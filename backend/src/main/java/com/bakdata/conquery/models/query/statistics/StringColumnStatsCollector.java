@@ -41,16 +41,19 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 	@Override
 	public ResultColumnStatistics describe() {
-		final List<Map.Entry<Comparable<?>, Long>> entriesSorted =
+		final List<Map.Entry<Comparable<?>, Long>>
+				entriesSorted =
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
-							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
+							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed())
+							 .toList();
+
+		final long end = Math.min(limit, entriesSorted.size());
 
 		final List<HistogramColumnDescription.Entry> head = new ArrayList<>();
 		long shownTotal = 0;
 
-
-		for (int i = 0; i < limit; i++) {
-			Map.Entry<Comparable<?>, Long> counts = entriesSorted.get(i);
+		for (int i = 0; i < end; i++) {
+			final Map.Entry<Comparable<?>, Long> counts = entriesSorted.get(i);
 
 			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
 			head.add(entry);
@@ -59,9 +62,11 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 		}
 
-		final Map<String, String> extras = entriesSorted.size() > limit
-										   ? Collections.emptyMap()
-										   : Map.of(C10N.get(StatisticsLabels.class).remainingNodes( entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
+		final Map<String, String>
+				extras =
+				entriesSorted.size() > limit
+				? Collections.emptyMap()
+				: Map.of(C10N.get(StatisticsLabels.class).remainingNodes(entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
 
 		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras, getType().typeInfo());
 	}
