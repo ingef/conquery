@@ -19,8 +19,8 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.statistics.DateColumnStatsCollector;
+import com.bakdata.conquery.models.query.statistics.HistogramColumnDescription;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
-import com.bakdata.conquery.models.query.statistics.StringColumnStatsCollector;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -103,47 +103,47 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1)
 								)
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept string",
 								"concept string",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept mapped",
 								"concept mapped",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept int",
 								"concept int",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept real",
 								"concept real",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept decimal",
 								"concept decimal",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept money",
 								"concept money",
 								null,
 								List.of(),
-								Map.of()
+								Map.of(), "STRING"
 						)
 				),
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))

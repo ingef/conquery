@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.Frequency;
 
@@ -45,29 +45,27 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
 							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
-		List<ColumnDescription.Entry> repr =
-				entriesSorted.stream()
-							 .limit(limit)
-							 .map(entry -> new ColumnDescription.Entry(((String) entry.getKey()), entry.getValue()))
-							 .toList();
+		final List<HistogramColumnDescription.Entry> head = new ArrayList<>();
+		int remainingValues = 0;
+		long remainingTotal = 0;
 
-		return new ColumnDescription(getName(), getLabel(), getDescription(), repr, Collections.emptyMap());
-	}
+		for (Map.Entry<Comparable<?>, Long> counts : entriesSorted) {
+			if (head.size() >= limit) {
+				remainingValues++;
+				remainingTotal += counts.getValue();
+				continue;
+			}
 
-	@Getter
-	@CPSType(id = "HISTO", base = ResultColumnStatistics.class)
-	@ToString(callSuper = true)
-	public static class ColumnDescription extends ResultColumnStatistics {
+			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
+			head.add(entry);
 
-		public static record Entry(String label, long value) {};
-		private final List<Entry> entries;
-
-		private final Map<String, String> extras;
-
-		public ColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
-			super(name, label, description, "STRING");
-			this.entries = histogram;
-			this.extras = extras;
 		}
+
+		final Map<String, String> extras = remainingValues == 0
+										   ? Collections.emptyMap()
+										   : Map.of(C10N.get(StatisticsLabels.class).remainingNodes(remainingValues), Long.toString(remainingTotal));
+
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras, getType().typeInfo());
 	}
+
 }

@@ -28,7 +28,7 @@ public class BalancingHistogram {
 	private int total;
 
 	public static BalancingHistogram create(double min, double max, int expectedBins) {
-		final double width = (max - min) / (expectedBins - 1);
+		final double width = (max - min) / expectedBins;
 
 		return new BalancingHistogram(new Node[expectedBins], min, max, width, expectedBins);
 	}
@@ -230,8 +230,13 @@ public class BalancingHistogram {
 		}
 
 		public void add(double value) {
-			max = Math.max(max, value);
-			min = Math.min(min, value);
+			if (value < min) {
+				min = value;
+			}
+			if (value > max) {
+				max = value;
+			}
+
 			entries.add(value);
 		}
 
