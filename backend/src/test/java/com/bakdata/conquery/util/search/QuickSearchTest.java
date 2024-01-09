@@ -84,34 +84,33 @@ class QuickSearchTest {
 	public void testSuffixes() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.suffixes("baaacd"))
+		assertThat(search.ngramSplitStrings("baaacd", "item"))
 				.containsExactly(
-						"baaacd!",
-						"aaacd",
-						"aacd",
-						"acd"
+						"baaacd",
+						"aa",
+						"aa",
+						"ac",
+						"cd"
 				);
 
-		assertThat(search.suffixes("acd"))
-				.containsExactly("acd!");
+		assertThat(search.ngramSplitStrings("acd", "item"))
+				.containsExactly("acd", "cd");
 
-		assertThat(search.suffixes("aacd"))
-				.containsExactly("aacd!", "acd");
+		assertThat(search.ngramSplitStrings("aacd", "item"))
+				.containsExactly("aacd", "ac", "cd");
 	}
 
 	@Test
 	public void testNoSuffix() {
 		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
 
-		assertThat(search.suffixes("baaacd"))
-				.containsExactly(
-						"baaacd!"
-				);
+		assertThat(search.ngramSplitStrings("baaacd", "item"))
+				.containsExactly("baaacd");
 
-		assertThat(search.suffixes("acd"))
-				.containsExactly("acd!");
+		assertThat(search.ngramSplitStrings("acd", "item"))
+				.containsExactly("acd");
 
-		assertThat(search.suffixes("aacd"))
-				.containsExactly("aacd!");
+		assertThat(search.ngramSplitStrings("aacd", "item"))
+				.containsExactly("aacd");
 	}
 }
