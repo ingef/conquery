@@ -19,33 +19,34 @@ import lombok.ToString;
 @Data
 public class BalancingHistogram {
 	private final Node[] nodes;
-	private final double min;
+	private final double min, max;
 	private final double width;
 
 	private final int expectedBins;
 
-	private final double stiffness;
 
 	private int total;
 
-	public static BalancingHistogram create(double min, double max, int expectedBins, double stiffness, boolean snap) {
-		double width = (max - min) / (expectedBins - 1);
+	public static BalancingHistogram create(double min, double max, int expectedBins) {
+		final double width = (max - min) / (expectedBins - 1);
 
-		if (snap) {
-			min = Math.floor(min);
-			max = Math.ceil(max);
-			width = Math.min(1, Math.round(width));
-
-			expectedBins = (int) Math.ceil((min - max) / width);
-		}
-
-		return new BalancingHistogram(new Node[expectedBins], min, width, expectedBins, stiffness);
+		return new BalancingHistogram(new Node[expectedBins], min, max, width, expectedBins);
 	}
 
 	public void add(double value) {
 		total++;
 
-		final int index = (int) Math.floor((value - min) / width);
+		final int index;
+
+		if (value >= max) {
+			index = nodes.length - 1;
+		}
+		else if (value <= min) {
+			index = 0;
+		}
+		else {
+			index = (int) Math.floor((value - min) / width);
+		}
 
 		if (nodes[index] == null) {
 			nodes[index] = new Node(new DoubleArrayList());
@@ -54,17 +55,17 @@ public class BalancingHistogram {
 		nodes[index].add(value);
 	}
 
-	public List<Node> balanced() {
+	public List<Node> balanced(double stiffness) {
 
-		final List<Node> merged = mergeLeft(nodes);
+		final List<Node> merged = mergeLeft(nodes, stiffness);
 
-		final List<Node> split = splitRight(merged);
+		final List<Node> split = splitRight(merged, stiffness);
 
 		return split;
 
 	}
 
-	private List<Node> mergeLeft(Node[] nodes) {
+	private List<Node> mergeLeft(Node[] nodes, double stiffness) {
 		final List<Node> bins = new ArrayList<>();
 
 		Node prior = null;
@@ -102,7 +103,7 @@ public class BalancingHistogram {
 		return bins;
 	}
 
-	private List<Node> splitRight(List<Node> nodes) {
+	private List<Node> splitRight(List<Node> nodes, double stiffness) {
 		final int expectedBinSize = total / expectedBins;
 
 		final List<Node> bins = new ArrayList<>();
