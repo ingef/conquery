@@ -11,7 +11,7 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 
 	public BooleanColumnStatsCollector(String name, String label, String description, PrintSettings printSettings) {
 		super(name, label, description, ResultType.BooleanT.INSTANCE, printSettings);
-		delegate = new StringColumnStatsCollector(name, label, description, ResultType.StringT.INSTANCE, printSettings, Integer.MAX_VALUE);
+		delegate = new StringColumnStatsCollector(name, label, description, ResultType.BooleanT.INSTANCE, printSettings, Integer.MAX_VALUE);
 	}
 
 	@Override

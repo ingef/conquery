@@ -83,17 +83,17 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	public ResultColumnStatistics describe() {
 		// If no real samples were collected, we short-circuit, as Statistics will throw an exception when empty.
 		if (getStatistics().getN() == 0) {
-			return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
+			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap(), getType().typeInfo());
 		}
 
-		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins(15, 85d, 15d);
+		final List<HistogramColumnDescription.Entry> bins = createBins(15, 85d, 15d);
 		final Map<String, String> extras = getExtras();
 
-		return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras, "STRING");
 	}
 
 	@NotNull
-	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins, double upperPercentile, double lowerPercentile) {
+	private List<HistogramColumnDescription.Entry> createBins(int expectedBins, double upperPercentile, double lowerPercentile) {
 
 		final double min = getStatistics().getPercentile(lowerPercentile);
 		final double max = getStatistics().getPercentile(upperPercentile);
@@ -105,7 +105,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final List<BalancingHistogram.Node> balanced = histogram.nodes();
 
 
-		final List<StringColumnStatsCollector.ColumnDescription.Entry> entries = new ArrayList<>();
+		final List<HistogramColumnDescription.Entry> entries = new ArrayList<>();
 
 
 		for (BalancingHistogram.Node bin : balanced) {
@@ -115,7 +115,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 
 
-			entries.add(new StringColumnStatsCollector.ColumnDescription.Entry(binLabel, bin.getCount()));
+			entries.add(new HistogramColumnDescription.Entry(binLabel, bin.getCount()));
 		}
 		return entries;
 	}

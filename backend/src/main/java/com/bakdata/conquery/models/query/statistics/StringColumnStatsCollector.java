@@ -6,11 +6,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.Frequency;
 
@@ -45,29 +43,15 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
 							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
-		List<ColumnDescription.Entry> repr =
+		List<HistogramColumnDescription.Entry> repr =
 				entriesSorted.stream()
 							 .limit(limit)
-							 .map(entry -> new ColumnDescription.Entry(((String) entry.getKey()), entry.getValue()))
+							 .map(entry -> new HistogramColumnDescription.Entry(((String) entry.getKey()), entry.getValue()))
 							 .toList();
 
-		return new ColumnDescription(getName(), getLabel(), getDescription(), repr, Collections.emptyMap());
+
+
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), repr, Collections.emptyMap(), getType().typeInfo());
 	}
 
-	@Getter
-	@CPSType(id = "HISTO", base = ResultColumnStatistics.class)
-	@ToString(callSuper = true)
-	public static class ColumnDescription extends ResultColumnStatistics {
-
-		public static record Entry(String label, long value) {};
-		private final List<Entry> entries;
-
-		private final Map<String, String> extras;
-
-		public ColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
-			super(name, label, description, "STRING");
-			this.entries = histogram;
-			this.extras = extras;
-		}
-	}
 }
