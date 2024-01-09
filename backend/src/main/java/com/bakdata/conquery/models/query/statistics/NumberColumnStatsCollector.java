@@ -86,17 +86,17 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
 		}
 
-		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins(15);
+		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins(15, 85d, 15d);
 		final Map<String, String> extras = getExtras();
 
 		return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
 	}
 
 	@NotNull
-	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins) {
+	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins, double upperPercentile, double lowerPercentile) {
 
-		final double min = getStatistics().getPercentile(20d);
-		final double max = getStatistics().getPercentile(80d);
+		final double min = getStatistics().getPercentile(lowerPercentile);
+		final double max = getStatistics().getPercentile(upperPercentile);
 
 		final BalancingHistogram histogram = BalancingHistogram.create(min, max, expectedBins);
 
