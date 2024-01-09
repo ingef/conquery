@@ -24,7 +24,6 @@ class ConceptCteContext implements Context {
 
 	ConversionContext conversionContext;
 	String conceptLabel;
-	Field<Object> primaryColumn;
 	Optional<ColumnDateRange> validityDate;
 	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> selects;
@@ -41,6 +40,13 @@ class ConceptCteContext implements Context {
 				getFilters().stream().map(SqlFilters::getSelects),
 				getSelects().stream()
 		);
+	}
+
+	public Field<Object> getPrimaryColumn() {
+		if (previous == null) {
+			return conversionContext.getPrimaryColumn();
+		}
+		return previous.getQualifiedSelects().getPrimaryColumn();
 	}
 
 	@Override
