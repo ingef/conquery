@@ -46,24 +46,22 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
 		final List<HistogramColumnDescription.Entry> head = new ArrayList<>();
-		int remainingValues = 0;
-		long remainingTotal = 0;
+		long shownTotal = 0;
 
-		for (Map.Entry<Comparable<?>, Long> counts : entriesSorted) {
-			if (head.size() >= limit) {
-				remainingValues++;
-				remainingTotal += counts.getValue();
-				continue;
-			}
+
+		for (int i = 0; i < limit; i++) {
+			Map.Entry<Comparable<?>, Long> counts = entriesSorted.get(i);
 
 			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
 			head.add(entry);
 
+			shownTotal += counts.getValue();
+
 		}
 
-		final Map<String, String> extras = remainingValues == 0
+		final Map<String, String> extras = entriesSorted.size() > limit
 										   ? Collections.emptyMap()
-										   : Map.of(C10N.get(StatisticsLabels.class).remainingNodes(remainingValues), Long.toString(remainingTotal));
+										   : Map.of(C10N.get(StatisticsLabels.class).remainingNodes( entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
 
 		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras, getType().typeInfo());
 	}
