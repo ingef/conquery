@@ -94,7 +94,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	@NotNull
 	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins) {
-		final BalancingHistogram histogram = BalancingHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins, 0.8d, false);
+
+		final double min = Math.max(getStatistics().getMean() - getStatistics().getStandardDeviation() * 2, getStatistics().getMin());
+		final double max = Math.min(getStatistics().getMean() + getStatistics().getStandardDeviation() * 2, getStatistics().getMax());
+
+		final BalancingHistogram histogram = BalancingHistogram.create(min, max, expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
@@ -141,13 +145,9 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	}
 
 
-
-
-
 	private String printValue(Number value) {
 		return formatter.format(value.doubleValue());
 	}
-
 
 
 }

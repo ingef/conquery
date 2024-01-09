@@ -14,7 +14,7 @@ class BalancingHistogramTest {
 
 	@Test
 	void balanced() {
-		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15);
 
 		final Random random = new Random(SEED);
 
@@ -33,13 +33,13 @@ class BalancingHistogramTest {
 		histogram.add(max);
 
 
-		List<BalancingHistogram.Node> balanced = histogram.balanced();
+		List<BalancingHistogram.Node> balanced = histogram.balanced(0.8d);
 		log.info("{}", balanced);
 	}
 
 	@Test
 	void snapped() {
-		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15);
 
 		final Random random = new Random(SEED);
 
@@ -64,7 +64,7 @@ class BalancingHistogramTest {
 
 	@Test
 	void plain() {
-		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15);
 
 		final Random random = new Random(SEED);
 
