@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
+import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
@@ -43,15 +45,27 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
 							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
-		List<HistogramColumnDescription.Entry> repr =
-				entriesSorted.stream()
-							 .limit(limit)
-							 .map(entry -> new HistogramColumnDescription.Entry(((String) entry.getKey()), entry.getValue()))
-							 .toList();
+		final List<HistogramColumnDescription.Entry> head = new ArrayList<>();
+		int remainingValues = 0;
+		long remainingTotal = 0;
 
+		for (Map.Entry<Comparable<?>, Long> counts : entriesSorted) {
+			if (head.size() >= limit) {
+				remainingValues++;
+				remainingTotal += counts.getValue();
+				continue;
+			}
 
+			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
+			head.add(entry);
 
-		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), repr, Collections.emptyMap(), getType().typeInfo());
+		}
+
+		final Map<String, String> extras = remainingValues == 0
+										   ? Collections.emptyMap()
+										   : Map.of(C10N.get(StatisticsLabels.class).remainingNodes(remainingValues), Long.toString(remainingTotal));
+
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras, getType().typeInfo());
 	}
 
 }

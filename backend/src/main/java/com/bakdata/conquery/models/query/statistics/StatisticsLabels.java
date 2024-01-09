@@ -43,5 +43,8 @@ public interface StatisticsLabels {
 	@De("Fehlend")
 	public String missing();
 
+	@En("{} additional Values")
+	@De("{} zusätzliche Werte")
+	public String remainingNodes(int count);
 
 }
