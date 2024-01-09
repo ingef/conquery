@@ -89,7 +89,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final List<HistogramColumnDescription.Entry> bins = createBins(15, 85d, 15d);
 		final Map<String, String> extras = getExtras();
 
-		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras, "STRING");
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras, getType().typeInfo());
+
 	}
 
 	@NotNull
