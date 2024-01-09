@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -25,24 +27,42 @@ public class SumSqlAggregator implements SqlAggregator {
 
 	private SumSqlAggregator(
 			Column sumColumn,
+			Column subtractColumn,
 			String alias,
 			SqlTables<ConceptCteStep> conceptTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		List<ExtractingSqlSelect<? extends Number>> preprocessingSelects = new ArrayList<>();
+
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
 				conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING),
 				sumColumn.getName(),
 				numberClass
 		);
+		preprocessingSelects.add(rootSelect);
 
-		Field<? extends Number>
-				qualifiedRootSelect =
-				rootSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(qualifiedRootSelect).as(alias), sumColumn.getName());
+		String aggregationSelectPredecessor = conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		Field<? extends Number> sumField;
+		if (subtractColumn != null) {
+			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
+					conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING),
+					subtractColumn.getName(),
+					numberClass
+			);
+			preprocessingSelects.add(subtractColumnRootSelect);
+
+			Field<? extends Number> qualifiedRootSelect = rootSelect.createAliasedReference(aggregationSelectPredecessor).select();
+			Field<? extends Number> qualifiedSubtractRootSelect = subtractColumnRootSelect.createAliasedReference(aggregationSelectPredecessor).select();
+			sumField = qualifiedRootSelect.minus(qualifiedSubtractRootSelect);
+		}
+		else {
+			sumField = rootSelect.createAliasedReference(aggregationSelectPredecessor).select();
+		}
+		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder()
-														 .preprocessingSelect(rootSelect)
+														 .preprocessingSelects(preprocessingSelects)
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
@@ -61,18 +81,23 @@ public class SumSqlAggregator implements SqlAggregator {
 	}
 
 	public static SumSqlAggregator create(SumSelect sumSelect, SelectContext selectContext) {
-		Column sumColumn = sumSelect.getColumn();
-		String alias = selectContext.getNameGenerator().selectName(sumSelect);
-		return new SumSqlAggregator(sumColumn, alias, selectContext.getConceptTables(), null);
+		return new SumSqlAggregator(
+				sumSelect.getColumn(),
+				sumSelect.getSubtractColumn(),
+				selectContext.getNameGenerator().selectName(sumSelect),
+				selectContext.getConceptTables(),
+				null
+		);
 	}
 
-	public static SumSqlAggregator create(
-			SumFilter<? extends IRange<? extends Number, ?>> sumFilter,
-			FilterContext<? extends IRange<? extends Number, ?>> filterContext
-	) {
-		Column sumColumn = sumFilter.getColumn();
-		String alias = filterContext.getNameGenerator().selectName(sumFilter);
-		return new SumSqlAggregator(sumColumn, alias, filterContext.getConceptTables(), filterContext.getValue());
+	public static <RANGE extends IRange<? extends Number, ?>> SqlAggregator create(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
+		return new SumSqlAggregator(
+				sumFilter.getColumn(),
+				sumFilter.getSubtractColumn(),
+				filterContext.getNameGenerator().selectName(sumFilter),
+				filterContext.getConceptTables(),
+				filterContext.getValue()
+		);
 	}
 
 }
