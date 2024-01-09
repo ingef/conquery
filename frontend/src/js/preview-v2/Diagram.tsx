@@ -190,8 +190,6 @@ export default function Diagram({
             },
           },
           x: {
-            suggestedMin: stat.span.min,
-            suggestedMax: stat.span.max,
             ticks: {
               callback: (valueIndex: number, index: number) => {
                 return index % 2 === 0
