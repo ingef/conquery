@@ -95,8 +95,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	@NotNull
 	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins) {
 
-		final double min = Math.max(getStatistics().getMean() - getStatistics().getStandardDeviation() * 2, getStatistics().getMin());
-		final double max = Math.min(getStatistics().getMean() + getStatistics().getStandardDeviation() * 2, getStatistics().getMax());
+		final double min = getStatistics().getPercentile(20d);
+		final double max = getStatistics().getPercentile(80d);
 
 		final BalancingHistogram histogram = BalancingHistogram.create(min, max, expectedBins);
 
