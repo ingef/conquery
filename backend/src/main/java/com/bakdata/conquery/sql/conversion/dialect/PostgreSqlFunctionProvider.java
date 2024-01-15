@@ -38,11 +38,6 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> toChar(int character) {
-		return DSL.chr(character);
-	}
-
-	@Override
 	public String getMinDateExpression() {
 		return MINUS_INFINITY_DATE_VALUE;
 	}
@@ -190,6 +185,14 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
 		return field.similarTo(pattern);
+	}
+
+	@Override
+	public Field<String[]> asArray(List<Field<String>> fields) {
+		String arrayExpression = fields.stream()
+									   .map(Field::toString)
+									   .collect(Collectors.joining(", ", "array{", "}"));
+		return DSL.field(arrayExpression, String[].class);
 	}
 
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {

@@ -32,8 +32,6 @@ public interface SqlFunctionProvider {
 
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
-	Field<String> toChar(int character);
-
 	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
@@ -69,6 +67,8 @@ public interface SqlFunctionProvider {
 	Field<?> random(Field<?> column);
 
 	Condition likeRegex(Field<String> field, String pattern);
+
+	Field<String[]> asArray(List<Field<String>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

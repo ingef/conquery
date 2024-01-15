@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -38,11 +39,6 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				type.getType(),
 				DSL.field("%s AS %s".formatted(field, type.getName()))
 		);
-	}
-
-	@Override
-	public Field<String> toChar(int character) {
-		return DSL.function("char", String.class, DSL.val(character));
 	}
 
 	@Override
@@ -209,6 +205,14 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
 		return DSL.condition("{0} LIKE_REGEXPR {1}", field, pattern);
+	}
+
+	@Override
+	public Field<String[]> asArray(List<Field<String>> fields) {
+		String arrayExpression = fields.stream()
+									   .map(Field::toString)
+									   .collect(Collectors.joining(", ", "array(", ")"));
+		return DSL.field(arrayExpression, String[].class);
 	}
 
 	@Override
