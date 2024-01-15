@@ -88,7 +88,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Query trie for all items associated with extensions of keywords
 			for (final List<KeywordIndex> hits : trie.prefixMap(keyword).values())
 				updateWeights(keyword, hits, itemWeights);
-			if (keyword.length() >= ngramLength) {
+			if (keyword.length() > ngramLength) {
 				// If there are items associated with the keyword, then there is an
 				// ngram associated with those items that is a prefix of keyword
 				updateWeights(keyword, trie.get(keyword.substring(0, ngramLength)), itemWeights);
