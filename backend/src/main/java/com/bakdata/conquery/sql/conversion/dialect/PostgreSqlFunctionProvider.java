@@ -191,7 +191,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)
-									   .collect(Collectors.joining(", ", "array{", "}"));
+									   .collect(Collectors.joining(", ", "array[", "]"));
 		return DSL.field(arrayExpression, Object[].class);
 	}
 
