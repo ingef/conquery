@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.filter;
+package com.bakdata.conquery.models.query.queryplan.filter;
 
 import java.util.Set;
 
@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -18,7 +17,7 @@ import lombok.ToString;
  * @param <FILTER_VALUE> Type of the used FilterValue
  */
 @ToString(callSuper = true)
-public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
+public abstract non-sealed class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter
 	private AGGREGATOR aggregator;
@@ -56,7 +55,6 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 		return true; // this is ignored for non-EventFilterNodes
 	}
 
-	@Override
 	public abstract boolean isContained();
 
 	@Override

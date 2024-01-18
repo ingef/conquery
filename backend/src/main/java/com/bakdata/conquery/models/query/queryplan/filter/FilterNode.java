@@ -8,11 +8,10 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @ToString
-public abstract class FilterNode<FILTER_VALUE> extends EventIterating {
+public abstract sealed class FilterNode<FILTER_VALUE> extends EventIterating permits EventFilterNode, AggregationResultFilterNode {
 
 	@Setter @Getter
 	protected FILTER_VALUE filterValue;
 
-	public abstract boolean isContained();
 
 }

@@ -42,6 +42,9 @@ public abstract class EventIterating {
 	public void nextBlock(Bucket bucket) {
 	}
 
+	/**
+	 * @implSpec returning false signals that the event may be discarded.
+	 */
 	public abstract boolean acceptEvent(Bucket bucket, int event);
 
 

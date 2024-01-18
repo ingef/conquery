@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.filter;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import lombok.ToString;
 
 /**

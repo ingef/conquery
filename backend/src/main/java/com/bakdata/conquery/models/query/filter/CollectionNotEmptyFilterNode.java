@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.filter;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import lombok.ToString;
 
 
