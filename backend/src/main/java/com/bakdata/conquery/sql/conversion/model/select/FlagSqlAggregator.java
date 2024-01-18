@@ -65,8 +65,6 @@ import org.jooq.impl.SQLDataType;
 public class FlagSqlAggregator implements SqlAggregator {
 
 	private static final Param<Integer> NUMERIC_TRUE_VAL = DSL.val(1);
-	private static final Param<Integer> NUMERIC_FALSE_VAL = DSL.val(0);
-	private static final Param<String> EMPTY_STRING = DSL.val("");
 
 	SqlSelects sqlSelects;
 	WhereClauses whereClauses;

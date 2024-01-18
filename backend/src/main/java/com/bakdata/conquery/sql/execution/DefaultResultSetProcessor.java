@@ -74,7 +74,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 			return Arrays.stream(casted).filter(Objects::nonNull).toList();
 		}
 		catch (ClassCastException exception) {
-			throw new SQLException("Expected an array of type String at column index %s in ResultSet %s.");
+			throw new SQLException("Expected an array of type String at column index %s in ResultSet %s.".formatted(columnIndex, resultSet));
 		}
 	}
 
