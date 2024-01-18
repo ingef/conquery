@@ -37,11 +37,11 @@ import org.jooq.impl.SQLDataType;
  * "group_select" as (
  * 		select
  * 			"pid",
- * 			(
- * 				case when max(CAST("preprocessing"."a" AS integer)) = 1 then 'A' else '' end || char(31)
- * 				|| case when max(CAST("preprocessing"."b" AS integer)) = 1 then 'B' else '' end || char(31)
- * 				|| case when max(CAST("preprocessing"."c" AS integer)) = 1 then 'C' else '' end || char(31)
- * 			) "flags_selects-1"
+ * 			array[
+ * 				case when max(cast("concept_flags-1-preprocessing"."a" as integer)) = 1 then 'A' end,
+ * 				case when max(cast("concept_flags-1-preprocessing"."b" as integer)) = 1 then 'B' end,
+ * 				case when max(cast("concept_flags-1-preprocessing"."c" as integer)) = 1 then 'C' end
+ * 				] as "flags_selects-1"
  * 		from "preprocessing"
  * 		group by "pid"
  * )
