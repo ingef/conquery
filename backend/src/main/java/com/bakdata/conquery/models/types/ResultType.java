@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -255,7 +256,7 @@ public abstract class ResultType<T> {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
 			if (cfg.isPrettyPrint()) {
-				return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits()));
+				return cfg.getDecimalFormat().format(readIntermediateValue(cfg, (Number) f));
 			}
 			return IntegerT.INSTANCE.print(cfg, f);
 		}
@@ -265,6 +266,11 @@ public abstract class ResultType<T> {
 			return resultSetProcessor.getMoney(resultSet, columnIndex);
 		}
 
+
+		@NotNull
+		public BigDecimal readIntermediateValue(PrintSettings cfg, Number f) {
+			return new BigDecimal(f.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
+		}
 	}
 
 	@CPSType(id = "LIST", base = ResultType.class)

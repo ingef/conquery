@@ -21,12 +21,12 @@ public class ConditionUtil {
 	}
 
 	/**
-	 * Use if you want to wrap a {@link Condition} without implementing a {@link FilterCondition} in an own class.
+	 * Use if you want to wrap a {@link Condition} without implementing a {@link WhereCondition} in an own class.
 	 *
-	 * @return A {@link FilterCondition} instance encapsulating the provided condition and type.
+	 * @return A {@link WhereCondition} instance encapsulating the provided condition and type.
 	 */
-	public FilterCondition wrap(final Condition condition, final FilterType type) {
-		return new FilterConditionWrapper(condition, type);
+	public WhereCondition wrap(final Condition condition, final ConditionType type) {
+		return new WhereConditionWrapper(condition, type);
 	}
 
 }

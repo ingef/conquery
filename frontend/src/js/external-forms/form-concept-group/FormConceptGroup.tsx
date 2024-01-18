@@ -127,6 +127,10 @@ const FormConceptGroup = (props: Props) => {
     allowlistedTables: props.allowlistedTables,
     blocklistedTables: props.blocklistedTables,
   };
+  const selectConfig = {
+    allowlistedSelects: props.allowlistedSelects,
+    blocklistedSelects: props.blocklistedSelects,
+  };
 
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
@@ -163,6 +167,7 @@ const FormConceptGroup = (props: Props) => {
     onChange: props.onChange,
     defaults,
     tableConfig,
+    selectConfig,
     isValidConcept: props.isValidConcept,
   });
 
@@ -216,7 +221,7 @@ const FormConceptGroup = (props: Props) => {
 
             const concept = isMovedObject(item)
               ? copyConcept(item)
-              : initializeConcept(item, defaults, tableConfig);
+              : initializeConcept(item, defaults, tableConfig, selectConfig);
 
             let insertIndex = i;
             let newPropsValue = props.value;
@@ -301,7 +306,7 @@ const FormConceptGroup = (props: Props) => {
 
           const concept = isMovedObject(item)
             ? copyConcept(item)
-            : initializeConcept(item, defaults, tableConfig);
+            : initializeConcept(item, defaults, tableConfig, selectConfig);
           return props.onChange(
             addConcept(
               addValue(props.value, newValue),
@@ -435,7 +440,12 @@ const FormConceptGroup = (props: Props) => {
                           props.value,
                           i,
                           j,
-                          initializeConcept(item, defaults, tableConfig),
+                          initializeConcept(
+                            item,
+                            defaults,
+                            tableConfig,
+                            selectConfig,
+                          ),
                         ),
                       );
                     }}

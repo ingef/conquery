@@ -1,5 +1,8 @@
 {
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "DATE_DISTANCE filter query with timeUnit YEARS",
   "expectedCsv": "tests/sql/filter/date_distance/years/expected.csv",
   "query": {

@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -87,6 +88,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@CheckForNull
 	public abstract Column getColumn();
+
+	@CheckForNull
+	public abstract CTCondition getCondition();
 
 	@JsonIgnore
 	public List<Select> getDefaultSelects() {
