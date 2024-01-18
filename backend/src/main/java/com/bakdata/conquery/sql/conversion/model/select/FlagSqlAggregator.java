@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
-import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Value;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -26,11 +24,9 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 /**
- * {@link FlagSelect} conversion aggregates the keys of the flags of a {@link FlagSelect} into a list.
+ * {@link FlagSelect} conversion aggregates the keys of the flags of a {@link FlagSelect} into an array.
  * <p>
- * If any value of the respective flag column is true, the flag key will be part of the string aggregation. <br>
- * If no value is true, an empty string will be added as value, because a {@code null} value would cause the whole string aggregation to be {@code null} too. <br>
- * Each value will be followed by the {@link ResultSetProcessor#UNIT_SEPARATOR}.
+ * If any value of the respective flag column is true, the flag key will be part of the generated array. <br>
  *
  * <pre>
  * {@code
@@ -170,7 +166,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 	private static List<String> getRequiredColumnNames(Map<String, Column> flags, String[] selectedFlags) {
 		return Arrays.stream(selectedFlags)
 					 .map(flags::get)
-					 .map(NamedImpl::getName)
+					 .map(Column::getName)
 					 .toList();
 	}
 
