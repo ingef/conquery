@@ -7,14 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
-class BalancingHistogramTest {
+class HistogramTest {
 
 	public static final int SEED = 0xD00F;
 	private final int max = 250;
 
 	@Test
 	void plain() {
-		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15);
+		Histogram histogram = Histogram.create(0, max, 15);
 
 		final Random random = new Random(SEED);
 
@@ -33,7 +33,7 @@ class BalancingHistogramTest {
 		histogram.add(max);
 
 
-		List<BalancingHistogram.Node> balanced = histogram.nodes();
+		List<Histogram.Node> balanced = histogram.nodes();
 		log.info("{}", balanced);
 	}
 

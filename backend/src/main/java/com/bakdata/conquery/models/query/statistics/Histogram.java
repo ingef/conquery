@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.ToString;
 
 @Data
-public class BalancingHistogram {
+public class Histogram {
 	private final Node[] nodes;
 	private final double min, max;
 	private final double width;
@@ -20,10 +20,10 @@ public class BalancingHistogram {
 
 	private int total;
 
-	public static BalancingHistogram create(double min, double max, int expectedBins) {
+	public static Histogram create(double min, double max, int expectedBins) {
 		final double width = (max - min) / expectedBins;
 
-		return new BalancingHistogram(new Node[expectedBins], min, max, width, expectedBins);
+		return new Histogram(new Node[expectedBins], min, max, width, expectedBins);
 	}
 
 	public void add(double value) {

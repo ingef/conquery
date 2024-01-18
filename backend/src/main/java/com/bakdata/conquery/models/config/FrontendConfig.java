@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.google.common.collect.Range;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,10 @@ public class FrontendConfig {
 	 */
 	@Min(0)
 	private int visualisationsHistogramLimit = 25;
+
+	private Range<Integer> visualisationPercentiles = Range.closed(15, 85);
+
+
 
 
 	/**

@@ -607,8 +607,7 @@ public class QueryProcessor {
 
 
 		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, config.getFrontend()
-																																												  .getVisualisationsHistogramLimit()))
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, config.getFrontend()))
 																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();

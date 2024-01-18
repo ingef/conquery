@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.statistics;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -20,33 +21,28 @@ public abstract class ColumnStatsCollector<T> {
 	@JsonIgnore
 	private final PrintSettings printSettings;
 
-	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, ResultType type, UniqueNamer uniqueNamer, long displayLimit) {
+	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, ResultType type, UniqueNamer uniqueNamer, FrontendConfig config) {
 
 		// List recursion must be done before assigning uniqueNames
-		if (type instanceof ResultType.ListT listT){
-			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, displayLimit);
+		if (type instanceof ResultType.ListT listT) {
+			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, config);
 			// name label type are discarded when using ListColumnStatsCollector
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
 
-
 		final String name = uniqueNamer.getUniqueName(info);
 		final String label = info.defaultColumnName(printSettings);
 
-		if (type instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+		if (type instanceof ResultType.NumericT || type instanceof ResultType.MoneyT || type instanceof ResultType.IntegerT) {
+			final int lowerPercentile = config.getVisualisationPercentiles().hasLowerBound() ? config.getVisualisationPercentiles().lowerEndpoint() : 0;
+			final int upperPercentile = config.getVisualisationPercentiles().hasUpperBound() ? config.getVisualisationPercentiles().upperEndpoint() : 100;
+
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit(), lowerPercentile, upperPercentile);
 		}
 
-		if (type instanceof ResultType.NumericT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
-		}
-
-		if (type instanceof ResultType.MoneyT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
-		}
 
 		if (type instanceof ResultType.StringT) {
-			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, displayLimit);
+			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit());
 		}
 
 		if (type instanceof ResultType.BooleanT) {
