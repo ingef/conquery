@@ -11,7 +11,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
 import lombok.Value;
@@ -24,11 +24,10 @@ class ConceptCteContext implements Context {
 
 	ConversionContext conversionContext;
 	String conceptLabel;
-	Field<Object> primaryColumn;
 	Optional<ColumnDateRange> validityDate;
 	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> selects;
-	List<ConceptFilter> filters;
+	List<SqlFilters> filters;
 	ConceptTables conceptTables;
 	@With
 	QueryStep previous;
@@ -38,9 +37,16 @@ class ConceptCteContext implements Context {
 	 */
 	public Stream<SqlSelects> allConceptSelects() {
 		return Stream.concat(
-				getFilters().stream().map(ConceptFilter::getSelects),
+				getFilters().stream().map(SqlFilters::getSelects),
 				getSelects().stream()
 		);
+	}
+
+	public Field<Object> getPrimaryColumn() {
+		if (previous == null) {
+			return conversionContext.getPrimaryColumn();
+		}
+		return previous.getQualifiedSelects().getPrimaryColumn();
 	}
 
 	@Override

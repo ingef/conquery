@@ -1,20 +1,24 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import java.util.Collections;
 import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
-@Builder
 @Value
+@Builder
 public class SqlSelects {
-	@Builder.Default
-	List<SqlSelect> forPreprocessingStep = Collections.emptyList();
+	@Singular
+	List<SqlSelect> preprocessingSelects;
 	// Empty if only used in event filter
-	@Builder.Default
-	List<SqlSelect> forAggregationSelectStep = Collections.emptyList();
+	@Singular
+	List<SqlSelect> aggregationSelects;
 	// Empty if only used in aggregation select
-	@Builder.Default
-	List<SqlSelect> forFinalStep = Collections.emptyList();
+	@Singular
+	List<SqlSelect> finalSelects;
+	// Additional predecessors these SqlSelects require
+	@Singular
+	List<QueryStep> additionalPredecessors;
 }

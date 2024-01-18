@@ -1,6 +1,9 @@
 {
   "label": "Date restriction query with simple date validity date and only max date restriction set",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/date_restriction/only_max/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

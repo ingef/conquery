@@ -1,5 +1,8 @@
 {
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "DATE_DISTANCE filter query with timeUnit DAYS and without date restriction set",
   "expectedCsv": "tests/sql/filter/date_distance/days_without_date_restriction/expected.csv",
   "query": {
