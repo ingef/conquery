@@ -26,7 +26,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 /**
- * {@link FlagSelect} conversion aggregates the keys of the flags of a {@link FlagSelect} into a string aggregation.
+ * {@link FlagSelect} conversion aggregates the keys of the flags of a {@link FlagSelect} into a list.
  * <p>
  * If any value of the respective flag column is true, the flag key will be part of the string aggregation. <br>
  * If no value is true, an empty string will be added as value, because a {@code null} value would cause the whole string aggregation to be {@code null} too. <br>
