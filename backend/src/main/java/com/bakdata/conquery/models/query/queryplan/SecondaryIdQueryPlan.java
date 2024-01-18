@@ -217,10 +217,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private ConceptQueryPlan createChild(QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		ConceptQueryPlan plan;
+		ConceptQueryPlan plan = childPlanReusePool.poll();
 
 		// Try to reuse old child plan first before allocating new ones
-		if ((plan = childPlanReusePool.poll()) == null) {
+		if (plan == null) {
 			plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
 		}
 
