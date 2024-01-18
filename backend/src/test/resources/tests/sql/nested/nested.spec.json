@@ -11,14 +11,14 @@
           "type": "CONCEPT",
           "label": "vs",
           "ids": [
-            "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+            "number"
           ],
           "tables": [
             {
-              "id": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector",
+              "id": "number.number_connector",
               "filters": [
                 {
-                  "filter": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector.value_filter",
+                  "filter": "number.number_connector.value_filter",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": -1,
@@ -26,7 +26,7 @@
                   }
                 }
               ],
-              "selects": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector.value_select"
+              "selects": "number.number_connector.value_select"
             }
           ]
         },
@@ -35,16 +35,16 @@
           "children": [
             {
               "ids": [
-                "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+                "geschlecht_select"
               ],
               "type": "CONCEPT",
               "label": "Geschlecht SELECT",
               "tables": [
                 {
-                  "id": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector",
+                  "id": "geschlecht_select.geschlecht_connector",
                   "filters": [
                     {
-                      "filter": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector.geschlecht",
+                      "filter": "geschlecht_select.geschlecht_connector.geschlecht",
                       "type": "BIG_MULTI_SELECT",
                       "value": [
                         "f"
@@ -52,23 +52,23 @@
                     }
                   ],
                   "selects": [
-                    "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector.geschlecht"
+                    "geschlecht_select.geschlecht_connector.geschlecht"
                   ]
                 }
               ]
             },
             {
               "ids": [
-                "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+                "language_select"
               ],
               "type": "CONCEPT",
               "label": "Language SELECT",
               "tables": [
                 {
-                  "id": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector",
+                  "id": "language_select.language_connector",
                   "filters": [
                     {
-                      "filter": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector.language",
+                      "filter": "language_select.language_connector.language",
                       "type": "BIG_MULTI_SELECT",
                       "value": [
                         "de"
@@ -76,7 +76,7 @@
                     }
                   ],
                   "selects": [
-                    "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector.language"
+                    "language_select.language_connector.language"
                   ]
                 }
               ]
@@ -88,7 +88,7 @@
   },
   "concepts": [
     {
-      "label": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "label": "number",
       "type": "TREE",
       "connectors": [
         {
@@ -114,7 +114,7 @@
       ]
     },
     {
-      "label": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "label": "geschlecht_select",
       "type": "TREE",
       "connectors": [
         {
@@ -139,7 +139,7 @@
       ]
     },
     {
-      "label": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "label": "language_select",
       "type": "TREE",
       "connectors": [
         {
