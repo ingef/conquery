@@ -231,7 +231,7 @@ public class ImportJob extends Job {
 		// We group by sharedDictionary to avoid sending dictionaries multliple times
 		Arrays.stream(columns)
 			  .parallel()
-			  .filter(column1 -> column1.getType() == MajorTypeId.STRING)
+			  .filter(column -> column.getType() == MajorTypeId.STRING)
 			  .filter(col -> col.getSharedDictionary() != null)
 			  .filter(col -> dicts.containsKey(col.getName()))
 			  .collect(Collectors.groupingBy(Column::getSharedDictionary))
