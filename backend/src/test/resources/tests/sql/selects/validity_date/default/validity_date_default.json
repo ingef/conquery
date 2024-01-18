@@ -1,5 +1,8 @@
 {
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "Validity date as default select without date restriction set",
   "description": "If validity dates exist and the concept is not excluded from time aggregation, validity dates should be part of the final selects - regardless if a date restriction is set.",
   "expectedCsv": "tests/sql/selects/validity_date/default/expected.csv",

@@ -20,6 +20,7 @@ import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.SqlStandaloneCommand;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
@@ -56,6 +57,7 @@ public class TestConquery {
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 	private final File tmpDir;
 	private final ConqueryConfig config;
+	private final TestDataImporter testDataImporter;
 	@Getter
 	private StandaloneCommand standaloneCommand;
 	@Getter
@@ -196,7 +198,7 @@ public class TestConquery {
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
 		if (config.getSqlConnectorConfig().isEnabled()) {
-			return buildSupport(datasetId, name);
+			return buildSupport(datasetId, name, StandaloneSupport.Mode.SQL);
 		}
 		return buildDistributedSupport(datasetId, name);
 	}
@@ -213,10 +215,10 @@ public class TestConquery {
 			.build()
 			.until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
 
-		return buildSupport(datasetId, name);
+		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
 	}
 
-	private StandaloneSupport buildSupport(DatasetId datasetId, String name) {
+	private StandaloneSupport buildSupport(DatasetId datasetId, String name, StandaloneSupport.Mode mode) {
 
 		DatasetRegistry<? extends Namespace> datasets = standaloneCommand.getManager().getDatasetRegistry();
 		Namespace ns = datasets.get(datasetId);
@@ -238,6 +240,7 @@ public class TestConquery {
 				Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManagerNode().getEnvironment().getValidator()), IntegrationTests.MAPPER);
 
 		StandaloneSupport support = new StandaloneSupport(
+				mode,
 				this,
 				ns,
 				ns.getStorage().getDataset(),
@@ -246,7 +249,8 @@ public class TestConquery {
 				standaloneCommand.getManagerNode().getAdmin().getAdminProcessor(),
 				standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
-				testUser
+				testUser,
+				testDataImporter
 		);
 
 		support.waitUntilWorkDone();

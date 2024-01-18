@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -46,7 +47,17 @@ public abstract class ConqueryTestSpec {
 	@Setter
 	@Getter
 	@Nullable
+	private String description;
+
+	@Setter
+	@Getter
+	@Nullable
 	private ConqueryConfig config;
+
+	@Setter
+	@Getter
+	@Nullable
+	SqlSpec sqlSpec;
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
@@ -144,6 +155,9 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 
+	public boolean isEnabled(Dialect sqlDialect) {
+		return sqlSpec == null || sqlSpec.isEnabled() && sqlSpec.isAllowedTest(sqlDialect);
+	}
 
 	/**
 	 * Replaces occurrences of the string "${dataset}" with the id of the current dataset of the {@link StandaloneSupport}.
