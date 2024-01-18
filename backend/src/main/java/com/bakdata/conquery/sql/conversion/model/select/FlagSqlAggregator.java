@@ -84,9 +84,9 @@ public class FlagSqlAggregator implements SqlAggregator {
 		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, rootTable);
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
-		FieldWrapper<String[]> flagAggregation = createFlagSelect(alias, conceptTables, functionProvider, rootSelects);
+		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, conceptTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<String[]> finalSelect = flagAggregation.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
 
 		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
 										  .aggregationSelect(flagAggregation)
@@ -132,7 +132,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 						 ));
 	}
 
-	private static FieldWrapper<String[]> createFlagSelect(
+	private static FieldWrapper<Object[]> createFlagSelect(
 			String alias,
 			SqlTables<ConceptCteStep> conceptTables,
 			SqlFunctionProvider functionProvider,
@@ -141,7 +141,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		Map<String, Field<Boolean>> flagFieldsMap = createRootSelectReferences(conceptTables, flagRootSelectMap);
 
 		// we first aggregate each flag column
-		List<Field<String>> flagAggregations = new ArrayList<>();
+		List<Field<?>> flagAggregations = new ArrayList<>();
 		for (Map.Entry<String, Field<Boolean>> entry : flagFieldsMap.entrySet()) {
 			Field<Boolean> boolColumn = entry.getValue();
 			Condition anyTrue = DSL.max(functionProvider.cast(boolColumn, SQLDataType.INTEGER))
@@ -152,7 +152,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		}
 
 		// and stuff them into 1 array field
-		Field<String[]> flagsArray = functionProvider.asArray(flagAggregations).as(alias);
+		Field<Object[]> flagsArray = functionProvider.asArray(flagAggregations).as(alias);
 		return new FieldWrapper<>(flagsArray);
 	}
 

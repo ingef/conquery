@@ -68,7 +68,7 @@ public interface SqlFunctionProvider {
 
 	Condition likeRegex(Field<String> field, String pattern);
 
-	Field<String[]> asArray(List<Field<String>> fields);
+	Field<Object[]> asArray(List<Field<?>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

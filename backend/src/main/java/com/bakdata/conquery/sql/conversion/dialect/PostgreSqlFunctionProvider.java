@@ -188,11 +188,11 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String[]> asArray(List<Field<String>> fields) {
+	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)
 									   .collect(Collectors.joining(", ", "array{", "}"));
-		return DSL.field(arrayExpression, String[].class);
+		return DSL.field(arrayExpression, Object[].class);
 	}
 
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
