@@ -1,6 +1,6 @@
 {
   "label": "FLAGS select",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
   "expectedCsv": "tests/sql/selects/flag/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
