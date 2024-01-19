@@ -1,5 +1,8 @@
 {
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "Validity date excluded from time aggregation",
   "description": "If a concept is excluded from time aggregation, validity dates should not be part of the final select.",
   "expectedCsv": "tests/sql/selects/validity_date/excluded_from_time_aggregation/expected.csv",

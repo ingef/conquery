@@ -60,11 +60,11 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
-	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
 
-	Field<?> last(Field<?> column, List<Field<?>> orderByColumns);
+	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
-	Field<?> random(Field<?> column);
+	<T> Field<T> random(Field<T> column);
 
 	Condition likeRegex(Field<String> field, String pattern);
 

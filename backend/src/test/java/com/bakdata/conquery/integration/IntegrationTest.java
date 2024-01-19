@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration;
 import java.io.File;
 import java.util.Map;
 
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -62,6 +63,7 @@ public interface IntegrationTest {
 		private final String name;
 		private final IntegrationTests integrationTests;
 		private final IntegrationTest test;
+		private final TestDataImporter testImporter;
 
 		@Override
 		public void execute() throws Throwable {
@@ -75,7 +77,7 @@ public interface IntegrationTest {
 			final ConqueryConfig clonedConfig = Cloner.clone(integrationTests.getConfig(), Map.of(), IntegrationTests.MAPPER);
 			final ConqueryConfig overridenConfig = test.overrideConfig(clonedConfig, integrationTests.getWorkDir());
 
-			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig);
+			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig, testImporter);
 
 			try {
 				testConquery.beforeEach();

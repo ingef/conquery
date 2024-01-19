@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -109,11 +110,17 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public SqlFilters convertToSqlFilter(FilterContext<RANGE> filterContext) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return SumDistinctSqlAggregator.create(this, filterContext).getSqlFilters();
+		}
 		return SumSqlAggregator.create(this, filterContext).getSqlFilters();
 	}
 
 	@Override
 	public Set<ConceptCteStep> getRequiredSqlSteps() {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return ConceptCteStep.withOptionalSteps(ConceptCteStep.JOIN_PREDECESSORS, ConceptCteStep.AGGREGATION_FILTER);
+		}
 		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
 	}
 
