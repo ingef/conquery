@@ -59,18 +59,6 @@ public class Histogram {
 		private double min = Double.MAX_VALUE;
 		private double max = Double.MIN_VALUE;
 
-		public Node merge(Node other) {
-			final Node out = new Node(new DoubleArrayList(getCount() + other.getCount()));
-
-			out.max = Math.max(max, other.getMax());
-			out.min = Math.min(min, other.getMin());
-
-			out.entries.addAll(other.getEntries());
-			out.entries.addAll(getEntries());
-
-			return out;
-		}
-
 		@ToString.Include
 		public int getCount() {
 			return entries.size();

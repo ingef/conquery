@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.statistics;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -105,26 +104,22 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final double min = getStatistics().getPercentile(lowerPercentile);
 		final double max = getStatistics().getPercentile(upperPercentile);
 
+
 		final Histogram histogram = Histogram.create(min, max, expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<Histogram.Node> balanced = histogram.nodes();
+		return histogram.nodes()
+						.stream()
+						.map(bin -> {
+							 final String lower = printValue(bin.getMin());
+							 final String upper = printValue(bin.getMax());
 
+							 final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 
-		final List<HistogramColumnDescription.Entry> entries = new ArrayList<>();
-
-
-		for (Histogram.Node bin : balanced) {
-			final String lower = printValue(bin.getMin());
-			final String upper = printValue(bin.getMax());
-
-			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
-
-
-			entries.add(new HistogramColumnDescription.Entry(binLabel, bin.getCount()));
-		}
-		return entries;
+							 return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
+						 })
+						.toList();
 	}
 
 	@NotNull
