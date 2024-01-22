@@ -72,7 +72,7 @@ const SxBasicButton = styled(BasicButton)<{
     opacity: 1;
 
     background-color: ${({ frame, bgHover, theme }) =>
-      frame || bgHover ? theme.col.grayVeryLight : " inherit"};
+      frame || bgHover ? theme.col.bgAlt : " inherit"};
   }
 
   &:disabled {
