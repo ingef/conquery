@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -58,15 +55,11 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	@SneakyThrows(IOException.class)
 	private static byte[] serializeMessage(WorkerMessage message, ObjectWriter writer) {
-		try (OutputStream outputStream = new ByteArrayOutputStream()) {
-			writer.writeValue(outputStream, message);
-		}
-
-		return new ByteArrayOutputStream().toByteArray();
+		return writer.writeValueAsBytes(message);
 	}
 
 	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper mapper) throws java.io.IOException {
-		return mapper.readerFor(WorkerMessage.class).readValue(new ByteArrayInputStream(messageRaw));
+		return mapper.readerFor(WorkerMessage.class).readValue(messageRaw);
 	}
 
 	@Override
