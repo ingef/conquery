@@ -1,4 +1,6 @@
 import styled from "@emotion/styled";
+import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -93,8 +95,7 @@ const MenuColumnItem: FC<PropsT> = ({
     <Container disabled={isDisabled} onClick={onClick}>
       <Row>
         <SxIconButton
-          regular
-          icon={includable ? "square" : "check-square"}
+          icon={includable ? faSquare : faCheckSquare}
           disabled={isDisabled || (!includable && !excludable)}
           onClick={(event) => {
             // To prevent selecting the table as well, see above
@@ -114,7 +115,7 @@ const MenuColumnItem: FC<PropsT> = ({
       {isFilterActive && (
         <SxWithTooltip text={t("queryNodeEditor.clearSettings")}>
           <ResetButton
-            icon="filter"
+            icon={faFilter}
             active
             onClick={(event) => {
               // To prevent selecting the table as well, see above

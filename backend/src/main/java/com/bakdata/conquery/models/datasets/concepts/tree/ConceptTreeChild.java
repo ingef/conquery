@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference //@Valid
+
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -32,6 +34,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonBackReference
 	@Getter
 	@Setter
+	@EqualsAndHashCode.Exclude
 	private ConceptTreeNode<?> parent;
 	@JsonIgnore
 	@Getter

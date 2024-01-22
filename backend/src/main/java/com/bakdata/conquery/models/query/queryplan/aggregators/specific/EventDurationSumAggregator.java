@@ -6,8 +6,8 @@ import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -21,12 +21,12 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class EventDurationSumAggregator extends Aggregator<Long> {
 
-	private final CDateSet set = CDateSet.create();
+	private final CDateSet set = CDateSet.createEmpty();
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	@CheckForNull
 	private CDateSet dateRestriction;
 	@CheckForNull
-	private Column validityDateColumn;
+	private ValidityDate validityDateColumn;
 	private int realUpperBound;
 
 	@Override
@@ -48,11 +48,11 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 			return;
 		}
 
-		if (!bucket.has(event, validityDateColumn)) {
+		final CDateRange value = validityDateColumn.getValidityDate(event, bucket);
+
+		if (value == null){
 			return;
 		}
-
-		final CDateRange value = bucket.getAsDateRange(event, validityDateColumn);
 
 
 		set.maskedAdd(value, dateRestriction, realUpperBound);

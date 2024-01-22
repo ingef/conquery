@@ -4,14 +4,18 @@ import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
+import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.MigrateCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.mode.Manager;
+import com.bakdata.conquery.mode.ManagerProvider;
+import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
+import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
@@ -34,7 +38,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
 	@Setter
-	private ManagerNode manager;
+	private ManagerNode managerNode;
 
 	public Conquery() {
 		this("Conquery");
@@ -51,7 +55,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new ShardNode());
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
-		bootstrap.addCommand(new StandaloneCommand(this));
+		bootstrap.addCommand(new DistributedStandaloneCommand(this));
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());
 
@@ -90,10 +94,16 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		if (manager == null) {
-			manager = new ManagerNode();
+		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
+								   new LocalManagerProvider() : new ClusterManagerProvider();
+		run(provider.provideManager(configuration, environment));
+	}
+
+	public void run(Manager manager) throws InterruptedException {
+		if (managerNode == null) {
+			managerNode = new ManagerNode();
 		}
-		manager.run(configuration, environment);
+		managerNode.run(manager);
 	}
 
 	public static void main(String... args) throws Exception {

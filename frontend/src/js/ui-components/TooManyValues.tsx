@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +31,7 @@ const TooManyValues: FC<Props> = ({ count, onClear }) => {
     <Root>
       <Text>{t("queryNodeEditor.tooManyValues", { count })}</Text>
       <IconButton
-        icon="times"
+        icon={faTimes}
         tiny
         title={t("common.clearValue")}
         aria-label={t("common.clearValue")}

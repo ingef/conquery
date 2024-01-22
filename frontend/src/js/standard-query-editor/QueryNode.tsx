@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
@@ -9,9 +8,9 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeHasNonDefaultSettings,
-  nodeHasFilterValues,
+  canNodeBeDropped,
   nodeIsConceptQueryNode,
+  useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
@@ -46,9 +45,6 @@ const Root = styled("div")<{
     active
       ? `2px solid ${theme.col.blueGrayDark}`
       : `1px solid ${theme.col.grayMediumLight}`};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.bg};
-  }
 `;
 
 interface PropsT {
@@ -95,20 +91,18 @@ const QueryNode = ({
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }: PropsT) => {
-  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
   const activeSecondaryId = useSelector<StateT, string | null>(
     (state) => state.queryEditor.selectedSecondaryId,
   );
-
-  const hasNonDefaultSettings = !node.error && nodeHasNonDefaultSettings(node);
-  const hasFilterValues = nodeHasFilterValues(node);
   const hasActiveSecondaryId = nodeHasActiveSecondaryId(
     node,
     activeSecondaryId,
   );
+
+  const { active, tooltipText } = useActiveState(node);
 
   const item: StandardQueryNodeT = {
     // Return the data describing the dragged item
@@ -151,7 +145,7 @@ const QueryNode = ({
           tags: node.tags,
         }),
   };
-  const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
+  const [, drag] = useDrag<StandardQueryNodeT, void>({
     type: item.type,
     item: () =>
       ({
@@ -160,14 +154,8 @@ const QueryNode = ({
           ...item.dragContext,
           ...getWidthAndHeight(ref),
         },
-      } as StandardQueryNodeT),
+      }) as StandardQueryNodeT,
   });
-
-  const tooltipText = hasNonDefaultSettings
-    ? t("queryEditor.hasNonDefaultSettings")
-    : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
@@ -175,7 +163,7 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
-  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
+  const onClick = node.error ? () => {} : () => onEditClick(andIdx, orIdx);
 
   const label = nodeIsConceptQueryNode(node)
     ? node.label
@@ -187,13 +175,17 @@ const QueryNode = ({
       : undefined;
 
   const QueryNodeRoot = (
-    <FlexHoverNavigatable triggerNavigate={onClick}>
+    <FlexHoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(node, item)}
+      highlightDroppable
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;
           drag(instance);
         }}
-        active={hasNonDefaultSettings || hasFilterValues}
+        active={active}
         onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
       >
         <QueryNodeContent
@@ -223,11 +215,12 @@ const QueryNode = ({
   );
 
   if (nodeIsConceptQueryNode(node)) {
-    const conceptById = getConceptById(node.ids[0]);
+    const conceptById = getConceptById(node.ids[0], node.tree);
+    const root = getConceptById(node.tree, node.tree);
 
-    if (conceptById) {
+    if (conceptById && root) {
       return (
-        <AdditionalInfoHoverable node={conceptById}>
+        <AdditionalInfoHoverable node={conceptById} root={root}>
           {QueryNodeRoot}
         </AdditionalInfoHoverable>
       );

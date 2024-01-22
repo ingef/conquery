@@ -15,9 +15,8 @@ import javax.ws.rs.Produces;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.SneakyThrows;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -28,6 +27,7 @@ public class AdminDatasetsResource {
 
 	private final AdminDatasetProcessor processor;
 
+	@SneakyThrows
 	@POST
 	@Consumes(ExtraMimeTypes.JSON_STRING)
 	public void addDataset(@Valid @NotNull Dataset dataset) {

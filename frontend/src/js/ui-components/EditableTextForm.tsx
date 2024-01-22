@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { FC, FormEvent, useState, useRef } from "react";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FC, FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -78,7 +79,7 @@ const EditableTextForm: FC<PropsT> = ({
             type="submit"
             frame
             disabled={loading}
-            icon={loading ? "spinner" : "check"}
+            icon={loading ? faSpinner : faCheck}
           />
         </WithTooltip>
       )}

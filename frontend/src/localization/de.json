@@ -2,13 +2,12 @@
   "locale": "de",
   "headline": "Anfragen und Analyse",
   "error": {
-    "sorry": "Das hat leider nicht geklappt",
-    "description": "Versuche es noch einmal. Falls es erneut nicht klappt, bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können.",
-    "reload": "Seite vollständig neu laden"
-  },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
-    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
+    "sorry": "Da ist etwas schiefgelaufen!",
+    "description": "Aber Du hast nichts falsch gemacht. Das Problem liegt auf unserer Seite.",
+    "reset": "Zurücksetzen",
+    "resetDescription": "Versuche zurückzusetzen. Falls das Problem weiterhin besteht, bitte kontaktiere uns, damit wir das Problem schneller beheben können.",
+    "reload": "Seite vollständig neu laden",
+    "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
   "leftPane": {
     "conceptTrees": "Konzepte",
@@ -17,7 +16,8 @@
   "rightPane": {
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Zeit-Editor",
-    "externalForms": "Formular-Editor"
+    "externalForms": "Formular-Editor",
+    "editorV2": "Wissenschaftlicher Editor"
   },
   "conceptTreeList": {
     "loading": "Lade Konzepte",
@@ -34,7 +34,6 @@
     "showingMismatches": "Zeige vollständig"
   },
   "queryRunner": {
-    "errorDates": "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen",
     "start": "Anfrage starten",
     "stop": "Anfrage stoppen",
     "stopSuccess": "Anfrage gestoppt.",
@@ -58,11 +57,12 @@
     "previousQuery": "Anfrage",
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
+    "secondaryIdTooltip": "Hier können zusätzliche Verknüpfungen zwischen den Konzepten bestimmt werden. Bei Standard erfolgt die Verknüpfung auf Entitäten-Ebene, bei den weiteren Schaltflächen auf Ebene der Entität + die zusätzlich gewählte Verknüpfung.",
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
-    "clear": "Editor-Oberfläche zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
@@ -136,7 +136,6 @@
     "manual": "Handbuch",
     "contact": "Kontakt",
     "confirm": "Bestätigen",
-    "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
@@ -159,16 +158,18 @@
     "share": "Freigeben",
     "shared": "Freigegeben",
     "loading": "Lade ...",
-    "average": "Mittelwert",
+    "average": "Mittel",
     "median": "Median",
     "min": "Min",
     "max": "Max",
     "std": "Std.",
+    "sum": "Summe",
     "logout": "Ausloggen",
     "dateInvalid": "Ungültiges Datum",
     "missingLabel": "Unbenannt",
     "import": "Importieren",
-    "openFileDialog": "Datei auswählen"
+    "openFileDialog": "Datei auswählen",
+    "shortcut": "Kurzbefehl"
   },
   "tooltip": {
     "headline": "Info",
@@ -230,7 +231,8 @@
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen",
     "editFolders": "Ordner bearbeiten",
-    "deleteNow": "Anfrage jetzt löschen"
+    "deleteNow": "Anfrage jetzt löschen",
+    "hasNoDates": "Keine Datumswerte in den Ergebnissen vorhanden."
   },
   "projectItemsFilter": {
     "all": "Alle",
@@ -264,11 +266,12 @@
   },
   "externalForms": {
     "manualButton": "Hilfe zum Formular im Handbuch öffnen",
-    "forms": "Formulare",
+    "forms": "Formular",
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
-      "invalidDateRange": "Enddatum liegt vor Startdatum"
+      "invalidDateRange": "Enddatum liegt vor Startdatum",
+      "validSelectRequired": "Kompatibler Ausgabewert erforderlich"
     },
     "default": {
       "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",
@@ -312,8 +315,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren",
-      "clearConfirm": "Formular jetzt leeren"
+      "clear": "Formular zurücksetzen",
+      "clearConfirm": "Jetzt zurücksetzen"
     }
   },
   "uploadQueryResultsModal": {
@@ -351,9 +354,9 @@
     "unresolvedId_other": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
-    "headline": "Konzepte aus Liste einfügen",
+    "headline": "Einträge aus Liste einfügen",
     "label": "Name der Liste",
-    "selectConceptRootNode": "Auflösen als Konzeptliste, oder als Filterliste in einem Konzept",
+    "selectConceptRootNode": "Welche Werte sind in der Liste enthalten?",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
     "resolvedCodes_one": "1 Wert aufgelöst.",
@@ -361,7 +364,12 @@
     "unknownCodes_one": "1 Wert nicht aufgelöst",
     "unknownCodes_other": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
-    "nothingResolved": "Kein Konzept konnte aufgelöst werden."
+    "nothingResolved": "Kein Konzept konnte aufgelöst werden.",
+    "filterValuesFrom": "Filterwerte aus",
+    "conceptValuesFrom": "Konzepte aus",
+    "includeUnresolved": "Nicht aufgelöste Werte mit einfügen",
+    "includeUnresolvedTooltipDisabled": "Kein Wert konnte aufgelöst werden.",
+    "insertRegardless": "Trotzdem Einfügen"
   },
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"
@@ -441,6 +449,7 @@
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
     "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
+    "tabEditorV2": "Erweiterter Editor. Hier kann eine komplexe Anfrage gestellt werden.",
     "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzepte, Anfragen und Formulare werden geladen.",
     "excludeTimestamps": "Auswahl führt dazu, dass die Datumswerte des Konzepts bei der Weiterverarbeitung nicht berücksichtigt werden.",
     "excludeFromSecondaryId": "Auswahl führt dazu, dass dieses Konzept nicht in der Analyse-Ebene berücksichtigt wird, falls eine Analyse-Ebene gewählt wurde.",
@@ -452,6 +461,8 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "Keine Daten verfügbar",
+    "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {
       "headline": "Historie",
       "description": "Hier werden Informationen chronologisch dargestellt.",
@@ -462,16 +473,15 @@
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Datenpunkt",
-    "events_other": "Datenpunkte",
+    "events_one": "Eintrag",
+    "events_other": "Einträge",
     "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie herunterladen",
-    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
+    "differencesTooltip": "Unterschiede aus den einzelnen Einträgen",
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
-    "dates": "Datumswerte",
     "searchEntitiesButton": "Historie starten",
     "error": "Konnte Historie für diese ID nicht laden.",
     "options": {
@@ -481,7 +491,7 @@
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
-      "full": "Alle Einzeldatenpunkte"
+      "full": "Alle Einzeleinträge"
     },
     "content": {
       "money": "Geldbeträge",
@@ -511,5 +521,38 @@
     "paste": "Aus Zwischenablage einfügen",
     "submit": "Übernehmen",
     "pasted": "Importiert"
+  },
+  "editorV2": {
+    "time": "ZEIT",
+    "and": "UND",
+    "or": "ODER",
+    "clear": "Editor zurücksetzen",
+    "clearConfirm": "Jetzt zurücksetzen",
+    "flip": "Drehen",
+    "dates": "Datum",
+    "negate": "Nicht",
+    "connector": "Verknüpfung",
+    "timeConnection": "Zeitverknüpfung",
+    "editTimeConnection": "Zeitverknüpfung bearbeiten",
+    "delete": "Löschen",
+    "expand": "Expandieren",
+    "edit": "Details",
+    "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein.",
+    "datesExcluded": "Keine Datumswerte",
+    "outputSection": "Ausgabewerte",
+    "filtersSection": "Filter",
+    "every": "Jeder",
+    "some": "Irgend ein",
+    "earliest": "Der früheste",
+    "latest": "Der späteste",
+    "dateRangeFrom": "Zeitraum aus",
+    "dayInterval": "Tage",
+    "intervalSome": "irgendwann",
+    "intervalMinDays": "mindestens {{days}} Tage",
+    "intervalMaxDays": "höchstens {{days}} Tage",
+    "intervalMinMaxDays": "zwischen {{minDays}} und {{maxDays}} Tagen",
+    "before": "zeitlich vor",
+    "after": "zeitlich nach",
+    "while": "zeitlich während"
   }
 }

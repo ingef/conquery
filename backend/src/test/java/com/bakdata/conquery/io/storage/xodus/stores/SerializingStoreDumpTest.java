@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 
@@ -72,7 +73,7 @@ public class SerializingStoreDumpTest {
 				storeId.getValueType(),
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory()
+				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
 		);
 	}
 

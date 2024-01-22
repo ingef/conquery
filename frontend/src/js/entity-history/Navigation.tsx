@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
-import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
+import {
+  faArrowDown,
+  faArrowUp,
+  faChevronLeft,
+  faDownload,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { Dispatch, SetStateAction, memo, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -76,6 +83,7 @@ const ButtonWithTooltip = styled(WithTooltip)`
 
 export const Navigation = memo(
   ({
+    blurred,
     className,
     entityIds,
     entityIdsStatus,
@@ -86,6 +94,7 @@ export const Navigation = memo(
     onLoadFromFile,
     onResetHistory,
   }: {
+    blurred?: boolean;
     className?: string;
     entityIds: EntityId[];
     entityIdsStatus: EntityIdsStatus;
@@ -98,7 +107,7 @@ export const Navigation = memo(
   }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const updateHistorySession = useUpdateHistorySession();
+    const { loadingId, updateHistorySession } = useUpdateHistorySession();
     const onCloseHistory = useCallback(() => {
       dispatch(closeHistory());
     }, [dispatch]);
@@ -151,7 +160,7 @@ export const Navigation = memo(
           <WithTooltip text={backButtonWarning}>
             <ContainedIconButton
               frame
-              icon="chevron-left"
+              icon={faChevronLeft}
               onClick={onCloseHistory}
             >
               {t("common.back")}
@@ -163,7 +172,7 @@ export const Navigation = memo(
               placement="bottom"
               confirmationText={t("history.settings.resetConfirm")}
             >
-              <ContainedIconButton frame icon="trash">
+              <ContainedIconButton frame icon={faTrash}>
                 {t("history.settings.reset")}
               </ContainedIconButton>
             </ConfirmableTooltip>
@@ -184,7 +193,7 @@ export const Navigation = memo(
                 text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
                 lazy
               >
-                <SxIconButton icon="arrow-up" onClick={goToPrev} />
+                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
               </ButtonWithTooltip>
             </TopActions>
           )}
@@ -193,10 +202,12 @@ export const Navigation = memo(
               <SearchEntites onLoad={onLoadFromFile} />
             )}
             <EntityIdsList
+              blurred={blurred}
               currentEntityId={currentEntityId}
               entityIds={entityIds}
               updateHistorySession={updateHistorySession}
               entityIdsStatus={entityIdsStatus}
+              loadingId={loadingId}
             />
           </SxLoadHistoryDropzone>
           {!empty && (
@@ -206,7 +217,7 @@ export const Navigation = memo(
                   text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
                   lazy
                 >
-                  <SxIconButton icon="arrow-down" onClick={goToNext} />
+                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
                 </ButtonWithTooltip>
               </BottomActions>
               <BottomActions style={{ marginTop: "10px" }}>
@@ -214,7 +225,7 @@ export const Navigation = memo(
                   <SxIconButton
                     style={{ backgroundColor: "white" }}
                     frame
-                    icon="download"
+                    icon={faDownload}
                     onClick={onDownload}
                   >
                     CSV

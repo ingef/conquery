@@ -1,0 +1,87 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Validity date with multiple ranges for subjects",
+  "description": "If multiple ranges of a concepts' validity date exist, that they are aggregated properly.",
+  "expectedCsv": "tests/sql/selects/validity_date/multirange/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "f"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table1.geschlecht",
+            "type": "SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/validity_date/multirange/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

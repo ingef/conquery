@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.AccessLevel;
@@ -25,7 +25,8 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
- * Messages are sent serialized and only deserialized when they are being processed. This ensures that messages that were sent just shortly before to setup state later messages depend upon is correct.
+ * @implNote Messages are sent serialized and only deserialized when they are being processed. This ensures that messages that were sent just shortly before to setup state later messages depend upon is correct.
+ * @implNote Messages are additionally sent gzipped, to avoid hogging memory with long queues.
  */
 @CPSType(id = "FORWARD_TO_WORKER", base = NetworkMessage.class)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,45 +34,48 @@ import lombok.ToString;
 @ToString(of = {"workerId", "text"})
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
-	@SneakyThrows(JsonProcessingException.class)
+	private final WorkerId workerId;
+	private final byte[] messageRaw;
+	// We cache these on the sender side.
+	@Getter(onMethod_ = @JsonIgnore(false))
+	private final boolean slowMessage;
+	private final String text;
+	@JsonIgnore
+	@Setter
+	private ProgressReporter progressReporter;
+
 	public static ForwardToWorker create(WorkerId worker, WorkerMessage message, ObjectWriter writer) {
 		return new ForwardToWorker(
 				worker,
-				writer.writeValueAsBytes(message),
+				serializeMessage(message, writer),
 				true,
 				message.toString()
 		);
 	}
 
-	private final WorkerId workerId;
-	private final byte[] messageRaw;
+	@SneakyThrows(IOException.class)
+	private static byte[] serializeMessage(WorkerMessage message, ObjectWriter writer) {
+		return writer.writeValueAsBytes(message);
+	}
 
-	// We cache these on the sender side.
-	@Getter(onMethod_ = @JsonIgnore(false))
-	private final boolean slowMessage;
-	private final String text;
-
-	@JsonIgnore
-	@Setter
-	private ProgressReporter progressReporter;
+	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper mapper) throws java.io.IOException {
+		return mapper.readerFor(WorkerMessage.class).readValue(messageRaw);
+	}
 
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
-		Worker worker = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
+		final Worker worker = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
 		ConqueryMDC.setLocation(worker.toString());
 
 
 		// Jobception: this is to ensure that no subsequent message is deserialized before one message is processed
-		worker.getJobManager().addSlowJob(new SimpleJob("Deserialize and process WorkerMessage", () -> {
+		worker.getJobManager().addSlowJob(new SimpleJob("Process %s".formatted(getText()), () -> {
 
-			WorkerMessage message = deserializeMessage(messageRaw, worker.getCommunicationMapper());
+			final WorkerMessage message = deserializeMessage(messageRaw, worker.getCommunicationMapper());
 
 			message.setProgressReporter(progressReporter);
 			message.react(worker);
 		}));
 	}
 
-	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper binaryMapper) throws java.io.IOException {
-		return binaryMapper.readerFor(WorkerMessage.class).readValue(messageRaw);
-	}
 }

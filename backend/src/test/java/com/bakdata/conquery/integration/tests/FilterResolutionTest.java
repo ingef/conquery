@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private String[] lines = new String[]{
+	private final String[] lines = new String[]{
 			"HEADER",
 			"a",
 			"aab",
@@ -48,28 +48,28 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String
+		final String
 				testJson =
 				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
 				  .withUTF8()
 				  .readAll();
 
-		DatasetId dataset = conquery.getDataset().getId();
+		final DatasetId dataset = conquery.getDataset().getId();
 
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-		CSVConfig csvConf = conquery.getConfig().getCsv();
+		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		test.importRequiredData(conquery);
 
 		conquery.waitUntilWorkDone();
 
 
-		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		Connector connector = concept.getConnectors().iterator().next();
-		SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
+		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		final Connector connector = concept.getConnectors().iterator().next();
+		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
@@ -77,9 +77,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri().toURL(), "HEADER", "", "", 2, true, indexService));
+		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "HEADER", "", "",  2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")
@@ -112,12 +112,12 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 													 .request(MediaType.APPLICATION_JSON_TYPE)
 													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
 
-			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
+			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
 			//check the resolved values
 			// "aaa" is hit by "a" and "aaa" therefore should be first
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
-			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
+			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
+			assertThat(resolved.unknownCodes()).containsExactly("unknown");
 		}
 
 		// from column values
@@ -126,11 +126,11 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 													 .request(MediaType.APPLICATION_JSON_TYPE)
 													 .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
 
-			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
+			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).contains("f");
-			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
+			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).contains("f");
+			assertThat(resolved.unknownCodes()).containsExactly("unknown");
 		}
 	}
 }

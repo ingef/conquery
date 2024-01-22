@@ -1,0 +1,152 @@
+{
+  "label": "NONE date aggregation of 2 concepts",
+  "expectedCsv": "tests/sql/selects/validity_date/aggregation/block/and/expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode": "NONE",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "label": "vs",
+          "ids": [
+            "number"
+          ],
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 0,
+                    "max": 1.0
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "f"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    },
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table2.datum_start",
+            "endColumn": "table2.datum_end"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table2.geschlecht",
+            "type": "SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/validity_date/aggregation/block/and/content_1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/selects/validity_date/aggregation/block/and/content_2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

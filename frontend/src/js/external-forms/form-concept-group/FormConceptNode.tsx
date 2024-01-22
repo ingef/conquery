@@ -1,10 +1,15 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import {
+  faCompressArrowsAlt,
+  faExpandArrowsAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
@@ -15,7 +20,6 @@ const Root = styled("div")<{
 }>`
   padding: 5px 10px;
   cursor: pointer;
-  background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: background-color ${({ theme }) => theme.transitionTime};
@@ -26,10 +30,8 @@ const Root = styled("div")<{
   &:hover {
     background-color: ${({ theme }) => theme.col.bgAlt};
   }
-
   display: grid;
   grid-template-columns: 1fr auto;
-
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
@@ -79,6 +81,9 @@ interface PropsT {
     expandable: boolean;
     active: boolean;
   };
+  deleteFromOtherField: () => void;
+  fieldName: string;
+  rowPrefixFieldname?: string;
 }
 
 // generalized node to handle concepts queried in forms
@@ -90,6 +95,9 @@ const FormConceptNode: FC<PropsT> = ({
   hasNonDefaultSettings,
   hasFilterValues,
   expand,
+  deleteFromOtherField,
+  fieldName,
+  rowPrefixFieldname,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
@@ -102,15 +110,19 @@ const FormConceptNode: FC<PropsT> = ({
       movedFromOrIdx: conceptIdx,
       width: 0,
       height: 0,
+      rowPrefixFieldname: rowPrefixFieldname,
     },
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,
       dragContext: {
         ...item.dragContext,
         ...getWidthAndHeight(ref),
+        deleteFromOtherField,
+        movedFromFieldName: fieldName,
+        rowPrefixFieldname: rowPrefixFieldname,
       },
     }),
   });
@@ -122,7 +134,11 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <HoverNavigatable triggerNavigate={onClick}>
+    <HoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(conceptNode, item)}
+      highlightDroppable
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;
@@ -146,9 +162,7 @@ const FormConceptNode: FC<PropsT> = ({
           {expand && expand.expandable && (
             <WithTooltip text={t("externalForms.common.concept.expand")}>
               <SxIconButton
-                icon={
-                  expand.active ? "compress-arrows-alt" : "expand-arrows-alt"
-                }
+                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
                 tiny
                 onClick={(e) => {
                   e.stopPropagation();

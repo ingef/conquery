@@ -6,29 +6,40 @@ import java.net.URL;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
-import groovy.transform.ToString;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 
-@ToString
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
 @With
+@Data
 public class FrontendConfig {
 	@Valid
 	@NotNull
 	private CurrencyConfig currency = new CurrencyConfig();
+
+	/**
+	 * Years to include in entity preview.
+	 */
+	@Min(0)
+	private int observationPeriodYears = 6;
+
+	/**
+	 * Query preview uses real samples for display, this parameter controls how many we try to sample.
+	 *
+	 * Note, that we use stochastic sampling, to avoid keeping the entire rendered query in memory, so this number is not exact.
+	 */
+	@Min(0)
+	private int visualisationSamples = 1000;
 
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
@@ -57,10 +68,16 @@ public class FrontendConfig {
 	@Email
 	private String contactEmail;
 
+	/**
+	 * If true, users are always allowed to add custom values into SelectFilter input fields.
+	 */
+	private boolean alwaysAllowCreateValue = false;
+
 
 	@Data
 	public static class CurrencyConfig {
-		private String prefix = "€";
+		@JsonAlias("prefix")
+		private String unit = "€";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";
 		private int decimalScale = 2;

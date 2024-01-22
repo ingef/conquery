@@ -1,0 +1,76 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "DATE_DISTANCE filter query with timeUnit DAYS and without date restriction set",
+  "expectedCsv": "tests/sql/filter/date_distance/days_without_date_restriction/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "geschlecht_select.geschlecht_connector.date_distance_days",
+                  "type": "INTEGER_RANGE",
+                  "value": {
+                    "min": 4000
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "filters": [
+            {
+              "column": "table1.datum",
+              "label": "date_distance_days",
+              "name": "date_distance_days",
+              "timeUnit": "DAYS",
+              "type": "DATE_DISTANCE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/date_distance/days_without_date_restriction/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.preview;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +25,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -33,13 +36,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -56,14 +61,18 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(id = "ENTITY_PREVIEW", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@ToString
 public class EntityPreviewForm extends Form implements InternalForm {
 
 	public static final String INFOS_QUERY_NAME = "INFOS";
 	public static final String VALUES_QUERY_NAME = "VALUES";
 
+
 	private final AbsoluteFormQuery infoCardQuery;
 	private final TableExportQuery valuesQuery;
 
+
+	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
 	@Nullable
 	@Override
@@ -71,39 +80,81 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
 
+		final TableExportQuery exportQuery = createExportQuery(dateRange, sources, entitySelectQuery);
+
+		final AbsoluteFormQuery infoCardQuery = createInfoCardQuery(dateRange, infos, entitySelectQuery);
+
+		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(dateRange, timeStratifiedSelects, datasetRegistry, entitySelectQuery);
+
+		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);
+	}
+
+	@NotNull
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
+		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
+
+		// per group create an AbsoluteFormQuery on years and quarters.
+		for (PreviewConfig.TimeStratifiedSelects selects : timeStratifiedSelects) {
+
+			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
+																  ArrayConceptQuery.createFromFeatures(
+																		  selects.selects().stream()
+																				 .map(PreviewConfig.InfoCardSelect::select)
+																				 .map(datasetRegistry::resolve)
+																				 .map(CQConcept::forSelect)
+																				 .collect(Collectors.toList())),
+																  List.of(
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+																  )
+			);
+
+			timeQueries.put(selects.label(), query);
+		}
+		return timeQueries;
+	}
+
+	@NotNull
+	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<Select> infos, Query entitySelectQuery) {
+		// Query exporting a few additional infos on the entity.
+		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
+							 ArrayConceptQuery.createFromFeatures(
+									  infos.stream()
+										   .map(CQConcept::forSelect)
+										   .collect(Collectors.toList())
+							  ),
+							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+		);
+	}
+
+	@NotNull
+	private static TableExportQuery createExportQuery(Range<LocalDate> dateRange, List<Connector> sources, Query entitySelectQuery) {
 		// Query exporting selected Sources of the Entity.
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 		exportQuery.setRawConceptValues(false);
-
-		// Query exporting a few additional infos on the entity.
-		final AbsoluteFormQuery infoCardQuery =
-				new AbsoluteFormQuery(entitySelectQuery, dateRange,
-									  ArrayConceptQuery.createFromFeatures(
-											  infos.stream()
-												   .map(CQConcept::forSelect)
-												   .collect(Collectors.toList())
-									  ),
-									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
-				);
-
-		return new EntityPreviewForm(infoCardQuery, exportQuery);
+		return exportQuery;
 	}
 
 
 	@Override
 	public Map<String, Query> createSubQueries() {
-		return Map.of(
-				VALUES_QUERY_NAME, getValuesQuery(),
-				INFOS_QUERY_NAME, getInfoCardQuery()
-		);
+
+		final Map<String, Query> subQueries = new HashMap<>();
+		subQueries.put(VALUES_QUERY_NAME, getValuesQuery());
+		subQueries.put(INFOS_QUERY_NAME, getInfoCardQuery());
+
+		subQueries.putAll(getTimeOverViews());
+
+		return subQueries;
 	}
 
 	@Override
@@ -124,7 +175,17 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return Sets.union(getValuesQuery().collectRequiredQueries(), getInfoCardQuery().collectRequiredQueries());
+		final Set<ManagedExecutionId> required = new HashSet<>();
+
+		for (AbsoluteFormQuery query : getTimeOverViews().values()) {
+			query.collectRequiredQueries(required);
+		}
+
+		getValuesQuery().collectRequiredQueries(required);
+
+		getInfoCardQuery().collectRequiredQueries(required);
+
+		return required;
 	}
 
 	@Override
@@ -136,6 +197,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	public void visit(Consumer<Visitable> visitor) {
 		getInfoCardQuery().visit(visitor);
 		getValuesQuery().visit(visitor);
+
+		getTimeOverViews().values().forEach(v -> v.visit(visitor));
 
 		visitor.accept(this);
 	}

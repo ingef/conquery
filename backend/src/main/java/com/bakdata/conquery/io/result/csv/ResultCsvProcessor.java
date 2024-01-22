@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ResultCsvProcessor {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
@@ -74,7 +75,7 @@ public class ResultCsvProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV), new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
 
 	}
 }

@@ -2,18 +2,19 @@
     "label": "Concept1",
     "type": "TREE",
     "connectors": {
-        "name": "column",
-        "column": "table.STRING",
-        "validityDates": [
-            {
-                "label": "DATE",
-                "column": "table.DATE"
-            },
-            {
-                "label": "DATE_RANGE",
-                "column": "table.DATE_RANGE"
-            }
-        ],
+      "name": "column",
+      "column": "table.STRING",
+      "validityDatesDescription": "Tooltip for the available validity dates",
+      "validityDates": [
+        {
+          "label": "DATE",
+          "column": "table.DATE"
+        },
+        {
+          "label": "DATE_RANGE",
+          "column": "table.DATE_RANGE"
+        }
+      ],
         "filters": [
             {
                 "type": "SUM",

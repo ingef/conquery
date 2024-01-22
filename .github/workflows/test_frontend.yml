@@ -1,12 +1,18 @@
 name: "Test Frontend"
 
 on:
+  push:
+    branches:
+      # Always run on protected branches
+      - master
+      - develop
+      - release
   pull_request:
     paths:
       - "frontend/**"
 
 jobs:
-  format-lint-unittest:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
@@ -17,16 +23,16 @@ jobs:
           node-version: 18
       - name: install dependencies
         working-directory: ./frontend
-        run: yarn --ignore-platform
+        run: npm install
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
       - name: lint
         working-directory: ./frontend
-        run: yarn lint
+        run: npm run lint
       - name: check format
         working-directory: ./frontend
-        run: yarn checkformat
+        run: npm run checkformat
       - name: test
         working-directory: ./frontend
-        run: yarn test
+        run: npm run test

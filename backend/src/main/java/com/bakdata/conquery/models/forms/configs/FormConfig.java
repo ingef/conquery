@@ -19,8 +19,8 @@ import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
@@ -66,10 +66,10 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
-	
+
 	/**
-	 * This is a blackbox for us at the moment, where the front end saves the state of the 
-	 * formular, when the user saved it.
+	 * This is a blackbox for us at the moment, where the front end saves the state of the
+	 * form, when the user saved it.
 	 */
 	@NotNull
 	private JsonNode values;

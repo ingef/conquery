@@ -1,5 +1,10 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import {
+  faCaretDown,
+  faCaretRight,
+  IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import Highlighter from "react-highlight-words";
 
@@ -88,33 +93,35 @@ const ResultsNumber = styled("span")`
   font-weight: 700;
 `;
 
-interface PropsT {
-  label: string;
-  depth: number;
-  className?: string;
-  description?: string;
-  resultCount?: number | null;
-  searchWords?: string[] | null;
-  isOpen?: boolean;
-  isStructFolder?: boolean;
-  hasChildren?: boolean;
-  red?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-}
+const ConceptTreeNodeText = forwardRef<
+  HTMLDivElement,
+  {
+    label: string;
+    depth: number;
+    icon: IconDefinition;
 
-const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
+    className?: string;
+    description?: string;
+    resultCount?: number | null;
+    searchWords?: string[] | null;
+    isOpen?: boolean;
+    hasChildren?: boolean;
+    red?: boolean;
+    disabled?: boolean;
+    onClick?: () => void;
+  }
+>(
   (
     {
       label,
       description,
+      icon,
       resultCount,
       searchWords,
       className,
       depth,
 
       isOpen,
-      isStructFolder,
       red,
       disabled,
       hasChildren,
@@ -122,66 +129,58 @@ const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
       onClick,
     },
     ref,
-  ) => (
-    <Root ref={ref} className={className} depth={depth}>
-      <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
-        {hasChildren && (
-          <>
-            <CaretIconContainer>
-              <FaIcon
-                disabled={disabled}
-                active
-                icon={!!isOpen ? "caret-down" : "caret-right"}
-              />
-            </CaretIconContainer>
-            <FolderIconContainer>
-              <FaIcon
-                active
-                disabled={disabled}
-                regular={!!isStructFolder}
-                icon={!!isOpen ? "folder-open" : "folder"}
-              />
-            </FolderIconContainer>
-          </>
-        )}
-        {!hasChildren && (
-          <DashIconContainer>
-            <FaIcon
-              disabled={disabled}
-              large
-              active
-              icon={disabled ? "ellipsis-h" : "minus"}
-            />
-          </DashIconContainer>
-        )}
-        {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
-        <span>
-          {!!searchWords ? (
-            <Highlighter
-              searchWords={searchWords}
-              autoEscape={true}
-              textToHighlight={label}
-            />
-          ) : (
-            label
+  ) => {
+    return (
+      <Root ref={ref} className={className} depth={depth}>
+        <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
+          {hasChildren && (
+            <>
+              <CaretIconContainer>
+                <FaIcon
+                  disabled={disabled}
+                  active
+                  icon={isOpen ? faCaretDown : faCaretRight}
+                />
+              </CaretIconContainer>
+              <FolderIconContainer>
+                <FaIcon active disabled={disabled} icon={icon} />
+              </FolderIconContainer>
+            </>
           )}
-        </span>
-        {!!description && (
-          <Description>
-            {!!searchWords ? (
+          {!hasChildren && (
+            <DashIconContainer>
+              <FaIcon disabled={disabled} large active icon={icon} />
+            </DashIconContainer>
+          )}
+          {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
+          <span>
+            {searchWords ? (
               <Highlighter
                 searchWords={searchWords}
                 autoEscape={true}
-                textToHighlight={description}
+                textToHighlight={label}
               />
             ) : (
-              `- ${description}`
+              label
             )}
-          </Description>
-        )}
-      </Text>
-    </Root>
-  ),
+          </span>
+          {!!description && (
+            <Description>
+              {searchWords ? (
+                <Highlighter
+                  searchWords={searchWords}
+                  autoEscape={true}
+                  textToHighlight={description}
+                />
+              ) : (
+                `- ${description}`
+              )}
+            </Description>
+          )}
+        </Text>
+      </Root>
+    );
+  },
 );
 
 export default ConceptTreeNodeText;

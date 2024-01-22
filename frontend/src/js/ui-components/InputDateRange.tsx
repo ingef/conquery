@@ -1,23 +1,25 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, ReactNode, useMemo } from "react";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { FC, ReactNode, createRef, useMemo } from "react";
+import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
+  DateStringMinMax,
   formatDateFromState,
+  getDateStringFromShortcut,
   parseDate,
   parseDateToState,
-  getDateStringFromShortcut,
-  DateStringMinMax,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
+import { Icon } from "../icon/FaIcon";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
-import BaseInput from "./BaseInput";
+import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
-import Optional from "./Optional";
 
 const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -33,7 +35,6 @@ const StyledLabel = styled(Label)<{ large?: boolean }>`
     large &&
     css`
       font-size: ${theme.font.md};
-      margin: 20px 0 10px;
     `}
 `;
 
@@ -86,7 +87,6 @@ interface PropsT {
   center?: boolean;
   autoFocus?: boolean;
   tooltip?: string;
-  optional?: boolean;
   value: DateStringMinMax;
   onChange: (value: DateStringMinMax) => void;
 }
@@ -113,7 +113,6 @@ const InputDateRange: FC<PropsT> = ({
   labelSuffix,
   value,
   onChange,
-  optional,
   tooltip,
 }) => {
   const { t } = useTranslation();
@@ -165,6 +164,8 @@ const InputDateRange: FC<PropsT> = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
+  const maxRef = createRef<ReactDatePicker>();
+
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
@@ -173,8 +174,8 @@ const InputDateRange: FC<PropsT> = ({
 
     return (
       <StyledLabel large={large}>
+        <Icon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-        {optional && <Optional />}
         {label}
         <InfoTooltip
           html={
@@ -192,16 +193,16 @@ const InputDateRange: FC<PropsT> = ({
         {labelSuffix && labelSuffix}
       </StyledLabel>
     );
-  }, [t, label, labelSuffix, large, optional, tooltip, indexPrefix]);
+  }, [t, label, labelSuffix, large, tooltip, indexPrefix]);
 
   return (
     <Root center={center}>
       {labelWithSuffix}
       <Pickers inline={inline} center={center}>
         <SxLabeled label={t("inputDateRange.from")}>
-          <BaseInput
-            inputType="text"
+          <InputDate
             value={min}
+            dateFormat={displayDateFormat}
             valid={isMinValid}
             invalid={min.length !== 0 && !isMinValid}
             invalidText={t("common.dateInvalid")}
@@ -209,6 +210,7 @@ const InputDateRange: FC<PropsT> = ({
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
             }
+            onCalendarSelect={() => maxRef.current?.setOpen(true)}
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
             inputProps={{
               autoFocus,
@@ -216,9 +218,10 @@ const InputDateRange: FC<PropsT> = ({
           />
         </SxLabeled>
         <SxLabeled label={t("inputDateRange.to")}>
-          <BaseInput
-            inputType="text"
+          <InputDate
+            ref={maxRef}
             value={max}
+            dateFormat={displayDateFormat}
             valid={isMaxValid}
             invalid={max.length !== 0 && !isMaxValid}
             invalidText={t("common.dateInvalid")}

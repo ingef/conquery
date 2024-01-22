@@ -1,4 +1,6 @@
-import { useCallback } from "react";
+import startOfYear from "date-fns/startOfYear";
+import subYears from "date-fns/subYears";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
@@ -12,7 +14,8 @@ import type {
   DatasetT,
   EntityInfo,
   GetEntityHistoryDefaultParamsResponse,
-  HistorySources,
+  ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
@@ -29,6 +32,7 @@ import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
+import { isDateColumn, isSourceColumn } from "./timeline/util";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -80,9 +84,10 @@ export const loadHistoryData = createAsyncAction(
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityInfos: EntityInfo[];
+    currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
     currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
-    resultUrls?: string[];
+    resultUrls?: ResultUrlWithLabel[];
     entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
@@ -115,12 +120,14 @@ function getPreferredIdColumns(columns: ColumnDescription[]) {
 export function useNewHistorySession() {
   const dispatch = useDispatch();
   const loadPreviewData = useLoadPreviewData();
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, { noLoading: true });
+    const result = await loadPreviewData(url, columns, {
+      noLoading: true,
+    });
 
     if (!result) {
       dispatch(
@@ -165,6 +172,8 @@ export function useNewHistorySession() {
   };
 }
 
+const SHOW_LOADING_DELAY = 300;
+
 export function useUpdateHistorySession() {
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
@@ -172,12 +181,21 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
+  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const [loadingId, setLoadingId] = useState<string>();
+
   const defaultEntityHistoryParams = useSelector<
     StateT,
-    { sources: HistorySources }
+    StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
+  const observationPeriodMin = useSelector<StateT, string>((state) => {
+    return (
+      state.startup.config.observationPeriodStart ||
+      formatStdDate(subYears(startOfYear(new Date()), 1))
+    );
+  });
 
-  return useCallback(
+  const updateHistorySession = useCallback(
     async ({
       entityId,
       entityIds,
@@ -190,33 +208,57 @@ export function useUpdateHistorySession() {
     }) => {
       if (!datasetId) return;
 
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      loadingIdTimeout.current = setTimeout(() => {
+        setLoadingId(entityId.id);
+      }, SHOW_LOADING_DELAY);
+
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions, infos } =
+        const { resultUrls, columnDescriptions, infos, timeStratifiedInfos } =
           await getEntityHistory(
             datasetId,
             entityId,
             defaultEntityHistoryParams.sources,
+            {
+              min: observationPeriodMin,
+              max: formatStdDate(new Date()),
+            },
           );
 
-        const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
+        const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
 
         if (!csvUrl) {
           throw new Error("No CSV URL found");
         }
 
-        const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
-        const csv = await loadCSV(authorizedCSVUrl, { english: true });
+        const authorizedCSVUrl = getAuthorizedUrl(csvUrl.url);
+        const csv = await loadCSV(authorizedCSVUrl);
         const currentEntityData = await parseCSVWithHeaderToObj(
           csv.data.map((r) => r.join(";")).join("\n"),
         );
+        const dateColumn = columnDescriptions.find(isDateColumn);
+        if (!dateColumn) {
+          throw new Error("No date column found");
+        }
+        const sourceColumn = columnDescriptions.find(isSourceColumn);
+        if (!sourceColumn) {
+          throw new Error("No sources column found");
+        }
 
-        const currentEntityDataProcessed =
-          transformEntityData(currentEntityData);
+        const currentEntityDataProcessed = transformEntityData(
+          currentEntityData,
+          { dateColumn },
+        );
+
         const uniqueSources = [
-          ...new Set(currentEntityDataProcessed.map((row) => row.source)),
-        ];
+          ...new Set(
+            currentEntityDataProcessed.map((row) => row[sourceColumn.label]),
+          ),
+        ] as string[];
 
         const csvHeader = csv.data[0];
         const columns: Record<string, ColumnDescription> = Object.fromEntries(
@@ -232,10 +274,11 @@ export function useUpdateHistorySession() {
 
         dispatch(
           loadHistoryData.success({
-            currentEntityCsvUrl: csvUrl,
+            currentEntityCsvUrl: csvUrl.url,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
             currentEntityInfos: nonEmptyInfos,
+            currentEntityTimeStratifiedInfos: timeStratifiedInfos,
             currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
             resultUrls,
@@ -253,27 +296,53 @@ export function useUpdateHistorySession() {
           }),
         );
       }
+
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      setLoadingId(undefined);
     },
     [
       t,
       datasetId,
-      defaultEntityHistoryParams.sources,
+      defaultEntityHistoryParams,
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,
+      observationPeriodMin,
     ],
   );
+
+  return {
+    loadingId,
+    updateHistorySession,
+  };
 }
 
-const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
+interface DateRow {
+  from: Date;
+  to: Date;
+}
+const transformEntityData = (
+  data: { [key: string]: unknown }[],
+  {
+    dateColumn,
+  }: {
+    dateColumn: ColumnDescription;
+  },
+): EntityEvent[] => {
+  const dateKey = dateColumn.label;
+
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row["dates"]);
+      const { first, last } = getFirstAndLastDateOfRange(
+        row[dateKey] as string,
+      );
 
       return first && last
         ? {
             ...row,
-            dates: {
+            [dateKey]: {
               from: first,
               to: last,
             },
@@ -281,16 +350,19 @@ const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
         : row;
     })
     .sort((a, b) => {
-      return a.dates.from - b.dates.from > 0 ? -1 : 1;
+      return (a[dateKey] as DateRow).from.getTime() -
+        (b[dateKey] as DateRow).from.getTime() >
+        0
+        ? -1
+        : 1;
     })
     .map((row) => {
-      const { dates, ...rest } = row;
       return {
-        dates: {
-          from: formatStdDate(row.dates?.from),
-          to: formatStdDate(row.dates?.to),
+        ...row,
+        [dateKey]: {
+          from: formatStdDate((row[dateKey] as DateRow)?.from),
+          to: formatStdDate((row[dateKey] as DateRow)?.to),
         },
-        ...rest,
       };
     });
 };

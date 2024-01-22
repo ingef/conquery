@@ -38,17 +38,15 @@ const SxInputCheckbox = styled(InputCheckbox)`
   margin: 5px 0;
 `;
 
-interface PropsT {
-  targetFieldname: string;
-  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
-  onClose: () => void;
-}
-
 const FormConceptCopyModal = ({
   targetFieldname,
   onAccept,
   onClose,
-}: PropsT) => {
+}: {
+  targetFieldname: string;
+  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
+  onClose: () => void;
+}) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const { getValues } = useFormContext();
@@ -56,7 +54,16 @@ const FormConceptCopyModal = ({
   const visibleConceptListFields = useVisibleConceptListFields();
 
   const conceptListFieldOptions = visibleConceptListFields
-    .filter((field) => field.name !== targetFieldname)
+    .filter((field) => {
+      const isAnotherField = field.name !== targetFieldname;
+      const hasValues =
+        formValues[field.name] &&
+        formValues[field.name]
+          .flatMap((v: FormConceptGroupT) => v.concepts)
+          .some(exists);
+
+      return isAnotherField && hasValues;
+    })
     .map((field) => ({
       label: field.label[activeLang] || "-",
       value: field.name,

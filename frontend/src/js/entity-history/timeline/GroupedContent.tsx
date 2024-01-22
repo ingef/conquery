@@ -1,23 +1,22 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { memo, ReactNode, useMemo } from "react";
+import { NumericFormat } from "react-number-format";
 
 import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
+import { DateRow, EntityEvent } from "../reducer";
 import { formatHistoryDayRange } from "../RowDates";
-import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
 import {
   isConceptColumn,
+  isDateColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
   isVisibleColumn,
@@ -54,7 +53,6 @@ const getColumnDescriptionContentType = (
 
 const SORT_ORDER: ContentType[] = ["concept", "secondaryId", "rest", "money"];
 interface Props {
-  datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
   groupedRows: EntityEvent[];
   groupedRowsKeysWithDifferentValues: string[];
@@ -64,7 +62,6 @@ interface Props {
 }
 
 const GroupedContent = ({
-  datasetId,
   columns,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
@@ -72,12 +69,11 @@ const GroupedContent = ({
   rootConceptIdsByColumn,
   contentFilter,
 }: Props) => {
-  const { t } = useTranslation();
   const differencesKeys = useMemo(
     () =>
       groupedRowsKeysWithDifferentValues
         .filter((key) => {
-          if (key === "dates") return true;
+          if (isDateColumn(columns[key])) return true;
 
           if (!isVisibleColumn(columns[key])) {
             return false;
@@ -106,15 +102,12 @@ const GroupedContent = ({
         }}
       >
         {differencesKeys.map((key) => (
-          <TinyLabel key={key}>
-            {key === "dates" ? t("history.dates") : columns[key].defaultLabel}
-          </TinyLabel>
+          <TinyLabel key={key}>{columns[key].defaultLabel}</TinyLabel>
         ))}
         {groupedRows.map((groupedRow) =>
           differencesKeys.map((key) => (
             <Cell
               key={key}
-              datasetId={datasetId}
               columnDescription={columns[key]}
               cell={groupedRow[key]}
               currencyConfig={currencyConfig}
@@ -137,29 +130,29 @@ const CellWrap = styled("span")`
 const SxConceptName = styled(ConceptName)`
   ${({ theme }) => cellStyles(theme)};
 `;
-const SxNumberFormat = styled(NumberFormat)`
+const SxNumericFormat = styled(NumericFormat)`
   ${({ theme }) => cellStyles(theme)};
 `;
+
 const Cell = memo(
   ({
     columnDescription,
     currencyConfig,
     cell,
-    datasetId,
     rootConceptIdsByColumn,
   }: {
     columnDescription: ColumnDescription;
     currencyConfig: CurrencyConfigT;
-    cell: any;
-    datasetId: DatasetT["id"];
+    cell: unknown;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
-    if (!columnDescription) {
-      return cell.from === cell.to ? (
-        <CellWrap>{formatHistoryDayRange(cell.from)}</CellWrap>
+    if (isDateColumn(columnDescription)) {
+      return (cell as DateRow).from === (cell as DateRow).to ? (
+        <CellWrap>{formatHistoryDayRange((cell as DateRow).from)}</CellWrap>
       ) : (
         <CellWrap>
-          {formatHistoryDayRange(cell.from)} - {formatHistoryDayRange(cell.to)}
+          {formatHistoryDayRange((cell as DateRow).from)} -{" "}
+          {formatHistoryDayRange((cell as DateRow).to)}
         </CellWrap>
       );
     }
@@ -168,8 +161,7 @@ const Cell = memo(
       return (
         <SxConceptName
           rootConceptId={rootConceptIdsByColumn[columnDescription.label]}
-          conceptId={cell}
-          datasetId={datasetId}
+          conceptId={cell as string}
           title={columnDescription.defaultLabel}
         />
       );
@@ -177,15 +169,15 @@ const Cell = memo(
 
     if (isMoneyColumn(columnDescription)) {
       return (
-        <SxNumberFormat
+        <SxNumericFormat
           {...currencyConfig}
           displayType="text"
-          value={parseInt(cell) / 100}
+          value={parseInt(cell as string) / 100}
         />
       );
     }
 
-    return <CellWrap>{cell}</CellWrap>;
+    return <CellWrap>{cell as ReactNode}</CellWrap>;
   },
 );
 

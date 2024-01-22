@@ -18,12 +18,14 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @CPSType(id = "ABSOLUTE", base = Mode.class)
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class AbsoluteMode extends Mode {
 	@NotNull
 	@Valid
@@ -35,6 +37,7 @@ public class AbsoluteMode extends Mode {
 
 
 	@JsonView(View.InternalCommunication.class)
+	@EqualsAndHashCode.Exclude
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override
@@ -43,12 +46,8 @@ public class AbsoluteMode extends Mode {
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());
 
-		return new AbsoluteFormQuery(
-				getForm().getPrerequisite(),
-				dateRange,
-				resolvedFeatures,
-				resolutionsAndAlignments
-		);
+		Query prerequisite = getForm().getPrerequisite();
+		return new AbsoluteFormQuery(prerequisite, dateRange, resolvedFeatures, resolutionsAndAlignments);
 	}
 
 	@Override

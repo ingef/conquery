@@ -1,14 +1,25 @@
-import { TFunction } from "react-i18next";
+import { TFunction } from "i18next";
 
 import { isEmpty } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
+import { isValidSelect } from "../model/select";
 
-import { CheckboxField, Field, FormField } from "./config-types";
+import {
+  CheckboxField,
+  ConceptListField,
+  Field,
+  FormField,
+} from "./config-types";
+import { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const validateRequired = (t: TFunction, value: any): string | null => {
+export const validateRequired = (
+  t: TFunction,
+  value: unknown,
+): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
 };
 
-export const validatePositive = (t: TFunction, value: any) => {
+export const validatePositive = (t: TFunction, value: number) => {
   return isEmpty(value) || value > 0
     ? null
     : t("externalForms.formValidation.mustBePositiveNumber");
@@ -57,21 +68,62 @@ export const validateConceptGroupFilled = (
     : null;
 };
 
+const validateRestrictedSelects = (
+  t: TFunction,
+  value: FormConceptGroupT[],
+  field: ConceptListField,
+) => {
+  if (!value || value.length === 0) return null;
+
+  const { allowlistedSelects, blocklistedSelects } = field;
+
+  const hasAllowlistedSelects = (allowlistedSelects?.length || 0) > 0;
+  const hasBlocklistedSelects = (blocklistedSelects?.length || 0) > 0;
+
+  if (hasAllowlistedSelects || hasBlocklistedSelects) {
+    const allConcepts = value.flatMap((v) => v.concepts).filter(exists);
+
+    const invalidConcepts = allConcepts.filter((c) => {
+      const tableSelects = c.tables.flatMap((t) => t.selects);
+      const allSelects = [...c.selects, ...tableSelects];
+      const validSelects = allSelects.filter(
+        isValidSelect({ allowlistedSelects, blocklistedSelects }),
+      );
+
+      // A concept is considered "valid in terms of selects", if it has at least one valid select
+      return validSelects.length === 0;
+    });
+
+    if (invalidConcepts.length > 0) {
+      const names = invalidConcepts.map((c) => c.label).join(", ");
+
+      return `${t(
+        "externalForms.formValidation.validSelectRequired",
+      )}: ${names}`;
+    }
+  }
+
+  return null;
+};
+
+// TODO: Refactor using generics to try and tie the `field` to its `value`
 const DEFAULT_VALIDATION_BY_TYPE: Record<
   FormField["type"],
-  null | ((t: TFunction, value: any) => string | null)
+  null | ((t: TFunction, value: unknown, field: unknown) => string | null)
 > = {
   STRING: null,
   TEXTAREA: null,
   NUMBER: null,
   CHECKBOX: null,
-  CONCEPT_LIST: null,
+  // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
+  CONCEPT_LIST: validateRestrictedSelects,
   RESULT_GROUP: null,
   SELECT: null,
   TABS: null,
   DATASET_SELECT: null,
   GROUP: null,
   // MULTI_SELECT: null,
+  // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   DATE_RANGE: validateDateRange,
 };
 
@@ -86,7 +138,7 @@ function getNotEmptyValidation(fieldType: string) {
   }
 }
 
-function getPossibleValidations(fieldType: string) {
+function getConfigurableValidations(fieldType: string) {
   return {
     NOT_EMPTY: getNotEmptyValidation(fieldType),
     GREATER_THAN_ZERO: validatePositive,
@@ -108,17 +160,18 @@ export function getErrorForField(
 ) {
   const defaultValidation = DEFAULT_VALIDATION_BY_TYPE[field.type];
 
-  let error = defaultValidation ? defaultValidation(t, value) : null;
+  let error = defaultValidation ? defaultValidation(t, value, field) : null;
 
   if (
     isFieldWithValidations(field) &&
     !!field.validations &&
     field.validations.length > 0
   ) {
-    for (let validation of field.validations) {
-      const validateFn = getPossibleValidations(field.type)[validation];
+    for (const validation of field.validations) {
+      const validateFn = getConfigurableValidations(field.type)[validation];
 
       if (validateFn) {
+        // @ts-ignore TODO: try and improve these types
         error = error || validateFn(t, value);
       } else {
         console.error(

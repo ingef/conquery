@@ -43,7 +43,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	@JsonCreator
-	public User(String name, String label) {
+	protected User(String name, String label) {
 		this(name, label, null);
 	}
 

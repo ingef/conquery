@@ -1,7 +1,15 @@
 import styled from "@emotion/styled";
+import {
+  faCheckCircle,
+  faDownload,
+  faExclamationCircle,
+  faSpinner,
+  faTrash,
+  faUpload,
+} from "@fortawesome/free-solid-svg-icons";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import { useState, useEffect, FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
@@ -200,7 +208,7 @@ const CSVColumnPicker: FC<PropsT> = ({
 
           const firstRow = result.data[0];
 
-          let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
+          const initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
 
           // NOTE: IT WAS A PREVIOUS REQUIREMENT TO INITIALIZE THE HEADER WITH CERTAIN
           //       DEFAULT VALUES DEPENDING ON THE NUMBER OF COLUMNS IN THE CSV.
@@ -274,7 +282,7 @@ const CSVColumnPicker: FC<PropsT> = ({
             <FileName>{csv.length} Zeilen</FileName>
           </div>
           <WithTooltip text={t("common.clear")}>
-            <IconButton frame regular icon="trash-alt" onClick={onReset} />
+            <IconButton frame icon={faTrash} onClick={onReset} />
           </WithTooltip>
         </Grow>
         {csv.length > 0 && (
@@ -354,13 +362,13 @@ const CSVColumnPicker: FC<PropsT> = ({
       {uploadResult && (
         <PartialUploadResults>
           <Msg>
-            {uploadResult.resolved > 0 && <SuccessIcon icon="check-circle" />}
+            {uploadResult.resolved > 0 && <SuccessIcon icon={faCheckCircle} />}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
           </Msg>
           {uploadResult.unreadableDate.length > 0 && (
             <>
               <Msg>
-                <ErrorIcon icon="exclamation-circle" />
+                <ErrorIcon icon={faExclamationCircle} />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
                 })}
@@ -379,7 +387,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           {uploadResult.unresolvedId.length > 0 && (
             <>
               <Msg>
-                <ErrorIcon icon="exclamation-circle" />
+                <ErrorIcon icon={faExclamationCircle} />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
                 })}
@@ -401,7 +409,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
             <DownloadUnresolvedButton onClick={downloadUnresolved}>
-              <FaIcon icon="download" />{" "}
+              <FaIcon icon={faDownload} />{" "}
               {t("uploadQueryResultsModal.downloadUnresolved", {
                 count:
                   uploadResult.unreadableDate.length +
@@ -412,9 +420,9 @@ const CSVColumnPicker: FC<PropsT> = ({
         {uploadResult && (
           <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
             {loading ? (
-              <FaIcon white icon="spinner" />
+              <FaIcon white icon={faSpinner} />
             ) : (
-              <FaIcon white left icon="upload" />
+              <FaIcon white left icon={faUpload} />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
           </SxPrimaryButton>
@@ -426,9 +434,9 @@ const CSVColumnPicker: FC<PropsT> = ({
         ) : (
           <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
             {loading ? (
-              <FaIcon white icon="spinner" />
+              <FaIcon white icon={faSpinner} />
             ) : (
-              <FaIcon left white icon="upload" />
+              <FaIcon left white icon={faUpload} />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
           </SxPrimaryButton>

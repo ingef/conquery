@@ -1,0 +1,87 @@
+{
+  "label": "Date restriction with multiple validity dates and dateColumn",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/date_restriction/date_restriction_date_column/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2012-01-01",
+            "max": "2012-12-31"
+          },
+          "child": {
+            "ids": [
+              "geschlecht_select"
+            ],
+            "type": "CONCEPT",
+            "label": "Geschlecht SELECT",
+            "tables": [
+              {
+                "id": "geschlecht_select.geschlecht_connector",
+                "dateColumn" : {
+                  "value" : "geschlecht_select.geschlecht_connector.datum_alt"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "validityDates": [
+            {
+              "label": "datum",
+              "startColumn": "table1.datum_start",
+              "endColumn": "table1.datum_end"
+            },
+            {
+              "label": "datum_alt",
+              "column": "table1.datum_alt"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/date_restriction/date_restriction_date_column/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_alt",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

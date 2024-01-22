@@ -1,20 +1,22 @@
 import styled from "@emotion/styled";
+import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { ReactNode, useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
+import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import type { SearchT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
 
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
+import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
-import { toggleAdditionalInfos as toggleInfos } from "./actions";
-import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   width: 100%;
@@ -50,7 +52,7 @@ const TackIconButton = styled(IconButton)`
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 10px;
+  margin-right: 6px;
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -73,6 +75,11 @@ const Description = styled("p")`
 const Infos = styled("div")`
   width: 100%;
   overflow-x: auto;
+`;
+
+const IndentRoot = styled("div")`
+  padding-left: 15px;
+  margin: 5px 0 12px;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -107,10 +114,74 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
-const Tooltip = () => {
+const HighlightedText = ({
+  text,
+  words = [],
+}: {
+  words: string[];
+  text: string;
+}) => {
+  return (
+    <Highlighter
+      searchWords={words}
+      autoEscape={true}
+      textToHighlight={text || ""}
+    />
+  );
+};
+
+const ConceptLabel = ({
+  label,
+  conceptIcon,
+  tackIcon,
+}: {
+  label?: string;
+  conceptIcon?: IconDefinition;
+  tackIcon?: ReactNode;
+}) => {
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
+  );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
   const { t } = useTranslation();
 
-  const additionalInfos = useSelector<StateT, AdditionalInfosType>(
+  return (
+    <PinnedLabel>
+      {conceptIcon && <TypeIcon icon={conceptIcon} />}
+      <Label>
+        {label ? (
+          <HighlightedText words={words} text={label} />
+        ) : (
+          t("tooltip.placeholder")
+        )}
+      </Label>
+      {tackIcon}
+    </PinnedLabel>
+  );
+};
+
+const mark = (text: string, regex: RegExp | null): string => {
+  if (!regex) return text;
+  return text.replace(regex, "==$&==");
+};
+
+const Tooltip = () => {
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
+  );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
+
+  const {
+    label,
+    description,
+    infos,
+    matchingEntries,
+    matchingEntities,
+    dateRange,
+    icon,
+    rootLabel,
+    rootIcon,
+  } = useSelector<StateT, AdditionalInfosType>(
     (state) => state.tooltip.additionalInfos,
   );
   const displayTooltip = useSelector<StateT, boolean>(
@@ -119,34 +190,22 @@ const Tooltip = () => {
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.tooltip.toggleAdditionalInfos,
   );
-  const search = useSelector<StateT, SearchT>(
-    (state) => state.conceptTrees.search,
-  );
+
+  const highlightRegex = useMemo(() => {
+    return words.length > 0
+      ? new RegExp(words.filter((word) => word.length > 0).join("|"), "gi")
+      : null;
+  }, [words]);
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
   if (!displayTooltip) return <ActivateTooltip />;
 
-  const {
-    label,
-    description,
-    isFolder,
-    infos,
-    matchingEntries,
-    matchingEntities,
-    dateRange,
-  } = additionalInfos;
+  const mainLabel = rootLabel || label;
+  const mainIcon = rootIcon || icon;
 
-  const searchHighlight = (text: string) => {
-    return (
-      <Highlighter
-        searchWords={search.words || []}
-        autoEscape={true}
-        textToHighlight={text || ""}
-      />
-    );
-  };
+  const differentRootLabel = !!rootLabel && rootLabel !== label;
 
   return (
     <Root>
@@ -158,42 +217,40 @@ const Tooltip = () => {
           dateRange={dateRange}
         />
         <Head>
-          <PinnedLabel>
-            <TypeIcon icon={isFolder ? "folder" : "minus"} />
-            <Label>
-              {label ? searchHighlight(label) : t("tooltip.placeholder")}
-            </Label>
-            {toggleAdditionalInfos && (
-              <TackIconButton
-                bare
-                active
-                onClick={onToggleAdditionalInfos}
-                icon="thumbtack"
-              />
-            )}
-          </PinnedLabel>
+          <ConceptLabel
+            label={mainLabel}
+            conceptIcon={mainIcon}
+            tackIcon={
+              toggleAdditionalInfos && (
+                <TackIconButton
+                  bare
+                  active
+                  onClick={onToggleAdditionalInfos}
+                  icon={faThumbtack}
+                />
+              )
+            }
+          />
+          {differentRootLabel && (
+            <IndentRoot>
+              <ConceptLabel label={label} conceptIcon={icon} />
+            </IndentRoot>
+          )}
           {description && (
-            <Description>{searchHighlight(description)}</Description>
+            <Description>
+              <HighlightedText words={words} text={description} />
+            </Description>
           )}
         </Head>
         <Infos>
           {infos &&
             infos.map((info, i) => (
               <PieceOfInfo key={info.key + i}>
-                <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={
-                    {
-                      // TODO: Won't work anymore with the latest react-markdown, because
-                      // node is now a ReactElement, not a string.
-                      // Try to use another package for highlighting that doesn't depend on a string
-                      // or just highlight ourselves
-                      // p: ({ node }) => searchHighlight(node)
-                    }
-                  }
-                >
-                  {info.value}
+                <InfoHeadline>
+                  <HighlightedText words={words} text={info.key} />
+                </InfoHeadline>
+                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                  {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>
             ))}

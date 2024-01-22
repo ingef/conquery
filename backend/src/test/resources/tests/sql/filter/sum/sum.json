@@ -1,0 +1,73 @@
+{
+  "label": "SUM filter",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/filter/sum/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 1.5
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "SUM"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/sum/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          }
+        ]
+      }
+    ]
+  }
+}

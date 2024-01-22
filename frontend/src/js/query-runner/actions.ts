@@ -1,4 +1,5 @@
-import { TFunction, useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -22,7 +23,7 @@ import {
   errorPayload,
   successPayload,
 } from "../common/actions/genericActions";
-import { getExternalSupportedErrorMessage } from "../environment";
+import { EditorV2Query } from "../editor-v2/types";
 import {
   useLoadFormConfigs,
   useLoadQueries,
@@ -57,7 +58,11 @@ export type QueryRunnerActions = ActionType<
   by sending a DELETE request for that query ID
 */
 
-export type QueryTypeT = "standard" | "timebased" | "externalForms";
+export type QueryTypeT =
+  | "standard"
+  | "editorV2"
+  | "timebased"
+  | "externalForms";
 
 export const startQuery = createAsyncAction(
   "query-runners/START_QUERY_START",
@@ -79,6 +84,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
     datasetId: DatasetT["id"],
     query:
       | StandardQueryStateT
+      | EditorV2Query
       | ValidatedTimebasedQueryStateT
       | FormQueryPostPayload,
     {
@@ -95,7 +101,10 @@ export const useStartQuery = (queryType: QueryTypeT) => {
         : () =>
             postQueries(
               datasetId,
-              query as StandardQueryStateT | ValidatedTimebasedQueryStateT,
+              query as
+                | StandardQueryStateT
+                | EditorV2Query
+                | ValidatedTimebasedQueryStateT,
               {
                 queryType,
                 selectedSecondaryId,
@@ -169,12 +178,7 @@ const getQueryErrorMessage = ({
     return t("queryRunner.queryCanceled");
   }
 
-  return (
-    (error &&
-      error.code &&
-      getExternalSupportedErrorMessage(t, error.code, error.context)) ||
-    t("queryRunner.queryFailed")
-  );
+  return error?.message || t("queryRunner.queryFailed");
 };
 
 export const queryResultErrorAction = createAction(

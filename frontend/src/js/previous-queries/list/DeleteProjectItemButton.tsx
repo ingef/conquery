@@ -1,3 +1,4 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,7 +7,7 @@ import { ConfirmableTooltip } from "../../tooltip/ConfirmableTooltip";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { ProjectItemT } from "./ProjectItem";
-import { useRemoveQuery, useRemoveFormConfig } from "./actions";
+import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 
 export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
@@ -38,7 +39,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
     >
       <WithTooltip text={t("common.delete")}>
         <IconButton
-          icon="times"
+          icon={faTimes}
           bare
           data-test-id="project-item-delete-button"
         />

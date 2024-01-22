@@ -18,9 +18,9 @@ import org.mockserver.model.JsonBody;
 @Slf4j
 public class OIDCMockServer {
 
-	private static final int MOCK_SERVER_PORT = 1080;
+	public static final int MOCK_SERVER_PORT = 1080;
 	public static final String MOCK_SERVER_URL = "http://localhost:" + MOCK_SERVER_PORT;
-	public static final String REALM_NAME = "test_relam";
+	public static final String REALM_NAME = "test_realm";
 
 	private final ClientAndServer OIDC_SERVER;
 
@@ -35,8 +35,8 @@ public class OIDCMockServer {
 
 	public void init(Consumer<ClientAndServer> testMappings) {
 		// Mock well-known discovery endpoint (this is actually the output of keycloak)
-		OIDC_SERVER.when(request().withMethod("GET").withPath(String.format("/realms/%s/.well-known/uma2-configuration", REALM_NAME)))
-				.respond(
+		OIDC_SERVER.when(request().withMethod("GET").withPath("/realms/" + REALM_NAME + "/.well-known/uma2-configuration"))
+				   .respond(
 						response().withBody(
 								JsonBody.json(
 										new Object() {
@@ -85,11 +85,12 @@ public class OIDCMockServer {
 			@Override
 			public HttpResponse handle(HttpRequest httpRequest) throws Exception {
 				log.error(
-						"{} on {}\n\t Headers: {}n\tBody {}",
+						"{} on {}\n\t Headers: {}\n\tBody {}",
 						httpRequest.getMethod(),
 						httpRequest.getPath(),
 						httpRequest.getHeaderList(),
-						httpRequest.getBodyAsString());
+						httpRequest.getBodyAsString()
+				);
 				fail("Trapped because request did not match. See log.");
 				return null;
 			}

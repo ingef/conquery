@@ -7,18 +7,14 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Container class for the query API provide meta data for reach column in the
  * csv result. This can be used for the result preview in the frontend.
  */
-@Getter
+@Data
 @Builder
-@ToString
-@NoArgsConstructor
 @AllArgsConstructor
 public class ColumnDescriptor {
 

@@ -10,8 +10,13 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.mode.InternalObjectMapperCreator;
+import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
+import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
@@ -23,7 +28,7 @@ public abstract class AbstractSerializationTest {
 
 	private final Validator validator = Validators.newValidator();
 	private final ConqueryConfig config = new ConqueryConfig();
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private MetaStorage metaStorage;
 
 	private ObjectMapper managerInternalMapper;
@@ -33,15 +38,21 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
-		datasetRegistry = new DatasetRegistry(0, config, null);
+		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
+		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
+		datasetRegistry.setMetaStorage(metaStorage);
+		creator.init(datasetRegistry);
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);
 		when(managerNode.getConfig()).thenReturn(config);
 		when(managerNode.getValidator()).thenReturn(validator);
-		when(managerNode.getDatasetRegistry()).thenReturn(datasetRegistry);
+		doReturn(datasetRegistry).when(managerNode).getDatasetRegistry();
 		when(managerNode.getStorage()).thenReturn(metaStorage);
+		when(managerNode.getInternalObjectMapperCreator()).thenReturn(creator);
 
 		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);

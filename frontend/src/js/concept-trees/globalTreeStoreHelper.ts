@@ -1,6 +1,6 @@
-import type { ConceptT, ConceptIdT, GetConceptResponseT } from "../api/types";
+import type { ConceptIdT, ConceptT, GetConceptResponseT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import { nodeIsElement, NodeResetConfig } from "../model/node";
+import { NodeResetConfig, nodeIsElement } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
 import type {
@@ -49,9 +49,9 @@ export function setTree(
 export function getConceptById(
   conceptId: ConceptIdT,
   rootId?: ConceptIdT,
-): ConceptT | null {
+): ConceptT | undefined {
   if (rootId) {
-    return window.conceptTrees[rootId][conceptId] || null;
+    return window.conceptTrees[rootId]?.[conceptId];
   }
 
   const conceptTreeRootIds: ConceptIdT[] = Object.keys(window.conceptTrees);
@@ -62,7 +62,7 @@ export function getConceptById(
     if (concept) return concept;
   }
 
-  return null;
+  return undefined;
 }
 
 //

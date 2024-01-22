@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faListUl } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -46,7 +47,11 @@ const Description = styled("p")`
   margin: 0;
 `;
 
-export const TimelineEmptyPlaceholder = () => {
+export const TimelineEmptyPlaceholder = ({
+  className,
+}: {
+  className?: string;
+}) => {
   const { t } = useTranslation();
 
   const ids = useSelector<StateT, EntityHistoryStateT["entityIds"]>(
@@ -57,9 +62,9 @@ export const TimelineEmptyPlaceholder = () => {
   );
 
   return (
-    <Root>
+    <Root className={className}>
       <Row>
-        <BigIcon icon="list-ul" />
+        <BigIcon icon={faListUl} />
         <div>
           <Headline>{t("history.emptyTimeline.headline")}</Headline>
           <Description>{t("history.emptyTimeline.description")}</Description>

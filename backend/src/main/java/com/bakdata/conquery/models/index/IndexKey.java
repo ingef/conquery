@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.index;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -11,11 +11,19 @@ import java.util.List;
  * @param <I> The type of Index that is indexed by this key
  */
 public interface IndexKey<I extends Index<? extends IndexKey<I>>> {
-	URL getCsv();
+
+	/**
+	 * An url, or a part of it, that points to the referenced csv file.
+	 *
+	 * @implNote This is an url but implemented as an uri in this data object, because url can have undesired
+	 * side effects: <a href="https://www.baeldung.com/java-url-vs-uri#3-opening-a-remote-connection">URL equals() and hashcode()</a>
+	 */
+	URI getCsv();
 
 	String getInternalColumn();
 
 	List<String> getExternalTemplates();
 
-	I createIndex();
+	I createIndex(String defaultEmptyLabel);
+
 }

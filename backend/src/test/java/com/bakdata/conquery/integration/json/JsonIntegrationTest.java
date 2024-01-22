@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
@@ -21,39 +20,30 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+@Getter
 @Slf4j
 @RequiredArgsConstructor
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 
+	private final ConqueryTestSpec testSpec;
 	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
 	public static final Validator VALIDATOR = Validators.newValidator();
-	@Getter
-	private final ConqueryTestSpec testSpec;
 
 	public JsonIntegrationTest(InputStream in) throws IOException {
-		testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
-
-	}
-
-	@Override
-	public ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workDir) {
-		return testSpec.overrideConfig(conf);
+		this.testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
+		in.close();
 	}
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(testSpec));
-
 		testSpec.importRequiredData(conquery);
-
-		//ensure the metadata is collected
-
-
-		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
-
-		conquery.waitUntilWorkDone();
-
 		testSpec.executeTest(conquery);
+	}
+
+	@Override
+	public ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workDir) {
+		return getTestSpec().overrideConfig(conf);
 	}
 
 	public static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json) throws IOException {
@@ -73,4 +63,5 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 
 		return jsonReader.readValue(json);
 	}
+
 }

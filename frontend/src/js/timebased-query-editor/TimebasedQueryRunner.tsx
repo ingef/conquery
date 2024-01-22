@@ -58,7 +58,7 @@ const TimebasedQueryRunner = () => {
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      isButtonEnabled={isButtonEnabled}
+      disabled={!isButtonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}
       stopQuery={stopQuery}

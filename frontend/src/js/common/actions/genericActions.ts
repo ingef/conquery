@@ -3,7 +3,7 @@ export interface ErrorObject {
   status?: string;
 }
 
-export const errorPayload = <T extends Object>(
+export const errorPayload = <T extends object>(
   error: ErrorObject,
   context: T,
 ): T & ErrorObject => ({

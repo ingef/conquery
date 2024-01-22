@@ -56,7 +56,11 @@ export const useDatasetOptions = () => {
   );
 };
 
-const useInitializeForm = () => {
+const useInitializeForm = ({
+  datasetId,
+}: {
+  datasetId: DatasetT["id"] | null;
+}) => {
   const activeLang = useActiveLang();
   const config = useSelector<StateT, Form | null>(selectFormConfig);
   const allFields: (Field | Tabs)[] = useMemo(() => {
@@ -69,31 +73,48 @@ const useInitializeForm = () => {
 
   const datasetOptions = useDatasetOptions();
 
-  const defaultValues = useMemo(
-    () =>
-      Object.fromEntries(
-        allFields.map((field) => {
-          const initialValue = getInitialValue(field, {
-            availableDatasets: datasetOptions,
-            activeLang,
-          });
+  const defaultValues = useMemo(() => {
+    if (!config) return {};
 
-          return [field.name, initialValue];
-        }),
-      ),
-    [allFields, datasetOptions, activeLang],
-  );
+    return Object.fromEntries(
+      allFields.map((field) => {
+        const initialValue = getInitialValue(field, {
+          availableDatasets: datasetOptions,
+          activeLang,
+          datasetId,
+        });
+
+        return [field.name, initialValue];
+      }),
+    );
+  }, [allFields, datasetOptions, activeLang, config, datasetId]);
 
   const methods = useForm<DynamicFormValues>({
     defaultValues,
     mode: "onChange",
   });
 
+  useEffect(
+    function triggerValidationInitially() {
+      methods.trigger();
+    },
+    [methods, config],
+  );
+
   const onReset = useCallback(() => {
     methods.reset(defaultValues);
+    methods.trigger();
   }, [methods, defaultValues]);
 
-  return { methods, config, datasetOptions, onReset };
+  const onResetActiveForm = useCallback(() => {
+    methods.reset({
+      ...methods.getValues(),
+      ...defaultValues,
+    });
+    methods.trigger();
+  }, [methods, defaultValues]);
+
+  return { methods, config, datasetOptions, onReset, onResetActiveForm };
 };
 
 const FormsTab = () => {
@@ -101,9 +122,13 @@ const FormsTab = () => {
     (state) => state.datasets.selectedDatasetId,
   );
   const previousDatasetId = usePrevious(datasetId);
+
   useLoadForms({ datasetId });
 
-  const { methods, config, datasetOptions, onReset } = useInitializeForm();
+  const { methods, config, datasetOptions, onReset, onResetActiveForm } =
+    useInitializeForm({
+      datasetId,
+    });
 
   useEffect(
     function resetOnDatasetChange() {
@@ -116,7 +141,7 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation reset={onReset} />
+      <FormsNavigation onReset={onResetActiveForm} />
       <FormContainer
         methods={methods}
         config={config}

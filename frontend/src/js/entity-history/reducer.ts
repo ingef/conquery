@@ -5,13 +5,15 @@ import type {
   ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
+  ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
+  loadHistoryData,
   openHistory,
   resetCurrentEntity,
   resetHistory,
@@ -19,12 +21,14 @@ import {
 
 // TODO: This is quite inaccurate
 export type EntityEvent = {
-  dates: {
-    from: string; // e.g. 2022-01-31
-    to: string; // e.g. 2022-01-31
-  };
-  [key: string]: any;
+  [key: string]: unknown;
 };
+
+// Utility type, after transforming the date rows from a string into this format
+export interface DateRow {
+  from: string;
+  to: string;
+}
 
 export interface EntityId {
   id: string;
@@ -41,7 +45,7 @@ export type EntityHistoryStateT = {
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   label: string;
   entityIds: EntityId[];
   currentEntityUniqueSources: string[];
@@ -49,6 +53,7 @@ export type EntityHistoryStateT = {
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
+  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
 };
 
 const initialState: EntityHistoryStateT = {
@@ -69,6 +74,7 @@ const initialState: EntityHistoryStateT = {
   currentEntityData: [],
   currentEntityCsvUrl: "",
   currentEntityInfos: [],
+  currentEntityTimeStratifiedInfos: [],
 };
 
 export default function reducer(
@@ -102,6 +108,7 @@ export default function reducer(
         currentEntityData: [],
         currentEntityCsvUrl: "",
         currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
       };
     case getType(resetHistory):
       return {
@@ -116,6 +123,7 @@ export default function reducer(
         currentEntityData: [],
         currentEntityCsvUrl: "",
         currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
       };
     case getType(openHistory):
       return { ...state, isOpen: true };

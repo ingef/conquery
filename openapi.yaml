@@ -98,6 +98,192 @@ components:
         - RUNNING
         - FAILED
         - DONE
+    Column:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        type:
+          $ref: "#/components/schemas/ColumnType"
+        description:
+          type: string
+        minSuffixLength:
+          type: integer
+        generateSuffixes:
+          type: boolean
+        searchDisabled:
+          type: boolean
+        sharedDictionary:
+          type: string
+        secondaryId:
+          $ref: "#/components/schemas/SecondaryIdId"
+    Table:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
+
+    OutputDescriptionBase:
+      type: object
+      properties:
+        name:
+          description: "Name of the `table.column` to be imported into."
+          type: string
+        required:
+          type: boolean
+    LineOutput:
+      description: "Emits the line number. The line-number is not guaranteed to be in file order, just an incrementing unique number: If multiple files are preprocessed, the line-number will not reset to zero."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ LINE ]
+    NullOutput:
+      description: "Emits a `null`/NA value. Can be used to unify among multiple input sources with differing file schemas."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ NULL ]
+
+    CopyOutput:
+      description: "Parses and emits the values in inputColumn as the provided type."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+              description: "Name of the csv column to process."
+            inputType:
+              $ref: "#/components/schemas/MajorType"
+            operation:
+              type: string
+              enum: [ COPY ]
+    CompoundDateRangeOutput:
+      description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns).
+      This helps avoid copying multiple values of the same column, when they can be reused."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ COMPOUND_DATE_RANGE ]
+
+    DateRangeOutput:
+      description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ DATE_RANGE ]
+
+    EpochDateRangeOutput:
+      deprecated: true
+      description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ EPOCH_DATE_RANGE ]
+
+    EpochOutput:
+      deprecated: true
+      description: "Parses `startColumn` integer, emitting it as dates in the Unix-Epoch (i.e. days since 01-01-1970)"
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+            operation:
+              type: string
+              enum: [ EPOCH ]
+
+    OutputDescription:
+      description: "Operations to transform, then import, values into tables."
+      discriminator:
+        propertyName: operation
+        mapping: {
+          # FK: I'm using JSON notation here, because the key `NULL`  breaks some tools.
+          "COMPOUND_DATE_RANGE": "#/components/schemas/CompoundDateRangeOutput",
+          "COPY": "#/components/schemas/CopyOutput",
+          "DATE_RANGE": "#/components/schemas/DateRangeOutput",
+          "EPOCH": "#/components/schemas/EpochOutput",
+          "EPOCH_DATE_RANGE": "#/components/schemas/EpochDateRangeOutput",
+          "LINE": "#/components/schemas/LineOutput",
+          "NULL": "#/components/schemas/NullOutput",
+        }
+      oneOf:
+        - $ref: "#/components/schemas/CompoundDateRangeOutput"
+        - $ref: "#/components/schemas/CopyOutput"
+        - $ref: "#/components/schemas/DateRangeOutput"
+        - $ref: "#/components/schemas/EpochDateRangeOutput"
+        - $ref: "#/components/schemas/EpochOutput"
+        - $ref: "#/components/schemas/LineOutput"
+        - $ref: "#/components/schemas/NullOutput"
+
+    Import:
+      description: "Describes how one or multiple CSV files are to be transformed into a .cqpp file compatible with the designated table."
+      type: object
+      properties:
+        table:
+          $ref: "#/components/schemas/TableId"
+        name:
+          description: "Name of the import. When preprocessed with tags, will be overwritten to the respective tag."
+          type: string
+        label:
+          deprecated: true
+          type: string
+        inputs:
+          description: "One or more descriptions to preprocess a `.csv` or `.csv.gz` into a single cqpp."
+          type: array
+          items:
+            type: object
+            properties:
+              sourceFile:
+                description: "Filename of the to preprocess file, relative to the path supplied in `preprocess`."
+                type: string
+              filter:
+                description: "Groovy script which can be used to filter the csv rows.
+                The row is passed as `row` array, the fields can be accessed as integer variables to the index in the file.
+                For example accessing `value` in `id,value` can be done with `row[value]` (no string up-ticks), or `row[1]`."
+                type: string
+              primary:
+                $ref: "#/components/schemas/OutputDescription"
+              output:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutputDescription"
+
     FrontendDatasetId:
       type: object
       properties:
@@ -303,9 +489,19 @@ components:
           description: Available result urls of the query.
           type: array
           items:
-            type: string
-            format: url
-
+            $ref: "#/components/schemas/ResultAsset"
+    ResultAsset:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          format: url
+      required:
+        - label
+        - url
     Labeled:
       type: object
       properties:
@@ -924,6 +1120,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Filter"
+            validityDatesDescription:
+              description: "Further information about the available validity dates."
+              type: string
             validityDates:
               description: "Definitions of relevant date columns for this connector.
               e.g.: The publishing date of a movie, and its production period."
@@ -963,6 +1162,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/UniversalSelect"
+            defaultExcludeFromTimeAggregation:
+              type: boolean
+              description: "If true, excludeFromTimeAggregation will be set to true by default for the users."
             hidden:
               description: "If true, the concept is not visible in the API or the frontend."
               type: boolean
@@ -978,20 +1180,22 @@ components:
                     type: string
                   value:
                     type: string
-
+    MajorType:
+      type: string
+      enum:
+        - STRING
+        - INTEGER
+        - BOOLEAN
+        - NUMERIC
+        - MONEY
+        - DATE
+        - DATE_RANGE
     ColumnType:
       description: Available types for input and output of conquery. Additionally list, which is a nested type of ColumnType.
       oneOf:
+        - $ref: "#/components/schemas/MajorType"
         - type: string
-          enum:
-            - STRING
-            - INTEGER
-            - BOOLEAN
-            - NUMERIC
-            - MONEY
-            - DATE
-            - DATE_RANGE
-        - type: string
+          description: "Arbitrary nesting of ColumnTypes including List."
           pattern: "LIST\\[.*\\]"
     SemanticsEventDate:
       description: Values contain the primary date of a row.
@@ -1851,6 +2055,8 @@ components:
       description: Frontend configuration for the entity-preview.
       type: object
       properties:
+        observationPeriodMin:
+          $ref: "#/components/schemas/date"
         all:
           description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
           type: array
@@ -1869,8 +2075,66 @@ components:
                 type: string
               label:
                 type: string
+    PreviewConfig:
+      description: "Configuration to customize and integrate a Conquery instance."
+      type: object
+      properties:
+        observationStart:
+          type: string
+          description: "Default start date of entity-preview."
+        infoCardSelects:
+          type: array
+          items:
+            type: object
+            properties:
+              selectId:
+                $ref: "#/components/schemas/SelectId"
+              description:
+                type: string
+              label:
+                type: string
+
+        timeStratifiedSelects:
+          type: array
+          items:
+            properties:
+              description:
+                type: string
+              label:
+                type: string
+              selects:
+                type: array
+                items:
+                  properties:
+                    selectId:
+                      $ref: "#/components/schemas/SelectId"
+                    description:
+                      type: string
+                    label:
+                      type: string
+        hidden:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        allConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        defaultConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        searchFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterId"
+
     EntityHistoryExecutionStatus:
-      description: Specific execution info for a entity-preview, containing additional information for the entity.
+      description: "Specific execution info for a entity-preview, containing additional information for the entity."
       allOf:
         - $ref: "#/components/schemas/FullExecutionStatus"
         - type: object
@@ -1889,10 +2153,59 @@ components:
                     type: string
                   value:
                     type: string
-                  Semantics:
+                  semantics:
                     type: array
                     items:
                       $ref: "#/components/schemas/Semantics"
+            timeStratifiedInfos:
+              description: "Results stratified in time for every year and quarter for selects defined in PreviewConfig.timeStratifiedSelects of queried time."
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    description: "Display label of the group of Selects."
+                    type: string
+                  description:
+                    description: "Detailed description of the selects."
+                    type: string
+                  columns:
+                    allOf:
+                      - $ref: "#/components/schemas/ColumnDescription"
+                      - description: "Description of the columns of totals, years and quarters."
+                  totals:
+                    description: "Values for the entire observation period."
+                    type: object
+                    additionalProperties:
+                      type: string
+                  years:
+                    description: "One entry for each year, containing the values aggregated for each year and its quarters."
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        year:
+                          description: "The year of the entries."
+                          type: integer
+                        values:
+                          description: "Aggregated values for the whole year."
+                          type: object
+                          additionalProperties: true
+                        quarters:
+                          description: "For each contained quarter an entry also containing the aggregated values."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              quarter:
+                                type: integer
+                                minimum: 1
+                                maximum: 4
+                              values:
+                                description: "Aggregated values for the quarter."
+                                type: object
+                                additionalProperties: true
+
     FullExecutionStatus:
       allOf:
         - $ref: "#/components/schemas/QueryStatus"
@@ -1921,6 +2234,7 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SecondaryIdId"
+
 paths:
   /frontend/config:
     get:

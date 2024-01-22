@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,7 +7,6 @@ import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
 import { ContentFilterValue } from "../ContentControl";
@@ -54,7 +54,7 @@ const InlineGrid = styled("div")`
   cursor: pointer;
   border: 1px solid transparent;
   border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 5px;
+  padding: 6px 10px;
   &:hover {
     border: 1px solid ${({ theme }) => theme.col.blueGray};
   }
@@ -85,11 +85,12 @@ const Quarter = ({
   toggleOpenQuarter,
   differences,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
   contentFilter,
-  datasetId,
 }: {
   year: number;
   quarter: number;
@@ -99,8 +100,9 @@ const Quarter = ({
   detailLevel: DetailLevel;
   toggleOpenQuarter: (year: number, quarter: number) => void;
   differences: string[][];
-  datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
   currencyConfig: CurrencyConfigT;
@@ -115,7 +117,7 @@ const Quarter = ({
     <QuarterGroup key={quarter}>
       <QuarterHead empty={totalEventsPerQuarter === 0}>
         <InlineGrid onClick={() => toggleOpenQuarter(year, quarter)}>
-          <FaIcon large gray icon={isOpen ? "caret-down" : "caret-right"} />
+          <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
           <SxSmallHeading>Q{quarter} </SxSmallHeading>
           <span>
             – {totalEventsPerQuarter}{" "}
@@ -149,8 +151,9 @@ const Quarter = ({
                   <EventCard
                     key={`${index}-${evtIdx}`}
                     columns={columns}
+                    dateColumn={dateColumn}
+                    sourceColumn={sourceColumn}
                     columnBuckets={columnBuckets}
-                    datasetId={datasetId}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}
                     row={evt}
@@ -160,7 +163,7 @@ const Quarter = ({
               } else {
                 const firstRowWithoutDifferences = Object.fromEntries(
                   Object.entries(group[0]).filter(([key]) => {
-                    if (key === "dates") {
+                    if (key === dateColumn.label) {
                       return true; // always show dates, despite it being part of groupDifferences
                     }
 
@@ -172,8 +175,9 @@ const Quarter = ({
                   <EventCard
                     key={index}
                     columns={columns}
+                    dateColumn={dateColumn}
+                    sourceColumn={sourceColumn}
                     columnBuckets={columnBuckets}
-                    datasetId={datasetId}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}
                     row={firstRowWithoutDifferences}

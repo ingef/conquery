@@ -1,0 +1,68 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Single Concept EXISTS",
+  "expectedCsv": "tests/sql/selects/exists/single_exists/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector"
+        }
+      ],
+      "selects": "concept.exists"
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "selects": {
+        "type": "EXISTS",
+        "name": "exists"
+      },
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "exists_table",
+          "validityDates": [
+            {
+              "label": "datum",
+              "startColumn": "exists_table.datum_start",
+              "endColumn": "exists_table.datum_end"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/exists/single_exists/content.csv",
+        "name": "exists_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

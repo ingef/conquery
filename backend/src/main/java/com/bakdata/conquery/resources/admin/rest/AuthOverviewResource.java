@@ -39,7 +39,7 @@ public class AuthOverviewResource {
 	public Response getPermissionOverviewAsCSV(@PathParam(GROUP_ID) Group group) {
 		return Response
 				.ok(processor.getPermissionOverviewAsCSV(group))
-				.header("Content-Disposition", String.format("attachment; filename=\"authOverview_%s.csv\"", FileUtil.makeSafeFileName(group.getName(), "csv")))
+				.header("Content-Disposition", String.format("attachment; filename=\"authOverview_%s.csv\"", FileUtil.makeSafeFileName(group.getName())))
 				.build();
 	}
 }

@@ -2,13 +2,17 @@
 const localStorage: Storage = window.localStorage;
 
 interface UserSettings {
+  showEditorV2: boolean;
   arePreviousQueriesFoldersOpen: boolean;
-  preferredDownloadFormat?: string; // Usually CSV or XLSX
+  preferredDownloadEnding?: string; // Usually CSV or XLSX
+  preferredDownloadLabel?: string; // Label of the preferred Download format (e.g. "All files")
 }
 
 const initialState: UserSettings = {
+  showEditorV2: false,
   arePreviousQueriesFoldersOpen: false,
-  preferredDownloadFormat: undefined,
+  preferredDownloadEnding: undefined,
+  preferredDownloadLabel: undefined,
 };
 
 export const getUserSettings = (): UserSettings => {

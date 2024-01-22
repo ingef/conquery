@@ -1,0 +1,63 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Validity date as default select without date restriction set",
+  "description": "If validity dates exist and the concept is not excluded from time aggregation, validity dates should be part of the final selects - regardless if a date restriction is set.",
+  "expectedCsv": "tests/sql/selects/validity_date/default/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids":[
+            "geschlecht_select"
+          ],
+          "type":"CONCEPT",
+          "label":"Geschlecht SELECT",
+          "tables":[
+            {
+              "id": "geschlecht_select.geschlecht_connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts":[
+    {
+      "label":"geschlecht_select",
+      "type":"TREE",
+      "connectors":[
+        {
+          "label":"geschlecht_connector",
+          "table":"table1",
+          "validityDates":{
+            "label":"datum",
+            "column":"table1.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content":{
+    "tables":[
+      {
+        "csv": "tests/sql/selects/validity_date/default/content.csv",
+        "name":"table1",
+        "primaryColumn":{
+          "name":"pid",
+          "type":"STRING"
+        },
+        "columns":[
+          {
+            "name":"datum",
+            "type":"DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

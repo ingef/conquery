@@ -1,11 +1,13 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
@@ -16,6 +18,8 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
@@ -37,22 +41,34 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @CPSType(id = "EXPORT_FORM", base = QueryDescription.class)
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class ExportForm extends Form implements InternalForm {
 
-	@NotNull
+	@Getter
+	@Setter
+	@EqualsAndHashCode.Exclude
+	private JsonNode values;
+
+
+	@Nullable
 	@JsonProperty("queryGroup")
 	private ManagedExecutionId queryGroupId;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private ManagedQuery queryGroup;
 
 	@NotNull
@@ -61,6 +77,7 @@ public class ExportForm extends Form implements InternalForm {
 	private Mode timeMode;
 
 	@NotEmpty
+	@Valid
 	private List<CQElement> features = ImmutableList.of();
 
 	@NotNull
@@ -70,8 +87,10 @@ public class ExportForm extends Form implements InternalForm {
 	private boolean alsoCreateCoarserSubdivisions = false;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private Query prerequisite;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private List<Resolution> resolvedResolutions;
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -91,19 +110,28 @@ public class ExportForm extends Form implements InternalForm {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
+		if (queryGroupId == null) {
+			return Collections.emptySet();
+		}
+
 		return Set.of(queryGroupId);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+		if(queryGroupId != null) {
+			queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+			prerequisite = queryGroup.getQuery();
+		}
+		else {
+			prerequisite = new ConceptQuery(new CQYes());
+		}
 
 
 		// Apply defaults to user concept
 		ExportForm.DefaultSelectSettable.enable(features);
 
 		timeMode.resolve(context);
-		prerequisite = queryGroup.getQuery();
 
 		List<Resolution> resolutionsFlat = resolution.stream()
 													 .flatMap(ResolutionShortNames::correspondingResolutions)

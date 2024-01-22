@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
 import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -17,22 +18,30 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
+@EqualsAndHashCode(callSuper = true)
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
-	@JsonBackReference @Getter @Setter
+	@EqualsAndHashCode.Exclude
+	@JsonBackReference
+	@Getter
+	@Setter
 	private SelectHolder<?> holder;
 
 	@JsonIgnore
@@ -41,7 +50,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return getHolder().findConcept().getDataset();
 	}
 
-	@Setter @Getter
+	@Setter
+	@Getter
 	private String description;
 
 	/**
@@ -111,4 +121,15 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		return valid;
 	}
+
+	@JsonIgnore
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
+	}
+
+	@JsonIgnore
+	public Set<ConceptCteStep> getRequiredSqlSteps() {
+		return ConceptCteStep.MANDATORY_STEPS;
+	}
+
 }

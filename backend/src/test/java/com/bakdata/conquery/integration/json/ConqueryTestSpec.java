@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.bakdata.conquery.util.support.TestSupport;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -45,7 +47,17 @@ public abstract class ConqueryTestSpec {
 	@Setter
 	@Getter
 	@Nullable
+	private String description;
+
+	@Setter
+	@Getter
+	@Nullable
 	private ConqueryConfig config;
+
+	@Setter
+	@Getter
+	@Nullable
+	SqlSpec sqlSpec;
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
@@ -68,19 +80,19 @@ public abstract class ConqueryTestSpec {
 		return label;
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedClass, null);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedType, null);
 	}
 
-	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static  <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
@@ -102,7 +114,7 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 
-	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectInto(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
@@ -143,6 +155,9 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 
+	public boolean isEnabled(Dialect sqlDialect) {
+		return sqlSpec == null || sqlSpec.isEnabled() && sqlSpec.isAllowedTest(sqlDialect);
+	}
 
 	/**
 	 * Replaces occurrences of the string "${dataset}" with the id of the current dataset of the {@link StandaloneSupport}.
@@ -150,7 +165,7 @@ public abstract class ConqueryTestSpec {
 	@RequiredArgsConstructor
 	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
 
-		private final StandaloneSupport support;
+		private final TestSupport support;
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {

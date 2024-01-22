@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 
 import FaIcon from "../icon/FaIcon";
@@ -23,7 +24,8 @@ const Headline = styled("h2")<{ active: boolean }>`
   text-transform: uppercase;
   flex-shrink: 0;
 
-  transition: color ${({ theme }) => theme.transitionTime},
+  transition:
+    color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
   margin-right: 5px;
@@ -88,7 +90,7 @@ const TabNavigation: FC<PropsT> = ({
                 onClick={createClickHandler(key)}
               >
                 {label}
-                {loading && <SxFaIcon icon="spinner" />}
+                {loading && <SxFaIcon icon={faSpinner} />}
               </Headline>
             </SxWithTooltip>
           </HoverNavigatable>

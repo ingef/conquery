@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { ReactElement, useMemo } from "react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { ReactElement, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { Instance } from "tippy.js";
 
 import IconButton from "../button/IconButton";
 
@@ -28,18 +30,28 @@ export const ConfirmableTooltip = ({
 }: {
   children: ReactElement;
   confirmationText?: string;
-  confirmationIcon?: IconName;
+  confirmationIcon?: IconProp;
   placement?: "top" | "bottom" | "left" | "right";
   onConfirm: () => void;
   red?: boolean;
 }) => {
+  const tippyRef = useRef(null);
   const { t } = useTranslation();
   const dropdown = useMemo(() => {
     return (
       <List>
         <SxIconButton
-          icon={confirmationIcon || "check"}
-          onClick={onConfirm}
+          icon={confirmationIcon || faCheck}
+          onClick={() => {
+            onConfirm();
+
+            // https://github.com/atomiks/tippyjs-react/issues/324
+            // @ts-ignore TODO: Find a better way to get the tippy instance / to hide it
+            const tippyInstance = tippyRef.current?._tippy as Instance;
+            if (tippyInstance) {
+              tippyInstance.hide();
+            }
+          }}
           small
           bgHover
           red={red}
@@ -59,6 +71,7 @@ export const ConfirmableTooltip = ({
       trigger="click"
       offset={offset}
       hideOnClick
+      ref={tippyRef}
     >
       {children}
     </WithTooltip>

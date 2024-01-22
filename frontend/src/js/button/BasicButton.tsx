@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { forwardRef, ButtonHTMLAttributes } from "react";
+import { ButtonHTMLAttributes, forwardRef } from "react";
 
 export interface BasicButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -33,7 +33,7 @@ const Button = styled("button")<BasicButtonProps>`
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 0.4;
   }
 `;
 

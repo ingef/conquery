@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -33,6 +34,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -143,17 +145,33 @@ public class TableExportQuery extends Query {
 		query.resolve(context);
 
 		// First is dates, second is source id
-		AtomicInteger currentPosition = new AtomicInteger(2);
+		final AtomicInteger currentPosition = new AtomicInteger(2);
 
 		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
-		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions);
+		final Set<ValidityDate> validityDates = tables.stream()
+													  .map(CQConcept::getTables)
+													  .flatMap(Collection::stream)
+													  .map(CQTable::findValidityDate)
+													  .filter(Objects::nonNull)
+													  .collect(Collectors.toSet());
 
-		resultInfos = createResultInfos(secondaryIdPositions);
+		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
+		final Set<Column> conceptColumns = tables.stream()
+												 .map(CQConcept::getTables)
+												 .flatMap(Collection::stream)
+												 .map(CQTable::getConnector)
+												 .map(Connector::getColumn)
+												 .filter(Objects::nonNull)
+												 .collect(Collectors.toSet());
+
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
+
+		resultInfos = createResultInfos(secondaryIdPositions, conceptColumns);
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
 
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
@@ -169,26 +187,27 @@ public class TableExportQuery extends Query {
 		return secondaryIdPositions;
 	}
 
-	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns, Set<ValidityDate> validityDates) {
 		final Map<Column, Integer> positions = new HashMap<>();
+
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
-				final Column validityDateColumn = table.findValidityDateColumn();
-
-				if (validityDateColumn != null) {
-					positions.putIfAbsent(validityDateColumn, 0);
-				}
-
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().getTable().getColumns()) {
+
+					// ValidityDates are handled separately in column=0
+					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column))) {
+						continue;
+					}
 
 					if (positions.containsKey(column)) {
 						continue;
 					}
 
-					if (column.getSecondaryId() != null) {
+					// We want to have ConceptColumns separate here.
+					if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
 						positions.putIfAbsent(column, secondaryIdPositions.get(column.getSecondaryId()));
 						continue;
 					}
@@ -201,7 +220,7 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
@@ -252,7 +271,7 @@ public class TableExportQuery extends Query {
 			}
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
-			if (column.getSecondaryId() != null) {
+			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
 				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
 																		.add(new SemanticType.ColumnT(column));
 				continue;
@@ -303,15 +322,20 @@ public class TableExportQuery extends Query {
 
 		final TreeConcept tree = (TreeConcept) concept;
 
-		int localId = (int) rawValue;
+		final int localId = (int) rawValue;
 
 		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
 
 		if (!printSettings.isPrettyPrint()) {
-			return node.getId().toStringWithoutDataset();
+			return node.getId().toString();
 		}
 
-		return node.getName();
+		if (node.getDescription() == null) {
+			return node.getName();
+		}
+
+		return node.getName() + " - " + node.getDescription();
+
 	}
 
 	@Override

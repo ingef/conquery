@@ -29,16 +29,33 @@ const ReloadButton = styled(TransparentButton)`
   margin-top: 10px;
 `;
 
-const ErrorFallback = () => {
+const ErrorFallback = ({
+  allowFullRefresh,
+  onReset,
+}: {
+  allowFullRefresh?: boolean;
+  onReset?: () => void;
+}) => {
   const { t } = useTranslation();
 
   return (
     <Root>
       <Heading>{t("error.sorry")}</Heading>
       <Description>{t("error.description")}</Description>
-      <ReloadButton onClick={() => window.location.reload()}>
-        {t("error.reload")}
-      </ReloadButton>
+      {allowFullRefresh && (
+        <>
+          <Description>{t("error.reloadDescription")}</Description>
+          <ReloadButton onClick={() => window.location.reload()}>
+            {t("error.reload")}
+          </ReloadButton>
+        </>
+      )}
+      {onReset && (
+        <>
+          <Description>{t("error.resetDescription")}</Description>
+          <ReloadButton onClick={onReset}>{t("error.reset")}</ReloadButton>
+        </>
+      )}
     </Root>
   );
 };

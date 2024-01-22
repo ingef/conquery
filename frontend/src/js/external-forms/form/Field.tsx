@@ -24,22 +24,19 @@ import { InputTextarea } from "../../ui-components/InputTextarea/InputTextarea";
 import ToggleButton from "../../ui-components/ToggleButton";
 import type { Field as FieldT, GeneralField, Tabs } from "../config-types";
 import { Description } from "../form-components/Description";
-import { getHeadlineFieldAs, Headline } from "../form-components/Headline";
+import {
+  getHeadlineFieldAs,
+  Headline,
+  HeadlineIndex,
+} from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-import {
-  getFieldKey,
-  getInitialValue,
-  isFormField,
-  isOptionalField,
-} from "../helper";
+import { getFieldKey, getInitialValue, isFormField } from "../helper";
 import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
-
-const BOTTOM_MARGIN = 7;
 
 // TODO: REFINE COLORS
 // const useColorByField = (fieldType: FormField["type"]) => {
@@ -67,18 +64,37 @@ type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FieldT | Tabs;
-  defaultValue?: any;
+  defaultValue?: unknown;
   noContainer?: boolean;
   noLabel?: boolean;
 };
-const FieldContainer = styled("div")<{ noLabel?: boolean }>`
-  margin: 0 0 ${BOTTOM_MARGIN}px;
+const FieldContainer = styled("div")<{
+  noLabel?: boolean;
+  hasError?: boolean;
+  red?: boolean;
+}>`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
-  background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 3px;
-  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid
+    ${({ theme, hasError, red }) =>
+      hasError
+        ? red
+          ? theme.col.red
+          : theme.col.blueGrayDark
+        : theme.col.grayLight};
 `;
-const ConnectedField = <T extends Object>({
+
+const ErrorContainer = styled("div")<{ red?: boolean }>`
+  color: ${({ theme, red }) => (red ? theme.col.red : theme.col.blueGrayDark)};
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
+const ConnectedField = <T extends object>({
   children,
   control,
   formField,
@@ -88,24 +104,34 @@ const ConnectedField = <T extends Object>({
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
-  const { field } = useController<DynamicFormValues>({
+  const { field, fieldState } = useController<DynamicFormValues>({
     name: formField.name,
     defaultValue,
     control,
     rules: {
       validate: (value) => getErrorForField(t, formField, value) || true,
     },
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const requiredMsg = t("externalForms.formValidation.isRequired");
+  const isRedError = fieldState.error?.message !== requiredMsg;
+
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer noLabel={noLabel}>
+    <FieldContainer
+      noLabel={noLabel}
+      hasError={exists(fieldState.error)}
+      red={isRedError}
+    >
       {children({ ...field, ...props })}
+      <ErrorContainer red={isRedError}>
+        {fieldState.error?.message}
+      </ErrorContainer>
     </FieldContainer>
   );
 };
@@ -115,7 +141,7 @@ const SxToggleButton = styled(ToggleButton)`
 `;
 
 const Spacer = styled("div")`
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+  height: 14px;
 `;
 
 const Group = styled("div")`
@@ -125,23 +151,14 @@ const Group = styled("div")`
 `;
 
 const NestedFields = styled("div")`
-  padding: 12px 10px 5px;
-  box-shadow: inset 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 10px 12px;
   background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 5px;
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+  border: 1px solid ${({ theme }) => theme.col.gray};
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
-
-interface PropsT {
-  formType: string;
-  field: GeneralField;
-  locale: Language;
-  availableDatasets: SelectOptionT[];
-  optional?: boolean;
-  register: UseFormRegister<DynamicFormValues>;
-  setValue: UseFormSetValue<DynamicFormValues>;
-  control: Control<DynamicFormValues>;
-}
 
 const setValueConfig = {
   shouldValidate: true,
@@ -149,20 +166,38 @@ const setValueConfig = {
   shouldTouch: true,
 };
 
-const Field = ({ field, ...commonProps }: PropsT) => {
+const Field = ({
+  field,
+  ...commonProps
+}: {
+  formType: string;
+  h1Index?: number;
+  field: GeneralField;
+  locale: Language;
+  availableDatasets: SelectOptionT[];
+  register: UseFormRegister<DynamicFormValues>;
+  setValue: UseFormSetValue<DynamicFormValues>;
+  control: Control<DynamicFormValues>;
+}) => {
   const datasetId = useDatasetId();
-  const { formType, optional, locale, availableDatasets, setValue, control } =
+  const { formType, h1Index, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
+
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
-      ? getInitialValue(field, { availableDatasets, activeLang: locale })
+      ? getInitialValue(field, {
+          availableDatasets,
+          activeLang: locale,
+          datasetId,
+        })
       : null;
 
   switch (field.type) {
     case "HEADLINE":
       return (
         <Headline as={getHeadlineFieldAs(field)} size={field.style?.size}>
+          {exists(h1Index) && <HeadlineIndex>{h1Index + 1}</HeadlineIndex>}
           {field.label[locale]}
         </Headline>
       );
@@ -191,7 +226,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               value={fieldProps.value as string}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -213,11 +247,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               rows={field.style?.rows ?? 4}
               value={fieldProps.value as string}
               onChange={(value) => {
-                console.log(value);
                 setValue(field.name, value, setValueConfig);
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -246,7 +278,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 max: field.max,
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -264,7 +295,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 inline={true}
                 label={field.label[locale]}
                 tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-                optional={optional}
                 value={fieldProps.value as DateStringMinMax}
                 onChange={(value) =>
                   setValue(field.name, value, setValueConfig)
@@ -286,7 +316,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               label={field.label[locale] || ""}
               dropzoneText={field.dropzoneLabel[locale] || ""}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
               value={fieldProps.value as DragItemQuery}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
@@ -312,11 +341,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         </ConnectedField>
       );
     case "SELECT":
-      const options = field.options.map((option) => ({
-        label: option.label[locale] || "",
-        value: option.value,
-      }));
-
       return (
         <ConnectedField
           formField={field}
@@ -326,9 +350,11 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <InputSelect
               label={field.label[locale]}
-              options={options}
+              options={field.options.map((option) => ({
+                label: option.label[locale] || "",
+                value: option.value,
+              }))}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
               value={fieldProps.value as SelectOptionT | null}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
@@ -336,17 +362,16 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         </ConnectedField>
       );
     case "DATASET_SELECT":
-      const datasetDefaultValue =
-        availableDatasets.length > 0
-          ? availableDatasets.find((opt) => opt.value === datasetId) ||
-            availableDatasets[0]
-          : null;
-
       return (
         <ConnectedField
           formField={field}
           control={control}
-          defaultValue={datasetDefaultValue}
+          defaultValue={
+            availableDatasets.length > 0
+              ? availableDatasets.find((opt) => opt.value === datasetId) ||
+                availableDatasets[0]
+              : null
+          }
         >
           {({ ref, ...fieldProps }) => {
             return (
@@ -354,7 +379,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 label={field.label[locale]}
                 options={availableDatasets}
                 tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-                optional={optional}
                 value={fieldProps.value as SelectOptionT | null}
                 onChange={(value) =>
                   setValue(field.name, value, setValueConfig)
@@ -374,7 +398,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           <Group
             style={{
               display: (field.style && field.style.display) || "flex",
-              gap: field.style?.display === "grid" ? "0 12px" : "0 8px",
+              gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
               gridTemplateColumns: `repeat(${
                 field.style?.gridColumns || 1
               }, 1fr)`,
@@ -382,16 +406,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           >
             {field.fields.map((f, i) => {
               const key = getFieldKey(formType, f, i);
-              const nestedFieldOptional = isOptionalField(f);
 
-              return (
-                <Field
-                  key={key}
-                  field={f}
-                  {...commonProps}
-                  optional={nestedFieldOptional}
-                />
-              );
+              return <Field key={key} field={f} {...commonProps} />;
             })}
           </Group>
         </>
@@ -426,16 +442,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
                       const key = getFieldKey(formType, f, i);
-                      const nestedFieldOptional = isOptionalField(f);
 
-                      return (
-                        <Field
-                          key={key}
-                          field={f}
-                          {...commonProps}
-                          optional={nestedFieldOptional}
-                        />
-                      );
+                      return <Field key={key} field={f} {...commonProps} />;
                     })}
                   </NestedFields>
                 ) : (
@@ -478,7 +486,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               blocklistedSelects={field.blocklistedSelects}
               allowlistedSelects={field.allowlistedSelects}
               defaults={field.defaults}
-              optional={optional}
               isValidConcept={(item) =>
                 !nodeIsInvalid(
                   item,
@@ -501,6 +508,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     }
                   : { concepts: [], connector: "OR" }
               }
+              rowPrefixFieldname={field.rowPrefixField?.name}
               renderRowPrefix={
                 exists(field.rowPrefixField)
                   ? ({ value: fieldValue, onChange, row, i }) => (

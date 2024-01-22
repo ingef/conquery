@@ -1,0 +1,64 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Validity date excluded from time aggregation",
+  "description": "If a concept is excluded from time aggregation, validity dates should not be part of the final select.",
+  "expectedCsv": "tests/sql/selects/validity_date/excluded_from_time_aggregation/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "excludeFromTimeAggregation": true,
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/validity_date/default/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

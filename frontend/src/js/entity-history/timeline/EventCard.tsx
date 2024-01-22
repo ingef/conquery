@@ -1,12 +1,16 @@
 import styled from "@emotion/styled";
+import {
+  faEuroSign,
+  faFingerprint,
+  faInfo,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
@@ -14,11 +18,12 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import { ColumnBuckets } from "../Timeline";
-import type { EntityEvent } from "../reducer";
+import type { DateRow, EntityEvent } from "../reducer";
 
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
+import { isDateColumn, isSourceColumn } from "./util";
 
 const Card = styled("div")`
   display: grid;
@@ -88,36 +93,36 @@ const Bullet = styled("div")`
   flex-shrink: 0;
 `;
 
-interface Props {
-  row: EntityEvent;
-  columns: Record<string, ColumnDescription>;
-  columnBuckets: ColumnBuckets;
-  datasetId: DatasetT["id"];
-  contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
-  rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  groupedRows?: EntityEvent[];
-  groupedRowsKeysWithDifferentValues?: string[];
-}
-
 const EventCard = ({
   row,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
-  datasetId,
   currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
-}: Props) => {
+}: {
+  row: EntityEvent;
+  columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
+  columnBuckets: ColumnBuckets;
+  contentFilter: ContentFilterValue;
+  currencyConfig: CurrencyConfigT;
+  rootConceptIdsByColumn: Record<string, ConceptIdT>;
+  groupedRows?: EntityEvent[];
+  groupedRowsKeysWithDifferentValues?: string[];
+}) => {
   const { t } = useTranslation();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
       exists(row[column.label]) &&
-      column.label !== "dates" && // Because they're already displayed somewhere else
-      column.label !== "source", // Because they're already displayed somewhere else
+      !isDateColumn(column) && // Because they're already displayed somewhere else
+      !isSourceColumn(column), // Because they're already displayed somewhere else
   );
   const groupableIdsTooltip = t("history.content.fingerprint");
 
@@ -134,14 +139,14 @@ const EventCard = ({
   return (
     <Card>
       <Bullet />
-      <RowDates dates={row.dates} />
-      <SxRawDataBadge event={row} />
+      <RowDates dates={row[dateColumn.label] as DateRow} />
+      <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
       <EventItemContent>
         {contentFilter.money && applicableMoney.length > 0 && (
           <Flex>
             <WithTooltip text={moneyTooltip}>
               <span>
-                <SxFaIcon icon="euro-sign" active large />
+                <SxFaIcon icon={faEuroSign} active large />
               </span>
             </WithTooltip>
             <ColBucket>
@@ -149,13 +154,11 @@ const EventCard = ({
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
-                    <NumberFormat
-                      thousandSeparator={currencyConfig.thousandSeparator}
-                      decimalSeparator={currencyConfig.decimalSeparator}
-                      decimalScale={currencyConfig.decimalScale}
-                      suffix={currencyConfig.prefix}
+                    <NumericFormat
+                      {...currencyConfig}
+                      suffix={" " + currencyConfig.unit}
                       displayType="text"
-                      value={parseInt(row[column.label]) / 100}
+                      value={parseInt(row[column.label] as string) / 100}
                     />
                   </code>
                 </div>
@@ -165,7 +168,6 @@ const EventCard = ({
         )}
         {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
-            datasetId={datasetId}
             columns={columns}
             contentFilter={contentFilter}
             groupedRows={groupedRows}
@@ -180,14 +182,14 @@ const EventCard = ({
           <Flex>
             <WithTooltip text={restTooltip}>
               <span>
-                <SxFaIcon icon="info" active large />
+                <SxFaIcon icon={faInfo} active large />
               </span>
             </WithTooltip>
             <ColBucket>
               {applicableRest.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>{row[column.label]}</span>
+                  <span>{row[column.label] as string}</span>
                 </div>
               ))}
             </ColBucket>
@@ -197,14 +199,14 @@ const EventCard = ({
           <Flex>
             <WithTooltip text={groupableIdsTooltip}>
               <span>
-                <SxFaIcon icon="fingerprint" active large />
+                <SxFaIcon icon={faFingerprint} active large />
               </span>
             </WithTooltip>
             <ColBucket>
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  {row[column.label]}
+                  {row[column.label] as string}
                 </div>
               ))}
             </ColBucket>

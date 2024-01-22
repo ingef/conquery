@@ -1,72 +1,66 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Arrays;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
 
-@ToString(callSuper = true, of = {"column"})
+@ToString(callSuper = true, of = "column")
 public class MultiSelectFilterNode extends EventFilterNode<String[]> {
-
 
 	@NotNull
 	@Getter
 	@Setter
 	private Column column;
 
-	/**
-	 * Shared between all executing Threads to maximize utilization.
-	 */
-	private ConcurrentMap<Import, int[]> selectedValuesCache;
-	private int[] selectedValues;
+	private final boolean empty;
+
+	private IntSet selectedValues;
+	private QueryExecutionContext context;
 
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
 		super(filterValue);
 		this.column = column;
-		selectedValuesCache = new ConcurrentHashMap<>();
+		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
 	}
 
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		this.context = context;
+		selectedValues = null;
+	}
+
+	@Override
 	public void setFilterValue(String[] strings) {
-		selectedValuesCache = new ConcurrentHashMap<>();
 		selectedValues = null;
 		super.setFilterValue(strings);
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, filterValue));
+		selectedValues = context.getIdsFor(column, bucket, filterValue);
 	}
 
-	private int[] findIds(Bucket bucket, String[] values) {
-		int[] selectedValues = new int[values.length];
 
-		StringStore type = (StringStore) bucket.getStore(getColumn());
-
-		for (int index = 0; index < values.length; index++) {
-			String select = values[index];
-			int parsed = type.getId(select);
-			selectedValues[index] = parsed;
-		}
-
-		return selectedValues;
-	}
 
 
 	@Override
@@ -76,18 +70,12 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		}
 
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return empty;
 		}
 
-		int stringToken = bucket.getString(event, getColumn());
+		final int stringId = bucket.getString(event, getColumn());
 
-		for (int selectedValue : selectedValues) {
-			if (selectedValue == stringToken) {
-				return true;
-			}
-		}
-
-		return false;
+		return selectedValues.contains(stringId);
 	}
 
 	@Override

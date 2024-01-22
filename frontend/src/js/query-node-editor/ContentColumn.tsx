@@ -12,6 +12,7 @@ import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import {
   ConceptQueryNodeType,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -52,7 +53,11 @@ interface PropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -105,12 +110,14 @@ const ContentColumn: FC<PropsT> = ({
     <Column>
       <ContentCellGroup>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
-        <CommonNodeSettings
-          excludeFromSecondaryId={node.excludeFromSecondaryId}
-          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-          excludeTimestamps={node.excludeTimestamps}
-          onToggleTimestamps={onToggleTimestamps}
-        />
+        {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
+          <CommonNodeSettings
+            excludeFromSecondaryId={node.excludeFromSecondaryId}
+            onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+            excludeTimestamps={node.excludeTimestamps}
+            onToggleTimestamps={onToggleTimestamps}
+          />
+        )}
         {nodeIsConceptQueryNode(node) && node.selects && (
           <NodeSelects
             selects={node.selects}

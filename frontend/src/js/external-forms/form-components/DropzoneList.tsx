@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { ForwardedRef, ReactElement, ReactNode, Ref, forwardRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
@@ -12,7 +13,8 @@ import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import Label from "../../ui-components/Label";
-import Optional from "../../ui-components/Optional";
+
+import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
 const ListItem = styled("div")`
   position: relative;
@@ -34,11 +36,25 @@ const Row = styled("div")`
   align-items: center;
 `;
 
+const ConceptContainer = styled("div")`
+  position: relative;
+`;
+
+const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)<{
+  index: number;
+}>`
+  ${({ index }) => (index === 0 ? "top: 3px;" : "")}
+`;
+
+const SxLastDropzoneBetweenElements = styled(DropzoneBetweenElements)`
+  height: 15px;
+  top: -5px;
+`;
+
 interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
   tooltip?: string;
-  optional?: boolean;
   dropzoneChildren: (args: ChildArgs<DroppableObject>) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
@@ -49,7 +65,10 @@ interface PropsT<DroppableObject> {
     monitor: DropTargetMonitor,
   ) => void;
   onDropFile: (file: File) => void;
-  onImportLines: (lines: string[]) => void;
+  onImportLines: (lines: string[], filename?: string) => void;
+  dropBetween: (
+    i: number,
+  ) => (item: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
 }
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
@@ -57,7 +76,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
     className,
     label,
     tooltip,
-    optional,
     dropzoneChildren,
     items,
     acceptedDropTypes,
@@ -65,6 +83,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
     disallowMultipleColumns,
     onDrop,
     onImportLines,
+    dropBetween,
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
@@ -75,23 +94,39 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   return (
     <div className={className}>
       <Row>
-        {label && (
-          <Label>
-            {optional && <Optional />}
-            {label}
-          </Label>
-        )}
+        {label && <Label>{label}</Label>}
         {tooltip && <InfoTooltip text={tooltip} />}
       </Row>
       {items && items.length > 0 && (
-        <div>
+        <>
           {items.map((item, i) => (
-            <ListItem key={i}>
-              <StyledIconButton icon="times" onClick={() => onDelete(i)} />
-              {item}
-            </ListItem>
+            <ConceptContainer key={i}>
+              {!disallowMultipleColumns && (
+                <SxDropzoneBetweenElements
+                  acceptedDropTypes={acceptedDropTypes}
+                  onDrop={dropBetween(i)}
+                  index={i}
+                />
+              )}
+              <ListItem>
+                <StyledIconButton
+                  bgHover
+                  icon={faTimes}
+                  onClick={() => onDelete(i)}
+                />
+                {item}
+              </ListItem>
+            </ConceptContainer>
           ))}
-        </div>
+          <ConceptContainer>
+            {!disallowMultipleColumns && (
+              <SxLastDropzoneBetweenElements
+                acceptedDropTypes={acceptedDropTypes}
+                onDrop={dropBetween(items.length)}
+              />
+            )}
+          </ConceptContainer>
+        </>
       )}
       <div ref={ref}>
         {showDropzone && onImportLines && (

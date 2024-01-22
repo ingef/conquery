@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
@@ -34,18 +36,20 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
+	private final String emptyDefaultLabel;
+
+	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@Override
-		public Index<?> load(@NotNull IndexKey key) throws Exception {
+		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
 			log.info("Started to parse mapping {}", key);
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
-			final Index<?> int2ext = key.createIndex();
+			final Index<?> int2ext = key.createIndex(emptyDefaultLabel);
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
-			try (InputStream inputStream = key.getCsv().openStream()) {
+			try (InputStream inputStream = key.getCsv().toURL().openStream()) {
 
 				final IterableResult<Record, ParsingContext> records = csvParser.iterateRecords(inputStream);
 
@@ -70,12 +74,9 @@ public class IndexService implements Injectable {
 						int2ext.put(internalValue, externalValue);
 					}
 					catch (IllegalArgumentException e) {
-						log.warn(
-								"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
-								internalValue,
-								externalValue,
-								csvParser.getContext().currentLine(),
-								(Exception) (log.isTraceEnabled() ? e : null)
+						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
+								 internalValue, externalValue, csvParser.getContext().currentLine(),
+								 (Exception) (log.isTraceEnabled() ? e : null) // Cast to Exception to satisfy format-string check
 						);
 					}
 				}
@@ -94,8 +95,9 @@ public class IndexService implements Injectable {
 		}
 	});
 
-	public IndexService(CsvParserSettings csvParserSettings) {
+	public IndexService(CsvParserSettings csvParserSettings, String emptyDefaultLabel) {
 		this.csvParserSettings = csvParserSettings.clone();
+		this.emptyDefaultLabel = emptyDefaultLabel;
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
@@ -106,10 +108,10 @@ public class IndexService implements Injectable {
 		final String internalValue = row.getString(key.getInternalColumn());
 
 		if (internalValue == null) {
-			log.trace(
-					"Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}",
-					csvParser.getContext().currentLine(),
-					log.isTraceEnabled() ? StringUtils.join(row.toFieldMap()) : null
+			log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext().currentLine(),
+					  log.isTraceEnabled()
+					  ? StringUtils.join(row.toFieldMap())
+					  : null
 			);
 			return null;
 		}
@@ -127,11 +129,7 @@ public class IndexService implements Injectable {
 
 		return externalTemplates.stream()
 								.distinct()
-								.collect(Collectors.toMap(
-												 Functions.identity(),
-												 value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')
-										 )
-								);
+								.collect(Collectors.toMap(Functions.identity(), value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
 	}
 
 	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {
@@ -155,6 +153,14 @@ public class IndexService implements Injectable {
 		catch (ExecutionException e) {
 			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
 		}
+	}
+
+	public CacheStats getStatistics() {
+		return mappings.stats();
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return mappings.asMap().keySet();
 	}
 
 	@Override

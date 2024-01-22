@@ -13,7 +13,7 @@ on:
       - "backend/src/main/java/com/bakdata/conquery/apiv1/**"
 
 jobs:
-  generate_auto_doc:
+  generate-auto-doc:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

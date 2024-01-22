@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.logging.log4j.util.Strings;
 
 
 /**
@@ -20,6 +21,7 @@ import lombok.ToString;
 @ToString(callSuper = true, of = "column")
 public class SelectFilterNode extends EventFilterNode<String> {
 
+	private final boolean empty;
 	private int selectedId = -1;
 	@NotNull
 	@Getter
@@ -29,28 +31,36 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	public SelectFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;
+
+		empty = Strings.isEmpty(filterValue);
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		//you can then also skip the block if the id is -1
+		// You can skip the block if the id is -1
 		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
-		if (selectedId == -1 || !bucket.has(event, getColumn())) {
+		final boolean has = bucket.has(event, getColumn());
+
+		if(empty && !has){
+			return true;
+		}
+
+		if (selectedId == -1 || !has) {
 			return false;
 		}
 
-		int value = bucket.getString(event, getColumn());
+		final int value = bucket.getString(event, getColumn());
 
 		return value == selectedId;
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
+		return empty || ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
 	}
 
 	@Override

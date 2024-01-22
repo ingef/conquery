@@ -1,12 +1,18 @@
 name: "End-To-End Tests"
 
 on:
+  push:
+    branches:
+      # Always run on protected branches
+      - master
+      - develop
+      - release
   pull_request:
     paths:
       - "**"
 
 jobs:
-  end-to-end-test:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -41,7 +47,7 @@ jobs:
       - name: Cypress run
         # This is a preconfigured action, maintained by cypress, to run e2e tests
         # https://github.com/cypress-io/github-action
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         with:
           working-directory: .
           start: bash ./scripts/run_e2e_all.sh

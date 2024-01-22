@@ -1,6 +1,10 @@
 import { getType } from "typesafe-actions";
 
-import type { QueryIdT, UserGroupIdT } from "../../api/types";
+import type {
+  QueryIdT,
+  ResultUrlWithLabel,
+  UserGroupIdT,
+} from "../../api/types";
 import { Action } from "../../app/actions";
 
 import {
@@ -17,7 +21,7 @@ import {
 
 export interface BaseFormConfigT {
   formType: string;
-  values: Record<string, any>;
+  values: Record<string, unknown>;
   label: string;
 }
 
@@ -42,13 +46,14 @@ export interface PreviousQueryT {
   own: boolean;
   ownerName: string;
   system?: boolean;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   shared: boolean;
   isPristineLabel?: boolean;
   canExpand?: boolean;
   groups?: UserGroupIdT[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   secondaryId?: string | null;
+  containsDates: boolean;
 }
 
 export interface PreviousQueriesStateT {

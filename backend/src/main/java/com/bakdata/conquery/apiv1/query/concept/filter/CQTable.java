@@ -10,14 +10,15 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,6 +26,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(exclude = "concept")
+@EqualsAndHashCode
 public class CQTable {
 	@Valid
 	@NotNull
@@ -35,6 +37,7 @@ public class CQTable {
 	private List<Select> selects = Collections.emptyList();
 
 	@JsonBackReference
+	@EqualsAndHashCode.Exclude
 	private CQConcept concept;
 
 	@NsIdRef
@@ -72,18 +75,17 @@ public class CQTable {
 	}
 
 	@CheckForNull
-	public Column findValidityDateColumn() {
+	public ValidityDate findValidityDate() {
 
-		// if no dateColumn is provided, we use the default instead which is always the first one.
-		// Set to null if none-available in the connector.
 		if (dateColumn != null) {
-			return dateColumn.getValue().getColumn();
+			return dateColumn.getValue();
 		}
 
 		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0).getColumn();
+			return connector.getValidityDates().get(0);
 		}
 
 		return null;
 	}
+
 }

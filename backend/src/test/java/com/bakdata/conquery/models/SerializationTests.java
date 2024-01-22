@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models;
 
+import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -19,10 +22,12 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
@@ -42,11 +47,11 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -65,8 +70,11 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -78,11 +86,16 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.util.SerialisationObjectsUtil;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.bakdata.conquery.util.dict.SuccinctTrieTest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -282,60 +295,11 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void treeConcept() throws IOException, JSONException {
-		Dataset dataset = new Dataset();
-		dataset.setName("datasetName");
-
-		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
-		concept.setLabel("conceptLabel");
-		concept.setName("conceptName");
-
-		Table table = new Table();
-
-		Column column = new Column();
-		column.setLabel("colLabel");
-		column.setName("colName");
-		column.setType(MajorTypeId.STRING);
-		column.setTable(table);
-
-		Column dateColumn = new Column();
-		dateColumn.setLabel("colLabel2");
-		dateColumn.setName("colName2");
-		dateColumn.setType(MajorTypeId.DATE);
-		dateColumn.setTable(table);
-
-
-		table.setColumns(new Column[]{column, dateColumn});
-		table.setDataset(dataset);
-		table.setLabel("tableLabel");
-		table.setName("tableName");
-
-		column.setTable(table);
-
-		ConceptTreeConnector connector = new ConceptTreeConnector();
-		connector.setConcept(concept);
-		connector.setLabel("connLabel");
-		connector.setName("connName");
-		connector.setColumn(column);
-
-		concept.setConnectors(List.of(connector));
-
-		ValidityDate valDate = new ValidityDate();
-		valDate.setColumn(dateColumn);
-		valDate.setConnector(connector);
-		valDate.setLabel("valLabel");
-		valDate.setName("valName");
-		connector.setValidityDates(List.of(valDate));
 
 		CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		Dataset dataset = createDataset(registry);
 
-		registry.register(dataset);
-		registry.register(concept);
-		registry.register(column);
-		registry.register(dateColumn);
-		registry.register(table);
-		registry.register(connector);
-		registry.register(valDate);
+		TreeConcept concept = createConcept(registry, dataset);
 
 		SerializationTestUtil
 				.forType(TreeConcept.class)
@@ -343,6 +307,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				.registry(registry)
 				.test(concept);
 	}
+
 
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
@@ -356,9 +321,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void formConfig() throws JSONException, IOException {
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
-		final Dataset dataset = new Dataset("test-dataset");
-
-		registry.register(dataset);
+		final Dataset dataset = createDataset(registry);
 
 		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -401,6 +364,70 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
+	public void testExportForm() throws JSONException, IOException {
+
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+
+		final Dataset dataset = createDataset(registry);
+
+
+		registry.register(dataset);
+
+		final ExportForm exportForm = createExportForm(registry, dataset);
+
+		SerializationTestUtil.forType(QueryDescription.class)
+							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .registry(registry)
+							 .checkHashCode()
+							 .test(exportForm);
+	}
+
+	@Test
+	public void managedForm() throws JSONException, IOException {
+
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+
+		final Dataset dataset = createDataset(registry);
+
+		final User user = createUser(registry, getMetaStorage());
+
+		final ExportForm exportForm = createExportForm(registry, dataset);
+
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset, getMetaStorage());
+		execution.setTags(new String[]{"test-tag"});
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .registry(registry)
+							 .test(execution);
+	}
+
+
+	@Test
+	public void testExternalExecution() throws IOException, JSONException {
+
+		final CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
+
+		final String subType = "test-type";
+		JsonNodeFactory factory = new JsonNodeFactory(false);
+		ObjectNode node = new ObjectNode(factory, Map.of(
+				"some-other-member", new TextNode("some-other-value")
+		));
+
+		ExternalForm form = new ExternalForm(node, subType);
+		final Dataset dataset = SerialisationObjectsUtil.createDataset(centralRegistry);
+		final User user = SerialisationObjectsUtil.createUser(centralRegistry, getMetaStorage());
+
+		final ExternalExecution execution = new ExternalExecution(form, user, dataset, getMetaStorage());
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .objectMappers(getManagerInternalMapper())
+							 .registry(centralRegistry)
+							 .test(execution);
+
+	}
+
+	@Test
 	public void cqConcept() throws JSONException, IOException {
 
 		final Dataset dataset = new Dataset();
@@ -439,7 +466,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
-		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+
+		I18n.init();
+
+		ConqueryError error = new ConqueryError.ExecutionProcessingError();
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -477,7 +507,7 @@ public class SerializationTests extends AbstractSerializationTest {
 																				  .userName(user.getLabel())
 																				  .hideLogoutButton(false)
 																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true)))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true, true, true)))
 																				  .build();
 
 		SerializationTestUtil
@@ -727,6 +757,100 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Locale[].class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper())
 							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
+	}
+
+	/**
+	 * Tests if the type id prefix for external forms is correctly removed before a form is forwarded to a form backend.
+	 */
+	@Test
+	public void externalForm() throws IOException, JSONException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+		SerializationTestUtil.forType(QueryDescription.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(externalForm);
+	}
+
+	/**
+	 * Extra nesting test because {@link ExternalForm} uses a custom deserializer.
+	 */
+	@Test
+	public void externalFormArray() throws IOException, JSONException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		final String externalFormString2 = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE2",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+		ExternalForm externalForm2 = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString2);
+		SerializationTestUtil.forType(QueryDescription[].class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(new QueryDescription[]{externalForm, externalForm2});
+	}
+
+
+	/**
+	 * Tests if the type id prefix for external forms is correctly removed before a form is forwarded to a form backend.
+	 */
+	@Test
+	public void externalFormToFormBackend() throws JsonProcessingException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+
+		final ObjectMapper objectMapper = FormBackendConfig.configureObjectMapper(getApiMapper().copy());
+		final String actual = objectMapper.writer().writeValueAsString(externalForm);
+
+		final String expected = """
+				{
+					"type":"SOME_SUB_TYPE",
+					"title":"Test Form",
+					"members":{
+						"val1":[0,1,2,3],
+						"val2":"hello"
+					}
+				}
+				""".replaceAll("[\\n\\t]", "");
+		assertThat(actual).as("Result of mixin for form backend").isEqualTo(expected);
 	}
 
 }

@@ -1,0 +1,5 @@
+pid,datum,test_column,test_column2,test_column3,test_column4
+1,2012-01-01,"A1",,"B1","C123445"
+2,2010-07-15,"A2","Bar","B2","C23456"
+3,2013-11-10,"A3","Foo","B3","C34557"
+4,2012-11-11,"A4","Foobar","B4","C45678"

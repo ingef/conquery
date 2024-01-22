@@ -51,6 +51,11 @@
   },
   {
     "method": "GET",
+    "path": "/datasets/{dataset}/connectors/{connector}",
+    "clazz": "ConnectorUIResource"
+  },
+  {
+    "method": "GET",
     "path": "/groups/{groupId}",
     "clazz": "GroupUIResource"
   },
@@ -83,5 +88,10 @@
     "method": "GET",
     "path": "/auth-overview",
     "clazz": "AuthOverviewUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/index-service",
+    "clazz": "IndexServiceUIResource"
   }
 ]

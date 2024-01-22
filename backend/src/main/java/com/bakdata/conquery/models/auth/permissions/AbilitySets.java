@@ -7,29 +7,15 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class AbilitySets {
 
-	public static final EnumSet<Ability> QUERY_CREATOR = EnumSet.of(
-			Ability.READ,
-			Ability.DELETE,
-			Ability.SHARE,
-			Ability.TAG,
-			Ability.CANCEL,
-			Ability.LABEL
-	);
+	public static final EnumSet<Ability> QUERY_CREATOR = EnumSet.of(Ability.READ, Ability.DELETE, Ability.SHARE, Ability.TAG, Ability.CANCEL, Ability.LABEL);
 
-	public static final EnumSet<Ability> FORM_CONFIG_CREATOR = EnumSet.of(
-			Ability.READ,
-			Ability.DELETE,
-			Ability.SHARE,
-			Ability.TAG,
-			Ability.LABEL,
-			Ability.MODIFY
-	);
+	public static final EnumSet<Ability>
+			FORM_CONFIG_CREATOR =
+			EnumSet.of(Ability.READ, Ability.DELETE, Ability.SHARE, Ability.TAG, Ability.LABEL, Ability.MODIFY);
 
-	public static final EnumSet<Ability> SHAREHOLDER = EnumSet.of(
-			Ability.READ,
-			Ability.TAG,
-			Ability.LABEL
-	);
+	public static final EnumSet<Ability> SHAREHOLDER = EnumSet.of(Ability.READ, Ability.TAG, Ability.LABEL);
 
-	public static final EnumSet<Ability> DATASET_CREATOR = EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID);
+	public static final EnumSet<Ability>
+			DATASET_CREATOR =
+			EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID, Ability.ENTITY_PREVIEW, Ability.QUERY_PREVIEW);
 }
