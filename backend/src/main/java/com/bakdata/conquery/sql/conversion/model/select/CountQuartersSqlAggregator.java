@@ -39,7 +39,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 
 		Field<Date> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<Integer> countQuartersField = new FieldWrapper<>(
-				DSL.countDistinct(functionProvider.quartersPerYear(qualifiedRootSelect)).as(alias),
+				DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)).as(alias),
 				column.getName()
 		);
 

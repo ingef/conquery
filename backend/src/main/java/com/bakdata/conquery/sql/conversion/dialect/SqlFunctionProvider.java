@@ -68,7 +68,7 @@ public interface SqlFunctionProvider {
 	/**
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
-	Field<String> quartersPerYear(Field<Date> dateField);
+	Field<String> yearQuarter(Field<Date> dateField);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {
