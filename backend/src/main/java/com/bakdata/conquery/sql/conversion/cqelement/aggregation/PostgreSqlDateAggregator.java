@@ -93,9 +93,10 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		// {[-infinity,infinity]} - {multirange} computes the inverse of a {multirange}
 		Field<Object> invertedValidityDate = DSL.field(
-				"{0}::datemultirange - {1}",
+				"{0}::{1} - {2}",
 				Object.class,
 				maxDateRange,
+				DSL.keyword("datemultirange"),
 				validityDate.get().getRange()
 		).as(PostgresDateAggregationCteStep.DATES_INVERTED.suffix());
 
@@ -127,7 +128,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
-		return DSL.when(field.isNull(), DSL.field("'{}'::datemultirange"))
+		return DSL.when(field.isNull(), DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
 				  .otherwise(field)
 				  .toString();
 	}

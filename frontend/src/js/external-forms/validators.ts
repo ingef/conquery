@@ -81,19 +81,25 @@ const validateRestrictedSelects = (
   const hasBlocklistedSelects = (blocklistedSelects?.length || 0) > 0;
 
   if (hasAllowlistedSelects || hasBlocklistedSelects) {
-    const validSelects = value
-      .flatMap((v) => v.concepts)
-      .filter(exists)
-      .flatMap((c) => {
-        const tableSelects = c.tables.flatMap((t) => t.selects);
+    const allConcepts = value.flatMap((v) => v.concepts).filter(exists);
 
-        return [...c.selects, ...tableSelects].filter(
-          isValidSelect({ allowlistedSelects, blocklistedSelects }),
-        );
-      });
+    const invalidConcepts = allConcepts.filter((c) => {
+      const tableSelects = c.tables.flatMap((t) => t.selects);
+      const allSelects = [...c.selects, ...tableSelects];
+      const validSelects = allSelects.filter(
+        isValidSelect({ allowlistedSelects, blocklistedSelects }),
+      );
 
-    if (validSelects.length === 0) {
-      return t("externalForms.formValidation.validSelectRequired");
+      // A concept is considered "valid in terms of selects", if it has at least one valid select
+      return validSelects.length === 0;
+    });
+
+    if (invalidConcepts.length > 0) {
+      const names = invalidConcepts.map((c) => c.label).join(", ");
+
+      return `${t(
+        "externalForms.formValidation.validSelectRequired",
+      )}: ${names}`;
     }
   }
 

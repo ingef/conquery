@@ -1,6 +1,9 @@
 {
   "label": "DATE_DISTANCE filter query with timeUnit CENTURIES",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/filter/date_distance/centuries/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
