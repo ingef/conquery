@@ -90,8 +90,6 @@ interface Props {
   rowPrefixFieldname?: string;
 }
 
-const DropzoneListItem = styled("div")``;
-
 const Row = styled("div")`
   display: flex;
   align-items: center;
@@ -316,7 +314,7 @@ const FormConceptGroup = (props: Props) => {
           );
         }}
         items={props.value.map((row, i) => (
-          <DropzoneListItem>
+          <div>
             {props.renderRowPrefix
               ? props.renderRowPrefix({
                   value: props.value,
@@ -459,7 +457,7 @@ const FormConceptGroup = (props: Props) => {
                 ),
               )}
             />
-          </DropzoneListItem>
+          </div>
         ))}
       />
       {isCopyModalOpen && (
