@@ -1,0 +1,80 @@
+{
+  "label": "FLAGS filter",
+  "type": "QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/flag/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "flags"
+          ],
+          "type": "CONCEPT",
+          "label": "flags",
+          "tables": [
+            {
+              "id": "flags.flags_connector",
+              "filters": [
+                {
+                  "filter": "flags.flags_connector.flags_filter",
+                  "type": "MULTI_SELECT",
+                  "value": [
+                    "B",
+                    "C"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "flags",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "flags_connector",
+          "table": "table1",
+          "filters": {
+            "type": "FLAGS",
+            "name": "flags_filter",
+            "flags": {
+              "A": "table1.a",
+              "B": "table1.b",
+              "C": "table1.c"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": {
+      "csv": "tests/sql/filter/flag/content.csv",
+      "name": "table1",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "a",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "b",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "c",
+          "type": "BOOLEAN"
+        }
+      ]
+    }
+  }
+}
