@@ -9,6 +9,12 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
 import lombok.ToString;
 
+/**
+ * Simple implementation of a histogram.
+ * First and last bin serve as potential overflow bins.
+ * <p>
+ * Bin labels are of real values and not partitions, this can make entries potentially non-contiguous, but ensures readable values.
+ */
 @Data
 public class Histogram {
 	private final Node[] nodes;
@@ -16,7 +22,6 @@ public class Histogram {
 	private final double width;
 
 	private final int expectedBins;
-
 
 	private int total;
 
