@@ -98,7 +98,7 @@ public class QueryStepJoiner {
 		);
 	}
 
-	private static Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
+	public static Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
 		List<Field<?>> primaryColumns = querySteps.stream()
 												  .map(queryStep -> queryStep.getQualifiedSelects().getPrimaryColumn())
 												  .collect(Collectors.toList());
