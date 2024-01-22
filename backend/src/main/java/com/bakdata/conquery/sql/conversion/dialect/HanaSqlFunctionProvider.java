@@ -3,12 +3,14 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Param;
@@ -28,6 +30,15 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public String getMaxDateExpression() {
 		return MAX_DATE_VALUE;
+	}
+
+	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return DSL.function(
+				"CAST",
+				type.getType(),
+				DSL.field("%s AS %s".formatted(field, type.getName()))
+		);
 	}
 
 	@Override
@@ -214,6 +225,14 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
 		return DSL.condition("{0} {1} {2}", field, DSL.keyword("LIKE_REGEXPR"), pattern);
+	}
+
+	@Override
+	public Field<Object[]> asArray(List<Field<?>> fields) {
+		String arrayExpression = fields.stream()
+									   .map(Field::toString)
+									   .collect(Collectors.joining(", ", "array(", ")"));
+		return DSL.field(arrayExpression, Object[].class);
 	}
 
 	@Override
