@@ -106,7 +106,7 @@ public class QueryStepJoiner {
 				  .as(PRIMARY_COLUMN_NAME);
 	}
 
-	private static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
+	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
 		return querySteps.stream()
 						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
 						 .collect(Collectors.toList());

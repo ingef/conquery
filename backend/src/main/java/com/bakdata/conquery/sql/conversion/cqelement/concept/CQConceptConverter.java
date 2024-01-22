@@ -28,7 +28,6 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
@@ -41,6 +40,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				new PreprocessingCte(),
 				new EventFilterCte(),
 				new AggregationSelectCte(),
+				new JoinPredecessorsCte(),
 				new AggregationFilterCte(),
 				new FinalConceptCte()
 		);
@@ -101,7 +101,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 								.conversionContext(context)
 								.filters(allFiltersForTable)
 								.selects(conceptSelects)
-								.primaryColumn(DSL.field(DSL.name(context.getConfig().getPrimaryColumn())))
 								.validityDate(validityDateSelect)
 								.isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
 								.conceptTables(conceptTables)
@@ -125,6 +124,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		table.getFilters().stream()
 			 .flatMap(filterValue -> filterValue.getFilter().getRequiredSqlSteps().stream())
 			 .forEach(requiredSteps::add);
+
+		Stream.concat(table.getConcept().getSelects().stream(), table.getSelects().stream())
+			  .flatMap(select -> select.getRequiredSqlSteps().stream())
+			  .forEach(requiredSteps::add);
 
 		return requiredSteps;
 	}

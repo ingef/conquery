@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.json.filter;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
@@ -26,9 +24,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -92,27 +88,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
-		importInternToExternMappers(support, internToExternMappings);
-		importSearchIndexes(support, searchIndices);
-		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
-		support.waitUntilWorkDone();
-
-		importConcepts(support);
-		support.waitUntilWorkDone();
-
-		query = parseQuery(support);
-
-		importTableContents(support, content.getTables());
-		support.waitUntilWorkDone();
-
-		updateMatchingStats(support);
-		support.waitUntilWorkDone();
-	}
-
-
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
-		Dataset dataset = support.getDataset();
-
 		concept = new TreeConcept();
 		concept.setLabel("concept");
 
@@ -123,16 +98,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		((ObjectNode) rawConnector.get("filters")).put("name", "filter");
 
-		connector = parseSubTree(
-				support,
-				rawConnector,
-				ConceptTreeConnector.class,
-				conn -> conn.setConcept(concept)
-		);
+		support.getTestImporter().importFilterTestData(support, this);
 
-		concept.setConnectors(Collections.singletonList((ConceptTreeConnector) connector));
-		LoadingUtil.uploadConcept(support, dataset, concept);
+		query = parseQuery(support);
 	}
+
 
 	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {
 		final String filterId = support.getDataset().getName() + ".concept.connector.filter";

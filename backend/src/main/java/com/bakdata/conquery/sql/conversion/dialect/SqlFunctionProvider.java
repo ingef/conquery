@@ -57,11 +57,11 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
-	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
 
-	Field<?> last(Field<?> column, List<Field<?>> orderByColumns);
+	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
-	Field<?> random(Field<?> column);
+	<T> Field<T> random(Field<T> column);
 
 	Condition likeRegex(Field<String> field, String pattern);
 
@@ -118,9 +118,13 @@ public interface SqlFunctionProvider {
 	}
 
 	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {
-		Field<String> likePattern = DSL.inline(prefix + "%");
-		String sqlTemplate = "'[' || STRING_AGG(CASE WHEN {0} LIKE {1} THEN {0} ELSE NULL END, ', ') || ']'";
-		return DSL.field(DSL.sql(sqlTemplate, field, likePattern), String.class);
+		return DSL.field(
+				"'[' || {0}({1}, {2}) || ']'",
+				String.class,
+				DSL.keyword("STRING_AGG"),
+				DSL.when(field.like(DSL.inline(prefix + "%")), field),
+				DSL.val(", ")
+		);
 	}
 
 }

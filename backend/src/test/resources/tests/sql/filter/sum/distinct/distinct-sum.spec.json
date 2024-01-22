@@ -1,0 +1,76 @@
+{
+  "label": "SUM filter with DISTINCT BY columns",
+  "type": "QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/sum/distinct/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "sum"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "sum.sum_connector",
+          "filters": [
+            {
+              "filter": "sum.sum_connector.sum_distinct_filter",
+              "type": "INTEGER_RANGE",
+              "value": {
+                "min": 1,
+                "max": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "sum",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "sum_connector",
+          "table": "table",
+          "filters": {
+            "name": "sum_distinct_filter",
+            "type": "SUM",
+            "column": "table.value",
+            "distinctByColumn": [
+              "table.k1",
+              "table.k2"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/sum/distinct/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "k1",
+            "type": "STRING"
+          },
+          {
+            "name": "k2",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

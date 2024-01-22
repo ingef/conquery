@@ -2,11 +2,14 @@ package com.bakdata.conquery.integration.sql.dialect;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.json.SqlTestDataImporter;
+import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -43,6 +46,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	private static DSLContext dslContext;
 	private static SqlConnectorConfig sqlConfig;
 	private static TestSqlDialect testSqlDialect;
+	private static SqlTestDataImporter testDataImporter;
 
 	public PostgreSqlIntegrationTests() {
 		super(ConqueryIntegrationTests.DEFAULT_SQL_TEST_ROOT, "com.bakdata.conquery.integration");
@@ -69,6 +73,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 									  .build();
 		dslContext = DslContextFactory.create(sqlConfig);
 		testSqlDialect = new TestPostgreSqlDialect(dslContext);
+		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testSqlDialect, sqlConfig));
 	}
 
 	@Test
@@ -87,11 +92,13 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 				  .hasMessageContaining("$org.postgresql.util.PSQLException");
 	}
 
-
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public List<DynamicNode> sqlBackendTests() {
-		return super.sqlTests(testSqlDialect, sqlConfig);
+	public Stream<DynamicNode> sqlBackendTests() {
+		return Stream.concat(
+				super.sqlProgrammaticTests(sqlConfig, testDataImporter),
+				super.sqlQueryTests(sqlConfig, testDataImporter).stream()
+		);
 	}
 
 	public static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
