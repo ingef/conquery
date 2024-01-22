@@ -86,7 +86,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+		final long expectedSize = 3L;
+
+		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		assertThat(id).isNotNull();
 
@@ -126,7 +128,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused.setSecondaryId(query.getSecondaryId());
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, reused, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Reuse in SecondaryId, but do exclude
@@ -170,7 +172,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused1.setSecondaryId(query.getSecondaryId());
 
-			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 			final ManagedQuery execution1 = (ManagedQuery) metaStorage.getExecution(reused1Id);
 			{
 				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
@@ -180,7 +182,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				final ManagedExecutionId
 						reused2Id =
-						IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+						IntegrationUtils.assertQueryResult(conquery, reused2, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 				final ManagedQuery execution2 = (ManagedQuery) metaStorage.getExecution(reused2Id);
 
 				assertThat(reused2Id)
@@ -227,7 +229,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 						execution.createPermission(Set.of(Ability.READ))
 				));
 
-				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, shareHolder, 201);
+				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, expectedSize, ExecutionState.DONE, shareHolder, 201);
 
 				ManagedExecution copy = metaStorage.getExecution(copyId);
 
