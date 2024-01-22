@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
@@ -29,6 +30,11 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public String getMaxDateExpression() {
 		return INFINITY_DATE_VALUE;
+	}
+
+	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return DSL.cast(field, type);
 	}
 
 	@Override
@@ -199,6 +205,14 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.extract(dateField, DatePart.YEAR),
 				DSL.extract(dateField, DatePart.QUARTER)
 		);
+  }
+  
+  @Override
+	public Field<Object[]> asArray(List<Field<?>> fields) {
+		String arrayExpression = fields.stream()
+									   .map(Field::toString)
+									   .collect(Collectors.joining(", ", "array[", "]"));
+		return DSL.field(arrayExpression, Object[].class);
 	}
 
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {

@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -28,6 +29,8 @@ public interface SqlFunctionProvider {
 	String getMinDateExpression();
 
 	String getMaxDateExpression();
+
+	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
 	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
@@ -69,6 +72,8 @@ public interface SqlFunctionProvider {
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
+  
+	Field<Object[]> asArray(List<Field<?>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

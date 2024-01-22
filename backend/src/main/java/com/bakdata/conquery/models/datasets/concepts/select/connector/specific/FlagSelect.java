@@ -12,9 +12,13 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.FlagsAggregator;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.FlagSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -24,6 +28,7 @@ import lombok.ToString;
  *
  * The selected flags are logically or-ed.
  */
+@Getter
 @CPSType(base = Select.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
@@ -54,5 +59,10 @@ public class FlagSelect extends Select {
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
 		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+	}
+
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		return FlagSqlAggregator.create(this, selectContext).getSqlSelects();
 	}
 }
