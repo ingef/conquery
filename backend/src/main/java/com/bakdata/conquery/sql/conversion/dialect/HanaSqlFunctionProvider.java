@@ -171,24 +171,29 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<?> first(Field<?> column, List<Field<?>> orderByColumns) {
+	public <T> Field<T> first(Field<T> column, List<Field<?>> orderByColumns) {
 		if (orderByColumns.isEmpty()) {
 			orderByColumns = List.of(column);
 		}
-		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)));
+		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)), column.getType());
 	}
 
 	@Override
-	public Field<?> last(Field<?> column, List<Field<?>> orderByColumns) {
+	public <T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns) {
 		if (orderByColumns.isEmpty()) {
 			orderByColumns = List.of(column);
 		}
-		return DSL.field(DSL.sql("LAST_VALUE({0} {1} DESC)", column, DSL.orderBy(orderByColumns)));
+		return DSL.field(DSL.sql("LAST_VALUE({0} {1} DESC)", column, DSL.orderBy(orderByColumns)), column.getType());
 	}
 
 	@Override
-	public Field<?> random(Field<?> column) {
-		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(DSL.function("RAND", Object.class))));
+	public <T> Field<T> random(Field<T> column) {
+		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(DSL.function("RAND", Object.class))), column.getType());
+	}
+
+	@Override
+	public Condition likeRegex(Field<String> field, String pattern) {
+		return DSL.condition("{0} LIKE_REGEXPR {1}", field, pattern);
 	}
 
 	@Override

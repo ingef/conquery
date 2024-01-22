@@ -15,8 +15,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -55,9 +53,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -81,11 +77,8 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.statistics.ColumnStatsCollector;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -94,8 +87,6 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,29 +103,7 @@ public class QueryProcessor {
 	@Inject
 	private ConqueryConfig config;
 
-	private static CDateSet extractValidityDate(ResultType dateType, Object dateValue) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return CDateSet.create(CDateRange.fromList((List<? extends Number>) dateValue));
 
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return CDateSet.create(CDateRange.exactly((Integer) dateValue));
-		}
-
-		if (dateType instanceof ResultType.ListT listT) {
-			final CDateSet out = CDateSet.createEmpty();
-
-			for (Object date : ((List<?>) dateValue)) {
-				out.addAll(extractValidityDate(listT.getElementType(), date));
-			}
-
-			// since they are ordered, we can be sure this is always the correct span
-			return out;
-		}
-
-		throw new IllegalStateException("Unexpected date Type %s".formatted(dateType));
-	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
@@ -592,7 +561,7 @@ public class QueryProcessor {
 				dateInfo =
 				query.getResultInfos().stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
 
-		final int dateIndex = dateInfo.map(resultInfos::indexOf).orElse(-1 /*Not used if dateInfo is not present*/);
+		final int dateIndex = dateInfo.map(resultInfos::indexOf).orElse(0 /*Discarded if dateInfo is not present*/);
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
@@ -606,50 +575,7 @@ public class QueryProcessor {
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 
-		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, config.getFrontend()
-																																												  .getVisualisationsHistogramLimit()))
-																	  .collect(Collectors.toList());
-
-		final IntSet entities = new IntOpenHashSet();
-		final AtomicInteger lines = new AtomicInteger();
-
-		final AtomicReference<CDateRange> span = new AtomicReference<>(null);
-
-
-		managedQuery.streamResults()
-					.peek(result -> entities.add(result.getEntityId()))
-					.map(EntityResult::listResultLines)
-					.flatMap(List::stream)
-					.forEach(line -> {
-
-						dateInfo.ifPresent(info -> {
-							final CDateSet dateSet = extractValidityDate(info.getType(), line[dateIndex]);
-							span.getAndAccumulate(dateSet.span(), (old, incoming) -> incoming.spanClosed(old));
-						});
-
-
-						lines.incrementAndGet();
-
-						for (int col = 0; col < line.length; col++) {
-							final ColumnStatsCollector collector = statsCollectors.get(col);
-							if (collector == null) {
-								continue;
-							}
-
-							collector.consume(line[col]);
-						}
-					});
-
-		return new ResultStatistics(
-				entities.size(),
-				lines.get(),
-				statsCollectors.stream()
-							   .filter(Objects::nonNull) // Not all columns produces stats
-							   .map(ColumnStatsCollector::describe)
-							   .toList(),
-				dateInfo.map(ignored -> span.get().toSimpleRange()).orElse(CDateRange.all().toSimpleRange())
-		);
+		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
 	}
 
 }

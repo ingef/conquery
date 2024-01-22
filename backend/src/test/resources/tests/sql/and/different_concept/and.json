@@ -1,7 +1,10 @@
 {
   "label": "Simple AND query for 3 different concepts",
   "expectedCsv": "tests/sql/and/different_concept/expected.csv",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

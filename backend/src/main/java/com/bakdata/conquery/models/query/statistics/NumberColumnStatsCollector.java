@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.statistics;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,8 +27,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	private final Comparator<TYPE> comparator;
 
 	private final NumberFormat formatter;
+	private final int expectedBins;
+	private final double upperPercentile;
+	private final double lowerPercentile;
 
-	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
+	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, int expectedBins, double lowerPercentile, double upperPercentile) {
 		super(name, label, description, type, printSettings);
 		comparator = selectComparator(type);
 
@@ -44,6 +46,9 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		else {
 			formatter = printSettings.getDecimalFormat();
 		}
+		this.expectedBins = expectedBins;
+		this.upperPercentile = upperPercentile;
+		this.lowerPercentile = lowerPercentile;
 	}
 
 	private Comparator<TYPE> selectComparator(ResultType resultType) {
@@ -86,7 +91,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap(), getType().typeInfo());
 		}
 
-		final List<HistogramColumnDescription.Entry> bins = createBins(15, 85d, 15d);
+		final List<HistogramColumnDescription.Entry> bins = createBins();
 		final Map<String, String> extras = getExtras();
 
 		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras, getType().typeInfo());
@@ -94,31 +99,27 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	}
 
 	@NotNull
-	private List<HistogramColumnDescription.Entry> createBins(int expectedBins, double upperPercentile, double lowerPercentile) {
+	private List<HistogramColumnDescription.Entry> createBins() {
 
 		final double min = getStatistics().getPercentile(lowerPercentile);
 		final double max = getStatistics().getPercentile(upperPercentile);
 
-		final BalancingHistogram histogram = BalancingHistogram.create(min, max, expectedBins);
+
+		final Histogram histogram = Histogram.create(min, max, expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<BalancingHistogram.Node> balanced = histogram.nodes();
+		return histogram.nodes()
+						.stream()
+						.map(bin -> {
+							 final String lower = printValue(bin.getMin());
+							 final String upper = printValue(bin.getMax());
 
+							 final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 
-		final List<HistogramColumnDescription.Entry> entries = new ArrayList<>();
-
-
-		for (BalancingHistogram.Node bin : balanced) {
-			final String lower = printValue(bin.getMin());
-			final String upper = printValue(bin.getMax());
-
-			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
-
-
-			entries.add(new HistogramColumnDescription.Entry(binLabel, bin.getCount()));
-		}
-		return entries;
+							 return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
+						 })
+						.toList();
 	}
 
 	@NotNull

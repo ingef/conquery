@@ -46,7 +46,7 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	@Override
 	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects) {
 
-		List<FieldWrapper> nulledRangeStartAndEnd =
+		List<FieldWrapper<?>> nulledRangeStartAndEnd =
 				Stream.of(
 							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_START),
 							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_END)

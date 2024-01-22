@@ -1,0 +1,75 @@
+{
+  "label": "SUM with subtract column filter",
+  "type": "QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/sum/diffsum/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "sum"
+          ],
+          "type": "CONCEPT",
+          "label": "sum",
+          "tables": [
+            {
+              "id": "sum.sum_connector",
+              "filters": [
+                {
+                  "filter": "sum.sum_connector.diffsum_filter",
+                  "type": "INTEGER_RANGE",
+                  "value": {
+                    "min": 100,
+                    "max": 200
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "sum",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "sum_connector",
+          "table": "table1",
+          "filters": {
+            "type": "SUM",
+            "name": "diffsum_filter",
+            "subtractColumn": "table1.minus",
+            "column": "table1.plus"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/sum/diffsum/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "plus",
+            "type": "INTEGER"
+          },
+          {
+            "name": "minus",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

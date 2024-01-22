@@ -1,6 +1,9 @@
 {
   "label": "Single Number-Real-Range Filter Query (only min val)",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/filter/number_only_min/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

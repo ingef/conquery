@@ -13,6 +13,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -37,6 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StandaloneSupport implements TestSupport {
 
+	public enum Mode {WORKER, SQL}
+
+	@Getter
+	private final Mode mode;
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;
@@ -52,6 +57,8 @@ public class StandaloneSupport implements TestSupport {
 	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
+	@Getter
+	private final TestDataImporter testImporter;
 
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();

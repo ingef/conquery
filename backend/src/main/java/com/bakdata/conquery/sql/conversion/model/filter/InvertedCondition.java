@@ -5,22 +5,22 @@ import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-public class InvertedCondition implements FilterCondition {
+public class InvertedCondition implements WhereCondition {
 
-	private final FilterCondition filterCondition;
+	private final WhereCondition filterCondition;
 
 	@Override
-	public Condition filterCondition() {
-		return DSL.not(filterCondition.filterCondition());
+	public Condition condition() {
+		return DSL.not(filterCondition.condition());
 	}
 
 	@Override
-	public FilterType type() {
+	public ConditionType type() {
 		return filterCondition.type();
 	}
 
 	@Override
-	public FilterCondition negate() {
+	public WhereCondition negate() {
 		return filterCondition;
 	}
 

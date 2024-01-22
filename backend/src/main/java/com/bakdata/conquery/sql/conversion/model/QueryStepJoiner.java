@@ -111,7 +111,7 @@ public class QueryStepJoiner {
 		return joinedQuery;
 	}
 
-	private static Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
+	public static Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
 		List<Field<?>> primaryColumns = querySteps.stream()
 												  .map(queryStep -> queryStep.getQualifiedSelects().getPrimaryColumn())
 												  .collect(Collectors.toList());
@@ -119,7 +119,7 @@ public class QueryStepJoiner {
 				  .as(PRIMARY_COLUMN_NAME);
 	}
 
-	private static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
+	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
 		return querySteps.stream()
 						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
 						 .collect(Collectors.toList());
