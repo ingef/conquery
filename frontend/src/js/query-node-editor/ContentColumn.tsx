@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -13,6 +12,7 @@ import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import {
   ConceptQueryNodeType,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -46,7 +46,6 @@ const ContentCellGroup = styled(ContentCell)`
 
 interface PropsT {
   node: StandardQueryNodeT;
-  datasetId: DatasetT["id"];
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
@@ -54,7 +53,11 @@ interface PropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -71,7 +74,6 @@ interface PropsT {
 
 const ContentColumn: FC<PropsT> = ({
   node,
-  datasetId,
   selectedTableIdx,
   blocklistedSelects,
   allowlistedSelects,
@@ -108,12 +110,14 @@ const ContentColumn: FC<PropsT> = ({
     <Column>
       <ContentCellGroup>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
-        <CommonNodeSettings
-          excludeFromSecondaryId={node.excludeFromSecondaryId}
-          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-          excludeTimestamps={node.excludeTimestamps}
-          onToggleTimestamps={onToggleTimestamps}
-        />
+        {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
+          <CommonNodeSettings
+            excludeFromSecondaryId={node.excludeFromSecondaryId}
+            onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+            excludeTimestamps={node.excludeTimestamps}
+            onToggleTimestamps={onToggleTimestamps}
+          />
+        )}
         {nodeIsConceptQueryNode(node) && node.selects && (
           <NodeSelects
             selects={node.selects}
@@ -138,7 +142,6 @@ const ContentColumn: FC<PropsT> = ({
               node={
                 node as ConceptQueryNodeType /* otherwise there won't be tables */
               }
-              datasetId={datasetId}
               tableIdx={idx}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}

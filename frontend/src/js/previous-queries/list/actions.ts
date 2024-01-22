@@ -4,14 +4,14 @@ import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
 import {
-  useGetQueries,
-  usePatchQuery,
-  useGetQuery,
-  useDeleteQuery,
-  usePatchFormConfig,
   useDeleteFormConfig,
+  useDeleteQuery,
   useGetFormConfig,
   useGetFormConfigs,
+  useGetQueries,
+  useGetQuery,
+  usePatchFormConfig,
+  usePatchQuery,
 } from "../../api/api";
 import {
   DatasetT,
@@ -21,6 +21,7 @@ import {
 } from "../../api/types";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
+import { SnackMessageType } from "../../snack-message/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -55,7 +56,12 @@ export const useLoadQueries = () => {
 
         dispatch(loadQueriesSuccess({ data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("previousQueries.error") }));
+        dispatch(
+          setMessage({
+            message: t("previousQueries.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
       setLoading(false);
     },
@@ -75,7 +81,6 @@ export const loadQuerySuccess = createAction("queries/LOAD_QUERY_SUCCESS")<{
 
 export const useLoadQuery = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
 
@@ -83,19 +88,22 @@ export const useLoadQuery = () => {
 
   const loadQuery = useCallback(
     async (queryId: PreviousQueryT["id"]) => {
-      if (!datasetId) return;
-
       setLoading(true);
       try {
-        const query = await getQuery(datasetId, queryId);
+        const query = await getQuery(queryId);
 
         dispatch(loadQuerySuccess({ id: queryId, data: query }));
       } catch (e) {
-        dispatch(setMessage({ message: t("previousQuery.loadError") }));
+        dispatch(
+          setMessage({
+            message: t("previousQuery.loadError"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
       setLoading(false);
     },
-    [dispatch, datasetId, getQuery, t],
+    [dispatch, getQuery, t],
   );
 
   return {
@@ -110,7 +118,6 @@ export const patchQuerySuccess = createAction("query/UPDATE_SUCCESS")<{
 }>();
 
 export const useUpdateQuery = () => {
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const patchQuery = usePatchQuery();
 
@@ -126,15 +133,18 @@ export const useUpdateQuery = () => {
     },
     errorMessage: string,
   ) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await patchQuery(datasetId, id, attributes);
+      await patchQuery(id, attributes);
 
       dispatch(patchQuerySuccess({ id, data: attributes }));
     } catch (e) {
-      dispatch(setMessage({ message: errorMessage }));
+      dispatch(
+        setMessage({
+          message: errorMessage,
+          type: SnackMessageType.ERROR,
+        }),
+      );
     }
     setLoading(false);
   };
@@ -148,21 +158,23 @@ export const deleteQuerySuccess = createAction("queries/DELETE_QUERY_SUCCESS")<{
 
 export const useRemoveQuery = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const deleteQuery = useDeleteQuery();
   const [loading, setLoading] = useState(false);
 
   const removeQuery = async (queryId: PreviousQueryT["id"]) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await deleteQuery(datasetId, queryId);
+      await deleteQuery(queryId);
 
       dispatch(deleteQuerySuccess({ queryId }));
     } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.deleteError") }));
+      dispatch(
+        setMessage({
+          message: t("previousQuery.deleteError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
     }
     setLoading(false);
   };
@@ -203,7 +215,12 @@ export const useLoadFormConfigs = () => {
 
         dispatch(loadFormConfigsSuccess({ data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("formConfigs.error") }));
+        dispatch(
+          setMessage({
+            message: t("formConfigs.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
       setLoading(false);
     },
@@ -233,11 +250,16 @@ export const useLoadFormConfig = () => {
 
       setLoading(true);
       try {
-        const data = await getFormConfig(datasetId, id);
+        const data = await getFormConfig(id);
 
         dispatch(patchFormConfigSuccess({ id, data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("formConfig.loadError") }));
+        dispatch(
+          setMessage({
+            message: t("formConfig.loadError"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
       setLoading(false);
     },
@@ -251,7 +273,6 @@ export const useLoadFormConfig = () => {
 };
 
 export const useUpdateFormConfig = () => {
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const patchFormConfig = usePatchFormConfig();
 
@@ -267,15 +288,18 @@ export const useUpdateFormConfig = () => {
     },
     errorMessage: string,
   ) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await patchFormConfig(datasetId, configId, attributes);
+      await patchFormConfig(configId, attributes);
 
       dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
     } catch (e) {
-      dispatch(setMessage({ message: errorMessage }));
+      dispatch(
+        setMessage({
+          message: errorMessage,
+          type: SnackMessageType.ERROR,
+        }),
+      );
     }
     setLoading(false);
   };
@@ -289,22 +313,24 @@ export const deleteFormConfigSuccess = createAction(
 
 export const useRemoveFormConfig = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const deleteFormConfig = useDeleteFormConfig();
 
   const [loading, setLoading] = useState(false);
 
   const removeFormConfig = async (configId: string) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await deleteFormConfig(datasetId, configId);
+      await deleteFormConfig(configId);
 
       dispatch(deleteFormConfigSuccess({ configId }));
     } catch (e) {
-      dispatch(setMessage({ message: t("formConfig.deleteError") }));
+      dispatch(
+        setMessage({
+          message: t("formConfig.deleteError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
     }
     setLoading(false);
   };

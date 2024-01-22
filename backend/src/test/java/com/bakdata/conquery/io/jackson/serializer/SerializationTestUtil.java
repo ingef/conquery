@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
@@ -37,9 +39,17 @@ public class SerializationTestUtil<T> {
 	/**
 	 * These don't seem to behave well in combination with recursiveComparison.
 	 */
-	private static final Class<?>[]
+	public static final Class<?>[]
 			TYPES_TO_IGNORE =
-			new Class[]{User.ShiroUserAdapter.class, AtomicInteger.class, Double.class, ThreadLocal.class, Validator.class};
+			new Class[]{
+					AtomicInteger.class,
+					Double.class,
+					SoftReference.class,
+					ThreadLocal.class,
+					User.ShiroUserAdapter.class,
+					Validator.class,
+					WeakReference.class
+			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
@@ -48,6 +58,8 @@ public class SerializationTestUtil<T> {
 	private ObjectMapper[] objectMappers;
 	@NonNull
 	private Injectable[] injectables = {};
+
+	private boolean forceHashCodeEqual = false;
 
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
@@ -64,6 +76,11 @@ public class SerializationTestUtil<T> {
 
 	public SerializationTestUtil<T> injectables(Injectable... injectables) {
 		this.injectables = injectables;
+		return this;
+	}
+
+	public SerializationTestUtil<T> checkHashCode() {
+		this.forceHashCodeEqual = true;
 		return this;
 	}
 
@@ -106,15 +123,18 @@ public class SerializationTestUtil<T> {
 		}
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 
-		//because IdentifiableImp cashes the hash
-		if (value instanceof IdentifiableImpl) {
+		if (forceHashCodeEqual) {
 			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
+		}
+
+		// Preliminary check that ids of identifiables are equal
+		if (value instanceof IdentifiableImpl identifiableValue) {
+			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison().ignoringFieldsOfTypes(TYPES_TO_IGNORE);
-
 
 		ass.isEqualTo(expected);
 	}

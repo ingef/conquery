@@ -3,7 +3,7 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
   fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
 
-export const isEmpty = (variable: any) => {
+export const isEmpty = (variable: unknown) => {
   return (
     typeof variable === "undefined" ||
     variable === null ||
@@ -11,21 +11,6 @@ export const isEmpty = (variable: any) => {
     (variable instanceof Array && variable.length === 0) ||
     (variable.constructor === Object && Object.keys(variable).length === 0)
   );
-};
-
-export const isEmptyObject = (variable: any) => {
-  if (!variable) return false;
-
-  return (
-    variable.constructor === Object &&
-    (Object.keys(variable).length === 0 ||
-      (Object.keys(variable).length > 0 &&
-        Object.keys(variable).every((k) => typeof variable[k] === "undefined")))
-  );
-};
-
-export const includes = (array: any[], element: any) => {
-  return array.indexOf(element) !== -1;
 };
 
 export const numberToThreeDigitArray = (number: number) => {
@@ -42,9 +27,6 @@ export const numberToThreeDigitArray = (number: number) => {
     .split(" ");
 };
 
-export const capitalize = (str: string) =>
-  str.charAt(0).toUpperCase() + str.slice(1);
-
 export const toUpperCaseUnderscore = (str: string) => {
   if (str.toUpperCase() === str) return str;
 
@@ -52,6 +34,3 @@ export const toUpperCaseUnderscore = (str: string) => {
     .replace(/[A-Z]/g, (upperCaseChar) => "_" + upperCaseChar.toLowerCase())
     .toUpperCase();
 };
-
-export const isObject = (item: any) =>
-  item && typeof item === "object" && !Array.isArray(item);

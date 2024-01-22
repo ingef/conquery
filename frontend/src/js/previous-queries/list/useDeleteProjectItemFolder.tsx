@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../../app/reducers";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
+import { SnackMessageType } from "../../snack-message/reducer";
 
 import {
   removeFolder,
@@ -70,7 +71,12 @@ export const useDeleteProjectItemFolder = () => {
 
       return Promise.all([loadQueries(datasetId), loadFormConfigs(datasetId)]);
     } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.retagError") }));
+      dispatch(
+        setMessage({
+          message: t("previousQuery.retagError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
       return Promise.reject();
     }
   };

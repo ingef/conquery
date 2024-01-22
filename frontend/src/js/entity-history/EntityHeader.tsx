@@ -2,12 +2,11 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { EntityInfo, SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
-import EntityInfos from "./EntityInfos";
 import { EntityId } from "./reducer";
 
 const Root = styled("div")`
@@ -30,9 +29,10 @@ const Buttons = styled("div")`
   gap: 5px;
 `;
 
-const SxHeading3 = styled(Heading3)`
+const SxHeading3 = styled(Heading3)<{ blurred?: boolean }>`
   flex-shrink: 0;
   margin: 0;
+  ${({ blurred }) => blurred && "filter: blur(6px);"}
 `;
 const Subtitle = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
@@ -48,25 +48,23 @@ const Avatar = styled(SxHeading3)`
   font-weight: 300;
 `;
 
-interface Props {
-  className?: string;
-  currentEntityIndex: number;
-  currentEntityId: EntityId;
-  currentEntityInfos: EntityInfo[];
-  status: SelectOptionT[];
-  setStatus: (value: SelectOptionT[]) => void;
-  entityStatusOptions: SelectOptionT[];
-}
-
 export const EntityHeader = ({
+  blurred,
   className,
   currentEntityIndex,
   currentEntityId,
-  currentEntityInfos,
   status,
   setStatus,
   entityStatusOptions,
-}: Props) => {
+}: {
+  blurred?: boolean;
+  className?: string;
+  currentEntityIndex: number;
+  currentEntityId: EntityId;
+  status: SelectOptionT[];
+  setStatus: (value: SelectOptionT[]) => void;
+  entityStatusOptions: SelectOptionT[];
+}) => {
   const totalEvents = useSelector<StateT, number>(
     (state) => state.entityHistory.currentEntityData.length,
   );
@@ -90,13 +88,12 @@ export const EntityHeader = ({
         <div>
           <EntityBadge>
             <Avatar>#{currentEntityIndex + 1}</Avatar>
-            <SxHeading3>{currentEntityId.id}</SxHeading3>
+            <SxHeading3 blurred={blurred}>{currentEntityId.id}</SxHeading3>
           </EntityBadge>
           <Subtitle>
             {totalEvents} {t("history.events", { count: totalEvents })}
           </Subtitle>
         </div>
-        <EntityInfos infos={currentEntityInfos} />
       </Flex>
       <Buttons>
         {entityStatusOptions.map((option, i) => (

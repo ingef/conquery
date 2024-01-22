@@ -1,15 +1,14 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -26,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,12 +36,13 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
 
 	@JsonBackReference
 	@NotNull
+	@EqualsAndHashCode.Exclude
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
@@ -149,9 +150,11 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 
 	@Override
-	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		final int suffixLength = isGenerateSuffixes() ? config.getSearchSuffixLength() : Integer.MAX_VALUE;
+
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
 		storage.getAllImports().stream()
 			   .filter(imp -> imp.getTable().equals(getTable()))
@@ -160,16 +163,12 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
 			   })
-			   .map(value -> new FEValue(value, value))
+			   .map(value -> new FrontendValue(value, value))
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
-		return List.of(search);
-	}
 
-	@Override
-	public List<Searchable> getSearchReferences() {
-		return List.of(this);
-	}
 
+		return search;
+	}
 }

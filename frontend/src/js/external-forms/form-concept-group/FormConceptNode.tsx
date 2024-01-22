@@ -1,10 +1,16 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import {
+  faCompressArrowsAlt,
+  faExpandArrowsAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { canNodeBeDropped } from "../../model/node";
+import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
@@ -14,7 +20,6 @@ const Root = styled("div")<{
 }>`
   padding: 5px 10px;
   cursor: pointer;
-  background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: background-color ${({ theme }) => theme.transitionTime};
@@ -25,10 +30,8 @@ const Root = styled("div")<{
   &:hover {
     background-color: ${({ theme }) => theme.col.bgAlt};
   }
-
   display: grid;
   grid-template-columns: 1fr auto;
-
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
@@ -70,7 +73,7 @@ interface PropsT {
   conceptIdx: number;
   conceptNode: DragItemConceptTreeNode;
   name: string;
-  onFilterClick: () => void;
+  onClick: () => void;
   hasNonDefaultSettings: boolean;
   hasFilterValues: boolean;
   expand?: {
@@ -78,19 +81,23 @@ interface PropsT {
     expandable: boolean;
     active: boolean;
   };
+  deleteFromOtherField: () => void;
+  fieldName: string;
+  rowPrefixFieldname?: string;
 }
-
-// TODO: Refactor, add a TooltipButton in conquery and use that.
 
 // generalized node to handle concepts queried in forms
 const FormConceptNode: FC<PropsT> = ({
   valueIdx,
   conceptIdx,
   conceptNode,
-  onFilterClick,
+  onClick,
   hasNonDefaultSettings,
   hasFilterValues,
   expand,
+  deleteFromOtherField,
+  fieldName,
+  rowPrefixFieldname,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
@@ -103,15 +110,19 @@ const FormConceptNode: FC<PropsT> = ({
       movedFromOrIdx: conceptIdx,
       width: 0,
       height: 0,
+      rowPrefixFieldname: rowPrefixFieldname,
     },
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,
       dragContext: {
         ...item.dragContext,
         ...getWidthAndHeight(ref),
+        deleteFromOtherField,
+        movedFromFieldName: fieldName,
+        rowPrefixFieldname: rowPrefixFieldname,
       },
     }),
   });
@@ -123,40 +134,46 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasNonDefaultSettings || hasFilterValues}
-      onClick={onFilterClick}
+    <HoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(conceptNode, item)}
+      highlightDroppable
     >
-      <div>
-        <WithTooltip text={tooltipText}>
-          <>
-            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-            <Label>{conceptNode && conceptNode.label}</Label>
-            {conceptNode && !!conceptNode.description && (
-              <Description>{conceptNode.description}</Description>
-            )}
-          </>
-        </WithTooltip>
-      </div>
-      <Right>
-        {expand && expand.expandable && (
-          <WithTooltip text={t("externalForms.common.concept.expand")}>
-            <SxIconButton
-              icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
-              tiny
-              onClick={(e) => {
-                e.stopPropagation();
-                expand.onClick();
-              }}
-            />
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={hasNonDefaultSettings || hasFilterValues}
+        onClick={onClick}
+      >
+        <div>
+          <WithTooltip text={tooltipText}>
+            <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+              <Label>{conceptNode && conceptNode.label}</Label>
+              {conceptNode && !!conceptNode.description && (
+                <Description>{conceptNode.description}</Description>
+              )}
+            </>
           </WithTooltip>
-        )}
-      </Right>
-    </Root>
+        </div>
+        <Right>
+          {expand && expand.expandable && (
+            <WithTooltip text={t("externalForms.common.concept.expand")}>
+              <SxIconButton
+                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
+                tiny
+                onClick={(e) => {
+                  e.stopPropagation();
+                  expand.onClick();
+                }}
+              />
+            </WithTooltip>
+          )}
+        </Right>
+      </Root>
+    </HoverNavigatable>
   );
 };
 

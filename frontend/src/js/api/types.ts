@@ -1,6 +1,8 @@
 // This file specifies
 // - response type provided by the backend API
 // - partial types that the reponses are built from
+import { ReactNode } from "react";
+
 import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
@@ -16,16 +18,17 @@ export interface SelectOptionT {
   disabled?: boolean;
   selectedLabel?: string;
   alwaysShown?: boolean;
+  displayLabel?: ReactNode;
 }
 
-// Example: { min: "2019-01-01", max: "2019-12-31" }
+// Example: { min: "2019-01-01", max: "2019-12-31" }
 export interface DateRangeT {
   min?: string;
   max?: string;
 }
 
 export interface CurrencyConfigT {
-  prefix: string;
+  unit: string;
   thousandSeparator: string;
   decimalSeparator: string;
   decimalScale: number;
@@ -95,6 +98,7 @@ export interface DateColumnT {
   options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
+  tooltip: string | null; // TODO: Would be better to use undefined instead of null
 }
 
 export type FilterT =
@@ -159,6 +163,7 @@ export interface ConceptBaseT {
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
   dateRange?: DateRangeT;
+  excludeFromTimeAggregation?: boolean; // To default-exclude some concepts from time aggregation
 }
 
 export type ConceptStructT = ConceptBaseT;
@@ -292,6 +297,7 @@ export interface GetFrontendConfigResponseT {
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
   contactEmail?: string;
+  observationPeriodStart?: string; // yyyy-mm-dd format, start of the data
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -322,8 +328,13 @@ export type ColumnDescriptionKind =
   | "MONEY"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]";
+  | "LIST[DATE_RANGE]"
+  | "LIST[STRING]";
 
+export interface ColumnDescriptionSemanticColumn {
+  type: "COLUMN";
+  column: string;
+}
 export interface ColumnDescriptionSemanticConceptColumn {
   type: "CONCEPT_COLUMN";
   concept: string;
@@ -364,6 +375,7 @@ export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticSecondaryId
   | ColumnDescriptionSemanticSelect
   | ColumnDescriptionSemanticConceptColumn
+  | ColumnDescriptionSemanticColumn // Probably won't be used by us
   | ColumnDescriptionSemanticEventDate
   | ColumnDescriptionSemanticSources
   | ColumnDescriptionSemanticCategorical // Probably won't be used by us
@@ -375,6 +387,7 @@ export interface ColumnDescription {
   // `label` matches column name in CSV
   // So it's more of an id, TODO: rename this to 'id',
   label: string;
+  description: string | null;
 
   type: ColumnDescriptionKind;
   semantics: ColumnDescriptionSemantic[];
@@ -387,15 +400,21 @@ export interface ColumnDescription {
   userConceptLabel: string | null;
 }
 
+export interface ResultUrlWithLabel {
+  label: string;
+  url: string;
+}
+
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   label: string;
   numberOfResults: number | null;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
+  containsDates: boolean;
 }
 
 export interface GetQueryRunningResponseT {
@@ -410,9 +429,8 @@ export interface GetQueryErrorResponseT {
 }
 
 export interface ErrorResponseT {
-  code: string; // To translate to localized messages
-  message?: string; // For developers / debugging only
-  context?: Record<string, string>; // More information to maybe display in translated messages
+  message?: string; // Localized error message (based on Accept-Language header) to show to users
+  code: string; // Previously used to translate to localized messages, now unused
 }
 
 export type GetQueryResponseStatusT =
@@ -501,10 +519,6 @@ export interface PostLoginResponseT {
   access_token: string;
 }
 
-export interface PostFormConfigsResponseT {
-  id: string;
-}
-
 export type GetFormConfigsResponseT = FormConfigT[];
 
 export type GetFormConfigResponseT = FormConfigT;
@@ -520,7 +534,10 @@ export interface HistorySources {
   default: { label: string; name: TableT["id"] }[];
 }
 
-export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
+  searchConcept: string | null; // concept id
+  searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+};
 
 export interface EntityInfo {
   label: string;
@@ -529,8 +546,40 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
+export interface TimeStratifiedInfoQuarter {
+  quarter: number;
+  values: {
+    [label: string]: string;
+  };
+}
+
+export interface TimeStratifiedInfoYear {
+  year: number;
+  values: {
+    [label: string]: number | string[];
+  };
+  quarters: TimeStratifiedInfoQuarter[];
+}
+
+export interface TimeStratifiedInfo {
+  label: string;
+  description: string | null;
+  totals: {
+    [label: string]: number | string[];
+  };
+  // `columns[].label` matches with
+  // `year.values` and `year.quarters[].values`
+  columns: ColumnDescription[];
+  years: TimeStratifiedInfoYear[];
+}
+
 export type GetEntityHistoryResponse = {
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
+  timeStratifiedInfos: TimeStratifiedInfo[];
 };
+
+export type PostResolveEntitiesResponse = {
+  [idKind: string]: string; // idKind is the key, the value is the resolved ID
+}[];

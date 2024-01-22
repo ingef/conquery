@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
@@ -9,11 +8,12 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeHasNonDefaultSettings,
-  nodeHasFilterValues,
+  canNodeBeDropped,
   nodeIsConceptQueryNode,
+  useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
@@ -21,13 +21,17 @@ import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
 
+const FlexHoverNavigatable = styled(HoverNavigatable)`
+  display: flex;
+  width: 100%;
+`;
+
 const Root = styled("div")<{
   active?: boolean;
 }>`
   position: relative;
   width: 100%;
   margin: 0 auto;
-  background-color: white;
   display: grid;
   grid-template-columns: 1fr auto;
 
@@ -41,9 +45,6 @@ const Root = styled("div")<{
     active
       ? `2px solid ${theme.col.blueGrayDark}`
       : `1px solid ${theme.col.grayMediumLight}`};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.bg};
-  }
 `;
 
 interface PropsT {
@@ -90,20 +91,18 @@ const QueryNode = ({
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }: PropsT) => {
-  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
   const activeSecondaryId = useSelector<StateT, string | null>(
     (state) => state.queryEditor.selectedSecondaryId,
   );
-
-  const hasNonDefaultSettings = !node.error && nodeHasNonDefaultSettings(node);
-  const hasFilterValues = nodeHasFilterValues(node);
   const hasActiveSecondaryId = nodeHasActiveSecondaryId(
     node,
     activeSecondaryId,
   );
+
+  const { active, tooltipText } = useActiveState(node);
 
   const item: StandardQueryNodeT = {
     // Return the data describing the dragged item
@@ -146,7 +145,7 @@ const QueryNode = ({
           tags: node.tags,
         }),
   };
-  const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
+  const [, drag] = useDrag<StandardQueryNodeT, void>({
     type: item.type,
     item: () =>
       ({
@@ -155,14 +154,8 @@ const QueryNode = ({
           ...item.dragContext,
           ...getWidthAndHeight(ref),
         },
-      } as StandardQueryNodeT),
+      }) as StandardQueryNodeT,
   });
-
-  const tooltipText = hasNonDefaultSettings
-    ? t("queryEditor.hasNonDefaultSettings")
-    : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
@@ -170,52 +163,64 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
+  const onClick = node.error ? () => {} : () => onEditClick(andIdx, orIdx);
+
+  const label = nodeIsConceptQueryNode(node)
+    ? node.label
+    : node.label || node.id;
+
+  const description =
+    nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+      ? node.description
+      : undefined;
+
   const QueryNodeRoot = (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
+    <FlexHoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(node, item)}
+      highlightDroppable
     >
-      <QueryNodeContent
-        error={node.error}
-        isConceptQueryNode={nodeIsConceptQueryNode(node)}
-        tooltipText={tooltipText}
-        label={
-          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-        }
-        description={
-          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
-            ? node.description
-            : undefined
-        }
-        rootNodeLabel={rootNodeLabel}
-      />
-      <QueryNodeActions
-        andIdx={andIdx}
-        orIdx={orIdx}
-        excludeTimestamps={node.excludeTimestamps}
-        isExpandable={isQueryExpandable(node)}
-        hasActiveSecondaryId={hasActiveSecondaryId}
-        excludeFromSecondaryId={node.excludeFromSecondaryId}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
-        onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={expandClick}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
-    </Root>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={active}
+        onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
+      >
+        <QueryNodeContent
+          error={node.error}
+          isConceptQueryNode={nodeIsConceptQueryNode(node)}
+          tooltipText={tooltipText}
+          label={label}
+          description={description}
+          rootNodeLabel={rootNodeLabel}
+        />
+        <QueryNodeActions
+          andIdx={andIdx}
+          orIdx={orIdx}
+          excludeTimestamps={node.excludeTimestamps}
+          isExpandable={isQueryExpandable(node)}
+          hasActiveSecondaryId={hasActiveSecondaryId}
+          excludeFromSecondaryId={node.excludeFromSecondaryId}
+          onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
+          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+          onExpandClick={expandClick}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+      </Root>
+    </FlexHoverNavigatable>
   );
 
   if (nodeIsConceptQueryNode(node)) {
-    const conceptById = getConceptById(node.ids[0]);
+    const conceptById = getConceptById(node.ids[0], node.tree);
+    const root = getConceptById(node.tree, node.tree);
 
-    if (conceptById) {
+    if (conceptById && root) {
       return (
-        <AdditionalInfoHoverable node={conceptById}>
+        <AdditionalInfoHoverable node={conceptById} root={root}>
           {QueryNodeRoot}
         </AdditionalInfoHoverable>
       );

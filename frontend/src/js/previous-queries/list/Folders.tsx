@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,7 +21,12 @@ import {
 import AddFolderModal from "./AddFolderModal";
 import DeleteFolderModal from "./DeleteFolderModal";
 import Folder from "./Folder";
-import { addFolder, useUpdateFormConfig, useUpdateQuery } from "./actions";
+import {
+  addFolder,
+  removeFolder,
+  useUpdateFormConfig,
+  useUpdateQuery,
+} from "./actions";
 import { useFolders } from "./selector";
 
 const DROP_TYPES = [
@@ -120,6 +126,9 @@ interface Props {
 
 const Folders: FC<Props> = ({ className }) => {
   const folders = useFolders();
+  const localFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.localFolders,
+  );
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
   );
@@ -151,7 +160,7 @@ const Folders: FC<Props> = ({ className }) => {
 
   const { updateQuery } = useUpdateQuery();
   const { updateFormConfig } = useUpdateFormConfig();
-  const onDropIntoFolder = (
+  const onDropIntoFolder = async (
     item: DragItemQuery | DragItemFormConfig,
     folder: string,
   ) => {
@@ -160,17 +169,22 @@ const Folders: FC<Props> = ({ className }) => {
     }
 
     if (item.type === DNDType.FORM_CONFIG) {
-      updateFormConfig(
+      await updateFormConfig(
         item.id,
         { tags: [...item.tags, folder] },
         t("formConfig.retagError"),
       );
     } else {
-      updateQuery(
+      await updateQuery(
         item.id,
         { tags: [...item.tags, folder] },
         t("previousQuery.retagError"),
       );
+    }
+
+    // Delete from the temporary "localFolders", because now it's a "real" folder
+    if (localFolders.includes(folder)) {
+      dispatch(removeFolder({ folderName: folder }));
     }
   };
 
@@ -206,7 +220,7 @@ const Folders: FC<Props> = ({ className }) => {
       )}
       <Row ref={parentRef}>
         <AddFolderIconButton
-          icon="plus"
+          icon={faPlus}
           frame
           tight
           onClick={() => setShowAddFolderModal(true)}
@@ -277,7 +291,7 @@ const Folders: FC<Props> = ({ className }) => {
                   />
                   <WithTooltip text={t("common.delete")}>
                     <SxIconButton
-                      icon="times"
+                      icon={faTimes}
                       onClick={(e) => {
                         setFolderToDelete(folder);
                         e.stopPropagation();

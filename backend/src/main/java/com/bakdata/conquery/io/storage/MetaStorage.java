@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -30,19 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MetaStorage extends ConqueryStorage implements Injectable {
 
+	@Getter
+	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final StoreFactory storageFactory;
 
-	private IdentifiableStore<ManagedExecution<?>> executions;
-
+	@Getter
+	protected final DatasetRegistry<? extends Namespace> datasetRegistry;
+	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
-
-	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
-	@Getter
-	protected final DatasetRegistry datasetRegistry;
 
 	public void openStores(ObjectMapper mapper) {
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
@@ -66,7 +65,6 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 				authUser,
 				authRole,
 				authGroup,
-
 				executions,
 				formConfigs
 		);
@@ -78,19 +76,19 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		centralRegistry.clear();
 	}
 
-	public void addExecution(ManagedExecution<?> query) {
+	public void addExecution(ManagedExecution query) {
 		executions.add(query);
 	}
 
-	public ManagedExecution<?> getExecution(ManagedExecutionId id) {
+	public ManagedExecution getExecution(ManagedExecutionId id) {
 		return executions.get(id);
 	}
 
-	public Collection<ManagedExecution<?>> getAllExecutions() {
+	public Collection<ManagedExecution> getAllExecutions() {
 		return executions.getAll();
 	}
 
-	public void updateExecution(ManagedExecution<?> query) {
+	public void updateExecution(ManagedExecution query) {
 		executions.update(query);
 	}
 

@@ -17,8 +17,10 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
+
+	private int realUpperBound;
 
 	public DateUnionAggregator(Column column) {
 		super(column);
@@ -27,6 +29,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -40,13 +43,9 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 			return;
 		}
 
-		CDateRange value = bucket.getAsDateRange(event, getColumn());
-		//otherwise the result would be something weird
-		if (value.isOpen()) {
-			return;
-		}
+		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override

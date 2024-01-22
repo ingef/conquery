@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faBook,
+  faPaperPlane,
+  faQuestion,
+} from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -35,13 +40,22 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const Dropdown = useMemo(
     () => (
       <List>
-        <a href={`mailto:${contactEmail}`} rel="noopener noreferrer">
-          <DropdownItemButton bgHover fixedIconWidth={14} icon="paper-plane">
+        <a
+          href={`mailto:${contactEmail}`}
+          rel="noopener noreferrer"
+          data-test-id="help-email"
+        >
+          <DropdownItemButton bgHover fixedIconWidth={14} icon={faPaperPlane}>
             {t("common.contact")}
           </DropdownItemButton>
         </a>
-        <a href={manualUrl} target="_blank" rel="noopener noreferrer">
-          <DropdownItemButton bgHover fixedIconWidth={14} icon="book">
+        <a
+          href={manualUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-test-id="help-manual"
+        >
+          <DropdownItemButton bgHover fixedIconWidth={14} icon={faBook}>
             {t("common.manual")}
           </DropdownItemButton>
         </a>
@@ -57,7 +71,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
       html={Dropdown}
       offset={dropdownOffset}
     >
-      <SxIconButton icon="question" frame />
+      <SxIconButton icon={faQuestion} frame data-test-id="help-menu" />
     </WithTooltip>
   );
 };

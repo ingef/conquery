@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonDeserialize(using = CBlockDeserializer.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
 
 	/**
@@ -63,11 +65,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
+	@ToString.Include
 	@NsIdRef
 	private final Bucket bucket;
 
 	@NotNull
 	@NsIdRef
+	@ToString.Include
 	private final ConceptTreeConnector connector;
 
 	/**
@@ -94,7 +98,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int[][] mostSpecificChildren;
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
-		int root = bucket.getBucket() * bucketSize;
+		final int root = bucket.getBucket() * bucketSize;
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
 		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
@@ -117,7 +121,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return -1;
 		}
 
-		int[] mostSpecificChild = mostSpecificChildren[event];
+		final int[] mostSpecificChild = mostSpecificChildren[event];
 		return mostSpecificChild[mostSpecificChild.length - 1];
 	}
 
@@ -138,7 +142,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int index = bucket.getEntityIndex(entity);
 
-		long bits = includedConceptElementsPerEntity[index];
+		final long bits = includedConceptElementsPerEntity[index];
 
 		return (bits & requiredBits) != 0L;
 	}
@@ -217,9 +221,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				ConceptTreeChild child = cache == null
-										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
-										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+				final ConceptTreeChild child = cache == null
+											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+											   : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
@@ -255,7 +259,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(List)}
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
-		long[] includedConcepts = new long[bucketSize];
+		final long[] includedConcepts = new long[bucketSize];
 
 		for (int entity : bucket.getEntities()) {
 
@@ -296,16 +300,12 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 *
-	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
+	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
-		CDateRange[] spans = new CDateRange[bucketSize];
+		final CDateRange[] spans = new CDateRange[bucketSize];
 
-		Arrays.fill(spans, CDateRange.all());
-
-		// First initialize to an illegal state that's easy on our comparisons
-
-		Table table = bucket.getTable();
+		final Table table = bucket.getTable();
 
 
 		for (Column column : table.getColumns()) {
@@ -317,7 +317,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int index = bucket.getEntityIndex(entity);
 				final int end = bucket.getEntityEnd(entity);
 
-				// We unroll spanClosed for the whole bucket/entity, this avoids costly
+				// We unroll span for the whole bucket/entity, this avoids costly reallocation in a loop
+				// First we initialize the values to illegal values, making Min/Max easier
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
 
@@ -327,47 +328,44 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 						continue;
 					}
 
-					CDateRange range = bucket.getAsDateRange(event, column);
+					final CDateRange range = bucket.getAsDateRange(event, column);
 
-					if (range.hasLowerBound()) {
-						final int minValue = range.getMinValue();
+					final int minValue = range.getMinValue();
 
-						max = Math.max(max, minValue);
-						min = Math.min(min, minValue);
-					}
+					min = Math.min(min, minValue);
 
-					if (range.hasUpperBound()) {
-						final int maxValue = range.getMaxValue();
+					final int maxValue = range.getMaxValue();
 
-						max = Math.max(max, maxValue);
-						min = Math.min(min, maxValue);
-					}
+					max = Math.max(max, maxValue);
 				}
 
 
-				spans[index] = createClosed(max, min, spans[index]);
+				if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
+					// No values were encountered
+					continue;
+				}
+
+				final CDateRange span = CDateRange.of(min, max);
+
+				if (spans[index] == null) {
+					spans[index] = span;
+				}
+				else {
+					spans[index] = spans[index].span(span);
+				}
+
 			}
+		}
+
+		for (int index = 0; index < spans.length; index++) {
+			if (spans[index] != null) {
+				continue;
+			}
+
+			spans[index] = CDateRange.all();
 		}
 
 		return spans;
 	}
 
-	/**
-	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
-	 */
-	private static CDateRange createClosed(int max, int min, CDateRange in) {
-		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
-			return in;
-		}
-
-		if (max == Integer.MIN_VALUE) {
-			return in.spanClosed(CDateRange.atLeast(min));
-		}
-
-		if (min == Integer.MAX_VALUE) {
-			return in.spanClosed(CDateRange.atMost(max));
-		}
-
-		return in.spanClosed(CDateRange.of(min, max));
-	}
 }

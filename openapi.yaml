@@ -1,0 +1,2518 @@
+openapi: 3.0.0
+info:
+  version: 0.0.0
+  title: Conquery API
+  description: Conquery API
+  license:
+    #TODO find a fitting license
+    name: TODO
+    url: http://TODO/
+servers:
+  - url: "http://localhost:8081"
+tags:
+  - name: dataset
+  - name: concept
+  - name: query
+  - name: user
+  - name: entity-preview
+  - name: config
+  - name: frontend
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+    Bearer:
+      type: http
+      scheme: bearer
+  parameters:
+    Dataset:
+      in: path
+      name: dataset
+      required: true
+      schema:
+        $ref: "#/components/schemas/DatasetId"
+    Query:
+      in: path
+      name: query
+      required: true
+      schema:
+        $ref: "#/components/schemas/ExecutionId"
+    Concept:
+      in: path
+      name: concept
+      required: true
+      schema:
+        $ref: "#/components/schemas/ConceptId"
+  responses:
+    unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: The user is not logged in or misses permissions to access the resource.
+  schemas:
+    Id:
+      description: Typed identifier of an object. Usually consists of a recursive structure separated by dots, starting with the dataset. The dataset can be omitted, when the url is already in a context with a bound dataset.
+      type: string
+    TableId:
+      $ref: "#/components/schemas/Id"
+    MappingId:
+      $ref: "#/components/schemas/Id"
+    DatasetId:
+      $ref: "#/components/schemas/Id"
+    FilterId:
+      $ref: "#/components/schemas/Id"
+    SelectId:
+      $ref: "#/components/schemas/Id"
+    ValidityDateId:
+      $ref: "#/components/schemas/Id"
+    ConceptElementId:
+      $ref: "#/components/schemas/Id"
+    ConceptId:
+      $ref: "#/components/schemas/ConceptElementId"
+    ConnectorId:
+      $ref: "#/components/schemas/Id"
+    SecondaryIdId:
+      $ref: "#/components/schemas/Id"
+    TemplateId:
+      $ref: "#/components/schemas/Id"
+    ColumnId:
+      $ref: "#/components/schemas/Id"
+    ExecutionId:
+      $ref: "#/components/schemas/Id"
+    UserId:
+      $ref: "#/components/schemas/Id"
+    DateTime: #TODO
+      type: string
+      # format: date-time TODO not compatible: Value does not conform to the required ISO-8601 datetime format. Invalid value '2022-12-13T13:33:32.455901838Z' for type datetime at
+    date: #TODO
+      type: string
+      format: date
+    QueryState:
+      description: Potential states of a query.
+      type: string
+      enum:
+        - NEW
+        - RUNNING
+        - FAILED
+        - DONE
+    Column:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        type:
+          $ref: "#/components/schemas/ColumnType"
+        description:
+          type: string
+        minSuffixLength:
+          type: integer
+        generateSuffixes:
+          type: boolean
+        searchDisabled:
+          type: boolean
+        sharedDictionary:
+          type: string
+        secondaryId:
+          $ref: "#/components/schemas/SecondaryIdId"
+    Table:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
+
+    OutputDescriptionBase:
+      type: object
+      properties:
+        name:
+          description: "Name of the `table.column` to be imported into."
+          type: string
+        required:
+          type: boolean
+    LineOutput:
+      description: "Emits the line number. The line-number is not guaranteed to be in file order, just an incrementing unique number: If multiple files are preprocessed, the line-number will not reset to zero."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ LINE ]
+    NullOutput:
+      description: "Emits a `null`/NA value. Can be used to unify among multiple input sources with differing file schemas."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ NULL ]
+
+    CopyOutput:
+      description: "Parses and emits the values in inputColumn as the provided type."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+              description: "Name of the csv column to process."
+            inputType:
+              $ref: "#/components/schemas/MajorType"
+            operation:
+              type: string
+              enum: [ COPY ]
+    CompoundDateRangeOutput:
+      description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns).
+      This helps avoid copying multiple values of the same column, when they can be reused."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ COMPOUND_DATE_RANGE ]
+
+    DateRangeOutput:
+      description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ DATE_RANGE ]
+
+    EpochDateRangeOutput:
+      deprecated: true
+      description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ EPOCH_DATE_RANGE ]
+
+    EpochOutput:
+      deprecated: true
+      description: "Parses `startColumn` integer, emitting it as dates in the Unix-Epoch (i.e. days since 01-01-1970)"
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+            operation:
+              type: string
+              enum: [ EPOCH ]
+
+    OutputDescription:
+      description: "Operations to transform, then import, values into tables."
+      discriminator:
+        propertyName: operation
+        mapping: {
+          # FK: I'm using JSON notation here, because the key `NULL`  breaks some tools.
+          "COMPOUND_DATE_RANGE": "#/components/schemas/CompoundDateRangeOutput",
+          "COPY": "#/components/schemas/CopyOutput",
+          "DATE_RANGE": "#/components/schemas/DateRangeOutput",
+          "EPOCH": "#/components/schemas/EpochOutput",
+          "EPOCH_DATE_RANGE": "#/components/schemas/EpochDateRangeOutput",
+          "LINE": "#/components/schemas/LineOutput",
+          "NULL": "#/components/schemas/NullOutput",
+        }
+      oneOf:
+        - $ref: "#/components/schemas/CompoundDateRangeOutput"
+        - $ref: "#/components/schemas/CopyOutput"
+        - $ref: "#/components/schemas/DateRangeOutput"
+        - $ref: "#/components/schemas/EpochDateRangeOutput"
+        - $ref: "#/components/schemas/EpochOutput"
+        - $ref: "#/components/schemas/LineOutput"
+        - $ref: "#/components/schemas/NullOutput"
+
+    Import:
+      description: "Describes how one or multiple CSV files are to be transformed into a .cqpp file compatible with the designated table."
+      type: object
+      properties:
+        table:
+          $ref: "#/components/schemas/TableId"
+        name:
+          description: "Name of the import. When preprocessed with tags, will be overwritten to the respective tag."
+          type: string
+        label:
+          deprecated: true
+          type: string
+        inputs:
+          description: "One or more descriptions to preprocess a `.csv` or `.csv.gz` into a single cqpp."
+          type: array
+          items:
+            type: object
+            properties:
+              sourceFile:
+                description: "Filename of the to preprocess file, relative to the path supplied in `preprocess`."
+                type: string
+              filter:
+                description: "Groovy script which can be used to filter the csv rows.
+                The row is passed as `row` array, the fields can be accessed as integer variables to the index in the file.
+                For example accessing `value` in `id,value` can be done with `row[value]` (no string up-ticks), or `row[1]`."
+                type: string
+              primary:
+                $ref: "#/components/schemas/OutputDescription"
+              output:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutputDescription"
+
+    FrontendDatasetId:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/DatasetId"
+        label:
+          type: string
+    ResolvedConceptsResult:
+      description: Response object for resolve endpoint.
+      type: object
+      properties:
+        resolvedConcepts:
+          description: Ids of resolved concept elements.
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/ConceptId"
+        unknownCodes:
+          description: Values that could not be resolved.
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        resolvedFilter:
+          type: object
+          properties:
+            TableId:
+              $ref: "#/components/schemas/TableId"
+            FilterId:
+              $ref: "#/components/schemas/FilterId"
+            value:
+              description: List of resolved filter values.
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    description: Actual value - can be treated as the Id of the value. To be used when querying the Filter.
+                    type: string
+                  label:
+                    description: Verbose description of the value.
+                    type: string
+                  optionValue:
+                    description: Less verbose description of the value.
+                    type: string
+                required:
+                  - "value"
+    mail:
+      type: string
+      format: mail
+    ColumnConfig:
+      type: object
+      properties:
+        name:
+          description: Name of the Column-Config to be used when resolving with Upload.
+          type: string
+        label:
+          description: Map of Localized labels.
+          type: object
+          items:
+            type: string
+        description:
+          description: Map of Localized descriptions.
+          type: object
+          items:
+            type: string
+        field:
+          type: string
+          description: Name of column in result csv.
+        pad:
+          description: Pad-String when uploading data, to avoid problems with some tools truncating leading zeros or similar.
+          type: string
+        length:
+          description: In conjunction with pad, the length of the padded string.
+          type: integer
+        resolvable:
+          description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
+          type: boolean
+    UploadConfig:
+      description: Describes the format of ids for EXTERNAL and entity-preview Id kinds. Also describes the output format for ids in the result files.
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnConfig"
+    CurrencyConfig:
+      description: Describes how the frontend shall interpret and display currency values.
+      type: object
+      properties:
+        prefix:
+          type: string
+        thousandSeparator:
+          type: string
+        decimalSeparator:
+          type: string
+          pattern: "[.,]"
+        decimalScale:
+          type: string
+
+    FrontendConfig:
+      type: object
+      properties:
+        version:
+          description: Revision of the backend.
+          type: string
+        manualUrl:
+          description: URL to this instances manual if available.
+          type: string
+          format: url
+        contactEmail:
+          $ref: "#/components/schemas/mail"
+        currency:
+          $ref: "#/components/schemas/CurrencyConfig"
+        upload:
+          $ref: "#/components/schemas/UploadConfig"
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: number
+    Me:
+      type: object
+      properties:
+        userName:
+          type: string
+        hideLogoutButton:
+          type: boolean
+        datasetAbilities:
+          description: Per dataset abilities of the logged in User.
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              canUpload:
+                type: boolean
+        groups:
+          description: Groups the user is part of.
+          type: array
+          items:
+            type: object
+            properties:
+              Id:
+                $ref: "#/components/schemas/Id"
+              label:
+                type: string
+    QueryStatus:
+      description: Status of an executing or executed query.
+      type: object
+      properties:
+        label:
+          description: Display label of the query.
+          type: string
+        isPristineLabel:
+          description: True if the user did not alter the queries label.
+          type: boolean
+        tags:
+          description: Tags of the query. To be treated like directories.
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          $ref: "#/components/schemas/DateTime"
+        lastUsed:
+          $ref: "#/components/schemas/DateTime"
+        owner:
+          $ref: "#/components/schemas/UserId"
+        ownerName:
+          type: string
+        shared:
+          description: True if the query is shared with other users.
+          type: boolean
+        own:
+          description: True if the query is owned by the current user.
+          type: boolean
+        system:
+          description: True if the query is system generated.
+          type: boolean
+        Id:
+          $ref: "#/components/schemas/ExecutionId"
+        status:
+          $ref: "#/components/schemas/QueryState"
+        numberOfResults:
+          description: Number of result-lines of the query.
+          type: integer
+        requiredTime:
+          description: Duration of the last execution.
+          nullable: true
+          type: integer
+        startTime:
+          $ref: "#/components/schemas/DateTime"
+        finishTime:
+          $ref: "#/components/schemas/DateTime"
+        queryType:
+          description: Specific subtype of the query.
+          type: string # TODO use discriminator from Query
+        secondaryId:
+          $ref: "#/components/schemas/SecondaryIdId"
+        resultUrls:
+          description: Available result urls of the query.
+          type: array
+          items:
+            $ref: "#/components/schemas/ResultAsset"
+    ResultAsset:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          format: url
+      required:
+        - label
+        - url
+    Labeled:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+
+    NotCondition:
+      properties:
+        condition:
+          $ref: "#/components/schemas/ConceptCondition"
+        type:
+          type: string
+          enum: [ NOT ]
+    IsPresentCondition:
+      properties:
+        column:
+          $ref: "#/components/schemas/ColumnId"
+        type:
+          type: string
+          enum: [ PRESENT ]
+    PrefixRangeCondition:
+      deprecated: true
+      properties:
+        min:
+          type: string
+        max:
+          type: string
+        type:
+          type: string
+          enum: [ PREFIX_RANGE ]
+    OrCondition:
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConceptCondition"
+        type:
+          type: string
+          enum: [ OR ]
+    PrefixCondition:
+      deprecated: true
+      properties:
+        prefixes:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          enum: [ PREFIX ]
+    AndCondition:
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConceptCondition"
+        type:
+          type: string
+          enum: [ AND ]
+    GroovyCondition:
+      deprecated: true
+      properties:
+        script:
+          type: string
+        type:
+          type: string
+          enum: [ GROOVY ]
+    ColumnEqualCondition:
+      properties:
+        column:
+          $ref: "#/components/schemas/ColumnId"
+        values:
+          type: array
+          items:
+            type: string
+            uniqueItems: true
+        type:
+          type: string
+          enum: [ COLUMN_EQUAL ]
+    EqualCondition:
+      properties:
+        values:
+          type: array
+          items:
+            type: string
+            uniqueItems: true
+        type:
+          type: string
+          enum: [ EQUAL ]
+
+    ConceptCondition:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          AND: "#/components/schemas/AndCondition"
+          COLUMN_EQUAL: "#/components/schemas/ColumnEqualCondition"
+          EQUAL: "#/components/schemas/EqualCondition"
+          GROOVY: "#/components/schemas/GroovyCondition"
+          NOT: "#/components/schemas/NotCondition"
+          OR: "#/components/schemas/OrCondition"
+          PREFIX: "#/components/schemas/PrefixCondition"
+          PREFIX_RANGE: "#/components/schemas/PrefixRangeCondition"
+          PRESENT: "#/components/schemas/IsPresentCondition"
+      oneOf:
+        - $ref: "#/components/schemas/AndCondition"
+        - $ref: "#/components/schemas/ColumnEqualCondition"
+        - $ref: "#/components/schemas/EqualCondition"
+        - $ref: "#/components/schemas/GroovyCondition"
+        - $ref: "#/components/schemas/NotCondition"
+        - $ref: "#/components/schemas/OrCondition"
+        - $ref: "#/components/schemas/PrefixCondition"
+        - $ref: "#/components/schemas/PrefixRangeCondition"
+        - $ref: "#/components/schemas/IsPresentCondition"
+
+    ConceptTreeChild:
+      description: "See documentation for Concept."
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/ConceptTreeChild"
+            condition:
+              $ref: "#/components/schemas/ConceptCondition"
+            description:
+              type: string
+            additionalInfos:
+              type: array
+              items:
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+    Select:
+      description: "Selects allow users to add aggregations to the output.
+      Selects can only be placed in Connectors, as opposed to UniversalSelects, which can also be placed in Concepts."
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          COUNT: "#/components/schemas/CountSelect"
+          COUNT_QUARTERS: "#/components/schemas/CountQuartersSelect"
+          DATE_DISTANCE: "#/components/schemas/DateDistanceSelect"
+          DATE_UNION: "#/components/schemas/DateUnionSelect"
+          DISTINCT: "#/components/schemas/DistinctSelect"
+          DURATION_SUM: "#/components/schemas/DurationSumSelect"
+          FIRST: "#/components/schemas/FirstValueSelect"
+          FLAGS: "#/components/schemas/FlagSelect"
+          LAST: "#/components/schemas/LastValueSelect"
+          QUARTER: "#/components/schemas/QuarterSelect"
+          QUARTERS_IN_YEAR: "#/components/schemas/QuartersInYearSelect"
+          RANDOM: "#/components/schemas/RandomValueSelect"
+          SUM: "#/components/schemas/SumSelect"
+      oneOf:
+        - $ref: "#/components/schemas/CountSelect"
+        - $ref: "#/components/schemas/CountQuartersSelect"
+        - $ref: "#/components/schemas/DateDistanceSelect"
+        - $ref: "#/components/schemas/DateUnionSelect"
+        - $ref: "#/components/schemas/DistinctSelect"
+        - $ref: "#/components/schemas/DurationSumSelect"
+        - $ref: "#/components/schemas/FirstValueSelect"
+        - $ref: "#/components/schemas/FlagSelect"
+        - $ref: "#/components/schemas/LastValueSelect"
+        - $ref: "#/components/schemas/QuarterSelect"
+        - $ref: "#/components/schemas/QuartersInYearSelect"
+        - $ref: "#/components/schemas/RandomValueSelect"
+        - $ref: "#/components/schemas/SumSelect"
+    ExistsSelect:
+      description: "Emits a boolean: True, if its holder is fulfilled, false otherwise."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            type:
+              type: string
+              enum: [ EXISTS ]
+    ConceptColumnSelect:
+      description: "Emits the values of the Concepts column. If `asIds` is true, it will instead emit the resolved ids."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            asIds:
+              type: boolean
+            type:
+              type: string
+              enum: [ CONCEPT_COLUMN ]
+    EventDateUnionSelect:
+      description: "Emits the aggregated values of the ValidityDates."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            type:
+              type: string
+              enum: [ EVENT_DATE_UNION ]
+    EventDurationSumSelect:
+      description: "Emits the number of days among the aggregated ValidityDates."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            type:
+              type: string
+              enum: [ EVENT_DURATION_SUM ]
+    QuarterSelect:
+      description: "Emits the sampled quarter in `2020Q1` format."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            sample:
+              $ref: "#/components/schemas/TemporalSampler"
+            type:
+              type: string
+              enum: [ QUARTER ]
+    DurationSumSelect:
+      description: "Emits the number of days of the aggregated date column."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ DURATION_SUM ]
+    CountSelect:
+      description: "Emits the number of filtered events, or number of unique entries in a selected column."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            distinct:
+              type: boolean
+            type:
+              type: string
+              enum: [ COUNT ]
+        - oneOf:
+            - properties:
+                column:
+                  $ref: "#/components/schemas/ColumnId"
+            - properties:
+                distinctByColumn:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ColumnId"
+    CountQuartersSelect:
+      description: "Emits the count of covered quarters encountered in the selected date column."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ COUNT_QUARTERS ]
+    DateUnionSelect:
+      description: "Emits the merged aggregate of the date column as date-set."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ DATE_UNION ]
+    DateDistanceSelect:
+      description: "Calculates the maximum distance of a date column, relative to today, or the end of the maximum of an available date restriction.
+      Mostly used to calculate the age of an entity, with `timeUnit=YEARS`."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            timeUnit:
+              type: string
+              enum: [ YEARS, DAYS, MONTHS, WEEKS, HOURS ]
+            type:
+              type: string
+              enum: [ DATE_DISTANCE ]
+    QuartersInYearSelect:
+      description: "Calculates the maximum number of quarters in a single year, over the entire observed period.
+      e.g.: If an entity has events Q1-Q3 2020, and an event in Q1 2019, the result is 3."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ QUARTERS_IN_YEAR ]
+    FlagSelect:
+      description: "Emits the labels of all of the columns having a `true` value. The columns must be of type boolean."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            flags:
+              description: "The keys are labels for the boolean columns."
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ FLAGS ]
+    SumSelect:
+      description: "Calculates the sum over a specified column, if `subtractColumn` is set subtracts that.
+      Additionally, if `distinctByColumn` is set, only aggregates the first encountered value for unique sets of keys."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            distinct:
+              type: boolean
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            subtractColumn:
+              $ref: "#/components/schemas/ColumnId"
+            distinctByColumn:
+              type: array
+              items:
+                $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ SUM ]
+    DistinctSelect:
+      description: "Collects unique values among the specified column.
+      If set, translates the values using the supplied mapping."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            mapping:
+              $ref: "#/components/schemas/MappingId"
+            type:
+              type: string
+              enum: [ DISTINCT ]
+    FirstValueSelect:
+      description: "Emits the first value among the specified column, by ValidityDate.
+      If set, translates the values using the supplied mapping."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            mapping:
+              $ref: "#/components/schemas/MappingId"
+            type:
+              type: string
+              enum: [ FIRST ]
+    LastValueSelect:
+      description: "Emits the last value among the specified column, by ValidityDate.
+      If set, translates the values using the supplied mapping."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            mapping:
+              $ref: "#/components/schemas/MappingId"
+            type:
+              type: string
+              enum: [ LAST ]
+    RandomValueSelect:
+      description: "Emits a random value among the encountered values. The distribution mirrors the distribution in the original data by values."
+      allOf:
+        - $ref: "#/components/schemas/SelectBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            mapping:
+              $ref: "#/components/schemas/MappingId"
+            type:
+              type: string
+              enum: [ RANDOM ]
+    SelectBase:
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - properties:
+            description:
+              type: string
+            default:
+              type: boolean
+    Searchable:
+      properties:
+        searchMinSuffixLength:
+          type: integer
+        generateSearchSuffixes:
+          type: boolean
+
+    UniversalSelect:
+      description: "Selects that can be used both on Concept and Connector level."
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_COLUMN: "#/components/schemas/ConceptColumnSelect"
+          COUNT_QUARTERS: "#/components/schemas/CountQuartersSelect"
+          EVENT_DATE_UNION: "#/components/schemas/EventDateUnionSelect"
+          EVENT_DURATION_SUM: "#/components/schemas/EventDurationSumSelect"
+          EXISTS: "#/components/schemas/ExistsSelect"
+          QUARTER: "#/components/schemas/QuarterSelect"
+      oneOf:
+        - $ref: "#/components/schemas/ConceptColumnSelect"
+        - $ref: "#/components/schemas/CountQuartersSelect"
+        - $ref: "#/components/schemas/EventDateUnionSelect"
+        - $ref: "#/components/schemas/EventDurationSumSelect"
+        - $ref: "#/components/schemas/ExistsSelect"
+        - $ref: "#/components/schemas/QuarterSelect"
+
+    SumFilter:
+      description: "Filters entities to having the sum over a set of columns to be within a user defined range. See SumSelect for more info."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            distinct:
+              type: boolean
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            subtractColumn:
+              $ref: "#/components/schemas/ColumnId"
+            distinctByColumn:
+              type: array
+              items:
+                $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ SUM ]
+    CountFilter:
+      description: "Filters entities to having a specific number of events. See CountSelect for more info."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            distinct:
+              type: boolean
+            type:
+              type: string
+              enum: [ COUNT ]
+        - oneOf:
+            - properties:
+                column:
+                  $ref: "#/components/schemas/ColumnId"
+            - properties:
+                distinctByColumn:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ColumnId"
+    FlagFilter:
+      description: "Filters events to have `true` values in the user selected columns."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            flags:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ FLAGS ]
+    CountQuartersFilter:
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ COUNT_QUARTERS ]
+    SelectFilterBase:
+      description: "Filters events for a user defined list of values in a specific column."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - $ref: "#/components/schemas/Searchable"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+        - oneOf:
+            - properties:
+                labels:
+                  type: object
+                  additionalProperties:
+                    type: string
+            - properties:
+                template:
+                  $ref: "#/components/schemas/TemplateId"
+    SingleSelectFilter:
+      allOf:
+        - $ref: "#/components/schemas/SelectFilterBase"
+        - properties:
+            type:
+              type: string
+              enum: [ SINGLE_SELECT ]
+    BigMultiSelectFilter:
+      allOf:
+        - $ref: "#/components/schemas/SelectFilterBase"
+        - properties:
+            type:
+              type: string
+              enum: [ BIG_MULTI_SELECT ]
+    MultiSelectFilter:
+      allOf:
+        - $ref: "#/components/schemas/SelectFilterBase"
+        - properties:
+            type:
+              type: string
+              enum: [ MULTI_SELECT ]
+    DurationSumFilter:
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ DURATION_SUM ]
+    QuartersInYearFilter:
+      description: "Filters for entities having events in a specific number of quarters. See QuartersInYearSelect for a more in depth description."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ QUARTERS_IN_YEAR ]
+    NumberFilter:
+      description: "Filters events to be within a certain numerical range."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            type:
+              type: string
+              enum: [ NUMBER ]
+    DateDistanceFilter:
+      description: "Filters events to be within a certain time period, relative to today in a predefined unit, or the last day of an available DateRestriction.
+      Usually used to filter for the age of entities, by setting `timeUnit=YEARS`."
+      allOf:
+        - $ref: "#/components/schemas/FilterBase"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+            timeUnit:
+              type: string
+              enum: [ YEARS, MONTHS, DAYS, HOURS ]
+            type:
+              type: string
+              enum: [ DATE_DISTANCE ]
+    FilterBase:
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - properties:
+            unit:
+              type: string
+            tooltip:
+              type: string
+            pattern:
+              type: string
+            allowDropFile:
+              type: boolean
+            defaultValue:
+              type: object
+    Filter:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          DATE_DISTANCE: "#/components/schemas/DateDistanceFilter"
+          NUMBER: "#/components/schemas/NumberFilter"
+          QUARTERS_IN_YEAR: "#/components/schemas/QuartersInYearFilter"
+          DURATION_SUM: "#/components/schemas/DurationSumFilter"
+          MULTI_SELECT: "#/components/schemas/MultiSelectFilter"
+          BIG_MULTI_SELECT: "#/components/schemas/BigMultiSelectFilter"
+          SINGLE_SELECT: "#/components/schemas/SingleSelectFilter"
+          FLAGS: "#/components/schemas/FlagFilter"
+          COUNT: "#/components/schemas/CountFilter"
+          SUM: "#/components/schemas/SumFilter"
+      oneOf:
+        - $ref: "#/components/schemas/DateDistanceFilter"
+        - $ref: "#/components/schemas/NumberFilter"
+        - $ref: "#/components/schemas/QuartersInYearFilter"
+        - $ref: "#/components/schemas/DurationSumFilter"
+        - $ref: "#/components/schemas/MultiSelectFilter"
+        - $ref: "#/components/schemas/BigMultiSelectFilter"
+        - $ref: "#/components/schemas/SingleSelectFilter"
+        - $ref: "#/components/schemas/FlagFilter"
+        - $ref: "#/components/schemas/CountFilter"
+        - $ref: "#/components/schemas/SumFilter"
+    ValidityDate:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+
+    Connector:
+      description: "Describes a set of filters and selects for a single table.
+      `column` provides the column to calculate the concept tree using ConceptConditions.
+      `table` should be used, if the concept does not create a tree. `column` and `table` are therefore exclusive."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - oneOf:
+            - properties:
+                table:
+                  $ref: "#/components/schemas/TableId"
+            - properties:
+                column:
+                  $ref: "#/components/schemas/ColumnId"
+        - properties:
+            condition:
+              allOf:
+                - description: "Allows filtering of events for the tree. Useful to separate out events from a larger table for a very niche concept."
+                - $ref: "#/components/schemas/ConceptCondition"
+            filters:
+              description: "Definition of filters available in for querying this connector."
+              type: array
+              items:
+                $ref: "#/components/schemas/Filter"
+            validityDatesDescription:
+              description: "Further information about the available validity dates."
+              type: string
+            validityDates:
+              description: "Definitions of relevant date columns for this connector.
+              e.g.: The publishing date of a movie, and its production period."
+              type: array
+              items:
+                $ref: "#/components/schemas/ValidityDate"
+            selects:
+              description: "Definition of selects available for querying this connector."
+              type: array
+              items:
+                oneOf:
+                  - $ref: "#/components/schemas/Select"
+                  - $ref: "#/components/schemas/UniversalSelect"
+            default:
+              type: boolean
+
+    Concept:
+      description: "Describes a collection of filters and aggregations from multiple source tables.
+      If `children` is set, events of the connectors will be matched according to conditions defined in the children. Each event may only map to a single child.
+      The structure of the children describes a directed tree: Querying for a non-leaf node, always includes its sub-tree.
+      
+      Using multiple connectors allows funneling of different source tables into a single tree."
+      allOf:
+        - $ref: "#/components/schemas/Labeled"
+        - properties:
+            tables:
+              type: array
+              items:
+                $ref: "#/components/schemas/Connector"
+            children:
+              description: "The children describing the tree to structure events onto. May be empty, if the concept only defines filters and selects."
+              type: array
+              items:
+                $ref: "#/components/schemas/ConceptTreeChild"
+            selects:
+              description: "Selects able to be applied to all events, irrespective of source table."
+              type: array
+              items:
+                $ref: "#/components/schemas/UniversalSelect"
+            defaultExcludeFromTimeAggregation:
+              type: boolean
+              description: "If true, excludeFromTimeAggregation will be set to true by default for the users."
+            hidden:
+              description: "If true, the concept is not visible in the API or the frontend."
+              type: boolean
+            description:
+              description: "A textual description of the concept. May include markdown text."
+              type: string
+            additionalInfos:
+              description: "A list of key value pairs of additional information. Displayed to the user in a side pane. May contain markdown text."
+              type: array
+              items:
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+    MajorType:
+      type: string
+      enum:
+        - STRING
+        - INTEGER
+        - BOOLEAN
+        - NUMERIC
+        - MONEY
+        - DATE
+        - DATE_RANGE
+    ColumnType:
+      description: Available types for input and output of conquery. Additionally list, which is a nested type of ColumnType.
+      oneOf:
+        - $ref: "#/components/schemas/MajorType"
+        - type: string
+          description: "Arbitrary nesting of ColumnTypes including List."
+          pattern: "LIST\\[.*\\]"
+    SemanticsEventDate:
+      description: Values contain the primary date of a row.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "EVENT_DATE"
+    SemanticsSources:
+      description: Values in the column contain references to the source connector.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "SOURCES"
+    SemanticsCategorical:
+      description: Values are an enumeration.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "CATEGORICAL"
+    SemanticsGroup:
+      description: One of the columns to group by in entity-preview.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "GROUP"
+    SemanticsHidden:
+      description: Values should not be displayed in entity-preview.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "HIDDEN"
+    SemanticsSelect:
+      description: Values are of the referenced select.
+      properties:
+        type:
+          type: string
+          enum:
+            - "SELECT"
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+        - type: object
+          properties:
+            select:
+              $ref: "#/components/schemas/SelectId"
+    SemanticsConceptColumn:
+      description: Values contain the ids of the concept-element resolved to the event.
+      properties:
+        type:
+          type: string
+          enum:
+            - "CONCEPT_COLUMN"
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+        - type: object
+          properties:
+            concept:
+              $ref: "#/components/schemas/ConceptId"
+    SemanticsColumn:
+      description: Values are of a specific column, without any aggregation.
+      properties:
+        type:
+          type: string
+          enum:
+            - "COLUMN"
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+        - type: object
+          properties:
+            column:
+              $ref: "#/components/schemas/ColumnId"
+    SemanticsId:
+      description: Values are an entity's Id.
+      properties:
+        type:
+          type: string
+          enum:
+            - "ID"
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+        - type: object
+          properties:
+            kind:
+              type: string
+    SemanticsSecondaryId:
+      description: Values are a secondaryId.
+      allOf:
+        - $ref: "#/components/schemas/SemanticsBase"
+        - type: object
+          properties:
+            secondaryId:
+              $ref: "#/components/schemas/SecondaryIdId"
+
+    SemanticsBase:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - "type"
+    Semantics:
+      description: Used to add additional information to a queries resulting column, such as sources or restrictions of the values.
+      discriminator:
+        propertyName: "type"
+        mapping:
+          "CATEGORICAL": "#/components/schemas/SemanticsCategorical"
+          "COLUMN": "#/components/schemas/SemanticsColumn"
+          "CONCEPT_COLUMN": "#/components/schemas/SemanticsConceptColumn"
+          "EVENT_DATE": "#/components/schemas/SemanticsEventDate"
+          "GROUP": "#/components/schemas/SemanticsGroup"
+          "HIDDEN": "#/components/schemas/SemanticsHidden"
+          "ID": "#/components/schemas/SemanticsId"
+          "SECONDARY_ID": "#/components/schemas/SemanticsSecondaryId"
+          "SELECT": "#/components/schemas/SemanticsSelect"
+          "SOURCES": "#/components/schemas/SemanticsSources"
+      oneOf:
+        - $ref: "#/components/schemas/SemanticsCategorical"
+        - $ref: "#/components/schemas/SemanticsColumn"
+        - $ref: "#/components/schemas/SemanticsConceptColumn"
+        - $ref: "#/components/schemas/SemanticsEventDate"
+        - $ref: "#/components/schemas/SemanticsGroup"
+        - $ref: "#/components/schemas/SemanticsHidden"
+        - $ref: "#/components/schemas/SemanticsId"
+        - $ref: "#/components/schemas/SemanticsSecondaryId"
+        - $ref: "#/components/schemas/SemanticsSelect"
+        - $ref: "#/components/schemas/SemanticsSources"
+
+    FilterValueBase:
+      type: object
+      properties:
+        filter:
+          $ref: "#/components/schemas/FilterId"
+
+    FilterValueMultiSelect:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "MULTI_SELECT"
+        value:
+          type: array
+          items:
+            type: string
+    FilterValueBigMultiSelect:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "BIG_MULTI_SELECT"
+        value:
+          type: array
+          items:
+            type: string
+    FilterValueSingleSelect:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "SELECT"
+        value:
+          type: string
+    FilterValueString:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "STRING"
+        value:
+          type: string
+
+    FilterValueInteger:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER"
+        value:
+          type: integer
+    FilterValueNumberRange:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER_RANGE"
+            - "DECIMAL_RANGE"
+            - "MONEY_RANGE"
+            - "REAL_RANGE"
+        value:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+    FilterValueIntegerRange:
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER_RANGE"
+        value:
+          type: object
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+
+    GroupFilterValue:
+      #TODO this is relatively complex
+      allOf:
+        - $ref: "#/components/schemas/FilterValueBase"
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/FilterValue"
+
+    FilterValue:
+      description: "Reference to a filter, and parameters for filtering with it.
+      Note that the filter is included by reference, and its actual logic is described in the defining concept."
+      type: object
+      discriminator:
+        propertyName: "type"
+        mapping:
+          "INTEGER_RANGE": "#/components/schemas/FilterValueIntegerRange"
+          "REAL_RANGE": "#/components/schemas/FilterValueNumberRange"
+          "MONEY_RANGE": "#/components/schemas/FilterValueNumberRange"
+          "DECIMAL_RANGE": "#/components/schemas/FilterValueNumberRange"
+          "INTEGER": "#/components/schemas/FilterValueInteger"
+          "STRING": "#/components/schemas/FilterValueString"
+          "SELECT": "#/components/schemas/FilterValueSingleSelect"
+          "BIG_MULTI_SELECT": "#/components/schemas/FilterValueMultiSelect"
+          "MULTI_SELECT": "#/components/schemas/FilterValueBigMultiSelect"
+      oneOf:
+        - $ref: "#/components/schemas/FilterValueNumberRange"
+        - $ref: "#/components/schemas/FilterValueNumberRange"
+        - $ref: "#/components/schemas/FilterValueNumberRange"
+        - $ref: "#/components/schemas/FilterValueNumberRange"
+        - $ref: "#/components/schemas/FilterValueInteger"
+        - $ref: "#/components/schemas/FilterValueString"
+        - $ref: "#/components/schemas/FilterValueSingleSelect"
+        - $ref: "#/components/schemas/FilterValueMultiSelect"
+        - $ref: "#/components/schemas/FilterValueBigMultiSelect"
+    ColumnDescription:
+      description: Metadata of a result column of a query.
+      type: object
+      properties:
+        label:
+          description: label of the column in csv.
+          type: string
+        description:
+          description: If available any description of the data of the query. For example SecondaryId or an exported Column.
+          nullable: true
+          type: string
+        defaultLabel:
+          nullable: true
+          type: string
+        type:
+          $ref: "#/components/schemas/ColumnType"
+        Semantics:
+          description: Additional information and tags of the query.
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/Semantics"
+    DateRange:
+      type: object
+      properties:
+        min:
+          $ref: "#/components/schemas/date"
+        max:
+          $ref: "#/components/schemas/date"
+    CQElementBase:
+      type: object
+      properties:
+        label:
+          type: string
+    CQDateRestriction:
+      description: "Restricts the events, downstream components receive to the specified absolute period. This node is fulfilled, if the downstream child is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            dateRange:
+              $ref: "#/components/schemas/DateRange"
+            child:
+              $ref: "#/components/schemas/CQElement"
+            type:
+              type: string
+              enum:
+                - DATE_RESTRICTION
+    CQNegation:
+      description: "Negates the result of its downstream child: If downstream is fulfilled, this node is not fulfilled and vice versa.
+      By default, this node will block date-aggregation of downstream elements, as the results are mostly bogus.
+      In LOGICAL dateAggregation mode, it will deduct the observed period from infinity."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            child:
+              $ref: "#/components/schemas/CQElement"
+            type:
+              type: string
+              enum:
+                - NEGATION
+    CQOr:
+      description: "Logically ors its downstream children: If any downstream element is fulfilled, this node is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/CQElement"
+            createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - OR
+
+    CQAnd:
+      description: "Logically ands its downstream children: If all downstream element are fulfilled, this node is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/CQElement"
+            createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - AND
+
+    CQReusedQuery:
+      description: "Allows the reuse of an existing query, by referencing execution of that query by its Id."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            queryId:
+              $ref: "#/components/schemas/ExecutionId"
+            excludeFromSecondaryId:
+              description: "If the query is reused within a SECONDARY_ID query, it will not be executed with the secondary-Id set."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - SAVED_QUERY
+    CQResultInfoDecorator:
+      #TODO del?
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            values:
+              type: object
+              additionalProperties:
+                type: string
+            child:
+              $ref: "#/components/schemas/CQElement"
+            type:
+              type: string
+              enum:
+                - RESULT_INFO_DECORATOR
+    CQConcept:
+      description: "The fundamental query-element. Contains definitions for filtering and aggregation based on concept defined filters and selects.
+      `ids` contains a list of concept element ids of the same concept, which should be filtered for.
+      `tables` contains one or more description of filters and selects from a specific connector.
+      Filters can be grouped into event-filters and aggregation-filters, where event filters, filter rows, while aggregation-filters aggregate those filtered rows.
+      Selects calculate aggregations on the filtered rows.
+      
+      The filters are logically and-ed, meaning this node is only fulfilled if all its filters are fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            ids:
+              $ref: "#/components/schemas/ConceptElementId"
+            tables:
+              type: object
+              properties:
+                Id:
+                  $ref: "#/components/schemas/ConnectorId"
+                dateColumn:
+                  description: "Allows the selection of one of pre-defined date for date-restrictions."
+                  type: object
+                  properties:
+                    value:
+                      $ref: "#/components/schemas/ValidityDateId"
+                filters:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/FilterValue"
+                selects:
+                  description: "References to Selects to evaluate while querying."
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SelectId"
+            selects:
+              description: "References to UniversalSelects to evaluate while querying."
+              type: array
+              items:
+                $ref: "#/components/schemas/SelectId"
+            excludeFromSecondaryId:
+              description: If true, this node is not grouped by a secondaryId even if the referenced tables contain the secondaryId.
+              type: boolean
+            excludeFromTimeAggregation:
+              description: If true, do not aggregate time for this node.
+              type: boolean
+            type:
+              type: string
+              enum:
+                - CONCEPT
+    TemporalSampler:
+      description: "Describes how a date-set should be sampled to reduce it to a single day.
+      - EARLIEST is the first day of the sets span
+      - LATEST is the last day of the sets span
+      - RANDOM samples is a single random day within the set."
+      type: string
+      enum:
+        - EARLIEST
+        - LATEST
+        - RANDOM
+    CQSampled:
+      type: object
+      properties:
+        child:
+          $ref: "#/components/schemas/CQElement"
+        sampler:
+          $ref: "#/components/schemas/TemporalSampler"
+    CQDaysBefore:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+      The result of `preceding` has to be within `days` specified time range before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            days:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+            index:
+              $ref: "#/components/schemas/CQSampled"
+            preceding:
+              $ref: "#/components/schemas/CQSampled"
+            type:
+              type: string
+              enum:
+                - DAYS_BEFORE
+    CQBeforeOrSame:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has be at or before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            index:
+              $ref: "#/components/schemas/CQSampled"
+            preceding:
+              $ref: "#/components/schemas/CQSampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_SAME
+    CQDaysBeforeOrNever:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be at least `days` before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            days:
+              type: integer
+            index:
+              $ref: "#/components/schemas/CQSampled"
+            preceding:
+              $ref: "#/components/schemas/CQSampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_NEVER
+    CQSame:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be the same as the sampled day `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            index:
+              $ref: "#/components/schemas/CQSampled"
+            preceding:
+              $ref: "#/components/schemas/CQSampled"
+            type:
+              type: string
+              enum:
+                - SAME
+    CQBefore:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has to be before the sampled day `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            index:
+              $ref: "#/components/schemas/CQSampled"
+            preceding:
+              $ref: "#/components/schemas/CQSampled"
+            type:
+              type: string
+              enum:
+                - BEFORE
+    CQExternal:
+      description: "Allows uploading of externally defined cohorts, with additional data. As a list of included entities, with additional options to specify durations or auxiliary virtual selects.
+      The data is uploaded as array of rows as rows of strings. The rows are required to have the same length. The first row is always skipped. As header.
+      Produces an error, when no entities can be resolved. "
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CQElementBase"
+        - properties:
+            format:
+              type: array
+              items:
+                anyOf:
+                  - type: string
+                    description: "Name of an ID-kind, described in `GET /frontend/config#upload`, will be used to resolve the entity to an already imported/existent entity"
+                  - type: string
+                    description: "EXTRA columns supply auxiliary data to be emitted as columns named after each columns header.
+                      Otherwise describes schemes to do date aggregation on one or multiple columns:
+                      - EVENT_DATE selects a single column as the source of the selected date
+                      - START_DATE selects a column as the start of a DateRange 
+                      - END_DATE selects a column as the end of a DateRange
+                      - DATE_RANGE selects a column as a full DateRange
+                      - DATE_SET selects a column as containing a date-set
+                      - ALL placeholder, to aggregate infinite/all dateset
+                      
+                      Combining multiple of the date aggregations is possible but except for START_DATE/END_DATE will create bogus results. 
+                      "
+                    enum:
+                      - EXTRA
+                      - EVENT_DATE
+                      - START_DATE
+                      - END_DATE
+                      - DATE_RANGE
+                      - DATE_SET
+                      - ALL
+            values:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+            onlySingles:
+              description: "If true, throw an error when an entity is resolved multiple times.
+              Additionally, in a result table EXTRA columns will be emitted as STRING instead of LIST[STRING]"
+              type: boolean
+            type:
+              type: string
+              enum:
+                - EXTERNAL
+
+    CQElement:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          AND: "#/components/schemas/CQAnd"
+          BEFORE: "#/components/schemas/CQBefore"
+          BEFORE_OR_NEVER: "#/components/schemas/CQDaysBeforeOrNever"
+          BEFORE_OR_SAME: "#/components/schemas/CQBeforeOrSame"
+          CONCEPT: "#/components/schemas/CQConcept"
+          DATE_RESTRICTION: "#/components/schemas/CQDateRestriction"
+          DAYS_BEFORE: "#/components/schemas/CQDaysBefore"
+          EXTERNAL: "#/components/schemas/CQExternal"
+          NEGATION: "#/components/schemas/CQNegation"
+          OR: "#/components/schemas/CQOr"
+          RESULT_INFO_DECORATOR: "#/components/schemas/CQResultInfoDecorator"
+          SAME: "#/components/schemas/CQSame"
+          SAVED_QUERY: "#/components/schemas/CQReusedQuery"
+      oneOf:
+        - $ref: "#/components/schemas/CQAnd"
+        - $ref: "#/components/schemas/CQBefore"
+        - $ref: "#/components/schemas/CQDaysBeforeOrNever"
+        - $ref: "#/components/schemas/CQBeforeOrSame"
+        - $ref: "#/components/schemas/CQConcept"
+        - $ref: "#/components/schemas/CQDateRestriction"
+        - $ref: "#/components/schemas/CQDaysBefore"
+        - $ref: "#/components/schemas/CQExternal"
+        - $ref: "#/components/schemas/CQNegation"
+        - $ref: "#/components/schemas/CQOr"
+        - $ref: "#/components/schemas/CQResultInfoDecorator"
+        - $ref: "#/components/schemas/CQSame"
+        - $ref: "#/components/schemas/CQReusedQuery"
+
+    DateAggregationMode:
+      description: "Can be used in some queries to alter the way dates are aggregated. Specifically for AND/OR/NEGATION nodes.
+      - NONE will disable date-aggregation, meaning no EVENT_DATES column will be created,
+      - MERGE will union all downstream dates,
+      - INTERSECT will intersect the downstream dates,
+      - LOGICAL depends on the respective nodes: AND will intersect, OR will merge, NEGATION will subtract the dates from ALL-time."
+      type: string
+      enum:
+        - NONE
+        - MERGE
+        - INTERSECT
+        - LOGICAL
+    TableExportQuery:
+      description: "For all entities fulfilling the sub-query, export raw data of selected tables over the selected period.
+      The output format is in wide format, meaning all tables are concatenated, but only single rows are emitted with only the columns of the source table filled.
+      Columns of the same SecondaryId will be grouped and marked with SECONDARY_ID Semantics. The source column will contain the Id of the source table.
+      The CONCEPT nodes can be used for filtering single rows."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/Query"
+        dateRange:
+          $ref: "#/components/schemas/DateRange"
+        tables:
+          type: array
+          items:
+            $ref: "#/components/schemas/CQConcept"
+        rawConceptValues:
+          description: "If true, columns of concepts will be emitted as raw values. Else they will be emitted as resolved ids of the concept-elements."
+          type: boolean
+        type:
+          type: string
+          enum:
+            - TABLE_EXPORT
+    SecondaryIdQuery:
+      description: "Executes concept-queries grouped by a secondary key - in addition to entities. Therefore, multiple columns are emitted per entity.
+      The secondary-ids are put into a column named after its label, tagged with SECONDARY_ID Semantics."
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/CQElement"
+        secondaryId:
+          $ref: "#/components/schemas/SecondaryIdId"
+        dateAggregationMode:
+          $ref: "#/components/schemas/DateAggregationMode"
+        type:
+          type: string
+          enum:
+            - SECONDARY_ID_QUERY
+    ResolutionAndAlignment:
+      description: "Grouping of algorithms used for subdividing and aligning of export-forms."
+      type: object
+      properties:
+        resolution:
+          description: "Determines the unit to sub-divide by, starting at the start of the input date range.
+          - COMPLETE is identity,
+          - YEARS creates subdivisions for all covered years,
+          - QUARTERS creates subdivisions for all covered quarters,
+          - DAYS creates subdivisions per covered day."
+          type: string
+          enum:
+            - COMPLETE
+            - DAYS
+            - QUARTERS
+            - YEARS
+        alignment:
+          description: "Aligns the date-ranges that are subdivided. This helps with more uniform output formats.
+          - NO_ALIGN will not alter the date-ranges,
+          - DAY aligns to days, effectively the same as NO_ALIGN,
+          - QUARTER will align to the start/end of the next quarter,
+          - YEAR will align to the start/end of the next year"
+          type: string
+          enum:
+            - NO_ALIGN
+            - DAY
+            - QUARTER
+            - YEAR
+    ArrayConceptQuery:
+      description: "Building block of export-forms: evaluates all queries independently, exporting their selects."
+      type: object
+      properties:
+        childQueries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConceptQuery"
+        dateAggregationMode:
+          $ref: "#/components/schemas/DateAggregationMode"
+        type:
+          type: string
+          enum:
+            - ARRAY_CONCEPT_QUERY
+    RelativeFormQuery:
+      description: "Export a set of features for all included entities. 
+      The periods to export are determined relative to the resulting event-dates per entity by sampling a single day. 
+      The parameters timeCountBefore/-After determine how many consecutive periods are exported for the feature (before) and outcome (after) range.
+      The index date either belongs to the feature range (indexPlacement BEFORE), the outcome range (AFTER) or lies in between (NEUTRAL)
+      In the feature range, the period closest to the index date has the index=-1. Earlier periods have a decremented index in respect to their sequence.
+      Accordingly, the period closest to the index date in the outcome range starts at index=1. Subsequent periods have an incremented index."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/Query"
+        features:
+          $ref: "#/components/schemas/ArrayConceptQuery"
+        indexSelector:
+          $ref: "#/components/schemas/TemporalSampler"
+        indexPlacement:
+          type: string
+          enum:
+            - BEFORE
+            - NEUTRAL
+            - AFTER
+        timeCountBefore:
+          type: integer
+        timeCountAfter:
+          type: integer
+        timeUnit:
+          #TODO was macht timeUnit, was nicht schon resolutionAndAlignmentMap macht?
+          type: string
+          enum:
+            - DAYS
+            - QUARTERS
+            - YEARS
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResolutionAndAlignment"
+        type:
+          type: string
+          enum:
+            - RELATIVE_FORM_QUERY
+    EntityDateQuery:
+      description: "Export a set of features for all entities satisfying the query, over the query's result date. 
+      See AbsoluteFormQuery for comparison."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/Query"
+        features:
+          $ref: "#/components/schemas/ArrayConceptQuery"
+        resolutionsAndAlignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResolutionAndAlignment"
+        dateRange:
+          $ref: "#/components/schemas/DateRange"
+        dateAggregationMode:
+          $ref: "#/components/schemas/DateAggregationMode"
+        type:
+          type: string
+          enum:
+            - ENTITY_DATE_QUERY
+    AbsoluteFormQuery:
+      description: "Export a set of features over a specified period for all entities the query is fulfilled. 
+                    Using resolutionsAndAlignmentMap the period can be subdivided into Years, Quarters and Months.
+                    The subdivisions can then be aligned to the years, months and quarters.
+                    Each subdivision is assigned an increasing index per resolution: The first quarter is index=1, the second quarter index=2, while the first year is index=1 and so on."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/Query"
+        features:
+          $ref: "#/components/schemas/ArrayConceptQuery"
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResolutionAndAlignment"
+        dateRange:
+          $ref: "#/components/schemas/DateRange"
+        type:
+          type: string
+          enum:
+            - ABSOLUTE_FORM_QUERY
+    ConceptQuery:
+      description: "The fundamental query of Conquery. Executes a query, where all fulfilling entities are included as a single line, 
+      containing the aggregated validity-dates, as well as any requested selects. The first columns are unique ids of the entity, then the event-dates column, and then in unspecified order all select results.
+      A CONCEPT_QUERY represents a tree of logically composed query elements, where the leafs are CONCEPT nodes, describing filtering and aggregation."
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/CQElement"
+        dateAggregationMode:
+          $ref: "#/components/schemas/DateAggregationMode"
+        type:
+          type: string
+          enum:
+            - CONCEPT_QUERY
+
+    Query:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_QUERY: "#/components/schemas/ConceptQuery"
+          ABSOLUTE_FORM_QUERY: "#/components/schemas/AbsoluteFormQuery"
+          ENTITY_DATE_QUERY: "#/components/schemas/EntityDateQuery"
+          RELATIVE_FORM_QUERY: "#/components/schemas/RelativeFormQuery"
+          ARRAY_CONCEPT_QUERY: "#/components/schemas/ArrayConceptQuery"
+          SECONDARY_ID_QUERY: "#/components/schemas/secondary-Id-query"
+          TABLE_EXPORT: "#/components/schemas/TableExportQuery"
+      oneOf:
+        - $ref: "#/components/schemas/ConceptQuery"
+        - $ref: "#/components/schemas/AbsoluteFormQuery"
+        - $ref: "#/components/schemas/EntityDateQuery"
+        - $ref: "#/components/schemas/RelativeFormQuery"
+        - $ref: "#/components/schemas/ArrayConceptQuery"
+        - $ref: "#/components/schemas/SecondaryIdQuery"
+        - $ref: "#/components/schemas/TableExportQuery"
+
+    ErrorInfo:
+      description: Basic format of an error.
+      type: object
+      properties:
+        Id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+          additionalProperties: true
+
+    EntityPreviewConfig:
+      description: Frontend configuration for the entity-preview.
+      type: object
+      properties:
+        observationPeriodMin:
+          $ref: "#/components/schemas/date"
+        all:
+          description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+        default:
+          description: For frontend, list of sources to select by default.
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+    PreviewConfig:
+      description: "Configuration to customize and integrate a Conquery instance."
+      type: object
+      properties:
+        observationStart:
+          type: string
+          description: "Default start date of entity-preview."
+        infoCardSelects:
+          type: array
+          items:
+            type: object
+            properties:
+              selectId:
+                $ref: "#/components/schemas/SelectId"
+              description:
+                type: string
+              label:
+                type: string
+
+        timeStratifiedSelects:
+          type: array
+          items:
+            properties:
+              description:
+                type: string
+              label:
+                type: string
+              selects:
+                type: array
+                items:
+                  properties:
+                    selectId:
+                      $ref: "#/components/schemas/SelectId"
+                    description:
+                      type: string
+                    label:
+                      type: string
+        hidden:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        allConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        defaultConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        searchFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterId"
+
+    EntityHistoryExecutionStatus:
+      description: "Specific execution info for a entity-preview, containing additional information for the entity."
+      allOf:
+        - $ref: "#/components/schemas/FullExecutionStatus"
+        - type: object
+          properties:
+            infos:
+              description: Auxiliary information to the entity.
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  typeInfo:
+                    type: string
+                  value:
+                    type: string
+                  semantics:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Semantics"
+            timeStratifiedInfos:
+              description: "Results stratified in time for every year and quarter for selects defined in PreviewConfig.timeStratifiedSelects of queried time."
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    description: "Display label of the group of Selects."
+                    type: string
+                  description:
+                    description: "Detailed description of the selects."
+                    type: string
+                  columns:
+                    allOf:
+                      - $ref: "#/components/schemas/ColumnDescription"
+                      - description: "Description of the columns of totals, years and quarters."
+                  totals:
+                    description: "Values for the entire observation period."
+                    type: object
+                    additionalProperties:
+                      type: string
+                  years:
+                    description: "One entry for each year, containing the values aggregated for each year and its quarters."
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        year:
+                          description: "The year of the entries."
+                          type: integer
+                        values:
+                          description: "Aggregated values for the whole year."
+                          type: object
+                          additionalProperties: true
+                        quarters:
+                          description: "For each contained quarter an entry also containing the aggregated values."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              quarter:
+                                type: integer
+                                minimum: 1
+                                maximum: 4
+                              values:
+                                description: "Aggregated values for the quarter."
+                                type: object
+                                additionalProperties: true
+
+    FullExecutionStatus:
+      allOf:
+        - $ref: "#/components/schemas/QueryStatus"
+        - type: object
+          properties:
+            progress:
+              description: Progress of the query.
+              nullable: true
+              type: number
+              minimum: 0
+              maximum: 1
+            columnDescriptions:
+              description: Metadata of the queries result by column.
+              type: array
+              items:
+                $ref: "#/components/schemas/ColumnDescription"
+            canExpand:
+              description: Flag for the frontend, if the query can be rendered by it and therefore should allow expansion.
+              type: boolean
+            query:
+              $ref: "#/components/schemas/Query"
+            error:
+              $ref: "#/components/schemas/ErrorInfo"
+            availableSecondaryIds:
+              description: List of all secondaryIds available inside this query, this is used by the frontend to display them to users when reusing queries.
+              type: array
+              items:
+                $ref: "#/components/schemas/SecondaryIdId"
+
+paths:
+  /frontend/config:
+    get:
+      summary: An Endpoint describing the configuration for the frontend.
+      tags:
+        - frontend
+      operationId: get-FrontendConfig
+      responses:
+        "200":
+          description: The Configuration for the Frontend
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrontendConfig"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /datasets/{dataset}/entity-preview:
+    parameters:
+      - $ref: "#/components/parameters/Dataset"
+    get:
+      tags:
+        - frontend
+        - entity-preview
+      operationId: get-EntityPreviewConfig
+      summary: Retrieve config and defaults for entity-preview for the frontend.
+      responses:
+        "200":
+          description: The config.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityPreviewConfig"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /me:
+    get:
+      tags:
+        - frontend
+        - user
+      operationId: get-me
+      summary: Fetches description of the currently logged in user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+          description: Description of the user
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /datasets:
+    get:
+      tags:
+        - frontend
+      operationId: list-datasets
+      summary: Fetch all datasets available to the User.
+      responses:
+        "200":
+          description: The available datasets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FrontendDatasetId"
+  /concepts/{concept}/resolve:
+    post:
+      tags:
+        - concept
+      parameters:
+        - $ref: "#/components/parameters/Concept"
+      operationId: resolve-concepts
+      summary: Resolve values to concept-ids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                concepts:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '400':
+          description: When the requested Concept does not have children.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: Resolved Concepts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolvedConceptsResult"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /datasets/{dataset}/queries:
+    parameters:
+      - $ref: "#/components/parameters/Dataset"
+    get:
+      tags:
+        - query
+        - dataset
+      operationId: list-queries
+      summary: Fetch Status and metadata of all queries visible to the user.
+      responses:
+        "200":
+          description: The Status and Metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QueryStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    post:
+      tags:
+        - query
+        - dataset
+      operationId: post-query
+      summary: Submit a query for execution in the dataset.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Query"
+      responses:
+        "200":
+          description: Status of the submitted query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullExecutionStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /queries/{query}:
+    parameters:
+      - $ref: "#/components/parameters/Query"
+    get:
+      tags:
+        - query
+      operationId: get-QueryStatus
+      summary: Get Status and metadata of Query
+      responses:
+        "200":
+          description: The Status and Metadata.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/FullExecutionStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    patch:
+      tags:
+        - query
+      summary: Update a query.
+      operationId: patch-query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Query"
+      responses:
+        "200":
+          description: Description of the updated execution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullExecutionStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    delete:
+      summary: Delete the query.
+      tags:
+        - query
+      operationId: delete-query
+      responses:
+        "200":
+          description: Query was deleted.
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /queries/{query}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/Query"
+    post:
+      summary: Cancel a running query.
+      tags:
+        - query
+      operationId: cancel-query
+      responses:
+        "200":
+          description: Query was cancelled.
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /queries/{query}/reexecute:
+    parameters:
+      - $ref: "#/components/parameters/Query"
+    post:
+      summary: Restart a query. Useful for when it is empty after a restart, or the underlying data has changed.
+      tags:
+        - query
+      operationId: reexecute-query
+      responses:
+        "200":
+          description: Description of restarted Query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullExecutionStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /datasets/{dataset}/queries/resolve-entities:
+    parameters:
+      - $ref: "#/components/parameters/Dataset"
+    post:
+      tags:
+        - entity-preview
+      operationId: resolve-entities
+      summary: Search for a few entities, returning their ids.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/FilterValue"
+      responses:
+        "200":
+          description: List of tuple of ids.
+          content:
+            application/json:
+              example: [ { "kind1": "id1", "kind2": "id2" }, { "kind1": "id3", "kind2": "id4" } ]
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+
+
+  /datasets/{dataset}/queries/entity:
+    parameters:
+      - $ref: "#/components/parameters/Dataset"
+    post:
+      tags:
+        - entity-preview
+      operationId: get-entity-preview
+      summary: Submit a query for the history of a single entity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idKind:
+                  description: The kind of the entity Id. Options are made available through `ColumnConfig#name`
+                  type: string
+                entityId:
+                  description: The Id of the entity.
+                  type: string
+                time:
+                  $ref: "#/components/schemas/DateRange"
+                sources:
+                  description: List of connectorIds to export their backing tables.
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ConnectorId"
+      responses:
+        "200":
+          description: Description of the history of the entity.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityHistoryExecutionStatus"
+        "401":
+          $ref: "#/components/responses/unauthorized"

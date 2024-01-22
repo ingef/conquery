@@ -4,13 +4,20 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import SplitPane from "react-split-pane";
 
-import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
+import type {
+  EntityInfo,
+  HistorySources,
+  ResultUrlWithLabel,
+  SelectOptionT,
+  TimeStratifiedInfo,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { ResizeHandle } from "../common/ResizeHandle";
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { EntityHeader } from "./EntityHeader";
@@ -18,8 +25,9 @@ import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
-import { Timeline } from "./Timeline";
-import { DEFAULT_ID_KIND, useUpdateHistorySession } from "./actions";
+import Timeline from "./Timeline";
+import VisibilityControl from "./VisibilityControl";
+import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 
 const FullScreen = styled("div")`
@@ -61,6 +69,7 @@ const SidebarBottom = styled("div")`
 
 const Header = styled("div")`
   display: flex;
+  flex-direction: row-reverse;
   gap: 15px;
   justify-content: space-between;
 `;
@@ -105,18 +114,26 @@ export const History = () => {
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
   );
-  const resultUrls = useSelector<StateT, string[]>(
+  const currentEntityTimeStratifiedInfos = useSelector<
+    StateT,
+    TimeStratifiedInfo[]
+  >((state) => state.entityHistory.currentEntityTimeStratifiedInfos);
+  const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
 
+  const [blurred, setBlurred] = useState(false);
+  const toggleBlurred = useCallback(() => setBlurred((v) => !v), []);
+  useHotkeys("p", toggleBlurred, [toggleBlurred]);
+
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
-  useHotkeys("shift+option+h", () => {
+  useHotkeys("shift+alt+h", () => {
     setShowAdvancedControls((v) => !v);
   });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   const { options, sourcesSet, sourcesFilter, setSourcesFilter } =
     useSourcesControl();
@@ -136,6 +153,10 @@ export const History = () => {
     setCurrentEntityStatus,
   } = useEntityStatus({ currentEntityId: currentEntityId?.id || null });
 
+  const onResetEntityStatus = useCallback(() => {
+    setEntityIdsStatus({});
+  }, [setEntityIdsStatus]);
+
   const onLoadFromFile = useCallback(
     ({
       label,
@@ -145,10 +166,8 @@ export const History = () => {
     }: LoadingPayload) => {
       updateHistorySession({
         label,
-        // Here, we're assuming that ids from the uploaded file have a default id kind
-        // TODO: possibly allow users to specifiy the id kind from the file they're uploading
-        entityIds: loadedEntityIds.map((id) => ({ id, kind: DEFAULT_ID_KIND })),
-        entityId: { id: loadedEntityIds[0], kind: DEFAULT_ID_KIND },
+        entityIds: loadedEntityIds,
+        entityId: loadedEntityIds[0],
       });
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);
@@ -156,83 +175,115 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
-  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll } =
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll, openAll } =
     useOpenCloseInteraction();
 
   return (
     <FullScreen>
-      <SplitPane
-        split="vertical"
-        minSize={200}
-        maxSize={-300}
-        defaultSize="20%"
-      >
-        <SxNavigation
-          entityIds={entityIds}
-          entityIdsStatus={entityIdsStatus}
-          currentEntityId={currentEntityId}
-          currentEntityIndex={currentEntityIndex}
-          entityStatusOptions={entityStatusOptions}
-          setEntityStatusOptions={setEntityStatusOptions}
-          onLoadFromFile={onLoadFromFile}
-        />
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <Main>
-            <Header>
-              {currentEntityId && (
-                <EntityHeader
-                  currentEntityIndex={currentEntityIndex}
-                  currentEntityId={currentEntityId}
-                  currentEntityInfos={currentEntityInfos}
-                  status={currentEntityStatus}
-                  setStatus={setCurrentEntityStatus}
-                  entityStatusOptions={entityStatusOptions}
-                />
-              )}
-              <Controls>
-                <SxSourcesControl
-                  options={options}
-                  sourcesFilter={sourcesFilter}
-                  setSourcesFilter={setSourcesFilter}
-                />
-              </Controls>
-            </Header>
-            <Flex>
-              <Sidebar>
-                {showAdvancedControls && (
-                  <DetailControl
-                    detailLevel={detailLevel}
-                    setDetailLevel={setDetailLevel}
+      <PanelGroup units="pixels" direction="horizontal">
+        <Panel minSize={400} defaultSize={400} maxSize={800}>
+          <SxNavigation
+            blurred={blurred}
+            entityIds={entityIds}
+            entityIdsStatus={entityIdsStatus}
+            currentEntityId={currentEntityId}
+            currentEntityIndex={currentEntityIndex}
+            entityStatusOptions={entityStatusOptions}
+            setEntityStatusOptions={setEntityStatusOptions}
+            onLoadFromFile={onLoadFromFile}
+            onResetHistory={onResetEntityStatus}
+          />
+        </Panel>
+        <ResizeHandle />
+        <Panel minSize={500}>
+          <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
+            <Main>
+              <Header>
+                <Controls>
+                  <SxSourcesControl
+                    options={options}
+                    sourcesFilter={sourcesFilter}
+                    setSourcesFilter={setSourcesFilter}
+                  />
+                </Controls>
+                {currentEntityId && (
+                  <EntityHeader
+                    blurred={blurred}
+                    currentEntityIndex={currentEntityIndex}
+                    currentEntityId={currentEntityId}
+                    status={currentEntityStatus}
+                    setStatus={setCurrentEntityStatus}
+                    entityStatusOptions={entityStatusOptions}
                   />
                 )}
-                <InteractionControl onCloseAll={closeAll} />
-                <ContentControl
-                  value={contentFilter}
-                  onChange={setContentFilter}
-                />
-                <SidebarBottom>
-                  {resultUrls.length > 0 && (
-                    <DownloadResultsDropdownButton
-                      tiny
-                      resultUrls={resultUrls}
-                      tooltip={t("history.downloadEntityData")}
+              </Header>
+              <Flex>
+                <Sidebar>
+                  <VisibilityControl
+                    blurred={blurred}
+                    toggleBlurred={toggleBlurred}
+                  />
+                  {showAdvancedControls && (
+                    <DetailControl
+                      detailLevel={detailLevel}
+                      setDetailLevel={setDetailLevel}
                     />
                   )}
-                </SidebarBottom>
-              </Sidebar>
-              <SxTimeline
-                detailLevel={detailLevel}
-                sources={sourcesSet}
-                contentFilter={contentFilter}
-                getIsOpen={getIsOpen}
-                toggleOpenYear={toggleOpenYear}
-                toggleOpenQuarter={toggleOpenQuarter}
-              />
-            </Flex>
-          </Main>
-        </ErrorBoundary>
-      </SplitPane>
+                  <InteractionControl
+                    onCloseAll={closeAll}
+                    onOpenAll={openAll}
+                  />
+                  <ContentControl
+                    value={contentFilter}
+                    onChange={setContentFilter}
+                  />
+                  <SidebarBottom>
+                    {resultUrls.length > 0 && (
+                      <DownloadResultsDropdownButton
+                        tiny
+                        resultUrls={resultUrls}
+                        tooltip={t("history.downloadEntityData")}
+                      />
+                    )}
+                  </SidebarBottom>
+                </Sidebar>
+                <SxTimeline
+                  blurred={blurred}
+                  detailLevel={detailLevel}
+                  sources={sourcesSet}
+                  contentFilter={contentFilter}
+                  currentEntityInfos={currentEntityInfos}
+                  currentEntityTimeStratifiedInfos={
+                    currentEntityTimeStratifiedInfos
+                  }
+                  getIsOpen={getIsOpen}
+                  toggleOpenYear={toggleOpenYear}
+                  toggleOpenQuarter={toggleOpenQuarter}
+                />
+              </Flex>
+            </Main>
+          </ErrorBoundary>
+        </Panel>
+      </PanelGroup>
     </FullScreen>
+  );
+};
+
+export const useDefaultStatusOptions = () => {
+  const { t } = useTranslation();
+
+  return useMemo(
+    () => [
+      {
+        label: t("history.options.check"),
+        value: t("history.options.check") as string,
+      },
+      {
+        label: t("history.options.noCheck"),
+        value: t("history.options.noCheck") as string,
+      },
+    ],
+    [t],
   );
 };
 
@@ -241,19 +292,9 @@ const useEntityStatus = ({
 }: {
   currentEntityId: string | null;
 }) => {
-  const { t } = useTranslation();
-  const [entityStatusOptions, setEntityStatusOptions] = useState<
-    SelectOptionT[]
-  >([
-    {
-      label: t("history.options.check"),
-      value: t("history.options.check") as string,
-    },
-    {
-      label: t("history.options.noCheck"),
-      value: t("history.options.noCheck") as string,
-    },
-  ]);
+  const defaultStatusOptions = useDefaultStatusOptions();
+  const [entityStatusOptions, setEntityStatusOptions] =
+    useState<SelectOptionT[]>(defaultStatusOptions);
 
   const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
   const setCurrentEntityStatus = useCallback(
@@ -388,10 +429,27 @@ const useOpenCloseInteraction = () => {
     setIsOpen({});
   }, []);
 
+  const openAll = useCallback(() => {
+    const lastYearsToUse = 20;
+    const currYear = new Date().getFullYear();
+    const years = [...Array(lastYearsToUse).keys()].map((i) => currYear - i);
+
+    const newIsOpen: Record<string, boolean> = {};
+
+    for (const year of years) {
+      for (const quarter of [1, 2, 3, 4]) {
+        newIsOpen[toId(year, quarter)] = true;
+      }
+    }
+
+    setIsOpen(newIsOpen);
+  }, [toId]);
+
   return {
     getIsOpen,
     toggleOpenYear,
     toggleOpenQuarter,
     closeAll,
+    openAll,
   };
 };

@@ -1,29 +1,38 @@
 name: "Test Frontend"
 
 on:
+  push:
+    branches:
+      # Always run on protected branches
+      - master
+      - develop
+      - release
   pull_request:
     paths:
       - "frontend/**"
 
 jobs:
-  unit-tests:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 6
-    strategy:
-      matrix:
-        node-version: [16.x]
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
       - name: install dependencies
         working-directory: ./frontend
-        run: yarn --ignore-platform
+        run: npm install
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
+      - name: lint
+        working-directory: ./frontend
+        run: npm run lint
+      - name: check format
+        working-directory: ./frontend
+        run: npm run checkformat
       - name: test
         working-directory: ./frontend
-        run: yarn test
+        run: npm run test

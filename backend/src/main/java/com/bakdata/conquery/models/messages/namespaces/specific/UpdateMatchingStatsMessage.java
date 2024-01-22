@@ -1,15 +1,16 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -24,6 +25,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Functions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +35,22 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class UpdateMatchingStatsMessage extends WorkerMessage {
+
+	@NsIdRefCollection
+	private final Collection<Concept<?>> concepts;
 
 
 	@Override
 	public void react(Worker worker) throws Exception {
-		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker));
+		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker, concepts));
 	}
 
 	@RequiredArgsConstructor
 	private static class UpdateMatchingStatsJob extends Job {
 		private final Worker worker;
+		private final Collection<Concept<?>> concepts;
 
 		@Override
 		public String getLabel() {
@@ -58,26 +65,26 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			}
 
 			final ProgressReporter progressReporter = getProgressReporter();
-			progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+			progressReporter.setMax(concepts.size());
 
-			log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+			log.info("BEGIN update Matching stats for {} Concepts", concepts.size());
 
-			// SubJobs collect into this Map.
-			final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages =
-					new ConcurrentHashMap<>(worker.getStorage().getAllConcepts().size()
-											* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
+			final Map<? extends Concept<?>, CompletableFuture<Void>>
+					subJobs =
+					concepts.stream()
+							.collect(Collectors.toMap(Functions.identity(),
+													  concept -> CompletableFuture.runAsync(() -> {
+														  final Map<ConceptElement<?>, MatchingStats.Entry>
+																  matchingStats =
+																  new HashMap<>(concept.countElements());
 
+														  calculateConceptMatches(concept, matchingStats, worker);
 
-			Map<? extends Concept<?>, CompletableFuture<?>> subJobs =
-					worker.getStorage().getAllConcepts()
-						  .stream()
-						  .collect(Collectors.toMap(
-								  Functions.identity(),
-								  concept -> CompletableFuture.runAsync(() -> {
-									  calculateConceptMatches(concept, messages, worker);
-									  progressReporter.report(1);
-								  }, worker.getJobsExecutorService())
-						  ));
+														  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+
+														  progressReporter.report(1);
+													  }, worker.getJobsExecutorService())
+							));
 
 
 			log.debug("All jobs submitted. Waiting for completion.");
@@ -110,19 +117,12 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 				}
 			} while (!all.isDone());
 
-			log.debug("All threads are done.");
-
-			if (messages.isEmpty()) {
-				log.warn("Results were empty.");
-			}
-			else {
-				worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
-			}
+			log.debug("DONE collecting matching stats for {}", worker.getInfo().getDataset());
 
 		}
 
 
-		private void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
 			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
@@ -132,8 +132,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 				}
 
 				try {
-					Bucket bucket = cBlock.getBucket();
-					Table table = bucket.getTable();
+					final Bucket bucket = cBlock.getBucket();
+					final Table table = bucket.getTable();
 
 					for (int entity : bucket.entities()) {
 
@@ -146,8 +146,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 							if (!(concept instanceof TreeConcept) || localIds == null) {
 
-								results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
-									   .addEvent(table, bucket, event, entity);
+								results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
 
 								continue;
 							}

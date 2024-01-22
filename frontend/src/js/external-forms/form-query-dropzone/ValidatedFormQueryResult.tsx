@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useGetQuery } from "../../api/api";
-import { useDatasetId } from "../../dataset/selectors";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import FormQueryResult from "./FormQueryResult";
@@ -26,7 +25,6 @@ const ValidatedFormQueryResult = ({
   queryResult,
   ...props
 }: PropsT) => {
-  const datasetId = useDatasetId();
   const getQuery = useGetQuery();
   const { t } = useTranslation();
 
@@ -35,9 +33,9 @@ const ValidatedFormQueryResult = ({
   useEffect(
     function validateQuery() {
       const loadAndValidateQuery = async () => {
-        if (datasetId && queryResult) {
+        if (queryResult) {
           try {
-            await getQuery(datasetId, queryResult.id);
+            await getQuery(queryResult.id);
             setLocalError(false);
           } catch (e) {
             setLocalError(true);
@@ -48,7 +46,7 @@ const ValidatedFormQueryResult = ({
 
       loadAndValidateQuery();
     },
-    [datasetId, queryResult],
+    [queryResult, getQuery, t, onInvalid],
   );
 
   const error = localError ? t("previousQuery.loadError") : undefined;

@@ -3,12 +3,11 @@
   "headline": "Queries and Analyses",
   "error": {
     "sorry": "Sorry, something went wrong here",
-    "description": "Please try again. If this happens again, please leave us a message. That way, we can fix this issue.",
-    "reload": "Refresh page"
-  },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "This is an example error",
-    "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"
+    "description": "But it's not your fault. It's an issue on our side.",
+    "reset": "Reset",
+    "resetDescription": "Try to reset. If the issue happens again, please reach out to us. Then we can fix this issue sooner.",
+    "reload": "Refresh page",
+    "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
   "leftPane": {
     "conceptTrees": "Concepts",
@@ -34,7 +33,6 @@
     "showingMismatches": "Showing full trees"
   },
   "queryRunner": {
-    "errorDates": "Invalid: all date ranges excluded from time calculation",
     "start": "Start Query",
     "stop": "Stop Query",
     "stopSuccess": "Query stopped",
@@ -58,11 +56,12 @@
     "previousQuery": "Query",
     "loadingPreviousQuery": "Loading Query Details",
     "secondaryId": "Analysis layer",
+    "secondaryIdTooltip": "Additional links between the concepts can be determined here. By default, the link is made on the entity level. If another option is selected the link will be additionally made on it.",
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor",
+    "clear": "Clear settings",
     "clearConfirm": "Clear now",
     "hasDefaultSettings": "Uses default settings",
     "hasNonDefaultSettings": "Has changed settings"
@@ -82,10 +81,10 @@
     "aConceptList": "a concept list"
   },
   "datasetSelector": {
-    "label": "Data sets",
-    "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets",
-    "disabled": "Can't change the data set at the moment."
+    "label": "Datasets",
+    "pleaseChoose": "Choose a dataset",
+    "error": "Could not load datasets",
+    "disabled": "Can't change the dataset at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
@@ -137,7 +136,6 @@
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
-    "optional": "Optional",
     "back": "Back",
     "any": "Any",
     "save": "Save",
@@ -165,9 +163,13 @@
     "min": "Min",
     "max": "Max",
     "std": "SD",
+    "sum": "Sum",
     "logout": "Logout",
     "dateInvalid": "Invalid date",
-    "missingLabel": "Unknown"
+    "missingLabel": "Unknown",
+    "import": "Import",
+    "openFileDialog": "Select file",
+    "shortcut": "Key"
   },
   "tooltip": {
     "headline": "Info",
@@ -206,7 +208,6 @@
   },
   "inputMultiSelect": {
     "dndPlaceholder": "Choose or drop file ...",
-    "openFileDialog": "Select file",
     "insertAll": "Insert all",
     "options_one": "1 Option",
     "options_other": "{{count}} Options",
@@ -230,7 +231,8 @@
     "shareError": "Could not share query",
     "deleteError": "Could not delete query",
     "editFolders": "Edit folders",
-    "deleteNow": "Delete query now"
+    "deleteNow": "Delete query now",
+    "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
     "all": "All",
@@ -264,11 +266,12 @@
   },
   "externalForms": {
     "manualButton": "Go to manual",
-    "forms": "Forms",
+    "forms": "Form",
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
-      "invalidDateRange": "End date is smaller than start date"
+      "invalidDateRange": "End date is smaller than start date",
+      "validSelectRequired": "Valid select required"
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",
@@ -351,9 +354,9 @@
     "unresolvedId_other": "Couldn't resolve ID for the following {{count}} lines"
   },
   "uploadConceptListModal": {
-    "headline": "Upload concepts",
+    "headline": "Upload concepts or filters from a list",
     "label": "Name of the concept",
-    "selectConceptRootNode": "Choose a concept tree root",
+    "selectConceptRootNode": "What's in the list you dropped?",
     "insertNode": "Insert now",
     "result": "Result",
     "resolvedCodes_one": "1 value resolved.",
@@ -361,7 +364,12 @@
     "unknownCodes_one": "1 value not resolved",
     "unknownCodes_other": "{{count}} values not resolved",
     "error": "An error occurred when resolving the values.",
-    "nothingResolved": "No concept resolved."
+    "nothingResolved": "No concept resolved.",
+    "filterValuesFrom": "Filter values from",
+    "conceptValuesFrom": "Concepts from",
+    "includeUnresolved": "Include unresolved values",
+    "includeUnresolvedTooltipDisabled": "Couldn't resolve any value.",
+    "insertRegardless": "Insert regardless"
   },
   "uploadFilterListModal": {
     "headline": "Upload filter values"
@@ -441,7 +449,8 @@
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
-    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
+    "tabEditorV2": "An extended editor that allows advanced queries.",
+    "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
     "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
     "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
     "editConceptName": "Edit concept name",
@@ -452,6 +461,15 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "No data available",
+    "blurred": "Data visibility",
+    "emptyTimeline": {
+      "headline": "History",
+      "description": "Exploring individual events chronologically.",
+      "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
+      "descriptionWithoutId": "Select an ID from the list on the left side",
+      "descriptionWithId": "Couldn't find any data for this ID."
+    },
     "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",
     "marked": "with status",
@@ -463,7 +481,9 @@
     "downloadEntityData": "Download entity history",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
-    "dates": "Dates",
+    "openAll": "Open all",
+    "searchEntitiesButton": "Start History",
+    "error": "Couldn't load history for this ID.",
     "options": {
       "check": "interesting",
       "noCheck": "not interesting"
@@ -482,12 +502,57 @@
     },
     "settings": {
       "headline": "History session settings",
+      "reset": "Reset history",
+      "resetConfirm": "Reset now",
       "selectStatusHeadline": "Possible status values",
       "selectStatusPlaceholder": "Options ...",
       "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
     },
     "load": {
+      "importDescription": "Please provide aa CSV format with columns<br /><code><strong>ID kind</strong>;<strong>ID</strong> (+ optionally: ;<strong>status 1</strong>;<strong>status 2</strong>;...)</code>",
+      "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
-    }
+    },
+    "searchResultLabel": "Found IDs"
+  },
+  "importModal": {
+    "headline": "Import codes",
+    "subtitle": "Please paste the data into the text area below, one code per line.",
+    "paste": "Paste from clipboard",
+    "submit": "Submit",
+    "pasted": "Imported"
+  },
+  "editorV2": {
+    "time": "TIME",
+    "and": "AND",
+    "or": "OR",
+    "clear": "Reset editor",
+    "clearConfirm": "Reset now",
+    "flip": "Flip",
+    "dates": "Dates",
+    "negate": "Negate",
+    "connector": "Connector",
+    "timeConnection": "Time connection",
+    "editTimeConnection": "Edit time connection",
+    "delete": "Delete",
+    "expand": "Expand",
+    "edit": "Details",
+    "initialDropText": "Drop a concept or query here.",
+    "datesExcluded": "No dates",
+    "outputSection": "Output values",
+    "filtersSection": "Filters",
+    "every": "Every",
+    "some": "Some",
+    "earliest": "The earliest",
+    "latest": "The latest",
+    "dateRangeFrom": "date range from",
+    "dayInterval": "Days",
+    "intervalSome": "some time",
+    "intervalMinDays": "at least {{days}} days",
+    "intervalMaxDays": "at most {{days}} days",
+    "intervalMinMaxDays": "between {{minDays}} and {{maxDays}} days",
+    "before": "before",
+    "after": "after",
+    "while": "while"
   }
 }

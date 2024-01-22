@@ -6,13 +6,16 @@ import type { ConceptQueryNodeType, StandardQueryNodeT } from "./types";
 export function getRootNodeLabel(node: StandardQueryNodeT) {
   if (!nodeIsConceptQueryNode(node) || !node.ids || !node.tree) return null;
 
-  const nodeIsRootNode = node.ids.indexOf(node.tree) !== -1;
+  const nodeIsRootNode = node.ids.includes(node.tree);
+  const root = getConceptById(node.tree, node.tree);
 
-  if (nodeIsRootNode) return null;
+  if (nodeIsRootNode) {
+    const noRootOrSameLabel = !root || root.label === node.label;
 
-  const root = getConceptById(node.tree);
+    return noRootOrSameLabel ? null : root.label;
+  }
 
-  return !!root ? root.label : null;
+  return root ? root.label : null;
 }
 
 export function isLabelPristine(node: ConceptQueryNodeType) {

@@ -6,7 +6,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -51,13 +50,9 @@ public class QueryExecutor implements Closeable {
 		return cancelledQueries.contains(query);
 	}
 
-	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
-		result.finish(Collections.emptyList(), Optional.of(error), worker);
-	}
+	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
-	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result) {
-		Collection<Entity> entities = executionContext.getBucketManager().getEntities().values();
-		ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
+		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
 
 		if (entities.isEmpty()) {
 			log.warn("Entities for query are empty");
@@ -65,7 +60,7 @@ public class QueryExecutor implements Closeable {
 
 		try {
 			// We log the QueryPlan once for debugging purposes.
-			if (log.isDebugEnabled()){
+			if (log.isDebugEnabled()) {
 				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
 			}
 
@@ -94,6 +89,9 @@ public class QueryExecutor implements Closeable {
 		}
 	}
 
+	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
+		result.finish(Collections.emptyList(), Optional.of(error), worker);
+	}
 
 	@Override
 	public void close() throws IOException {

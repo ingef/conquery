@@ -1,11 +1,10 @@
 import styled from "@emotion/styled";
 import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
-  useCallback,
-  useLayoutEffect,
-  FC,
-  useEffect,
 } from "react";
 import { FixedSizeList } from "react-window";
 
@@ -17,11 +16,6 @@ import type { ProjectItemT } from "./ProjectItem";
 import ProjectItemDragContainer from "./ProjectItemDragContainer";
 import ShareProjectItemModal from "./ShareProjectItemModal";
 
-interface PropsT {
-  datasetId: DatasetT["id"] | null;
-  items: ProjectItemT[];
-}
-
 const ROW_SIZE = 62;
 const ROOT_PADDING_Y = 4;
 
@@ -31,7 +25,13 @@ const Root = styled("div")`
   padding: ${ROOT_PADDING_Y}px 0;
 `;
 
-const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
+export const ProjectItems = ({
+  datasetId,
+  items,
+}: {
+  items: ProjectItemT[];
+  datasetId: DatasetT["id"] | null;
+}) => {
   const [itemToShare, setItemToShare] = useState<ProjectItemT | null>(null);
   const [itemToEditFolders, setItemToEditFolders] =
     useState<ProjectItemT | null>(null);
@@ -124,5 +124,3 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
     </Root>
   );
 };
-
-export default ProjectItems;

@@ -5,25 +5,30 @@ import type {
   ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
+  ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
+  loadHistoryData,
   openHistory,
   resetCurrentEntity,
+  resetHistory,
 } from "./actions";
 
 // TODO: This is quite inaccurate
 export type EntityEvent = {
-  dates: {
-    from: string; // e.g. 2022-01-31
-    to: string; // e.g. 2022-01-31
-  };
-  [key: string]: any;
+  [key: string]: unknown;
 };
+
+// Utility type, after transforming the date rows from a string into this format
+export interface DateRow {
+  from: string;
+  to: string;
+}
 
 export interface EntityId {
   id: string;
@@ -33,12 +38,14 @@ export interface EntityId {
 export type EntityHistoryStateT = {
   defaultParams: {
     sources: HistorySources;
+    searchConcept: string | null;
+    searchFilters: string[];
   };
   isLoading: boolean;
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   label: string;
   entityIds: EntityId[];
   currentEntityUniqueSources: string[];
@@ -46,11 +53,14 @@ export type EntityHistoryStateT = {
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
+  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
 };
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
     sources: { all: [], default: [] },
+    searchConcept: null,
+    searchFilters: [],
   },
   label: "",
   columns: {},
@@ -64,6 +74,7 @@ const initialState: EntityHistoryStateT = {
   currentEntityData: [],
   currentEntityCsvUrl: "",
   currentEntityInfos: [],
+  currentEntityTimeStratifiedInfos: [],
 };
 
 export default function reducer(
@@ -75,7 +86,9 @@ export default function reducer(
       return {
         ...state,
         defaultParams: {
-          sources: action.payload.sources,
+          sources: { all: action.payload.all, default: action.payload.default },
+          searchConcept: action.payload.searchConcept,
+          searchFilters: action.payload.searchFilters || [],
         },
       };
     case getType(loadHistoryData.request):
@@ -95,6 +108,22 @@ export default function reducer(
         currentEntityData: [],
         currentEntityCsvUrl: "",
         currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
+      };
+    case getType(resetHistory):
+      return {
+        ...state,
+        label: "",
+        columns: {},
+        columnDescriptions: [],
+        resultUrls: [],
+        entityIds: [],
+        currentEntityUniqueSources: [],
+        currentEntityId: null,
+        currentEntityData: [],
+        currentEntityCsvUrl: "",
+        currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
       };
     case getType(openHistory):
       return { ...state, isOpen: true };

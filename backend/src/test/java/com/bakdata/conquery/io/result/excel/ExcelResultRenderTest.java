@@ -64,12 +64,12 @@ public class ExcelResultRenderTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null) {
+		ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
-						.map(ResultTestUtil.TypedSelectDummy::new)
-						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList());
+									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(select -> new SelectResultInfo(select, new CQConcept()))
+									   .collect(Collectors.toList());
 			}
 
 			@Override
@@ -112,21 +112,17 @@ public class ExcelResultRenderTest {
 		int i = 0;
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
+			DataFormatter formatter = new DataFormatter(settings.getLocale());
 			for (Cell cell : row) {
-				DataFormatter formatter = new DataFormatter(settings.getLocale());
-				switch (cell.getCellType()) {
-					case STRING:
-					case FORMULA:
-					case BOOLEAN:
-					case NUMERIC:
-						sj.add(formatter.formatCellValue(cell));
-						break;
-					case BLANK:
-						// We write 'null' here to express that the cell was empty
-						sj.add("null");
-						break;
-					default: throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
-				}
+
+				final String formatted = switch (cell.getCellType()) {
+					case STRING, FORMULA, BOOLEAN, NUMERIC -> formatter.formatCellValue(cell);
+					// We write 'null' here to express that the cell was empty
+					case BLANK -> "null";
+					default -> throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
+				};
+
+				sj.add(formatted);
 			}
 			computed.add(sj.toString());
 			i++;
@@ -164,8 +160,16 @@ public class ExcelResultRenderTest {
 
 	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
 		String printVal = info.getType().printNullable(settings, val);
+
+		if (info.getType().equals(ResultType.BooleanT.INSTANCE)) {
+			/**
+			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
+			 */
+			printVal = (Boolean) val ? "TRUE" : "FALSE";
+		}
+
 		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
-			printVal = printVal +" €";
+			printVal = printVal + " €";
 		}
 		valueJoiner.add(printVal);
 	}

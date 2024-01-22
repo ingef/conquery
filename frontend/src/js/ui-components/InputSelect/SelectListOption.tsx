@@ -5,14 +5,6 @@ import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
 
-interface StyleProps {
-  active?: boolean;
-  disabled?: boolean;
-}
-interface Props extends StyleProps {
-  option: SelectOptionT;
-}
-
 const Container = styled("div")<StyleProps>`
   padding: 3px 8px;
   cursor: pointer;
@@ -27,12 +19,9 @@ const Container = styled("div")<StyleProps>`
     css`
       background-color: ${theme.col.blueGrayVeryLight};
     `};
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      opacity: 0.5;
-      cursor: not-allowed;
-    `};
+
+  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 
   /* to style react-markdown */
   p {
@@ -40,13 +29,26 @@ const Container = styled("div")<StyleProps>`
   }
 `;
 
+interface StyleProps {
+  active?: boolean;
+  disabled?: boolean;
+}
+
+interface Props extends StyleProps {
+  option: SelectOptionT;
+}
+
 const SelectListOption = forwardRef<HTMLDivElement, Props>(
   ({ option, ...props }, ref) => {
-    const label = option.label || option.value;
+    const label = option.label || String(option.value);
 
     return (
-      <Container disabled={option.disabled} {...props} ref={ref}>
-        <ReactMarkdown>{String(label)}</ReactMarkdown>
+      <Container {...props} disabled={option.disabled} ref={ref}>
+        {option.displayLabel ? (
+          option.displayLabel
+        ) : (
+          <ReactMarkdown>{label}</ReactMarkdown>
+        )}
       </Container>
     );
   },

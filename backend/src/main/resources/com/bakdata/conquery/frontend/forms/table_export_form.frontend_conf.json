@@ -1,44 +1,84 @@
 {
   "title": {
-    "de": "Rohdatenexport"
+    "de": "Rohdatenexport",
+    "en": "Table Export"
+  },
+  "description": {
+    "en": "This form is used to output the raw tables behind the specified concepts, which are linked to the concepts. The data can be analyzed in an absolute observation period.",
+    "de": "Mit diesem Formular werden zu den angegebenen Konzepten die dahinterliegenden, rohen Tabellen ausgegeben, welche mit den Konzepten verknüpft sind. Die Daten können dabei in einem absoluten Beobachtungszeitraum analysiert werden. Die Ausgabe kann sowohl als Excel, als auch CSV heruntergeladen werden."
   },
   "type": "FULL_EXPORT_FORM",
   "fields": [
     {
+      "label": {
+        "en": "Cohort",
+        "de": "Versichertengruppe"
+      },
+      "style": {
+        "size": "h1"
+      },
+      "type": "HEADLINE"
+    },
+    {
       "name": "queryGroup",
       "type": "RESULT_GROUP",
       "label": {
-        "de": "Versichertengruppe (Anfrage)"
+        "de": "Versichertengruppe (Anfrage)",
+        "en": "Cohort (Previous Query)"
       },
       "dropzoneLabel": {
-        "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu."
+        "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu. Ist das Feld leer wird die Gesamtpopulation verwendet.",
+        "en": "Add a cohort from a previous query. When no population is provided, the entire dataset's population is used."
       },
       "validations": [
-        "NOT_EMPTY"
       ],
       "tooltip": {
-          "de": "Versichertengruppe (Anfrage) für die Daten ausgegeben werden soll."
+        "de": "Versichertengruppe (Anfrage) für die Daten ausgegeben werden soll.",
+        "en": "Cohort whose data is exported"
       }
+    },
+    {
+      "label": {
+        "de": "Zeitlicher Bezug",
+        "en": "Time Reference"
+      },
+      "style": {
+        "size": "h1"
+      },
+      "type": "HEADLINE"
     },
     {
       "name": "dateRange",
       "type": "DATE_RANGE",
       "label": {
-        "de": "Ausgabezeitraum"
+        "de": "Beobachtungszeitraum",
+        "en": "Observation Period"
       },
       "validations": [
         "NOT_EMPTY"
       ]
     },
     {
+      "label": {
+        "de": "Datengrundlage und Konzepte",
+        "en": "Attributes"
+      },
+      "style": {
+        "size": "h1"
+      },
+      "type": "HEADLINE"
+    },
+    {
       "name": "tables",
       "type": "CONCEPT_LIST",
       "label": {
-        "de": "Datenquellen"
+        "de": "Konzepte",
+        "en": "Concepts"
       },
       "isTwoDimensional": false,
       "conceptDropzoneLabel": {
-        "de": "Definiere hier die auszuspielenden Datenquellen."
+        "en": "Add a concept or a concept list",
+        "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
       },
       "validations": [
         "NOT_EMPTY"

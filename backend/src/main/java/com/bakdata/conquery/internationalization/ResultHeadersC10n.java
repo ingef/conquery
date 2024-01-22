@@ -21,11 +21,6 @@ public interface ResultHeadersC10n {
 	@De("Quelle")
 	String source();
 
-	@En("event_duration")
-	@De("Anzahl relevanter Tage")
-	String eventDuration();
-
-
 	@En("event_date")
 	@De("Indexdatum")
 	String eventDate();

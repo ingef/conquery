@@ -1,42 +1,45 @@
 {
-    "type": "FORM_TEST",
-    "label": "ABS-EXPORT-FORM ADD DEFAULT SELECT Test",
-    "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected.csv"
-    },
-    "form": {
-        "type": "EXPORT_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001",
-        "resolution": "QUARTERS",
-        "timeMode": {
-            "value": "ABSOLUTE",
-            "features": [
-                {
-                    "ids": [
-                        "alter"
-                    ],
-                    "type": "CONCEPT",
-                    "tables": [
-                        {
-                            "id": "alter.alter",
-                            "filters": []
-                        }
-                    ]
-                }
-            ],
-            "dateRange": {
-                "min": "2012-01-16",
-                "max": "2012-12-17"
-            }
-        }
-    },
-    "concepts": [
-        "/tests/form/shared/alter.concept.json"
-    ],
-    "content": {
-        "tables": [
-            "/tests/form/shared/vers_stamm.table.json"
-        ],
-        "previousQueryResults": ["tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"]
-    }
+	"type": "FORM_TEST",
+	"label": "ABS-EXPORT-FORM ADD DEFAULT SELECT Test",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"alter"
+				],
+				"type": "CONCEPT",
+				"tables": [
+					{
+						"id": "alter.alter",
+						"filters": []
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ABSOLUTE",
+			"dateRange": {
+				"min": "2012-01-16",
+				"max": "2012-12-17"
+			}
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/alter.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"
+		]
+	}
 }

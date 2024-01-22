@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +13,7 @@ import type {
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
+import { SnackMessageType } from "../../snack-message/reducer";
 import WithTooltip from "../../tooltip/WithTooltip";
 import { useLoadQueries } from "../list/actions";
 
@@ -65,7 +67,10 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
         setUploadResult(e as UploadQueryResponseT);
       } else {
         dispatch(
-          setMessage({ message: t("uploadQueryResultsModal.uploadFailed") }),
+          setMessage({
+            message: t("uploadQueryResultsModal.uploadFailed"),
+            type: SnackMessageType.ERROR,
+          }),
         );
       }
     }
@@ -77,7 +82,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
       <WithTooltip text={t("uploadQueryResults.uploadResults")}>
         <SxIconButton
           frame
-          icon="upload"
+          icon={faUpload}
           onClick={() => setIsModalOpen(true)}
         />
       </WithTooltip>

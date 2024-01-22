@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -17,7 +17,7 @@ export const useOpenableConcept = ({
   const conceptOpen = useSelector<StateT, boolean>(
     (state) => state.conceptTreesOpen[conceptId],
   );
-  const open = conceptOpen == null ? openInitially : conceptOpen;
+  const open = conceptOpen ?? openInitially;
 
   const dispatch = useDispatch();
   const onToggleOpen = () =>

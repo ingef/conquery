@@ -1,19 +1,16 @@
 import isPropValid from "@emotion/is-prop-valid";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import { IconName, library } from "@fortawesome/fontawesome-svg-core";
-import { far } from "@fortawesome/free-regular-svg-icons";
-import { fas } from "@fortawesome/free-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FC, forwardRef } from "react";
-
-library.add(fas, far);
+import { forwardRef } from "react";
 
 export interface IconStyleProps {
   left?: boolean;
   center?: boolean;
   right?: boolean;
   white?: boolean;
+  red?: boolean;
   light?: boolean;
   gray?: boolean;
   main?: boolean;
@@ -26,9 +23,8 @@ export interface IconStyleProps {
 }
 
 export interface FaIconPropsT extends IconStyleProps {
-  icon: IconName;
+  icon: IconProp;
   className?: string;
-  regular?: boolean;
 }
 
 const spin = keyframes`
@@ -43,6 +39,7 @@ const spin = keyframes`
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
+// @ts-ignore TODO: Figure out how to avoid a type error with styled here
 export const Icon = styled(FontAwesomeIcon, {
   shouldForwardProp,
 })<IconStyleProps>`
@@ -51,9 +48,11 @@ export const Icon = styled(FontAwesomeIcon, {
   text-align: ${({ center }) => (center ? "center" : "left")};
   font-size: ${({ theme, large, tiny }) =>
     large ? theme.font.md : tiny ? theme.font.tiny : theme.font.sm};
-  color: ${({ theme, white, gray, light, main, active, disabled }) =>
+  color: ${({ theme, white, gray, red, light, main, active, disabled }) =>
     disabled
       ? theme.col.grayMediumLight
+      : red
+      ? theme.col.red
       : gray
       ? theme.col.gray
       : active
@@ -73,13 +72,14 @@ export const Icon = styled(FontAwesomeIcon, {
   }
 `;
 
-const FaIcon: FC<FaIconPropsT> = forwardRef(
-  ({ icon, regular, className, ...restProps }, ref) => {
+const FaIcon = forwardRef<SVGSVGElement, FaIconPropsT>(
+  ({ icon, className, ...restProps }, ref) => {
     return (
       <Icon
-        forwardedRef={ref}
+        // @ts-ignore TODO: ref is working, try fixing the type error
+        ref={ref}
         className={`fa-fw ${className}`}
-        icon={regular ? ["far", icon] : icon}
+        icon={icon}
         {...restProps}
       />
     );

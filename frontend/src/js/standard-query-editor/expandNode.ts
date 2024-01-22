@@ -13,7 +13,7 @@ import {
   TableConfigT,
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import { TreesT } from "../concept-trees/reducer";
@@ -95,7 +95,7 @@ const mergeMultiSelectFilter = ({
       };
     }): MultiSelectFilterWithValueType | BigMultiSelectFilterWithValueType => {
   const fixedFilterType = {
-    type: savedFilter.type as typeof matchingFilter["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+    type: savedFilter.type as (typeof matchingFilter)["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
   };
 
   const basicFilter = {
@@ -109,8 +109,9 @@ const mergeMultiSelectFilter = ({
   }
 
   const hasOptions = savedFilter.options.length > 0;
+  const isMultiSelect = savedFilter.type === "MULTI_SELECT";
 
-  if (hasOptions) {
+  if (isMultiSelect && hasOptions) {
     return {
       ...basicFilter,
       value: matchingFilter.value
@@ -249,7 +250,7 @@ const mergeTables = (
 // Look for tables in the already savedConcept. If they were not included in the
 // respective query concept, exclude them.
 // Also, apply all necessary filters
-const mergeFromSavedConceptIntoNode = (
+export const mergeFromSavedConceptIntoNode = (
   node: QueryConceptNodeT,
   {
     tables,

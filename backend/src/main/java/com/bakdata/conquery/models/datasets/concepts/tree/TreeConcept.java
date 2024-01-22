@@ -84,6 +84,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	@Override
+	public void clearMatchingStats() {
+		setMatchingStats(null);
+		getAllChildren().forEach(ConceptTreeChild::clearMatchingStats);
+	}
+
+	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}
@@ -146,35 +152,39 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 					continue;
 				}
 
-				if (match == null) {
-					match = n;
-
-					if (n.getChildIndex() != null) {
-						ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
-
-						if (specificChild != null) {
-							match = specificChild;
-						}
-					}
-				}
-				else {
+				if (match != null) {
 					failed = true;
 					log.error("Value '{}' matches the two nodes {} and {} in the tree {} (row={}))"
-							, stringValue, match.getLabel(), n.getLabel(), n.getConcept().getLabel(), rowMap.getValue());
-					// TODO Why don't we return null here and drop the `failed`-flag?
+							, stringValue, match.getId(), n.getId(), n.getConcept().getId(), rowMap.getValue());
+					continue;
 				}
+
+				match = n;
+
+				if (n.getChildIndex() == null) {
+					continue;
+				}
+
+				final ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
+
+				if (specificChild == null) {
+					continue;
+				}
+
+				match = specificChild;
 			}
 
 			if (failed) {
 				return null;
 			}
-			else if (match != null) {
-				best = match;
-				currentList = match.getChildren();
+
+			// Nothing better found below, so return best-so far match
+			if (match == null) {
+				return best;
 			}
-			else {
-				break;
-			}
+
+			best = match;
+			currentList = match.getChildren();
 		}
 		return best;
 	}

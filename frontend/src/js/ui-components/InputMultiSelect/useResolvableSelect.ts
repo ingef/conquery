@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 import { SelectOptionT } from "../../api/types";
-import { getUniqueFileRows } from "../../common/helpers";
 import { usePrevious } from "../../common/helpers/usePrevious";
 
 export const useResolvableSelect = ({
@@ -33,14 +32,4 @@ export const useResolvableSelect = ({
     },
     [onResolve, previousDefaultValue, defaultValue],
   );
-
-  const onDropFile = async (file: File) => {
-    const rows = await getUniqueFileRows(file);
-
-    if (onResolve) {
-      onResolve(rows);
-    }
-  };
-
-  return { onDropFile: onResolve ? onDropFile : undefined };
 };

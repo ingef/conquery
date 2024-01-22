@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 
@@ -28,7 +28,6 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,16 +36,16 @@ import org.junit.jupiter.api.Test;
 public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
-	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
 	private ObjectMapper objectMapper;
 
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
+	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"), STORAGE);
 	private final ConceptQuery cQuery = new ConceptQuery(
-		new CQReusedQuery(managedQuery.getId()));
+			new CQReusedQuery(managedQuery.getId()));
 	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach
@@ -74,7 +73,7 @@ public class SerializingStoreDumpTest {
 				storeId.getValueType(),
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory()
+				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
 		);
 	}
 
@@ -85,10 +84,13 @@ public class SerializingStoreDumpTest {
 	public void testCorruptValueDump() throws IOException {
 		// Set dump directory to this tests temp-dir
 		config.setUnreadableDataDumpDirectory(tmpDir);
+		final StoreInfo<UserId, User> info = USER_STORE_ID;
+		final UserId invalidId = new UserId("testU2");
+
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), info);
 			store.add(user.getId(), user);
 		}
 
@@ -99,14 +101,14 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
-			store.add(new UserId("testU2"), cQuery);
+				new StoreInfo<>(info.getName(), UserId.class, QueryDescription.class));
+			store.add(invalidId, cQuery);
 		}
 
 		{
 			// Reopen the store with the initial value and try to iterate over all entries
 			// (this triggers the dump or removal of invalid entries)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), info);
 			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(0);
@@ -117,18 +119,22 @@ public class SerializingStoreDumpTest {
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
-		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION), "dump file");
-		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
+		final File[] dumpFiles = SerializingStore.makeDumpFileName(invalidId.toString(), tmpDir, info.getName()).getParentFile()
+												 .listFiles(file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
 
-		// Test if the dump is correct
-		File dumpFile = getDumpFile(dumpFileCond);
+		final File[] exceptionFiles = SerializingStore.makeDumpFileName(invalidId.toString(), tmpDir, info.getName()).getParentFile()
+													  .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
-	}
+		assertThat(dumpFiles)
+				.isNotNull()
+				.hasSize(1);
 
-	private File getDumpFile(Condition<File> dumpFileCond) {
-		return Objects.requireNonNull(tmpDir.listFiles(dumpFileCond::matches))[0];
+		assertThat(exceptionFiles)
+				.isNotNull()
+				.hasSize(1);
+
+
+		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
 	}
 
 	/**
@@ -138,10 +144,12 @@ public class SerializingStoreDumpTest {
 	public void testCorruptKeyDump() throws IOException {
 		// Set dump directory to this tests temp-dir
 		config.setUnreadableDataDumpDirectory(tmpDir);
+		final String invalidId = "not a valid conquery Id";
+		final StoreInfo<UserId, User> info = USER_STORE_ID;
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), info);
 			store.add(new UserId("testU1"), user);
 		}
 
@@ -152,14 +160,14 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
-			store.add("not a valid conquery Id", cQuery);
+				new StoreInfo<>(info.getName(), String.class, QueryDescription.class));
+			store.add(invalidId, cQuery);
 		}
 
 		{
 			// Reopen the store with the initial value and try to iterate over all entries
 			// (this triggers the dump or removal of invalid entries)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), info);
 			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(1);
@@ -171,13 +179,23 @@ public class SerializingStoreDumpTest {
 		}
 
 		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION), "dump file");
-		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
+		// The file name is bogus since the id wasn't read properly
+		final File[] dumpFiles = SerializingStore.makeDumpFileName(invalidId, tmpDir, info.getName()).getParentFile()
+												 .listFiles(file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
 
-		// Test if the dump is correct
-		File dumpFile = getDumpFile(dumpFileCond);
+		final File[] exceptionFiles = SerializingStore.makeDumpFileName(invalidId, tmpDir, info.getName()).getParentFile()
+												 .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+		assertThat(dumpFiles)
+				.isNotNull()
+				.hasSize(1);
+
+		assertThat(exceptionFiles)
+				.isNotNull()
+				.hasSize(1);
+
+
+		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
 	}
 
 	/**

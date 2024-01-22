@@ -3,6 +3,12 @@ import { ColumnDescription } from "../../api/types";
 export const isIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "ID");
 
+export const isDateColumn = (columnDescription: ColumnDescription) =>
+  columnDescription.semantics.some((s) => s.type === "EVENT_DATE");
+
+export const isSourceColumn = (columnDescription: ColumnDescription) =>
+  columnDescription.semantics.some((s) => s.type === "SOURCES");
+
 export const isGroupableColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "GROUP");
 
@@ -18,3 +24,12 @@ export const isMoneyColumn = (columnDescription: ColumnDescription) =>
 
 export const isSecondaryIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "SECONDARY_ID");
+
+export const formatCurrency = (value: number, digits?: number) =>
+  value.toLocaleString(navigator.language, {
+    style: "currency",
+    currency: "EUR",
+    unitDisplay: "short",
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });

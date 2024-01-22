@@ -1,47 +1,50 @@
 {
-    "type": "FORM_TEST",
-    "label": "ABS-EXPORT-FORM WITH SELECT SET Test",
-    "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
-    },
-    "form": {
-        "type": "EXPORT_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001",
-        "resolution": "QUARTERS",
-        "timeMode": {
-            "value": "ABSOLUTE",
-            "features": [
-                {
-                    "ids": [
-                        "two_connector"
-                    ],
-                    "type": "CONCEPT",
-                    "label": "explicitly set select",
-                    "tables": [
-                        {
-                            "id": "two_connector.table1",
-                            "selects": "two_connector.table1.liste_geburtsdatum"
-                        },
-                        {
-                            "id": "two_connector.table2"
-                        }
-                    ]
-                }
-            ],
-            "dateRange": {
-                "min": "2012-01-16",
-                "max": "2012-12-17"
-            }
-        },
-        "values": "Some arbitrary data that is frontend/user provided"
-    },
-    "concepts": [
-        "/tests/form/shared/two_connector.concept.json"
-    ],
-    "content": {
-        "tables": [
-            "/tests/form/shared/vers_stamm.table.json"
-        ],
-        "previousQueryResults": ["tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"]
-    }
+	"type": "FORM_TEST",
+	"label": "ABS-EXPORT-FORM WITH SELECT SET Test",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"two_connector"
+				],
+				"type": "CONCEPT",
+				"label": "explicitly set select",
+				"tables": [
+					{
+						"id": "two_connector.table1",
+						"selects": "two_connector.table1.liste_geburtsdatum"
+					},
+					{
+						"id": "two_connector.table2"
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ABSOLUTE",
+			"dateRange": {
+				"min": "2012-01-16",
+				"max": "2012-12-17"
+			}
+		},
+		"values": "Some arbitrary data that is frontend/user provided"
+	},
+	"concepts": [
+		"/tests/form/shared/two_connector.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"
+		]
+	}
 }

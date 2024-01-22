@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 
-import { parseStdDate, getDiffInDays } from "../common/helpers";
+import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
 import { Cell } from "./Cell";
 

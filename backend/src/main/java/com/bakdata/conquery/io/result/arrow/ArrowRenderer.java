@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -37,12 +38,12 @@ import org.apache.arrow.vector.util.Text;
 public class ArrowRenderer {
 
     public static void renderToStream(
-            Function<VectorSchemaRoot, ArrowWriter> writerProducer,
-            PrintSettings printSettings,
-            int batchSize,
-            List<ResultInfo> idHeaders,
-            List<ResultInfo> resultInfo,
-            Stream<EntityResult> results) throws IOException {
+			Function<VectorSchemaRoot, ArrowWriter> writerProducer,
+			PrintSettings printSettings,
+			ArrowConfig arrowConfig,
+			List<ResultInfo> idHeaders,
+			List<ResultInfo> resultInfo,
+			Stream<EntityResult> results) throws IOException {
 
 		List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings));
 		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
@@ -53,7 +54,7 @@ public class ArrowRenderer {
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
-			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, batchSize);
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, arrowConfig.getBatchSize());
 		}
 
     }
@@ -284,10 +285,9 @@ public class ArrowRenderer {
             return dateDayVectorFiller((DateDayVector) vector, (line) -> (Number) line[pos]);
         }
 
-        if (vector instanceof StructVector) {
-            StructVector structVector = (StructVector) vector;
+        if (vector instanceof StructVector structVector) {
 
-            List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
+			List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
             for (int i = 0; i < nestedVectors.size(); i++) {
 				nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, resultType);
@@ -295,10 +295,9 @@ public class ArrowRenderer {
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
 
-        if (vector instanceof ListVector) {
-            ListVector listVector = (ListVector) vector;
+        if (vector instanceof ListVector listVector) {
 
-            ValueVector nestedVector = listVector.getDataVector();
+			ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
 			return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, ((ResultType.ListT) (resultType)).getElementType()), (line) -> (List<?>) line[pos]);

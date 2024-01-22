@@ -1,29 +1,34 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import type { ConceptIdT, DatasetT } from "../api/types";
+import type { ConceptIdT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
+import { ModeT } from "../ui-components/InputRange";
 
 import {
-  updateNodeLabel,
   addConceptToNode,
   removeConceptFromNode,
-  toggleTable,
-  setFilterValue,
-  switchFilterMode,
   resetAllSettings,
   resetTable,
-  toggleTimestamps,
+  setDateColumn,
+  setFilterValue,
   setSelects,
   setTableSelects,
-  setDateColumn,
+  switchFilterMode,
   toggleSecondaryIdExclude,
+  toggleTable,
+  toggleTimestamps,
+  updateNodeLabel,
   useLoadFilterSuggestions,
 } from "./actions";
-import { StandardQueryNodeT } from "./types";
+import {
+  DragItemConceptTreeNode,
+  FilterWithValueType,
+  StandardQueryNodeT,
+} from "./types";
 
 interface EditedNodePosition {
   andIdx: number;
@@ -36,9 +41,6 @@ interface Props {
 }
 
 const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
-  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
-    (state) => state.datasets.selectedDatasetId,
-  );
   const node = useSelector<StateT, StandardQueryNodeT | null>(
     (state) =>
       state.queryEditor.query[editedNode.andIdx]?.elements[editedNode.orIdx],
@@ -60,7 +62,8 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
   );
 
   const onDropConcept = useCallback(
-    (concept) => dispatch(addConceptToNode({ andIdx, orIdx, concept })),
+    (concept: DragItemConceptTreeNode) =>
+      dispatch(addConceptToNode({ andIdx, orIdx, concept })),
     [dispatch, andIdx, orIdx],
   );
 
@@ -71,43 +74,48 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
   );
 
   const onToggleTable = useCallback(
-    (tableIdx, isExcluded) =>
+    (tableIdx: number, isExcluded: boolean) =>
       dispatch(toggleTable({ andIdx, orIdx, tableIdx, isExcluded })),
     [dispatch, andIdx, orIdx],
   );
 
   const onSelectSelects = useCallback(
-    (value) => {
+    (value: SelectOptionT[]) => {
       dispatch(setSelects({ andIdx, orIdx, value }));
     },
     [dispatch, andIdx, orIdx],
   );
 
   const onSelectTableSelects = useCallback(
-    (tableIdx, value) =>
+    (tableIdx: number, value: SelectOptionT[]) =>
       dispatch(setTableSelects({ andIdx, orIdx, tableIdx, value })),
     [dispatch, andIdx, orIdx],
   );
 
   const onSetFilterValue = useCallback(
-    (tableIdx, filterIdx, value) =>
+    (
+      tableIdx: number,
+      filterIdx: number,
+      value: FilterWithValueType["value"],
+    ) =>
       dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value })),
     [dispatch, andIdx, orIdx],
   );
 
   const onSwitchFilterMode = useCallback(
-    (tableIdx, filterIdx, mode) =>
+    (tableIdx: number, filterIdx: number, mode: ModeT) =>
       dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode })),
     [dispatch, andIdx, orIdx],
   );
 
   const onResetAllSettings = useCallback(
-    (config) => dispatch(resetAllSettings({ andIdx, orIdx, config })),
+    (config: NodeResetConfig) =>
+      dispatch(resetAllSettings({ andIdx, orIdx, config })),
     [dispatch, andIdx, orIdx],
   );
 
   const onResetTable = useCallback(
-    (tableIdx, config) =>
+    (tableIdx: number, config: NodeResetConfig) =>
       dispatch(resetTable({ andIdx, orIdx, tableIdx, config })),
     [dispatch, andIdx, orIdx],
   );
@@ -123,19 +131,18 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
   );
 
   const onSetDateColumn = useCallback(
-    (tableIdx, value) =>
+    (tableIdx: number, value: string) =>
       dispatch(setDateColumn({ andIdx, orIdx, tableIdx, value })),
     [dispatch, andIdx, orIdx],
   );
 
-  if (!datasetId || !node) {
+  if (!node) {
     return null;
   }
 
   return (
     <QueryNodeEditor
       name="standard"
-      datasetId={datasetId}
       node={node}
       showTables={showTables}
       onLoadFilterSuggestions={onLoadFilterSuggestions}

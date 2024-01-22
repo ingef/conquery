@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -29,8 +30,7 @@ const TimebasedQueryClearButton = () => {
       <IconButton
         frame
         onClick={clearQuery}
-        regular
-        icon="trash-alt"
+        icon={faTrash}
         disabled={!isEnabled}
       >
         {t("common.clear")}

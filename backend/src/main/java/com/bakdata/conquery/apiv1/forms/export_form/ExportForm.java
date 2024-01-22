@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
@@ -15,94 +16,137 @@ import javax.validation.constraints.NotNull;
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-@Getter @Setter
-@CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm extends Form {
+@Getter
+@Setter
+@CPSType(id = "EXPORT_FORM", base = QueryDescription.class)
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class ExportForm extends Form implements InternalForm {
 
-	@NotNull
+	@Getter
+	@Setter
+	@EqualsAndHashCode.Exclude
+	private JsonNode values;
+
+
+	@Nullable
 	@JsonProperty("queryGroup")
 	private ManagedExecutionId queryGroupId;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private ManagedQuery queryGroup;
 
-	@NotNull @Valid @JsonManagedReference
+	@NotNull
+	@Valid
+	@JsonManagedReference
 	private Mode timeMode;
-	
-	@NotNull @NotEmpty
-	private List<Resolution> resolution = List.of(Resolution.COMPLETE);
-	
-	private boolean alsoCreateCoarserSubdivisions = true;
+
+	@NotEmpty
+	@Valid
+	private List<CQElement> features = ImmutableList.of();
+
+	@NotNull
+	@NotEmpty
+	private List<ResolutionShortNames> resolution = List.of(ResolutionShortNames.COMPLETE);
+
+	private boolean alsoCreateCoarserSubdivisions = false;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private Query prerequisite;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private List<Resolution> resolvedResolutions;
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		timeMode.visit(visitor);
+		features.forEach(visitor);
 	}
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, Query> createSubQueries() {
 		return Map.of(
-			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-			List.of(
-				timeMode.createSpecializedQuery(datasets, user, submittedDataset)
-					.toManagedExecution(user, submittedDataset)));
+				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
+				timeMode.createSpecializedQuery()
+		);
 	}
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
+		if (queryGroupId == null) {
+			return Collections.emptySet();
+		}
+
 		return Set.of(queryGroupId);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
-
-		timeMode.resolve(context);
-		prerequisite = queryGroup.getQuery();
-
-
-		if(isAlsoCreateCoarserSubdivisions()) {
-			if(getResolution().size() != 1) {
-				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
-			}
-			resolvedResolutions = getResolution().get(0).getThisAndCoarserSubdivisions();
+		if(queryGroupId != null) {
+			queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+			prerequisite = queryGroup.getQuery();
 		}
 		else {
-			resolvedResolutions = getResolution();
+			prerequisite = new ConceptQuery(new CQYes());
+		}
+
+
+		// Apply defaults to user concept
+		ExportForm.DefaultSelectSettable.enable(features);
+
+		timeMode.resolve(context);
+
+		List<Resolution> resolutionsFlat = resolution.stream()
+													 .flatMap(ResolutionShortNames::correspondingResolutions)
+													 .distinct()
+													 .toList();
+
+
+		if (isAlsoCreateCoarserSubdivisions()) {
+			if (resolutionsFlat.size() != 1) {
+				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
+			}
+			resolvedResolutions = resolutionsFlat.get(0).getThisAndCoarserSubdivisions();
+		}
+		else {
+			resolvedResolutions = resolutionsFlat;
 		}
 	}
 
@@ -171,7 +215,7 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm(this, user, submittedDataset, storage);
 	}
 }

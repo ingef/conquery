@@ -46,6 +46,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -101,7 +102,7 @@ public class FormConfigTest {
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
-			Namespace namespaceMock = Mockito.mock(Namespace.class);
+			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}
@@ -129,7 +130,7 @@ public class FormConfigTest {
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset);
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();
@@ -137,7 +138,6 @@ public class FormConfigTest {
 		form.setTimeMode(mode);
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
-		mode.setFeatures(List.of(new CQConcept()));
 
 
 		user = new User("test", "test", storage);
@@ -247,7 +247,7 @@ public class FormConfigTest {
 		RelativeMode mode3 = new RelativeMode();
 		form2.setTimeMode(mode3);
 		mode3.setForm(form);
-		mode3.setFeatures(List.of(new CQConcept()));
+		form.setFeatures(List.of(new CQConcept()));
 
 		TestForm form3 = new TestForm.Abs();
 

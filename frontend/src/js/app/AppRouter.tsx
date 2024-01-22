@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { ReactNode } from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import {
   AuthTokenContextProvider,
@@ -9,15 +9,10 @@ import KeycloakProvider from "../authorization/KeycloakProvider";
 import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 import { basename } from "../environment";
-import type { TabT } from "../pane/types";
 
 import App from "./App";
 
-interface PropsT {
-  rightTabs: TabT[];
-}
-
-const ContextProviders: FC = ({ children }) => {
+const ContextProviders = ({ children }: { children: ReactNode }) => {
   const authTokenContextValue = useAuthTokenContextValue();
 
   return (
@@ -27,7 +22,7 @@ const ContextProviders: FC = ({ children }) => {
   );
 };
 
-const AppRouter = (props: PropsT) => {
+const AppRouter = () => {
   return (
     <Router basename={basename}>
       <ContextProviders>
@@ -37,7 +32,7 @@ const AppRouter = (props: PropsT) => {
             path="/*"
             element={
               <WithAuthToken>
-                <App {...props} />
+                <App />
               </WithAuthToken>
             }
           />

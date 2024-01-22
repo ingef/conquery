@@ -7,16 +7,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,16 +30,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
-public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable {
+public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable<FilterId> {
 
 	/**
-	 * user given mapping from the values in the CSVs to shown labels
+	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
@@ -45,9 +48,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@NsIdRef
 	@View.ApiManagerPersistence
 	private FilterTemplate template;
-
-	@JsonIgnore
-	public abstract String getFilterType();
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -55,35 +57,22 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
-		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
+		f.setCreatable(conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
-		f.setOptions(labels.entrySet().stream()
-						   .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
-						   .collect(Collectors.toList()));
+		f.setOptions(collectLabels());
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Cannot use both labels and template.")
-	public boolean isNotUsingTemplateAndLabels() {
-		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
-		if (getTemplate() == null && labels.isEmpty()) {
-			return true;
-		}
-
-		return (getTemplate() == null) != labels.isEmpty();
-	}
-
-	private int searchMinSuffixLength = 3;
-	private boolean generateSearchSuffixes = true;
+	public abstract String getFilterType();
 
 	@Override
-	public List<Searchable> getSearchReferences() {
-		final List<Searchable> out = new ArrayList<>();
+	public List<Searchable<?>> getSearchReferences() {
+		final List<Searchable<?>> out = new ArrayList<>();
 
 		if (getTemplate() != null) {
 			out.add(getTemplate());
@@ -96,6 +85,24 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		out.addAll(getColumn().getSearchReferences());
 
 		return out;
+	}
+
+	@NotNull
+	protected List<FrontendValue> collectLabels() {
+		return labels.entrySet().stream()
+					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+					 .collect(Collectors.toList());
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Cannot use both labels and template.")
+	public boolean isNotUsingTemplateAndLabels() {
+		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
+		if (getTemplate() == null && labels.isEmpty()) {
+			return true;
+		}
+
+		return (getTemplate() == null) != labels.isEmpty();
 	}
 
 	@Override
@@ -120,13 +127,17 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
-		labels.entrySet().stream()
-			  .map(entry -> new FEValue(entry.getKey(), entry.getValue())).forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
-		search.shrinkToFit();
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
 
-		return List.of(search);
+		if(log.isTraceEnabled()) {
+			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
+		}
+
+		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+
+
+		return search;
 	}
 }

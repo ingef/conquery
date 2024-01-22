@@ -6,12 +6,17 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 import { useGetDatasets } from "../api/api";
 import type { DatasetT, GetDatasetsResponseT } from "../api/types";
 import { StateT } from "../app/reducers";
-import { ErrorObject } from "../common/actions";
+import { ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
-import { useLoadDefaultHistoryParams } from "../entity-history/actions";
+import {
+  resetHistory,
+  useLoadDefaultHistoryParams,
+} from "../entity-history/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
+import { queryResultReset } from "../query-runner/actions";
 import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
@@ -57,14 +62,20 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage({ message: t("datasetSelector.error") }));
+      dispatch(
+        setMessage({
+          message: t("datasetSelector.error"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
       dispatch(loadDatasets.failure(e as Error));
     }
   }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);
 };
 
-export const selectDatasetInput =
-  createAction("dataset/SELECT")<{ id: DatasetT["id"] | null }>();
+export const selectDatasetInput = createAction("dataset/SELECT")<{
+  id: DatasetT["id"] | null;
+}>();
 
 export const saveQuery = createAction("dataset/SAVE_QUERY")<{
   query: StandardQueryStateT;
@@ -101,6 +112,12 @@ export const useSelectDataset = () => {
       }
 
       dispatch(selectDatasetInput({ id: datasetId }));
+
+      dispatch(resetHistory());
+      dispatch(queryResultReset({ queryType: "standard" }));
+      dispatch(queryResultReset({ queryType: "timebased" }));
+      dispatch(queryResultReset({ queryType: "editorV2" }));
+      dispatch(queryResultReset({ queryType: "externalForms" }));
 
       // To allow loading trees to check whether they should abort or not
       setDatasetId(datasetId);

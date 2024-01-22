@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference //@Valid
+
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -32,6 +34,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonBackReference
 	@Getter
 	@Setter
+	@EqualsAndHashCode.Exclude
 	private ConceptTreeNode<?> parent;
 	@JsonIgnore
 	@Getter
@@ -46,6 +49,11 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Getter
 	@Setter
 	private TreeChildPrefixIndex childIndex;
+
+	@Override
+	public void clearMatchingStats() {
+		setMatchingStats(null);
+	}
 
 	@Override
 	@JsonIgnore
@@ -70,6 +78,17 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	}
 
 	@Override
+	public boolean matchesPrefix(int[] conceptPrefix) {
+		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
+	}
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getConcept().getDataset();
+	}
+
+	@Override
 	@JsonIgnore
 	public TreeConcept getConcept() {
 		ConceptTreeNode<?> n = this;
@@ -80,16 +99,5 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 			n = n.getParent();
 		}
 		throw new IllegalStateException("The node " + this + " seems to have no root");
-	}
-
-	@Override
-	public boolean matchesPrefix(int[] conceptPrefix) {
-		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
-	}
-
-	@JsonIgnore
-	@Override
-	public Dataset getDataset() {
-		return getConcept().getDataset();
 	}
 }

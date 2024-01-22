@@ -1,13 +1,13 @@
 import {
-  format,
-  parse,
-  addQuarters,
-  lastDayOfQuarter,
   addMonths,
-  endOfMonth,
-  isValid,
+  addQuarters,
   differenceInCalendarDays,
+  endOfMonth,
+  format,
   formatDistance,
+  isValid,
+  lastDayOfQuarter,
+  parse,
 } from "date-fns";
 import { de, enGB } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
@@ -212,4 +212,20 @@ export function getFirstAndLastDateOfRange(dateRangeStr: string): {
   const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
 
   return { first, last };
+}
+
+export function useMonthName(date: Date): string {
+  const locale = useDateLocale();
+
+  return format(date, "LLLL", { locale });
+}
+
+export function useMonthNames(): string[] {
+  const locale = useDateLocale();
+
+  return [...Array(12).keys()].map((month) => {
+    const date = new Date();
+    date.setMonth(month);
+    return format(date, "LLLL", { locale });
+  });
 }

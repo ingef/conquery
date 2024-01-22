@@ -3,26 +3,22 @@ package com.bakdata.conquery.models.query;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
-import java.util.Date;
 import java.util.Locale;
 import java.util.function.Function;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.With;
-import lombok.experimental.Wither;
 
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-@With
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PrintSettings {
 
@@ -50,7 +46,7 @@ public class PrintSettings {
 	/**
 	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept#getElements()}.
 	 */
-	private final DatasetRegistry datasetRegistry;
+	private final Namespace namespace;
 
 	private final Function<SelectResultInfo, String> columnNamer;
 
@@ -60,10 +56,10 @@ public class PrintSettings {
 
 	private final PrintIdMapper idMapper;
 
-	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
-		this.datasetRegistry = datasetRegistry;
+		this.namespace = namespace;
 		this.currency = config.getPreprocessor().getParsers().getCurrency();
 		this.columnNamer = columnNamer;
 		this.idMapper = idMapper;
@@ -79,8 +75,8 @@ public class PrintSettings {
 
 	}
 
-	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {
-		this(prettyPrint, locale, datasetRegistry, config, idMapper, null);
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper) {
+		this(prettyPrint, locale, namespace, config, idMapper, null);
 	}
 
 }

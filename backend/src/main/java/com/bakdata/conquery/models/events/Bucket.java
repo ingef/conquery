@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -18,6 +17,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
@@ -165,19 +165,22 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return ((DateRangeStore) getStore(column)).getDateRange(event);
 	}
 
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(getAsDateRange(event, column));
+	public boolean eventIsContainedIn(int event, ValidityDate validityDate, CDateSet dateRanges) {
+		final CDateRange dateRange = validityDate.getValidityDate(event, this);
+
+		if (dateRange == null){
+			return false;
+		}
+
+		return dateRanges.intersects(dateRange);
 	}
 
 	public CDateRange getAsDateRange(int event, Column column) {
-		switch (column.getType()) {
-			case DATE:
-				return CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
-			case DATE_RANGE:
-				return getDateRange(event, column);
-			default:
-				throw new IllegalStateException("Column is not of DateCompatible type.");
-		}
+		return switch (column.getType()) {
+			case DATE -> CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
+			case DATE_RANGE -> getDateRange(event, column);
+			default -> throw new IllegalStateException("Column is not of DateCompatible type.");
+		};
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
@@ -185,10 +188,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public Map<String, Object> calculateMap(int event) {
-		Map<String, Object> out = new HashMap<>(stores.length);
+		final Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
-			ColumnStore store = stores[i];
+			final ColumnStore store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}

@@ -1,10 +1,15 @@
 import styled from "@emotion/styled";
-import { FocusEvent, forwardRef, KeyboardEvent, useCallback } from "react";
+import {
+  faCheck,
+  faExclamationTriangle,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { FocusEvent, KeyboardEvent, forwardRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -15,12 +20,12 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const Input = styled("input")<{ large?: boolean }>`
+const Input = styled("input")<{ large?: boolean; disabled?: boolean }>`
   outline: 0;
   width: 100%;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  font-size: ${({ theme }) => theme.font.md};
   padding: ${({ large }) =>
     large ? "10px 30px 10px 14px" : "6px 30px 6px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
@@ -70,7 +75,7 @@ interface InputProps {
   onKeyPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-interface Props {
+export interface Props {
   className?: string;
   inputType: string;
   money?: boolean;
@@ -82,7 +87,10 @@ interface Props {
   large?: boolean;
   inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
+  disabled?: boolean;
+  onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
   onChange: (val: string | number | null) => void;
 }
 
@@ -116,13 +124,16 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       money,
       value,
       onChange,
+      onFocus,
       onBlur,
+      onClick,
       placeholder,
       large,
       inputType,
       valid,
       invalid,
       invalidText,
+      disabled,
     },
     ref,
   ) => {
@@ -171,10 +182,15 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             }}
             value={exists(value) ? value : ""}
             large={large}
+            disabled={disabled}
+            onFocus={onFocus}
             onBlur={onBlur}
+            onClick={onClick}
             onWheel={
               (e) =>
-                (e.target as any).blur() /* to disable scrolling for number */
+                (
+                  e.target as HTMLElement
+                ).blur() /* to disable scrolling for number */
             }
             {...inputProps}
             {...patternMatchingProps}
@@ -182,18 +198,19 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         )}
         {exists(value) && !isEmpty(value) && (
           <>
-            {valid && !invalid && <GreenIcon icon="check" large={large} />}
+            {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
             {invalid && (
               <WithTooltip text={invalidText}>
                 <AbsoluteWrap>
-                  <RedIcon icon="exclamation-triangle" large={large} />
+                  <RedIcon icon={faExclamationTriangle} large={large} />
                 </AbsoluteWrap>
               </WithTooltip>
             )}
             <ClearZoneIconButton
               tiny
-              icon="times"
+              icon={faTimes}
               tabIndex={-1}
+              disabled={disabled}
               title={t("common.clearValue")}
               aria-label={t("common.clearValue")}
               onClick={() => onChange(null)}

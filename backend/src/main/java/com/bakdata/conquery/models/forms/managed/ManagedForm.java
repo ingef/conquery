@@ -1,172 +1,76 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.DatabindContext;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Internal runtime representation of a form query.
  */
-@Getter
-@Setter
 @ToString
 @Slf4j
-@NoArgsConstructor
-public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
+@EqualsAndHashCode(callSuper = true)
+@CPSType(id = "MANAGED_FORM", base = ManagedExecution.class)
+public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
 	/**
-	 * The form that was submitted through the api.
+	 * The submitted form for this execution.
+	 *
+	 * @implNote We use the type {@link Form} here rather than the type parameter F.
+	 * Using F causes the class to have a concrete type at runtime which in turn skips
+	 * the object inspection of Jackson to look at the actual <code>type</code> member of the object (see {@link com.bakdata.conquery.io.cps.CPSTypeIdResolver#typeFromId(DatabindContext, String)}).
+	 * This causes a problem, when the object uses types with {@link com.bakdata.conquery.io.cps.SubTyped},
+	 * as the subtype is only added to the {@link com.fasterxml.jackson.databind.DeserializationContext}, when the
+	 * type is derived from the <pre>type</pre> member not when Jackson can just infer the deserializer from the type of
+	 * this property.
 	 */
+	@Getter
 	private Form submittedForm;
 
-	/**
-	 * Mapping of a result table name to a set of queries.
-	 * This is required by forms that have multiple results (CSVs) as output.
-	 */
-	@JsonIgnore
-	protected Map<String, List<ManagedQuery>> subQueries;
+	protected ManagedForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
 
-	@JsonIgnore
-	private MetaStorage storage;
-
-	/**
-	 * Subqueries that are send to the workers.
-	 */
-	@JsonIgnore
-	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
-
-
-	public ManagedForm(Form submittedForm, User owner, Dataset submittedDataset) {
-		super(owner, submittedDataset);
+	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage) {
+		super(owner, submittedDataset, storage);
 		this.submittedForm = submittedForm;
 	}
 
 
 	@Override
-	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
-		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
-		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
-		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
-		storage = datasetRegistry.getMetaStorage();
-	}
-
-	@Override
 	public void start() {
 		synchronized (this) {
-			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+			super.start();
 
-
-			if (submittedForm.getValues() != null) {
+			if (getSubmittedForm().getValues() != null) {
 				// save as formConfig
-				final FormConfigAPI build = FormConfigAPI.builder().formType(submittedForm.getFormType())
+				final FormConfigAPI build = FormConfigAPI.builder().formType(getSubmittedForm().getFormType())
 														 .label(this.getLabelWithoutAutoLabelSuffix())
 														 .tags(this.getTags())
-														 .values(submittedForm.getValues()).build();
+														 .values(getSubmittedForm().getValues()).build();
 
 				final FormConfig formConfig = build.intern(getOwner(), getDataset());
 
-				storage.addFormConfig(formConfig);
+				getStorage().addFormConfig(formConfig);
 			}
 		}
-		flatSubQueries.values().forEach(ManagedQuery::start);
-		super.start();
-	}
-
-	@Override
-	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
-		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
-
-		for (Map.Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {
-			for (ManagedQuery subquery : entry.getValue()) {
-				subquery.getQuery().visit(collector);
-			}
-		}
-
-		return collector.getIdentifiables();
-	}
-
-
-	/**
-	 * Distribute the result to a sub query.
-	 */
-	@Override
-	public void addResult(@NonNull MetaStorage storage, FormShardResult result) {
-		if (result.getError().isPresent()) {
-			fail(storage, result.getError().get());
-			return;
-		}
-
-		ManagedExecutionId subQueryId = result.getSubQueryId();
-
-		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
-		subQuery.addResult(storage, result);
-
-		switch (subQuery.getState()) {
-			case DONE:
-				if (allSubQueriesDone()) {
-					finish(storage, ExecutionState.DONE);
-				}
-				break;
-			case FAILED:
-				// Fail the whole execution if a subquery fails
-				fail(storage, result.getError().orElseThrow(
-						() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
-					 )
-				);
-				break;
-			case NEW:
-			case RUNNING:
-			default:
-				break;
-
-		}
-
-	}
-
-
-	private boolean allSubQueriesDone() {
-		synchronized (this) {
-			for (ManagedQuery q : flatSubQueries.values()) {
-				if (!q.getState().equals(ExecutionState.DONE)) {
-					return false;
-				}
-			}
-		}
-		return true;
 	}
 
 	@Override
@@ -174,50 +78,14 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		submittedForm.visit(visitor);
 	}
 
-	@Override
-	@JsonIgnore
-	public Set<Namespace> getRequiredDatasets() {
-		return flatSubQueries.values().stream()
-							 .map(ManagedQuery::getRequiredDatasets)
-							 .flatMap(Set::stream)
-							 .collect(Collectors.toSet());
-	}
 
 	@Override
 	@JsonIgnore
-	public QueryDescription getSubmitted() {
-		return submittedForm;
+	public F getSubmitted() {
+		return (F) submittedForm;
 	}
 
 
-	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
-		// Set the ColumnDescription if the Form only consits of a single subquery
-		if (subQueries == null) {
-			// If subqueries was not set the Execution was not initialized, do it manually
-			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
-		}
-		if (subQueries.size() != 1) {
-			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
-			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries
-																																											 .size(),
-					  this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName()
-			);
-			return;
-		}
-		List<ManagedQuery> subQuery = subQueries.entrySet().iterator().next().getValue();
-		if (subQuery.isEmpty()) {
-			log.warn(
-					"The {} ({} from Form {}) does not have any subqueries after initialization. Not creating a column description.",
-					this.getClass().getSimpleName(),
-					getId(),
-					getSubmitted().getClass().getSimpleName()
-			);
-			return;
-		}
-		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
-	}
 
 
 	@Override

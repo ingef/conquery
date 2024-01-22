@@ -20,8 +20,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RelativeFormQuery extends Query {
 	@NotNull @Valid
 	private final Query query;
@@ -48,19 +50,21 @@ public class RelativeFormQuery extends Query {
 	private final CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
-	
+
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context),
-			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		return new RelativeFormQueryPlan(
+				query.createQueryPlan(context),
+				// At the moment we do not use the dates of feature and outcome query
+				features.createQueryPlan(context),
+				indexSelector, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap
+		);
 	}
 
 	@Override
@@ -97,5 +101,10 @@ public class RelativeFormQuery extends Query {
 		visitor.accept(this);
 		query.visit(visitor);
 		features.visit(visitor);
+	}
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return query.collectRequiredEntities(context);
 	}
 }

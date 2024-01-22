@@ -3,21 +3,27 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.select.CountSqlAggregator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -36,8 +42,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	private boolean distinct;
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) {
-		f.setType(FEFilterType.Fields.INTEGER_RANGE);
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
+		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 		f.setMin(1);
 	}
 
@@ -67,4 +73,15 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 		return out;
 	}
+
+	@Override
+	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
+		return CountSqlAggregator.create(this, filterContext).getSqlFilters();
+	}
+
+	@Override
+	public Set<ConceptCteStep> getRequiredSqlSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
+	}
+
 }

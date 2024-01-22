@@ -3,10 +3,10 @@ import { getIndexedDBCache, setIndexedDBCache } from "./indexedDBCache";
 type Etag = string;
 interface CachedResourceWithEtag {
   etag: Etag;
-  resource: Object;
+  resource: object;
 }
 
-const encode = (obj: Object) => {
+const encode = (obj: object) => {
   // TODO: Use strings directly, not objs.
   // Since this is used to cache responses, we could use the raw string returned from the API call,
   // before axios calls JSON.parse on it.
@@ -25,7 +25,7 @@ const decode = (buf: Uint8Array) => {
 export const storeEtagResource = (
   key: string,
   etag: string,
-  resource: Object,
+  resource: object,
 ) => {
   const item = { etag, resource };
 

@@ -18,6 +18,7 @@ const Root = styled("div")<{
   bare?: boolean;
   transparent?: boolean;
   canDrop?: boolean;
+  invisible?: boolean;
 }>`
   border: ${({ theme, isOver, canDrop, naked }) =>
     naked
@@ -29,7 +30,7 @@ const Root = styled("div")<{
       : `3px dashed ${theme.col.grayMediumLight}`};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: ${({ bare }) => (bare ? "0" : "10px")};
-  display: flex;
+  display: ${({ invisible }) => (invisible ? "none" : "flex")};
   align-items: center;
   justify-content: center;
   background-color: ${({ theme, canDrop, naked, isOver, transparent }) =>
@@ -61,6 +62,7 @@ export interface DropzoneProps<DroppableObject> {
   naked?: boolean;
   bare?: boolean;
   transparent?: boolean;
+  invisible?: boolean;
   onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
@@ -103,6 +105,7 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
     canDrop,
     onDrop,
     onClick,
+    invisible,
     children,
   }: DropzoneProps<DroppableObject>,
   ref?: ForwardedRef<HTMLDivElement>,
@@ -111,7 +114,11 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
   const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
     void,
-    any
+    {
+      canDrop: boolean;
+      isOver: boolean;
+      item: unknown;
+    }
   >({
     accept: acceptedDropTypes,
     drop: onDrop,
@@ -138,6 +145,7 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
         }
       }}
       isOver={isOver}
+      invisible={invisible && !canDropResult}
       canDrop={canDropResult}
       className={className}
       onClick={onClick}

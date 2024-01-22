@@ -1,4 +1,14 @@
 import styled from "@emotion/styled";
+import {
+  faCalendar,
+  faFolder as faFolderRegular,
+  faUser as faUserRegular,
+} from "@fortawesome/free-regular-svg-icons";
+import {
+  faFolder,
+  faMicroscope,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,16 +18,18 @@ import type { SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
-import { formatDate } from "../../common/helpers";
+import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
+import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
 
+import Highlighter from "react-highlight-words";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import ProjectItemLabel from "./ProjectItemLabel";
-import { useUpdateQuery, useUpdateFormConfig } from "./actions";
+import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -122,6 +134,16 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
+const Row = styled("div")`
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  opacity: 0.7;
+`;
+
 const FoldersButton = styled(IconButton)`
   margin-right: 10px;
 `;
@@ -138,6 +160,9 @@ const ProjectItem = forwardRef<
   ref,
 ) {
   const { t } = useTranslation();
+  const highlightedWords = useSelector<StateT, string[]>(
+    (state) => state.projectItemsSearch.words,
+  );
 
   const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
     (state) => state.conceptTrees.secondaryIds,
@@ -145,8 +170,6 @@ const ProjectItem = forwardRef<
 
   const { updateQuery } = useUpdateQuery();
   const { updateFormConfig } = useUpdateFormConfig();
-
-  const mayDeleteRightAway = item.tags.length === 0 && !!item.isPristineLabel;
 
   const formLabel = useFormLabelByType(
     isFormConfig(item) ? item.formType : null,
@@ -206,8 +229,7 @@ const ProjectItem = forwardRef<
               }
             >
               <FoldersButton
-                icon={"folder"}
-                regular={folders.length === 0}
+                icon={folders.length === 0 ? faFolderRegular : faFolder}
                 tight
                 small
                 bare
@@ -216,11 +238,24 @@ const ProjectItem = forwardRef<
               />
             </WithTooltip>
             {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-              <WithTooltip text={t("previousQuery.downloadResults")}>
-                <SxDownloadButton tight small bare url={item.resultUrls[0]}>
-                  {topLeftLabel}
-                </SxDownloadButton>
-              </WithTooltip>
+              <Row>
+                <WithTooltip text={t("previousQuery.downloadResults")}>
+                  <SxDownloadButton
+                    tight
+                    small
+                    bare
+                    simpleIcon
+                    resultUrl={item.resultUrls[0]}
+                  >
+                    {topLeftLabel}
+                  </SxDownloadButton>
+                </WithTooltip>
+                {!item.containsDates && (
+                  <WithTooltip text={t("previousQuery.hasNoDates")}>
+                    <SxFaIcon red icon={faCalendar} />
+                  </WithTooltip>
+                )}
+              </Row>
             ) : (
               <NonBreakingText>{topLeftLabel}</NonBreakingText>
             )}
@@ -233,7 +268,7 @@ const ProjectItem = forwardRef<
                 <WithTooltip
                   text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
                 >
-                  <IconButton icon="microscope" bare onClick={() => {}} />
+                  <IconButton icon={faMicroscope} bare onClick={() => {}} />
                 </WithTooltip>
               )}
             {item.own && (
@@ -245,19 +280,13 @@ const ProjectItem = forwardRef<
                 }
               >
                 <IconButton
-                  icon="user"
-                  regular={!isShared}
+                  icon={isShared ? faUser : faUserRegular}
                   bare
                   onClick={onIndicateShare}
                 />
               </WithTooltip>
             )}
-            {item.own && (
-              <DeleteProjectItemButton
-                item={item}
-                mayDeleteRightAway={mayDeleteRightAway}
-              />
-            )}
+            {item.own && <DeleteProjectItemButton item={item} />}
           </TopRight>
         </TopInfos>
         <LabelRow>
@@ -266,10 +295,21 @@ const ProjectItem = forwardRef<
             label={label}
             selectTextOnMount={true}
             onSubmit={onRenameLabel}
+            highlightedWords={highlightedWords}
             isEditing={isEditingLabel}
             setIsEditing={setIsEditingLabel}
           />
-          <OwnerName>{item.ownerName}</OwnerName>
+          <OwnerName>
+            {highlightedWords.length > 0 ? (
+              <Highlighter
+                searchWords={highlightedWords}
+                autoEscape
+                textToHighlight={item.ownerName}
+              />
+            ) : (
+              item.ownerName
+            )}
+          </OwnerName>
         </LabelRow>
       </Content>
     </Root>

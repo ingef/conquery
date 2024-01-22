@@ -18,13 +18,15 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -35,29 +37,32 @@ import lombok.RequiredArgsConstructor;
  */
 @CPSType(id = "ENTITY_DATE_QUERY", base = QueryDescription.class)
 @Getter
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class EntityDateQuery extends Query {
 
-    @NotNull
-    @Valid
-    private final Query query;
-    @NotNull @Valid
-    private final ArrayConceptQuery features;
+	@NotNull
+	@Valid
+	private final Query query;
+	@NotNull
+	@Valid
+	private final ArrayConceptQuery features;
 
-    @NotNull @NotEmpty
-    private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
+	@NotNull
+	@NotEmpty
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
 
-    @NotNull @Valid
-    private final CDateRange dateRange;
+	@NotNull
+	@Valid
+	private final CDateRange dateRange;
 
-    @NotNull
-    private final DateAggregationMode dateAggregationMode;
+	@NotNull
+	private final DateAggregationMode dateAggregationMode;
 
 
-    @Override
-    public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
-        // Clear all selects we need only the date union which is enforced through the content
-        Visitable.stream(query)
+	@Override
+	public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
+		// Clear all selects we need only the date union which is enforced through the content
+		Visitable.stream(query)
 				 .filter(CQConcept.class::isInstance)
 				 .map(CQConcept.class::cast)
 				 .forEach(concept -> {
@@ -65,9 +70,9 @@ public class EntityDateQuery extends Query {
 					 concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
 				 });
 
-        return new EntityDateQueryPlan(
-                query.createQueryPlan(context),
-                features.createQueryPlan(context),
+		return new EntityDateQueryPlan(
+				query.createQueryPlan(context),
+				features.createQueryPlan(context),
                 resolutionsAndAlignments,
                 dateRange
         );
@@ -104,4 +109,9 @@ public class EntityDateQuery extends Query {
         query.visit(visitor);
         features.visit(visitor);
     }
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return query.collectRequiredEntities(context);
+	}
 }

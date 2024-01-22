@@ -6,7 +6,7 @@ on:
       - release
 
 jobs:
-  bump-test:
+  merge-release:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:

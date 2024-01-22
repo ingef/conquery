@@ -1,287 +1,59 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
+public interface Namespace extends Injectable, Closeable {
 
-/**
- * Keep track of all data assigned to a single dataset. Each ShardNode has one {@link Worker} per {@link Dataset} / {@link Namespace}.
- * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
- */
-@Slf4j
-@Getter
-@ToString(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Namespace implements Closeable {
+	Dataset getDataset();
 
-	private final ObjectMapper preprocessMapper;
-	private final ObjectMapper communicationMapper;
-	@ToString.Include
-	private final NamespaceStorage storage;
+	void remove();
 
-	private final ExecutionManager executionManager;
+	CentralRegistry getCentralRegistry();
 
-	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
-	private final JobManager jobManager;
+	int getNumberOfEntities();
 
-	/**
-	 * All known {@link Worker}s that are part of this Namespace.
-	 */
-	private final Set<WorkerInformation> workers = new HashSet<>();
+	void updateInternToExternMappings();
 
-	/**
-	 * Map storing the buckets each Worker has been assigned.
-	 */
-	private final Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
+	void clearIndexCache();
 
-	private final FilterSearch filterSearch;
+	PreviewConfig getPreviewConfig();
 
-	private final IndexService indexService;
+	CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException;
 
-	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
-	private final List<Injectable> injectables;
+	CentralRegistry getMetaRegistry();
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
+	ExecutionManager getExecutionManager();
 
-		// Prepare namespace dependent Jackson injectables
-		List<Injectable> injectables = new ArrayList<>();
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
-		injectables.add(indexService);
-		ObjectMapper persistenceMapper = mapperCreator.apply(View.Persistence.Manager.class);
-		ObjectMapper communicationMapper = mapperCreator.apply(View.InternalCommunication.class);
-		ObjectMapper preprocessMapper = mapperCreator.apply(null);
+	ObjectMapper getPreprocessMapper();
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+	ObjectMapper getCommunicationMapper();
 
-		// Open and load the stores
-		storage.openStores(persistenceMapper);
-		storage.loadData();
+	NamespaceStorage getStorage();
 
-		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
-		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
+	JobManager getJobManager();
 
-		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
+	FilterSearch getFilterSearch();
 
+	IndexService getIndexService();
 
-		final Namespace namespace = new Namespace(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
+	List<Injectable> getInjectables();
 
-		datasetRegistry.add(namespace);
-
-
-		return namespace;
-	}
-
-
-	public void sendToAll(WorkerMessage msg) {
-		if (workers.isEmpty()) {
-			throw new IllegalStateException("There are no workers yet");
-		}
-		for (WorkerInformation w : workers) {
-			w.send(msg);
-		}
-	}
-
-
-	/**
-	 * Find the assigned worker for the bucket. If there is none return null.
-	 */
-	public synchronized WorkerInformation getResponsibleWorkerForBucket(int bucket) {
-		return bucket2WorkerMap.get(bucket);
-	}
-
-	/**
-	 * Assign responsibility of a bucket to a Worker.
-	 *
-	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for dedicated Workers, or entity weightings)
-	 */
-	public synchronized void addResponsibility(int bucket) {
-		WorkerInformation smallest = workers.stream()
-											.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
-											.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
-
-		log.debug("Assigning Bucket[{}] to Worker[{}]", bucket, smallest.getId());
-
-		bucket2WorkerMap.put(bucket, smallest);
-
-		smallest.getIncludedBuckets().add(bucket);
-	}
-
-	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
-
-		info.setCommunicationWriter(communicationMapper.writer());
-
-		workers.add(info);
-
-		for (Integer bucket : info.getIncludedBuckets()) {
-			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
-
-			// This is a completely invalid state from which we should not recover even in production settings.
-			if (old != null && !old.equals(info)) {
-				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
-			}
-		}
-	}
-
-	public Dataset getDataset() {
-		return storage.getDataset();
-	}
-
-	public void close() {
-		try {
-			jobManager.close();
-		}
-		catch (Exception e) {
-			log.error("Unable to close namespace jobmanager of {}", this, e);
-		}
-
-		try {
-			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
-			storage.close();
-		}
-		catch (IOException e) {
-			log.error("Unable to close namespace storage of {}.", this, e);
-		}
-	}
-
-	public void remove() {
-		try {
-			jobManager.close();
-		}
-		catch (Exception e) {
-			log.error("Unable to close namespace jobmanager of {}", this, e);
-		}
-
-		log.info("Removing namespace storage of {}", getStorage().getDataset().getId());
-		storage.removeStorage();
-	}
-
-	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
-
-		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets == null) {
-			return Collections.emptySet();
-		}
-		return workerBuckets.getBucketsForWorker(workerId);
-	}
-
-	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
-		// Ensure that only one map is created and populated in the storage
-		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets != null) {
-			return workerBuckets;
-		}
-		storage.setWorkerToBucketsMap(new WorkerToBucketsMap());
-		return storage.getWorkerBuckets();
-	}
-
-	/**
-	 * Updates the Worker-to-Buckets map, persist it and distributes the update to the shards.
-	 *
-	 * @see Namespace#removeBucketAssignmentsForImportFormWorkers(Import)
-	 */
-	public synchronized void addBucketsToWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
-		// Ensure that add and remove are not executed at the same time.
-		// We don't make assumptions about the underlying implementation regarding thread safety
-		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets == null) {
-			workerBuckets = createWorkerBucketsMap();
-		}
-		workerBuckets.addBucketForWorker(id, bucketIds);
-
-		storage.setWorkerToBucketsMap(workerBuckets);
-
-		sendUpdatedWorkerInformation();
-	}
-
-	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import importId) {
-
-		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets == null) {
-			return;
-		}
-		workerBuckets.removeBucketsOfImport(importId.getId());
-
-		storage.setWorkerToBucketsMap(workerBuckets);
-
-		sendUpdatedWorkerInformation();
-	}
-
-
-	private synchronized void sendUpdatedWorkerInformation() {
-		// While we hold the lock on the namespace distribute the new, consistent state among the workers
-		for (WorkerInformation w : getWorkers()) {
-			w.send(new UpdateWorkerBucket(w));
-		}
-	}
-
-	public CentralRegistry getCentralRegistry() {
-		return getStorage().getCentralRegistry();
-	}
-
-	public int getNumberOfEntities() {
-		return getStorage().getPrimaryDictionary().getSize();
-	}
-
-
-	public void updateInternToExternMappings() {
-		storage.getAllConcepts().stream()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(con -> con.getSelects().stream())
-			   .filter(MappableSingleColumnSelect.class::isInstance)
-			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
-
-		storage.getSecondaryIds().stream()
-			   .filter(desc -> desc.getMapping() != null)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
-
-	}
-
-	public void clearIndexCache() {
-		indexService.evictCache();
-	}
-
-	public PreviewConfig getPreviewConfig() {
-		return getStorage().getPreviewConfig();
-	}
+	<ID extends Id<T> & NamespacedId, T extends Identifiable<?>> T resolve(ID id);
 }

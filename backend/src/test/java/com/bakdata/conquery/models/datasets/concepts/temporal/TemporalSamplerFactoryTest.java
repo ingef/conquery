@@ -14,15 +14,10 @@ import org.junit.jupiter.api.Test;
 
 class TemporalSamplerFactoryTest {
 
-	private static CDateSet generateSet(CDateRange... ranges) {
-		return CDateSet.create(Arrays.asList(ranges));
-	}
-
-
 	@Test
 	public void earliest() {
 
-		Sampler sampler = EARLIEST.sampler();
+		final Sampler sampler = EARLIEST.sampler(0);
 		assertThat(sampler.sample(generateSet(exactly(LocalDate.of(2011, 1, 10)))))
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
@@ -36,16 +31,19 @@ class TemporalSamplerFactoryTest {
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 	}
 
+	private static CDateSet generateSet(CDateRange... ranges) {
+		return CDateSet.create(Arrays.asList(ranges));
+	}
 
 	@Test
 	public void latest() {
 
-		Sampler sampler = LATEST.sampler();
+		final Sampler sampler = LATEST.sampler(0);
 		assertThat(sampler.sample(generateSet(exactly(LocalDate.of(2011, 1, 10)))))
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		assertThat(sampler.sample(generateSet(atLeast(LocalDate.of(2011, 1, 10)))))
-				.isEmpty();
+				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		assertThat(sampler.sample(generateSet(atMost(LocalDate.of(2011, 1, 10)))))
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
@@ -56,16 +54,16 @@ class TemporalSamplerFactoryTest {
 
 	@Test
 	public void random() {
-		assertThat(RANDOM.sampler().sample(generateSet(exactly(LocalDate.of(2011, 1, 10)))))
+		assertThat(RANDOM.sampler(0).sample(generateSet(exactly(LocalDate.of(2011, 1, 10)))))
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		{
-			assertThat(RANDOM.sampler().sample(CDateSet.create())).isEmpty();
+			assertThat(RANDOM.sampler(0).sample(CDateSet.createEmpty())).isEmpty();
 		}
 
 		{
-			CDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
-			Sampler sampler = RANDOM.sampler();
+			final CDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
+			final Sampler sampler = RANDOM.sampler(0);
 
 			for (int rep = 0; rep < 10; rep++) {
 				assertThat(sampler.sample(set).getAsInt())
@@ -76,10 +74,10 @@ class TemporalSamplerFactoryTest {
 
 
 		{
-			CDateSet set =
+			final CDateSet set =
 					generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)), of(LocalDate.of(2011, 1, 15), LocalDate.of(2011, 1, 17)));
 
-			Sampler sampler = RANDOM.sampler();
+			final Sampler sampler = RANDOM.sampler(0);
 			for (int rep = 0; rep < 10; rep++) {
 
 				assertThat(sampler.sample(set).getAsInt())

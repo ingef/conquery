@@ -1,1 +1,6 @@
-{}
+{
+    "frontend": {
+		"manualUrl": "https://example.org",
+		"contactEmail": "test@example.org"
+	}
+}

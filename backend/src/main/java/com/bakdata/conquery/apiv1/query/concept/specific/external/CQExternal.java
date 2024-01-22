@@ -21,11 +21,13 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.config.FrontendConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
@@ -34,6 +36,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.DateReader;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
@@ -58,7 +61,7 @@ public class CQExternal extends CQElement {
 	/**
 	 * Describes the format of {@code values}, how to extract data from each row:
 	 * <p>
-	 * - Must contain at least one of {@link FrontendConfig.UploadConfig#getIds()}.
+	 * - Must contain at least one of {@link IdColumnConfig#getIds()}.
 	 * - May contain names of {@link DateFormat}s.
 	 * - Lines filled with {@code FORMAT_EXTRA} are added as extra data to output.
 	 *
@@ -117,14 +120,14 @@ public class CQExternal extends CQElement {
 											 .filter(Objects::nonNull)
 											 .toArray(String[]::new);
 
-		if (!onlySingles) {
+		if (onlySingles) {
 			return createExternalNodeOnlySingle(context, plan, extraHeaders);
 		}
+		return createExternalNodeForList(context, plan, extraHeaders);
 
-		return createExternalNode(context, plan, extraHeaders);
 	}
 
-	private ExternalNode<String> createExternalNode(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
 																 .collect(Collectors.toMap(
@@ -142,20 +145,23 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null, null);
+			extraAggregators.put(extraHeader, aggregator);
+			plan.registerAggregator(aggregator);
+
 		}
-		extraAggregators.values().forEach(plan::registerAggregator);
 
 		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
 	}
 
-	private ExternalNode<List<String>> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<List<String>> createExternalNodeForList(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null, null);
+			extraAggregators.put(extraHeader, aggregator);
+			plan.registerAggregator(aggregator);
 		}
-		extraAggregators.values().forEach(plan::registerAggregator);
 
 		return new ExternalNode<>(
 				context.getStorage().getDataset().getAllIdsTable(),
@@ -171,24 +177,32 @@ public class CQExternal extends CQElement {
 	 *
 	 * @return Row -> Dates
 	 */
-	private static CDateSet[] readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
+	private static CDateSet[] readDates(String[][] values, List<String> format, DateReader dateReader) {
 		final CDateSet[] out = new CDateSet[values.length];
 
-		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
+		List<DateFormat> dateFormats = format.stream()
+											 .map(CQExternal::resolveDateFormat)
+											 // Don't use Stream#toList to preserve null-values
+											 .collect(Collectors.toList());
 
 
-		// If no format provided, put empty dates into output.
+		/*
+		 If no format is provided, put empty dates into output.
+		 This indicates that no date context was provided and
+		 the entries are not restricted by any date restriction,
+		 but can also don't contribute to any date aggregation.
+		 */
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
 			// Initialize empty
 			for (int row = 0; row < values.length; row++) {
-				out[row] = CDateSet.create();
+				out[row] = CDateSet.createEmpty();
 			}
 			return out;
 		}
 
 		for (int row = 1; row < values.length; row++) {
 			try {
-				final CDateSet dates = CDateSet.create();
+				final CDateSet dates = CDateSet.createEmpty();
 
 				// Collect all specified dates into a single set.
 				for (int col = 0; col < dateFormats.size(); col++) {
@@ -205,7 +219,7 @@ public class CQExternal extends CQElement {
 				}
 
 				if (out[row] == null) {
-					out[row] = CDateSet.create();
+					out[row] = CDateSet.createEmpty();
 				}
 
 				out[row].addAll(dates);
@@ -225,7 +239,7 @@ public class CQExternal extends CQElement {
 		final ResolveStatistic resolved =
 				resolveEntities(values, format,
 								context.getNamespace().getStorage().getIdMapping(),
-								context.getConfig().getFrontend().getQueryUpload(),
+								context.getConfig().getIdColumns(),
 								context.getConfig().getLocale().getDateReader(),
 								onlySingles
 				);
@@ -274,20 +288,20 @@ public class CQExternal extends CQElement {
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
-	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader, boolean onlySingles) {
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles) {
 		final Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
 
 		final List<String[]> unresolvedDate = new ArrayList<>();
 		final List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
-		final CDateSet[] rowDates = readDates(values, format, dateReader, queryUpload);
+		final CDateSet[] rowDates = readDates(values, format, dateReader);
 
 		// Extract extra data from rows by Row, to be collected into by entities
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = readExtras(values, format);
 
-		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
+		final List<Function<String[], EntityIdMap.ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
 
 		// We will not be able to resolve anything...
 		if (readers.isEmpty()) {
@@ -404,6 +418,11 @@ public class CQExternal extends CQElement {
 
 
 	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return new RequiredEntities(valuesResolved.keySet());
+	}
+
+	@Override
 	public List<ResultInfo> getResultInfos() {
 		if (extra == null) {
 			return Collections.emptyList();
@@ -451,5 +470,17 @@ public class CQExternal extends CQElement {
 		log.error("Duplicate Headers {}", duplicates);
 
 		return false;
+	}
+
+	/**
+	 * Try to resolve a date format, return nothing if not possible.
+	 */
+	private static DateFormat resolveDateFormat(String name) {
+		try {
+			return DateFormat.valueOf(name);
+		}
+		catch (IllegalArgumentException e) {
+			return null; // Does not exist
+		}
 	}
 }

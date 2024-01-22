@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -106,7 +107,7 @@ public class AuthorizationHelper {
 	/**
 	 * Calculates the abilities on all datasets a subject has based on its permissions.
 	 */
-	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry datasetRegistry) {
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry<? extends Namespace> datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
 

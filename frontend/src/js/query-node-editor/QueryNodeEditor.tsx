@@ -1,23 +1,23 @@
 import styled from "@emotion/styled";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   ConceptIdT,
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
+  NodeResetConfig,
   nodeHasEmptySettings,
   nodeIsConceptQueryNode,
-  NodeResetConfig,
 } from "../model/node";
 import type {
   DragItemConceptTreeNode,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -26,6 +26,7 @@ import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
+import { useAutoLabel } from "./useAutoLabel";
 
 const Root = styled("div")`
   padding: 10px;
@@ -88,7 +89,6 @@ export interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;
-  datasetId: DatasetT["id"];
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -103,7 +103,11 @@ export interface QueryNodeEditorPropsT {
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -159,6 +163,20 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       ? RIGHT_SIDE_WIDTH_COMPACT
       : RIGHT_SIDE_WIDTH);
 
+  const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
+    node,
+    onUpdateLabel: props.onUpdateLabel,
+  });
+  const nodeLabel = useMemo(
+    () =>
+      !nodeIsConceptQueryNode(node)
+        ? node.label || node.id
+        : autoLabelEnabled && autoLabel && node.ids.length > 1
+        ? autoLabel
+        : node.label,
+    [autoLabel, autoLabelEnabled, node],
+  );
+
   return (
     <Root
       ref={(instance) => {
@@ -173,10 +191,11 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           <NodeName
             maxWidth={nodeNameMaxWidth}
             allowEditing={nodeIsConceptQueryNode(node)}
-            label={
-              nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-            }
-            onUpdateLabel={props.onUpdateLabel}
+            label={nodeLabel}
+            onUpdateLabel={(label) => {
+              setAutoLabelEnabled(false);
+              props.onUpdateLabel(label);
+            }}
           />
           <ResetAndClose
             isCompact={isCompact}
@@ -208,7 +227,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             />
             <ContentColumn
               node={node}
-              datasetId={props.datasetId}
               selectedTableIdx={selectedTableIdx}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}

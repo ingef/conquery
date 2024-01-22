@@ -1,7 +1,8 @@
 import styled from "@emotion/styled";
+import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 
-import { ConceptIdT, DatasetT } from "../../api/types";
+import { ConceptIdT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 
@@ -17,24 +18,12 @@ const Named = styled("span")`
 interface Props {
   className?: string;
   title?: string;
-  datasetId: DatasetT["id"] | null;
-  conceptId: string; // Because it's just part of an actual ConceptT['id']
+  conceptId: string;
   rootConceptId: ConceptIdT;
 }
 
-const ConceptName = ({
-  className,
-  title,
-  datasetId,
-  rootConceptId,
-  conceptId,
-}: Props) => {
-  // TODO: refactor. It's very implicit that the id is
-  // somehow containing the datasetId.
-  if (!datasetId) return null;
-
-  const fullConceptId = `${datasetId}.${conceptId}`;
-  const concept = getConceptById(fullConceptId, rootConceptId);
+const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
+  const concept = getConceptById(conceptId, rootConceptId);
 
   if (!concept) {
     return (
@@ -54,7 +43,7 @@ const ConceptName = ({
     </Named>
   );
 
-  if (fullConceptId === rootConceptId) {
+  if (conceptId === rootConceptId) {
     return (
       <div title={title} className={className}>
         {conceptName}
@@ -66,7 +55,7 @@ const ConceptName = ({
 
   return (
     <Root title={title} className={className}>
-      <FaIcon icon="folder" active />
+      <FaIcon icon={faFolder} active />
       <span>
         {rootConcept ? `${rootConcept.label} ` : null}
         {conceptName}

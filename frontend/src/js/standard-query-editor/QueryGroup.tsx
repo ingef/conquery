@@ -52,7 +52,8 @@ interface PropsT {
   group: QueryGroupType;
   andIdx: number;
   onDropOrNode: (node: StandardQueryNodeT, andIdx: number) => void;
-  onDropConceptListFile: (file: File, andIdx: number) => void;
+  onDropFile: (file: File, andIdx: number) => void;
+  onImportLines: (lines: string[], filename?: string, andIdx?: number) => void;
   onDeleteNode: (andIdx: number, orIdx: number) => void;
   onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
@@ -71,7 +72,8 @@ const QueryGroup = ({
   onDateClick,
   onDeleteGroup,
   onDropOrNode,
-  onDropConceptListFile,
+  onDropFile,
+  onImportLines,
   onDeleteNode,
   onEditClick,
   onExpandClick,
@@ -99,9 +101,14 @@ const QueryGroup = ({
     () => onDateClick(andIdx),
     [andIdx, onDateClick],
   );
-  const onDropFile = useCallback(
-    (file: File) => onDropConceptListFile(file, andIdx),
-    [andIdx, onDropConceptListFile],
+  const dropFile = useCallback(
+    (file: File) => onDropFile(file, andIdx),
+    [andIdx, onDropFile],
+  );
+  const importLines = useCallback(
+    (lines: string[], filename?: string) =>
+      onImportLines(lines, filename, andIdx),
+    [andIdx, onImportLines],
   );
 
   return (
@@ -110,8 +117,9 @@ const QueryGroup = ({
         <QueryEditorDropzone
           key={group.elements.length + 1}
           onDropNode={onDropNode}
-          onDropFile={onDropFile}
+          onDropFile={dropFile}
           onLoadPreviousQuery={onLoadPreviousQuery}
+          onImportLines={importLines}
         />
       </SxWithTooltip>
       <QueryOrConnector>{t("common.or")}</QueryOrConnector>

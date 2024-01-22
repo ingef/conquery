@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import type { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton from "../ui-components/VerticalToggleButton";
 
@@ -143,7 +144,7 @@ const TimebasedCondition = ({
 
   return (
     <Root>
-      {removable && <StyledIconButton icon="times" onClick={onRemove} />}
+      {removable && <StyledIconButton icon={faTimes} onClick={onRemove} />}
       <NodesContainer>
         <HorizontalLine />
         <Nodes>

@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -19,6 +19,12 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryConte
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,6 +33,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +48,13 @@ import lombok.ToString;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
+@EqualsAndHashCode
 @ToString(of = "value")
 public abstract class FilterValue<VALUE> {
+	/**
+	 * Very large SELECT FilterValues can cause issues, so we just limit it to large but not gigantic quantities.
+	 */
+	private static final int MAX_NUMBER_FILTER_VALUES = 20_000;
 	@NotNull
 	@Nonnull
 	@NsIdRef
@@ -58,27 +71,47 @@ public abstract class FilterValue<VALUE> {
 		return getFilter().createFilterNode(getValue());
 	}
 
+	public SqlFilters convertToSqlFilter(ConversionContext context, SqlTables<ConceptCteStep> conceptTables) {
+		FilterContext<VALUE> filterContext = new FilterContext<>(value, context, conceptTables);
+		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
+		if (context.isNegation()) {
+			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
+		}
+		return sqlFilters;
+	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
+
+		@ValidationMethod(message = "Too many values selected.")
+		@JsonIgnore
+		public boolean isSaneAmountOfFilterValues() {
+			return getValue().length < MAX_NUMBER_FILTER_VALUES;
+		}
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
 		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
+
+		@ValidationMethod(message = "Too many values selected.")
+		@JsonIgnore
+		public boolean isSaneAmountOfFilterValues() {
+			return getValue().length < MAX_NUMBER_FILTER_VALUES;
+		}
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.SELECT, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQSelectFilter extends FilterValue<String> {
 		public CQSelectFilter(@NsIdRef Filter<String> filter, String value) {
@@ -87,7 +120,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.STRING, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.STRING, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQStringFilter extends FilterValue<String> {
 		public CQStringFilter(@NsIdRef Filter<String> filter, String value) {
@@ -96,7 +129,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.INTEGER, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.INTEGER, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerFilter extends FilterValue<Long> {
 		public CQIntegerFilter(@NsIdRef Filter<Long> filter, Long value) {
@@ -105,7 +138,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
@@ -118,7 +151,7 @@ public abstract class FilterValue<VALUE> {
 	 * it became an INTEGER_RANGE, which is handled differently by the frontend.
 	 */
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
 		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
@@ -128,7 +161,7 @@ public abstract class FilterValue<VALUE> {
 
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.REAL, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.REAL, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealFilter extends FilterValue<BigDecimal> {
 		public CQRealFilter(@NsIdRef Filter<BigDecimal> filter, BigDecimal value) {
@@ -137,7 +170,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = FEFilterType.Fields.REAL_RANGE, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.REAL_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
 		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
@@ -150,7 +183,7 @@ public abstract class FilterValue<VALUE> {
 	 * <p>
 	 * See TestGroupFilter in the tests for an example.
 	 */
-	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
+	@CPSType(id = FrontendFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
 	@JsonDeserialize(using = GroupFilterDeserializer.class)
 	public static class GroupFilterValue extends FilterValue<Object> {
@@ -171,7 +204,7 @@ public abstract class FilterValue<VALUE> {
 	 * Values of group filters can have an arbitrary format which is set by the filter itself.
 	 * Hence, we treat the value for the filter as Object.class.
 	 * <p>
-	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig()} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
+	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig(com.bakdata.conquery.models.config.ConqueryConfig)} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
 	 */
 	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> {
 		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);

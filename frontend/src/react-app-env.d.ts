@@ -1,4 +1,4 @@
-/// <reference types="react-scripts" />
+/// <reference types="vite/client" />
 import "@emotion/react";
 
 import type { ConceptIdT, ConceptT } from "./js/api/types";
@@ -31,6 +31,12 @@ declare module "@emotion/react" {
       green: string;
       orange: string;
       palette: string[];
+      fileTypes: {
+        csv: string;
+        pdf: string;
+        zip: string;
+        xlsx: string;
+      };
     };
     img: {
       logo: string;

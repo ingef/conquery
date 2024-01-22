@@ -1,12 +1,16 @@
 import styled from "@emotion/styled";
+import {
+  faEuroSign,
+  faFingerprint,
+  faInfo,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
@@ -14,11 +18,12 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import { ColumnBuckets } from "../Timeline";
-import type { EntityEvent } from "../reducer";
+import type { DateRow, EntityEvent } from "../reducer";
 
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
+import { isDateColumn, isSourceColumn } from "./util";
 
 const Card = styled("div")`
   display: grid;
@@ -35,30 +40,24 @@ const EventItemContent = styled("div")`
   margin-top: 5px;
   background-color: white;
   overflow: hidden;
-`;
-const MainContent = styled("div")`
-  display: grid;
-  grid-template-columns: 1.618fr 1fr;
-  gap: 6px;
-  padding: 15px 15px 12px 6px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  > div {
+    &:first-of-type {
+      padding-top: 14px;
+    }
+  }
 `;
 
 const ColBucket = styled("div")`
   color: black;
   padding: 1px 4px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  grid-template-columns: 1fr 1fr 1fr;
   @media (min-width: 1800px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
   @media (min-width: 2500px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
   gap: 3px 10px;
 `;
@@ -67,6 +66,8 @@ const Flex = styled("div")`
   display: flex;
   align-items: flex-start;
   gap: 5px;
+  padding: 12px 15px 10px 6px;
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const SxRawDataBadge = styled(RawDataBadge)`
@@ -92,33 +93,36 @@ const Bullet = styled("div")`
   flex-shrink: 0;
 `;
 
-interface Props {
-  row: EntityEvent;
-  columns: Record<string, ColumnDescription>;
-  columnBuckets: ColumnBuckets;
-  datasetId: DatasetT["id"];
-  contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
-  rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  groupedRows?: EntityEvent[];
-  groupedRowsKeysWithDifferentValues?: string[];
-}
-
 const EventCard = ({
   row,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
-  datasetId,
   currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
-}: Props) => {
+}: {
+  row: EntityEvent;
+  columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
+  columnBuckets: ColumnBuckets;
+  contentFilter: ContentFilterValue;
+  currencyConfig: CurrencyConfigT;
+  rootConceptIdsByColumn: Record<string, ConceptIdT>;
+  groupedRows?: EntityEvent[];
+  groupedRowsKeysWithDifferentValues?: string[];
+}) => {
   const { t } = useTranslation();
 
-  const applicableGroupableIds = columnBuckets.groupableIds.filter((column) =>
-    exists(row[column.label]),
+  const applicableGroupableIds = columnBuckets.groupableIds.filter(
+    (column) =>
+      exists(row[column.label]) &&
+      !isDateColumn(column) && // Because they're already displayed somewhere else
+      !isSourceColumn(column), // Because they're already displayed somewhere else
   );
   const groupableIdsTooltip = t("history.content.fingerprint");
 
@@ -135,77 +139,35 @@ const EventCard = ({
   return (
     <Card>
       <Bullet />
-      <RowDates dates={row.dates} />
-      <SxRawDataBadge event={row} />
+      <RowDates dates={row[dateColumn.label] as DateRow} />
+      <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
       <EventItemContent>
-        <MainContent>
-          <Col>
-            {contentFilter.money && applicableMoney.length > 0 && (
-              <Flex>
-                <WithTooltip text={moneyTooltip}>
-                  <span>
-                    <SxFaIcon icon="euro-sign" active large />
-                  </span>
-                </WithTooltip>
-                <ColBucket>
-                  {applicableMoney.map((column) => (
-                    <div key={column.label}>
-                      <TinyLabel>{column.defaultLabel}</TinyLabel>
-                      <code>
-                        <NumberFormat
-                          thousandSeparator={currencyConfig.thousandSeparator}
-                          decimalSeparator={currencyConfig.decimalSeparator}
-                          decimalScale={currencyConfig.decimalScale}
-                          suffix={currencyConfig.prefix}
-                          displayType="text"
-                          value={parseInt(row[column.label]) / 100}
-                        />
-                      </code>
-                    </div>
-                  ))}
-                </ColBucket>
-              </Flex>
-            )}
-            {contentFilter.rest && applicableRest.length > 0 && (
-              <Flex>
-                <WithTooltip text={restTooltip}>
-                  <span>
-                    <SxFaIcon icon="info" active large />
-                  </span>
-                </WithTooltip>
-                <ColBucket>
-                  {applicableRest.map((column) => (
-                    <div key={column.label}>
-                      <TinyLabel>{column.defaultLabel}</TinyLabel>
-                      <span>{row[column.label]}</span>
-                    </div>
-                  ))}
-                </ColBucket>
-              </Flex>
-            )}
-          </Col>
-
-          {contentFilter.groupId && applicableGroupableIds.length > 0 && (
-            <Flex>
-              <WithTooltip text={groupableIdsTooltip}>
-                <span>
-                  <SxFaIcon icon="fingerprint" active large />
-                </span>
-              </WithTooltip>
-              <ColBucket style={{ gridTemplateColumns: "1fr" }}>
-                {applicableGroupableIds.map((column) => (
-                  <div key={column.label}>
-                    <TinyLabel>{column.defaultLabel}</TinyLabel>
-                    {row[column.label]}
-                  </div>
-                ))}
-              </ColBucket>
-            </Flex>
-          )}
-        </MainContent>
+        {contentFilter.money && applicableMoney.length > 0 && (
+          <Flex>
+            <WithTooltip text={moneyTooltip}>
+              <span>
+                <SxFaIcon icon={faEuroSign} active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableMoney.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  <code>
+                    <NumericFormat
+                      {...currencyConfig}
+                      suffix={" " + currencyConfig.unit}
+                      displayType="text"
+                      value={parseInt(row[column.label] as string) / 100}
+                    />
+                  </code>
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
+        )}
         {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
-            datasetId={datasetId}
             columns={columns}
             contentFilter={contentFilter}
             groupedRows={groupedRows}
@@ -215,6 +177,40 @@ const EventCard = ({
             currencyConfig={currencyConfig}
             rootConceptIdsByColumn={rootConceptIdsByColumn}
           />
+        )}
+        {contentFilter.rest && applicableRest.length > 0 && (
+          <Flex>
+            <WithTooltip text={restTooltip}>
+              <span>
+                <SxFaIcon icon={faInfo} active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableRest.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  <span>{row[column.label] as string}</span>
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
+        )}
+        {contentFilter.groupId && applicableGroupableIds.length > 0 && (
+          <Flex>
+            <WithTooltip text={groupableIdsTooltip}>
+              <span>
+                <SxFaIcon icon={faFingerprint} active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableGroupableIds.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  {row[column.label] as string}
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
         )}
       </EventItemContent>
     </Card>

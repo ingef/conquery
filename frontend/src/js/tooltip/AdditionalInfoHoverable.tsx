@@ -1,51 +1,55 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { ReactNode } from "react";
 import { useDispatch } from "react-redux";
 
-import type { ConceptT, DateRangeT, InfoT } from "../api/types";
-import { isEmpty } from "../common/helpers";
+import type { ConceptT } from "../api/types";
+import { isEmpty } from "../common/helpers/commonHelper";
+import { getNodeIcon } from "../model/node";
 
-import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
+import { displayAdditionalInfos, toggleAdditionalInfos } from "./actions";
 import { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   cursor: pointer;
 `;
 
-export type AdditionalInfoHoverableNodeType = {
-  label: string;
-  description?: string;
-  children?: string[];
-  matchingEntries: number;
-  matchingEntities: number;
-  dateRange?: DateRangeT;
-  additionalInfos: InfoT[];
-};
-
 // Allowlist the data we pass (especially: don't pass all children)
-const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
+const getAdditionalInfos = (
+  node: ConceptT,
+  root?: ConceptT,
+): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
-  isFolder: !!node.children && node.children.length > 0,
   matchingEntries: node.matchingEntries,
   matchingEntities: node.matchingEntities,
   dateRange: node.dateRange,
   infos: node.additionalInfos,
+  icon: getNodeIcon(node, {
+    isStructNode: !root?.detailsAvailable,
+  }),
+  rootLabel: root?.label,
+  rootIcon: root ? getNodeIcon(root) : undefined,
 });
 
-interface Props {
-  node: ConceptT;
+const AdditionalInfoHoverable = ({
+  node,
+  className,
+  children,
+  root,
+}: {
+  children: ReactNode;
   className?: string;
-}
-
-const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
+  node: ConceptT;
+  root: ConceptT;
+}) => {
   const dispatch = useDispatch();
 
   const onDisplayAdditionalInfos = () => {
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
-
     dispatch(
-      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+      displayAdditionalInfos({
+        additionalInfos: getAdditionalInfos(node, root),
+      }),
     );
   };
 
@@ -54,7 +58,9 @@ const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
 
     dispatch(toggleAdditionalInfos());
     dispatch(
-      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+      displayAdditionalInfos({
+        additionalInfos: getAdditionalInfos(node, root),
+      }),
     );
   };
 

@@ -1,4 +1,6 @@
 import styled from "@emotion/styled";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -69,7 +71,7 @@ const QueryGroupActions = ({
             red
             tight
             active={excludeActive}
-            icon="ban"
+            icon={faBan}
             onClick={onExcludeClick}
           >
             {t("queryEditor.exclude")}
@@ -78,9 +80,8 @@ const QueryGroupActions = ({
         <WithTooltip text={t("help.queryEditorDate")} lazy>
           <StyledIconButton
             active={dateActive}
-            regular
             tight
-            icon="calendar"
+            icon={faCalendar}
             onClick={onDateClick}
           >
             {t("queryEditor.date")}
@@ -89,7 +90,7 @@ const QueryGroupActions = ({
       </div>
       <Right>
         <WithTooltip text={t("queryEditor.removeColumn")}>
-          <IconButton tiny icon="times" onClick={onDeleteGroup} />
+          <IconButton tiny icon={faTimes} onClick={onDeleteGroup} />
         </WithTooltip>
       </Right>
     </Actions>

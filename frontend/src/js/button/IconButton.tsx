@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef, memo, useMemo } from "react";
 
-import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
+import FaIcon, { FaIconPropsT, IconStyleProps } from "../icon/FaIcon";
 
 import BasicButton, { BasicButtonProps } from "./BasicButton";
 
@@ -11,11 +11,14 @@ interface StyledFaIconProps extends FaIconPropsT {
   red?: boolean;
   secondary?: boolean;
   hasChildren: boolean;
+  iconColor?: string;
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red, secondary, light }) =>
-    red
+  color: ${({ theme, active, red, secondary, light, iconColor }) =>
+    iconColor
+      ? iconColor
+      : red
       ? theme.col.red
       : active
       ? theme.col.blueGrayDark
@@ -42,18 +45,20 @@ const SxBasicButton = styled(BasicButton)<{
   tight?: boolean;
   bgHover?: boolean;
   red?: boolean;
+  large?: boolean;
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary, red }) =>
-    active
+    red
+      ? theme.col.red
+      : active
       ? theme.col.blueGrayDark
       : secondary
       ? theme.col.orange
-      : red
-      ? theme.col.red
       : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
-  transition: opacity ${({ theme }) => theme.transitionTime},
+  transition:
+    opacity ${({ theme }) => theme.transitionTime},
     background-color ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -62,19 +67,25 @@ const SxBasicButton = styled(BasicButton)<{
   display: inline-flex;
   align-items: center;
   gap: ${({ tight }) => (tight ? "5px" : "10px")};
-
+  font-size: ${({ theme, large }) => (large ? theme.font.md : theme.font.sm)};
   &:hover {
     opacity: 1;
 
     background-color: ${({ frame, bgHover, theme }) =>
-      frame || bgHover ? theme.col.grayVeryLight : " inherit"};
+      frame || bgHover ? theme.col.bgAlt : " inherit"};
   }
 
   &:disabled {
     &:hover {
-      opacity: 0.6;
+      opacity: 0.4;
     }
   }
+`;
+
+const Children = styled("span")`
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 export interface IconButtonPropsT extends BasicButtonProps {
@@ -82,8 +93,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   active?: boolean;
   large?: boolean;
   small?: boolean;
-  icon: IconName;
-  regular?: boolean;
+  icon: IconProp;
   secondary?: boolean;
   tight?: boolean;
   red?: boolean;
@@ -93,6 +103,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   light?: boolean;
   fixedIconWidth?: number;
   bgHover?: boolean;
+  iconColor?: string;
 }
 
 // A button that is prefixed by an icon
@@ -103,7 +114,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       active,
       red,
       large,
-      regular,
       left,
       children,
       tight,
@@ -113,6 +123,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       light,
       fixedIconWidth,
       bgHover,
+      iconColor,
       ...restProps
     },
     ref,
@@ -122,7 +133,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         <SxFaIcon
           main
           left={left}
-          regular={regular}
           large={large}
           active={active}
           red={red}
@@ -132,6 +142,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
           tight={tight}
           small={small}
           light={light}
+          iconColor={iconColor}
           {...iconProps}
         />
       );
@@ -148,7 +159,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       active,
       red,
       large,
-      regular,
       left,
       children,
       tight,
@@ -157,6 +167,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       secondary,
       light,
       fixedIconWidth,
+      iconColor,
     ]);
     return (
       <SxBasicButton
@@ -165,11 +176,12 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         tight={tight}
         bgHover={bgHover}
         red={red}
+        large={large}
         {...restProps}
         ref={ref}
       >
         {iconElement}
-        {children && <span>{children}</span>}
+        {children && <Children>{children}</Children>}
       </SxBasicButton>
     );
   },

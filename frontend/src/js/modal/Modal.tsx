@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { useRef, FC, ReactNode } from "react";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { ReactNode, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
@@ -50,12 +51,17 @@ const Headline = styled("h3")`
 
 const Subtitle = styled(`p`)`
   margin: -15px 0 20px;
+  max-width: 600px;
 `;
 
-const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
+const ModalContent = ({
   children,
   scrollable,
   onClose,
+}: {
+  children: ReactNode;
+  onClose: () => void;
+  scrollable?: boolean;
 }) => {
   const ref = useRef(null);
 
@@ -68,21 +74,11 @@ const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
   );
 };
 
-interface PropsT {
-  className?: string;
-  headline?: ReactNode;
-  subtitle?: ReactNode;
-  doneButton?: boolean;
-  closeIcon?: boolean;
-  scrollable?: boolean;
-  onClose: () => void;
-}
-
 // A modal with three ways to close it
 // - a button
 // - click outside
 // - press esc
-const Modal: FC<PropsT> = ({
+const Modal = ({
   className,
   children,
   headline,
@@ -91,6 +87,15 @@ const Modal: FC<PropsT> = ({
   closeIcon,
   scrollable,
   onClose,
+}: {
+  className?: string;
+  children: ReactNode;
+  headline?: ReactNode;
+  subtitle?: ReactNode;
+  doneButton?: boolean;
+  closeIcon?: boolean;
+  scrollable?: boolean;
+  onClose: () => void;
 }) => {
   const { t } = useTranslation();
 
@@ -104,7 +109,7 @@ const Modal: FC<PropsT> = ({
           {closeIcon && (
             <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
-                <FaIcon icon="times" />
+                <FaIcon icon={faTimes} />
               </TransparentButton>
             </WithTooltip>
           )}

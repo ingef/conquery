@@ -9,8 +9,10 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -22,15 +24,19 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id="NEGATION", base= CQElement.class)
+@CPSType(id = "NEGATION", base = CQElement.class)
 @Setter
 @Getter
 public class CQNegation extends CQElement {
 
-	@Valid @NotNull @Getter @Setter
+	@Valid
+	@NotNull
+	@Getter
+	@Setter
 	private CQElement child;
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
@@ -49,26 +55,31 @@ public class CQNegation extends CQElement {
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		switch(context.getDateAggregationMode()) {
-			case MERGE:
-			case NONE:
-			case INTERSECT:
-				return DateAggregationAction.BLOCK;
-			case LOGICAL:
-				return DateAggregationAction.NEGATE;
-			default:
-				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
-		}
+		return switch (context.getDateAggregationMode()) {
+			case MERGE, NONE, INTERSECT -> DateAggregationAction.BLOCK;
+			case LOGICAL -> DateAggregationAction.NEGATE;
+		};
 	}
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		return child.getResultInfos();
 	}
-	
+
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		child.visit(visitor);
+	}
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		/*
+		 * We cannot realistically handle negation as that would require translating most if not all query logic into collectRequiredTables. Specifically CQConcept/Filters.
+		 *
+		 * Additionally, it would require collectRequiredEntities to be perfect, instead of being good enough,
+		 * since excluding entities that _might_ not be included would exclude them from evaluation.
+		 */
+		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,6 +25,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -67,35 +73,26 @@ public class SumSelect extends Select {
 
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
-			switch (getColumn().getType()) {
-				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
-				case MONEY:
-					return new MoneySumAggregator(getColumn());
-				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
-				case REAL:
-					return new RealSumAggregator(getColumn());
-				default:
-					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
-			}
+			return switch (getColumn().getType()) {
+				case INTEGER -> new IntegerSumAggregator(getColumn());
+				case MONEY -> new MoneySumAggregator(getColumn());
+				case DECIMAL -> new DecimalSumAggregator(getColumn());
+				case REAL -> new RealSumAggregator(getColumn());
+				default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
+			};
 		}
 		if (getColumn().getType() != getSubtractColumn().getType()) {
 			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn()
 					.getType()));
 		}
-		switch (getColumn().getType()) {
-			case INTEGER:
-				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-			case MONEY:
-				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-			case DECIMAL:
-				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-			case REAL:
-				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
-		}
+
+		return switch (getColumn().getType()) {
+			case INTEGER -> new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case MONEY -> new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL -> new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL -> new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
+		};
 	}
 
 
@@ -107,11 +104,11 @@ public class SumSelect extends Select {
 
 		out.add(getColumn());
 
-		if(getSubtractColumn() != null){
+		if (getSubtractColumn() != null) {
 			out.add(getSubtractColumn());
 		}
 
-		if(distinctByColumn == null) {
+		if (distinctByColumn == null) {
 			out.addAll(getDistinctByColumn());
 		}
 
@@ -130,4 +127,21 @@ public class SumSelect extends Select {
 	public boolean isColumnsOfSameType() {
 		return getSubtractColumn() == null || getSubtractColumn().getType().equals(getColumn().getType());
 	}
+
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return SumDistinctSqlAggregator.create(this, selectContext).getSqlSelects();
+		}
+		return SumSqlAggregator.create(this, selectContext).getSqlSelects();
+	}
+
+	@Override
+	public Set<ConceptCteStep> getRequiredSqlSteps() {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return ConceptCteStep.withOptionalSteps(ConceptCteStep.JOIN_PREDECESSORS);
+		}
+		return ConceptCteStep.MANDATORY_STEPS;
+	}
+
 }

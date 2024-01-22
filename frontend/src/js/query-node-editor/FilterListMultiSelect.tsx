@@ -10,7 +10,6 @@ import type {
 import { exists } from "../common/helpers/exists";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
-import type { FiltersContextT } from "./TableFilter";
 import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 
@@ -38,12 +37,8 @@ const getPageToLoad = (
     : prevPageLoaded + 1;
 };
 
-interface FilterContextT extends FiltersContextT {
-  filterId: FilterT["id"];
-}
-
 interface PropsT {
-  context: FilterContextT;
+  filterId: FilterT["id"];
 
   label: string;
   indexPrefix?: number;
@@ -66,7 +61,7 @@ interface PropsT {
 }
 
 const FilterListMultiSelect: FC<PropsT> = ({
-  context,
+  filterId,
   value,
   onChange,
   label,
@@ -134,23 +129,14 @@ const FilterListMultiSelect: FC<PropsT> = ({
     setLoading(true);
 
     try {
-      const r = await postFilterValuesResolve(
-        context.datasetId,
-        context.treeId,
-        context.tableId,
-        context.filterId,
-        rows,
-      );
+      const r = await postFilterValuesResolve(filterId, rows);
+      const hasUnknownCodes = r.unknownCodes && r.unknownCodes.length > 0;
 
-      setResolved(r);
-      setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);
-
-      if (
-        r.resolvedFilter &&
-        r.resolvedFilter.value &&
-        r.resolvedFilter.value.length > 0
-      ) {
-        onChange(r.resolvedFilter.value);
+      if (hasUnknownCodes) {
+        setResolved(r);
+        setIsModalOpen(true);
+      } else {
+        onSubmitResolvedValues(r, { includeUnresolved: false });
       }
     } catch (e) {
       setError(true);
@@ -159,13 +145,44 @@ const FilterListMultiSelect: FC<PropsT> = ({
     setLoading(false);
   };
 
+  const onSubmitResolvedValues = (
+    resolvedResponse: PostFilterResolveResponseT,
+    {
+      includeUnresolved,
+    }: {
+      includeUnresolved?: boolean;
+    },
+  ) => {
+    const hasSomethingToInsert =
+      (resolvedResponse.resolvedFilter?.value?.length || 0) > 0 ||
+      resolvedResponse.unknownCodes.length > 0;
+
+    console.log("hasSomethingToInsert", hasSomethingToInsert);
+    console.log("resolvedResponse", resolvedResponse);
+
+    if (!hasSomethingToInsert) return;
+
+    const value = includeUnresolved
+      ? [
+          ...resolvedResponse.resolvedFilter!.value,
+          ...resolvedResponse.unknownCodes.map((item) => ({
+            label: item,
+            value: item,
+          })),
+        ]
+      : resolvedResponse.resolvedFilter!.value;
+
+    onChange(value);
+  };
+
   return (
     <>
-      {allowDropFile && isModalOpen && (
+      {allowDropFile && isModalOpen && resolved && (
         <UploadFilterListModal
           resolved={resolved}
           loading={loading}
           error={error}
+          onSubmit={onSubmitResolvedValues}
           onClose={() => setIsModalOpen(false)}
         />
       )}

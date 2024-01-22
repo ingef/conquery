@@ -44,7 +44,8 @@ public class ExcelRenderer {
 			ResultType.DateT.class, ExcelRenderer::writeDateCell,
 			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
 			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-			ResultType.NumericT.class, ExcelRenderer::writeNumericCell
+			ResultType.NumericT.class, ExcelRenderer::writeNumericCell,
+			ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell
 	);
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
@@ -67,7 +68,7 @@ public class ExcelRenderer {
 		void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
 	}
 
-	public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
 			List<ResultInfo> idHeaders,
 			E exec,
 			OutputStream outputStream) throws IOException {
@@ -99,7 +100,7 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
@@ -136,7 +137,7 @@ public class ExcelRenderer {
 	 * Create a table environment, which improves mainly the visuals of the produced table.
 	 */
 	@NotNull
-	private XSSFTable createTableEnvironment(ManagedExecution<?> exec, SXSSFSheet sheet) {
+	private XSSFTable createTableEnvironment(ManagedExecution exec, SXSSFSheet sheet) {
 		XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
 
 		CTTable cttable = table.getCTTable();
@@ -301,12 +302,13 @@ public class ExcelRenderer {
 	}
 
 	/**
-	 * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
+	 * This writer is only used on Columns with the result type {@link ResultType.BooleanT}, not on complex types such as `LIST[BOOLEAN]`,
+	 * because MS Excel can only represent those as strings
 	 */
 	private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (value instanceof Boolean) {
-			Boolean aBoolean = (Boolean) value;
+		if (value instanceof Boolean aBoolean) {
 			cell.setCellValue(aBoolean);
+			return;
 		}
 		cell.setCellValue(info.getType().printNullable(settings, value));
 	}

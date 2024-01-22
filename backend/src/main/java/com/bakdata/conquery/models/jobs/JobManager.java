@@ -8,12 +8,14 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JobManager implements Closeable{
+public class JobManager implements Closeable {
 
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
 
-	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { System.exit(1);};
+	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> {
+		System.exit(1);
+	};
 
 	public JobManager(String name, boolean failOnError) {
 
@@ -31,23 +33,21 @@ public class JobManager implements Closeable{
 		log.trace("Added job {}", job.getLabel());
 		slowExecutor.add(job);
 	}
-	
+
 	public void addFastJob(Job job) {
 		fastExecutor.add(job);
 	}
-	
-	public List<Job> getSlowJobs() {
-		return slowExecutor.getJobs();
+
+	public List<JobStatus> getJobStatus() {
+		return getSlowJobs().stream()
+							.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter().getProgress(), job.getLabel(), job.isCancelled()))
+							.sorted()
+							.collect(Collectors.toList());
+
 	}
 
-	public JobManagerStatus reportStatus() {
-
-		return new JobManagerStatus(
-				getSlowJobs()
-						.stream()
-						.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
-						.collect(Collectors.toList())
-		);
+	public List<Job> getSlowJobs() {
+		return slowExecutor.getJobs();
 	}
 
 	public boolean isSlowWorkerBusy() {

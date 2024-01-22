@@ -1,0 +1,67 @@
+{
+  "type": "QUERY_TEST",
+  "label": "FLAGS_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/FLAGS_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name" : "connector",
+          "table" : "table",
+          "selects": {
+            "name" : "select",
+            "type": "FLAGS",
+            "flags": {
+              "A": "table.a",
+              "B": "table.b",
+              "C": "table.c"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": {
+		"name": "table",
+		"csv": "tests/aggregator/FLAGS_AGGREGATOR/content.csv",
+		"primaryColumn": {
+			"name": "id",
+			"type": "STRING"
+		},
+		"columns": [
+			{
+				"name": "a",
+				"type": "BOOLEAN"
+			},
+			{
+          "name": "b",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "c",
+          "type": "BOOLEAN"
+        }
+      ]
+    }
+  }
+}
