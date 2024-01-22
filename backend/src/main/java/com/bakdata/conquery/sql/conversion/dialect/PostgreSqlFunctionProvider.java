@@ -9,12 +9,12 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
-import org.jooq.WindowSpecificationRowsStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -124,7 +124,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
-		return ColumnDateRange.of(DSL.field("range_agg({0})", columnDateRange.getRange()));
+		return ColumnDateRange.of(DSL.function("range_agg", Object.class, columnDateRange.getRange()));
 	}
 
 	@Override
@@ -132,7 +132,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		Field<String> aggregatedValidityDate = DSL.field("%s::varchar".formatted(columnDateRange.getRange().toString()), String.class);
+		Field<String> aggregatedValidityDate = DSL.field("{0}::{1}", String.class, columnDateRange.getRange(), DSL.keyword("varchar"));
 		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
@@ -165,21 +165,31 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public <T> Field<T> first(Field<T> column, List<Field<?>> orderByColumn) {
-		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(column)), column.getType());
+		return DSL.field("({0})[1]", column.getType(), DSL.arrayAgg(column));
 	}
 
 	@Override
 	public <T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns) {
-		String orderByClause = orderByColumns.stream()
-											 .map(Field::toString)
-											 .collect(Collectors.joining(", ", "ORDER BY ", " DESC"));
-		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByClause)))), column.getType());
+		ArrayAggOrderByStep<Object[]> arrayAgg = DSL.arrayAgg(DSL.field(
+																	  "{0} {1} {2} {3}",
+																	  column,
+																	  DSL.keyword("ORDER BY"),
+																	  DSL.sql(orderByColumns.stream().map(Field::toString).collect(Collectors.joining(","))),
+																	  DSL.keyword("DESC")
+															  )
+		);
+		return DSL.field("({0})[1]", column.getType(), arrayAgg);
 	}
 
 	@Override
 	public <T> Field<T> random(Field<T> column) {
-		WindowSpecificationRowsStep orderByRandomClause = DSL.orderBy(DSL.function("random", Object.class));
-		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByRandomClause)))), column.getType());
+		ArrayAggOrderByStep<Object[]> arrayAgg = DSL.arrayAgg(DSL.field(
+				"{0} {1} {2}",
+				column,
+				DSL.keyword("ORDER BY"),
+				DSL.function("random", Object.class)
+		));
+		return DSL.field("({0})[1]", column.getType(), arrayAgg);
 	}
 
 	@Override
@@ -206,16 +216,19 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	private Field<Integer> extract(DatePart datePart, Field<Integer> timeInterval) {
-		return DSL.function(
-				"EXTRACT",
+		return DSL.field(
+				"{0}({1} {2} {3})",
 				Integer.class,
-				DSL.inlined(DSL.field("%s FROM %s".formatted(datePart, timeInterval)))
+				DSL.keyword("EXTRACT"),
+				DSL.keyword(datePart.toSQL()),
+				DSL.keyword("FROM"),
+				timeInterval
 		);
 	}
 
 	@Override
 	public Field<Date> toDateField(String dateValue) {
-		return DSL.field("%s::date".formatted(DSL.val(dateValue)), Date.class);
+		return DSL.field("{0}::{1}", Date.class, DSL.val(dateValue), DSL.keyword("date"));
 	}
 
 }
