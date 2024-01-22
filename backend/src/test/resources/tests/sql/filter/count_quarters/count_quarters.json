@@ -1,6 +1,6 @@
 {
   "label": "COUNT_QUARTERS on single date column",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
   "expectedCsv": "tests/sql/filter/count_quarters/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
