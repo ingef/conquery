@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.worker;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.util.ConcurrentHashSet;
 
 @Slf4j
 @ToString(callSuper = true)
@@ -28,14 +28,16 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 	 */
 	@JsonIgnore
 	private final Object jobManagerSync = new Object();
+
 	/**
 	 * Contains latest state of the Job-Queue of the Shard.
 	 *
 	 * @implNote This is sent by the shards at regular intervals, not polled.
+	 * @implNote This set is implemented as concurrent. Writers are single threaded, readers however are arbitrary.
 	 */
 	@JsonIgnore
 	@Getter
-	private final Set<JobManagerStatus> jobManagerStatus = new HashSet<>();
+	private final Set<JobManagerStatus> jobManagerStatus = new ConcurrentHashSet<>();
 	private final AtomicBoolean full = new AtomicBoolean(false);
 	private LocalDateTime lastStatusTime = LocalDateTime.now();
 
