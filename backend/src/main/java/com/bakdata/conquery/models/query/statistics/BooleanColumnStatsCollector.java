@@ -16,7 +16,7 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 
 	@Override
 	public void consume(Boolean value) {
-		final String printed = ResultType.BooleanT.INSTANCE.printNullable(getPrintSettings(), value);
+		final String printed = value == null ? null : ResultType.BooleanT.INSTANCE.printNullable(getPrintSettings(), value);
 		delegate.consume(printed);
 	}
 
