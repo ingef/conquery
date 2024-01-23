@@ -11,6 +11,21 @@ import org.junit.jupiter.api.Test;
 class QuickSearchTest {
 
 	@Test
+	public void anaconda() {
+		final TrieSearch<String> search = new TrieSearch<>(2, "");
+		for (String item : List.of("Anaconda", "Honda", "London", "Analysis", "Canada", "Condor")) {
+			search.addItem(item, List.of(item));
+		}
+
+		search.shrinkToFit();
+
+		final List<String> results = search.findItems(List.of("anaconda"), Integer.MAX_VALUE);
+
+		assertThat(results).isEqualTo(List.of("Anaconda", "Canada", "Condor", "London", "Analysis", "Honda"));
+
+	}
+
+	@Test
 	public void pants() {
 		final TrieSearch<String> search = new TrieSearch<>(2, "");
 		for (String item : List.of("Pants", "Pantshop", "Sweatpants", "PantsPants")) {
@@ -43,6 +58,7 @@ class QuickSearchTest {
 		for (String item : items) {
 			search.addItem(item, List.of(item));
 		}
+		search.shrinkToFit();
 		return search;
 	}
 
@@ -57,8 +73,8 @@ class QuickSearchTest {
 		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
 				.containsExactly(
 						"c aa",        // Two exact matches
-						"aa",        // One exact match
 						"c",        // One exact match
+						"aa",        // One exact match
 						"aaa",        // One prefix match, onto a whole word
 						"aab",        // One prefix match, onto a whole word
 						"d baaacd"    // Two partial matches
@@ -81,36 +97,37 @@ class QuickSearchTest {
 	}
 
 	@Test
-	public void testSuffixes() {
+	public void testNGrams() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.ngramSplitStrings("baaacd", "item"))
+		assertThat(search.ngramSplitToStringStream("baaacd"))
 				.containsExactly(
-						"baaacd",
+						"baaacd!",
+						"ba",
 						"aa",
 						"aa",
 						"ac",
 						"cd"
 				);
 
-		assertThat(search.ngramSplitStrings("acd", "item"))
-				.containsExactly("acd", "cd");
+		assertThat(search.ngramSplitToStringStream("acd"))
+				.containsExactly("acd!", "ac", "cd");
 
-		assertThat(search.ngramSplitStrings("aacd", "item"))
-				.containsExactly("aacd", "ac", "cd");
+		assertThat(search.ngramSplitToStringStream("aacd"))
+				.containsExactly("aacd!", "aa", "ac", "cd");
 	}
 
 	@Test
-	public void testNoSuffix() {
+	public void testNoNGram() {
 		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
 
-		assertThat(search.ngramSplitStrings("baaacd", "item"))
-				.containsExactly("baaacd");
+		assertThat(search.ngramSplitToStringStream("baaacd"))
+				.containsExactly("baaacd!");
 
-		assertThat(search.ngramSplitStrings("acd", "item"))
-				.containsExactly("acd");
+		assertThat(search.ngramSplitToStringStream("acd"))
+				.containsExactly("acd!");
 
-		assertThat(search.ngramSplitStrings("aacd", "item"))
-				.containsExactly("aacd");
+		assertThat(search.ngramSplitToStringStream("aacd"))
+				.containsExactly("aacd!");
 	}
 }

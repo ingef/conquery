@@ -35,9 +35,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We prefer original words in our results.
 	 *
-	 * @implNote they are identifiable by having a KeywordIndex with start equal to 0.
+	 * @implNote they are marked by appending WHOLE_WORD_MARKER to them in the trie.
 	 */
-	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = EXACT_MATCH_WEIGHT;
+	private static final String WHOLE_WORD_MARKER = "!";
 
 	private final int ngramLength;
 
@@ -48,23 +48,13 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private final List<KeywordItems<T>> keywordItemsList = new ArrayList<>();
 
-	private record NgramIndex(String ngram, int index, int start) {
-	}
-
-	private record KeywordIndex(int index, int start) {
-		public KeywordIndex(NgramIndex info) {
-			this(info.index, info.start);
-		}
-
-		public boolean isOriginal() {
-			return start == 0;
-		}
+	private record NgramIndex(String ngram, int index) {
 	}
 
 	/**
 	 * Maps from keywords to associated items.
 	 */
-	private final PatriciaTrie<List<KeywordIndex>> trie = new PatriciaTrie<>();
+	private final PatriciaTrie<List<Integer>> trie = new PatriciaTrie<>();
 
 	private boolean shrunk = false;
 	private long size = -1;
@@ -75,58 +65,64 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 		this.ngramLength = ngramLength;
 
-		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, ""))));
+		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
 	}
 
-	public List<T> findItems(Collection<String> keywords, int limit) {
+	public List<T> findItems(Collection<String> queries, int limit) {
 		final Object2DoubleMap<T> itemWeights = new Object2DoubleAVLTreeMap<>();
 
-		// We are not guaranteed to have split keywords incoming, so we normalize them for searching
-		keywords = keywords.stream().flatMap(this::split).collect(Collectors.toSet());
+		// We are not guaranteed to have split queries incoming, so we normalize them for searching
+		queries = queries.stream().flatMap(this::split).collect(Collectors.toSet());
 
-		for (String keyword : keywords) {
-			// Query trie for all items associated with extensions of keywords
-			for (final List<KeywordIndex> hits : trie.prefixMap(keyword).values())
-				updateWeights(keyword, hits, itemWeights);
-			if (keyword.length() > ngramLength) {
-				// If there are items associated with the keyword, then there is an
-				// ngram associated with those items that is a prefix of keyword
-				updateWeights(keyword, trie.get(keyword.substring(0, ngramLength)), itemWeights);
+		for (final String query : queries) {
+			// Query trie for all items associated with extensions of queries
+			final int queryLength = query.length();
+			if (queryLength < ngramLength) {
+				// ToDo: A guard against queryLength < ngramLength would make this case obsolete, but the tests would have to be adjusted
+				for (final List<Integer> hits : trie.prefixMap(query).values()) {
+					updateWeights(query, hits, itemWeights);
+				}
+			}
+			else {
+				for (int start = 0; start <= queryLength - ngramLength; start++) {
+					final String ngram = query.substring(start, start + ngramLength);
+					updateWeights(query, trie.get(ngram), itemWeights);
+				}
 			}
 		}
-
 
 		// Sort items according to their weight, then limit.
 		// Note that sorting is in ascending order, meaning lower-scores are better.
 		return itemWeights.object2DoubleEntrySet()
-				.stream()
-				.sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
-				.limit(limit)
-				.map(Map.Entry::getKey)
-				.collect(Collectors.toList());
+						  .stream()
+						  .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
+						  .limit(limit)
+						  .map(Map.Entry::getKey)
+						  .collect(Collectors.toList());
 	}
 
 	/**
 	 * calculate and update weights for all queried items
 	 */
-	private void updateWeights(String keyword, final List<KeywordIndex> hits, Object2DoubleMap<T> itemWeights) {
-		if (hits == null) return;
+	private void updateWeights(String query, final List<Integer> hits, Object2DoubleMap<T> itemWeights) {
+		if (hits == null) {
+			return;
+		}
 
-		for (KeywordIndex keywordIndex : hits) {
+		for (int index : hits) {
 
-			final KeywordItems<T> entry = keywordItemsList.get(keywordIndex.index);
-			if (!entry.word.startsWith(keyword, keywordIndex.start)) continue;
+			final KeywordItems<T> entry = keywordItemsList.get(index);
 
-			boolean isOriginal = keywordIndex.isOriginal();
-			final String itemWord = isOriginal ? entry.word : entry.word.substring(keywordIndex.start);
+			final String itemWord = entry.word;
 
-			final double weight = weightWord(keyword, itemWord, isOriginal);
+			final double weight = weightWord(query, itemWord);
+
 			entry.items.forEach(item ->
-			{
-				// We combine hits multiplicative to favor items with multiple hits
-				final double currentWeight = itemWeights.getOrDefault(item, 1);
-				itemWeights.put(item, currentWeight * weight);
-			});
+								{
+									// We combine hits multiplicative to favor items with multiple hits
+									final double currentWeight = itemWeights.getOrDefault(item, 1);
+									itemWeights.put(item, currentWeight * weight);
+								});
 		}
 	}
 
@@ -136,51 +132,54 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		return splitPattern.splitAsStream(keyword.trim())
-				.map(String::trim)
-				.filter(StringUtils::isNotBlank)
-				.map(String::toLowerCase);
+						   .map(String::trim)
+						   .filter(StringUtils::isNotBlank)
+						   .map(String::toLowerCase);
 	}
 
 	/**
 	 * A lower weight implies more relevant words.
 	 */
-	private double weightWord(String keyword, String itemWord, boolean isOriginal) {
-		final double keywordLength = keyword.length();
+	private double weightWord(String query, String itemWord) {
 		final double itemLength = itemWord.length();
+		final double queryLength = query.length();
 
-		// keyword is prefix of itemWord
-		assert itemLength >= keywordLength;
-
-		final double weight;
+		double weight;
+		double root = (itemLength + queryLength) / 2;
 
 		// We saturate the weight to avoid favoring extremely short matches.
-		if (keywordLength == itemLength) {
+		if (queryLength == itemLength) {
 			weight = EXACT_MATCH_WEIGHT;
-		} else {
+		}
+		else if (queryLength < itemLength) {
 			// We assume that less difference implies more relevant words
-			weight = (itemLength - keywordLength) / keywordLength;
+			weight = (itemLength - queryLength) / itemLength;
+		}
+		else{
+			// We assume that less difference implies more relevant words
+			weight = (queryLength - itemLength) / queryLength;
 		}
 
-		// An original itemWord is favorable (but less than exact matches).
-		if (isOriginal) {
-			return ORIGINAL_WORD_WEIGHT_FACTOR * weight;
-		}
+		return Math.pow(weight, 1 / root);
+	}
 
-		return weight;
+	private boolean isOriginal(String itemWord) {
+		return itemWord.endsWith(WHOLE_WORD_MARKER);
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
 		return keywords.stream()
-				.flatMap(this::split)
-				.flatMap(this::doGetWholeWords)
-				.distinct()
-				.limit(limit)
-				.collect(Collectors.toList());
+					   .flatMap(this::split)
+					   .map(kw -> kw + WHOLE_WORD_MARKER)
+					   .flatMap(this::doGet)
+					   .distinct()
+					   .limit(limit)
+					   .collect(Collectors.toList());
 	}
 
-	private Stream<T> doGetWholeWords(String kw) {
-		return trie.getOrDefault(kw, Collections.emptyList()).stream().filter(KeywordIndex::isOriginal)
-				.flatMap(ndx -> keywordItemsList.get(ndx.index).items.stream());
+	private Stream<T> doGet(String kw) {
+		return trie.getOrDefault(kw, Collections.emptyList()).stream()
+				   .flatMap(index -> keywordItemsList.get(index).items.stream());
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -188,50 +187,49 @@ public class TrieSearch<T extends Comparable<T>> {
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.flatMap(word -> ngramSplit(word, item))
-				.distinct()
-				.forEach(this::doPut);
+				.flatMap(this::ngramSplit)
+				.forEach(ni -> doPut(ni, item));
 	}
 
-	public Stream<String> ngramSplitStrings(String word, T item) {
-		return ngramSplit(word, item).map(wi -> wi.ngram);
+	public Stream<String> ngramSplitToStringStream(String word) {
+		return ngramSplit(word).map(ni -> ni.ngram);
 	}
 
-	private Stream<NgramIndex> ngramSplit(String word, T item) {
+	private Stream<NgramIndex> ngramSplit(String word) {
 		// We append a special character here marking original words as we want to favor them in weighing.
-		int index;
-		List<KeywordIndex> entry = trie.get(word);
+		final String wholeWord = word + WHOLE_WORD_MARKER;
+		List<Integer> entry = trie.get(wholeWord);
 
-		Optional<KeywordIndex> optionalIndex = Optional.empty();
-		if (entry != null)
-			optionalIndex = entry.stream().filter(KeywordIndex::isOriginal).findFirst();
-
-		if (optionalIndex.isPresent())
-			index = optionalIndex.get().index;
+		final int index;
+		if (entry != null) {
+			index = entry.get(0);
+		}
 		else {
 			keywordItemsList.add(new KeywordItems<>(word, new ArrayList<>()));
 			index = keywordItemsList.size() - 1;
 		}
 
-		keywordItemsList.get(index).items.add(item);
-
-		// start equal to 0 marks word as an original
-		Stream<NgramIndex> wholeWordStream = Stream.of(new NgramIndex(word, index, 0));
-		if (word.length() < ngramLength) return wholeWordStream;
+		Stream<NgramIndex> wholeWordStream = Stream.of(new NgramIndex(wholeWord, index));
+		if (word.length() < ngramLength) {
+			return wholeWordStream;
+		}
 
 		return Stream.concat(
 				wholeWordStream,
-				IntStream.range(1, word.length() - ngramLength + 1)
-						.mapToObj(start -> new NgramIndex(word.substring(start, start + ngramLength), index, start))
+				IntStream.range(0, word.length() - ngramLength + 1)
+						 .mapToObj(start -> new NgramIndex(word.substring(start, start + ngramLength), index))
 		);
 	}
 
-	private void doPut(NgramIndex ni) {
-		// wouldn't it suffice to check once in addItem()?
-		// is concurrency the reason?
+	private void doPut(NgramIndex ni, T item) {
+		// ToDo: wouldn't it suffice to check once in addItem()? Is concurrency the reason?
 		ensureWriteable();
 		trie.computeIfAbsent(ni.ngram, (ignored) -> new ArrayList<>())
-				.add(new KeywordIndex(ni));
+			.add(ni.index);
+
+		if (isOriginal(ni.ngram)) {
+			keywordItemsList.get(ni.index).items.add(item);
+		}
 	}
 
 	private void ensureWriteable() {
@@ -256,7 +254,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			return;
 		}
 
-		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+		trie.replaceAll((key, values) -> new ArrayList<>(values));
 		((ArrayList<KeywordItems<T>>) keywordItemsList).trimToSize();
 		keywordItemsList.replaceAll(ki -> new KeywordItems<>(
 				ki.word,
@@ -279,24 +277,24 @@ public class TrieSearch<T extends Comparable<T>> {
 		// ToDo: meaning changed
 		final IntSummaryStatistics statistics =
 				trie.values()
-						.stream()
-						.mapToInt(List::size)
-						.summaryStatistics();
+					.stream()
+					.mapToInt(List::size)
+					.summaryStatistics();
 
 		// ToDo: meaning changed
 		final long singletons =
 				trie.values().stream()
-						.mapToInt(List::size)
-						.filter(length -> length == 1)
-						.count();
+					.mapToInt(List::size)
+					.filter(length -> length == 1)
+					.count();
 
 		log.info("Stats=`{}`, with {} singletons.", statistics, singletons);
 	}
 
 	public Stream<T> stream() {
 		return keywordItemsList.stream()
-				.flatMap(ki -> ki.items.stream())
-				.distinct();
+							   .flatMap(ki -> ki.items.stream())
+							   .distinct();
 	}
 
 	public Iterator<T> iterator() {
@@ -304,7 +302,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		final Set<T> seen = new HashSet<>();
 
 		return Iterators.filter(
-				Iterators.concat(Iterators.transform(keywordItemsList.stream().map(ki -> ki.items).iterator(), Collection::iterator)),
+				Iterators.concat(Iterators.transform(keywordItemsList.iterator(), ki -> ki.items.iterator())),
 				seen::add
 		);
 	}
