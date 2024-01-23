@@ -228,6 +228,11 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<String> yearQuarter(Field<Date> dateField) {
+		return DSL.function("QUARTER", String.class, dateField);
+  }
+  
+  @Override
 	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)

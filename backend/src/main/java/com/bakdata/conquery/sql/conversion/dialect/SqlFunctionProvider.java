@@ -68,6 +68,11 @@ public interface SqlFunctionProvider {
 
 	Condition likeRegex(Field<String> field, String pattern);
 
+	/**
+	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
+	 */
+	Field<String> yearQuarter(Field<Date> dateField);
+  
 	Field<Object[]> asArray(List<Field<?>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
