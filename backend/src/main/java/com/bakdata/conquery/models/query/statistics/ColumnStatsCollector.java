@@ -72,13 +72,11 @@ public abstract class ColumnStatsCollector<T> {
 		private final String name;
 		private final String label;
 		private final String description;
-		private final String type;
 
-		protected ResultColumnStatistics(String name, String label, String description, String type) {
+		protected ResultColumnStatistics(String name, String label, String description) {
 			this.name = name;
 			this.label = label;
 			this.description = description;
-			this.type = type;
 		}
 	}
 }

@@ -40,6 +40,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final AtomicReference<CDateRange> spanRef = new AtomicReference<>(null);
 		final Consumer<Object[]> dateAggregator = getDateSpanner(dateInfo, dateIndex, spanRef);
 
+		//TODO This might be really slow, we can handle this in parallel - thread per statsCollector - quite well
 		managedQuery.streamResults()
 					.peek(result -> entities.add(result.getEntityId()))
 					.map(EntityResult::listResultLines)
