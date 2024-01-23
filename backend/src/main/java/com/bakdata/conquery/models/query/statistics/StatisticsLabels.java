@@ -46,6 +46,11 @@ public interface StatisticsLabels {
 
 	@En("{0} additional Values")
 	@De("{0} weitere Werte")
-	public String remainingNodes(long count);
+	public String remainingValues(long count);
+
+	@En("{0} entries")
+	@De("{0} Einträge")
+	public String remainingEntries(long count);
+
 
 }
