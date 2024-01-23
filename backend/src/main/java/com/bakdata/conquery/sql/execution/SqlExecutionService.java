@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -39,7 +40,7 @@ public class SqlExecutionService {
 	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
 
 		String sqlString = sqlQuery.getSqlQuery().getSql();
-		List<ResultType> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).toList();
+		List<ResultType<?>> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
 
 		log.debug("Executing query: \n{}", sqlString);
 		try (Statement statement = connection.createStatement();
@@ -59,11 +60,10 @@ public class SqlExecutionService {
 		}
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
 		List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
-		ResultSetProcessor.ResultSetMapper[] mappers = ResultSetProcessor.getMappers(resultTypes);
 		while (resultSet.next()) {
-			SqlEntityResult resultRow = getResultRow(resultSet, mappers, columnCount);
+			SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
 			resultTable.add(resultRow);
 		}
 		return resultTable;
@@ -85,7 +85,7 @@ public class SqlExecutionService {
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, ResultSetProcessor.ResultSetMapper[] mappers, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
 
 		int rowNumber = resultSet.getRow();
 		String id = resultSet.getString(PID_COLUMN_INDEX);
@@ -93,7 +93,7 @@ public class SqlExecutionService {
 
 		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
 			int resultTypeIndex = resultSetIndex - VALUES_OFFSET_INDEX;
-			resultRow[resultTypeIndex] = mappers[resultTypeIndex].getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
+			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
 		}
 
 		return new SqlEntityResult(rowNumber, id, resultRow);

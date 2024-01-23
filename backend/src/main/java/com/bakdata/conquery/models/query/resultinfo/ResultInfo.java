@@ -33,7 +33,7 @@ public abstract class ResultInfo {
 	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
-	public abstract ResultType getType();
+	public abstract ResultType<?> getType();
 
 	@ToString.Include
 	public abstract Set<SemanticType> getSemantics();
