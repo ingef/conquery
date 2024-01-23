@@ -14,6 +14,7 @@ import c10n.C10N;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
+import com.google.common.collect.Range;
 import lombok.Getter;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jetbrains.annotations.NotNull;
@@ -73,6 +74,23 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
 	}
 
+	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
+		if (lower <= 1.d && upper >= 99d) {
+			return Range.closed(statistics.getPercentile(0.1), statistics.getPercentile(100));
+		}
+
+
+		final double min = statistics.getPercentile(lower);
+		final double max = statistics.getPercentile(upper);
+
+		if (max - min >= expectedBins) {
+			return Range.closed(min, max);
+		}
+
+		return expandBounds(Math.max(0.1, lower - by), Math.min(100, upper + by), expectedBins, statistics, by);
+
+	}
+
 	@Override
 	public void consume(Number value) {
 		if (value == null) {
@@ -106,24 +124,24 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	@NotNull
 	private List<HistogramColumnDescription.Entry> createBins() {
 
-		final double min = getStatistics().getPercentile(lowerPercentile);
-		final double max = getStatistics().getPercentile(upperPercentile);
+		final Range<Double> bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
 
-
-		final Histogram histogram = Histogram.create(min, max, expectedBins);
+		final Histogram
+				histogram =
+				Histogram.longTailed(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
 		return histogram.nodes()
 						.stream()
 						.map(bin -> {
-							 final String lower = printValue(bin.getMin());
-							 final String upper = printValue(bin.getMax());
+							final String lower = printValue(bin.getMin());
+							final String upper = printValue(bin.getMax());
 
-							 final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
+							final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 
-							 return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
-						 })
+							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
+						})
 						.toList();
 	}
 
