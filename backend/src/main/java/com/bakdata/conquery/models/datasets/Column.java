@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -156,13 +155,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
-		storage.getAllImports().stream()
-			   .filter(imp -> imp.getTable().equals(getTable()))
-			   .flatMap(imp -> {
-				   final ImportColumn importColumn = imp.getColumns()[getPosition()];
-
-				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
-			   })
+		storage.getStorageHandler()
+			   .lookupColumnValues(storage, this).stream()
 			   .map(value -> new FrontendValue(value, value))
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 

@@ -6,6 +6,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.mode.cluster.ClusterStorageHandler;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -28,7 +29,7 @@ public class WorkerStorage extends NamespacedStorage {
 	private IdentifiableStore<CBlock> cBlocks;
 
 	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
-		super(storageFactory, pathName, validator);
+		super(storageFactory, pathName, validator, new ClusterStorageHandler());
 	}
 
 	@Override

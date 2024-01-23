@@ -41,7 +41,7 @@ public abstract class AbstractSerializationTest {
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
-		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
+		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService, null);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
 		datasetRegistry.setMetaStorage(metaStorage);
 		creator.init(datasetRegistry);

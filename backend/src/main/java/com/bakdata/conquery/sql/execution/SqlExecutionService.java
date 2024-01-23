@@ -18,6 +18,9 @@ import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.exception.DataAccessException;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -37,12 +40,23 @@ public class SqlExecutionService {
 		return result;
 	}
 
+	public Result<?> execute(Select<?> query) {
+		log.debug("Executing query: \n{}", query);
+		try {
+			return dslContext.fetch(query);
+		}
+		catch (DataAccessException exception) {
+			throw new ConqueryError.SqlError(exception);
+		}
+	}
+
 	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
 
 		String sqlString = sqlQuery.getSqlQuery().getSql();
 		List<ResultType<?>> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
 
 		log.debug("Executing query: \n{}", sqlString);
+
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
@@ -56,7 +70,7 @@ public class SqlExecutionService {
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (RuntimeException e) {
-			throw new ConqueryError.SqlError(new SQLException(e));
+			throw new ConqueryError.SqlError(e);
 		}
 	}
 
