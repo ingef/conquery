@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
+
+	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final AtomicLong nulls = new AtomicLong(0);
 
@@ -32,7 +34,10 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	private final double lowerPercentile;
 
 	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, int expectedBins, double lowerPercentile, double upperPercentile) {
-		super(name, label, description, type, printSettings);
+		super(name, label, description, printSettings);
+
+		this.type = type;
+
 		comparator = selectComparator(type);
 
 		if (type instanceof ResultType.MoneyT) {

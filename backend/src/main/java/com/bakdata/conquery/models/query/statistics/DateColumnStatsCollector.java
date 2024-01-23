@@ -20,6 +20,7 @@ import lombok.ToString;
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
+	private final ResultType type;
 	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
 	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
 
@@ -27,8 +28,10 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 	private final AtomicLong nulls = new AtomicLong(0);
 	private CDateRange span = null;
 
+
 	public DateColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
-		super(name, label, description, type, printSettings);
+		super(name, label, description, printSettings);
+		this.type = type;
 	}
 
 	@Override

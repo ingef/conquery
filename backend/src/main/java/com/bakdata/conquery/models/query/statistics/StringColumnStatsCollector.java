@@ -22,9 +22,12 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	private final AtomicLong nulls = new AtomicLong(0);
 	private final long limit;
 
-	public StringColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, long limit) {
-		super(name, label, description, type, printSettings);
+	private final ResultType.StringT type;
+
+	public StringColumnStatsCollector(String name, String label, String description, ResultType.StringT type, PrintSettings printSettings, long limit) {
+		super(name, label, description, printSettings);
 		this.limit = limit;
+		this.type = type;
 	}
 
 	@Override
