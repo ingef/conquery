@@ -20,7 +20,7 @@ public class HistogramColumnDescription extends ColumnStatsCollector.ResultColum
 
 	private final Map<String, String> extras;
 
-	public HistogramColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras, String type) {
+	public HistogramColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
 		super(name, label, description);
 		this.entries = histogram;
 		this.extras = extras;

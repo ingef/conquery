@@ -64,9 +64,9 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 		final Map<String, String> extras =
 				entriesSorted.size() <= limit
 				? Collections.emptyMap()
-				: Map.of(C10N.get(StatisticsLabels.class).remainingNodes(entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
+				: Map.of(C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).remainingNodes(entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
 
-		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras, getType().typeInfo());
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras);
 	}
 
 }

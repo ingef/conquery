@@ -88,13 +88,13 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	public ResultColumnStatistics describe() {
 		// If no real samples were collected, we short-circuit, as Statistics will throw an exception when empty.
 		if (getStatistics().getN() == 0) {
-			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap(), getType().typeInfo());
+			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
 		}
 
 		final List<HistogramColumnDescription.Entry> bins = createBins();
 		final Map<String, String> extras = getExtras();
 
-		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras, getType().typeInfo());
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
 
 	}
 
@@ -124,7 +124,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	@NotNull
 	private Map<String, String> getExtras() {
-		final StatisticsLabels labels = C10N.get(StatisticsLabels.class);
+		final StatisticsLabels labels = C10N.get(StatisticsLabels.class, getPrintSettings().getLocale());
+
 
 		// LinkedHashMap remembers insertion order
 		final LinkedHashMap<String, String> out = new LinkedHashMap<>();

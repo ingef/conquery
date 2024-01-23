@@ -54,8 +54,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final UriBuilder uriBuilder = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getDescription");
 
-		final ResultStatistics results = conquery.getClient().target(
-														 uriBuilder.buildFromMap(Map.of(ResourceConstants.QUERY, executionId.toString())))
+		final ResultStatistics results = conquery.getClient().target(uriBuilder.buildFromMap(Map.of(ResourceConstants.QUERY, executionId.toString())))
 												 .request()
 												 .acceptLanguage(Locale.ENGLISH)
 												 .get(ResultStatistics.class);
@@ -107,43 +106,73 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept string",
 								"concept string",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("c", 2),
+										new HistogramColumnDescription.Entry("a", 1),
+										new HistogramColumnDescription.Entry("b", 1),
+										new HistogramColumnDescription.Entry("d", 1)
+								),
+								Map.of()
 						),
 						new HistogramColumnDescription(
 								"concept mapped",
 								"concept mapped",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("CEH", 2),
+										new HistogramColumnDescription.Entry("AH", 1),
+										new HistogramColumnDescription.Entry("BEH", 1),
+										new HistogramColumnDescription.Entry("d", 1)
+								),
+								Map.of()
 						),
 						new HistogramColumnDescription(
 								"concept int",
 								"concept int",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("1", 1),
+										new HistogramColumnDescription.Entry("2", 1),
+										new HistogramColumnDescription.Entry("3", 2),
+										new HistogramColumnDescription.Entry("4", 1)
+								),
+								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
 						),
 						new HistogramColumnDescription(
 								"concept real",
 								"concept real",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("1", 1),
+										new HistogramColumnDescription.Entry("2", 1),
+										new HistogramColumnDescription.Entry("3", 2),
+										new HistogramColumnDescription.Entry("4", 1)
+								),
+								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
 						),
 						new HistogramColumnDescription(
 								"concept decimal",
 								"concept decimal",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("1", 1),
+										new HistogramColumnDescription.Entry("2", 1),
+										new HistogramColumnDescription.Entry("3", 2),
+										new HistogramColumnDescription.Entry("4", 1)
+								),
+								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
 						),
 						new HistogramColumnDescription(
 								"concept money",
 								"concept money",
 								null,
-								List.of(),
-								Map.of(), "STRING"
+								List.of(
+										new HistogramColumnDescription.Entry("€10.00", 1),
+										new HistogramColumnDescription.Entry("€20.00", 1),
+										new HistogramColumnDescription.Entry("€30.00", 2),
+										new HistogramColumnDescription.Entry("€40.00", 1)
+								),
+								Map.of("25th percentile", "€15.00", "75th percentile", "€35.00", "Maximum", "€40.00", "Mean", "€26.00", "Median", "€30.00", "Minimum", "€10.00", "Missing", "1", "Standard Deviation", "11.4", "Sum", "€130.00", "Total", "5")
 						)
 				),
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))
