@@ -22,9 +22,12 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	private final AtomicLong nulls = new AtomicLong(0);
 	private final long limit;
 
-	public StringColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, long limit) {
-		super(name, label, description, type, printSettings);
+	private final ResultType.StringT type;
+
+	public StringColumnStatsCollector(String name, String label, String description, ResultType.StringT type, PrintSettings printSettings, long limit) {
+		super(name, label, description, printSettings);
 		this.limit = limit;
+		this.type = type;
 	}
 
 	@Override
@@ -61,10 +64,15 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 		}
 
+		final StatisticsLabels statisticsLabels = C10N.get(StatisticsLabels.class, getPrintSettings().getLocale());
+
 		final Map<String, String> extras =
 				entriesSorted.size() <= limit
 				? Collections.emptyMap()
-				: Map.of(C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).remainingNodes(entriesSorted.size() - limit), Long.toString(frequencies.getSumFreq() - shownTotal));
+				: Map.of(
+						statisticsLabels.remainingValues(entriesSorted.size() - limit),
+						statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
+				);
 
 		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras);
 	}

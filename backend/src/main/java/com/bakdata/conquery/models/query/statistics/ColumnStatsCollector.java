@@ -17,7 +17,6 @@ public abstract class ColumnStatsCollector<T> {
 	private final String name;
 	private final String label;
 	private final String description;
-	private final ResultType type;
 	@JsonIgnore
 	private final PrintSettings printSettings;
 
@@ -27,7 +26,7 @@ public abstract class ColumnStatsCollector<T> {
 		if (type instanceof ResultType.ListT listT) {
 			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, config);
 			// name label type are discarded when using ListColumnStatsCollector
-			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
+			return new ListColumnStatsCollector<>(null, null, null, columnStatsCollector, printSettings);
 		}
 
 		final String name = uniqueNamer.getUniqueName(info);
@@ -41,8 +40,8 @@ public abstract class ColumnStatsCollector<T> {
 		}
 
 
-		if (type instanceof ResultType.StringT) {
-			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit());
+		if (type instanceof ResultType.StringT stringT) {
+			return new StringColumnStatsCollector(name, label, info.getDescription(), stringT, printSettings, config.getVisualisationsHistogramLimit());
 		}
 
 		if (type instanceof ResultType.BooleanT) {

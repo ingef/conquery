@@ -20,7 +20,8 @@
             "concept.connector.int",
             "concept.connector.real",
             "concept.connector.decimal",
-            "concept.connector.money"
+            "concept.connector.money",
+            "concept.connector.boolean"
           ]
         }
       ]
@@ -82,6 +83,11 @@
               "name": "money",
               "column": "table.money",
               "type": "SUM"
+            },
+            {
+              "name": "boolean",
+              "column": "table.boolean",
+              "type": "FIRST"
             }
           ],
           "filters": [
@@ -131,6 +137,10 @@
           {
             "name": "money",
             "type": "MONEY"
+          },
+          {
+            "name": "boolean",
+            "type": "BOOLEAN"
           }
         ]
       }

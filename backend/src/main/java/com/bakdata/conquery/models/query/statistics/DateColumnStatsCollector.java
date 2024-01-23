@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
@@ -25,10 +26,25 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 	private final AtomicInteger totalCount = new AtomicInteger();
 	private final AtomicLong nulls = new AtomicLong(0);
+	private final Function<Object, CDateRange> dateExtractor;
 	private CDateRange span = null;
 
+
 	public DateColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
-		super(name, label, description, type, printSettings);
+		super(name, label, description, printSettings);
+		dateExtractor = getDateExtractor(type);
+	}
+
+	private static Function<Object, CDateRange> getDateExtractor(ResultType dateType) {
+		if (dateType instanceof ResultType.DateRangeT) {
+			return dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
+		}
+
+		if (dateType instanceof ResultType.DateT) {
+			return dateValue -> CDateRange.exactly((Integer) dateValue);
+		}
+
+		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
 	}
 
 	@Override
@@ -40,7 +56,7 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 			return;
 		}
 
-		final CDateRange dateRange = extractDateRange(getType(), value);
+		final CDateRange dateRange = dateExtractor.apply(value);
 		span = dateRange.spanClosed(span);
 
 		if (dateRange.isOpen()) {
@@ -51,20 +67,6 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 			handleDay(day);
 		}
 
-	}
-
-	private static CDateRange extractDateRange(ResultType dateType, Object dateValue) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return CDateRange.fromList((List<? extends Number>) dateValue);
-
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return CDateRange.exactly((Integer) dateValue);
-		}
-
-
-		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
 	}
 
 	private void handleDay(int day) {

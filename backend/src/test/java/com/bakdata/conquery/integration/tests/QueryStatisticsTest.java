@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import javax.ws.rs.core.UriBuilder;
 
+import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -21,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.statistics.DateColumnStatsCollector;
 import com.bakdata.conquery.models.query.statistics.HistogramColumnDescription;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
+import com.bakdata.conquery.models.query.statistics.StatisticsLabels;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -59,6 +61,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 												 .acceptLanguage(Locale.ENGLISH)
 												 .get(ResultStatistics.class);
 
+		final StatisticsLabels labels = C10N.get(StatisticsLabels.class, Locale.ENGLISH);
 
 		// We are using TreeMaps for Maps that have a defined order.
 		final ResultStatistics expected = new ResultStatistics(
@@ -136,7 +139,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("3", 2),
 										new HistogramColumnDescription.Entry("4", 1)
 								),
-								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
+								Map.of(labels.p25(), "1.5", labels.p75(), "3.5", labels.max(), "4", labels.mean(), "2.6", labels.median(), "3", labels.min(), "1", labels.missing(), "1", labels.std(), "1.14", labels.sum(), "13", labels.count(), "5")
 						),
 						new HistogramColumnDescription(
 								"concept real",
@@ -148,7 +151,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("3", 2),
 										new HistogramColumnDescription.Entry("4", 1)
 								),
-								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
+								Map.of(labels.p25(), "1.5", labels.p75(), "3.5", labels.max(), "4", labels.mean(), "2.6", labels.median(), "3", labels.min(), "1", labels.missing(), "1", labels.std(), "1.14", labels.sum(), "13", labels.count(), "5")
 						),
 						new HistogramColumnDescription(
 								"concept decimal",
@@ -160,7 +163,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("3", 2),
 										new HistogramColumnDescription.Entry("4", 1)
 								),
-								Map.of("25th percentile", "1.5", "75th percentile", "3.5", "Maximum", "4", "Mean", "2.6", "Median", "3", "Minimum", "1", "Missing", "1", "Standard Deviation", "1.14", "Sum", "13", "Total", "5")
+								Map.of(labels.p25(), "1.5", labels.p75(), "3.5", labels.max(), "4", labels.mean(), "2.6", labels.median(), "3", labels.min(), "1", labels.missing(), "1", labels.std(), "1.14", labels.sum(), "13", labels.count(), "5")
 						),
 						new HistogramColumnDescription(
 								"concept money",
@@ -172,7 +175,17 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("€30.00", 2),
 										new HistogramColumnDescription.Entry("€40.00", 1)
 								),
-								Map.of("25th percentile", "€15.00", "75th percentile", "€35.00", "Maximum", "€40.00", "Mean", "€26.00", "Median", "€30.00", "Minimum", "€10.00", "Missing", "1", "Standard Deviation", "11.4", "Sum", "€130.00", "Total", "5")
+								Map.of(labels.p25(), "€15.00", labels.p75(), "€35.00", labels.max(), "€40.00", labels.mean(), "€26.00", labels.median(), "€30.00", labels.min(), "€10.00", labels.missing(), "1", labels.std(), "11.4", labels.sum(), "€130.00", labels.count(), "5")
+						),
+						new HistogramColumnDescription(
+								"concept boolean",
+								"concept boolean",
+								null,
+								List.of(
+										new HistogramColumnDescription.Entry("Yes", 4),
+										new HistogramColumnDescription.Entry("No", 1)
+								),
+								Map.of()
 						)
 				),
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))
