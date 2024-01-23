@@ -25,26 +25,27 @@ public interface StatisticsLabels {
 	public String sum();
 
 	@En("Standard Deviation")
-	@De("Standard Abweichung")
+	@De("Standartabweichung")
 	public String std();
 
-	@En("75th percentile")
-	@De("75te Percentile")
+	@En("3rd Quartile")
+	@De("3. Quartil")
 	public String p75();
 
-	@En("25th percentile")
-	@De("25te Percentile")
+	@En("1st Quartile")
+	@De("1. Quartil")
 	public String p25();
 
 	@En("Total")
+	@De("Anzahl")
 	public String count();
 
 	@En("Missing")
-	@De("Fehlend")
+	@De("Fehlende Einträge")
 	public String missing();
 
 	@En("{0} additional Values")
-	@De("{0} zusätzliche Werte")
+	@De("{0} weitere Werte")
 	public String remainingNodes(long count);
 
 }

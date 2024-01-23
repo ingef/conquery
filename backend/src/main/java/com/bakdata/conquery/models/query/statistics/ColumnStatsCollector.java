@@ -26,7 +26,7 @@ public abstract class ColumnStatsCollector<T> {
 		if (type instanceof ResultType.ListT listT) {
 			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, config);
 			// name label type are discarded when using ListColumnStatsCollector
-			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
+			return new ListColumnStatsCollector<>(null, null, null, columnStatsCollector, printSettings);
 		}
 
 		final String name = uniqueNamer.getUniqueName(info);
