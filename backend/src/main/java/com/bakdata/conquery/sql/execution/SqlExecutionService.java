@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -18,6 +19,7 @@ import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
@@ -40,10 +42,28 @@ public class SqlExecutionService {
 		return result;
 	}
 
-	public Result<?> execute(Select<?> query) {
+	public Result<?> fetch(Select<?> query) {
 		log.debug("Executing query: \n{}", query);
 		try {
 			return dslContext.fetch(query);
+		}
+		catch (DataAccessException exception) {
+			throw new ConqueryError.SqlError(exception);
+		}
+	}
+
+	/**
+	 * Executes the query and returns the results as a Stream.
+	 * <p>
+	 * Note: The returned Stream is resourceful. It must be closed by the caller, because it contains a reference to an open ResultSet (and PreparedStatement).
+	 *
+	 * @param query The query to be executed.
+	 * @return A Stream of query results.
+	 */
+	public <R extends Record> Stream<R> fetchStream(Select<R> query) {
+		log.debug("Executing query: \n{}", query);
+		try {
+			return dslContext.fetchStream(query);
 		}
 		catch (DataAccessException exception) {
 			throw new ConqueryError.SqlError(exception);

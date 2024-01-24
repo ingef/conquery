@@ -156,10 +156,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
 		storage.getStorageHandler()
-			   .lookupColumnValues(storage, this).stream()
+			   .lookupColumnValues(storage, this)
 			   .map(value -> new FrontendValue(value, value))
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
-
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
 
