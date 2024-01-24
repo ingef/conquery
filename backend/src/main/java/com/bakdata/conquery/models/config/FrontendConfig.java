@@ -38,7 +38,7 @@ public class FrontendConfig {
 	 * Limit to number of histogram entries.
 	 */
 	@Min(0)
-	private int visualisationsHistogramLimit = 25;
+	private int visualisationsHistogramLimit = 12;
 
 	private Range<Integer> visualisationPercentiles = Range.closed(15, 85);
 
