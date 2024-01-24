@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.NamespaceHandler;
+import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -51,14 +52,17 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	@Getter
 	@Setter
 	private MetaStorage metaStorage;
+
 	private final NamespaceHandler<N> namespaceHandler;
 
 	private final IndexService indexService;
 
+	@Getter
+	private final StorageHandler storageHandler;
 
 	public N createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator, storageHandler);
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
 		datasetStorage.openStores(persistenceMapper);

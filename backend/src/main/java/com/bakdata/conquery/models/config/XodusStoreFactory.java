@@ -38,6 +38,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
+import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -92,7 +93,6 @@ import lombok.extern.slf4j.Slf4j;
 @With
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
-
 
 	/**
 	 * The store names are created by hand here because the abstraction of {@link BigStore}
@@ -198,8 +198,8 @@ public class XodusStoreFactory implements StoreFactory {
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
 	@Override
-	public Collection<NamespaceStorage> discoverNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath, getValidator()), NAMESPACE_STORES);
+	public Collection<NamespaceStorage> discoverNamespaceStorages(StorageHandler storageHandler) {
+		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath, getValidator(), storageHandler), NAMESPACE_STORES);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +47,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			"baaa,lbl-5,ov-5",
 			"b,lbl-6,ov-6"
 	};
+
+	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
