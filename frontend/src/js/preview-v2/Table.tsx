@@ -62,6 +62,7 @@ export default function Table({ data, queryData }: Props) {
       if (listType) {
         const listTypeRenderFunction = getRenderFunction(listType);
         return (value) =>
+        value ?
           (value as Vector)
             .toArray()
             .map((listItem: string) =>
@@ -69,7 +70,8 @@ export default function Table({ data, queryData }: Props) {
                 ? listTypeRenderFunction(listItem)
                 : listItem,
             )
-            .join(", ");
+            .join(", ")
+            : null;
       }
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {

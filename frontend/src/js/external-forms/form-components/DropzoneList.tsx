@@ -109,7 +109,11 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                 />
               )}
               <ListItem>
-                <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
+                <StyledIconButton
+                  bgHover
+                  icon={faTimes}
+                  onClick={() => onDelete(i)}
+                />
                 {item}
               </ListItem>
             </ConceptContainer>

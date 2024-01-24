@@ -35,7 +35,7 @@ class RowNumberCte extends DateAggregationCte {
 									  .as(ROW_NUMBER_FIELD_NAME);
 
 		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
-		selects.add(new FieldWrapper(rowNumber));
+		selects.add(new FieldWrapper<>(rowNumber));
 
 		Selects rowNumberSelects = Selects.builder()
 										  .primaryColumn(primaryColumn)

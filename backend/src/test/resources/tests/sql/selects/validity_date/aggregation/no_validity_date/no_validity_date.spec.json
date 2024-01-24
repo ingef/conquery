@@ -1,7 +1,10 @@
 {
   "label": "MERGE date aggregation of 2 concepts but no one has a validity date",
   "expectedCsv": "tests/sql/selects/validity_date/aggregation/no_validity_date/expected.csv",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "dateAggregationMode": "MERGE",

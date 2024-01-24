@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
+	private final String emptyDefaultLabel;
 
 	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@Override
@@ -44,7 +45,7 @@ public class IndexService implements Injectable {
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
-			final Index<?> int2ext = key.createIndex();
+			final Index<?> int2ext = key.createIndex(emptyDefaultLabel);
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
@@ -94,8 +95,9 @@ public class IndexService implements Injectable {
 		}
 	});
 
-	public IndexService(CsvParserSettings csvParserSettings) {
+	public IndexService(CsvParserSettings csvParserSettings, String emptyDefaultLabel) {
 		this.csvParserSettings = csvParserSettings.clone();
+		this.emptyDefaultLabel = emptyDefaultLabel;
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
