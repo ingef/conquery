@@ -6,28 +6,34 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Select;
 import org.jooq.impl.DSL;
 
 @Slf4j
-@RequiredArgsConstructor
 public class SqlStorageHandler implements StorageHandler {
 
 	private final SqlExecutionService sqlExecutionService;
+	private final DSLContext dslContext;
+
+	public SqlStorageHandler(SqlExecutionService sqlExecutionService) {
+		this.sqlExecutionService = sqlExecutionService;
+		this.dslContext = sqlExecutionService.getDslContext();
+	}
 
 	@Override
 	public Stream<String> lookupColumnValues(NamespaceStorage namespaceStorage, Column column) {
-		Select<Record1<Object>> columValuesQuery = DSL.selectDistinct(DSL.field(DSL.name(column.getName())))
-													  .from(DSL.table(DSL.name(column.getTable().getName())));
+		Select<Record1<Object>> columValuesQuery = dslContext.selectDistinct(DSL.field(DSL.name(column.getName())))
+															 .from(DSL.table(DSL.name(column.getTable().getName())));
 		return queryForDistinctValues(columValuesQuery);
 	}
 
 	private Stream<String> queryForDistinctValues(Select<Record1<Object>> columValuesQuery) {
 		try {
 			return sqlExecutionService.fetchStream(columValuesQuery)
+									  .peek(record -> log.info("Record: {}", record))
 									  .map(record -> record.get(0, String.class))
 									  // the database might return null or a blank string as a distinct value
 									  .filter(value -> value != null && !value.isBlank());

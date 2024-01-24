@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.google.common.base.Stopwatch;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -32,7 +33,9 @@ public class SqlExecutionService {
 	private static final int PID_COLUMN_INDEX = 1;
 	private static final int VALUES_OFFSET_INDEX = 2;
 
+	@Getter
 	private final DSLContext dslContext;
+
 	private final ResultSetProcessor resultSetProcessor;
 
 	public SqlExecutionResult execute(SqlManagedQuery sqlQuery) {
