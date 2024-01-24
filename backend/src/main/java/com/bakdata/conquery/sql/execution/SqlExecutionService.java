@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.execution;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,7 +56,8 @@ public class SqlExecutionService {
 	/**
 	 * Executes the query and returns the results as a Stream.
 	 * <p>
-	 * Note: The returned Stream is resourceful. It must be closed by the caller, because it contains a reference to an open ResultSet (and PreparedStatement).
+	 * Note: The returned Stream is resourceful. It must be closed by the caller, because it contains a reference to an open {@link ResultSet}
+	 * and {@link PreparedStatement}.
 	 *
 	 * @param query The query to be executed.
 	 * @return A Stream of query results.
@@ -85,11 +87,8 @@ public class SqlExecutionService {
 
 			return new SqlExecutionResult(columnNames, resultTable);
 		}
-		catch (SQLException e) {
-			throw new ConqueryError.SqlError(e);
-		}
 		// not all DB vendors throw SQLExceptions
-		catch (RuntimeException e) {
+		catch (SQLException | RuntimeException e) {
 			throw new ConqueryError.SqlError(e);
 		}
 	}
