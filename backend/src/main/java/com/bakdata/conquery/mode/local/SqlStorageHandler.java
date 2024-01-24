@@ -29,7 +29,7 @@ public class SqlStorageHandler implements StorageHandler {
 		try {
 			return sqlExecutionService.fetchStream(columValuesQuery)
 									  .map(record -> record.get(0, String.class))
-									  // the database might return null or an empty string as a distinct value
+									  // the database might return null or a blank string as a distinct value
 									  .filter(value -> value != null && !value.isBlank());
 		}
 		catch (Exception e) {
