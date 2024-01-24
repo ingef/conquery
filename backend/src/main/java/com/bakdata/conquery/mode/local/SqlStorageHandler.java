@@ -33,7 +33,6 @@ public class SqlStorageHandler implements StorageHandler {
 	private Stream<String> queryForDistinctValues(Select<Record1<Object>> columValuesQuery) {
 		try {
 			return sqlExecutionService.fetchStream(columValuesQuery)
-									  .peek(record -> log.info("Record: {}", record))
 									  .map(record -> record.get(0, String.class))
 									  // the database might return null or a blank string as a distinct value
 									  .filter(value -> value != null && !value.isBlank());
