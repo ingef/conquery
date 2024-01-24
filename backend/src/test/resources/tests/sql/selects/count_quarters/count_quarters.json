@@ -1,7 +1,7 @@
 {
   "label": "COUNT_QUARTERS on single date column",
   "type": "QUERY_TEST",
-  "expectedCsv": "tests/sql/filter/count_quarters/expected.csv",
+  "expectedCsv": "tests/sql/selects/count_quarters/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -16,14 +16,9 @@
           "tables": [
             {
               "id": "count.count_connector",
-              "filters": {
-                "filter": "count.count_connector.count_quarters_filter",
-                "type": "INTEGER_RANGE",
-                "value": {
-                  "min": 2,
-                  "max": 3
-                }
-              }
+              "selects": [
+                "count.count_connector.count_quarters_select"
+              ]
             }
           ]
         }
@@ -38,8 +33,8 @@
         {
           "label": "count_connector",
           "table": "table1",
-          "filters": {
-            "name": "count_quarters_filter",
+          "selects": {
+            "name": "count_quarters_select",
             "type": "COUNT_QUARTERS",
             "column": "table1.behandlungsdatum"
           }
@@ -50,7 +45,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/filter/count_quarters/content.csv",
+        "csv": "tests/sql/selects/count_quarters/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
