@@ -1,20 +1,15 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.RangeSet;
-import com.google.common.collect.TreeRangeMap;
-import com.google.common.collect.TreeRangeSet;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Simple implementation of a histogram.
@@ -23,68 +18,98 @@ import lombok.ToString;
  * Bin labels are of real values and not partitions, this can make entries potentially non-contiguous, but ensures readable values.
  */
 @Data
+@Slf4j
 public class Histogram {
 
-	private final RangeMap<Double, Integer> value2Index;
 
-	private final Node[] nodes;
+	private final Node[] belowZero, aboveZero;
+
+	private final Node overflowNode;
+	private final Node underflowNode;
+
+	private final Node zeroNode;
+
+	private final double lower, upper;
+
+	private final double width;
 
 	private int total;
 
-	public static Histogram longTailed(double min, double max, int expectedBins) {
+
+	public static Histogram zeroCentered(double min, double max, int expectedBins) {
+
 		final double width = (max - min) / expectedBins;
 
-		final RangeSet<Double> ranges = TreeRangeSet.create();
+		final int nBelowZero = (int) Math.ceil(Math.abs(min) / width);
+		final int nAboveZero = (int) Math.ceil(max / width);
 
-		ranges.add(Range.closed(0d, 0d));
-
-
-		for (double start = 0 + Math.ulp(0); start < max; start += width) {
-			ranges.add(Range.open(start, start + width));
-		}
-
-		for (double end = 0 - Math.ulp(0); end > min; end -= width) {
-			ranges.add(Range.open(end - width, end));
-		}
-
-		final Range<Double> span = ranges.span();
-
-
-		final TreeRangeMap<Double, Integer> value2Index = TreeRangeMap.create();
-
-		final AtomicInteger index = new AtomicInteger(1);
-
-		ranges.asRanges().stream()
-			  .sorted(Comparator.comparingDouble(Range::lowerEndpoint))
-			  .forEach(range -> value2Index.put(range, index.getAndIncrement()));
-
-		value2Index.put(Range.lessThan(span.lowerEndpoint()), 0);
-		value2Index.put(Range.greaterThan(span.upperEndpoint()), index.getAndIncrement());
-
-		return new Histogram(value2Index, new Node[value2Index.asMapOfRanges().size()]);
+		return new Histogram(new Node[nBelowZero], new Node[nAboveZero],
+							 new Node(),
+							 new Node(),
+							 new Node(),
+							 -(nBelowZero * width),
+							 nAboveZero * width,
+							 width
+		);
 	}
 
 	public void add(double value) {
 		total++;
 
+		if (value == 0d) {
+			zeroNode.add(value);
+		}
+		else if (value <= lower) {
+			underflowNode.add(value);
+		}
+		else if (value >= upper) {
+			overflowNode.add(value);
+		}
+		else if (value > 0) {
+			final int index = (int) Math.floor(value / width);
 
-		final int index = value2Index.get(value);
+			if (aboveZero[index] == null) {
+				aboveZero[index] = new Node();
+			}
 
-		if (nodes[index] == null) {
-			nodes[index] = new Node(new DoubleArrayList());
+			aboveZero[index].add(value);
+		}
+		else if (value < 0) {
+			final int index = (int) Math.floor(Math.abs(value) / width);
+
+			if (belowZero[index] == null) {
+				belowZero[index] = new Node();
+			}
+
+			belowZero[index].add(value);
+		}
+		else {
+			log.warn("Don't know how to handle value {} with {}", value, this);
 		}
 
-		nodes[index].add(value);
 	}
 
 	public List<Node> nodes() {
-		return Arrays.stream(nodes).filter(Objects::nonNull).toList();
+		return Stream.of(
+							 Stream.of(underflowNode),
+							 Stream.of(belowZero),
+							 Stream.of(zeroNode),
+							 Stream.of(aboveZero),
+							 Stream.of(overflowNode)
+					 )
+					 .flatMap(s -> s) // This is suggested concat of multiple nodes
+					 .filter(Objects::nonNull)
+					 .filter(node -> node.getCount() > 0)
+					 .collect(Collectors.toList());
+
 	}
 
 	@Data
 	public static final class Node {
 		@ToString.Exclude
-		private final DoubleList entries;
+		private final DoubleList entries = new DoubleArrayList();
+
+
 		private double min = Double.MAX_VALUE;
 		private double max = Double.MIN_VALUE;
 

@@ -75,20 +75,22 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	}
 
 	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
+		assert by > 1;
+
+		// limitation of DescriptiveStatistics#getPercentile
 		if (lower <= 1.d && upper >= 99d) {
-			return Range.closed(statistics.getPercentile(0.1), statistics.getPercentile(100));
+			return Range.closed(statistics.getMin(), statistics.getMax());
 		}
 
 
-		final double min = statistics.getPercentile(lower);
-		final double max = statistics.getPercentile(upper);
+		final double min = lower <= 1.d ? statistics.getMin() : statistics.getPercentile(lower);
+		final double max = upper >= 99 ? statistics.getMax() : statistics.getPercentile(upper);
 
-		if (max - min >= expectedBins) {
-			return Range.closed(min, max);
+		if (max - min < expectedBins) {
+			return expandBounds(Math.max(0, lower - by), Math.min(100, upper + by), expectedBins, statistics, by);
 		}
 
-		return expandBounds(Math.max(0.1, lower - by), Math.min(100, upper + by), expectedBins, statistics, by);
-
+		return Range.closed(min, max);
 	}
 
 	@Override
@@ -128,7 +130,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		final Histogram
 				histogram =
-				Histogram.longTailed(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins);
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 

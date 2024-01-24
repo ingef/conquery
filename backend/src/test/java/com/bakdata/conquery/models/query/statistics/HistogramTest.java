@@ -17,7 +17,7 @@ class HistogramTest {
 	@Test
 	void plain() {
 
-		final Histogram histogram = Histogram.longTailed(0, 10, 10);
+		final Histogram histogram = Histogram.zeroCentered(0, 10, 10);
 
 		final Random random = new Random(SEED);
 
