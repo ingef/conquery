@@ -46,12 +46,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	private record KeywordItems<T>(String word, List<T> items) {
 	}
 
-	private final List<KeywordItems<T>> keywordItemsList = new ArrayList<>();
-
 	/**
 	 * Maps from keywords to associated items.
 	 */
-	private final PatriciaTrie<List<Integer>> trie = new PatriciaTrie<>();
+	private final PatriciaTrie<List<KeywordItems<T>>> trie = new PatriciaTrie<>();
 
 	private boolean shrunk = false;
 	private long size = -1;
@@ -76,7 +74,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			final int queryLength = query.length();
 			if (queryLength < ngramLength) {
 				// ToDo: A guard against queryLength < ngramLength would make this case obsolete, but the tests would have to be adjusted
-				for (final List<Integer> hits : trie.prefixMap(query).values()) {
+				for (final List<KeywordItems<T>> hits : trie.prefixMap(query).values()) {
 					updateWeights(query, hits, itemWeights);
 				}
 			}
@@ -101,15 +99,12 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * calculate and update weights for all queried items
 	 */
-	private void updateWeights(String query, final List<Integer> hits, Object2DoubleMap<T> itemWeights) {
+	private void updateWeights(String query, final List<KeywordItems<T>> hits, Object2DoubleMap<T> itemWeights) {
 		if (hits == null) {
 			return;
 		}
 
-		for (int index : hits) {
-
-			final KeywordItems<T> entry = keywordItemsList.get(index);
-
+		for (final KeywordItems<T> entry : hits) {
 			final double weight = weightWord(query, entry.word);
 
 			entry.items.forEach(item ->
@@ -157,14 +152,10 @@ public class TrieSearch<T extends Comparable<T>> {
 		return Math.pow(weight, 2 / (itemLength + queryLength));
 	}
 
-	private boolean isOriginal(String itemWord) {
-		return itemWord.endsWith(WHOLE_WORD_MARKER);
-	}
-
 	public List<T> findExact(Collection<String> keywords, int limit) {
 		return keywords.stream()
 					   .flatMap(this::split)
-					   .map(this::ToWholeWord)
+					   .map(this::toWholeWord)
 					   .flatMap(this::doGet)
 					   .distinct()
 					   .limit(limit)
@@ -173,7 +164,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private Stream<T> doGet(String kw) {
 		return trie.getOrDefault(kw, Collections.emptyList()).stream()
-				   .flatMap(index -> keywordItemsList.get(index).items.stream());
+				   .flatMap(ki -> ki.items.stream());
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -185,7 +176,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public Stream<String> toTrieKeys(String word) {
-		Stream<String> wholeWordStream = Stream.of(ToWholeWord(word));
+		Stream<String> wholeWordStream = Stream.of(toWholeWord(word));
 
 		if (word.length() < ngramLength) {
 			return wholeWordStream;
@@ -199,28 +190,22 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private void doPut(String word, T item) {
-		List<Integer> entry = trie.get(ToWholeWord(word));
-
-		final int index;
-		if (entry != null) {
-			index = entry.get(0);
-		}
-		else {
-			keywordItemsList.add(new KeywordItems<>(word, new ArrayList<>()));
-			index = keywordItemsList.size() - 1;
-		}
-
-		ToTrieKeys(word).forEach(key -> doPut(key, index, item));
-	}
-
-	private void doPut(String key, int index, T item) {
 		// ToDo: wouldn't it suffice to check once in addItem()? Is concurrency the reason?
 		ensureWriteable();
-		trie.computeIfAbsent(key, (ignored) -> new ArrayList<>())
-			.add(index);
 
-		if (isOriginal(key)) {
-			keywordItemsList.get(index).items.add(item);
+		List<KeywordItems<T>> entry = trie.get(toWholeWord(word));
+
+		final KeywordItems<T> ki;
+		if (entry != null) {
+			ki = entry.get(0);
+		}
+		else {
+			ki = new KeywordItems<>(word, new ArrayList<>());
+		}
+		ki.items.add(item);
+
+		for (final String key : (Iterable<String>) toTrieKeys(word)::iterator) {
+			trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(ki);
 		}
 	}
 
@@ -252,11 +237,6 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		trie.replaceAll((key, values) -> new ArrayList<>(values));
-		((ArrayList<KeywordItems<T>>) keywordItemsList).trimToSize();
-		keywordItemsList.replaceAll(ki -> new KeywordItems<>(
-				ki.word,
-				ki.items.stream().distinct().collect(Collectors.toList())
-		));
 
 		size = calculateSize();
 		shrunk = true;
@@ -267,7 +247,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			return size;
 		}
 
-		return keywordItemsList.stream().flatMap(ki -> ki.items.stream()).distinct().count();
+		return trie.values().stream().distinct().count();
 	}
 
 	public void logStats() {
@@ -289,19 +269,20 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public Stream<T> stream() {
-		return keywordItemsList.stream()
-							   .flatMap(ki -> ki.items.stream())
-							   .distinct();
+		return trie.values().stream()
+				   .flatMap(Collection::stream)
+				   .flatMap(ki -> ki.items.stream())
+				   .distinct();
 	}
 
 	public Iterator<T> iterator() {
 		// This is a very ugly workaround to not get eager evaluation (which happens when using flatMap and distinct on streams)
 		final Set<T> seen = new HashSet<>();
 
-		return Iterators.filter(
-				Iterators.concat(Iterators.transform(keywordItemsList.iterator(), ki -> ki.items.iterator())),
-				seen::add
-		);
+		final Iterator<KeywordItems<T>> keywordItemsIterator = Iterators.concat(Iterators.transform(trie.values().iterator(), List::iterator));
+		final Iterator<T> itemsIterator = Iterators.concat(Iterators.transform(keywordItemsIterator, ki -> ki.items.iterator()));
+
+		return Iterators.filter(itemsIterator, seen::add);
 	}
 
 	public boolean isWriteable() {
