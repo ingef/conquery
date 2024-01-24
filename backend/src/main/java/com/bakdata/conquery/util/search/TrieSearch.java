@@ -184,7 +184,7 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(word -> doPut(word, item));
 	}
 
-	public Stream<String> ToTrieKeys(String word) {
+	public Stream<String> toTrieKeys(String word) {
 		Stream<String> wholeWordStream = Stream.of(ToWholeWord(word));
 
 		if (word.length() < ngramLength) {
@@ -224,7 +224,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 	}
 
-	public String ToWholeWord(String word) {
+	public String toWholeWord(String word) {
 		// We append a special character here marking original words as we want to favor them in weighing.
 		return word + WHOLE_WORD_MARKER;
 	}

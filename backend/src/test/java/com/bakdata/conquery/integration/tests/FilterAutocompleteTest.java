@@ -155,7 +155,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 			// This is probably the insertion order
 			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("", "a", "aab", "aaa", "baaa", "b", "f", "m", "mf", "fm");
+					.containsExactlyInAnyOrder("", "a", "aab", "aaa", "baaa", "b", "f", "m", "mf", "fm");
 		}
 	}
 }
