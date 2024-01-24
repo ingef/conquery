@@ -48,9 +48,6 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private final List<KeywordItems<T>> keywordItemsList = new ArrayList<>();
 
-	private record NgramIndex(String ngram, int index) {
-	}
-
 	/**
 	 * Maps from keywords to associated items.
 	 */
@@ -113,9 +110,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 			final KeywordItems<T> entry = keywordItemsList.get(index);
 
-			final String itemWord = entry.word;
-
-			final double weight = weightWord(query, itemWord);
+			final double weight = weightWord(query, entry.word);
 
 			entry.items.forEach(item ->
 								{
@@ -144,23 +139,22 @@ public class TrieSearch<T extends Comparable<T>> {
 		final double itemLength = itemWord.length();
 		final double queryLength = query.length();
 
-		double weight;
-		double root = (itemLength + queryLength) / 2;
+		final double weight;
 
 		// We saturate the weight to avoid favoring extremely short matches.
 		if (queryLength == itemLength) {
 			weight = EXACT_MATCH_WEIGHT;
 		}
+		// We assume that less difference implies more relevant words
 		else if (queryLength < itemLength) {
-			// We assume that less difference implies more relevant words
 			weight = (itemLength - queryLength) / itemLength;
 		}
-		else{
-			// We assume that less difference implies more relevant words
+		else {
 			weight = (queryLength - itemLength) / queryLength;
 		}
 
-		return Math.pow(weight, 1 / root);
+		// Soft grouping based on string length
+		return Math.pow(weight, 2 / (itemLength + queryLength));
 	}
 
 	private boolean isOriginal(String itemWord) {
@@ -170,7 +164,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public List<T> findExact(Collection<String> keywords, int limit) {
 		return keywords.stream()
 					   .flatMap(this::split)
-					   .map(kw -> kw + WHOLE_WORD_MARKER)
+					   .map(this::ToWholeWord)
 					   .flatMap(this::doGet)
 					   .distinct()
 					   .limit(limit)
@@ -187,18 +181,25 @@ public class TrieSearch<T extends Comparable<T>> {
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.flatMap(this::ngramSplit)
-				.forEach(ni -> doPut(ni, item));
+				.forEach(word -> doPut(word, item));
 	}
 
-	public Stream<String> ngramSplitToStringStream(String word) {
-		return ngramSplit(word).map(ni -> ni.ngram);
+	public Stream<String> ToTrieKeys(String word) {
+		Stream<String> wholeWordStream = Stream.of(ToWholeWord(word));
+
+		if (word.length() < ngramLength) {
+			return wholeWordStream;
+		}
+
+		return Stream.concat(
+				wholeWordStream,
+				IntStream.range(0, word.length() - ngramLength + 1)
+						 .mapToObj(start -> word.substring(start, start + ngramLength))
+		);
 	}
 
-	private Stream<NgramIndex> ngramSplit(String word) {
-		// We append a special character here marking original words as we want to favor them in weighing.
-		final String wholeWord = word + WHOLE_WORD_MARKER;
-		List<Integer> entry = trie.get(wholeWord);
+	private void doPut(String word, T item) {
+		List<Integer> entry = trie.get(ToWholeWord(word));
 
 		final int index;
 		if (entry != null) {
@@ -209,27 +210,23 @@ public class TrieSearch<T extends Comparable<T>> {
 			index = keywordItemsList.size() - 1;
 		}
 
-		Stream<NgramIndex> wholeWordStream = Stream.of(new NgramIndex(wholeWord, index));
-		if (word.length() < ngramLength) {
-			return wholeWordStream;
-		}
-
-		return Stream.concat(
-				wholeWordStream,
-				IntStream.range(0, word.length() - ngramLength + 1)
-						 .mapToObj(start -> new NgramIndex(word.substring(start, start + ngramLength), index))
-		);
+		ToTrieKeys(word).forEach(key -> doPut(key, index, item));
 	}
 
-	private void doPut(NgramIndex ni, T item) {
+	private void doPut(String key, int index, T item) {
 		// ToDo: wouldn't it suffice to check once in addItem()? Is concurrency the reason?
 		ensureWriteable();
-		trie.computeIfAbsent(ni.ngram, (ignored) -> new ArrayList<>())
-			.add(ni.index);
+		trie.computeIfAbsent(key, (ignored) -> new ArrayList<>())
+			.add(index);
 
-		if (isOriginal(ni.ngram)) {
-			keywordItemsList.get(ni.index).items.add(item);
+		if (isOriginal(key)) {
+			keywordItemsList.get(index).items.add(item);
 		}
+	}
+
+	public String ToWholeWord(String word) {
+		// We append a special character here marking original words as we want to favor them in weighing.
+		return word + WHOLE_WORD_MARKER;
 	}
 
 	private void ensureWriteable() {

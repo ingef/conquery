@@ -100,9 +100,9 @@ class QuickSearchTest {
 	public void testNGrams() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.ngramSplitToStringStream("baaacd"))
+		assertThat(search.ToTrieKeys("baaacd"))
 				.containsExactly(
-						"baaacd!",
+						search.ToWholeWord("baaacd"),
 						"ba",
 						"aa",
 						"aa",
@@ -110,24 +110,24 @@ class QuickSearchTest {
 						"cd"
 				);
 
-		assertThat(search.ngramSplitToStringStream("acd"))
-				.containsExactly("acd!", "ac", "cd");
+		assertThat(search.ToTrieKeys("acd"))
+				.containsExactly(search.ToWholeWord("acd"), "ac", "cd");
 
-		assertThat(search.ngramSplitToStringStream("aacd"))
-				.containsExactly("aacd!", "aa", "ac", "cd");
+		assertThat(search.ToTrieKeys("aacd"))
+				.containsExactly(search.ToWholeWord("aacd"), "aa", "ac", "cd");
 	}
 
 	@Test
 	public void testNoNGram() {
 		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
 
-		assertThat(search.ngramSplitToStringStream("baaacd"))
-				.containsExactly("baaacd!");
+		assertThat(search.ToTrieKeys("baaacd"))
+				.containsExactly(search.ToWholeWord("baaacd"));
 
-		assertThat(search.ngramSplitToStringStream("acd"))
-				.containsExactly("acd!");
+		assertThat(search.ToTrieKeys("acd"))
+				.containsExactly(search.ToWholeWord("acd"));
 
-		assertThat(search.ngramSplitToStringStream("aacd"))
-				.containsExactly("aacd!");
+		assertThat(search.ToTrieKeys("aacd"))
+				.containsExactly(search.ToWholeWord("aacd"));
 	}
 }
