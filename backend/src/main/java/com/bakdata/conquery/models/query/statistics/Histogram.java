@@ -34,12 +34,13 @@ public class Histogram {
 	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean expectNegativeValues) {
 		final double width = (upper - lower) / expectedBins;
 
+		//TODO are the branches functionally the same?
 		if (!expectNegativeValues) {
 			final Node[] nodes = IntStream.range(0, expectedBins + 1)
 										  .mapToObj(index -> new Node(lower + index * width, lower + (index + 1) * width))
 										  .toArray(Node[]::new);
 
-			return new Histogram(nodes, null, new Node(0, lower), new Node(upper, Double.POSITIVE_INFINITY), lower, upper, width);
+			return new Histogram(nodes, new Node(0, 0), new Node(0, lower), new Node(upper, Double.POSITIVE_INFINITY), lower, upper, width);
 		}
 
 
