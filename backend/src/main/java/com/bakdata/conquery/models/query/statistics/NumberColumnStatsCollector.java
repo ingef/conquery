@@ -132,17 +132,14 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		final Histogram
 				histogram =
-				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins);
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins, statistics.getMin());
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
 		return histogram.nodes()
 						.stream()
 						.map(bin -> {
-							final String lower = printValue(bin.getMin());
-							final String upper = printValue(bin.getMax());
-
-							final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
+							final String binLabel = bin.getLabel(this::printValue);
 
 							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
 						})

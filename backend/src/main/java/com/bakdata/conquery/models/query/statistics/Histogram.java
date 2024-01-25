@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Functions;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectFunction;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
@@ -78,13 +79,10 @@ public class Histogram {
 		}
 		else if (value > 0) {
 			final int index = (int) Math.floor(value / width);
-
 			aboveZero[index].add(value);
 		}
 		else if (value < 0) {
 			final int index = (int) Math.floor(Math.abs(value) / width);
-
-
 			belowZero[index].add(value);
 		}
 		else {
@@ -101,7 +99,7 @@ public class Histogram {
 							 Stream.of(aboveZero),
 							 Stream.of(overflowNode)
 					 )
-					 .flatMap(Functions.identity()) // This is suggested concat of multiple nodes
+					 .flatMap(Functions.identity()) // This is suggested concat of multiple streams
 					 .filter(Objects::nonNull)
 					 .filter(node -> node.getCount() > 0 || !node.isSpecial())
 					 .collect(Collectors.toList());
@@ -137,6 +135,13 @@ public class Histogram {
 		}
 
 
+		String getLabel(Double2ObjectFunction<String> printer) {
+			final String lower = printer.apply(Double.isFinite(getMin()) ? getMin() : getLower());
+			final String upper = printer.apply(Double.isFinite(getMax()) ? getMax() : getUpper());
+
+			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
+			return binLabel;
+		}
 	}
 
 }
