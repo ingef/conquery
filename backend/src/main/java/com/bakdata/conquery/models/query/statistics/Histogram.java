@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectFunction;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -25,44 +24,33 @@ import lombok.extern.slf4j.Slf4j;
 public class Histogram {
 
 
-	private final Node[] belowZero, aboveZero;
-
-	private final Node underflowNode;
-	private final Node zeroNode;
-	private final Node overflowNode;
-
-
+	private final Node[] nodes;
+	private final Node zeroNode, underflowNode, overflowNode;
 	private final double lower, upper;
-
 	private final double width;
 
 	private int total;
 
+	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean expectNegativeValues) {
+		final double width = (upper - lower) / expectedBins;
 
-	public static Histogram zeroCentered(double min, double max, int expectedBins) {
+		if (!expectNegativeValues) {
+			final Node[] nodes = IntStream.range(0, expectedBins + 1)
+										  .mapToObj(index -> new Node(lower + index * width, lower + (index + 1) * width))
+										  .toArray(Node[]::new);
 
-		final double width = (max - min) / expectedBins;
-
-		final int nBelowZero = (int) Math.ceil(Math.abs(min) / width);
-
-		final Node[] negative = IntStream.range(0, nBelowZero).mapToObj(index -> new Node(-(index + 1) * width, -index * width, false)).toArray(Node[]::new);
-
-		final int nAboveZero = (int) Math.ceil(max / width);
-
-		final Node[] positive = IntStream.range(0, nAboveZero).mapToObj(index -> new Node(index * width, (index + 1) * width, false)).toArray(Node[]::new);
+			return new Histogram(nodes, null, new Node(0, lower), new Node(upper, Double.POSITIVE_INFINITY), lower, upper, width);
+		}
 
 
-		final double lowerBound = -(nBelowZero * width);
-		final double upperBound = nAboveZero * width;
+		final double newLower = lower == 0 ? 0 : Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
+		// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
+		final Node[] nodes = IntStream.range(0, expectedBins + 1)
+									  .mapToObj(index -> new Node(newLower + width * index, newLower + width * (index + 1)))
+									  .toArray(Node[]::new);
 
-		return new Histogram(negative, positive,
-							 new Node(Double.NEGATIVE_INFINITY, lowerBound, true),
-							 new Node(0, 0, true),
-							 new Node(upperBound, Double.POSITIVE_INFINITY, true),
-							 lowerBound,
-							 upperBound,
-							 width
-		);
+		return new Histogram(nodes, new Node(0, 0), new Node(Double.NEGATIVE_INFINITY, newLower), new Node(upper, Double.POSITIVE_INFINITY), newLower, upper, width);
+
 	}
 
 	public void add(double value) {
@@ -70,40 +58,33 @@ public class Histogram {
 
 		if (value == 0d) {
 			zeroNode.add(value);
-		}
-		else if (value <= lower) {
-			underflowNode.add(value);
-		}
-		else if (value >= upper) {
-			overflowNode.add(value);
-		}
-		else if (value > 0) {
-			final int index = (int) Math.floor(value / width);
-			aboveZero[index].add(value);
-		}
-		else if (value < 0) {
-			final int index = (int) Math.floor(Math.abs(value) / width);
-			belowZero[index].add(value);
-		}
-		else {
-			log.warn("Don't know how to handle value {} with {}", value, this);
+			return;
 		}
 
+		if (value <= lower) {
+			underflowNode.add(value);
+			return;
+		}
+
+		if (value >= upper) {
+			overflowNode.add(value);
+			return;
+		}
+
+		final int index = (int) Math.floor((value - lower) / width);
+		nodes[index].add(value);
 	}
 
 	public List<Node> nodes() {
 		return Stream.of(
 							 Stream.of(underflowNode),
-							 Stream.of(belowZero),
-							 Stream.of(zeroNode),
-							 Stream.of(aboveZero),
+							 Stream.ofNullable(zeroNode),
+							 Stream.of(nodes),
 							 Stream.of(overflowNode)
 					 )
-					 .flatMap(Functions.identity()) // This is suggested concat of multiple streams
-					 .filter(Objects::nonNull)
-					 .filter(node -> node.getCount() > 0 || !node.isSpecial())
-					 .collect(Collectors.toList());
-
+					 .flatMap(Function.identity())
+					 .sorted(Comparator.comparingDouble(Node::getLower))
+					 .toList();
 	}
 
 	@Data
@@ -112,7 +93,6 @@ public class Histogram {
 		private final DoubleList entries = new DoubleArrayList();
 
 		private final double lower, upper;
-		private final boolean isSpecial;
 
 
 		private double min = Double.POSITIVE_INFINITY;
