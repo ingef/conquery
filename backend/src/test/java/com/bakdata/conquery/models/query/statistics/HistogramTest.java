@@ -42,20 +42,40 @@ class HistogramTest {
 			histogram.add(random.nextDouble(10, 15));
 		}
 
-		final List<Histogram.Node> balanced = histogram.nodes();
+		final List<Histogram.Node> nodes = histogram.nodes();
 
-		log.info("{}", balanced);
+		log.info("{}", nodes);
 
-		assertThat(balanced).hasSize(11); // gap between 7-8
+		assertThat(nodes).hasSize(13);
 
-		final Histogram.Node first = balanced.get(0);
+		final Histogram.Node first = nodes.get(0);
 
 		assertThat(first.getMin()).isLessThanOrEqualTo(-1);
 
-		final Histogram.Node last = balanced.get(balanced.size() - 1);
+		assertThat(nodes.get(7).getCount()).isZero();
+		assertThat(nodes.get(8).getCount()).isZero();
+
+		final Histogram.Node last = nodes.get(nodes.size() - 1);
 
 		assertThat(last.getMin()).isCloseTo(10, Offset.offset(0.2d));
 		assertThat(last.getMax()).isGreaterThanOrEqualTo(11);
+
+		for (int i = 0; i < nodes.size(); i++) {
+			final Histogram.Node node = nodes.get(i);
+
+			assertThat(node.getLower())
+					.as("[%d]=%s lower < upper", i, node)
+					.isLessThanOrEqualTo(node.getUpper());
+
+			if (node.getMin() == Double.POSITIVE_INFINITY) {
+				// has no values
+				continue;
+			}
+
+			assertThat(node.getMin()).isGreaterThanOrEqualTo(node.getLower());
+			assertThat(node.getMax()).isLessThanOrEqualTo(node.getUpper());
+			assertThat(node.getMin()).isLessThanOrEqualTo(node.getMax());
+		}
 
 	}
 

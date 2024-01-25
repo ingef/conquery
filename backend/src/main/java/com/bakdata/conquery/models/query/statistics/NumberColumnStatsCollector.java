@@ -16,10 +16,12 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.Range;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
+@Slf4j
 public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
 
 	private final ResultType type;
