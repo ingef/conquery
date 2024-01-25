@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	private final InternalObjectMapperCreator mapperCreator;
 	private final SqlContext sqlContext;
 	private final SqlExecutionService sqlExecutionService;
+	private final SqlFunctionProvider functionProvider;
 
 	@Override
 	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService) {
@@ -33,6 +35,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 				namespaceStorage,
 				executionManager,
 				sqlExecutionService,
+				functionProvider,
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
 				namespaceData.getIndexService(),

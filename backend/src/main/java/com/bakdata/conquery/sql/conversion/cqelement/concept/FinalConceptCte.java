@@ -7,6 +7,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -26,8 +27,10 @@ class FinalConceptCte extends ConceptCte {
 														.toList();
 
 		if (conceptCteContext.getValidityDate().isEmpty() || conceptCteContext.isExcludedFromDateAggregation()) {
+			String predecessor = conceptCteContext.getConceptTables().getPredecessor(ConceptCteStep.FINAL);
+			Field<Object> primaryColumn = QualifyingUtil.qualify(conceptCteContext.getPrimaryColumn(), predecessor);
 			Selects finalConceptSelects = Selects.builder()
-												 .primaryColumn(conceptCteContext.getPrimaryColumn())
+												 .primaryColumn(primaryColumn)
 												 .sqlSelects(forFinalStep)
 												 .build();
 			return QueryStep.builder()

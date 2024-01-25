@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
@@ -27,7 +28,9 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import org.jooq.Condition;
+import org.jooq.Field;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
@@ -75,9 +78,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private ConceptCteContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {
 
-		CQTable cqTable = cqConcept.getTables().get(0);
-		String tableName = cqTable.getConnector().getTable().getName();
 		String conceptLabel = context.getNameGenerator().conceptName(cqConcept);
+
+		CQTable cqTable = cqConcept.getTables().get(0);
+		Table table = cqTable.getConnector().getTable();
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, context.getConfig());
+		String tableName = table.getName();
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(cqTable, tableName, conceptLabel);
 
 		Set<ConceptCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);

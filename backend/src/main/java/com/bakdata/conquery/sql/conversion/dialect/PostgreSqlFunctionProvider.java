@@ -26,6 +26,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
+	private static final String ANY_CHAR_REGEX = "%";
 
 	@Override
 	public String getMaxDateExpression() {
@@ -35,6 +36,11 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
 		return DSL.cast(field, type);
+	}
+
+	@Override
+	public String getAnyCharRegex() {
+		return ANY_CHAR_REGEX;
 	}
 
 	@Override
@@ -83,7 +89,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String alias) {
 
 		Field<?> dateRange;
 
@@ -119,12 +125,20 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		}
 
 		return ColumnDateRange.of(dateRange)
-							  .asValidityDateRange(conceptLabel);
+							  .asValidityDateRange(alias);
 	}
 
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(DSL.function("range_agg", Object.class, columnDateRange.getRange()));
+	}
+
+	@Override
+	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
+		Field<?> daterange = columnDateRange.getRange();
+		Field<Date> start = DSL.function("lower", Date.class, daterange);
+		Field<Date> end = DSL.function("upper", Date.class, daterange);
+		return ColumnDateRange.of(start, end);
 	}
 
 	@Override

@@ -33,15 +33,36 @@ public interface SqlFunctionProvider {
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
 	/**
+	 * @return The regex that matches any char repeated any times (including 0), for example:
+	 * <ul>
+	 *     <li>'%' for Postgres' POSIX-like regexes</li>
+	 *     <li>'.*' for HANA's PERL-like regexes</li>
+	 * </ul
+	 */
+	String getAnyCharRegex();
+
+	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
 	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
 
 	ColumnDateRange daterange(CDateRange dateRestriction);
 
+	/**
+	 * Creates a {@link ColumnDateRange} for a given {@link ValidityDate}. The upper end of the created {@link ColumnDateRange} is treated as excluded,
+	 * meaning that it sets the end date to one day after the upper bound of the provided {@link ValidityDate}.
+	 */
 	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
+
+	/**
+	 * Given a single-column {@link ColumnDateRange}, it will create a new {@link ColumnDateRange} with a start and end field.
+	 * For dialects that don't support single-column ranges, it will create a copy of the given {@link ColumnDateRange}.
+	 *
+	 * @return A {@link ColumnDateRange} which has a start and end field.
+	 */
+	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
