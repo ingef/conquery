@@ -8,9 +8,8 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
@@ -25,18 +24,18 @@ public class NumberSqlAggregator implements SqlAggregator {
 
 	public NumberSqlAggregator(
 			Column column,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> conceptTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING),
+				conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 				column.getName(),
 				numberClass
 		);
 
-		Field<Number> eventFilterCtePredecessor = conceptTables.qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased());
+		Field<Number> eventFilterCtePredecessor = conceptTables.qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased());
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
 		this.sqlSelects = SqlSelects.builder()

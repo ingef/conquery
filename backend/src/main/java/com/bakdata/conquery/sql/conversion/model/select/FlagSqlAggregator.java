@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -72,15 +72,15 @@ public class FlagSqlAggregator implements SqlAggregator {
 	public static FlagSqlAggregator create(FlagSelect flagSelect, SelectContext selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getParentContext().getSqlDialect().getFunctionProvider();
-		SqlTables<ConceptCteStep> conceptTables = selectContext.getConceptTables();
+		SqlTables<ConnectorCteStep> conceptTables = selectContext.getConceptTables();
 
-		String rootTable = conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+		String rootTable = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, rootTable);
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
 		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, conceptTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
 										  .aggregationSelect(flagAggregation)
@@ -91,8 +91,8 @@ public class FlagSqlAggregator implements SqlAggregator {
 	}
 
 	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
-		SqlTables<ConceptCteStep> conceptTables = filterContext.getConceptTables();
-		String rootTable = conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+		SqlTables<ConnectorCteStep> conceptTables = filterContext.getConceptTables();
+		String rootTable = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 
 		List<SqlSelect> rootSelects =
 				getRequiredColumnNames(flagFilter.getFlags(), filterContext.getValue())
@@ -104,7 +104,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 									   .build();
 
 		List<Field<Boolean>> flagFields = rootSelects.stream()
-													 .map(sqlSelect -> conceptTables.<Boolean>qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, sqlSelect.aliased()))
+													 .map(sqlSelect -> conceptTables.<Boolean>qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, sqlSelect.aliased()))
 													 .toList();
 		FlagCondition flagCondition = new FlagCondition(flagFields);
 		WhereClauses whereClauses = WhereClauses.builder()
@@ -128,7 +128,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 
 	private static FieldWrapper<Object[]> createFlagSelect(
 			String alias,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> conceptTables,
 			SqlFunctionProvider functionProvider,
 			Map<String, SqlSelect> flagRootSelectMap
 	) {
@@ -150,11 +150,11 @@ public class FlagSqlAggregator implements SqlAggregator {
 		return new FieldWrapper<>(flagsArray);
 	}
 
-	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConceptCteStep> conceptTables, Map<String, SqlSelect> flagRootSelectMap) {
+	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConnectorCteStep> conceptTables, Map<String, SqlSelect> flagRootSelectMap) {
 		return flagRootSelectMap.entrySet().stream()
 						  .collect(Collectors.toMap(
 								  Map.Entry::getKey,
-								  entry -> conceptTables.qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, entry.getValue().aliased())
+								  entry -> conceptTables.qualifyOnPredecessor(ConnectorCteStep.AGGREGATION_SELECT, entry.getValue().aliased())
 						  ));
 	}
 

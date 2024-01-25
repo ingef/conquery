@@ -31,18 +31,18 @@ import org.jooq.Condition;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
-	private final List<ConceptCte> conceptCTEs;
+	private final List<ConnectorCte> connectorCtes;
 	private final SqlFunctionProvider functionProvider;
 
 	public CQConceptConverter(SqlFunctionProvider functionProvider) {
 		this.functionProvider = functionProvider;
-		this.conceptCTEs = List.of(
+		this.connectorCtes = List.of(
 				new PreprocessingCte(),
 				new EventFilterCte(),
 				new AggregationSelectCte(),
 				new JoinPredecessorsCte(),
 				new AggregationFilterCte(),
-				new FinalConceptCte()
+				new FinalConnectorCte()
 		);
 	}
 
@@ -61,7 +61,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		ConceptCteContext conceptCteContext = createConceptCteContext(cqConcept, context);
 
 		Optional<QueryStep> lastQueryStep = Optional.empty();
-		for (ConceptCte queryStep : this.conceptCTEs) {
+		for (ConnectorCte queryStep : this.connectorCtes) {
 			Optional<QueryStep> convertedStep = queryStep.convert(conceptCteContext, lastQueryStep);
 			if (convertedStep.isEmpty()) {
 				continue;
@@ -80,7 +80,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String conceptLabel = context.getNameGenerator().conceptName(cqConcept);
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(cqTable, tableName, conceptLabel);
 
-		Set<ConceptCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
+		Set<ConnectorCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
 		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
@@ -112,13 +112,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	 * Determines if event/aggregation filter steps are required.
 	 *
 	 * <p>
-	 * {@link ConceptCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
+	 * {@link ConnectorCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
 	 */
-	private Set<ConceptCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
-		Set<ConceptCteStep> requiredSteps = new HashSet<>(ConceptCteStep.MANDATORY_STEPS);
+	private Set<ConnectorCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
+		Set<ConnectorCteStep> requiredSteps = new HashSet<>(ConnectorCteStep.MANDATORY_STEPS);
 
 		if (dateRestrictionApplicable(dateRestrictionRequired, validityDateSelect)) {
-			requiredSteps.add(ConceptCteStep.EVENT_FILTER);
+			requiredSteps.add(ConnectorCteStep.EVENT_FILTER);
 		}
 
 		table.getFilters().stream()

@@ -19,7 +19,7 @@ class ConceptTablesTest {
 
 	@ParameterizedTest
 	@MethodSource("requiredStepsProvider")
-	public void getPredecessorTableName(Set<ConceptCteStep> requiredSteps, ConceptCteStep step, String expectedPredecessorTableName) {
+	public void getPredecessorTableName(Set<ConnectorCteStep> requiredSteps, ConnectorCteStep step, String expectedPredecessorTableName) {
 		ConceptTables conceptTables = new ConceptTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
 		Assertions.assertEquals(
 				expectedPredecessorTableName,
@@ -31,44 +31,44 @@ class ConceptTablesTest {
 		return Stream.of(
 
 				// AGGREGATION_SELECT and FINAL direct predecessors missing
-				Arguments.of(ConceptCteStep.MANDATORY_STEPS, ConceptCteStep.PREPROCESSING, ROOT_TABLE),
-				Arguments.of(ConceptCteStep.MANDATORY_STEPS, ConceptCteStep.EVENT_FILTER, ConceptCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConceptCteStep.MANDATORY_STEPS, ConceptCteStep.AGGREGATION_SELECT, ConceptCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConceptCteStep.MANDATORY_STEPS, ConceptCteStep.AGGREGATION_FILTER, ConceptCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConceptCteStep.MANDATORY_STEPS, ConceptCteStep.FINAL, ConceptCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
+				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.PREPROCESSING, ROOT_TABLE),
+				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.EVENT_FILTER, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
+				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_SELECT, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
+				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_FILTER, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
+				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.FINAL, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
 
 				// only FINAL direct predecessor missing
 				Arguments.of(
-						withAdditionalSteps(Set.of(ConceptCteStep.EVENT_FILTER)),
-						ConceptCteStep.AGGREGATION_SELECT,
-						ConceptCteStep.EVENT_FILTER.cteName(CONCEPT_LABEL)
+						withAdditionalSteps(Set.of(ConnectorCteStep.EVENT_FILTER)),
+						ConnectorCteStep.AGGREGATION_SELECT,
+						ConnectorCteStep.EVENT_FILTER.cteName(CONCEPT_LABEL)
 				),
 
 				// only AGGREGATION_SELECT direct predecessor missing
 				Arguments.of(
-						withAdditionalSteps(Set.of(ConceptCteStep.AGGREGATION_FILTER)),
-						ConceptCteStep.FINAL,
-						ConceptCteStep.AGGREGATION_FILTER.cteName(CONCEPT_LABEL)
+						withAdditionalSteps(Set.of(ConnectorCteStep.AGGREGATION_FILTER)),
+						ConnectorCteStep.FINAL,
+						ConnectorCteStep.AGGREGATION_FILTER.cteName(CONCEPT_LABEL)
 				),
 
 				// more than 1 predecessor missing of FINAL
 				Arguments.of(
-						Set.of(ConceptCteStep.PREPROCESSING, ConceptCteStep.FINAL),
-						ConceptCteStep.FINAL,
-						ConceptCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)
+						Set.of(ConnectorCteStep.PREPROCESSING, ConnectorCteStep.FINAL),
+						ConnectorCteStep.FINAL,
+						ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)
 				),
 
 				// all predecessors missing of FINAL
 				Arguments.of(
-						Set.of(ConceptCteStep.FINAL),
-						ConceptCteStep.FINAL,
+						Set.of(ConnectorCteStep.FINAL),
+						ConnectorCteStep.FINAL,
 						ROOT_TABLE
 				)
 		);
 	}
 
-	private static Set<ConceptCteStep> withAdditionalSteps(Set<ConceptCteStep> additionalSteps) {
-		return Stream.concat(ConceptCteStep.MANDATORY_STEPS.stream(), additionalSteps.stream()).collect(Collectors.toSet());
+	private static Set<ConnectorCteStep> withAdditionalSteps(Set<ConnectorCteStep> additionalSteps) {
+		return Stream.concat(ConnectorCteStep.MANDATORY_STEPS.stream(), additionalSteps.stream()).collect(Collectors.toSet());
 	}
 
 }

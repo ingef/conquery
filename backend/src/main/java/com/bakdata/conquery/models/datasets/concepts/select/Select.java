@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -128,8 +128,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	@JsonIgnore
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		return ConceptCteStep.MANDATORY_STEPS;
+	public Set<ConnectorCteStep> getRequiredSqlSteps() {
+		return ConnectorCteStep.MANDATORY_STEPS;
 	}
 
 }

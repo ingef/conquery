@@ -3,7 +3,7 @@
   "sqlSpec": {
     "isEnabled": true
   },
-  "label": "Simple TREE concept with 1 child with EQUAL CTCondition selected",
+  "label": "TREE concept with multiple nested conditions",
   "expectedCsv": "tests/sql/tree/nested/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

@@ -12,13 +12,13 @@ public class SelectFilterUtil {
 
 	public static <T> SqlFilters convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
 		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConnectorCteStep.PREPROCESSING),
 				selectFilter.getColumn().getName(),
 				String.class
 		);
 
 		WhereCondition condition = new MultiSelectCondition(
-				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased()),
 				values,
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);

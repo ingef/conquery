@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 
-abstract class ConceptCte {
+abstract class ConnectorCte {
 
 
 	protected Optional<QueryStep> convert(ConceptCteContext context, Optional<QueryStep> previous) {
@@ -30,9 +30,9 @@ abstract class ConceptCte {
 	}
 
 	/**
-	 * @return The {@link ConceptCteStep} this instance belongs to.
+	 * @return The {@link ConnectorCteStep} this instance belongs to.
 	 */
-	protected abstract ConceptCteStep cteStep();
+	protected abstract ConnectorCteStep cteStep();
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext);
 

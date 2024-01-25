@@ -8,7 +8,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
-class PreprocessingCte extends ConceptCte {
+class PreprocessingCte extends ConnectorCte {
 
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
@@ -32,12 +32,12 @@ class PreprocessingCte extends ConceptCte {
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
 						.conditions(conditions)
-						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.PREPROCESSING;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.PREPROCESSING;
 	}
 
 }

@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.model;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +17,11 @@ class NameGeneratorTest {
 
 		Assertions.assertEquals(
 				"foo-group_filter",
-				nameGenerator.cteStepName(ConceptCteStep.AGGREGATION_FILTER, "foo")
+				nameGenerator.cteStepName(ConnectorCteStep.AGGREGATION_FILTER, "foo")
 		);
 
 		String veryLongCteName = "concept-foobar-fizzbuzz-123_aggregation_select_filter_date_aggregation_cte";
-		String actual = nameGenerator.cteStepName(ConceptCteStep.AGGREGATION_FILTER, veryLongCteName);
+		String actual = nameGenerator.cteStepName(ConnectorCteStep.AGGREGATION_FILTER, veryLongCteName);
 		Assertions.assertEquals(NAME_MAX_LENGTH, actual.length());
 		Assertions.assertEquals("123_aggregation_select_filter_date_aggregation_cte-group_filter", actual);
 	}

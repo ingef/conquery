@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.CountSqlAggregator;
@@ -80,8 +80,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	}
 
 	@Override
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
+	public Set<ConnectorCteStep> getRequiredSqlSteps() {
+		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.AGGREGATION_FILTER);
 	}
 
 }

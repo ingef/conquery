@@ -15,7 +15,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
-class FinalConceptCte extends ConceptCte {
+class FinalConnectorCte extends ConnectorCte {
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
@@ -38,8 +38,8 @@ class FinalConceptCte extends ConceptCte {
 	}
 
 	@Override
-	protected ConceptCteStep cteStep() {
-		return ConceptCteStep.FINAL;
+	protected ConnectorCteStep cteStep() {
+		return ConnectorCteStep.FINAL;
 	}
 
 	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, ConceptCteContext conceptCteContext) {

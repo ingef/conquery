@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
-class EventFilterCte extends ConceptCte {
+class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
@@ -25,8 +25,8 @@ class EventFilterCte extends ConceptCte {
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.EVENT_FILTER;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.EVENT_FILTER;
 	}
 
 	private Selects getEventFilterSelects(ConceptCteContext conceptCteContext) {

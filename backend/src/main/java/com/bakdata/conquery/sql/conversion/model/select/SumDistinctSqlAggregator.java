@@ -9,9 +9,8 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -22,6 +21,7 @@ import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import lombok.Getter;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -29,6 +29,7 @@ import org.jooq.impl.DSL;
 @Value
 public class SumDistinctSqlAggregator implements SqlAggregator {
 
+	@Getter
 	private enum SumDistinctCteStep implements CteStep {
 
 		GROUP_BY_DISTINCT_COLUMNS("grouped_by_distinct_columns", null),
@@ -46,11 +47,6 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 		public String cteName(String nodeLabel) {
 			return "%s-%s".formatted(nodeLabel, this.suffix);
 		}
-
-		@Override
-		public CteStep predecessor() {
-			return this.predecessor;
-		}
 	}
 
 	private static final String ROW_NUMBER_ALIAS = "row_number";
@@ -65,7 +61,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			String alias,
 			IRange<? extends Number, ?> filterValue,
 			Field<Object> primaryColumn,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> conceptTables,
 			SqlFunctionProvider functionProvider,
 			NameGenerator nameGenerator
 	) {
@@ -80,7 +76,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 																				   .toList();
 
 		// sum column grouped by distinct columns
-		String predecessor = conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		String predecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 		ExtractingSqlSelect<? extends Number> qualifiedRootSelect = sumColumnRootSelect.createAliasedReference(predecessor);
 		FieldWrapper<? extends Number> firstSelect = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect.select(), List.of()).as(alias));
 		QueryStep distinctColumnsStep = getGroupByDistinctColumnsStep(alias, primaryColumn, nameGenerator, predecessor, firstSelect, distinctByRootSelects);
@@ -99,14 +95,16 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 		if (filterValue != null) {
 			this.sqlSelects = builder.build();
-			Field<BigDecimal> qualifiedSumSelect = distinctSum.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
+			Field<BigDecimal>
+					qualifiedSumSelect =
+					distinctSum.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.builder().build();
 		}

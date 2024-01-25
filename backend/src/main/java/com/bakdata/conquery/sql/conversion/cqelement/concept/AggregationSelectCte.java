@@ -6,7 +6,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 
-class AggregationSelectCte extends ConceptCte {
+class AggregationSelectCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
@@ -27,8 +27,8 @@ class AggregationSelectCte extends ConceptCte {
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_SELECT;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_SELECT;
 	}
 
 }

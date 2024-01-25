@@ -12,7 +12,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
-class JoinPredecessorsCte extends ConceptCte {
+class JoinPredecessorsCte extends ConnectorCte {
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
@@ -39,8 +39,8 @@ class JoinPredecessorsCte extends ConceptCte {
 	}
 
 	@Override
-	protected ConceptCteStep cteStep() {
-		return ConceptCteStep.JOIN_PREDECESSORS;
+	protected ConnectorCteStep cteStep() {
+		return ConnectorCteStep.JOIN_PREDECESSORS;
 	}
 
 }

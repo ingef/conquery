@@ -8,7 +8,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
-class AggregationFilterCte extends ConceptCte {
+class AggregationFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
@@ -39,8 +39,8 @@ class AggregationFilterCte extends ConceptCte {
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_FILTER;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_FILTER;
 	}
 
 }

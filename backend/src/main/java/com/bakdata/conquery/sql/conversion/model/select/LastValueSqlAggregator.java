@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -25,21 +25,21 @@ public class LastValueSqlAggregator implements SqlAggregator {
 			Column column,
 			String alias,
 			Optional<ColumnDateRange> validityDate,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> conceptTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+		String rootTableName = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		String columnName = column.getName();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
 		List<Field<?>> validityDateFields =
-				validityDate.map(_validityDate -> _validityDate.qualify(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)))
+				validityDate.map(_validityDate -> _validityDate.qualify(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> lastGroupBy = new FieldWrapper<>(functionProvider.last(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)

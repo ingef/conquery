@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
@@ -137,11 +137,11 @@ public class SumSelect extends Select {
 	}
 
 	@Override
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
+	public Set<ConnectorCteStep> getRequiredSqlSteps() {
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return ConceptCteStep.withOptionalSteps(ConceptCteStep.JOIN_PREDECESSORS);
+			return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.JOIN_PREDECESSORS);
 		}
-		return ConceptCteStep.MANDATORY_STEPS;
+		return ConnectorCteStep.MANDATORY_STEPS;
 	}
 
 }

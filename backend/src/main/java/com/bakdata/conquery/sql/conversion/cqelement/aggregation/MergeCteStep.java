@@ -9,6 +9,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 enum MergeCteStep implements DateAggregationCteStep {
 
@@ -19,19 +20,8 @@ enum MergeCteStep implements DateAggregationCteStep {
 
 	private static final Set<MergeCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
-	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
 	private final MergeCteStep predecessor;
-
-	@Override
-	public String suffix() {
-		return this.suffix;
-	}
-
-	@Override
-	public DateAggregationCteStep predecessor() {
-		return this.predecessor;
-	}
 
 	static List<DateAggregationCte> requiredSteps() {
 		return Arrays.stream(values())

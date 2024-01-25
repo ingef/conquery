@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectFilterUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -43,8 +43,8 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		return ConceptCteStep.withOptionalSteps(ConceptCteStep.EVENT_FILTER);
+	public Set<ConnectorCteStep> getRequiredSqlSteps() {
+		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.EVENT_FILTER);
 	}
 
 }

@@ -1,7 +1,10 @@
 {
-  "label": "Complex query with neste AND, OR and extra lang qualifiers",
+  "label": "Query with nested AND, OR",
   "expectedCsv": "tests/sql/nested/expected.csv",
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

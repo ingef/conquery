@@ -8,13 +8,12 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -29,24 +28,24 @@ public class SumSqlAggregator implements SqlAggregator {
 			Column sumColumn,
 			Column subtractColumn,
 			String alias,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> conceptTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		List<ExtractingSqlSelect<? extends Number>> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING),
+				conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 				sumColumn.getName(),
 				numberClass
 		);
 		preprocessingSelects.add(rootSelect);
 
-		String aggregationSelectPredecessor = conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		String aggregationSelectPredecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 		Field<? extends Number> sumField;
 		if (subtractColumn != null) {
 			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
-					conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING),
+					conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 					subtractColumn.getName(),
 					numberClass
 			);
@@ -66,13 +65,15 @@ public class SumSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
+			Field<BigDecimal>
+					qualifiedSumGroupBy =
+					sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
