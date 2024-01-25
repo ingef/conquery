@@ -27,5 +27,7 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	
 	MatchingStats getMatchingStats();
 
+	void setMatchingStats(MatchingStats matchingStats);
+
 	String getDescription();
 }

@@ -8,9 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.mode.local.SqlMatchingStats;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -26,6 +30,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -55,6 +60,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final Collection<Concept<?>> concepts;
+	private final ExecutorService executors;
 
 	public SqlUpdateMatchingStatsJob(
 			SqlConnectorConfig sqlConnectorConfig,
@@ -67,6 +73,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		this.dslContext = executionService.getDslContext();
 		this.functionProvider = functionProvider;
 		this.concepts = concepts;
+		this.executors = Executors.newFixedThreadPool(sqlConnectorConfig.getBackgroundThreads());
 	}
 
 	@Override
@@ -79,34 +86,38 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
 
-		for (Concept<?> concept : concepts) {
-			if (!(concept instanceof TreeConcept tree)) {
-				log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
-				break;
-			}
-			SqlMatchingStats matchingStats = collectMatchingStats(concept.getConnectors(), tree);
-			concept.setMatchingStats(matchingStats);
+		concepts.stream()
+				.filter(SqlUpdateMatchingStatsJob::isTreeConcept)
+				.flatMap(concept -> collectMatchingStats(concept.getConnectors(), (TreeConcept) concept))
+				.forEach(executors::submit);
+
+		executors.shutdown();
+		while (!executors.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for executors to set matching stats for all concepts...");
 		}
 
 		log.debug("DONE collecting matching stats.");
 	}
 
-	private SqlMatchingStats collectMatchingStats(List<? extends Connector> connectors, ConceptTreeNode<?> treeNode) {
+	@Override
+	public void cancel() {
+		super.cancel();
+		executors.shutdownNow();
+	}
 
-		treeNode.getChildren().forEach(child -> {
-			SqlMatchingStats childStats = collectMatchingStats(connectors, child);
-			child.setMatchingStats(childStats);
-		});
+	private static boolean isTreeConcept(Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
+			return false;
+		}
+		return true;
+	}
 
-		Optional<CTCondition> childCondition = treeNode instanceof ConceptTreeChild treeChild
-											   ? Optional.of(treeChild.getCondition())
-											   : Optional.empty();
-
-		long events = collectEventCount(connectors, childCondition);
-		long entities = collectEntityCount(connectors, childCondition);
-		CDateRange span = collectDateSpan(connectors, childCondition);
-
-		return new SqlMatchingStats(events, entities, span);
+	private Stream<Runnable> collectMatchingStats(List<? extends Connector> connectors, ConceptTreeNode<?> treeNode) {
+		return Stream.concat(
+				treeNode.getChildren().stream().flatMap(child -> collectMatchingStats(connectors, child)),
+				Stream.of(new SqlMatchingStatsTask(connectors, treeNode))
+		);
 	}
 
 	/**
@@ -259,6 +270,27 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		return childCondition.or(() -> Optional.ofNullable(connector.getCondition()))
 							 .map(condition -> condition.convertToSqlCondition(context).condition())
 							 .orElse(DSL.noCondition());
+	}
+
+	@RequiredArgsConstructor
+	private class SqlMatchingStatsTask implements Runnable {
+
+		private final List<? extends Connector> connectors;
+		private final ConceptTreeNode<?> treeNode;
+
+		@Override
+		public void run() {
+			Optional<CTCondition> childCondition = treeNode instanceof ConceptTreeChild treeChild
+												   ? Optional.of(treeChild.getCondition())
+												   : Optional.empty();
+
+			long events = collectEventCount(connectors, childCondition);
+			long entities = collectEntityCount(connectors, childCondition);
+			CDateRange span = collectDateSpan(connectors, childCondition);
+
+			SqlMatchingStats matchingStats = new SqlMatchingStats(events, entities, span);
+			treeNode.setMatchingStats(matchingStats);
+		}
 	}
 
 }

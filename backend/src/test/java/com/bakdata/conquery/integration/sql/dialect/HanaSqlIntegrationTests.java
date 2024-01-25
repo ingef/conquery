@@ -176,6 +176,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 														.databaseUsername(hanaContainer.getUsername())
 														.databasePassword(hanaContainer.getPassword())
 														.primaryColumn("pid")
+														.backgroundThreads(Runtime.getRuntime().availableProcessors())
 														.build();
 			this.dslContext = DslContextFactory.create(sqlConnectorConfig);
 		}

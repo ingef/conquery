@@ -78,7 +78,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label) {
 
 		Column startColumn;
 		Column endColumn;
@@ -104,7 +104,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd)
-							  .asValidityDateRange(conceptLabel);
+							  .asValidityDateRange(label);
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-pid,icd_code,aufnahmedatum,entlassungsdatum
+primary_column,icd_code,aufnahmedatum,entlassungsdatum
 3,"F200",2022-11-28,2022-11-11
 3,"F201",2021-08-31,2021-12-15
 3,"F204",2010-07-01,2019-07-13

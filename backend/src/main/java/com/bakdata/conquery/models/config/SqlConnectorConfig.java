@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.config;
 
+import javax.validation.constraints.Min;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,4 +31,10 @@ public class SqlConnectorConfig {
 	private String jdbcConnectionUrl;
 
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
+
+	/**
+	 * The amount of threads for background tasks like calculating matching stats {@link com.bakdata.conquery.models.jobs.SqlUpdateMatchingStatsJob}.
+	 */
+	@Min(1)
+	private int backgroundThreads;
 }
