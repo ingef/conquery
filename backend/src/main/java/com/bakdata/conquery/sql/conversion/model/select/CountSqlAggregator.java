@@ -27,16 +27,16 @@ public class CountSqlAggregator implements SqlAggregator {
 			Column countColumn,
 			CountType countType,
 			String alias,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(
-				conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
+				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 				countColumn.getName(),
 				Object.class
 		);
 
-		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		Field<Integer> countField = countType == CountType.DISTINCT
 									? DSL.countDistinct(qualifiedRootSelect)
 									: DSL.count(qualifiedRootSelect);
@@ -47,14 +47,14 @@ public class CountSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(countGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
 			Field<Integer> qualifiedCountSelect =
-					countGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+					countGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)
@@ -67,7 +67,7 @@ public class CountSqlAggregator implements SqlAggregator {
 				countSelect.getColumn(),
 				CountType.fromBoolean(countSelect.isDistinct()),
 				selectContext.getNameGenerator().selectName(countSelect),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				null
 		);
 	}
@@ -77,7 +77,7 @@ public class CountSqlAggregator implements SqlAggregator {
 				countFilter.getColumn(),
 				CountType.fromBoolean(countFilter.isDistinct()),
 				filterContext.getNameGenerator().selectName(countFilter),
-				filterContext.getConceptTables(),
+				filterContext.getConnectorTables(),
 				filterContext.getValue()
 		);
 	}

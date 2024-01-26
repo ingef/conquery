@@ -17,7 +17,7 @@ public class SelectContext implements Context {
 	CQConcept concept;
 	String label;
 	Optional<ColumnDateRange> validityDate;
-	SqlTables<ConnectorCteStep> conceptTables;
+	SqlTables<ConnectorCteStep> connectorTables;
 
 	@Override
 	public NameGenerator getNameGenerator() {

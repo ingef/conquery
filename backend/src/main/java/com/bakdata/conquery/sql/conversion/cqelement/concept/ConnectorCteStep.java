@@ -18,9 +18,11 @@ public enum ConnectorCteStep implements CteStep {
 	AGGREGATION_FILTER("group_filter", JOIN_PREDECESSORS),
 	FINAL("", AGGREGATION_FILTER);
 
-	public static final Set<ConnectorCteStep>
-			MANDATORY_STEPS =
-			Set.of(ConnectorCteStep.PREPROCESSING, ConnectorCteStep.AGGREGATION_SELECT, ConnectorCteStep.FINAL);
+	public static final Set<ConnectorCteStep> MANDATORY_STEPS = Set.of(
+			ConnectorCteStep.PREPROCESSING,
+			ConnectorCteStep.AGGREGATION_SELECT,
+			ConnectorCteStep.FINAL
+	);
 
 	private final String suffix;
 	private final ConnectorCteStep predecessor;

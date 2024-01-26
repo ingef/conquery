@@ -16,8 +16,8 @@ public class IntervalPackingTables extends SqlTables<IntervalPackingCteStep> {
 		super(nodeLabel, requiredSteps, rootTableName, nameGenerator);
 	}
 
-	public static IntervalPackingTables forConcept(String nodeLabel, SqlTables<ConnectorCteStep> conceptTables, NameGenerator nameGenerator) {
-		String preprocessingCteName = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+	public static IntervalPackingTables forConcept(String nodeLabel, SqlTables<ConnectorCteStep> connectorTables, NameGenerator nameGenerator) {
+		String preprocessingCteName = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 		return new IntervalPackingTables(nodeLabel, REQUIRED_STEPS, preprocessingCteName, nameGenerator);
 	}
 

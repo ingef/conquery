@@ -25,21 +25,21 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 			Column column,
 			String alias,
 			Optional<ColumnDateRange> validityDate,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
+		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		String columnName = column.getName();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
 		List<Field<?>> validityDateFields =
-				validityDate.map(_validityDate -> _validityDate.qualify(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
+				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> firstGroupBy = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -55,7 +55,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 				firstValueSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(firstValueSelect),
 				selectContext.getValidityDate(),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 	}

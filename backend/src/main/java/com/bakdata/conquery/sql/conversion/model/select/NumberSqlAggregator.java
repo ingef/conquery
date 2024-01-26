@@ -24,18 +24,18 @@ public class NumberSqlAggregator implements SqlAggregator {
 
 	public NumberSqlAggregator(
 			Column column,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
+				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 				column.getName(),
 				numberClass
 		);
 
-		Field<Number> eventFilterCtePredecessor = conceptTables.qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased());
+		Field<Number> eventFilterCtePredecessor = connectorTables.qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased());
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
 		this.sqlSelects = SqlSelects.builder()
@@ -52,7 +52,7 @@ public class NumberSqlAggregator implements SqlAggregator {
 	) {
 		return new NumberSqlAggregator(
 				numberFilter.getColumn(),
-				filterContext.getConceptTables(),
+				filterContext.getConnectorTables(),
 				prepareFilterValue(numberFilter.getColumn(), filterContext.getValue())
 		);
 	}

@@ -28,24 +28,24 @@ public class SumSqlAggregator implements SqlAggregator {
 			Column sumColumn,
 			Column subtractColumn,
 			String alias,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		List<ExtractingSqlSelect<? extends Number>> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
+				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 				sumColumn.getName(),
 				numberClass
 		);
 		preprocessingSelects.add(rootSelect);
 
-		String aggregationSelectPredecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		String aggregationSelectPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 		Field<? extends Number> sumField;
 		if (subtractColumn != null) {
 			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
-					conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
+					connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
 					subtractColumn.getName(),
 					numberClass
 			);
@@ -65,14 +65,14 @@ public class SumSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
 			Field<BigDecimal> qualifiedSumGroupBy =
-					sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+					sumGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
@@ -85,7 +85,7 @@ public class SumSqlAggregator implements SqlAggregator {
 				sumSelect.getColumn(),
 				sumSelect.getSubtractColumn(),
 				selectContext.getNameGenerator().selectName(sumSelect),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				null
 		);
 	}
@@ -95,7 +95,7 @@ public class SumSqlAggregator implements SqlAggregator {
 				sumFilter.getColumn(),
 				sumFilter.getSubtractColumn(),
 				filterContext.getNameGenerator().selectName(sumFilter),
-				filterContext.getConceptTables(),
+				filterContext.getConnectorTables(),
 				filterContext.getValue()
 		);
 	}

@@ -61,12 +61,12 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			String alias,
 			IRange<? extends Number, ?> filterValue,
 			Field<Object> primaryColumn,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider,
 			NameGenerator nameGenerator
 	) {
 		// preprocesssing
-		String rootTable = conceptTables.getRootTable();
+		String rootTable = connectorTables.getRootTable();
 		Class<? extends Number> numberClass1 = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		ExtractingSqlSelect<? extends Number> sumColumnRootSelect = new ExtractingSqlSelect<>(rootTable, sumColumn.getName(), numberClass1);
 		List<ExtractingSqlSelect<Object>> distinctByRootSelects = distinctByColumns.stream()
@@ -76,7 +76,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 																				   .toList();
 
 		// sum column grouped by distinct columns
-		String predecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 		ExtractingSqlSelect<? extends Number> qualifiedRootSelect = sumColumnRootSelect.createAliasedReference(predecessor);
 		FieldWrapper<? extends Number> firstSelect = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect.select(), List.of()).as(alias));
 		QueryStep distinctColumnsStep = getGroupByDistinctColumnsStep(alias, primaryColumn, nameGenerator, predecessor, firstSelect, distinctByRootSelects);
@@ -97,14 +97,14 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.build();
 			Field<BigDecimal>
 					qualifiedSumSelect =
-					distinctSum.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+					distinctSum.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.builder().build();
 		}
@@ -117,7 +117,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				selectContext.getNameGenerator().selectName(sumSelect),
 				null,
 				selectContext.getParentContext().getPrimaryColumn(),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				selectContext.getParentContext().getSqlDialect().getFunctionProvider(),
 				selectContext.getNameGenerator()
 		);
@@ -130,7 +130,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				filterContext.getNameGenerator().selectName(sumFilter),
 				filterContext.getValue(),
 				filterContext.getParentContext().getPrimaryColumn(),
-				filterContext.getConceptTables(),
+				filterContext.getConnectorTables(),
 				filterContext.getParentContext().getSqlDialect().getFunctionProvider(),
 				filterContext.getNameGenerator()
 		);

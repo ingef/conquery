@@ -72,15 +72,15 @@ public class FlagSqlAggregator implements SqlAggregator {
 	public static FlagSqlAggregator create(FlagSelect flagSelect, SelectContext selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getParentContext().getSqlDialect().getFunctionProvider();
-		SqlTables<ConnectorCteStep> conceptTables = selectContext.getConceptTables();
+		SqlTables<ConnectorCteStep> connectorTables = selectContext.getConnectorTables();
 
-		String rootTable = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
+		String rootTable = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, rootTable);
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
-		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, conceptTables, functionProvider, rootSelects);
+		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
 										  .aggregationSelect(flagAggregation)
@@ -91,8 +91,8 @@ public class FlagSqlAggregator implements SqlAggregator {
 	}
 
 	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
-		SqlTables<ConnectorCteStep> conceptTables = filterContext.getConceptTables();
-		String rootTable = conceptTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
+		SqlTables<ConnectorCteStep> connectorTables = filterContext.getConnectorTables();
+		String rootTable = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 
 		List<SqlSelect> rootSelects =
 				getRequiredColumnNames(flagFilter.getFlags(), filterContext.getValue())
@@ -104,7 +104,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 									   .build();
 
 		List<Field<Boolean>> flagFields = rootSelects.stream()
-													 .map(sqlSelect -> conceptTables.<Boolean>qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, sqlSelect.aliased()))
+													 .map(sqlSelect -> connectorTables.<Boolean>qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, sqlSelect.aliased()))
 													 .toList();
 		FlagCondition flagCondition = new FlagCondition(flagFields);
 		WhereClauses whereClauses = WhereClauses.builder()
@@ -128,11 +128,11 @@ public class FlagSqlAggregator implements SqlAggregator {
 
 	private static FieldWrapper<Object[]> createFlagSelect(
 			String alias,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider,
 			Map<String, SqlSelect> flagRootSelectMap
 	) {
-		Map<String, Field<Boolean>> flagFieldsMap = createRootSelectReferences(conceptTables, flagRootSelectMap);
+		Map<String, Field<Boolean>> flagFieldsMap = createRootSelectReferences(connectorTables, flagRootSelectMap);
 
 		// we first aggregate each flag column
 		List<Field<?>> flagAggregations = new ArrayList<>();
@@ -150,11 +150,11 @@ public class FlagSqlAggregator implements SqlAggregator {
 		return new FieldWrapper<>(flagsArray);
 	}
 
-	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConnectorCteStep> conceptTables, Map<String, SqlSelect> flagRootSelectMap) {
+	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConnectorCteStep> connectorTables, Map<String, SqlSelect> flagRootSelectMap) {
 		return flagRootSelectMap.entrySet().stream()
 						  .collect(Collectors.toMap(
 								  Map.Entry::getKey,
-								  entry -> conceptTables.qualifyOnPredecessor(ConnectorCteStep.AGGREGATION_SELECT, entry.getValue().aliased())
+								  entry -> connectorTables.qualifyOnPredecessor(ConnectorCteStep.AGGREGATION_SELECT, entry.getValue().aliased())
 						  ));
 	}
 
