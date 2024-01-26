@@ -58,16 +58,16 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
-		CQTableContext CQTableContext = createConceptCteContext(cqConcept, context);
+		CQTableContext tableContext = createConceptCteContext(cqConcept, context);
 
 		Optional<QueryStep> lastQueryStep = Optional.empty();
 		for (ConnectorCte queryStep : this.connectorCtes) {
-			Optional<QueryStep> convertedStep = queryStep.convert(CQTableContext, lastQueryStep);
+			Optional<QueryStep> convertedStep = queryStep.convert(tableContext, lastQueryStep);
 			if (convertedStep.isEmpty()) {
 				continue;
 			}
 			lastQueryStep = convertedStep;
-			CQTableContext = CQTableContext.withPrevious(lastQueryStep.get());
+			tableContext = tableContext.withPrevious(lastQueryStep.get());
 		}
 
 		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));

@@ -11,27 +11,27 @@ import org.jooq.Condition;
 class AggregationFilterCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		String predecessorTableName = CQTableContext.getConceptTables().getPredecessor(cteStep());
+		String predecessorTableName = tableContext.getConceptTables().getPredecessor(cteStep());
 		Selects aggregationFilterSelects = Selects.builder()
-												  .primaryColumn(CQTableContext.getPrimaryColumn())
-												  .sqlSelects(getForAggregationFilterSelects(CQTableContext))
+												  .primaryColumn(tableContext.getPrimaryColumn())
+												  .sqlSelects(getForAggregationFilterSelects(tableContext))
 												  .build()
 												  .qualify(predecessorTableName);
 
-		List<Condition> aggregationFilterConditions = CQTableContext.getFilters().stream()
-																	.flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																	.map(WhereCondition::condition)
-																	.toList();
+		List<Condition> aggregationFilterConditions = tableContext.getFilters().stream()
+																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+																  .map(WhereCondition::condition)
+																  .toList();
 
 		return QueryStep.builder()
 						.selects(aggregationFilterSelects)
 						.conditions(aggregationFilterConditions);
 	}
 
-	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext CQTableContext) {
-		return CQTableContext.getSelects().stream()
+	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext tableContext) {
+		return tableContext.getSelects().stream()
 							 .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 							 .filter(sqlSelect -> !sqlSelect.isUniversal())
 							 .distinct()

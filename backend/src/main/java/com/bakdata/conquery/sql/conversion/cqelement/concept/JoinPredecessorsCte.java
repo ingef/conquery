@@ -15,13 +15,13 @@ import org.jooq.TableLike;
 class JoinPredecessorsCte extends ConnectorCte {
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext) {
+	protected QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
-		queriesToJoin.add(CQTableContext.getPrevious());
-		CQTableContext.allConceptSelects()
-					  .flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessors().stream())
-					  .forEach(queriesToJoin::add);
+		queriesToJoin.add(tableContext.getPrevious());
+		tableContext.allConceptSelects()
+					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessors().stream())
+					.forEach(queriesToJoin::add);
 
 		Field<Object> primaryColumn = QueryStepJoiner.coalescePrimaryColumns(queriesToJoin);
 		List<SqlSelect> mergedSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
@@ -30,7 +30,7 @@ class JoinPredecessorsCte extends ConnectorCte {
 								 .sqlSelects(mergedSelects)
 								 .build();
 
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, CQTableContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)
