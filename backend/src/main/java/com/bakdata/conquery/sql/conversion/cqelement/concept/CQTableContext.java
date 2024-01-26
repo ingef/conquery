@@ -20,7 +20,7 @@ import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-class ConceptCteContext implements Context {
+class CQTableContext implements Context {
 
 	ConversionContext conversionContext;
 	String conceptLabel;

@@ -13,12 +13,12 @@ import org.jooq.Condition;
 class EventFilterCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
-		Selects eventFilterSelects = getEventFilterSelects(conceptCteContext);
-		List<Condition> eventFilterConditions = conceptCteContext.getFilters().stream()
-																 .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
-																 .map(WhereCondition::condition)
-																 .toList();
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext) {
+		Selects eventFilterSelects = getEventFilterSelects(CQTableContext);
+		List<Condition> eventFilterConditions = CQTableContext.getFilters().stream()
+															  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
+															  .map(WhereCondition::condition)
+															  .toList();
 		return QueryStep.builder()
 						.selects(eventFilterSelects)
 						.conditions(eventFilterConditions);
@@ -29,21 +29,21 @@ class EventFilterCte extends ConnectorCte {
 		return ConnectorCteStep.EVENT_FILTER;
 	}
 
-	private Selects getEventFilterSelects(ConceptCteContext conceptCteContext) {
-		String predecessorTableName = conceptCteContext.getConceptTables().getPredecessor(cteStep());
+	private Selects getEventFilterSelects(CQTableContext CQTableContext) {
+		String predecessorTableName = CQTableContext.getConceptTables().getPredecessor(cteStep());
 
-		Optional<ColumnDateRange> validityDate = conceptCteContext.getValidityDate();
+		Optional<ColumnDateRange> validityDate = CQTableContext.getValidityDate();
 		if (validityDate.isPresent()) {
 			validityDate = Optional.of(validityDate.get().qualify(predecessorTableName));
 		}
 
-		List<? extends SqlSelect> sqlSelects = conceptCteContext.allConceptSelects()
-																.flatMap(selects -> selects.getAggregationSelects().stream())
-																.map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
-																.toList();
+		List<? extends SqlSelect> sqlSelects = CQTableContext.allConceptSelects()
+															 .flatMap(selects -> selects.getAggregationSelects().stream())
+															 .map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
+															 .toList();
 
 		return Selects.builder()
-					  .primaryColumn(conceptCteContext.getPrimaryColumn())
+					  .primaryColumn(CQTableContext.getPrimaryColumn())
 					  .validityDate(validityDate)
 					  .sqlSelects(sqlSelects)
 					  .build();

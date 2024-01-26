@@ -9,21 +9,21 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 class AggregationSelectCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext) {
 
-		List<SqlSelect> requiredInAggregationFilterStep = conceptCteContext.allConceptSelects()
-																		   .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
-																		   .distinct()
-																		   .toList();
+		List<SqlSelect> requiredInAggregationFilterStep = CQTableContext.allConceptSelects()
+																		.flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
+																		.distinct()
+																		.toList();
 
 		Selects aggregationSelectSelects = Selects.builder()
-												  .primaryColumn(conceptCteContext.getPrimaryColumn())
+												  .primaryColumn(CQTableContext.getPrimaryColumn())
 												  .sqlSelects(requiredInAggregationFilterStep)
 												  .build();
 
 		return QueryStep.builder()
 						.selects(aggregationSelectSelects)
-						.groupBy(List.of(conceptCteContext.getPrimaryColumn()));
+						.groupBy(List.of(CQTableContext.getPrimaryColumn()));
 	}
 
 	@Override

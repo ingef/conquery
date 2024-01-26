@@ -10,29 +10,29 @@ import org.jooq.Condition;
 
 class PreprocessingCte extends ConnectorCte {
 
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext) {
 
-		List<SqlSelect> forPreprocessing = conceptCteContext.allConceptSelects()
-															.flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
-															.distinct()
-															.toList();
+		List<SqlSelect> forPreprocessing = CQTableContext.allConceptSelects()
+														 .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
+														 .distinct()
+														 .toList();
 
 		Selects preprocessingSelects = Selects.builder()
-											  .primaryColumn(conceptCteContext.getPrimaryColumn())
-											  .validityDate(conceptCteContext.getValidityDate())
+											  .primaryColumn(CQTableContext.getPrimaryColumn())
+											  .validityDate(CQTableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
 
 		// all where clauses that don't require any preprocessing (connector/child conditions)
-		List<Condition> conditions = conceptCteContext.getFilters().stream()
-													  .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
-													  .map(WhereCondition::condition)
-													  .toList();
+		List<Condition> conditions = CQTableContext.getFilters().stream()
+												   .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
+												   .map(WhereCondition::condition)
+												   .toList();
 
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
 						.conditions(conditions)
-						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(CQTableContext.getConceptTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
 	}
 
 	@Override

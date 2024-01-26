@@ -58,22 +58,22 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
-		ConceptCteContext conceptCteContext = createConceptCteContext(cqConcept, context);
+		CQTableContext CQTableContext = createConceptCteContext(cqConcept, context);
 
 		Optional<QueryStep> lastQueryStep = Optional.empty();
 		for (ConnectorCte queryStep : this.connectorCtes) {
-			Optional<QueryStep> convertedStep = queryStep.convert(conceptCteContext, lastQueryStep);
+			Optional<QueryStep> convertedStep = queryStep.convert(CQTableContext, lastQueryStep);
 			if (convertedStep.isEmpty()) {
 				continue;
 			}
 			lastQueryStep = convertedStep;
-			conceptCteContext = conceptCteContext.withPrevious(lastQueryStep.get());
+			CQTableContext = CQTableContext.withPrevious(lastQueryStep.get());
 		}
 
 		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
 	}
 
-	private ConceptCteContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {
+	private CQTableContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {
 
 		CQTable cqTable = cqConcept.getTables().get(0);
 		String tableName = cqTable.getConnector().getTable().getName();
@@ -97,15 +97,15 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 												.map(select -> select.convertToSqlSelects(selectContext))
 												.toList();
 
-		return ConceptCteContext.builder()
-								.conversionContext(context)
-								.filters(allFiltersForTable)
-								.selects(conceptSelects)
-								.validityDate(validityDateSelect)
-								.isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
-								.conceptTables(conceptTables)
-								.conceptLabel(conceptLabel)
-								.build();
+		return CQTableContext.builder()
+							 .conversionContext(context)
+							 .filters(allFiltersForTable)
+							 .selects(conceptSelects)
+							 .validityDate(validityDateSelect)
+							 .isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
+							 .conceptTables(conceptTables)
+							 .conceptLabel(conceptLabel)
+							 .build();
 	}
 
 	/**

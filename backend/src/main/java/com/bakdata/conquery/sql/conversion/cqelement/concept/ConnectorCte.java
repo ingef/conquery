@@ -8,7 +8,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 abstract class ConnectorCte {
 
 
-	protected Optional<QueryStep> convert(ConceptCteContext context, Optional<QueryStep> previous) {
+	protected Optional<QueryStep> convert(CQTableContext context, Optional<QueryStep> previous) {
 
 		if (!isRequired(context.getConceptTables())) {
 			return Optional.empty();
@@ -34,7 +34,7 @@ abstract class ConnectorCte {
 	 */
 	protected abstract ConnectorCteStep cteStep();
 
-	protected abstract QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext);
+	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext CQTableContext);
 
 	private boolean isRequired(ConceptTables conceptTables) {
 		return conceptTables.isRequiredStep(cteStep());
