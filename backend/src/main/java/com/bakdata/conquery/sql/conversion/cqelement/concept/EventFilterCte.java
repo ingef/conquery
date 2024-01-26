@@ -37,7 +37,7 @@ class EventFilterCte extends ConnectorCte {
 			validityDate = Optional.of(validityDate.get().qualify(predecessorTableName));
 		}
 
-		List<? extends SqlSelect> sqlSelects = tableContext.getSqlSelects().stream()
+		List<? extends SqlSelect> sqlSelects = tableContext.allSqlSelects().stream()
 														   .flatMap(selects -> selects.getAggregationSelects().stream())
 														   .map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
 														   .toList();

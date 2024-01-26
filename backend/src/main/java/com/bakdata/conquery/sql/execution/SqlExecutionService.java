@@ -80,7 +80,7 @@ public class SqlExecutionService {
 		String sqlString = sqlQuery.getSqlQuery().getSql();
 		List<ResultType<?>> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
 
-		log.debug("Executing query: \n{}", sqlString);
+		log.info("Executing query: \n{}", sqlString);
 
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {

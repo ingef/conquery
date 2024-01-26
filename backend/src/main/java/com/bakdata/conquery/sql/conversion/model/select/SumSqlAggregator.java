@@ -71,8 +71,7 @@ public class SumSqlAggregator implements SqlAggregator {
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<BigDecimal>
-					qualifiedSumGroupBy =
+			Field<BigDecimal> qualifiedSumGroupBy =
 					sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()

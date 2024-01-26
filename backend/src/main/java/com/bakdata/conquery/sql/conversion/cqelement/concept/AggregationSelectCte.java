@@ -11,7 +11,7 @@ class AggregationSelectCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> requiredInAggregationFilterStep = tableContext.getSqlSelects().stream()
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
 																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
 																	  .distinct()
 																	  .toList();

@@ -31,7 +31,7 @@ class AggregationFilterCte extends ConnectorCte {
 	}
 
 	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext tableContext) {
-		return tableContext.getSqlSelects().stream()
+		return tableContext.allSqlSelects().stream()
 						   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 						   .filter(sqlSelect -> !sqlSelect.isUniversal())
 						   .distinct()

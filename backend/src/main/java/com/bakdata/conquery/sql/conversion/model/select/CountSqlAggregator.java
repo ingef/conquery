@@ -53,8 +53,7 @@ public class CountSqlAggregator implements SqlAggregator {
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer>
-					qualifiedCountSelect =
+			Field<Integer> qualifiedCountSelect =
 					countGroupBy.createAliasedReference(conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
