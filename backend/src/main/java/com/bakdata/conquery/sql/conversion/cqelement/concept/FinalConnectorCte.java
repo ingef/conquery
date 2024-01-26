@@ -20,7 +20,7 @@ class FinalConnectorCte extends ConnectorCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> forFinalStep = tableContext.getSelects().stream()
+		List<SqlSelect> forFinalStep = tableContext.getSqlSelects().stream()
 												   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 												   .distinct()
 												   .toList();

@@ -19,7 +19,7 @@ class JoinPredecessorsCte extends ConnectorCte {
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(tableContext.getPrevious());
-		tableContext.allConceptSelects()
+		tableContext.getSqlSelects().stream()
 					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessors().stream())
 					.forEach(queriesToJoin::add);
 

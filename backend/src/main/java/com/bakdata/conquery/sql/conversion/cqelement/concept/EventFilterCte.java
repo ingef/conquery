@@ -15,7 +15,7 @@ class EventFilterCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 		Selects eventFilterSelects = getEventFilterSelects(tableContext);
-		List<Condition> eventFilterConditions = tableContext.getFilters().stream()
+		List<Condition> eventFilterConditions = tableContext.getSqlFilters().stream()
 															.flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
 															.map(WhereCondition::condition)
 															.toList();
@@ -37,10 +37,10 @@ class EventFilterCte extends ConnectorCte {
 			validityDate = Optional.of(validityDate.get().qualify(predecessorTableName));
 		}
 
-		List<? extends SqlSelect> sqlSelects = tableContext.allConceptSelects()
-															 .flatMap(selects -> selects.getAggregationSelects().stream())
-															 .map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
-															 .toList();
+		List<? extends SqlSelect> sqlSelects = tableContext.getSqlSelects().stream()
+														   .flatMap(selects -> selects.getAggregationSelects().stream())
+														   .map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
+														   .toList();
 
 		return Selects.builder()
 					  .primaryColumn(tableContext.getPrimaryColumn())

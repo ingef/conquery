@@ -37,6 +37,13 @@ public abstract class SqlTables<C extends CteStep> {
 	}
 
 	/**
+	 * @return True if the given {@link CteStep} is part of these {@link SqlTables}.
+	 */
+	public boolean isRequiredStep(CteStep cteStep) {
+		return this.cteNames.containsKey(cteStep);
+	}
+
+	/**
 	 * @return The name of the table the given {@link CteStep} will select from.
 	 */
 	public String getPredecessor(CteStep cteStep) {

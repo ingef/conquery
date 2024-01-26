@@ -20,7 +20,7 @@ class AggregationFilterCte extends ConnectorCte {
 												  .build()
 												  .qualify(predecessorTableName);
 
-		List<Condition> aggregationFilterConditions = tableContext.getFilters().stream()
+		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
 																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
 																  .map(WhereCondition::condition)
 																  .toList();
@@ -31,11 +31,11 @@ class AggregationFilterCte extends ConnectorCte {
 	}
 
 	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext tableContext) {
-		return tableContext.getSelects().stream()
-							 .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-							 .filter(sqlSelect -> !sqlSelect.isUniversal())
-							 .distinct()
-							 .toList();
+		return tableContext.getSqlSelects().stream()
+						   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
+						   .filter(sqlSelect -> !sqlSelect.isUniversal())
+						   .distinct()
+						   .toList();
 	}
 
 	@Override

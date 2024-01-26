@@ -99,8 +99,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return CQTableContext.builder()
 							 .conversionContext(context)
-							 .filters(allFiltersForTable)
-							 .selects(conceptSelects)
+							 .sqlFilters(allFiltersForTable)
+							 .sqlSelects(conceptSelects)
 							 .validityDate(validityDateSelect)
 							 .isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
 							 .conceptTables(conceptTables)

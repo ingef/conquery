@@ -12,7 +12,7 @@ class PreprocessingCte extends ConnectorCte {
 
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> forPreprocessing = tableContext.allConceptSelects()
+		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
 													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
 													   .distinct()
 													   .toList();
@@ -24,7 +24,7 @@ class PreprocessingCte extends ConnectorCte {
 											  .build();
 
 		// all where clauses that don't require any preprocessing (connector/child conditions)
-		List<Condition> conditions = tableContext.getFilters().stream()
+		List<Condition> conditions = tableContext.getSqlFilters().stream()
 												 .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
 												 .map(WhereCondition::condition)
 												 .toList();

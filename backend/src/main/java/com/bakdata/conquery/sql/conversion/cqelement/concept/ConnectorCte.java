@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
 abstract class ConnectorCte {
 
@@ -36,8 +37,8 @@ abstract class ConnectorCte {
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext);
 
-	private boolean isRequired(ConceptTables conceptTables) {
-		return conceptTables.isRequiredStep(cteStep());
+	private boolean isRequired(SqlTables<ConnectorCteStep> connectorTables) {
+		return connectorTables.isRequiredStep(cteStep());
 	}
 
 }

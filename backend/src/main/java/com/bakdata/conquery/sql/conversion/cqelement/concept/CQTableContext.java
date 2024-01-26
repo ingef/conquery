@@ -26,8 +26,8 @@ class CQTableContext implements Context {
 	String conceptLabel;
 	Optional<ColumnDateRange> validityDate;
 	boolean isExcludedFromDateAggregation;
-	List<SqlSelects> selects;
-	List<SqlFilters> filters;
+	List<SqlSelects> sqlSelects;
+	List<SqlFilters> sqlFilters;
 	ConceptTables conceptTables;
 	@With
 	QueryStep previous;
@@ -35,11 +35,8 @@ class CQTableContext implements Context {
 	/**
 	 * @return All concepts {@link SqlSelects} that are either required for {@link Filter}'s or {@link Select}'s.
 	 */
-	public Stream<SqlSelects> allConceptSelects() {
-		return Stream.concat(
-				getFilters().stream().map(SqlFilters::getSelects),
-				getSelects().stream()
-		);
+	public List<SqlSelects> allSqlSelects() {
+		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 
 	public Field<Object> getPrimaryColumn() {
