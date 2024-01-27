@@ -91,8 +91,8 @@ export default function Table({ data, queryData }: Props) {
           min: Date;
           max: Date;
         };
-        const min = dateRange.min.toLocaleDateString("de-de");
-        const max = dateRange.max.toLocaleDateString("de-de");
+        const min = dateRange.min.toLocaleDateString();
+        const max = dateRange.max.toLocaleDateString();
         return min == max ? min : `${min} - ${max}`;
       };
     } else if (cellType == "MONEY") {

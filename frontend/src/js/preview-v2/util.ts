@@ -14,7 +14,7 @@ export function formatNumber(num: number, precision = 2): string {
 
 export function formatDate(date: string | undefined) {
   if (date) {
-    return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ?? date;
+    return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString() ?? date;
   }
   return t("preview.dateError");
 }
