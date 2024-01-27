@@ -34,13 +34,16 @@ export const StyledTable = styled("table")`
     font-weight: normal;
     text-align: left;
   }
-  th:last-of-type {
-    border-right: none;
-  }
 
   td {
     padding: 10px;
     border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
+    border-right: 1px solid ${({ theme }) => theme.col.grayLight};
+  }
+
+  th:last-of-type,
+  td:last-of-type {
+    border-right: none;
   }
 `;
 
