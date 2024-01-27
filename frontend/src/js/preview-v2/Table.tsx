@@ -89,7 +89,10 @@ export default function Table({ data, queryData }: Props) {
         return isNaN(num) ? value.toString() : formatNumber(num);
       };
     } else if (cellType == "DATE") {
-      return (value) => formatDate(value as string);
+      return (value) =>
+        value instanceof Date
+          ? value.toLocaleDateString()
+          : formatDate(value as string);
     } else if (cellType == "DATE_RANGE") {
       return (value) => {
         const dateRange = (value as Vector).toJSON() as unknown as {
