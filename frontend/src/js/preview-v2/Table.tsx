@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import {
@@ -39,6 +39,11 @@ export const StyledTable = styled("table")`
     padding: 10px;
     border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
     border-right: 1px solid ${({ theme }) => theme.col.grayLight};
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 45ch;
   }
 
   th:last-of-type,
@@ -59,7 +64,7 @@ export default function Table({ data, queryData }: Props) {
 
   function getRenderFunction(
     cellType: string,
-  ): ((value: string | Vector) => ReactNode) | undefined {
+  ): ((value: string | Vector) => string) | undefined {
     if (cellType.indexOf("LIST") == 0) {
       const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
         "listtype"
@@ -81,7 +86,7 @@ export default function Table({ data, queryData }: Props) {
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {
         const num = parseFloat(value as string);
-        return isNaN(num) ? value : formatNumber(num);
+        return isNaN(num) ? value.toString() : formatNumber(num);
       };
     } else if (cellType == "DATE") {
       return (value) => formatDate(value as string);
@@ -99,7 +104,7 @@ export default function Table({ data, queryData }: Props) {
       return (value) => {
         const num = parseFloat(value as string);
         return isNaN(num)
-          ? value
+          ? value.toString()
           : `${formatNumber(num)} ${currencyConfig.unit}`;
       };
     } else if (cellType == "BOOLEAN") {
@@ -109,7 +114,7 @@ export default function Table({ data, queryData }: Props) {
 
   const getRenderFunctionByFieldName = (
     fieldName: string,
-  ): ((value: string | Vector) => ReactNode) | undefined => {
+  ): ((value: string | Vector) => string) | undefined => {
     const cellType = (
       queryData as GetQueryResponseDoneT
     ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
@@ -122,7 +127,10 @@ export default function Table({ data, queryData }: Props) {
     title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
     dataIndex: field.name,
     key: field.name,
-    render: getRenderFunctionByFieldName(field.name),
+    render: (value: string | Vector) => {
+      const rendered = getRenderFunctionByFieldName(field.name)?.(value);
+      return rendered ? <span title={rendered}>{rendered}</span> : value;
+    },
   }));
 
   const rootRef = useRef<HTMLDivElement>(null);
