@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import org.jooq.impl.DSL;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
@@ -27,6 +28,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 														.nameGenerator(new NameGenerator(config.getDialect().getNameMaxLength()))
 														.nodeConversions(this)
 														.sqlDialect(this.dialect)
+														.primaryColumn(DSL.field(DSL.name(config.getPrimaryColumn())))
 														.build();
 		return convert(queryDescription, initialCtx);
 	}

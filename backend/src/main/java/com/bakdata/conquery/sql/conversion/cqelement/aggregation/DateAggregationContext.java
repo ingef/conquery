@@ -22,7 +22,7 @@ class DateAggregationContext implements Context {
 
 	Field<Object> primaryColumn;
 	List<SqlSelect> carryThroughSelects;
-	DateAggregationTables dateAggregationTables;
+	DateAggregationTables<?> dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
 	@Builder.Default
 	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();

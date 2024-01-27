@@ -585,30 +585,21 @@ export type PostResolveEntitiesResponse = {
 }[];
 
 export type BaseStatistics = {
-  name: string;
   label: string;
   description?: string;
   count: number;
   nullValues: number;
 };
 
-export type NumberStatistics = BaseStatistics & {
-  type: SelectorResultDataType;
-  mean: number;
-  stdDev: number;
-  min: number;
-  max: number;
-  samples: number[];
-};
-
-export type StringStatistics = BaseStatistics & {
-  type: "STRING";
-  histogram: {
-    [value: string]: number;
-  };
+export type BarStatistics = BaseStatistics & {
+  chart: "HISTO";
+  type: "INTEGER" | "DECIMAL" | "MONEY" | "STRING" | "REAL";
+  entries: { label: string; value: number }[];
+  extras: { [key: string]: string };
 };
 
 export type DateStatistics = BaseStatistics & {
+  chart: "DATES";
   type: "DATE_RANGE" | "DATE";
   quarterCounts: Record<string, number>;
   monthCounts: Record<string, number>;
@@ -618,10 +609,7 @@ export type DateStatistics = BaseStatistics & {
   };
 };
 
-export type PreviewStatistics =
-  | NumberStatistics
-  | StringStatistics
-  | DateStatistics;
+export type PreviewStatistics = BarStatistics | DateStatistics;
 
 export type PreviewStatisticsResponse = {
   entities: number;

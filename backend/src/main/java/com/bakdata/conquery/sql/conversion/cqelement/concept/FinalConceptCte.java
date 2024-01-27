@@ -21,7 +21,7 @@ class FinalConceptCte extends ConceptCte {
 	protected QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
 		List<SqlSelect> forFinalStep = conceptCteContext.getSelects().stream()
-														.flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
+														.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 														.distinct()
 														.toList();
 

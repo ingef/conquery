@@ -24,7 +24,7 @@ public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 	}
 
 	@Override
-	public MapIndex createIndex() {
+	public MapIndex createIndex(String defaultEmptyLabel) {
 		return new MapIndex(externalTemplate);
 	}
 

@@ -1,40 +1,32 @@
-import {
-  NumberStatistics,
-  PreviewStatistics,
-  StringStatistics,
-  DateStatistics,
-} from "../api/types";
+import { t } from "i18next";
+import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
+import { parseDate } from "../common/helpers/dateHelper";
 
-const NUMBER_STATISTICS_TYPES = [
-  "NUMBER",
-  "INTEGER",
-  "REAL",
-  "DECIMAL",
-  "MONEY",
-];
+export const NUMBER_TYPES = ["NUMBER", "INTEGER", "REAL", "DECIMAL"];
 
-const DIGITS_OF_PRECISION = 3;
-export function formatNumber(num: number): string {
-  return num
-    .toPrecision(DIGITS_OF_PRECISION)
-    .toLocaleString()
-    .replace(".", ",");
+export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
+
+export function formatNumber(num: number, precision = 2): string {
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: precision,
+  }).format(num);
 }
 
-export function previewStatsIsStringStats(
-  stats: PreviewStatistics,
-): stats is StringStatistics {
-  return stats.type === "STRING";
+export function formatDate(date: string | undefined) {
+  if (date) {
+    return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString() ?? date;
+  }
+  return t("preview.dateError");
 }
 
-export function previewStatsIsNumberStats(
+export function previewStatsIsBarStats(
   stats: PreviewStatistics,
-): stats is NumberStatistics {
-  return NUMBER_STATISTICS_TYPES.indexOf(stats.type) !== -1 // && "stddev" in stats;
+): stats is BarStatistics {
+  return stats.chart === "HISTO";
 }
 
 export function previewStatsIsDateStats(
   stats: PreviewStatistics,
 ): stats is DateStatistics {
-  return stats.type === "DATE" || stats.type === "DATE_RANGE";
+  return stats.chart === "DATES";
 }

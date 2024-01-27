@@ -1,5 +1,8 @@
 {
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "DATE_DISTANCE select with timeUnit MONTHS",
   "expectedCsv": "tests/sql/selects/date_distance/months/expected.csv",
   "query": {

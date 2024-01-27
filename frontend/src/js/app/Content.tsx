@@ -9,11 +9,11 @@ import Tooltip from "../tooltip/Tooltip";
 import { useMemo } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
+import Preview from "../preview-v2/Preview";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
-import Preview from "../preview-v2/Preview";
 
 const Root = styled("div")`
   width: 100%;
@@ -38,6 +38,10 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
+  const disableDragHandles = useSelector<StateT, boolean>(
+    (state) => state.panes.disableDragHandles,
+  );
+
   const collapsedStyles = useMemo(() => {
     if (displayTooltip) return {};
 
@@ -54,7 +58,7 @@ const Content = () => {
       <Root>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
-        {isPreviewV1Open && <PreviewV1 /> }
+        {isPreviewV1Open && <PreviewV1 />}
         <PanelGroup direction="horizontal" units="pixels">
           <Panel
             style={collapsedStyles}
@@ -64,11 +68,11 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={disableDragHandles} />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={disableDragHandles} />
           <Panel minSize={250}>
             <RightPane />
           </Panel>

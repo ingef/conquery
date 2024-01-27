@@ -6,6 +6,9 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
+import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -13,6 +16,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 /**
  * This condition requires the value of another column to be equal to a given value.
@@ -38,5 +43,11 @@ public class ColumnEqualCondition implements CTCondition {
 			return false;
 		}
 		return values.contains(checkedValue.toString());
+	}
+
+	@Override
+	public WhereCondition convertToSqlCondition(CTConditionContext context) {
+		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), column), String.class);
+		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 }

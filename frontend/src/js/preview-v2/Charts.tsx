@@ -5,6 +5,7 @@ import { t } from "i18next";
 import { PreviewStatistics } from "../api/types";
 import IconButton from "../button/IconButton";
 
+import { useHotkeys } from "react-hotkeys-hook";
 import Diagram from "./Diagram";
 
 const Root = styled("div")``;
@@ -18,7 +19,7 @@ const SxDiagram = styled(Diagram)`
 const DirectionSelector = styled("div")`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 5px;
   grid-column: 1 / 3;
@@ -28,7 +29,7 @@ const DirectionSelector = styled("div")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  font-size: 24px;
+  font-size: 24;
 `;
 
 const DiagramContainer = styled("div")`
@@ -46,15 +47,42 @@ type ChartProps = {
   setPage: (page: number) => void;
 };
 
-export default function Charts({ statistics, className, showPopup, page, setPage }: ChartProps) {
+const DIAGRAMS_PER_PAGE = 4;
+
+export default function Charts({
+  statistics,
+  className,
+  showPopup,
+  page,
+  setPage,
+}: ChartProps) {
+  const diagramsOnPage = statistics.slice(
+    page * DIAGRAMS_PER_PAGE,
+    (page + 1) * DIAGRAMS_PER_PAGE,
+  );
+  const maxPage = Math.ceil(statistics.length / DIAGRAMS_PER_PAGE);
+
+  const updatePage = (change: number) => {
+    const newValue = page + change;
+    if (newValue >= 0 && newValue < maxPage) {
+      setPage(newValue);
+    }
+  };
+
+  useHotkeys("left", () => updatePage(-1), [page]);
+  useHotkeys("right", () => updatePage(1), [page]);
+
   return (
     <>
       <Root className={className}>
         <DiagramContainer>
-          {statistics.slice(page * 4, (page + 1) * 4).map((statistic) => {
+          {diagramsOnPage.map((statistic) => {
             return (
-              <div key={statistic.name}>
-                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+              <div key={statistic.label}>
+                <SxDiagram
+                  stat={statistic}
+                  onClick={() => showPopup(statistic)}
+                />
               </div>
             );
           })}
@@ -62,16 +90,17 @@ export default function Charts({ statistics, className, showPopup, page, setPage
         <DirectionSelector>
           <SxIconButton
             icon={faArrowLeft}
-            onClick={() => setPage(page - 1)}
+            onClick={() => updatePage(-1)}
             disabled={page === 0}
           />
           <span>
-            {t("preview.page")} {page + 1}/{Math.ceil(statistics.length / 4)}
+            {t("preview.page")} {page + 1}/
+            {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
           </span>
           <SxIconButton
             icon={faArrowRight}
-            onClick={() => setPage(page + 1)}
-            disabled={(page + 1) * 4 >= statistics.length}
+            onClick={() => updatePage(1)}
+            disabled={page === maxPage - 1}
           />
         </DirectionSelector>
       </Root>

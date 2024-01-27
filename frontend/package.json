@@ -57,7 +57,6 @@
     "lodash.difference": "^4.5.0",
     "mustache": "^4.2.0",
     "nodemon": "^3.0.1",
-    "pdfast": "^0.2.0",
     "prettier-plugin-organize-imports": "^3.2.3",
     "rc-table": "^7.35.2",
     "react": "^18.2.0",

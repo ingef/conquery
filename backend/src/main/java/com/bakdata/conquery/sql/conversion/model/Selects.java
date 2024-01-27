@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -9,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -20,8 +20,8 @@ public class Selects {
 	Field<Object> primaryColumn;
 	@Builder.Default
 	Optional<ColumnDateRange> validityDate = Optional.empty();
-	@Builder.Default
-	List<SqlSelect> sqlSelects = Collections.emptyList();
+	@Singular
+	List<SqlSelect> sqlSelects;
 
 	public Selects withValidityDate(ColumnDateRange validityDate) {
 		return this.toBuilder()
@@ -38,13 +38,13 @@ public class Selects {
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
-													.map(sqlSelect -> sqlSelect.createReference(qualifier))
+													.map(sqlSelect -> sqlSelect.createAliasedReference(qualifier))
 													.distinct()
 													.collect(Collectors.toList());
 
-		SelectsBuilder builder = this.toBuilder()
-									 .primaryColumn(qualifiedPrimaryColumn)
-									 .sqlSelects(sqlSelects);
+		SelectsBuilder builder = Selects.builder()
+										.primaryColumn(qualifiedPrimaryColumn)
+										.sqlSelects(sqlSelects);
 
 		if (this.validityDate.isPresent()) {
 			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));

@@ -10,6 +10,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.lang.GroovyShell;
@@ -72,6 +74,11 @@ public class GroovyCondition implements CTCondition {
 		catch (Exception e) {
 			throw new ConceptConfigurationException(node, "Could not execute condition \"" + script + "\" on " + rowMap.getValue(), e);
 		}
+	}
+
+	@Override
+	public WhereCondition convertToSqlCondition(CTConditionContext context) {
+		throw new UnsupportedOperationException("SQL conversion of CTCondition %s not supported yet.".formatted(getClass()));
 	}
 
 

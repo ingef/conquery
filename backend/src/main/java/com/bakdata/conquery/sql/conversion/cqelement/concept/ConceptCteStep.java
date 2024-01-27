@@ -12,7 +12,8 @@ public enum ConceptCteStep implements CteStep {
 	PREPROCESSING("preprocessing", null),
 	EVENT_FILTER("event_filter", PREPROCESSING),
 	AGGREGATION_SELECT("group_select", EVENT_FILTER),
-	AGGREGATION_FILTER("group_filter", AGGREGATION_SELECT),
+	JOIN_PREDECESSORS("join_predecessors", AGGREGATION_SELECT),
+	AGGREGATION_FILTER("group_filter", JOIN_PREDECESSORS),
 	FINAL("", AGGREGATION_FILTER);
 
 	public static final Set<ConceptCteStep> MANDATORY_STEPS = Set.of(ConceptCteStep.PREPROCESSING, ConceptCteStep.AGGREGATION_SELECT, ConceptCteStep.FINAL);

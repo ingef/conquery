@@ -10,8 +10,8 @@ public class DateDistanceCondition extends RangeCondition {
 	}
 
 	@Override
-	public FilterType type() {
-		return FilterType.EVENT;
+	public ConditionType type() {
+		return ConditionType.EVENT;
 	}
 
 }

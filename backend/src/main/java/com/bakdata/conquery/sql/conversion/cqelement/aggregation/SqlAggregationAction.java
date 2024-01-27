@@ -14,7 +14,7 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
  */
 interface SqlAggregationAction {
 
-	DateAggregationTables tableNames(NameGenerator nameGenerator);
+	DateAggregationTables<?> tableNames(NameGenerator nameGenerator);
 
 	List<DateAggregationCte> dateAggregationCtes();
 

@@ -1,14 +1,13 @@
 import styled from "@emotion/styled";
 import { SetStateAction, useMemo, useRef, useState } from "react";
 
-import { Input } from "../ui-components/InputSelect/InputSelectComponents";
-import FaIcon from "../icon/FaIcon";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import FaIcon from "../icon/FaIcon";
+import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 
 export interface SelectItem {
   label: string;
-  name: string; // Used as key
 }
 
 interface SelectBoxProps<T extends SelectItem> {
@@ -31,7 +30,6 @@ const InputContainer = styled("div")`
   flex-direction: row;
 `;
 
-// TODO combine Margin
 const List = styled("div")`
   position: absolute;
   z-index: 1;
@@ -49,7 +47,12 @@ const List = styled("div")`
 `;
 
 const ListItem = styled("div")`
-  margin-left: 5px;
+  padding: 0 5px;
+  cursor: pointer;
+  cursor: pointer;
+  &:hover {
+    background-color: ${({ theme }) => theme.col.grayVeryLight};
+  }
 `;
 
 const SxInput = styled(Input)`
@@ -65,7 +68,6 @@ const SxArrow = styled(FaIcon)`
   font-size: 17px;
   cursor: pointer;
 `;
-
 
 export default function SelectBox<T extends SelectItem>({
   items,
@@ -86,12 +88,12 @@ export default function SelectBox<T extends SelectItem>({
       if (item.label === null) {
         return false;
       }
-      return item.label.toLowerCase().includes(searchTerm.toLowerCase())
+      return item.label.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [items, searchTerm]);
 
   return (
-    <Root className={className} onClick={() => setIsOpen(!isOpen)} >
+    <Root className={className} onClick={() => setIsOpen(!isOpen)}>
       <InputContainer>
         <SxInput
           type="text"
@@ -100,23 +102,26 @@ export default function SelectBox<T extends SelectItem>({
           onChange={(e: { target: { value: SetStateAction<string> } }) =>
             setSearchTerm(e.target.value)
           }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onChange(displayedItems[0]);
+            }
+          }}
           spellCheck={false}
         />
         <ArrowContainer>
-          <SxArrow icon={isOpen ? faCaretUp : faCaretDown}/>
+          <SxArrow icon={isOpen ? faCaretUp : faCaretDown} />
         </ArrowContainer>
       </InputContainer>
       <List ref={clickOutsideRef}>
-        {isOpen && (
-            displayedItems.map((item) => {
-              return (<ListItem key={item.name}
-                onClick={() => onChange(item)}
-              >
+        {isOpen &&
+          displayedItems.map((item) => {
+            return (
+              <ListItem key={item.label} onClick={() => onChange(item)}>
                 {item.label}
-              </ListItem>)
-            })    
-          )  
-        }
+              </ListItem>
+            );
+          })}
       </List>
     </Root>
   );

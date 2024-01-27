@@ -1,12 +1,10 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
-import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
@@ -23,8 +21,8 @@ class AggregationFilterCte extends ConceptCte {
 												  .qualify(predecessorTableName);
 
 		List<Condition> aggregationFilterConditions = conceptCteContext.getFilters().stream()
-																	   .flatMap(conceptFilter -> conceptFilter.getFilters().getGroup().stream())
-																	   .map(FilterCondition::filterCondition)
+																	   .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+																	   .map(WhereCondition::condition)
 																	   .toList();
 
 		return QueryStep.builder()
@@ -34,11 +32,10 @@ class AggregationFilterCte extends ConceptCte {
 
 	private List<SqlSelect> getForAggregationFilterSelects(ConceptCteContext conceptCteContext) {
 		return conceptCteContext.getSelects().stream()
-								.flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
-								// TODO: EXISTS edge case is only in a concepts final select statement and has no predecessor selects
-								.filter(conquerySelect -> !(conquerySelect instanceof ExistsSqlSelect))
+								.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
+								.filter(sqlSelect -> !sqlSelect.isUniversal())
 								.distinct()
-								.collect(Collectors.toList());
+								.toList();
 	}
 
 	@Override

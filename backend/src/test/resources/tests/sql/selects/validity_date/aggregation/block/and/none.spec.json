@@ -1,7 +1,10 @@
 {
   "label": "NONE date aggregation of 2 concepts",
   "expectedCsv": "tests/sql/selects/validity_date/aggregation/block/and/expected.csv",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "dateAggregationMode": "NONE",

@@ -57,6 +57,10 @@ public class PrintSettings {
 	private final PrintIdMapper idMapper;
 
 	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
+		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
+	}
+
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.namespace = namespace;
@@ -64,8 +68,8 @@ public class PrintSettings {
 		this.columnNamer = columnNamer;
 		this.idMapper = idMapper;
 
-		this.integerFormat = NUMBER_FORMAT.apply(locale);
-		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
+		this.integerFormat = numberFormat;
+		this.decimalFormat = decimalFormat;
 
 		this.listFormat = prettyPrint ? config.getLocale().getListFormats().get(0) : UNPRETTY_LIST_FORMAT;
 		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;

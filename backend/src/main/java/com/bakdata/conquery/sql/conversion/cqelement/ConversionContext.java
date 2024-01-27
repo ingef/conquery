@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
+import org.jooq.Field;
 
 @Value
 @With
@@ -27,6 +28,7 @@ public class ConversionContext implements Context {
 	@Singular
 	List<QueryStep> querySteps;
 	SqlQuery finalQuery;
+	Field<Object> primaryColumn;
 	CDateRange dateRestrictionRange;
 	boolean negation;
 	boolean isGroupBy;

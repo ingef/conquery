@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.index;
 
+import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -24,11 +25,13 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 	 * @see FilterTemplate#getOptionValue()
 	 */
 	private final String optionValueTemplate;
+	private final String defaultEmptyLabel;
 
-	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate) {
+	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel1) {
 		super(suffixCutoff, split);
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
+		this.defaultEmptyLabel = defaultEmptyLabel1;
 	}
 
 	@Override
@@ -54,5 +57,11 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
+		// If no empty label was provided by the mapping, we insert the configured default-label
+		if (findExact(List.of(""), 1).isEmpty()) {
+			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
+		}
+
+		shrinkToFit();
 	}
 }

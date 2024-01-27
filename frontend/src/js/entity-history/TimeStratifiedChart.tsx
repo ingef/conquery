@@ -5,10 +5,10 @@ import {
   CategoryScale,
   Chart as ChartJS,
   ChartOptions,
-  PointElement,
-  Title,
   LineElement,
   LinearScale,
+  PointElement,
+  Title,
   Tooltip,
 } from "chart.js";
 import { useMemo } from "react";

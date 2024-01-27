@@ -194,7 +194,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 *
 	 * @implNote Since this involves https requests, ensure to cache the returned value.
 	 */
-	private IdpConfiguration retrieveIdpConfiguration(final Client client) {
+	public IdpConfiguration retrieveIdpConfiguration(final Client client) {
 
 		if (wellKnownEndpoint == null) {
 			log.error("Cannot retrieve idp configuration, because no well-known endpoint was given");
@@ -241,14 +241,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 		// Filter for keys that are used for signing (discard encryption keys)
 		final Map<String, PublicKey> signingKeys = jwks.getKeys().stream()
-													   .filter(jwk -> JWK.Use.SIG.name().equals(jwk.getPublicKeyUse()))
+													   .filter(jwk -> JWK.Use.SIG.asString().equals(jwk.getPublicKeyUse()))
 													   .collect(Collectors.toMap(JWK::getKeyId, JwtPkceVerifyingRealmFactory::getPublicKey));
 
 
 		if (signingKeys.isEmpty()) {
 			throw new IllegalStateException("No signing keys could be retrieved from IDP. Received these JWKs (Key Ids):" + jwks.getKeys()
 																																.stream()
-																																.map(JWK::getKeyId));
+																																.map(JWK::getKeyId).toList());
 		}
 
 		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, issuer);
