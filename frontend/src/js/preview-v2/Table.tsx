@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import {
   CurrencyConfigT,
@@ -10,7 +11,6 @@ import {
 } from "../api/types";
 import { StateT } from "../app/reducers";
 import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
-import { useTranslation } from "react-i18next";
 
 interface Props {
   data: ArrowTable;
@@ -64,15 +64,15 @@ export default function Table({ data, queryData }: Props) {
       if (listType) {
         const listTypeRenderFunction = getRenderFunction(listType);
         return (value) =>
-        value ?
-          (value as Vector)
-            .toArray()
-            .map((listItem: string) =>
-              listTypeRenderFunction
-                ? listTypeRenderFunction(listItem)
-                : listItem,
-            )
-            .join(", ")
+          value
+            ? (value as Vector)
+                .toArray()
+                .map((listItem: string) =>
+                  listTypeRenderFunction
+                    ? listTypeRenderFunction(listItem)
+                    : listItem,
+                )
+                .join(", ")
             : null;
       }
     } else if (NUMBER_TYPES.includes(cellType)) {

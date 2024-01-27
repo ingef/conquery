@@ -7,17 +7,14 @@ export const NUMBER_TYPES = ["NUMBER", "INTEGER", "REAL", "DECIMAL"];
 export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
 
 export function formatNumber(num: number, precision = 2): string {
-  const precisionMultiplier = 10 * precision;
-  return (
-    Math.round(num * precisionMultiplier) / precisionMultiplier
-  ).toLocaleString("de-de");
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: precision,
+  }).format(num);
 }
 
 export function formatDate(date: string | undefined) {
   if (date) {
-    return (
-      parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ?? date
-    );
+    return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ?? date;
   }
   return t("preview.dateError");
 }
