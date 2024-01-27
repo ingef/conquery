@@ -169,7 +169,9 @@
     "missingLabel": "Unbenannt",
     "import": "Importieren",
     "openFileDialog": "Datei auswählen",
-    "shortcut": "Kurzbefehl"
+    "shortcut": "Kurzbefehl",
+    "true": "Wahr",
+    "false": "Falsch"
   },
   "tooltip": {
     "headline": "Info",
