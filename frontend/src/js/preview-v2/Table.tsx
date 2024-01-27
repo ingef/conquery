@@ -10,6 +10,7 @@ import {
 } from "../api/types";
 import { StateT } from "../app/reducers";
 import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   data: ArrowTable;
@@ -48,6 +49,7 @@ export default function Table({ data, queryData }: Props) {
     table: StyledTable,
   };
 
+  const { t } = useTranslation();
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
   );
@@ -98,7 +100,7 @@ export default function Table({ data, queryData }: Props) {
           : `${formatNumber(num)} ${currencyConfig.unit}`;
       };
     } else if (cellType == "BOOLEAN") {
-      return (value) => (value ? "1" : "0");
+      return (value) => (value ? t("common.true") : t("common.false"));
     }
   }
 

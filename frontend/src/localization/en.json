@@ -169,7 +169,9 @@
     "missingLabel": "Unknown",
     "import": "Import",
     "openFileDialog": "Select file",
-    "shortcut": "Key"
+    "shortcut": "Key",
+    "true": "True",
+    "false": "False"
   },
   "tooltip": {
     "headline": "Info",
