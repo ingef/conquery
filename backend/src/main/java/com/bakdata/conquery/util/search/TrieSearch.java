@@ -73,7 +73,6 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Query trie for all items associated with extensions of queries
 			final int queryLength = query.length();
 			if (queryLength < ngramLength) {
-				// ToDo: A guard against queryLength < ngramLength would make this case obsolete, but the tests would have to be adjusted
 				for (final List<KeywordItems<T>> hits : trie.prefixMap(query).values()) {
 					updateWeights(query, hits, itemWeights);
 				}
@@ -195,13 +194,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		List<KeywordItems<T>> entry = trie.get(toWholeWord(word));
 
-		final KeywordItems<T> ki;
-		if (entry != null) {
-			ki = entry.get(0);
-		}
-		else {
-			ki = new KeywordItems<>(word, new ArrayList<>());
-		}
+		final KeywordItems<T> ki = entry != null ? entr.get(0) : new KeywordItems<>(word, new ArrayList<>());
 		ki.items.add(item);
 
 		for (final String key : (Iterable<String>) toTrieKeys(word)::iterator) {
