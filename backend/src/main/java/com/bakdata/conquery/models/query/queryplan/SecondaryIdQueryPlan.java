@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -62,6 +63,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	@Getter(AccessLevel.NONE)
 	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
+	private final int subPlanLimit;
 
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
@@ -126,23 +128,29 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 				final String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
 
-				if (childPerKey.containsKey(key)) {
-					final ConceptQueryPlan plan = childPerKey.get(key);
+				ConceptQueryPlan plan = childPerKey.get(key);
+
+				if (plan != null) {
 					plan.nextEvent(bucket, event);
+					continue;
+				}
+
+				plan = createChild(ctxWithPhase, bucket);
+				final boolean consumed = plan.nextEvent(bucket, event);
+
+				if (consumed) {
+					childPerKey.put(key, plan);
 				}
 				else {
-					final ConceptQueryPlan plan = createChild(ctxWithPhase, bucket);
-					final boolean consumed = plan.nextEvent(bucket, event);
-
-					if (consumed) {
-						childPerKey.put(key, plan);
-					}
-					else {
-						childPlanReusePool.add(plan);
-					}
+					discardSubPlan(plan);
 				}
+
 			}
 		}
+	}
+
+	private boolean discardSubPlan(ConceptQueryPlan plan) {
+		return childPlanReusePool.add(plan);
 	}
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
@@ -216,6 +224,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 * and bring it up to speed
 	 */
 	private ConceptQueryPlan createChild(QueryExecutionContext currentContext, Bucket currentBucket) {
+
+		if (childPerKey.size() >= subPlanLimit){
+			throw new ConqueryError.ExecutionProcessingError();//TODO proper message
+		}
 
 		ConceptQueryPlan plan = childPlanReusePool.poll();
 

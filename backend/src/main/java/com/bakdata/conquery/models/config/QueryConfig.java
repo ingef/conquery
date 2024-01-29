@@ -11,4 +11,6 @@ public class QueryConfig {
 	private ThreadPoolDefinition executionPool = new ThreadPoolDefinition();
 
 	private Duration oldQueriesTime = Duration.days(30);
+
+	private int maxSecondaryIdSubPlans = 30;
 }

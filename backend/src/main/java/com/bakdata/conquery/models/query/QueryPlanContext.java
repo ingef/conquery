@@ -20,8 +20,10 @@ public class QueryPlanContext {
 
 	@Getter(AccessLevel.NONE)
 	private final Worker worker;
+	private final int secondaryIdSubPlanLimit;
 
 	private CDateRange dateRestriction = CDateRange.all();
+
 
 	/**
 	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryIdDescriptionId}.
