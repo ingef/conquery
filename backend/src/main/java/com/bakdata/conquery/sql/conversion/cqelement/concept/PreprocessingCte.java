@@ -32,7 +32,7 @@ class PreprocessingCte extends ConnectorCte {
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
 						.conditions(conditions)
-						.fromTable(QueryStep.toTableLike(tableContext.getConceptTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
 	}
 
 	@Override

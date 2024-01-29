@@ -30,7 +30,7 @@ class EventFilterCte extends ConnectorCte {
 	}
 
 	private Selects getEventFilterSelects(CQTableContext tableContext) {
-		String predecessorTableName = tableContext.getConceptTables().getPredecessor(cteStep());
+		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
 
 		Optional<ColumnDateRange> validityDate = tableContext.getValidityDate();
 		if (validityDate.isPresent()) {

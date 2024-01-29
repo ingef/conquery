@@ -28,7 +28,7 @@ class CQTableContext implements Context {
 	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
-	ConceptTables conceptTables;
+	ConnectorTables connectorTables;
 	@With
 	QueryStep previous;
 

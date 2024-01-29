@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ConceptTablesTest {
+class ConnectorTablesTest {
 
 	private static final String CONCEPT_LABEL = "foo";
 	private static final String ROOT_TABLE = "root";
@@ -20,10 +20,10 @@ class ConceptTablesTest {
 	@ParameterizedTest
 	@MethodSource("requiredStepsProvider")
 	public void getPredecessorTableName(Set<ConnectorCteStep> requiredSteps, ConnectorCteStep step, String expectedPredecessorTableName) {
-		ConceptTables conceptTables = new ConceptTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
+		ConnectorTables connectorTables = new ConnectorTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
 		Assertions.assertEquals(
 				expectedPredecessorTableName,
-				conceptTables.getPredecessor(step)
+				connectorTables.getPredecessor(step)
 		);
 	}
 

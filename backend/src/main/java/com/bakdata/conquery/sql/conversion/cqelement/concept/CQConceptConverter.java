@@ -81,18 +81,18 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(cqTable, tableName, conceptLabel);
 
 		Set<ConnectorCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
-		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
+		ConnectorTables connectorTables = new ConnectorTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
 		List<SqlFilters> allFiltersForTable = new ArrayList<>();
 		cqTable.getFilters().stream()
-			   .map(filterValue -> filterValue.convertToSqlFilter(context, conceptTables))
+			   .map(filterValue -> filterValue.convertToSqlFilter(context, connectorTables))
 			   .forEach(allFiltersForTable::add);
 		collectConditionFilters(cqConcept, cqTable).ifPresent(allFiltersForTable::add);
 		getDateRestriction(context, validityDateSelect).ifPresent(allFiltersForTable::add);
 
 		// convert selects
-		SelectContext selectContext = new SelectContext(context, cqConcept, conceptLabel, validityDateSelect, conceptTables);
+		SelectContext selectContext = new SelectContext(context, cqConcept, conceptLabel, validityDateSelect, connectorTables);
 		List<SqlSelects> conceptSelects = Stream.concat(cqConcept.getSelects().stream(), cqTable.getSelects().stream())
 												.map(select -> select.convertToSqlSelects(selectContext))
 												.toList();
@@ -103,7 +103,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .sqlSelects(conceptSelects)
 							 .validityDate(validityDateSelect)
 							 .isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
-							 .conceptTables(conceptTables)
+							 .connectorTables(connectorTables)
 							 .conceptLabel(conceptLabel)
 							 .build();
 	}

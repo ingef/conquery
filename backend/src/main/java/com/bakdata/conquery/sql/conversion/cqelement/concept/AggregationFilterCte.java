@@ -13,7 +13,7 @@ class AggregationFilterCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		String predecessorTableName = tableContext.getConceptTables().getPredecessor(cteStep());
+		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
 		Selects aggregationFilterSelects = Selects.builder()
 												  .primaryColumn(tableContext.getPrimaryColumn())
 												  .sqlSelects(getForAggregationFilterSelects(tableContext))

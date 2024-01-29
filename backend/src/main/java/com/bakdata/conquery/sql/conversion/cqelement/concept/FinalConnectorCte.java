@@ -46,7 +46,7 @@ class FinalConnectorCte extends ConnectorCte {
 
 		String conceptLabel = tableContext.getConceptLabel();
 		IntervalPackingTables intervalPackingTables =
-				IntervalPackingTables.forConcept(conceptLabel, tableContext.getConceptTables(), tableContext.getNameGenerator());
+				IntervalPackingTables.forConcept(conceptLabel, tableContext.getConnectorTables(), tableContext.getNameGenerator());
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()

@@ -11,11 +11,11 @@ abstract class ConnectorCte {
 
 	protected Optional<QueryStep> convert(CQTableContext tableContext, Optional<QueryStep> previous) {
 
-		if (!isRequired(tableContext.getConceptTables())) {
+		if (!isRequired(tableContext.getConnectorTables())) {
 			return Optional.empty();
 		}
 
-		String cteName = tableContext.getConceptTables().cteName(cteStep());
+		String cteName = tableContext.getConnectorTables().cteName(cteStep());
 		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(tableContext).cteName(cteName);
 
 		// only preprocessing has no previously converted step
