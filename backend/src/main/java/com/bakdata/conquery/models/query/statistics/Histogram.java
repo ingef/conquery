@@ -31,10 +31,11 @@ public class Histogram {
 
 	private int total;
 
-	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean contains0) {
-		final double width = (upper - lower) / expectedBins;
+	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean contains0, boolean round) {
+		//TODO add rounding, if we have integer values
 
-		//TODO are the branches functionally the same?
+		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
+
 		if (!contains0) {
 			final Node[] nodes = IntStream.range(0, expectedBins)
 										  .mapToObj(index -> new Node(lower + index * width, lower + (index + 1) * width))

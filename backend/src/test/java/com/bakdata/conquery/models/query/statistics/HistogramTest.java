@@ -19,7 +19,7 @@ class HistogramTest {
 	@Test
 	void plain() {
 
-		final Histogram histogram = Histogram.zeroCentered(0, 10, 10, true);
+		final Histogram histogram = Histogram.zeroCentered(0, 10, 10, true, false);
 
 		final Random random = new Random(SEED);
 
@@ -84,7 +84,7 @@ class HistogramTest {
 	@Test
 	void weird() {
 
-		final Histogram histogram = Histogram.zeroCentered(-35, 27, 12, true);
+		final Histogram histogram = Histogram.zeroCentered(-35, 27, 12, true, false);
 
 		final Random random = new Random(SEED);
 

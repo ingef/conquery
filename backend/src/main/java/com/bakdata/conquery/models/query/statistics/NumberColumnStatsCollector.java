@@ -76,6 +76,9 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
 	}
 
+	/**
+	 * If distance between bounds is less than expectedBins, we expand our bounds along percentiles.
+	 */
 	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
 		assert by > 1;
 
@@ -131,7 +134,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final Range<Double> bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
 
 		final Histogram histogram =
-				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins, getStatistics().getMin() <= 0);
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins, getStatistics().getMin() <= 0, type instanceof ResultType.IntegerT);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
