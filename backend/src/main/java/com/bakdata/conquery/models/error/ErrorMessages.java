@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.error;
 
-import java.sql.SQLException;
-
 import c10n.annotations.De;
 import c10n.annotations.En;
 import com.bakdata.conquery.models.forms.util.Alignment;
@@ -60,5 +58,5 @@ public interface ErrorMessages {
 
 	@En("Something went wrong while querying the database: ${0}.")
 	@De("Etwas ist beim Anfragen des Servers fehlgeschlagen: ${0}.")
-	String sqlError(SQLException error);
+	String sqlError(Exception error);
 }

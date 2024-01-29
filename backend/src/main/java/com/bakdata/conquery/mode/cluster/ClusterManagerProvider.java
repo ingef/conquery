@@ -27,7 +27,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDistributedDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
 		final ClusterConnectionManager connectionManager =

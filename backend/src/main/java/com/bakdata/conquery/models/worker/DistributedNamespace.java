@@ -23,14 +23,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DistributedNamespace extends LocalNamespace {
+public class DistributedNamespace extends Namespace {
 
 	private final WorkerHandler workerHandler;
 	private final DistributedExecutionManager executionManager;
 
-	public DistributedNamespace(ObjectMapper preprocessMapper, ObjectMapper communicationMapper, NamespaceStorage storage, DistributedExecutionManager executionManager,
-								JobManager jobManager, FilterSearch filterSearch, IndexService indexService, List<Injectable> injectables,
-								WorkerHandler workerHandler) {
+	public DistributedNamespace(
+			ObjectMapper preprocessMapper,
+			ObjectMapper communicationMapper,
+			NamespaceStorage storage,
+			DistributedExecutionManager executionManager,
+			JobManager jobManager,
+			FilterSearch filterSearch,
+			IndexService indexService,
+			List<Injectable> injectables,
+			WorkerHandler workerHandler
+	) {
 		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
