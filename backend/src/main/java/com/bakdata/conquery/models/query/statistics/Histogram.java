@@ -78,10 +78,8 @@ public class Histogram {
 
 	public List<Node> nodes() {
 		return Stream.of(
-							 Stream.of(underflowNode),
-							 Stream.ofNullable(zeroNode),
-							 Stream.of(nodes),
-							 Stream.of(overflowNode)
+							 Stream.of(underflowNode, overflowNode, zeroNode).filter(node -> node.getCount() > 0),
+							 Stream.of(nodes)
 					 )
 					 .flatMap(Function.identity())
 					 .sorted(Comparator.comparingDouble(node -> Double.isFinite(node.getMin()) ? node.getMin() : node.getLower()))
