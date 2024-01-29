@@ -1,9 +1,12 @@
 package com.bakdata.conquery.models.worker;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import com.bakdata.conquery.mode.cluster.ClusterState;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.codahale.metrics.health.HealthCheck;
 import lombok.Data;
 
@@ -11,17 +14,31 @@ import lombok.Data;
 public class ClusterHealthCheck extends HealthCheck {
 
 	private final ClusterState clusterState;
+	private final long ageMillis;
 
 	@Override
 	protected Result check() throws Exception {
 
-		final List<String> disconnectedWorkers =
-				clusterState.getShardNodes().values().stream()
-							.filter(Predicate.not(ShardNodeInformation::isConnected))
-							.map(ShardNodeInformation::toString)
-							.toList();
+		final List<String> disconnectedWorkers = new ArrayList<>();
 
-		if (disconnectedWorkers.isEmpty()){
+		for (ShardNodeInformation shard : clusterState.getShardNodes().values()) {
+			if (!shard.isConnected()) {
+				disconnectedWorkers.add(shard.toString());
+				continue;
+			}
+
+			// If we haven't received a message in a long while, the shard likely has connectivity issues.
+			final boolean allLate = shard.getJobManagerStatus().stream()
+										 .map(JobManagerStatus::getTimestamp)
+										 .map(ts -> ts.until(LocalDateTime.now(), ChronoUnit.MILLIS))
+										 .allMatch(elapsed -> elapsed > ageMillis);
+
+			if (allLate) {
+				disconnectedWorkers.add(shard.toString());
+			}
+		}
+
+		if (disconnectedWorkers.isEmpty()) {
 			return Result.healthy("All known shards are connected.");
 		}
 

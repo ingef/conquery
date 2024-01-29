@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.util.Duration;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,12 @@ public class ClusterConfig extends Configuration {
 	private InetAddress managerURL = InetAddress.getLoopbackAddress();
 	@Valid @NotNull
 	private MinaConfig mina = new MinaConfig();
+
+	/**
+	 * Duration after which {@link com.bakdata.conquery.models.worker.ClusterHealthCheck} will consider a connection timed out.
+	 */
+	private Duration connectionTimeOut = Duration.minutes(5);
+
 	@Min(1)
 	private int entityBucketSize = 1000;
 
