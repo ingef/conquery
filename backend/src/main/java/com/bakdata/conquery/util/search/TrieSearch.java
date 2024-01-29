@@ -43,13 +43,25 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private final Pattern splitPattern;
 
+	/**
+	 * Used for grouping then summing KeywordItemsCount
+	 */
 	private record KeywordItems<T>(String word, List<T> items) {
+		public KeywordItemsCount<T> toKeywordItemsCount(int count) {
+			return new KeywordItemsCount<>(word, items, count);
+		}
+	}
+
+	private record KeywordItemsCount<T>(String word, List<T> items, int count) {
+		public KeywordItems<T> toKeywordItems() {
+			return new KeywordItems<>(word, items);
+		}
 	}
 
 	/**
 	 * Maps from keywords to associated items.
 	 */
-	private final PatriciaTrie<List<KeywordItems<T>>> trie = new PatriciaTrie<>();
+	private final PatriciaTrie<List<KeywordItemsCount<T>>> trie = new PatriciaTrie<>();
 
 	private boolean shrunk = false;
 	private long size = -1;
@@ -73,7 +85,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Query trie for all items associated with extensions of queries
 			final int queryLength = query.length();
 			if (queryLength < ngramLength) {
-				for (final List<KeywordItems<T>> hits : trie.prefixMap(query).values()) {
+				for (final List<KeywordItemsCount<T>> hits : trie.prefixMap(query).values()) {
 					updateWeights(query, hits, itemWeights);
 				}
 			}
@@ -98,13 +110,14 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * calculate and update weights for all queried items
 	 */
-	private void updateWeights(String query, final List<KeywordItems<T>> hits, Object2DoubleMap<T> itemWeights) {
+	private void updateWeights(String query, final List<KeywordItemsCount<T>> hits, Object2DoubleMap<T> itemWeights) {
 		if (hits == null) {
 			return;
 		}
 
-		for (final KeywordItems<T> entry : hits) {
-			final double weight = weightWord(query, entry.word);
+		for (final KeywordItemsCount<T> entry : hits) {
+			//			KeywordItems<T> ki = entry.keywordItems;
+			final double weight = Math.pow(weightWord(query, entry.word), entry.count);
 
 			entry.items.forEach(item ->
 								{
@@ -163,7 +176,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private Stream<T> doGet(String kw) {
 		return trie.getOrDefault(kw, Collections.emptyList()).stream()
-				   .flatMap(ki -> ki.items.stream());
+				   .flatMap(kic -> kic.items.stream());
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -192,14 +205,11 @@ public class TrieSearch<T extends Comparable<T>> {
 		// ToDo: wouldn't it suffice to check once in addItem()? Is concurrency the reason?
 		ensureWriteable();
 
-		List<KeywordItems<T>> entry = trie.get(toWholeWord(word));
+		List<KeywordItemsCount<T>> entry = trie.get(toWholeWord(word));
+		final KeywordItemsCount<T> kic = entry != null ? entry.get(0) : new KeywordItemsCount<>(word, new ArrayList<>(), 1);
 
-		final KeywordItems<T> ki = entry != null ? entr.get(0) : new KeywordItems<>(word, new ArrayList<>());
-		ki.items.add(item);
-
-		for (final String key : (Iterable<String>) toTrieKeys(word)::iterator) {
-			trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(ki);
-		}
+		kic.items.add(item);
+		toTrieKeys(word).forEach(key -> trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(kic));
 	}
 
 	public String toWholeWord(String word) {
@@ -214,11 +224,6 @@ public class TrieSearch<T extends Comparable<T>> {
 		throw new IllegalStateException("Cannot alter a shrunk search.");
 	}
 
-	public Collection<T> listItems() {
-		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
-		return stream().sorted().collect(Collectors.toList());
-	}
-
 	/**
 	 * Since growth of ArrayList might be excessive, we can shrink the internal lists to only required size instead.
 	 *
@@ -229,42 +234,43 @@ public class TrieSearch<T extends Comparable<T>> {
 			return;
 		}
 
-		trie.replaceAll((key, values) -> new ArrayList<>(values));
-
+		trie.replaceAll((key, values) -> groupAndSum(values));
 		size = calculateSize();
 		shrunk = true;
 	}
+
+	private List<KeywordItemsCount<T>> groupAndSum(List<KeywordItemsCount<T>> values) {
+		if (values.size() < 2) {
+			return values;
+		}
+
+		Map<KeywordItems<T>, Integer> map =
+				values.stream().collect(Collectors.groupingBy(KeywordItemsCount::toKeywordItems, Collectors.summingInt(val -> val.count)));
+
+		List<KeywordItemsCount<T>> grouped_values = new ArrayList<>(map.size());
+
+		// Now, instead of referencing the KeywordItemsCounts that were created at TrieSearch::doPut each Trie entry has its own set of KeywordItemsCount
+		for (Map.Entry<KeywordItems<T>, Integer> entry : map.entrySet()) {
+			grouped_values.add(entry.getKey().toKeywordItemsCount(entry.getValue()));
+		}
+
+		return grouped_values;
+	}
+
 
 	public long calculateSize() {
 		if (size != -1) {
 			return size;
 		}
 
-		return trie.values().stream().distinct().count();
+		return trie.values().stream().mapToLong(Collection::size).sum();
 	}
 
-	public void logStats() {
-		// ToDo: meaning changed
-		final IntSummaryStatistics statistics =
-				trie.values()
-					.stream()
-					.mapToInt(List::size)
-					.summaryStatistics();
-
-		// ToDo: meaning changed
-		final long singletons =
-				trie.values().stream()
-					.mapToInt(List::size)
-					.filter(length -> length == 1)
-					.count();
-
-		log.info("Stats=`{}`, with {} singletons.", statistics, singletons);
-	}
 
 	public Stream<T> stream() {
 		return trie.values().stream()
 				   .flatMap(Collection::stream)
-				   .flatMap(ki -> ki.items.stream())
+				   .flatMap(kic -> kic.items.stream())
 				   .distinct();
 	}
 
@@ -272,8 +278,8 @@ public class TrieSearch<T extends Comparable<T>> {
 		// This is a very ugly workaround to not get eager evaluation (which happens when using flatMap and distinct on streams)
 		final Set<T> seen = new HashSet<>();
 
-		final Iterator<KeywordItems<T>> keywordItemsIterator = Iterators.concat(Iterators.transform(trie.values().iterator(), List::iterator));
-		final Iterator<T> itemsIterator = Iterators.concat(Iterators.transform(keywordItemsIterator, ki -> ki.items.iterator()));
+		final Iterator<KeywordItemsCount<T>> keywordItemsIterator = Iterators.concat(Iterators.transform(trie.values().iterator(), List::iterator));
+		final Iterator<T> itemsIterator = Iterators.concat(Iterators.transform(keywordItemsIterator, kic -> kic.items.iterator()));
 
 		return Iterators.filter(itemsIterator, seen::add);
 	}
