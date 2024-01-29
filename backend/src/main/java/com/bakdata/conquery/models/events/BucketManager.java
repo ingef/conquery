@@ -32,8 +32,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
-@RequiredArgsConstructor
+@Data
 public class BucketManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
@@ -53,6 +53,8 @@ public class BucketManager {
 	private final Worker worker;
 	@Getter
 	private final Int2ObjectMap<Entity> entities;
+
+	private final EventFiltersCache eventFiltersCache = new EventFiltersCache();
 
 
 	/**

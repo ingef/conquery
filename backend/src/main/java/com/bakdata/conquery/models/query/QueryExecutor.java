@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.EventFiltersCache;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -39,6 +40,8 @@ public class QueryExecutor implements Closeable {
 	private final int secondaryIdSubPlanLimit;
 
 	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
+
+	private final EventFiltersCache eventFiltersCache = new EventFiltersCache();
 
 	public void unsetQueryCancelled(ManagedExecutionId query) {
 		cancelledQueries.remove(query);
