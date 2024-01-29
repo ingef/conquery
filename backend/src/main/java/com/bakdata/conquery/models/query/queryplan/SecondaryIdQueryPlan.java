@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -57,12 +56,17 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final ConceptQueryPlan queryPlan;
 
 
-	private final Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
+	private Map<String, ConceptQueryPlan> childPerKey;
+
+
 	/**
+	 * TODO borrow these from {@link QueryExecutionContext}
+	 *
 	 * This helps us avoid allocations, instead allowing us to reuse the queries.
 	 */
 	@Getter(AccessLevel.NONE)
 	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
+
 	private final int subPlanLimit;
 
 	/**
@@ -225,9 +229,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private ConceptQueryPlan createChild(QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		if (childPerKey.size() >= subPlanLimit){
-			throw new ConqueryError.ExecutionProcessingError();//TODO proper message
-		}
+		//TODO consider limiting to a global amount of available subQueryPlans
 
 		ConceptQueryPlan plan = childPlanReusePool.poll();
 
@@ -251,9 +253,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		queryPlan.init(ctx, entity);
 
 		// Dump the created children into reuse-pool
-		childPlanReusePool.addAll(childPerKey.values());
+		childPerKey.values().stream().limit(10/*TODO Pull from config */).forEach(childPlanReusePool::add);
 
-		childPerKey.clear();
+		childPerKey = new HashMap<>();
 	}
 
 	@Override
