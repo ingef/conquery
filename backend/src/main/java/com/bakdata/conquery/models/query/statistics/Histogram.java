@@ -84,7 +84,7 @@ public class Histogram {
 							 Stream.of(overflowNode)
 					 )
 					 .flatMap(Function.identity())
-					 .sorted(Comparator.comparingDouble(Node::getLower))
+					 .sorted(Comparator.comparingDouble(node -> Double.isFinite(node.getMin()) ? node.getMin() : node.getLower()))
 					 .toList();
 	}
 
@@ -123,6 +123,7 @@ public class Histogram {
 			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 			return binLabel;
 		}
+
 	}
 
 }
