@@ -8,6 +8,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -40,8 +41,8 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected SingletonStore<Dictionary> primaryDictionary;
 
-	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
-		super(storageFactory, pathName, validator);
+	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator, StorageHandler storageHandler) {
+		super(storageFactory, pathName, validator, storageHandler);
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {

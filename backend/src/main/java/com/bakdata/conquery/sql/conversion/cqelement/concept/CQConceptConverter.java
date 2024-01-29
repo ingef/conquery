@@ -70,9 +70,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			conceptCteContext = conceptCteContext.withPrevious(lastQueryStep.get());
 		}
 
-		return context.toBuilder()
-					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")))
-					  .build();
+		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
 	}
 
 	private ConceptCteContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {

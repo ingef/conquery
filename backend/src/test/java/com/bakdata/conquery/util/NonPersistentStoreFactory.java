@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -68,7 +69,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 
 
 	@Override
-	public Collection<NamespaceStorage> discoverNamespaceStorages() {
+	public Collection<NamespaceStorage> discoverNamespaceStorages(StorageHandler storageHandler) {
 		return Collections.emptyList();
 	}
 

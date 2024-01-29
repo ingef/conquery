@@ -11,6 +11,9 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.CountQuartersSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
@@ -38,6 +41,13 @@ public class CountQuartersSelect extends SingleColumnSelect {
 			default ->
 					throw new IllegalArgumentException(String.format("Column '%s' is not of Date (-Range) Type but '%s'", getColumn(), getColumn().getType()));
 		};
+	}
 
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
+			throw new UnsupportedOperationException("COUNT_QUARTERS conversion on columns of type DATE_RANGE not implemented yet.");
+		}
+		return CountQuartersSqlAggregator.create(this, selectContext).getSqlSelects();
 	}
 }
