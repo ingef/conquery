@@ -27,23 +27,22 @@ export const StyledTable = styled("table")`
   border-spacing: 0;
 
   th {
-    padding: 10px;
     background: ${({ theme }) => theme.col.grayVeryLight};
-    border-right: 1px solid ${({ theme }) => theme.col.grayLight};
-    border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
     font-weight: normal;
     text-align: left;
   }
 
   td {
-    padding: 10px;
-    border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
-    border-right: 1px solid ${({ theme }) => theme.col.grayLight};
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 25ch;
+  }
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+    border-right: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   }
 
   th:last-of-type,
