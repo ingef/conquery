@@ -35,21 +35,21 @@ public class Histogram {
 
 		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
 
-		final double newUpper = width * expectedBins;
-
 		final double newLower;
 
 		if (lower == 0) {
 			newLower = 0;
 		}
 		else if (contains0) {
+			// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
 			newLower = Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
 		}
 		else {
 			newLower = lower;
 		}
 
-		// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
+		final double newUpper = newLower + width * expectedBins;
+
 		final Node[] nodes = IntStream.range(0, expectedBins)
 									  .mapToObj(index -> new Node(newLower + width * index, newLower + width * (index + 1)))
 									  .toArray(Node[]::new);
