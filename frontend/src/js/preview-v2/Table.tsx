@@ -43,7 +43,7 @@ export const StyledTable = styled("table")`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 45ch;
+    max-width: 25ch;
   }
 
   th:last-of-type,
