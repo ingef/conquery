@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.tests;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -21,9 +20,9 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -68,21 +67,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
-		{
-			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
-			conquery.waitUntilWorkDone();
-		}
+		importManually(conquery, test);
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
@@ -111,9 +96,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 								   ));
 
 			final FullExecutionStatus status = conquery.getClient().target(reexecuteUri)
-																	.request(MediaType.APPLICATION_JSON)
-																	.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
-																	.readEntity(FullExecutionStatus.class);
+													   .request(MediaType.APPLICATION_JSON)
+													   .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
+													   .readEntity(FullExecutionStatus.class);
 
 			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
 
@@ -242,5 +227,15 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				assertThat(copy.getId()).isNotSameAs(execution.getId());
 			}
 		}
+	}
+
+	public static void importManually(StandaloneSupport conquery, QueryTest test) throws Exception {
+		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+		TestDataImporter testImporter = conquery.getTestImporter();
+
+		testImporter.importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+		testImporter.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
+		testImporter.importConcepts(conquery, test.getRawConcepts());
+		testImporter.importTableContents(conquery, test.getContent().getTables());
 	}
 }
