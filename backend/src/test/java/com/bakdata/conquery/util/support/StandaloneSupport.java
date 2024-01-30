@@ -13,6 +13,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -23,7 +24,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -37,9 +38,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StandaloneSupport implements TestSupport {
 
+	public enum Mode {WORKER, SQL}
+
+	@Getter
+	private final Mode mode;
 	private final TestConquery testConquery;
 	@Getter
-	private final DistributedNamespace namespace;
+	private final Namespace namespace;
 	@Getter
 	private final Dataset dataset;
 	@Getter
@@ -52,6 +57,8 @@ public class StandaloneSupport implements TestSupport {
 	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
+	@Getter
+	private final TestDataImporter testImporter;
 
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();

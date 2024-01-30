@@ -1,0 +1,73 @@
+{
+  "label": "Single Number-Real-Range Filter Query with REAL RANGE on column with MONEY type",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/filter/number_money/real_range/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.money_number_filter",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 99.00,
+                    "max": 150.00
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "filters": {
+            "name": "money_number_filter",
+            "column": "table1.money",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/number_money/real_range/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "money",
+            "type": "MONEY"
+          }
+        ]
+      }
+    ]
+  }
+}

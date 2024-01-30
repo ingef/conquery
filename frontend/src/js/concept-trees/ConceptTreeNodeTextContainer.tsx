@@ -1,4 +1,4 @@
-import { useRef, FC } from "react";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -80,7 +80,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
           matchingEntries: 0,
         }),
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,

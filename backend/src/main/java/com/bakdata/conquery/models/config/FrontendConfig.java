@@ -34,6 +34,14 @@ public class FrontendConfig {
 	private int observationPeriodYears = 6;
 
 	/**
+	 * Query preview uses real samples for display, this parameter controls how many we try to sample.
+	 *
+	 * Note, that we use stochastic sampling, to avoid keeping the entire rendered query in memory, so this number is not exact.
+	 */
+	@Min(0)
+	private int visualisationSamples = 1000;
+
+	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
 	 * as the base url for forms that specify a relative url. Internally {@link URI#resolve(URI)}
 	 * is used to concatenate this base url and the manual url from the form.

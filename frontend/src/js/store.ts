@@ -3,8 +3,8 @@ import { composeWithDevTools } from "redux-devtools-extension";
 
 import buildAppReducer from "./app/reducers";
 
-export function makeStore(initialState: Object) {
+export function makeStore() {
   const enhancer = composeWithDevTools();
 
-  return createStore(buildAppReducer(), initialState, enhancer);
+  return createStore(buildAppReducer(), {}, enhancer);
 }

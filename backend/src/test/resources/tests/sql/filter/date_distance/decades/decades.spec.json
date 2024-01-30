@@ -1,7 +1,10 @@
 {
-  "type": "SQL_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "DATE_DISTANCE filter query with timeUnit DECADES",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/filter/date_distance/decades/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

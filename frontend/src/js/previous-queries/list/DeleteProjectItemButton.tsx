@@ -7,7 +7,7 @@ import { ConfirmableTooltip } from "../../tooltip/ConfirmableTooltip";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { ProjectItemT } from "./ProjectItem";
-import { useRemoveQuery, useRemoveFormConfig } from "./actions";
+import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 
 export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {

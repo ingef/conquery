@@ -1,7 +1,10 @@
 {
-  "type": "SQL_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "Single Concept EXISTS",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/selects/exists/single_exists/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

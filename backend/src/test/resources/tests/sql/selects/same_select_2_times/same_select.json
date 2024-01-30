@@ -1,8 +1,11 @@
 {
   "label": "Same select 2 times",
   "description": "Selecting the same select 2 times should not cause a name collision",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/selects/same_select_2_times/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

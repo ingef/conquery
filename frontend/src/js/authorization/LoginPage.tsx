@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { useContext, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -84,7 +84,7 @@ const LoginPage = () => {
   const { t } = useTranslation();
   const { setAuthToken } = useContext(AuthTokenContext);
 
-  async function onSubmit(e: any) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);

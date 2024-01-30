@@ -158,6 +158,14 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return of(values[0], values[1]);
 	}
 
+	public static CDateRange fromList(List<? extends Number> values) {
+		if (values.size() != 2) {
+			throw new IllegalArgumentException("Array must be exactly of size 2");
+		}
+
+		return of(values.get(0).intValue(), values.get(1).intValue());
+	}
+
 	public CDateRange intersection(CDateRange other) {
 		if (!intersects(other)) {
 			throw new IllegalArgumentException("Ranges do not intersect.");

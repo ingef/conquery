@@ -1,0 +1,69 @@
+{
+  "label": "SUM select with DISTINCT BY columns",
+  "type": "QUERY_TEST",
+  "expectedCsv": "tests/sql/selects/sum/distinct/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.sum_distinct_select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "selects": {
+            "name": "sum_distinct_select",
+            "type": "SUM",
+            "column": "table.value",
+            "distinctByColumn": [
+              "table.k1",
+              "table.k2"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/sum/distinct/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "k1",
+            "type": "STRING"
+          },
+          {
+            "name": "k2",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

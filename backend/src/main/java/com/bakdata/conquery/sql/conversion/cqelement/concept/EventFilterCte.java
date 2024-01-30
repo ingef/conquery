@@ -1,50 +1,52 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.model.ConceptSelects;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import org.jooq.Condition;
 
 class EventFilterCte extends ConceptCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
-
-		String preprocessingCteName = cteContext.getConceptTables().getPredecessorTableName(CteStep.EVENT_FILTER);
-
-		ConceptSelects eventFilterSelects = new ConceptSelects(
-				cteContext.getPrimaryColumn(),
-				cteContext.getValidityDateRange().map(validityDate -> validityDate.qualify(preprocessingCteName)),
-				// all selects we need to carry on for later steps have to be selected to be able to reference them from later steps
-				getSelectsForAggregationSelectStep(cteContext, preprocessingCteName)
-		);
-
-		List<Condition> eventFilterConditions = cteContext.getFilters().stream()
-														  .flatMap(conceptFilter -> conceptFilter.getFilters().getEvent().stream())
-														  .map(FilterCondition::filterCondition)
-														  .toList();
-
+	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+		Selects eventFilterSelects = getEventFilterSelects(conceptCteContext);
+		List<Condition> eventFilterConditions = conceptCteContext.getFilters().stream()
+																 .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
+																 .map(WhereCondition::condition)
+																 .toList();
 		return QueryStep.builder()
 						.selects(eventFilterSelects)
 						.conditions(eventFilterConditions);
 	}
 
-	private static List<SqlSelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
-		return cteContext.allConceptSelects()
-						 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-						 .map(conquerySelect -> ExtractingSqlSelect.fromConquerySelect(conquerySelect, preprocessingCteName))
-						 .distinct()
-						 .collect(Collectors.toList());
+	@Override
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.EVENT_FILTER;
 	}
 
-	@Override
-	public CteStep cteStep() {
-		return CteStep.EVENT_FILTER;
+	private Selects getEventFilterSelects(ConceptCteContext conceptCteContext) {
+		String predecessorTableName = conceptCteContext.getConceptTables().getPredecessor(cteStep());
+
+		Optional<ColumnDateRange> validityDate = conceptCteContext.getValidityDate();
+		if (validityDate.isPresent()) {
+			validityDate = Optional.of(validityDate.get().qualify(predecessorTableName));
+		}
+
+		List<? extends SqlSelect> sqlSelects = conceptCteContext.allConceptSelects()
+																.flatMap(selects -> selects.getAggregationSelects().stream())
+																.map(sqlSelect -> sqlSelect.createColumnReference(predecessorTableName))
+																.toList();
+
+		return Selects.builder()
+					  .primaryColumn(conceptCteContext.getPrimaryColumn())
+					  .validityDate(validityDate)
+					  .sqlSelects(sqlSelects)
+					  .build();
 	}
 
 }

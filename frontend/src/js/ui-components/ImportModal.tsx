@@ -83,7 +83,10 @@ export const ImportModal = ({
   ) => {
     e.stopPropagation();
 
-    const lines = textInput.split("\n").map((line) => line.trim());
+    const lines = textInput
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     onSubmit(lines, droppedFilename);
     onClose();

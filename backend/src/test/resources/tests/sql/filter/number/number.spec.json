@@ -1,7 +1,10 @@
 {
   "label": "Single Number-Real-Range Filter Query",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/filter/number/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

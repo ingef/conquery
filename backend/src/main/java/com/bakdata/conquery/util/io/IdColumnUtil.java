@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.sql.execution.SqlEntityResult;

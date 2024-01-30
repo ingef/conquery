@@ -10,39 +10,40 @@ import org.jooq.impl.DSL;
  * <p>
  * This can be used if another select requires a column in a later step.
  *
- * @param <V> type of column
+ * @param <T> type of column
  */
 @Value
 @EqualsAndHashCode
-public class ExtractingSqlSelect<V> implements SqlSelect {
+public class ExtractingSqlSelect<T> implements SqlSelect {
 
 	String table;
 	String column;
 	@EqualsAndHashCode.Exclude
-	Class<V> columnClass;
-
-	@SuppressWarnings("unchecked")
-	public static <V> ExtractingSqlSelect<V> fromConquerySelect(SqlSelect select, String qualifier) {
-		return (ExtractingSqlSelect<V>) new ExtractingSqlSelect<>(
-				qualifier,
-				select.columnName(),
-				select.aliased().getType()
-		);
-	}
+	Class<T> columnClass;
 
 	@Override
-	public Field<V> select() {
+	public Field<T> select() {
 		return DSL.field(DSL.name(table, column), columnClass);
 	}
 
 	@Override
-	public Field<V> aliased() {
-		return DSL.field(column, columnClass);
+	public Field<T> aliased() {
+		return DSL.field(DSL.name(column), columnClass);
 	}
 
 	@Override
 	public String columnName() {
 		return column;
+	}
+
+	@Override
+	public ExtractingSqlSelect<T> createAliasedReference(String qualifier) {
+		Field<T> aliased = aliased();
+		return new ExtractingSqlSelect<>(
+				qualifier,
+				aliased.getName(),
+				aliased.getType()
+		);
 	}
 
 }

@@ -11,6 +11,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -38,6 +40,7 @@ class JwtPkceVerifyingRealmTest {
 	private static final String ALTERNATIVE_ID_CLAIM = "alternativeId";
 	public static final int TOKEN_LEEWAY = 60;
 	private static JwtPkceVerifyingRealm REALM;
+	private static final String KEY_ID = "valid_key_id";
 	private static RSAPrivateKey PRIVATE_KEY;
 	private static RSAPublicKey PUBLIC_KEY;
 
@@ -53,7 +56,7 @@ class JwtPkceVerifyingRealmTest {
 
 		// Create the realm
 		REALM = new JwtPkceVerifyingRealm(
-				() -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration(PUBLIC_KEY, URI.create("auth"), URI.create("token"), HTTP_REALM_URL)),
+				() -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration(Map.of(KEY_ID, PUBLIC_KEY), URI.create("auth"), URI.create("token"), HTTP_REALM_URL)),
 				AUDIENCE,
 				List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
 				List.of(ALTERNATIVE_ID_CLAIM),
@@ -81,6 +84,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withClaim("groups", "conquery")
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -108,6 +112,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withClaim("groups", "conquery")
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -133,6 +138,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withClaim(ALTERNATIVE_ID_CLAIM, expected.getName())
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -154,6 +160,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withSubject(expected.getName())
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -175,6 +182,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withClaim("groups", "conquery")
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -194,6 +202,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withClaim("groups", "conquery")
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -217,9 +226,35 @@ class JwtPkceVerifyingRealmTest {
 						  .withClaim("groups", "conquery")
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
 		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+	}
+
+	@Test
+	void falsifyTokenUnknownKid() {
+
+		// Setup the expected user id
+		User expected = new User("Test", "Test", STORAGE);
+		STORAGE.updateUser(expected);
+
+		Date issueDate = new Date();
+		Date expDate = DateUtils.addMinutes(issueDate, 1);
+		String token = JWT.create()
+						  .withIssuer(HTTP_REALM_URL)
+						  .withAudience(AUDIENCE)
+						  .withSubject(expected.getName())
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withClaim("groups", "conquery")
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withKeyId("unknown_key_id")
+						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+		BearerToken accessToken = new BearerToken(token);
+
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).isInstanceOf(UnsupportedTokenException.class);
 	}
 }

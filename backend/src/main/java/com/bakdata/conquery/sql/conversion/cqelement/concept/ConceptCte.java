@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +7,8 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 
 abstract class ConceptCte {
 
-	protected Optional<QueryStep> convert(CteContext context, Optional<QueryStep> previous) {
+
+	protected Optional<QueryStep> convert(ConceptCteContext context, Optional<QueryStep> previous) {
 
 		if (!isRequired(context.getConceptTables())) {
 			return Optional.empty();
@@ -17,24 +17,24 @@ abstract class ConceptCte {
 		String cteName = context.getConceptTables().cteName(cteStep());
 		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(context).cteName(cteName);
 
-		if (previous.isPresent()) {
-			queryStepBuilder.predecessors(List.of(previous.get()))
-							.fromTable(QueryStep.toTableLike(previous.get().getCteName()));
+		// only preprocessing has no previously converted step
+		if (previous.isEmpty()) {
+			queryStepBuilder.predecessors(List.of());
 		}
-		else {
-			// only PREPROCESSING step has no predecessor
-			queryStepBuilder.predecessors(Collections.emptyList())
-							.fromTable(QueryStep.toTableLike(context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING)));
+		// if interval packing takes place, fromTable and predecessors of the final concept step are already set
+		else if (queryStepBuilder.build().getFromTable() == null && queryStepBuilder.build().getPredecessors().isEmpty()) {
+			queryStepBuilder.fromTable(QueryStep.toTableLike(previous.get().getCteName()))
+							.predecessors(List.of(previous.get()));
 		}
 		return Optional.of(queryStepBuilder.build());
 	}
 
 	/**
-	 * @return The {@link CteStep} this instance belongs to.
+	 * @return The {@link ConceptCteStep} this instance belongs to.
 	 */
-	protected abstract CteStep cteStep();
+	protected abstract ConceptCteStep cteStep();
 
-	protected abstract QueryStep.QueryStepBuilder convertStep(CteContext cteContext);
+	protected abstract QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext);
 
 	private boolean isRequired(ConceptTables conceptTables) {
 		return conceptTables.isRequiredStep(cteStep());

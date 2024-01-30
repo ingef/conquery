@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 
-import type { PermissionsT, GetMeResponseT, DatasetT } from "../api/types";
+import type { DatasetT, GetMeResponseT, PermissionsT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 interface ContextT {

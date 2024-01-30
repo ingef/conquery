@@ -1,30 +1,43 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.Collections;
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.model.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import org.jooq.Condition;
 
 class PreprocessingCte extends ConceptCte {
 
-	public QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
+	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
-		List<SqlSelect> preprocessingSelects = cteContext.allConceptSelects()
-														 .flatMap(sqlSelects -> sqlSelects.getForPreprocessingStep().stream())
-														 .distinct()
-														 .toList();
+		List<SqlSelect> forPreprocessing = conceptCteContext.allConceptSelects()
+															.flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
+															.distinct()
+															.toList();
+
+		Selects preprocessingSelects = Selects.builder()
+											  .primaryColumn(conceptCteContext.getPrimaryColumn())
+											  .validityDate(conceptCteContext.getValidityDate())
+											  .sqlSelects(forPreprocessing)
+											  .build();
+
+		// all where clauses that don't require any preprocessing (connector/child conditions)
+		List<Condition> conditions = conceptCteContext.getFilters().stream()
+													  .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
+													  .map(WhereCondition::condition)
+													  .toList();
 
 		return QueryStep.builder()
-						.selects(new ConceptSelects(cteContext.getPrimaryColumn(), cteContext.getValidityDateRange(), preprocessingSelects))
-						.conditions(Collections.emptyList())
-						.predecessors(Collections.emptyList());
+						.selects(preprocessingSelects)
+						.conditions(conditions)
+						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 	}
 
 	@Override
-	public CteStep cteStep() {
-		return CteStep.PREPROCESSING;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.PREPROCESSING;
 	}
 
 }

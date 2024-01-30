@@ -14,23 +14,25 @@ interface PropsT {
 }
 
 const Container = styled.div`
+  padding: 4px;
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
 `;
-
-const AddBtn = styled(IconButton)``;
 
 const RemoveBtn = styled(IconButton)`
   position: absolute;
-  top: -5px;
+  top: -7px;
   right: -7px;
+  opacity: 1;
+  z-index: 1;
   background-color: white;
 `;
 
 const GroupItem = styled("div")`
   padding: 2px 2px 2px 0;
   position: relative;
-  margin: 0 5px 5px 0;
+  max-width: 200px;
 `;
 
 const DynamicInputGroup = ({
@@ -59,11 +61,18 @@ const DynamicInputGroup = ({
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <RemoveBtn tiny icon={faTimes} onClick={() => onRemoveClick(idx)} />
+            <RemoveBtn
+              bgHover
+              tiny
+              icon={faTimes}
+              onClick={() => onRemoveClick(idx)}
+            />
           )}
         </GroupItem>
       ))}
-      {limitNotReached && <AddBtn icon={faPlus} tiny onClick={onAddClick} />}
+      {limitNotReached && (
+        <IconButton bgHover icon={faPlus} tiny onClick={onAddClick} />
+      )}
     </Container>
   );
 };

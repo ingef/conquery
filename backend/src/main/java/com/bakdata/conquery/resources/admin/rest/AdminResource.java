@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.time.LocalDate;
@@ -136,5 +137,11 @@ public class AdminResource {
 						  }
 					  })
 					  .toArray(FullExecutionStatus[]::new);
+	}
+
+	@POST
+	@Path("/" + INDEX_SERVICE_PATH_ELEMENT + "/reset")
+	public void resetIndexService() {
+		processor.resetIndexService();
 	}
 }

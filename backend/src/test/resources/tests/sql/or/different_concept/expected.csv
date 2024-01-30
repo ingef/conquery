@@ -1,4 +1,4 @@
-pid,validity_date_1,,value,geschlecht,language
-7,"{[2014-06-30,2015-07-01)}",-1.00,mf,
-8,,,,fr
-2,,,,fr
+result,dates,vs value,Geschlecht SELECT geschlecht,Language SELECT language
+7,"{2014-02-05/2015-07-01,2016-02-05/2016-02-05}",-1.0,mf,
+8,{2012-11-11/2012-11-11},,,fr
+2,{2010-07-15/2010-07-15},,,fr

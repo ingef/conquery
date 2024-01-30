@@ -4,12 +4,12 @@ import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
+import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.MigrateCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.mode.Manager;
@@ -55,7 +55,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new ShardNode());
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
-		bootstrap.addCommand(new StandaloneCommand(this));
+		bootstrap.addCommand(new DistributedStandaloneCommand(this));
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());
 

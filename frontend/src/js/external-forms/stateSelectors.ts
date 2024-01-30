@@ -32,7 +32,7 @@ export const selectRunningQuery = (state: StateT) => {
 
 function getVisibleConceptListFields(
   fields: GeneralField[],
-  values: Record<string, any>,
+  values: Record<string, unknown>,
 ): ConceptListField[] {
   return fields
     .flatMap((field) => {

@@ -1,7 +1,10 @@
 {
   "label": "Simple Negation Query",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/not/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

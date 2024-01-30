@@ -117,7 +117,10 @@ async function rest(url, options) {
 					return response.json();
 				})
 				.then( (json) => {
-					window.location = '${c}?access_token='+json.access_token;
+					var searchParams = new URLSearchParams(window.location.search);
+					searchParams.set("access_token", json.access_token);
+					// This triggers a page reload
+					window.location.search = searchParams.toString();
 				}
 				)
 				.catch(function(error) {
@@ -131,7 +134,7 @@ async function rest(url, options) {
 				
 				function logout() {
 					event.preventDefault();
-					rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')
+					rest('/admin/logout')
 					.then(function () { location.reload() });
 				}
 				

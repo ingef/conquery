@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -11,9 +9,9 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
@@ -25,13 +23,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
@@ -40,7 +36,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -52,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
+public class ManagedQuery extends ManagedExecution implements EditorQuery, SingleTableResult, InternalExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
@@ -131,47 +126,14 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(lastResultCount);
-
-		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
-
-		if (query instanceof SecondaryIdQuery) {
-			status.setSecondaryId(((SecondaryIdQuery) query).getSecondaryId().getId());
-		}
+		enrichStatusBase(status);
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions();
+			columnDescriptions = generateColumnDescriptions(isInitialized(), getNamespace(), getConfig());
 		}
 		status.setColumnDescriptions(columnDescriptions);
-	}
-
-	/**
-	 * Generates a description of each column that will appear in the resulting csv.
-	 */
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
-
-		final Locale locale = I18n.LOCALE.get();
-
-		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
-
-		final UniqueNamer uniqNamer = new UniqueNamer(settings);
-
-		// First add the id columns to the descriptor list. These are always the first columns
-		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
-			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header))
-												   .type(header.getType().typeInfo())
-												   .semantics(header.getSemantics())
-												   .build());
-		}
-
-		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
-		return columnDescriptions;
 	}
 
 	@JsonIgnore

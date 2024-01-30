@@ -3,7 +3,7 @@ import {
   faCompressArrowsAlt,
   faExpandArrowsAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { useRef, FC } from "react";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
@@ -113,7 +113,7 @@ const FormConceptNode: FC<PropsT> = ({
       rowPrefixFieldname: rowPrefixFieldname,
     },
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,

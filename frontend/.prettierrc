@@ -1,0 +1,17 @@
+{
+  "trailingComma": "all",
+  "semi": true,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "proseWrap": "always",
+  "plugins": ["prettier-plugin-organize-imports"],
+  "overrides": [
+    {
+      "files": "*.(ts|tsx)",
+      "options": {
+        "parser": "typescript"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT } from "../api/types";
 import type { StateT } from "../app/reducers";

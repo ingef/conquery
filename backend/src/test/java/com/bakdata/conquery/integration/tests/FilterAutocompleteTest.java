@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -48,6 +49,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	};
 
 	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
+
+	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
@@ -62,9 +68,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		test.importRequiredData(conquery);
-		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		conquery.waitUntilWorkDone();
+
+		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		final Connector connector = concept.getConnectors().iterator().next();
@@ -79,7 +86,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
 		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
 
@@ -138,7 +145,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 			//check the resolved values
 			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-					.containsExactly("f", "fm");
+					.containsExactly("", "f", "fm");
 		}
 
 

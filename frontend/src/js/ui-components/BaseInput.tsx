@@ -4,7 +4,7 @@ import {
   faExclamationTriangle,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { FocusEvent, forwardRef, KeyboardEvent, useCallback } from "react";
+import { FocusEvent, KeyboardEvent, forwardRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -188,7 +188,9 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             onClick={onClick}
             onWheel={
               (e) =>
-                (e.target as any).blur() /* to disable scrolling for number */
+                (
+                  e.target as HTMLElement
+                ).blur() /* to disable scrolling for number */
             }
             {...inputProps}
             {...patternMatchingProps}
