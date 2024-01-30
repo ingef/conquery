@@ -2,7 +2,7 @@ import { t } from "i18next";
 import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
 import { parseDate } from "../common/helpers/dateHelper";
 
-export const NUMBER_TYPES = ["NUMBER", "INTEGER", "REAL", "DECIMAL"];
+export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
 
 export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
 
