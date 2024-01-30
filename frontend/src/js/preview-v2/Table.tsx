@@ -86,7 +86,7 @@ export default function Table({ data, queryData }: Props) {
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {
         const num = parseFloat(value as string);
-        return isNaN(num) ? value.toString() : formatNumber(num);
+        return isNaN(num) ? '' : formatNumber(num);
       };
     } else if (cellType == "DATE") {
       return (value) =>
@@ -105,9 +105,10 @@ export default function Table({ data, queryData }: Props) {
       };
     } else if (cellType == "MONEY") {
       return (value) => {
-        const num = parseFloat(value as string);
+        // parse cent string
+        const num = parseFloat(value as string) / 100;
         return isNaN(num)
-          ? value.toString()
+          ? ''
           : `${formatNumber(num)} ${currencyConfig.unit}`;
       };
     } else if (cellType == "BOOLEAN") {
