@@ -32,28 +32,30 @@ public class Histogram {
 	private int total;
 
 	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean contains0, boolean round) {
-		//TODO add rounding, if we have integer values
 
 		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
 
-		if (!contains0) {
-			final Node[] nodes = IntStream.range(0, expectedBins)
-										  .mapToObj(index -> new Node(lower + index * width, lower + (index + 1) * width))
-										  .toArray(Node[]::new);
+		final double newUpper = width * expectedBins;
 
-			return new Histogram(nodes, new Node(0, 0), new Node(0, lower), new Node(upper, Double.POSITIVE_INFINITY), lower, upper, width);
+		final double newLower;
+
+		if (lower == 0) {
+			newLower = 0;
 		}
-
-
-		final double newLower = lower == 0 ? 0 : Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
-
+		else if (contains0) {
+			newLower = Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
+		}
+		else {
+			newLower = lower;
+		}
 
 		// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
 		final Node[] nodes = IntStream.range(0, expectedBins)
 									  .mapToObj(index -> new Node(newLower + width * index, newLower + width * (index + 1)))
 									  .toArray(Node[]::new);
 
-		return new Histogram(nodes, new Node(0, 0), new Node(Double.NEGATIVE_INFINITY, newLower), new Node(upper, Double.POSITIVE_INFINITY), newLower, upper, width);
+
+		return new Histogram(nodes, new Node(0, 0), new Node(Double.NEGATIVE_INFINITY, newLower), new Node(newUpper, Double.POSITIVE_INFINITY), newLower, newUpper, width);
 
 	}
 
