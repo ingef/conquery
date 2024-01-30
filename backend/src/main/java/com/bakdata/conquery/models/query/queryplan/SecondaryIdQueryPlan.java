@@ -44,6 +44,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @ToString
 public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
+
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQuery query;
 	private final QueryPlanContext queryPlanContext;
@@ -67,7 +68,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Getter(AccessLevel.NONE)
 	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
 
-	private final int subPlanLimit;
+	private final int subPlanRetentionLimit;
 
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
@@ -253,7 +254,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		queryPlan.init(ctx, entity);
 
 		// Dump the created children into reuse-pool
-		childPerKey.values().stream().limit(10/*TODO Pull from config */).forEach(childPlanReusePool::add);
+		childPerKey.values().stream().limit(subPlanRetentionLimit).forEach(childPlanReusePool::add);
 
 		childPerKey = new HashMap<>();
 	}

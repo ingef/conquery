@@ -107,7 +107,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
 				getConfig().getCluster().getEntityBucketSize(),
-				getConfig().getQueries().getMaxSecondaryIdSubPlans()
+				getConfig().getQueries().getSecondaryIdSubPlanRetention()
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();

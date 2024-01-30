@@ -50,10 +50,10 @@ public class Workers extends IdResolveContext {
 
 	private final int entityBucketSize;
 
-	private final int secondaryIdSubPlanLimit;
+	private final int secondaryIdSubPlanRetention;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanLimit) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
@@ -61,7 +61,7 @@ public class Workers extends IdResolveContext {
 		this.persistenceMapperSupplier = persistenceMapperSupplier;
 		this.communicationMapperSupplier = communicationMapperSupplier;
 		this.entityBucketSize = entityBucketSize;
-		this.secondaryIdSubPlanLimit = secondaryIdSubPlanLimit;
+		this.secondaryIdSubPlanRetention = secondaryIdSubPlanRetention;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
@@ -75,7 +75,7 @@ public class Workers extends IdResolveContext {
 		injectInto(communicationMapper);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
 
 		addWorker(worker);
 
@@ -92,7 +92,7 @@ public class Workers extends IdResolveContext {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
 
 		addWorker(worker);
 

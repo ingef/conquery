@@ -12,5 +12,5 @@ public class QueryConfig {
 
 	private Duration oldQueriesTime = Duration.days(30);
 
-	private int maxSecondaryIdSubPlans = 30;
+	private int secondaryIdSubPlanRetention = 15;
 }
