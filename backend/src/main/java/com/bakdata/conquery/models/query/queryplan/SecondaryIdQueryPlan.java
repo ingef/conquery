@@ -57,7 +57,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final ConceptQueryPlan queryPlan;
 
 
-	private Map<String, ConceptQueryPlan> childPerKey;
+	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
 
 
 	/**
