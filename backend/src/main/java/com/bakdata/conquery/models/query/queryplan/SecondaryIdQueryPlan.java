@@ -254,6 +254,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		queryPlan.init(ctx, entity);
 
 		// Dump the created children into reuse-pool
+		childPlanReusePool.clear();
+
 		childPerKey.values().stream().limit(subPlanRetentionLimit).forEach(childPlanReusePool::add);
 
 		childPerKey = new HashMap<>();
