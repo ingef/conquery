@@ -6,29 +6,29 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 
-class AggregationSelectCte extends ConceptCte {
+class AggregationSelectCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> requiredInAggregationFilterStep = conceptCteContext.allConceptSelects()
-																		   .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
-																		   .distinct()
-																		   .toList();
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
+																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
+																	  .distinct()
+																	  .toList();
 
 		Selects aggregationSelectSelects = Selects.builder()
-												  .primaryColumn(conceptCteContext.getPrimaryColumn())
+												  .primaryColumn(tableContext.getPrimaryColumn())
 												  .sqlSelects(requiredInAggregationFilterStep)
 												  .build();
 
 		return QueryStep.builder()
 						.selects(aggregationSelectSelects)
-						.groupBy(List.of(conceptCteContext.getPrimaryColumn()));
+						.groupBy(List.of(tableContext.getPrimaryColumn()));
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_SELECT;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_SELECT;
 	}
 
 }

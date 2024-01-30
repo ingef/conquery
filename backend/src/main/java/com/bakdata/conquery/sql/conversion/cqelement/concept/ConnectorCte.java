@@ -4,18 +4,19 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-abstract class ConceptCte {
+abstract class ConnectorCte {
 
 
-	protected Optional<QueryStep> convert(ConceptCteContext context, Optional<QueryStep> previous) {
+	protected Optional<QueryStep> convert(CQTableContext tableContext, Optional<QueryStep> previous) {
 
-		if (!isRequired(context.getConceptTables())) {
+		if (!isRequired(tableContext.getConnectorTables())) {
 			return Optional.empty();
 		}
 
-		String cteName = context.getConceptTables().cteName(cteStep());
-		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(context).cteName(cteName);
+		String cteName = tableContext.getConnectorTables().cteName(cteStep());
+		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(tableContext).cteName(cteName);
 
 		// only preprocessing has no previously converted step
 		if (previous.isEmpty()) {
@@ -30,14 +31,14 @@ abstract class ConceptCte {
 	}
 
 	/**
-	 * @return The {@link ConceptCteStep} this instance belongs to.
+	 * @return The {@link ConnectorCteStep} this instance belongs to.
 	 */
-	protected abstract ConceptCteStep cteStep();
+	protected abstract ConnectorCteStep cteStep();
 
-	protected abstract QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext);
+	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext);
 
-	private boolean isRequired(ConceptTables conceptTables) {
-		return conceptTables.isRequiredStep(cteStep());
+	private boolean isRequired(SqlTables<ConnectorCteStep> connectorTables) {
+		return connectorTables.isRequiredStep(cteStep());
 	}
 
 }

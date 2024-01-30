@@ -15,68 +15,68 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
-class FinalConceptCte extends ConceptCte {
+class FinalConnectorCte extends ConnectorCte {
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	protected QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> forFinalStep = conceptCteContext.getSelects().stream()
-														.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-														.distinct()
-														.toList();
+		List<SqlSelect> forFinalStep = tableContext.allSqlSelects().stream()
+												   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
+												   .distinct()
+												   .toList();
 
-		if (conceptCteContext.getValidityDate().isEmpty() || conceptCteContext.isExcludedFromDateAggregation()) {
+		if (tableContext.getValidityDate().isEmpty() || tableContext.isExcludedFromDateAggregation()) {
 			Selects finalConceptSelects = Selects.builder()
-												 .primaryColumn(conceptCteContext.getPrimaryColumn())
+												 .primaryColumn(tableContext.getPrimaryColumn())
 												 .sqlSelects(forFinalStep)
 												 .build();
 			return QueryStep.builder()
 							.selects(finalConceptSelects);
 		}
 
-		return applyIntervalPacking(forFinalStep, conceptCteContext);
+		return applyIntervalPacking(forFinalStep, tableContext);
 	}
 
 	@Override
-	protected ConceptCteStep cteStep() {
-		return ConceptCteStep.FINAL;
+	protected ConnectorCteStep cteStep() {
+		return ConnectorCteStep.FINAL;
 	}
 
-	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, ConceptCteContext conceptCteContext) {
+	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, CQTableContext tableContext) {
 
-		String conceptLabel = conceptCteContext.getConceptLabel();
+		String conceptLabel = tableContext.getConceptLabel();
 		IntervalPackingTables intervalPackingTables =
-				IntervalPackingTables.forConcept(conceptLabel, conceptCteContext.getConceptTables(), conceptCteContext.getNameGenerator());
+				IntervalPackingTables.forConcept(conceptLabel, tableContext.getConnectorTables(), tableContext.getNameGenerator());
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()
 									  .nodeLabel(conceptLabel)
-									  .primaryColumn(conceptCteContext.getPrimaryColumn())
-									  .validityDate(conceptCteContext.getValidityDate().get())
+									  .primaryColumn(tableContext.getPrimaryColumn())
+									  .validityDate(tableContext.getValidityDate().get())
 									  .intervalPackingTables(intervalPackingTables)
 									  .build();
 
-		QueryStep finalIntervalPackingStep = conceptCteContext.getConversionContext()
-															  .getSqlDialect()
-															  .getIntervalPacker()
-															  .createIntervalPackingSteps(intervalPackingContext);
+		QueryStep finalIntervalPackingStep = tableContext.getConversionContext()
+														 .getSqlDialect()
+														 .getIntervalPacker()
+														 .createIntervalPackingSteps(intervalPackingContext);
 
-		return joinSelectsAndFiltersWithIntervalPackingStep(forFinalStep, finalIntervalPackingStep, conceptCteContext);
+		return joinSelectsAndFiltersWithIntervalPackingStep(forFinalStep, finalIntervalPackingStep, tableContext);
 	}
 
 	private QueryStep.QueryStepBuilder joinSelectsAndFiltersWithIntervalPackingStep(
 			List<SqlSelect> forFinalStep,
 			QueryStep finalIntervalPackingStep,
-			ConceptCteContext conceptCteContext
+			CQTableContext tableContext
 	) {
-		QueryStep finalSelectsAndFilterStep = conceptCteContext.getPrevious();
+		QueryStep finalSelectsAndFilterStep = tableContext.getPrevious();
 		Field<Object> primaryColumn = finalSelectsAndFilterStep.getQualifiedSelects().getPrimaryColumn();
 		Optional<ColumnDateRange> validityDate = Optional.of(finalIntervalPackingStep.getQualifiedSelects().getValidityDate().get());
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(
 				List.of(finalSelectsAndFilterStep, finalIntervalPackingStep),
 				LogicalOperation.AND,
-				conceptCteContext.getConversionContext()
+				tableContext.getConversionContext()
 		);
 
 		Selects finalConceptSelects = Selects.builder()

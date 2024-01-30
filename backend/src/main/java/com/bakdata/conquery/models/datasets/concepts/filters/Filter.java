@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -107,8 +107,8 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	}
 
 	@JsonIgnore
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		return ConceptCteStep.MANDATORY_STEPS;
+	public Set<ConnectorCteStep> getRequiredSqlSteps() {
+		return ConnectorCteStep.MANDATORY_STEPS;
 	}
 
 }

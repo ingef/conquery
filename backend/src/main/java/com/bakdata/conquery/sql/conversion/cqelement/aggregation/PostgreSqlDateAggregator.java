@@ -13,11 +13,13 @@ import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.Getter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
+	@Getter
 	private enum PostgresDateAggregationCteStep implements DateAggregationCteStep {
 
 		DATE_AGGREGATED("dates_aggregated"),
@@ -29,16 +31,6 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			this.suffix = suffix;
 		}
 
-		@Override
-		public String suffix() {
-			return this.suffix;
-		}
-
-		@Override
-		public DateAggregationCteStep predecessor() {
-			// Postgres can do the aggregation in 1 step - so we don't have any predeceasing steps
-			return null;
-		}
 	}
 
 	private final SqlFunctionProvider functionProvider;
@@ -98,7 +90,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 				maxDateRange,
 				DSL.keyword("datemultirange"),
 				validityDate.get().getRange()
-		).as(PostgresDateAggregationCteStep.DATES_INVERTED.suffix());
+		).as(PostgresDateAggregationCteStep.DATES_INVERTED.getSuffix());
 
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(PostgresDateAggregationCteStep.DATES_INVERTED, baseStep.getCteName()))
