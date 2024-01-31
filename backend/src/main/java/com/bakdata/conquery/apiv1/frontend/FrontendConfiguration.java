@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.frontend;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Map;
 
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -16,7 +17,11 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
  * @param contactEmail typical a mailto-url
  */
 public record FrontendConfiguration(
+		// Backend version
 		String version,
+
+		// Form backend id -> version
+		Map<String, String> formBackendVersions,
 		FrontendConfig.CurrencyConfig currency,
 		IdColumnConfig queryUpload,
 		URL manualUrl,
