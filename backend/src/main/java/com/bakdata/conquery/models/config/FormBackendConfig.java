@@ -120,6 +120,8 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 			log.warn("Unable to retrieve version from form backend '{}'. Enable trace logging for more info", getId(), (Exception) (log.isTraceEnabled()
 																																	? e
 																																	: null));
+			// Set place holder
+			VersionInfo.INSTANCE.setFormBackendVersion(getId(), "no-version-available");
 		}
 
 	}
