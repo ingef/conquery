@@ -44,7 +44,8 @@ export const StyledTable = styled("table")`
     max-width: 25ch;
   }
 
-  th, td {
+  th,
+  td {
     padding: 10px;
     border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
     border-right: 1px solid ${({ theme }) => theme.col.grayMediumLight};

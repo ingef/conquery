@@ -22,9 +22,9 @@ export function formatDate(date: string | undefined) {
 
 export function toFullLocaleDateString(date: Date) {
   return date.toLocaleDateString(navigator.language, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
