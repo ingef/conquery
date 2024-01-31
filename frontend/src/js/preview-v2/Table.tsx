@@ -10,7 +10,12 @@ import {
   GetQueryResponseT,
 } from "../api/types";
 import { StateT } from "../app/reducers";
-import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
+import {
+  NUMBER_TYPES,
+  formatDate,
+  formatNumber,
+  toFullLocaleDateString,
+} from "./util";
 
 interface Props {
   data: ArrowTable;
@@ -85,12 +90,12 @@ export default function Table({ data, queryData }: Props) {
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {
         const num = parseFloat(value as string);
-        return isNaN(num) ? '' : formatNumber(num);
+        return isNaN(num) ? "" : formatNumber(num);
       };
     } else if (cellType == "DATE") {
       return (value) =>
         value instanceof Date
-          ? value.toLocaleDateString()
+          ? toFullLocaleDateString(value)
           : formatDate(value as string);
     } else if (cellType == "DATE_RANGE") {
       return (value) => {
@@ -98,17 +103,15 @@ export default function Table({ data, queryData }: Props) {
           min: Date;
           max: Date;
         };
-        const min = dateRange.min.toLocaleDateString();
-        const max = dateRange.max.toLocaleDateString();
+        const min = toFullLocaleDateString(dateRange.min);
+        const max = toFullLocaleDateString(dateRange.max);
         return min == max ? min : `${min} - ${max}`;
       };
     } else if (cellType == "MONEY") {
       return (value) => {
         // parse cent string
         const num = parseFloat(value as string) / 100;
-        return isNaN(num)
-          ? ''
-          : `${formatNumber(num)} ${currencyConfig.unit}`;
+        return isNaN(num) ? "" : `${formatNumber(num)} ${currencyConfig.unit}`;
       };
     } else if (cellType == "BOOLEAN") {
       return (value) => (value ? t("common.true") : t("common.false"));
