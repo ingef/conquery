@@ -69,14 +69,9 @@ function transformDateStatsToData(
     // check month exists
     const month = format(pointer, "yyyy-MM");
     const monthLabel = format(pointer, "dd.MM.yyyy");
-    if (month in monthCounts) {
-      labels.push(monthLabel);
-      values.push(monthCounts[month]);
-    } else {
-      // add zero values
-      labels.push(monthLabel);
-      values.push(0);
-    }
+
+    labels.push(monthLabel);
+    values.push(monthCounts[month] ?? 0);
 
     pointer = addMonths(pointer, 1);
   }
@@ -97,11 +92,7 @@ function getValueForIndex<T>(
   data: ChartData | undefined,
   index: number,
 ): T | undefined {
-  const labels = data?.labels;
-  if (!labels) {
-    return undefined;
-  }
-  return labels[index] as T | undefined;
+  return data?.labels?.[index] as T | undefined;
 }
 
 export default function Diagram({
@@ -122,42 +113,46 @@ export default function Diagram({
   }, [stat, theme]);
 
   const options = useMemo(() => {
+    const baseOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
+      layout: {
+        padding: 0,
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: stat.label,
+        },
+        tooltip: {
+          usePointStyle: true,
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          titleColor: "rgba(0, 0, 0, 1)",
+          bodyColor: "rgba(0, 0, 0, 1)",
+          borderColor: "rgba(0, 0, 0, 0.2)",
+          borderWidth: 0.5,
+          padding: 10,
+          callbacks: {
+            title: (title) => title[0].label,
+            label: (context) => formatNumber(context.raw as number),
+          },
+          caretSize: 0,
+          caretPadding: 0,
+        },
+      },
+    } as Partial<ChartOptions>;
+
     if (previewStatsIsBarStats(stat)) {
       return {
+        ...baseOptions,
         type: "bar",
-        responsive: true,
-        interaction: {
-          mode: "index" as const,
-          intersect: false,
-        },
-        maintainAspectRatio: false,
-        layout: {
-          padding: 0,
-        },
         scales: {
           y: {
             beginAtZero: true,
-          },
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: stat.label,
-          },
-          tooltip: {
-            usePointStyle: true,
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "rgba(0, 0, 0, 1)",
-            bodyColor: "rgba(0, 0, 0, 1)",
-            borderColor: "rgba(0, 0, 0, 0.2)",
-            borderWidth: 0.5,
-            padding: 10,
-            callbacks: {
-              title: (title) => title[0].label,
-              label: (context) => formatNumber(context.raw as number),
-            },
-            caretSize: 0,
-            caretPadding: 0,
           },
         },
       } as ChartOptions<"bar">;
@@ -165,16 +160,8 @@ export default function Diagram({
 
     if (previewStatsIsDateStats(stat)) {
       return {
+        ...baseOptions,
         type: "line",
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: "index" as const,
-          intersect: false,
-        },
-        layout: {
-          padding: 0,
-        },
         elements: {
           point: {
             radius: 0,
@@ -197,27 +184,6 @@ export default function Diagram({
                   : "";
               },
             },
-          },
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: stat.label,
-          },
-          tooltip: {
-            usePointStyle: true,
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "rgba(0, 0, 0, 1)",
-            bodyColor: "rgba(0, 0, 0, 1)",
-            borderColor: "rgba(0, 0, 0, 0.2)",
-            borderWidth: 0.5,
-            padding: 10,
-            callbacks: {
-              title: (title) => title[0].label,
-              label: (context) => formatNumber(context.raw as number),
-            },
-            caretSize: 0,
-            caretPadding: 0,
           },
         },
       } as ChartOptions<"line">;
