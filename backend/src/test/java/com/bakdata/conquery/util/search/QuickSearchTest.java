@@ -21,7 +21,7 @@ class QuickSearchTest {
 
 		final List<String> results = search.findItems(List.of("anaconda"), Integer.MAX_VALUE);
 
-		assertThat(results).isEqualTo(List.of("Anaconda", "Canada", "Condor", "London", "Analysis", "Honda"));
+		assertThat(results).isEqualTo(List.of("Anaconda", "Canada", "Condor", "Analysis", "Honda", "London"));
 
 	}
 
@@ -36,7 +36,8 @@ class QuickSearchTest {
 
 		final List<String> results = search.findItems(List.of("pants"), Integer.MAX_VALUE);
 
-		assertThat(results).isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants"));
+		// PantsPants occurs after Pantshop due to it being longer and consisting only of duplicate entries
+		assertThat(results).isEqualTo(List.of("Pants", "Pantshop", "PantsPants", "Sweatpants"));
 
 	}
 

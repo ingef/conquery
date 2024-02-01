@@ -126,8 +126,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+			// "aaa" occurs after "aab" due to it consisting only of duplicate entries
 			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("a", "aaa", "aab", "baaa", "" /* `No V*a*lue` :^) */);
+					.containsExactly("a", "aab", "aaa", "baaa", "" /* `No V*a*lue` :^) */);
 		}
 
 
