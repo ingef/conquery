@@ -11,8 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
@@ -70,10 +69,7 @@ public class CollectEntitiesCommand extends Command {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 		final Collection<EntityExtractor> jobs = findPreprocessedJobs(namespace.getList("file"));
 
-		final ExecutorService pool = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(),
-															60L, TimeUnit.SECONDS,
-															new SynchronousQueue<>()
-		);
+		final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
 		for (EntityExtractor job : jobs) {
 			pool.submit(() -> {

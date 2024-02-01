@@ -19,19 +19,8 @@ enum IntersectCteStep implements DateAggregationCteStep {
 
 	private static final Set<IntersectCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
-	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
 	private final IntersectCteStep predecessor;
-
-	@Override
-	public String suffix() {
-		return this.suffix;
-	}
-
-	@Override
-	public DateAggregationCteStep predecessor() {
-		return this.predecessor;
-	}
 
 	static List<DateAggregationCte> requiredSteps() {
 		return Arrays.stream(values())

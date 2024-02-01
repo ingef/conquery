@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -71,10 +70,7 @@ public class UpdateFilterSearchJob extends Job {
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors() - 1,
-															   60L, TimeUnit.SECONDS,
-															   new SynchronousQueue<>()
-		);
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
 		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 

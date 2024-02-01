@@ -1,6 +1,9 @@
 {
   "label": "COUNT_QUARTERS on single date column",
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/selects/count_quarters/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
