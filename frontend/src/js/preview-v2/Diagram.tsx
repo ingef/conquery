@@ -68,7 +68,7 @@ function transformDateStatsToData(
   while (pointer <= end) {
     // check month exists
     const month = format(pointer, "yyyy-MM");
-    const monthLabel = format(pointer, "MMM yyyy");
+    const monthLabel = format(pointer, "dd.MM.yyyy");
     if (month in monthCounts) {
       labels.push(monthLabel);
       values.push(monthCounts[month]);
