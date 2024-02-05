@@ -20,26 +20,23 @@ import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-class ConceptCteContext implements Context {
+class CQTableContext implements Context {
 
 	ConversionContext conversionContext;
 	String conceptLabel;
 	Optional<ColumnDateRange> validityDate;
 	boolean isExcludedFromDateAggregation;
-	List<SqlSelects> selects;
-	List<SqlFilters> filters;
-	ConceptTables conceptTables;
+	List<SqlSelects> sqlSelects;
+	List<SqlFilters> sqlFilters;
+	ConnectorTables connectorTables;
 	@With
 	QueryStep previous;
 
 	/**
 	 * @return All concepts {@link SqlSelects} that are either required for {@link Filter}'s or {@link Select}'s.
 	 */
-	public Stream<SqlSelects> allConceptSelects() {
-		return Stream.concat(
-				getFilters().stream().map(SqlFilters::getSelects),
-				getSelects().stream()
-		);
+	public List<SqlSelects> allSqlSelects() {
+		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 
 	public Field<Object> getPrimaryColumn() {

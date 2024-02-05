@@ -3,12 +3,14 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Param;
@@ -28,6 +30,15 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public String getMaxDateExpression() {
 		return MAX_DATE_VALUE;
+	}
+
+	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return DSL.function(
+				"CAST",
+				type.getType(),
+				DSL.field("%s AS %s".formatted(field, type.getName()))
+		);
 	}
 
 	@Override
@@ -116,15 +127,16 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Field<String> withMaxDateReplaced = replace(endDateExpression, MAX_DATE_VALUE, INFINITY_SIGN);
 
 		// add interval braces to ranges: start is allways included, end is allways excluded except if it's the maximum/infinity date
-		Field<String> enclosedMinDate = DSL.field("'[' || %s".formatted(withMinDateReplaced), String.class);
-		Field<String> enclosedMaxDate = DSL.when(withMaxDateReplaced.like(INFINITY_SIGN), DSL.field("%s || ']'".formatted(withMaxDateReplaced), String.class))
-										   .otherwise(DSL.field("%s || ')'".formatted(withMaxDateReplaced), String.class));
+		Field<String> enclosedMinDate = DSL.field("'[' || {0}", String.class, withMinDateReplaced);
+		Field<String> enclosedMaxDate = DSL.when(withMaxDateReplaced.like(INFINITY_SIGN), DSL.field("{0} || ']'", String.class, withMaxDateReplaced))
+										   .otherwise(DSL.field("{0} || ')'", String.class, withMaxDateReplaced));
 
-		Field<String> rangeConcatenated = DSL.field("%s || ',' || %s".formatted(enclosedMinDate, enclosedMaxDate), String.class);
+		Field<String> rangeConcatenated = DSL.field("{0} || ',' || {1}", String.class, enclosedMinDate, enclosedMaxDate);
 
 		Field<String> stringAggregation = DSL.field(
-				"STRING_AGG({0}, {1} {2})",
+				"{0}({1}, {2} {3})",
 				String.class,
+				DSL.keyword("STRING_AGG"),
 				rangeConcatenated,
 				DSL.toChar(DELIMITER),
 				DSL.orderBy(startDate)
@@ -132,7 +144,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		// encapsulate all ranges (including empty ranges) within curly braces
 		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
-				  .otherwise(DSL.field(("'{' || %s || '}'".formatted(stringAggregation)), String.class));
+				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
 	}
 
 	@Override
@@ -175,7 +187,13 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		if (orderByColumns.isEmpty()) {
 			orderByColumns = List.of(column);
 		}
-		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)), column.getType());
+		return DSL.field(
+				"{0}({1} {2})",
+				column.getType(),
+				DSL.keyword("FIRST_VALUE"),
+				column,
+				DSL.orderBy(orderByColumns)
+		);
 	}
 
 	@Override
@@ -183,17 +201,43 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		if (orderByColumns.isEmpty()) {
 			orderByColumns = List.of(column);
 		}
-		return DSL.field(DSL.sql("LAST_VALUE({0} {1} DESC)", column, DSL.orderBy(orderByColumns)), column.getType());
+		return DSL.field(
+				"{0}({1} {2} {3})",
+				column.getType(),
+				DSL.keyword("LAST_VALUE"),
+				column,
+				DSL.orderBy(orderByColumns),
+				DSL.keyword("DESC")
+		);
 	}
 
 	@Override
 	public <T> Field<T> random(Field<T> column) {
-		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(DSL.function("RAND", Object.class))), column.getType());
+		return DSL.field(
+				"{0}({1} {2})",
+				column.getType(),
+				DSL.keyword("FIRST_VALUE"),
+				column,
+				DSL.orderBy(DSL.function("RAND", Object.class))
+		);
 	}
 
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
-		return DSL.condition("{0} LIKE_REGEXPR {1}", field, pattern);
+		return DSL.condition("{0} {1} {2}", field, DSL.keyword("LIKE_REGEXPR"), pattern);
+	}
+
+	@Override
+	public Field<String> yearQuarter(Field<Date> dateField) {
+		return DSL.function("QUARTER", String.class, dateField);
+  }
+  
+  @Override
+	public Field<Object[]> asArray(List<Field<?>> fields) {
+		String arrayExpression = fields.stream()
+									   .map(Field::toString)
+									   .collect(Collectors.joining(", ", "array(", ")"));
+		return DSL.field(arrayExpression, Object[].class);
 	}
 
 	@Override
@@ -207,7 +251,14 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	private Field<String> toVarcharField(Field<Date> startDate, Param<Integer> dateExpressionLength) {
-		return DSL.field("CAST({0} AS VARCHAR({1}))", String.class, startDate, dateExpressionLength);
+		return DSL.field(
+				"{0}({1} {2}({3}))",
+				String.class,
+				DSL.keyword("CAST"),
+				startDate,
+				DSL.keyword("AS VARCHAR"),
+				dateExpressionLength
+		);
 	}
 
 }

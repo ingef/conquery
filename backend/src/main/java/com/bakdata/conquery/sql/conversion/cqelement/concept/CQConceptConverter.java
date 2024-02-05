@@ -31,18 +31,18 @@ import org.jooq.Condition;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
-	private final List<ConceptCte> conceptCTEs;
+	private final List<ConnectorCte> connectorCtes;
 	private final SqlFunctionProvider functionProvider;
 
 	public CQConceptConverter(SqlFunctionProvider functionProvider) {
 		this.functionProvider = functionProvider;
-		this.conceptCTEs = List.of(
+		this.connectorCtes = List.of(
 				new PreprocessingCte(),
 				new EventFilterCte(),
 				new AggregationSelectCte(),
 				new JoinPredecessorsCte(),
 				new AggregationFilterCte(),
-				new FinalConceptCte()
+				new FinalConnectorCte()
 		);
 	}
 
@@ -58,69 +58,67 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
-		ConceptCteContext conceptCteContext = createConceptCteContext(cqConcept, context);
+		CQTableContext tableContext = createConceptCteContext(cqConcept, context);
 
 		Optional<QueryStep> lastQueryStep = Optional.empty();
-		for (ConceptCte queryStep : this.conceptCTEs) {
-			Optional<QueryStep> convertedStep = queryStep.convert(conceptCteContext, lastQueryStep);
+		for (ConnectorCte queryStep : this.connectorCtes) {
+			Optional<QueryStep> convertedStep = queryStep.convert(tableContext, lastQueryStep);
 			if (convertedStep.isEmpty()) {
 				continue;
 			}
 			lastQueryStep = convertedStep;
-			conceptCteContext = conceptCteContext.withPrevious(lastQueryStep.get());
+			tableContext = tableContext.withPrevious(lastQueryStep.get());
 		}
 
-		return context.toBuilder()
-					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")))
-					  .build();
+		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
 	}
 
-	private ConceptCteContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {
+	private CQTableContext createConceptCteContext(CQConcept cqConcept, ConversionContext context) {
 
 		CQTable cqTable = cqConcept.getTables().get(0);
 		String tableName = cqTable.getConnector().getTable().getName();
 		String conceptLabel = context.getNameGenerator().conceptName(cqConcept);
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(cqTable, tableName, conceptLabel);
 
-		Set<ConceptCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
-		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
+		Set<ConnectorCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
+		ConnectorTables connectorTables = new ConnectorTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
 		List<SqlFilters> allFiltersForTable = new ArrayList<>();
 		cqTable.getFilters().stream()
-			   .map(filterValue -> filterValue.convertToSqlFilter(context, conceptTables))
+			   .map(filterValue -> filterValue.convertToSqlFilter(context, connectorTables))
 			   .forEach(allFiltersForTable::add);
 		collectConditionFilters(cqConcept, cqTable).ifPresent(allFiltersForTable::add);
 		getDateRestriction(context, validityDateSelect).ifPresent(allFiltersForTable::add);
 
 		// convert selects
-		SelectContext selectContext = new SelectContext(context, cqConcept, conceptLabel, validityDateSelect, conceptTables);
+		SelectContext selectContext = new SelectContext(context, cqConcept, conceptLabel, validityDateSelect, connectorTables);
 		List<SqlSelects> conceptSelects = Stream.concat(cqConcept.getSelects().stream(), cqTable.getSelects().stream())
 												.map(select -> select.convertToSqlSelects(selectContext))
 												.toList();
 
-		return ConceptCteContext.builder()
-								.conversionContext(context)
-								.filters(allFiltersForTable)
-								.selects(conceptSelects)
-								.validityDate(validityDateSelect)
-								.isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
-								.conceptTables(conceptTables)
-								.conceptLabel(conceptLabel)
-								.build();
+		return CQTableContext.builder()
+							 .conversionContext(context)
+							 .sqlFilters(allFiltersForTable)
+							 .sqlSelects(conceptSelects)
+							 .validityDate(validityDateSelect)
+							 .isExcludedFromDateAggregation(cqConcept.isExcludeFromTimeAggregation())
+							 .connectorTables(connectorTables)
+							 .conceptLabel(conceptLabel)
+							 .build();
 	}
 
 	/**
 	 * Determines if event/aggregation filter steps are required.
 	 *
 	 * <p>
-	 * {@link ConceptCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
+	 * {@link ConnectorCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
 	 */
-	private Set<ConceptCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
-		Set<ConceptCteStep> requiredSteps = new HashSet<>(ConceptCteStep.MANDATORY_STEPS);
+	private Set<ConnectorCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
+		Set<ConnectorCteStep> requiredSteps = new HashSet<>(ConnectorCteStep.MANDATORY_STEPS);
 
 		if (dateRestrictionApplicable(dateRestrictionRequired, validityDateSelect)) {
-			requiredSteps.add(ConceptCteStep.EVENT_FILTER);
+			requiredSteps.add(ConnectorCteStep.EVENT_FILTER);
 		}
 
 		table.getFilters().stream()

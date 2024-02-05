@@ -56,7 +56,12 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
 
-		storage.getExecution(executionId).reset();
+		final ManagedExecution execution = storage.getExecution(executionId);
+
+		// The query might already be deleted
+		if(execution != null) {
+			execution.reset();
+		}
 	}
 
 	@Override

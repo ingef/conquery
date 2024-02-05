@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -19,17 +19,17 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 	private RandomValueSqlAggregator(
 			Column column,
 			String alias,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		String columnName = column.getName();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
-		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -44,7 +44,7 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 		return new RandomValueSqlAggregator(
 				randomValueSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(randomValueSelect),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 	}

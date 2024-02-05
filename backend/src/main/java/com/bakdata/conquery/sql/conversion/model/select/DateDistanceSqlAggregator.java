@@ -11,14 +11,14 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.Value;
 import org.jooq.Field;
@@ -36,7 +36,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			String alias,
 			CDateRange dateRestriction,
 			ChronoUnit timeUnit,
-			SqlTables<ConceptCteStep> conceptTables,
+			SqlTables<ConnectorCteStep> connectorTables,
 			DateNowSupplier dateNowSupplier,
 			Range.LongRange filterValue,
 			SqlFunctionProvider functionProvider
@@ -45,18 +45,18 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		if (column.getType() != MajorTypeId.DATE) {
 			throw new UnsupportedOperationException("Can't calculate date distance to column of type " + column.getType());
 		}
-		Name dateColumnName = DSL.name(conceptTables.getRootTable(), column.getName());
+		Name dateColumnName = DSL.name(connectorTables.getRootTable(), column.getName());
 		FieldWrapper<Integer> dateDistanceSelect = new FieldWrapper<>(functionProvider.dateDistance(timeUnit, dateColumnName, endDate).as(alias));
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder().preprocessingSelect(dateDistanceSelect);
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
@@ -67,7 +67,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.build();
 			Field<Integer>
 					qualifiedDateDistanceSelect =
-					dateDistanceSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
+					dateDistanceSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER)).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.eventFilter(dateDistanceCondition)
@@ -84,7 +84,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 				selectContext.getNameGenerator().selectName(dateDistanceSelect),
 				selectContext.getParentContext().getDateRestrictionRange(),
 				dateDistanceSelect.getTimeUnit(),
-				selectContext.getConceptTables(),
+				selectContext.getConnectorTables(),
 				selectContext.getParentContext().getSqlDialect().getDateNowSupplier(),
 				null,
 				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
@@ -100,7 +100,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 				filterContext.getNameGenerator().selectName(dateDistanceFilter),
 				filterContext.getParentContext().getDateRestrictionRange(),
 				dateDistanceFilter.getTimeUnit(),
-				filterContext.getConceptTables(),
+				filterContext.getConnectorTables(),
 				filterContext.getParentContext().getSqlDialect().getDateNowSupplier(),
 				filterContext.getValue(),
 				filterContext.getParentContext().getSqlDialect().getFunctionProvider()

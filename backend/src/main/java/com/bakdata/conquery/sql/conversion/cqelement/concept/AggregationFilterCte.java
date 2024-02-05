@@ -8,39 +8,39 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
-class AggregationFilterCte extends ConceptCte {
+class AggregationFilterCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		String predecessorTableName = conceptCteContext.getConceptTables().getPredecessor(cteStep());
+		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
 		Selects aggregationFilterSelects = Selects.builder()
-												  .primaryColumn(conceptCteContext.getPrimaryColumn())
-												  .sqlSelects(getForAggregationFilterSelects(conceptCteContext))
+												  .primaryColumn(tableContext.getPrimaryColumn())
+												  .sqlSelects(getForAggregationFilterSelects(tableContext))
 												  .build()
 												  .qualify(predecessorTableName);
 
-		List<Condition> aggregationFilterConditions = conceptCteContext.getFilters().stream()
-																	   .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																	   .map(WhereCondition::condition)
-																	   .toList();
+		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
+																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+																  .map(WhereCondition::condition)
+																  .toList();
 
 		return QueryStep.builder()
 						.selects(aggregationFilterSelects)
 						.conditions(aggregationFilterConditions);
 	}
 
-	private List<SqlSelect> getForAggregationFilterSelects(ConceptCteContext conceptCteContext) {
-		return conceptCteContext.getSelects().stream()
-								.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-								.filter(sqlSelect -> !sqlSelect.isUniversal())
-								.distinct()
-								.toList();
+	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext tableContext) {
+		return tableContext.allSqlSelects().stream()
+						   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
+						   .filter(sqlSelect -> !sqlSelect.isUniversal())
+						   .distinct()
+						   .toList();
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_FILTER;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_FILTER;
 	}
 
 }

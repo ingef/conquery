@@ -1,15 +1,23 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.*;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
+import com.bakdata.conquery.integration.common.RequiredSecondaryId;
+import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class WorkerTestDataImporter implements TestDataImporter {
 
@@ -21,13 +29,13 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSecondaryIds(support, content.getSecondaryIds());
 		importInternToExternMappers(support, test.getInternToExternMappings());
 
-		waitUntilDone(support, () -> importSearchIndexes(support, test.getSearchIndexes()));
-		waitUntilDone(support, () -> importTables(support, content.getTables(), content.isAutoConcept()));
-		waitUntilDone(support, () -> importConcepts(support, test.getRawConcepts()));
-		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
-		waitUntilDone(support, () -> importIdMapping(support, content));
-		waitUntilDone(support, () -> importPreviousQueries(support, content, support.getTestUser()));
-		waitUntilDone(support, () -> updateMatchingStats(support));
+		waitUntilDone(support, () -> LoadingUtil.importSearchIndexes(support, test.getSearchIndexes()));
+		waitUntilDone(support, () -> LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept()));
+		waitUntilDone(support, () -> LoadingUtil.importConcepts(support, test.getRawConcepts()));
+		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> LoadingUtil.importIdMapping(support, content));
+		waitUntilDone(support, () -> LoadingUtil.importPreviousQueries(support, content, support.getTestUser()));
+		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 
 		sendUpdateMatchingStatsMessage(support);
 	}
@@ -37,12 +45,12 @@ public class WorkerTestDataImporter implements TestDataImporter {
 
 		RequiredData content = test.getContent();
 
-		waitUntilDone(support, () -> importSecondaryIds(support, content.getSecondaryIds()));
-		waitUntilDone(support, () -> importTables(support, content.getTables(), content.isAutoConcept()));
-		waitUntilDone(support, () -> importConcepts(support, test.getRawConcepts()));
-		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
-		waitUntilDone(support, () -> importIdMapping(support, content));
-		waitUntilDone(support, () -> importPreviousQueries(support, content, support.getTestUser()));
+		waitUntilDone(support, () -> LoadingUtil.importSecondaryIds(support, content.getSecondaryIds()));
+		waitUntilDone(support, () -> LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept()));
+		waitUntilDone(support, () -> LoadingUtil.importConcepts(support, test.getRawConcepts()));
+		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> LoadingUtil.importIdMapping(support, content));
+		waitUntilDone(support, () -> LoadingUtil.importPreviousQueries(support, content, support.getTestUser()));
 	}
 
 	@Override
@@ -50,9 +58,9 @@ public class WorkerTestDataImporter implements TestDataImporter {
 
 		RequiredData content = test.getContent();
 
-		importInternToExternMappers(support, test.getInternToExternMappings());
-		importSearchIndexes(support, test.getSearchIndices());
-		waitUntilDone(support, () -> importTables(support, content.getTables(), content.isAutoConcept()));
+		LoadingUtil.importInternToExternMappers(support, test.getInternToExternMappings());
+		LoadingUtil.importSearchIndexes(support, test.getSearchIndices());
+		waitUntilDone(support, () -> LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept()));
 
 		test.setConnector(ConqueryTestSpec.parseSubTree(
 								  support,
@@ -63,9 +71,29 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
-		waitUntilDone(support, () -> uploadConcept(support, support.getDataset(), test.getConcept()));
-		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
-		waitUntilDone(support, () -> updateMatchingStats(support));
+		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
+		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
+	}
+
+	@Override
+	public void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+		waitUntilDone(support, () -> LoadingUtil.importSecondaryIds(support, secondaryIds));
+	}
+
+	@Override
+	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
+		waitUntilDone(support, () -> LoadingUtil.importTables(support, tables, autoConcept));
+	}
+
+	@Override
+	public void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		waitUntilDone(support, () -> LoadingUtil.importConcepts(support, rawConcepts));
+	}
+
+	@Override
+	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
 	}
 
 	private void waitUntilDone(StandaloneSupport support, CheckedRunnable<?> runnable) {

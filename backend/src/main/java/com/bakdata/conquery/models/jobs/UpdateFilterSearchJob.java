@@ -70,7 +70,7 @@ public class UpdateFilterSearchJob extends Job {
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = Executors.newCachedThreadPool();
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
 		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 

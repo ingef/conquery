@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
-import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -29,13 +28,10 @@ public class SqlExecutionManager implements ExecutionManager {
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
 
-	public SqlExecutionManager(final SqlContext context, MetaStorage metaStorage) {
+	public SqlExecutionManager(final SqlContext context, SqlExecutionService sqlExecutionService, MetaStorage metaStorage) {
 		SqlDialect sqlDialect = context.getSqlDialect();
 		this.metaStorage = metaStorage;
-		this.executionService = new SqlExecutionService(
-				sqlDialect.getDSLContext(),
-				ResultSetProcessorFactory.create(sqlDialect)
-		);
+		this.executionService = sqlExecutionService;
 		this.converter = new SqlConverter(sqlDialect, context.getConfig());
 	}
 

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.error;
 
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -256,7 +255,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class SqlError extends ConqueryError {
-		private final SQLException error;
+		private final Exception error;
 
 		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {

@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -28,6 +29,8 @@ public interface SqlFunctionProvider {
 	String getMinDateExpression();
 
 	String getMaxDateExpression();
+
+	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
 	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
@@ -64,6 +67,13 @@ public interface SqlFunctionProvider {
 	<T> Field<T> random(Field<T> column);
 
 	Condition likeRegex(Field<String> field, String pattern);
+
+	/**
+	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
+	 */
+	Field<String> yearQuarter(Field<Date> dateField);
+  
+	Field<Object[]> asArray(List<Field<?>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {
@@ -118,9 +128,13 @@ public interface SqlFunctionProvider {
 	}
 
 	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {
-		Field<String> likePattern = DSL.inline(prefix + "%");
-		String sqlTemplate = "'[' || STRING_AGG(CASE WHEN {0} LIKE {1} THEN {0} ELSE NULL END, ', ') || ']'";
-		return DSL.field(DSL.sql(sqlTemplate, field, likePattern), String.class);
+		return DSL.field(
+				"'[' || {0}({1}, {2}) || ']'",
+				String.class,
+				DSL.keyword("STRING_AGG"),
+				DSL.when(field.like(DSL.inline(prefix + "%")), field),
+				DSL.val(", ")
+		);
 	}
 
 }

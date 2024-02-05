@@ -1,6 +1,9 @@
 {
   "label": "SUM select with DISTINCT BY columns",
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/selects/sum/distinct/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
