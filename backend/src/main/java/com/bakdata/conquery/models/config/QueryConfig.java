@@ -12,5 +12,11 @@ public class QueryConfig {
 
 	private Duration oldQueriesTime = Duration.days(30);
 
+	/**
+	 * Limits how many subQuery-Plans should be cached between executions:
+	 * This number limits how many sub-plans are cached per core so that outliers do not cause massive memory overhead.
+	 *
+	 * TODO Implement global limit of active secondaryId sub plans
+	 */
 	private int secondaryIdSubPlanRetention = 15;
 }
