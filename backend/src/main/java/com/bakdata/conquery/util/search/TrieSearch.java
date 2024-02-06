@@ -1,6 +1,15 @@
 package com.bakdata.conquery.util.search;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,7 +53,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	private final Pattern splitPattern;
 
 	private static class KeyLengthItems<T> {
-		int keyLength;
+		private final int keyLength;
 
 		// In shrinkToFit we shrink "items" for every whole word
 		List<T> items;
@@ -175,11 +184,28 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public void addItem(T item, List<String> keywords) {
+		ensureWriteable();
+
 		// Associate item with all extracted keywords
+
+		Set<String> barrier = new HashSet<>();
+
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.forEach(word -> doPut(word, item));
+				.distinct()
+				.forEach(word -> doPut(word, item, barrier));
+	}
+
+	private void doPut(String word, T item, Set<String> barrier) {
+
+		List<KeyLengthItems<T>> entry = trie.get(toWholeWord(word));
+		final KeyLengthItems<T> ki = entry != null ? entry.get(0) : new KeyLengthItems<>(word.length(), new ArrayList<>());
+
+		ki.items.add(item);
+		toTrieKeys(word)
+				.filter(barrier::add)
+				.forEach(key -> trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(ki));
 	}
 
 	public Stream<String> toTrieKeys(String word) {
@@ -194,17 +220,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				IntStream.range(0, word.length() - ngramLength + 1)
 						 .mapToObj(start -> word.substring(start, start + ngramLength))
 		);
-	}
-
-	private void doPut(String word, T item) {
-		// ToDo: wouldn't it suffice to check once in addItem()? Is concurrency the reason?
-		ensureWriteable();
-
-		List<KeyLengthItems<T>> entry = trie.get(toWholeWord(word));
-		final KeyLengthItems<T> ki = entry != null ? entry.get(0) : new KeyLengthItems<>(word.length(), new ArrayList<>());
-
-		ki.items.add(item);
-		toTrieKeys(word).forEach(key -> trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(ki));
 	}
 
 	public String toWholeWord(String word) {
@@ -234,16 +249,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			return;
 		}
 
-		for (Map.Entry<String, List<KeyLengthItems<T>>> entry : trie.entrySet()) {
-			// Every KeywordItems<T> is the sole member of a whole word.
-			if (!isWholeWord(entry.getKey())) {
-				// Skip ngram
-				continue;
-			}
 
-			KeyLengthItems<T> ki = entry.getValue().get(0);
-			ki.items = ki.items.stream().distinct().collect(Collectors.toList());
-		}
 		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
 		size = calculateSize();
 		shrunk = true;
