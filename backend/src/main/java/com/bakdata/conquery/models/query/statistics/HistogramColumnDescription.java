@@ -12,10 +12,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class HistogramColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
 
-	public static record Entry(String label, long value) {
-	}
-
-	;
+	public static record Entry(String label, long value) {};
 	private final List<Entry> entries;
 
 	private final Map<String, String> extras;
