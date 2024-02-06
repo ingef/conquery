@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -150,10 +152,12 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
+		final int ngramLength = isGenerateSuffixes() ? config.getNgramLength() : Integer.MAX_VALUE;
 
-		final int suffixLength = isGenerateSuffixes() ? config.getNgramLength() : Integer.MAX_VALUE;
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(ngramLength, config.getSearchSplitChars());
 
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
+		Instant start = Instant.now();
+		log.debug("START-COLUMN ADDING_ITEMS for {}", getId());
 
 		storage.getStorageHandler()
 			   .lookupColumnValues(storage, this)
@@ -161,7 +165,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
+		log.debug("DONE-COLUMN ADDING_ITEMS for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+
+		start = Instant.now();
+		log.debug("START-COLUMN SHRINKING for {}", getId());
+
 		search.shrinkToFit();
+
+		log.debug("DONE-COLUMN SHRINKING for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
 
 		return search;
 	}

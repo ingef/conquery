@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -135,9 +137,19 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
+		Instant start = Instant.now();
+		log.debug("START-SELECT ADDING_ITEMS for {}", getId());
+
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
+		log.debug("DONE-SELECT ADDING_ITEMS for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+
+		start = Instant.now();
+		log.debug("START-SELECT SHRINKING for {}", getId());
+
 		search.shrinkToFit();
+
+		log.debug("DONE-SELECT SHRINKING for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
 
 		return search;
 	}

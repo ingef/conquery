@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.index;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,14 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)
 		);
+
+		Instant start = Instant.now();
+		log.debug("START-FV-PUT ADDING_ITEMS");
+
 		addItem(feValue, FilterSearch.extractKeywords(feValue));
+
+		log.debug("DONE-FV-PUT ADDING_ITEMS in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
+
 	}
 
 	@Override
@@ -57,11 +66,23 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
+
+		Instant start = Instant.now();
+		log.debug("START-FV-FIN ADDING_ITEMS");
+
 		// If no empty label was provided by the mapping, we insert the configured default-label
 		if (findExact(List.of(""), 1).isEmpty()) {
 			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
 		}
 
+		log.debug("DONE-FV-FIN ADDING_ITEMS in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
+
+		start = Instant.now();
+		log.debug("START-FV-FIN SHRINKING");
+
 		shrinkToFit();
+
+		log.debug("DONE-FV-FIN SHRINKING in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
+
 	}
 }
