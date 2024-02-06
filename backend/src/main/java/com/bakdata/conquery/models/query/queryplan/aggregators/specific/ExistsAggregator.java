@@ -29,7 +29,7 @@ public class ExistsAggregator extends Aggregator<Boolean> {
 	private QPNode reference;
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {  }
+	public void consumeEvent(Bucket bucket, int event) {  }
 
 	@Override
 	public Boolean createAggregationResult() {
