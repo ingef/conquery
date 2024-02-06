@@ -161,6 +161,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
+		search.shrinkToFit();
 
 		return search;
 	}
