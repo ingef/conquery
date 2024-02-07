@@ -72,12 +72,12 @@ public class TrieSearch<T extends Comparable<T>> {
 
 			updateWeights(query, prefixHits, itemWeights);
 
-			ngrams(query)
-					.forEach(ngram -> {
-						final List<T> hits = entries.get(ngram);
-
-						updateWeights(query, Map.of(ngram, hits), itemWeights);
-					});
+			if (query.length() < ngramLength) {
+				updateWeightsForEachNGram(prefixHits.keySet().stream().flatMap(this::ngrams).distinct(), query, itemWeights);
+			}
+			else {
+				updateWeightsForEachNGram(ngrams(query), query, itemWeights);
+			}
 		}
 
 		// Sort items according to their weight, then limit.
@@ -88,6 +88,10 @@ public class TrieSearch<T extends Comparable<T>> {
 						  .limit(limit)
 						  .map(Map.Entry::getKey)
 						  .collect(Collectors.toList());
+	}
+
+	private void updateWeightsForEachNGram(Stream<String> ngrams, String query, Object2DoubleMap<T> itemWeights) {
+		ngrams.forEach(ngram -> updateWeights(query, Map.of(ngram, entries.get(ngram)), itemWeights));
 	}
 
 	private Stream<String> split(String keyword) {
