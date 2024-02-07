@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
@@ -82,9 +81,9 @@ public class FilterSearch {
 
 
 	/**
-	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
+	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void updateSearch(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
 		log.debug("BEGIN counting Search totals.");
@@ -93,6 +92,11 @@ public class FilterSearch {
 	}
 
 
+	/**
+	 * Adds new values to a search. If there is no search yet for the searchable, it is created.
+	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
+	 * prevents from adding new values.
+	 */
 	public void registerValues(Searchable<?> searchable, Collection<String> values) {
 		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig, storage));
 
@@ -126,10 +130,17 @@ public class FilterSearch {
 						 .count();
 	}
 
-	public void shrinkSearches() {
-		final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = getSearchCache();
+	/**
+	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
+	 */
+	public void shrinkSearch(Searchable<?> searchable) {
+		final TrieSearch<FrontendValue> search = getSearchCache().get(searchable);
 
-		searchCache.values().forEach(TrieSearch::shrinkToFit);
+		if (search == null) {
+			log.warn("Searchable has no search associated: {}", searchable);
+			return;
+		}
+		search.shrinkToFit();
 	}
 
 	public synchronized void clearSearch() {

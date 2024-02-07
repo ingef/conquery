@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -96,6 +97,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	@Override
 	public void afterAllReaction() {
 		log.debug("{} shrinking searches", this);
-		namespace.getFilterSearch().shrinkSearches();
+		final FilterSearch filterSearch = namespace.getFilterSearch();
+		columns.forEach(filterSearch::shrinkSearch);
 	}
 }

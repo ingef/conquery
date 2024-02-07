@@ -135,7 +135,10 @@ public class UpdateFilterSearchJob extends Job {
 			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 		}
 
-		namespace.getFilterSearch().updateSearch(searchCache);
+		// Shrink searches before registering in the filter search
+		searchCache.values().forEach(TrieSearch::shrinkToFit);
+
+		namespace.getFilterSearch().addSearches(searchCache);
 
 		log.info("UpdateFilterSearchJob search finished");
 
