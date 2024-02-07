@@ -3,7 +3,6 @@ package com.bakdata.conquery.util.search;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,7 +46,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	private final int ngramLength;
 
 	private final Pattern splitPattern;
-	private final Map<String, List<T>> entries = new HashMap<>();
+	private final PatriciaTrie<List<T>> entries = new PatriciaTrie<>();
 	private final PatriciaTrie<List<T>> whole = new PatriciaTrie<>();
 	private boolean shrunk = false;
 	private long size = -1;
@@ -70,13 +70,15 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Query trie for all items associated with extensions of queries
 			final SortedMap<String, List<T>> prefixHits = whole.prefixMap(query);
 
+			// Slightly favor whole words starting with query
 			updateWeights(query, prefixHits, itemWeights);
 
 			if (query.length() < ngramLength) {
-				updateWeightsForEachNGram(prefixHits.keySet().stream().flatMap(this::ngrams).distinct(), query, itemWeights);
+				updateWeights(query, entries.prefixMap(query), itemWeights);
 			}
 			else {
-				updateWeightsForEachNGram(ngrams(query), query, itemWeights);
+				final Map<String, List<T>> ngramHits = ngrams(query).collect(Collectors.toMap(Function.identity(), entries::get));
+				updateWeights(query, ngramHits, itemWeights);
 			}
 		}
 
@@ -88,10 +90,6 @@ public class TrieSearch<T extends Comparable<T>> {
 						  .limit(limit)
 						  .map(Map.Entry::getKey)
 						  .collect(Collectors.toList());
-	}
-
-	private void updateWeightsForEachNGram(Stream<String> ngrams, String query, Object2DoubleMap<T> itemWeights) {
-		ngrams.forEach(ngram -> updateWeights(query, Map.of(ngram, entries.get(ngram)), itemWeights));
 	}
 
 	private Stream<String> split(String keyword) {
