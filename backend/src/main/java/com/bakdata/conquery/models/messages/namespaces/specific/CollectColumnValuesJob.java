@@ -14,10 +14,13 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -32,11 +35,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
-public class CollectColumnValuesJob extends WorkerMessage {
+public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 
 	@Getter
 	@NsIdRefCollection
 	private final Set<Column> columns;
+
+	/**
+	 * This exists only on the manager for the afterAllReaction.
+	 */
+	@JsonIgnore
+	private final Namespace namespace;
 
 
 	@Override
@@ -62,7 +71,7 @@ public class CollectColumnValuesJob extends WorkerMessage {
 										final Set<String> values = buckets.stream()
 																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																		  .collect(Collectors.toSet());
-										context.send(new RegisterColumnValues(column, values));
+										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column, values));
 									})
 					   )
 					   .collect(Collectors.toList());
@@ -82,5 +91,11 @@ public class CollectColumnValuesJob extends WorkerMessage {
 				log.debug("Still waiting for jobs.");
 			}
 		}
+	}
+
+	@Override
+	public void afterAllReaction() {
+		log.debug("{} shrinking searches", this);
+		namespace.getFilterSearch().shrinkSearches();
 	}
 }

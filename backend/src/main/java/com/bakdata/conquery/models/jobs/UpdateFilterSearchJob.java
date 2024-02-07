@@ -121,7 +121,7 @@ public class UpdateFilterSearchJob extends Job {
 		}
 
 		log.debug("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
-		namespace.getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns));
+		namespace.getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, namespace));
 
 		service.shutdown();
 

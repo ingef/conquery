@@ -2,10 +2,13 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
@@ -21,7 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter
 @Slf4j
-public class RegisterColumnValues extends NamespaceMessage {
+public class RegisterColumnValues extends NamespaceMessage implements ReactionMessage {
+
+	private UUID callerId;
+
+	private WorkerId workerId;
+
 	@NsIdRef
 	private final Column column;
 	private final Collection<String> values;

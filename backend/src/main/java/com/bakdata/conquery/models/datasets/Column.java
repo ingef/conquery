@@ -72,6 +72,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	}
 
 
+	/**
+	 * We create only an empty search here, because the content is provided through {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues} and filled by the caller.
+	 */
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
