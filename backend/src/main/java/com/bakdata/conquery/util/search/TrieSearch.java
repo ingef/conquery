@@ -2,14 +2,15 @@ package com.bakdata.conquery.util.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -20,7 +21,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
@@ -42,33 +42,12 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
 	private static final double EXACT_MATCH_WEIGHT = 0.1d;
-	/**
-	 * We prefer original words in our results.
-	 *
-	 * @implNote they are marked by appending WHOLE_WORD_MARKER to them in the trie.
-	 */
-	private static final String WHOLE_WORD_MARKER = "!";
 
 	private final int ngramLength;
 
 	private final Pattern splitPattern;
-
-	@EqualsAndHashCode(callSuper = false, of = {"keyword"})
-	private static class KeywordItems<T> {
-		private final String keyword;
-		private final List<T> items;
-
-		public KeywordItems(String keyword, List<T> items) {
-			this.keyword = keyword;
-			this.items = items;
-		}
-	}
-
-	/**
-	 * Maps from keywords to associated items.
-	 */
-	private final PatriciaTrie<List<KeywordItems<T>>> trie = new PatriciaTrie<>();
-
+	private final Map<String, List<T>> entries = new HashMap<>();
+	private final PatriciaTrie<List<T>> whole = new PatriciaTrie<>();
 	private boolean shrunk = false;
 	private long size = -1;
 
@@ -78,7 +57,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 		this.ngramLength = ngramLength;
 
-		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
+		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, ""))));
 	}
 
 	public List<T> findItems(Collection<String> queries, int limit) {
@@ -89,18 +68,16 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		for (final String query : queries) {
 			// Query trie for all items associated with extensions of queries
-			final int queryLength = query.length();
-			if (queryLength < ngramLength) {
-				for (final List<KeywordItems<T>> hits : trie.prefixMap(query).values()) {
-					updateWeights(query, hits, itemWeights);
-				}
-			}
-			else {
-				for (int start = 0; start <= queryLength - ngramLength; start++) {
-					final String ngram = query.substring(start, start + ngramLength);
-					updateWeights(query, trie.get(ngram), itemWeights);
-				}
-			}
+			final SortedMap<String, List<T>> prefixHits = whole.prefixMap(query);
+
+			updateWeights(query, prefixHits, itemWeights);
+
+			ngrams(query)
+					.forEach(ngram -> {
+						final List<T> hits = entries.get(ngram);
+
+						updateWeights(query, Map.of(ngram, hits), itemWeights);
+					});
 		}
 
 		// Sort items according to their weight, then limit.
@@ -113,26 +90,6 @@ public class TrieSearch<T extends Comparable<T>> {
 						  .collect(Collectors.toList());
 	}
 
-	/**
-	 * calculate and update weights for all queried items
-	 */
-	private void updateWeights(String query, final List<KeywordItems<T>> hits, Object2DoubleMap<T> itemWeights) {
-		if (hits == null) {
-			return;
-		}
-
-		for (final KeywordItems<T> entry : hits) {
-			final double weight = weightWord(query, entry.keyword);
-
-			entry.items.forEach(item ->
-								{
-									// We combine hits multiplicative to favor items with multiple hits
-									final double currentWeight = itemWeights.getOrDefault(item, 1);
-									itemWeights.put(item, currentWeight * weight);
-								});
-		}
-	}
-
 	private Stream<String> split(String keyword) {
 		if (Strings.isNullOrEmpty(keyword)) {
 			return Stream.empty();
@@ -142,6 +99,39 @@ public class TrieSearch<T extends Comparable<T>> {
 						   .map(String::trim)
 						   .filter(StringUtils::isNotBlank)
 						   .map(String::toLowerCase);
+	}
+
+	/**
+	 * calculate and update weights for all queried items
+	 */
+	private void updateWeights(String query, final Map<String, List<T>> items, Object2DoubleMap<T> itemWeights) {
+		if (items == null) {
+			return;
+		}
+
+
+		for (Map.Entry<String, List<T>> entry : items.entrySet()) {
+			final String key = entry.getKey();
+			final List<T> hits = entry.getValue();
+
+			final double weight = weightWord(query, key);
+
+			// We combine hits multiplicative to favor items with multiple hits
+			for (T item : hits) {
+				final double currentWeight = itemWeights.getOrDefault(item, 1);
+				itemWeights.put(item, currentWeight * weight);
+			}
+		}
+	}
+
+	public Stream<String> ngrams(String word) {
+
+		if (word.length() < ngramLength) {
+			return Stream.empty();
+		}
+
+		return IntStream.range(0, word.length() - ngramLength + 1)
+						.mapToObj(start -> word.substring(start, start + ngramLength));
 	}
 
 	/**
@@ -172,16 +162,12 @@ public class TrieSearch<T extends Comparable<T>> {
 	public List<T> findExact(Collection<String> keywords, int limit) {
 		return keywords.stream()
 					   .flatMap(this::split)
-					   .map(this::toWholeWord)
-					   .flatMap(this::doGet)
+					   .map(whole::get)
+					   .filter(Objects::nonNull)
+					   .flatMap(List::stream)
 					   .distinct()
 					   .limit(limit)
 					   .collect(Collectors.toList());
-	}
-
-	private Stream<T> doGet(String kw) {
-		return trie.getOrDefault(kw, Collections.emptyList()).stream()
-				   .flatMap(ki -> ki.items.stream());
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -189,48 +175,12 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		// Associate item with all extracted keywords
 
-		Set<String> barrier = new HashSet<>();
+		final Set<String> barrier = new HashSet<>();
 
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.distinct()
 				.forEach(word -> doPut(word, item, barrier));
-	}
-
-	private void doPut(String word, T item, Set<String> barrier) {
-
-		List<KeywordItems<T>> entry = trie.get(toWholeWord(word));
-		final KeywordItems<T> ki = entry != null ? entry.get(0) : new KeywordItems<>(word, new ArrayList<>());
-
-		ki.items.add(item);
-		toTrieKeys(word)
-				.filter(barrier::add)
-				.forEach(key -> trie.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(ki));
-	}
-
-	public Stream<String> toTrieKeys(String word) {
-		Stream<String> wholeWordStream = Stream.of(toWholeWord(word));
-
-		if (word.length() < ngramLength) {
-			return wholeWordStream;
-		}
-
-		return Stream.concat(
-				wholeWordStream,
-				IntStream.range(0, word.length() - ngramLength + 1)
-						 .mapToObj(start -> word.substring(start, start + ngramLength))
-		);
-	}
-
-	public String toWholeWord(String word) {
-		// We append a special character here marking original words as we want to favor them in weighing.
-		return word + WHOLE_WORD_MARKER;
-	}
-
-	public boolean isWholeWord(String word) {
-		// We append a special character here marking original words as we want to favor them in weighing.
-		return word.endsWith(WHOLE_WORD_MARKER);
 	}
 
 	private void ensureWriteable() {
@@ -238,6 +188,18 @@ public class TrieSearch<T extends Comparable<T>> {
 			return;
 		}
 		throw new IllegalStateException("Cannot alter a shrunk search.");
+	}
+
+	private void doPut(String word, T item, Set<String> barrier) {
+		whole.computeIfAbsent(word, (ignored) -> new ArrayList<>()).add(item);
+
+		ngrams(word)
+				.filter(barrier::add)
+				.forEach(key -> entries.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(item));
+	}
+
+	public boolean isWriteable() {
+		return !shrunk;
 	}
 
 	/**
@@ -249,11 +211,12 @@ public class TrieSearch<T extends Comparable<T>> {
 		if (shrunk) {
 			return;
 		}
-		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+		entries.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+		whole.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+
 		size = calculateSize();
 		shrunk = true;
 	}
-
 
 	public long calculateSize() {
 		if (size != -1) {
@@ -261,35 +224,24 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		long totalSize = 0;
-		for (Map.Entry<String, List<KeywordItems<T>>> entry : trie.entrySet()) {
-			if (!isWholeWord(entry.getKey())) {
-				continue;
-			}
-			for (KeywordItems<T> ki : entry.getValue()) {
-				totalSize += ki.items.size();
-			}
+		for (List<T> entry : whole.values()) {
+			totalSize += entry.size();
 		}
 		return totalSize;
 	}
 
-
 	public Stream<T> stream() {
-		return trie.entrySet().stream().filter(en -> isWholeWord(en.getKey()))
-				   .flatMap(en -> en.getValue().stream())
-				   .flatMap(ki -> ki.items.stream())
-				   .distinct();
+		return whole.values().stream()
+					.flatMap(Collection::stream)
+					.distinct();
 	}
 
 	public Iterator<T> iterator() {
 		// This is a very ugly workaround to not get eager evaluation (which happens when using flatMap and distinct on streams)
 		final Set<T> seen = new HashSet<>();
 
-		final Iterator<Map.Entry<String, List<KeywordItems<T>>>> enIter = Iterators.filter(trie.entrySet().iterator(), en -> isWholeWord(en.getKey()));
-		final Iterator<KeywordItems<T>> kiIter = Iterators.concat(Iterators.transform(enIter, en -> en.getValue().iterator()));
-		return Iterators.filter(Iterators.concat(Iterators.transform(kiIter, ki -> ki.items.iterator())), seen::add);
+		final Iterator<Iterator<T>> enIter = Iterators.transform(whole.values().iterator(), List::listIterator);
+		return Iterators.filter(Iterators.concat(enIter), seen::add);
 	}
 
-	public boolean isWriteable() {
-		return !shrunk;
-	}
 }
