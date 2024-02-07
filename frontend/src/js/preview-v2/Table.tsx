@@ -1,21 +1,10 @@
 import styled from "@emotion/styled";
 import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import {
-  CurrencyConfigT,
-  GetQueryResponseDoneT,
-  GetQueryResponseT,
-} from "../api/types";
-import { StateT } from "../app/reducers";
-import {
-  NUMBER_TYPES,
-  formatDate,
-  formatNumber,
-  toFullLocaleDateString,
-} from "./util";
+import { DefaultRecordType } from "rc-table/lib/interface";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import { useCustomTableRenderers } from "./tableUtils";
 
 interface Props {
   data: ArrowTable;
@@ -58,92 +47,52 @@ export const StyledTable = styled("table")`
 `;
 
 export default function Table({ data, queryData }: Props) {
-  const components = {
-    table: StyledTable,
-  };
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { getRenderFunctionByFieldName } = useCustomTableRenderers(
+    queryData as GetQueryResponseDoneT,
+  );
+  const tableData = useMemo(() => data.toArray(), [data]);
 
-  const { t } = useTranslation();
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
+  const columns = useMemo(
+    () =>
+      data.schema.fields.map((field) => ({
+        title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+        dataIndex: field.name,
+        key: field.name,
+        render: (value: string | Vector) => {
+          return typeof value === "string" ? (
+            <span title={value as string}>{value}</span>
+          ) : (
+            value
+          );
+        },
+      })),
+    [data.schema.fields],
   );
 
-  function getRenderFunction(
-    cellType: string,
-  ): ((value: string | Vector) => string) | undefined {
-    if (cellType.indexOf("LIST") == 0) {
-      const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
-        "listtype"
-      ];
-      if (listType) {
-        const listTypeRenderFunction = getRenderFunction(listType);
-        return (value) =>
-          value
-            ? (value as Vector)
-                .toArray()
-                .map((listItem: string) =>
-                  listTypeRenderFunction
-                    ? listTypeRenderFunction(listItem)
-                    : listItem,
-                )
-                .join(", ")
-            : null;
-      }
-    } else if (NUMBER_TYPES.includes(cellType)) {
-      return (value) => {
-        const num = parseFloat(value as string);
-        return isNaN(num) ? "" : formatNumber(num);
-      };
-    } else if (cellType == "DATE") {
-      return (value) =>
-        value instanceof Date
-          ? toFullLocaleDateString(value)
-          : formatDate(value as string);
-    } else if (cellType == "DATE_RANGE") {
-      return (value) => {
-        const dateRange = (value as Vector).toJSON() as unknown as {
-          min: Date;
-          max: Date;
-        };
-        const min = toFullLocaleDateString(dateRange.min);
-        const max = toFullLocaleDateString(dateRange.max);
-        return min == max ? min : `${min} - ${max}`;
-      };
-    } else if (cellType == "MONEY") {
-      return (value) => {
-        // parse cent string
-        const num = parseFloat(value as string) / 100;
-        return isNaN(num) ? "" : `${formatNumber(num)} ${currencyConfig.unit}`;
-      };
-    } else if (cellType == "BOOLEAN") {
-      return (value) => (value ? t("common.true") : t("common.false"));
-    }
-  }
-
-  const getRenderFunctionByFieldName = (
-    fieldName: string,
-  ): ((value: string | Vector) => string) | undefined => {
-    const cellType = (
-      queryData as GetQueryResponseDoneT
-    ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
-    if (cellType) {
-      return getRenderFunction(cellType);
-    }
-  };
-
-  const columns = data.schema.fields.map((field) => ({
-    title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
-    dataIndex: field.name,
-    key: field.name,
-    render: (value: string | Vector) => {
-      const rendered = getRenderFunctionByFieldName(field.name)?.(value);
-      return rendered ? <span title={rendered}>{rendered}</span> : value;
+  // parse rows outside of rc-table to cache them
+  const getNextTableRows = useCallback(
+    (startIndex: number = 0) => {
+      const stepCount = 50;
+      const nextRows = [] as DefaultRecordType[];
+      tableData
+        .slice(startIndex, startIndex + stepCount)
+        .forEach((dataEntry: Vector) => {
+          const parsedValues = Object.fromEntries(
+            Object.entries(dataEntry.toJSON()).map(([key, value]) => {
+              const parsedValue =
+                getRenderFunctionByFieldName(key)?.(value) ?? value;
+              return [key, parsedValue];
+            }),
+          );
+          nextRows.push(parsedValues);
+        });
+      return nextRows;
     },
-  }));
+    [tableData, getRenderFunctionByFieldName],
+  );
 
-  const rootRef = useRef<HTMLDivElement>(null);
-  const tableData = data.toArray();
-  const stepCount = 50;
-  const [loadingAmount, setLoadingAmount] = useState(stepCount);
+  const [loadedTableData, setLoadedTableData] = useState(getNextTableRows());
 
   useEffect(() => {
     const eventFunction = () => {
@@ -157,23 +106,26 @@ export default function Table({ data, queryData }: Props) {
       const thresholdTriggered =
         (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
       if (thresholdTriggered) {
-        setLoadingAmount((amount) =>
-          Math.min(amount + stepCount, tableData.length),
-        );
+        setLoadedTableData([
+          ...loadedTableData,
+          ...getNextTableRows(loadedTableData.length),
+        ]);
       }
     };
 
     window.addEventListener("scroll", eventFunction, true);
     return () => window.removeEventListener("scroll", eventFunction, true);
-  }, [tableData.length]);
+  }, [loadedTableData, getNextTableRows]);
 
   return (
     <Root ref={rootRef}>
       <RcTable
         columns={columns}
-        data={tableData.slice(0, loadingAmount)}
-        rowKey={(_, index) => `row_${index}`}
-        components={components}
+        data={loadedTableData}
+        rowKey={(_, index) => `previewtable_row_${index}`}
+        components={{
+          table: StyledTable,
+        }}
         scroll={{ x: true }}
       />
     </Root>
