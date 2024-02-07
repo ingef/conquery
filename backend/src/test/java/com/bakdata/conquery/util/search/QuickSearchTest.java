@@ -13,7 +13,7 @@ class QuickSearchTest {
 	@Test
 	public void anaconda() {
 		final TrieSearch<String> search = new TrieSearch<>(3, "");
-		for (String item : List.of("Anaconda", "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
+		for (String item : List.of("Anaconda","Anaxonds" /* Simulate Typing Errors */, "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
 			search.addItem(item, List.of(item));
 		}
 
@@ -24,7 +24,7 @@ class QuickSearchTest {
 
 		assertThat(results)
 				.describedAs("Query for %s".formatted(query))
-				.isEqualTo(List.of("Anaconda", "Condar", "Condor", "Honda", "Analysis", "Ananas", "Canada", "London"));
+				.isEqualTo(List.of("Anaconda", "Condar", "Anaxonds", "Condor", "Honda", "Analysis", "Ananas", "Canada", "London"));
 
 	}
 

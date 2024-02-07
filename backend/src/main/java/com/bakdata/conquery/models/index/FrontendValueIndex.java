@@ -44,13 +44,7 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 				templateToConcrete.get(optionValueTemplate)
 		);
 
-		Instant start = Instant.now();
-		log.debug("START-FV-PUT ADDING_ITEMS");
-
 		addItem(feValue, FilterSearch.extractKeywords(feValue));
-
-		log.debug("DONE-FV-PUT ADDING_ITEMS in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
-
 	}
 
 	@Override

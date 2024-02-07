@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,11 +76,16 @@ public class TrieSearch<T extends Comparable<T>> {
 
 			if (query.length() < ngramLength) {
 				updateWeights(query, entries.prefixMap(query), itemWeights);
+				continue;
 			}
-			else {
-				final Map<String, List<T>> ngramHits = ngrams(query).collect(Collectors.toMap(Function.identity(), entries::get));
-				updateWeights(query, ngramHits, itemWeights);
-			}
+
+			final Map<String, List<T>> ngramHits = ngrams(query)
+					.collect(Collectors.toMap(
+							Function.identity(),
+							ng -> entries.getOrDefault(ng, Collections.emptyList())
+					));
+
+			updateWeights(query, ngramHits, itemWeights);
 		}
 
 		// Sort items according to their weight, then limit.

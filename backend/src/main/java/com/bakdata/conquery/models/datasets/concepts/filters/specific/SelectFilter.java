@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -32,6 +31,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 
 @Setter
@@ -137,19 +137,19 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
-		Instant start = Instant.now();
+		StopWatch timer = StopWatch.createStarted();
 		log.debug("START-SELECT ADDING_ITEMS for {}", getId());
 
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		log.debug("DONE-SELECT ADDING_ITEMS for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+		log.debug("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), Duration.ofMillis(timer.getTime()));
 
-		start = Instant.now();
+		timer.reset();
 		log.debug("START-SELECT SHRINKING for {}", getId());
 
 		search.shrinkToFit();
 
-		log.debug("DONE-SELECT SHRINKING for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+		log.debug("DONE-SELECT SHRINKING for {} in {}", getId(), Duration.ofMillis(timer.getTime()));
 
 		return search;
 	}

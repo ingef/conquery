@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -32,6 +31,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Getter
 @Setter
@@ -156,7 +156,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(ngramLength, config.getSearchSplitChars());
 
-		Instant start = Instant.now();
+		StopWatch timer = StopWatch.createStarted();
+
 		log.debug("START-COLUMN ADDING_ITEMS for {}", getId());
 
 		storage.getStorageHandler()
@@ -165,14 +166,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		log.debug("DONE-COLUMN ADDING_ITEMS for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+		log.debug("DONE-COLUMN ADDING_ITEMS for {} in {} milliseconds", getId(), Duration.ofMillis(timer.getTime()));
 
-		start = Instant.now();
+		timer.reset();
 		log.debug("START-COLUMN SHRINKING for {}", getId());
 
 		search.shrinkToFit();
 
-		log.debug("DONE-COLUMN SHRINKING for {} in {} milliseconds", getId(), Duration.between(start, Instant.now()).toMillis());
+		log.debug("DONE-COLUMN SHRINKING for {} in {} milliseconds", getId(), Duration.ofMillis(timer.getTime()));
 
 		return search;
 	}
