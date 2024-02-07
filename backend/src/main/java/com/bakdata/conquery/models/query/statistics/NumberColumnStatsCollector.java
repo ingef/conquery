@@ -134,7 +134,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final Range<Double> bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
 
 		final Histogram histogram =
-				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), expectedBins, getStatistics().getMin() <= 0, type instanceof ResultType.IntegerT);
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins, true);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 

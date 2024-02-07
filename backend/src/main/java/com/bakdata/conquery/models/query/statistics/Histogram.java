@@ -7,8 +7,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import it.unimi.dsi.fastutil.doubles.Double2ObjectFunction;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +29,7 @@ public class Histogram {
 
 	private int total;
 
-	public static Histogram zeroCentered(double lower, double upper, int expectedBins, boolean contains0, boolean round) {
+	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean round) {
 
 		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
 
@@ -40,7 +38,7 @@ public class Histogram {
 		if (lower == 0) {
 			newLower = 0;
 		}
-		else if (contains0) {
+		else if (absMin <= 0) {
 			// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
 			newLower = Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
 		}
@@ -55,7 +53,12 @@ public class Histogram {
 									  .toArray(Node[]::new);
 
 
-		return new Histogram(nodes, new Node(0, 0), new Node(Double.NEGATIVE_INFINITY, newLower), new Node(newUpper, Double.POSITIVE_INFINITY), newLower, newUpper, width);
+		return new Histogram(nodes,
+							 new Node(0, 0),
+							 new Node(Math.min(absMin, newLower), newLower),
+							 new Node(newUpper, Math.max(absMax, newUpper)),
+							 newLower, newUpper,
+							 width);
 
 	}
 
@@ -63,22 +66,22 @@ public class Histogram {
 		total++;
 
 		if (value == 0d) {
-			zeroNode.add(value);
+			zeroNode.add();
 			return;
 		}
 
 		if (value <= lower) {
-			underflowNode.add(value);
+			underflowNode.add();
 			return;
 		}
 
 		if (value >= upper) {
-			overflowNode.add(value);
+			overflowNode.add();
 			return;
 		}
 
 		final int index = (int) Math.floor((value - lower) / width);
-		nodes[index].add(value);
+		nodes[index].add();
 	}
 
 	public List<Node> nodes() {
@@ -87,41 +90,29 @@ public class Histogram {
 							 Stream.of(nodes)
 					 )
 					 .flatMap(Function.identity())
-					 .sorted(Comparator.comparingDouble(node -> Double.isFinite(node.getMin()) ? node.getMin() : node.getLower()))
+					 .sorted(Comparator.comparingDouble(Node::getMin))
 					 .toList();
 	}
 
 	@Data
 	public static final class Node {
-		@ToString.Exclude
-		private final DoubleList entries = new DoubleArrayList();
-
-		private final double lower, upper;
-
-
-		private double min = Double.POSITIVE_INFINITY;
-		private double max = Double.NEGATIVE_INFINITY;
-
 		@ToString.Include
+		private int hits = 0;
+
+		private final double min, max;
+
 		public int getCount() {
-			return entries.size();
+			return hits;
 		}
 
-		public void add(double value) {
-			if (value < min) {
-				min = value;
-			}
-			if (value > max) {
-				max = value;
-			}
-
-			entries.add(value);
+		public void add() {
+			hits++;
 		}
 
 
 		String getLabel(Double2ObjectFunction<String> printer) {
-			final String lower = printer.apply(Double.isFinite(getMin()) ? getMin() : getLower());
-			final String upper = printer.apply(Double.isFinite(getMax()) ? getMax() : getUpper());
+			final String lower = printer.apply(getMin());
+			final String upper = printer.apply(getMax());
 
 			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 			return binLabel;

@@ -19,7 +19,7 @@ class HistogramTest {
 	@Test
 	void plain() {
 
-		final Histogram histogram = Histogram.zeroCentered(0, 10, 10, true, false);
+		final Histogram histogram = Histogram.zeroCentered(0, 10, -2, 15, 10,  false);
 
 		final Random random = new Random(SEED);
 
@@ -65,17 +65,17 @@ class HistogramTest {
 		for (int i = 0; i < nodes.size(); i++) {
 			final Histogram.Node node = nodes.get(i);
 
-			assertThat(node.getLower())
+			assertThat(node.getMin())
 					.as("[%d]=%s lower < upper", i, node)
-					.isLessThanOrEqualTo(node.getUpper());
+					.isLessThanOrEqualTo(node.getMax());
 
 			if (node.getMin() == Double.POSITIVE_INFINITY) {
 				// has no values
 				continue;
 			}
 
-			assertThat(node.getMin()).isGreaterThanOrEqualTo(node.getLower());
-			assertThat(node.getMax()).isLessThanOrEqualTo(node.getUpper());
+			assertThat(node.getMin()).isGreaterThanOrEqualTo(node.getMin());
+			assertThat(node.getMax()).isLessThanOrEqualTo(node.getMax());
 			assertThat(node.getMin()).isLessThanOrEqualTo(node.getMax());
 		}
 
@@ -84,7 +84,7 @@ class HistogramTest {
 	@Test
 	void weird() {
 
-		final Histogram histogram = Histogram.zeroCentered(-35, 27, 12, true, false);
+		final Histogram histogram = Histogram.zeroCentered(-35, 27, -40, 28, 12, false);
 
 		final Random random = new Random(SEED);
 
@@ -119,17 +119,17 @@ class HistogramTest {
 		for (int i = 0; i < nodes.size(); i++) {
 			final Histogram.Node node = nodes.get(i);
 
-			assertThat(node.getLower())
+			assertThat(node.getMin())
 					.as("[%d]=%s lower < upper", i, node)
-					.isLessThanOrEqualTo(node.getUpper());
+					.isLessThanOrEqualTo(node.getMax());
 
 			if (node.getMin() == Double.POSITIVE_INFINITY) {
 				// has no values
 				continue;
 			}
 
-			assertThat(node.getMin()).isGreaterThanOrEqualTo(node.getLower());
-			assertThat(node.getMax()).isLessThanOrEqualTo(node.getUpper());
+			assertThat(node.getMin()).isGreaterThanOrEqualTo(node.getMin());
+			assertThat(node.getMax()).isLessThanOrEqualTo(node.getMax());
 			assertThat(node.getMin()).isLessThanOrEqualTo(node.getMax());
 		}
 
