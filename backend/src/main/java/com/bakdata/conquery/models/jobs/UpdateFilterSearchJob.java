@@ -90,7 +90,7 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		for (Searchable<?> searchable : collectedSearchables.get(Searchable.class)) {
+		for (Searchable<?> searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
 			if (searchable instanceof Column column) {
 				throw new IllegalStateException("Columns should have been grouped out previously");
 			}
@@ -121,7 +121,7 @@ public class UpdateFilterSearchJob extends Job {
 		}
 
 		// The following cast is save
-		final Set<Column> searchableColumns = (Set) collectedSearchables.get(Column.class);
+		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(Column.class, Collections.emptySet());
 		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
 		buildSearchForColumnValuesAsync.accept(searchableColumns);
 
