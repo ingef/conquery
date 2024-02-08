@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,14 +70,16 @@ public class UpdateFilterSearchJob extends Job {
 					   .collect(Collectors.toList());
 
 
-		final Set<Searchable<?>> collectedSearchables =
+		// Unfortunately the is no ClassToInstanceMultimap yet
+		final Map<Class<?>, Set<Searchable<?>>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
 								// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
 								// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
 								.filter(Predicate.not(Searchable::isSearchDisabled))
-								.collect(Collectors.toSet());
+								// Group Searchables into "Columns" and other "Searchables"
+								.collect(Collectors.groupingBy(s -> s instanceof Column ? Column.class : Searchable.class, Collectors.toSet()));
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
@@ -87,14 +88,11 @@ public class UpdateFilterSearchJob extends Job {
 		final HashMap<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
 		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
-		log.debug("Found {} searchable Objects.", collectedSearchables.size());
+		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		final Set<Column> columns = new HashSet<>();
-
-		for (Searchable<?> searchable : collectedSearchables) {
+		for (Searchable<?> searchable : collectedSearchables.get(Searchable.class)) {
 			if (searchable instanceof Column column) {
-				columns.add(column);
-				continue;
+				throw new IllegalStateException("Columns should have been grouped out previously");
 			}
 
 			service.submit(() -> {
@@ -122,8 +120,10 @@ public class UpdateFilterSearchJob extends Job {
 			});
 		}
 
-		log.debug("Start collecting column values: {}", Arrays.toString(columns.toArray()));
-		buildSearchForColumnValuesAsync.accept(columns);
+		// The following cast is save
+		final Set<Column> searchableColumns = (Set) collectedSearchables.get(Column.class);
+		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
+		buildSearchForColumnValuesAsync.accept(searchableColumns);
 
 		service.shutdown();
 
@@ -134,7 +134,7 @@ public class UpdateFilterSearchJob extends Job {
 				service.shutdownNow();
 				return;
 			}
-			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
+			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables.get(Searchable.class), synchronizedResult.keySet()));
 		}
 
 		// Shrink searches before registering in the filter search
