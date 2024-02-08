@@ -55,12 +55,12 @@ class QuickSearchTest {
 
 		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
 				.containsExactly(
-						"c aa",        // Two exact matches
-						"aa",                // One exact match
-						"c",                // One exact match
-						"aaa",                // One prefix match, onto a whole word
-						"aab",                // One prefix match, onto a whole word
-						"d baaacd"            // Two partial matches
+						"c aa",      // Two exact matches
+						"c",				// One exact match
+						"aa",               // One exact match
+						"aaa",              // One prefix match, onto a whole word
+						"aab",              // One prefix match, onto a whole word
+						"d baaacd"          // Two partial matches
 				);
 
 		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")

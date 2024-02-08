@@ -72,10 +72,10 @@ public class TrieSearch<T extends Comparable<T>> {
 			final SortedMap<String, List<T>> prefixHits = whole.prefixMap(query);
 
 			// Slightly favor whole words starting with query
-			updateWeights(query, prefixHits, itemWeights);
+			updateWeights(query, prefixHits, itemWeights, true);
 
 			if (query.length() < ngramLength) {
-				updateWeights(query, entries.prefixMap(query), itemWeights);
+				updateWeights(query, entries.prefixMap(query), itemWeights, false);
 				continue;
 			}
 
@@ -85,7 +85,7 @@ public class TrieSearch<T extends Comparable<T>> {
 							ng -> entries.getOrDefault(ng, Collections.emptyList())
 					));
 
-			updateWeights(query, ngramHits, itemWeights);
+			updateWeights(query, ngramHits, itemWeights, false);
 		}
 
 		// Sort items according to their weight, then limit.
@@ -112,7 +112,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * calculate and update weights for all queried items
 	 */
-	private void updateWeights(String query, final Map<String, List<T>> items, Object2DoubleMap<T> itemWeights) {
+	private void updateWeights(String query, final Map<String, List<T>> items, Object2DoubleMap<T> itemWeights, boolean original) {
 		if (items == null) {
 			return;
 		}
@@ -122,7 +122,10 @@ public class TrieSearch<T extends Comparable<T>> {
 			final String key = entry.getKey();
 			final List<T> hits = entry.getValue();
 
-			final double weight = weightWord(query, key);
+			double weight = weightWord(query, key);
+			if (original) {
+				weight *= weight;
+			}
 
 			// We combine hits multiplicative to favor items with multiple hits
 			for (T item : hits) {
@@ -164,7 +167,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		// Soft grouping based on string length
-		return Math.pow(weight, 2 / (itemLength + queryLength));
+		return Math.pow(weight, 1 / (itemLength + queryLength));
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
