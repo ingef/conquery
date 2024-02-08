@@ -137,18 +137,18 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		}
 
 		StopWatch timer = StopWatch.createStarted();
-		log.debug("START-SELECT ADDING_ITEMS for {}", getId());
+		log.trace("START-SELECT ADDING_ITEMS for {}", getId());
 
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		log.debug("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), timer);
+		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), timer);
 
 		timer.reset();
-		log.debug("START-SELECT SHRINKING for {}", getId());
+		log.trace("START-SELECT SHRINKING for {}", getId());
 
 		search.shrinkToFit();
 
-		log.debug("DONE-SELECT SHRINKING for {} in {}", getId(), timer);
+		log.trace("DONE-SELECT SHRINKING for {} in {}", getId(), timer);
 
 		return search;
 	}

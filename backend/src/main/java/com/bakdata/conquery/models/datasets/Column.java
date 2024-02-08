@@ -157,7 +157,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		StopWatch timer = StopWatch.createStarted();
 
-		log.debug("START-COLUMN ADDING_ITEMS for {}", getId());
+		log.trace("START-COLUMN ADDING_ITEMS for {}", getId());
 
 		storage.getStorageHandler()
 			   .lookupColumnValues(storage, this)
@@ -165,14 +165,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		log.debug("DONE-COLUMN ADDING_ITEMS for {} in {}", getId(), timer);
+		log.trace("DONE-COLUMN ADDING_ITEMS for {} in {}", getId(), timer);
 
 		timer.reset();
-		log.debug("START-COLUMN SHRINKING for {}", getId());
+		log.trace("START-COLUMN SHRINKING for {}", getId());
 
 		search.shrinkToFit();
 
-		log.debug("DONE-COLUMN SHRINKING for {} in {}", getId(), timer);
+		log.trace("DONE-COLUMN SHRINKING for {} in {}", getId(), timer);
 
 		return search;
 	}
