@@ -1,17 +1,20 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
@@ -57,17 +60,14 @@ public class DistributedNamespace extends Namespace {
 					  .orElseGet(() -> storage.assignEntityBucket(entity, bucketSize));
 	}
 
-	/**
-	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
-	 */
-	private void updateFilterSearch() {
-		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig()));
+
+	@Override
+	void updateFilterSearch() {
+		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig(), this::buildSearchForColumnValuesAsync));
 	}
 
-	/**
-	 * Issues a job that collects basic metrics for every concept and its nodes. This information is displayed in the frontend.
-	 */
-	private void updateMatchingStats() {
+	@Override
+	void updateMatchingStats() {
 		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
 													.stream()
 													.filter(concept -> concept.getMatchingStats() == null)
@@ -75,19 +75,10 @@ public class DistributedNamespace extends Namespace {
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 	}
 
-	/**
-	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
-	 */
 	@Override
-	public void postprocessData() {
-
-		getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and FilterSearch",
-				() -> {
-					updateMatchingStats();
-					updateFilterSearch();
-					updateInternToExternMappings();
-				}
-		));
+	void buildSearchForColumnValuesAsync(Set<Column> columns) {
+		log.debug("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
+		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
 	}
+
 }

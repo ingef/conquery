@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -21,8 +22,7 @@ import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
@@ -43,10 +43,12 @@ import org.apache.commons.lang3.time.StopWatch;
 @RequiredArgsConstructor
 public class UpdateFilterSearchJob extends Job {
 
-	private final DistributedNamespace namespace;
+	private final Namespace namespace;
 
 	@NonNull
 	private final IndexConfig indexConfig;
+
+	private final Consumer<Set<Column>> buildSearchForColumnValuesAsync;
 
 	@Override
 	public void execute() throws Exception {
@@ -120,8 +122,8 @@ public class UpdateFilterSearchJob extends Job {
 			});
 		}
 
-		log.debug("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
-		namespace.getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, namespace));
+		log.debug("Start collecting column values: {}", Arrays.toString(columns.toArray()));
+		buildSearchForColumnValuesAsync.accept(columns);
 
 		service.shutdown();
 

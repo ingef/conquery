@@ -13,6 +13,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -115,58 +116,60 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 									   )
 							   );
 
+		final Invocation.Builder autocompleteRequestBuilder = conquery.getClient().target(autocompleteUri)
+																	  .request(MediaType.APPLICATION_JSON_TYPE);
 		// Data starting with a is in reference csv
 		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of("a"),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
+			try (final Response fromCsvResponse = autocompleteRequestBuilder.post(Entity.entity(new FilterResource.AutocompleteRequest(
+					Optional.of("a"),
+					OptionalInt.empty(),
+					OptionalInt.empty()
+			), MediaType.APPLICATION_JSON_TYPE))) {
 
-			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
 			// "aaa" occurs after "aab" due to it consisting only of duplicate entries.
 			// The empty string results from `No V*a*lue` and `..Def*au*lt..`
 
-			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("a", "aab", "aaa", "" /* `No V*a*lue` :^) */, "baaa");
+				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
+						.containsExactly("a", "aab", "aaa", "" /* `No V*a*lue` :^) */, "baaa");
+
+			}
 		}
 
 
 		// Data starting with f  is in column values
 		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of("f"),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
+			try (final Response fromCsvResponse = autocompleteRequestBuilder
+					.post(Entity.entity(new FilterResource.AutocompleteRequest(
+							Optional.of("f"),
+							OptionalInt.empty(),
+							OptionalInt.empty()
+					), MediaType.APPLICATION_JSON_TYPE))) {
 
-			final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+				final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
-			//check the resolved values
-			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-					.containsExactly("", "f", "fm");
+				//check the resolved values
+				assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
+						.containsExactly("", "f", "fm");
+			}
 		}
 
 
 		// Data starting with a is in reference csv
 		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of(""),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
+			try (final Response fromCsvResponse = autocompleteRequestBuilder
+					.post(Entity.entity(new FilterResource.AutocompleteRequest(
+							Optional.of(""),
+							OptionalInt.empty(),
+							OptionalInt.empty()
+					), MediaType.APPLICATION_JSON_TYPE))) {
 
-			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 			// This is probably the insertion order
-			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
+				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
 					.containsExactlyInAnyOrder("", "a", "aab", "aaa", "baaa", "b", "f", "m", "mf", "fm");
+			}
 		}
 	}
 }
