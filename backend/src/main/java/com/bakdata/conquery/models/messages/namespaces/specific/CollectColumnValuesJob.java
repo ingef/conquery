@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -57,6 +59,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(context.getJobsExecutorService());
 
+		final AtomicInteger done = new AtomicInteger();
+
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
@@ -73,6 +77,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																		  .collect(Collectors.toSet());
 										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column, values));
+										log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
 									})
 					   )
 					   .collect(Collectors.toList());
@@ -89,9 +94,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				throw new RuntimeException(e);
 			}
 			catch (TimeoutException e) {
-				log.debug("Still waiting for jobs.");
+				log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
 			}
 		}
+		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 	}
 
 	@Override
