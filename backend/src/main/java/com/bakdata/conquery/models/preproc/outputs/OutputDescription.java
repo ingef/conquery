@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.StringJoiner;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,8 +18,10 @@ import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.univocity.parsers.common.DataProcessingException;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.Getter;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -99,11 +102,12 @@ public abstract class OutputDescription {
 	}
 
 	@Data
-	public static class OutputException extends Exception {
+	public static class OutputException extends DataProcessingException {
+
 		private final OutputDescription source;
 
 		public OutputException(OutputDescription source, Exception cause) {
-			super(cause);
+			super("Failed to apply Output", cause);
 			this.source = source;
 		}
 	}
@@ -125,6 +129,9 @@ public abstract class OutputDescription {
 			throw new InputMismatchException(String.format("Did not find headers `%s` in `%s`", missing.toString(), actualHeaders.keySet()));
 		}
 	}
+
+	@JsonIgnore
+	public abstract List<String> getRequiredHeaders();
 
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.

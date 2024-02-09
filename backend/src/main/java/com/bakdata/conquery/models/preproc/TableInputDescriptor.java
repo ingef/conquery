@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
@@ -60,6 +62,16 @@ public class TableInputDescriptor {
 	@NotEmpty
 	@JsonManagedReference
 	private OutputDescription[] output;
+
+	@JsonIgnore
+	public List<String> getRequiredHeaders() {
+		List<String> headers = new ArrayList<>(primary.getRequiredHeaders());
+		Arrays.stream(output)
+			  .map(OutputDescription::getRequiredHeaders)
+			  .forEach(headers::addAll);
+
+		return headers;
+	}
 
 	/**
 	 * Empty array to be used only for validation of groovy script.

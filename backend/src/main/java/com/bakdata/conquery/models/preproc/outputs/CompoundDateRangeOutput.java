@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -33,6 +35,11 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@NotEmpty
 	private String startColumn, endColumn;
 	private boolean allowOpen;
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Collections.emptyList();
+	}
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
