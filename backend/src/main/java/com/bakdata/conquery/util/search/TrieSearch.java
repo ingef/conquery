@@ -47,6 +47,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	private final int ngramLength;
 
 	private final Pattern splitPattern;
+
+	// We store whole words and ngrams separately to avoid additional work,
+	// such as checking and skipping ngrams when iterating through all whole words
 	private final PatriciaTrie<List<T>> entries = new PatriciaTrie<>();
 	private final PatriciaTrie<List<T>> whole = new PatriciaTrie<>();
 	private boolean shrunk = false;
@@ -110,22 +113,18 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	/**
-	 * calculate and update weights for all queried items
+	 * Calculate and update weights for all queried items
 	 */
 	private void updateWeights(String query, final Map<String, List<T>> items, Object2DoubleMap<T> itemWeights, boolean original) {
 		if (items == null) {
 			return;
 		}
 
-
 		for (Map.Entry<String, List<T>> entry : items.entrySet()) {
 			final String key = entry.getKey();
 			final List<T> hits = entry.getValue();
 
-			double weight = weightWord(query, key);
-			if (original) {
-				weight *= weight;
-			}
+			double weight = weightWord(query, key, original);
 
 			// We combine hits multiplicative to favor items with multiple hits
 			for (T item : hits) {
@@ -148,7 +147,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * A lower weight implies more relevant words.
 	 */
-	private double weightWord(String query, String itemWord) {
+	private double weightWord(String query, String itemWord, boolean original) {
 		final double itemLength = itemWord.length();
 		final double queryLength = query.length();
 
@@ -158,6 +157,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		if (queryLength == itemLength) {
 			weight = EXACT_MATCH_WEIGHT;
 		}
+
 		// We assume that less difference implies more relevant words
 		else if (queryLength < itemLength) {
 			weight = (itemLength - queryLength) / itemLength;
@@ -166,8 +166,12 @@ public class TrieSearch<T extends Comparable<T>> {
 			weight = (queryLength - itemLength) / queryLength;
 		}
 
-		// Soft grouping based on string length
-		return Math.pow(weight, 1 / (itemLength + queryLength));
+		// Prefer original words
+		if (original) {
+			return weight * weight;
+		}
+
+		return weight;
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
@@ -184,10 +188,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	public void addItem(T item, List<String> keywords) {
 		ensureWriteable();
 
-		// Associate item with all extracted keywords
-
+		// This barrier avoids work when shrinking and therefore unnecessary calls to entries::computeIfAbsent
 		final Set<String> barrier = new HashSet<>();
 
+		// Associate item with all extracted keywords
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
@@ -216,7 +220,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * Since growth of ArrayList might be excessive, we can shrink the internal lists to only required size instead.
 	 *
-	 * @implSpec the TrieSearch is still mutable after this.
+	 * @implSpec the TrieSearch is still mutable after this. Shrinking might result in different search results.
 	 */
 	public void shrinkToFit() {
 		if (shrunk) {
@@ -229,16 +233,17 @@ public class TrieSearch<T extends Comparable<T>> {
 		shrunk = true;
 	}
 
+	/**
+	 * This is the number of (not necessarily distinct) items associated with whole words.
+	 * <p>
+	 * Ngrams have their own lists of items and are not considered for the size.
+	 */
 	public long calculateSize() {
 		if (size != -1) {
 			return size;
 		}
 
-		long totalSize = 0;
-		for (List<T> entry : whole.values()) {
-			totalSize += entry.size();
-		}
-		return totalSize;
+		return whole.values().stream().mapToLong(List::size).sum();
 	}
 
 	public Stream<T> stream() {
