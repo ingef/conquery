@@ -135,9 +135,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		log.debug("Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}", getLabel(), bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins);
 
-		//TODO round=true might cause issues with columns of very high resolutions.
 		final Histogram histogram =
-				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins, true);
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins, bounds.upperEndpoint() - bounds.lowerEndpoint() > 1);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
