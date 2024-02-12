@@ -96,7 +96,8 @@ public class Histogram {
 							 Stream.of(nodes)
 					 )
 					 .flatMap(Function.identity())
-					 .sorted(Comparator.comparingDouble(Node::getMin))
+					 // We compare by Max as well to fix zeroNode and underflowNode sorting when absMin > 0
+					 .sorted(Comparator.comparingDouble(Node::getMin).thenComparing(Comparator.comparingDouble(Node::getMax)))
 					 .toList();
 	}
 
