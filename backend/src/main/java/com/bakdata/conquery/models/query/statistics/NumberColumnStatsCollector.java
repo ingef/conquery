@@ -87,7 +87,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return Range.closed(statistics.getMin(), statistics.getMax());
 		}
 
-
+		// We need to truncate to bounds separately.
 		final double min = lower <= 1.d ? statistics.getMin() : statistics.getPercentile(lower);
 		final double max = upper >= 99 ? statistics.getMax() : statistics.getPercentile(upper);
 
@@ -158,15 +158,22 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		out.put(labels.min(), printValue(getStatistics().getMin()));
 		out.put(labels.max(), printValue(getStatistics().getMax()));
-		out.put(labels.mean(), printValue(getStatistics().getMean()));
+
+		// mean is always a decimal number, therefore integer needs special handling
+		if(getType() instanceof ResultType.IntegerT){
+			out.put(labels.mean(), getPrintSettings().getDecimalFormat().format(getStatistics().getMean()));
+		}
+		else {
+			out.put(labels.mean(), printValue(getStatistics().getMean()));
+		}
 
 		out.put(labels.p25(), printValue(getStatistics().getPercentile(25)));
 		out.put(labels.median(), printValue(getStatistics().getPercentile(50)));
 		out.put(labels.p75(), printValue(getStatistics().getPercentile(75)));
+
 		out.put(labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()));
 
 		out.put(labels.sum(), printValue(getStatistics().getSum()));
-
 		out.put(labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()));
 		out.put(labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get()));
 

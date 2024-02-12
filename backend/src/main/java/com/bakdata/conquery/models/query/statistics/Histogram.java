@@ -23,13 +23,19 @@ public class Histogram {
 
 
 	private final Node[] nodes;
-	private final Node zeroNode, underflowNode, overflowNode;
-	private final double lower, upper;
+	private final Node zeroNode;
+	private final Node underflowNode;
+	private final Node overflowNode;
+	private final double lower;
+	private final double upper;
 	private final double width;
 
 	private int total;
 
 	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean round) {
+
+		lower = Math.max(Math.ceil(absMin), Math.floor(lower));
+		upper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
 		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
 
