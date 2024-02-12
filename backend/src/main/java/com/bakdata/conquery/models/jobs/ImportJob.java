@@ -42,6 +42,8 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -283,8 +285,8 @@ public class ImportJob extends Job {
 
 
 		// First entity of Bucket starts at 0, the following are appended.
-		final Map<String, Integer> entityStarts = new HashMap<>(localStarts.size());
-		final Map<String, Integer> entityEnds = new HashMap<>(localStarts.size());
+		final Object2IntMap<String> entityStarts = new Object2IntOpenHashMap<>();
+		final Object2IntMap<String> entityEnds = new Object2IntOpenHashMap<>();
 
 
 		int currentStart = 0;

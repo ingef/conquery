@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Map;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -9,6 +8,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import lombok.Getter;
 
 /**
@@ -20,7 +20,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, Collections.emptyMap(), Collections.emptyMap(), null);
+		super(0, 0, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), null);
 		this.setStores(new ColumnStore[0]);
 	}
 

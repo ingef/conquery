@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -67,13 +68,12 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	//TODO Object2IntMap!
-	private final Map<String, Integer> start;
+	private final Object2IntMap<String> start;
 
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	private final Map<String, Integer> ends;
+	private final Object2IntMap<String> ends;
 
 	@NsIdRef
 	private final Import imp;
@@ -113,7 +113,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 
 	public int getEntityEnd(String entityId) {
-		return ends.get(entityId);
+		return ends.getInt(entityId);
 	}
 
 	public final boolean has(int event, Column column) {

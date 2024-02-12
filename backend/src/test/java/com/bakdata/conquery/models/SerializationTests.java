@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -95,15 +96,19 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
-import lombok.Getter;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
+import org.assertj.core.api.RecursiveComparisonAssert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+
 @Slf4j
-@Getter
 public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
@@ -221,7 +226,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptyMap(), Collections.emptyMap(), imp);
+		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
 
 		compoundStore.setParent(bucket);
 
@@ -608,7 +613,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Collections.emptyMap(), Collections.emptyMap(), imp);
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
@@ -805,6 +810,87 @@ public class SerializationTests extends AbstractSerializationTest {
 				}
 				""".replaceAll("[\\n\\t]", "");
 		assertThat(actual).as("Result of mixin for form backend").isEqualTo(expected);
+	}
+
+	@Test
+	public void object2IntEmpty() throws JSONException, IOException {
+		Object2IntMap<String> empty = Object2IntMaps.emptyMap();
+
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
+							 })
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(empty);
+
+	}
+
+	@Test
+	public void object2IntString() throws JSONException, IOException {
+		Object2IntMap<String> map = new Object2IntOpenHashMap<>();
+
+		map.put("zero", 0);
+		map.put("one", 1);
+		map.put("two", 2);
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
+							 })
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
+	}
+
+
+	@Test
+	@Disabled(value = "Actually this works fine, but assertj has problems with the comparison of the keys being arrays. It compares the array's hashes not their contents.")
+	public void object2IntArray() throws JSONException, IOException {
+		Object2IntMap<int[]> map = new Object2IntOpenHashMap<>();
+
+		map.put(new int[]{}, 0);
+		map.put(new int[]{1}, 1);
+		map.put(new int[]{2, 2}, 2);
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<int[]>>() {
+							 })
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
+	}
+
+	@Test
+	public void arrayObject2Int() throws JSONException, IOException {
+		Object2IntMap<String>[] map = new Object2IntOpenHashMap[]{
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+				}},
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+					put("one", 1);
+				}},
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+					put("one", 1);
+					put("two", 2);
+				}}
+		};
+		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
+							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
+	}
+
+	@Test
+	public void object2IntObject() throws JSONException, IOException {
+		Object2IntMap<FrontendValue> map = new Object2IntOpenHashMap<>();
+
+		map.put(new FrontendValue("zero", "zero"), 0);
+		map.put(new FrontendValue("one", "one"), 1);
+		map.put(new FrontendValue("two", "two"), 2);
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<FrontendValue>>() {
+							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
 	}
 
 }
