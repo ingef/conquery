@@ -102,19 +102,19 @@ class HistogramTest {
 
 		log.info("{}", nodes);
 
-		assertThat(nodes).hasSize(13);
+		assertThat(nodes).hasSize(15 /*12 + lower, zero, upper*/);
 
 		final Histogram.Node first = nodes.get(0);
 
 		assertThat(first.getMin()).isLessThanOrEqualTo(-1);
 
-		//		assertThat(nodes.get(7).getCount()).isZero();
-		//		assertThat(nodes.get(8).getCount()).isZero();
+		assertThat(nodes.get(7).getCount()).isEqualTo(5);
+		assertThat(nodes.get(8).getCount()).isEqualTo(10);
 
 		final Histogram.Node last = nodes.get(nodes.size() - 1);
 
-		assertThat(last.getMin()).isCloseTo(10, Offset.offset(0.2d));
-		assertThat(last.getMax()).isGreaterThanOrEqualTo(11);
+		assertThat(last.getMin()).isCloseTo(26, Offset.offset(0.2d));
+		assertThat(last.getMax()).isGreaterThanOrEqualTo(28);
 
 		for (int i = 0; i < nodes.size(); i++) {
 			final Histogram.Node node = nodes.get(i);
