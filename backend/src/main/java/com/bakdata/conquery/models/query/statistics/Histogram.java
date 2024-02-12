@@ -40,9 +40,7 @@ public class Histogram {
 		lower = Math.max(Math.ceil(absMin), Math.floor(lower));
 		upper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
-		final double width = roundWidth ? Math.max(1, Math.round((upper - lower) / expectedBins)) : (upper - lower) / expectedBins;
-
-		if (width == 0) {
+		if (lower == upper) {
 			// Short circuit for degenerate cases
 			return new Histogram(new Node[0],
 								 new Node(0, 0),
@@ -52,6 +50,8 @@ public class Histogram {
 								 0
 			);
 		}
+
+		final double width = roundWidth ? Math.max(1, Math.round((upper - lower) / expectedBins)) : (upper - lower) / expectedBins;
 
 		final double newLower;
 
