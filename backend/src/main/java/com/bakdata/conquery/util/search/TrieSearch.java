@@ -43,6 +43,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
 	private static final double EXACT_MATCH_WEIGHT = 0.1d;
+	private static final double BASE_WEIGHT = 0.5d;
 
 	private final int ngramLength;
 
@@ -82,7 +83,9 @@ public class TrieSearch<T extends Comparable<T>> {
 				continue;
 			}
 
+			// Collectors::toMap throws IllegalStateException if there are duplicate keys
 			final Map<String, List<T>> ngramHits = ngrams(query)
+					.distinct()
 					.collect(Collectors.toMap(
 							Function.identity(),
 							ng -> entries.getOrDefault(ng, Collections.emptyList())
@@ -148,25 +151,18 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * A lower weight implies more relevant words.
 	 */
 	private double weightWord(String query, String itemWord, boolean original) {
-		final double itemLength = itemWord.length();
-		final double queryLength = query.length();
-
+		// The weight function needs to be fast, as it is called frequently.
 		final double weight;
 
-		// We saturate the weight to avoid favoring extremely short matches.
-		if (queryLength == itemLength) {
+		// We prefer same length words.
+		if (query.length() == itemWord.length()) {
 			weight = EXACT_MATCH_WEIGHT;
 		}
-
-		// We assume that less difference implies more relevant words
-		else if (queryLength < itemLength) {
-			weight = (itemLength - queryLength) / itemLength;
-		}
 		else {
-			weight = (queryLength - itemLength) / queryLength;
+			weight = BASE_WEIGHT;
 		}
 
-		// Prefer original words
+		// We prefer original words
 		if (original) {
 			return weight * weight;
 		}

@@ -13,7 +13,7 @@ class QuickSearchTest {
 	@Test
 	public void anaconda() {
 		final TrieSearch<String> search = new TrieSearch<>(3, "");
-		for (String item : List.of("Anaconda","Anaxonds" /* Simulate Typing Errors */, "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
+		for (String item : List.of("Anaconda", "Anaxonds" /* Simulate Typing Errors */, "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
 			search.addItem(item, List.of(item));
 		}
 
@@ -40,10 +40,9 @@ class QuickSearchTest {
 		String query = "pants";
 		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
 
-		// PantsPants occurs after Pantshop due to it being longer and consisting only of duplicate entries
 		assertThat(results)
 				.describedAs("Query for %s".formatted(query))
-				.isEqualTo(List.of("Pants", "Pantshop", "PantsPants", "Sweatpants", "Rantsom", "Fantastic"));
+				.isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants", "Rantsom", "Fantastic"));
 	}
 
 	@Test
@@ -55,12 +54,12 @@ class QuickSearchTest {
 
 		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
 				.containsExactly(
-						"c aa",      // Two exact matches
-						"aa",               // One exact match
-						"c",				// One exact match
-						"aaa",              // One prefix match, onto a whole word
-						"aab",              // One prefix match, onto a whole word
-						"d baaacd"          // Two partial matches
+						"c aa",       // Two exact matches
+						"aa",         // One exact match
+						"c",          // One exact match
+						"aaa",        // One prefix match, onto a whole word
+						"aab",        // One prefix match, onto a whole word
+						"d baaacd"    // Two partial matches
 				);
 
 		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
