@@ -135,5 +135,16 @@ class HistogramTest {
 
 	}
 
+	@Test
+	public void zeroWidth() {
+		Histogram histogram = Histogram.zeroCentered(0.0, 0.0, -1.0, 1.0, 10, true);
+		// Should be only zero-bin, under and overflow bins
+		histogram.add(0);
+		histogram.add(-0.5);
+		histogram.add(0.5);
+
+		assertThat(histogram.nodes()).hasSize(3);
+	}
+
 
 }

@@ -33,11 +33,23 @@ public class Histogram {
 	private int total;
 
 	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean round) {
+		//TODO if we have integer bins, we can go further with bins and make Node.upper==Node.lower, which is very nice to read.
 
 		lower = Math.max(Math.ceil(absMin), Math.floor(lower));
 		upper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
 		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
+
+		if (width == 0) {
+			// Short circuit for degenerate cases
+			return new Histogram(new Node[0],
+								 new Node(0, 0),
+								 new Node(absMin, lower),
+								 new Node(upper, absMax),
+								 lower, upper,
+								 0
+			);
+		}
 
 		final double newLower;
 
@@ -76,7 +88,7 @@ public class Histogram {
 			return;
 		}
 
-		if (value <= lower) {
+		if (value < lower) {
 			underflowNode.add();
 			return;
 		}
@@ -96,7 +108,7 @@ public class Histogram {
 							 Stream.of(nodes)
 					 )
 					 .flatMap(Function.identity())
-					 // We compare by Max as well to fix zeroNode and underflowNode sorting when absMin > 0
+					 // We compare by Max as well to fix zeroNode and underflowNode sorting when absMin >= 0
 					 .sorted(Comparator.comparingDouble(Node::getMin).thenComparing(Comparator.comparingDouble(Node::getMax)))
 					 .toList();
 	}
