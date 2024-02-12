@@ -12,10 +12,12 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Simple implementation of a histogram.
- * First and last bin serve as potential overflow bins.
- * <p>
- * Bin labels are of real values and not partitions, this can make entries potentially non-contiguous, but ensures readable values.
+ * Basic implementation of a histogram.
+ *
+ * Of note:
+ * * We have over and underflow bins, if values exceed our assumed value-range.
+ * * The bins are always aligned such that zero is its own separate bin, as we assume it is a special value.
+ * 		- This means, distributions will be slightly shifted left to have equal-spaced bins, that have zero not intersect them.
  */
 @Data
 @Slf4j
@@ -32,13 +34,13 @@ public class Histogram {
 
 	private int total;
 
-	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean round) {
+	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
 		//TODO if we have integer bins, we can go further with bins and make Node.upper==Node.lower, which is very nice to read.
 
 		lower = Math.max(Math.ceil(absMin), Math.floor(lower));
 		upper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
-		final double width = round ? Math.ceil((upper - lower) / expectedBins) : (upper - lower) / expectedBins;
+		final double width = roundWidth ? Math.max(1, Math.round((upper - lower) / expectedBins)) : (upper - lower) / expectedBins;
 
 		if (width == 0) {
 			// Short circuit for degenerate cases
@@ -67,6 +69,7 @@ public class Histogram {
 		final double newUpper = newLower + width * expectedBins;
 
 		final Node[] nodes = IntStream.range(0, expectedBins)
+									  // Note, using multiplication is important to avoid floating-point imprecision when wanting to arrive exactly around 0 etc.
 									  .mapToObj(index -> new Node(newLower + width * index, newLower + width * (index + 1)))
 									  .toArray(Node[]::new);
 
