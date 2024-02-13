@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
 import { DefaultRecordType } from "rc-table/lib/interface";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
 
@@ -46,7 +46,7 @@ export const StyledTable = styled("table")`
   }
 `;
 
-export default function Table({ data, queryData }: Props) {
+export default memo(function Table({ data, queryData }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const { getRenderFunctionByFieldName } = useCustomTableRenderers(
     queryData as GetQueryResponseDoneT,
@@ -130,4 +130,4 @@ export default function Table({ data, queryData }: Props) {
       />
     </Root>
   );
-}
+});
