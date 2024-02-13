@@ -10,22 +10,22 @@ import org.jetbrains.annotations.Nullable;
 
 @ToString
 @Getter
-public class ListColumnStatsCollector<T> extends ColumnStatsCollector<Collection<T>>{
+public class ListColumnStatsCollector<T> extends ColumnStatsCollector {
 
-	private final ColumnStatsCollector<T> underlying;
+	private final ColumnStatsCollector underlying;
 
-	public ListColumnStatsCollector(String name, String label, String description, ColumnStatsCollector<T> underlying, PrintSettings printSettings) {
+	public ListColumnStatsCollector(String name, String label, String description, ColumnStatsCollector underlying, PrintSettings printSettings) {
 		super(name, label, description, printSettings);
 		this.underlying = underlying;
 	}
 
 	@Override
-	public void consume(@Nullable Collection<T> values) {
+	public void consume(@Nullable Object values) {
 		if(values == null){
 			return;
 		}
 
-		for (T value : values) {
+		for (Object value : (Collection) values) {
 			underlying.consume(value);
 		}
 	}

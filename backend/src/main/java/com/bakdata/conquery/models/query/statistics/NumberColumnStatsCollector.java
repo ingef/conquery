@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Slf4j
-public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
+public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector {
 
 	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
@@ -99,18 +99,20 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	}
 
 	@Override
-	public void consume(Number value) {
+	public void consume(Object value) {
 		if (value == null) {
 			nulls.incrementAndGet();
 			return;
 		}
 
+		Number number = (Number) value;
+
 		// TODO this feels like a pretty borked abstraction
 		if (getType() instanceof ResultType.MoneyT moneyT) {
-			value = moneyT.readIntermediateValue(getPrintSettings(), value);
+			number = moneyT.readIntermediateValue(getPrintSettings(), number);
 		}
 
-		statistics.addValue(value.doubleValue());
+		statistics.addValue(number.doubleValue());
 
 	}
 

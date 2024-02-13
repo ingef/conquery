@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 
 @Data
-public abstract class ColumnStatsCollector<T> {
+public abstract class ColumnStatsCollector {
 	private final String name;
 	private final String label;
 	private final String description;
@@ -24,7 +24,7 @@ public abstract class ColumnStatsCollector<T> {
 
 		// List recursion must be done before assigning uniqueNames
 		if (type instanceof ResultType.ListT listT) {
-			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, config);
+			final ColumnStatsCollector columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, config);
 			// name label type are discarded when using ListColumnStatsCollector
 			return new ListColumnStatsCollector<>(null, null, null, columnStatsCollector, printSettings);
 		}
@@ -60,7 +60,7 @@ public abstract class ColumnStatsCollector<T> {
 		throw new IllegalArgumentException("Don't know how to describe column of type %s".formatted(type));
 	}
 
-	public abstract void consume(@Nullable T value);
+	public abstract void consume(@Nullable Object value);
 
 	public abstract ResultColumnStatistics describe();
 

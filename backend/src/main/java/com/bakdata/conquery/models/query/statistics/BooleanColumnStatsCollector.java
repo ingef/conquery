@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 
 @Getter
-public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
+public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 
 	private final StringColumnStatsCollector delegate;
 
@@ -15,7 +15,7 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 	}
 
 	@Override
-	public void consume(Boolean value) {
+	public void consume(Object value) {
 		final String printed = value == null ? null : ResultType.BooleanT.INSTANCE.printNullable(getPrintSettings(), value);
 		delegate.consume(printed);
 	}

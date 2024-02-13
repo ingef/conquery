@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
+public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
 	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();

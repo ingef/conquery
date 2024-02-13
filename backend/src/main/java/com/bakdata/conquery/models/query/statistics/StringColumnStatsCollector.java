@@ -16,7 +16,7 @@ import org.apache.commons.math3.stat.Frequency;
 
 @Getter
 @Slf4j
-public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
+public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 	private final Frequency frequencies = new Frequency();
 	private final AtomicLong nulls = new AtomicLong(0);
@@ -31,7 +31,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	}
 
 	@Override
-	public void consume(String value) {
+	public void consume(Object value) {
 		if (value == null) {
 			nulls.incrementAndGet();
 			return;
