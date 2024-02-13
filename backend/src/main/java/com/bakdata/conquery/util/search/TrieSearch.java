@@ -252,8 +252,10 @@ public class TrieSearch<T extends Comparable<T>> {
 		// This is a very ugly workaround to not get eager evaluation (which happens when using flatMap and distinct on streams)
 		final Set<T> seen = new HashSet<>();
 
-		final Iterator<Iterator<T>> enIter = Iterators.transform(whole.values().iterator(), List::listIterator);
-		return Iterators.filter(Iterators.concat(enIter), seen::add);
+		return Iterators.filter(
+				Iterators.concat(Iterators.transform(whole.values().iterator(), Collection::iterator)),
+				seen::add
+		);
 	}
 
 }
