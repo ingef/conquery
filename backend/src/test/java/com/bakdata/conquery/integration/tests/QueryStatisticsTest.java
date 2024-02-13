@@ -134,8 +134,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept int",
 								null,
 								List.of(
-										new HistogramColumnDescription.Entry("1", 1),
-										new HistogramColumnDescription.Entry("1 - 2", 0),
+										new HistogramColumnDescription.Entry("1 - 2", 1),
 										new HistogramColumnDescription.Entry("2 - 3", 1),
 										new HistogramColumnDescription.Entry("3 - 4", 2),
 										new HistogramColumnDescription.Entry("4 - 5", 1),
@@ -153,8 +152,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept real",
 								null,
 								List.of(
-										new HistogramColumnDescription.Entry("1", 1),
-										new HistogramColumnDescription.Entry("1 - 2", 0),
+										new HistogramColumnDescription.Entry("1 - 2", 1),
 										new HistogramColumnDescription.Entry("2 - 3", 1),
 										new HistogramColumnDescription.Entry("3 - 4", 2),
 										new HistogramColumnDescription.Entry("4 - 5", 1),
@@ -172,8 +170,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept decimal",
 								null,
 								List.of(
-										new HistogramColumnDescription.Entry("1", 1),
-										new HistogramColumnDescription.Entry("1 - 2", 0),
+										new HistogramColumnDescription.Entry("1 - 2", 1),
 										new HistogramColumnDescription.Entry("2 - 3", 1),
 										new HistogramColumnDescription.Entry("3 - 4", 2),
 										new HistogramColumnDescription.Entry("4 - 5", 1),
@@ -191,8 +188,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept money",
 								null,
 								List.of(
-										new HistogramColumnDescription.Entry("€10.00", 1),
-										new HistogramColumnDescription.Entry("€10.00 - €13.00", 0),
+										new HistogramColumnDescription.Entry("€10.00 - €13.00", 1),
 										new HistogramColumnDescription.Entry("€13.00 - €16.00", 0),
 										new HistogramColumnDescription.Entry("€16.00 - €19.00", 0),
 										new HistogramColumnDescription.Entry("€19.00 - €22.00", 1),
@@ -220,9 +216,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))
 		);
 
-		assertThat(results)
-				.usingRecursiveComparison()
-				.isEqualTo(expected);
+		assertThat(results).isEqualTo(expected);
 
 	}
 
