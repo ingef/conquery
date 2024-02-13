@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
@@ -42,8 +42,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
-	private static final double EXACT_MATCH_WEIGHT = 0.1d;
-	private static final double BASE_WEIGHT = 0.5d;
+	private static final long BASE_WEIGHT = 2;
+
+	private static final long EXACT_MATCH_WEIGHT = 10;
 
 	private final int ngramLength;
 
@@ -66,7 +67,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public List<T> findItems(Collection<String> queries, int limit) {
-		final Object2DoubleMap<T> itemWeights = new Object2DoubleAVLTreeMap<>();
+		final Object2LongMap<T> itemWeights = new Object2LongAVLTreeMap<>();
 
 		// We are not guaranteed to have split queries incoming, so we normalize them for searching
 		queries = queries.stream().flatMap(this::split).collect(Collectors.toSet());
@@ -78,7 +79,13 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Slightly favor whole words starting with query
 			updateWeights(query, prefixHits, itemWeights, true);
 
-			if (query.length() < ngramLength) {
+
+			final int queryLength = query.length();
+			if (queryLength == 0 || ngramLength == Integer.MAX_VALUE) {
+				continue;
+			}
+
+			if (queryLength < ngramLength) {
 				updateWeights(query, entries.prefixMap(query), itemWeights, false);
 				continue;
 			}
@@ -96,9 +103,9 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		// Sort items according to their weight, then limit.
 		// Note that sorting is in ascending order, meaning lower-scores are better.
-		return itemWeights.object2DoubleEntrySet()
+		return itemWeights.object2LongEntrySet()
 						  .stream()
-						  .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
+						  .sorted(Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
 						  .limit(limit)
 						  .map(Map.Entry::getKey)
 						  .collect(Collectors.toList());
@@ -118,21 +125,23 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * Calculate and update weights for all queried items
 	 */
-	private void updateWeights(String query, final Map<String, List<T>> items, Object2DoubleMap<T> itemWeights, boolean original) {
+	private void updateWeights(String query, final Map<String, List<T>> items, Object2LongMap<T> itemWeights, boolean original) {
 		if (items == null) {
 			return;
 		}
 
 		for (Map.Entry<String, List<T>> entry : items.entrySet()) {
-			final String key = entry.getKey();
 			final List<T> hits = entry.getValue();
 
-			double weight = weightWord(query, key, original);
+			if (hits.isEmpty()) {
+				continue;
+			}
+
+			long weight = weightWord(query, entry.getKey(), original);
 
 			// We combine hits multiplicative to favor items with multiple hits
 			for (T item : hits) {
-				final double currentWeight = itemWeights.getOrDefault(item, 1);
-				itemWeights.put(item, currentWeight * weight);
+				itemWeights.put(item, itemWeights.getOrDefault(item, 1) + weight);
 			}
 		}
 	}
@@ -150,9 +159,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * A lower weight implies more relevant words.
 	 */
-	private double weightWord(String query, String itemWord, boolean original) {
+	private long weightWord(String query, String itemWord, boolean original) {
 		// The weight function needs to be fast, as it is called frequently.
-		final double weight;
+		final long weight;
 
 		// We prefer same length words.
 		if (query.length() == itemWord.length()) {
