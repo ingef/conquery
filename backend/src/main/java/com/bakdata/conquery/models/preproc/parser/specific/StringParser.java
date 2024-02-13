@@ -9,8 +9,6 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -21,14 +19,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-@ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
+@ToString(callSuper = true)
 public class StringParser extends Parser<String, StringStore> {
 
 
 	private static final Pattern DIGITS = Pattern.compile("^\\d+$");
-
-	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
-
 
 	public StringParser(ConqueryConfig config) {
 		super(config);
@@ -59,7 +54,7 @@ public class StringParser extends Parser<String, StringStore> {
 	protected StringStore decideType() {
 
 		//check if a singleton type is enough
-		if (strings.isEmpty()) {
+		if (getLines() == 0) {
 			return EmptyStore.INSTANCE;
 		}
 
