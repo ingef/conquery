@@ -64,14 +64,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
+					   .filter(column -> table2Buckets.get(column.getTable()) != null)
 					   .map(column ->
 									jobsExecutorService.submit(() -> {
 										final List<Bucket> buckets = table2Buckets.get(column.getTable());
-
-										if (buckets == null) {
-											log.debug("Skipping column '{}' because there are no buckets imported", column);
-											return;
-										}
 
 										final Set<String> values = buckets.stream()
 																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())

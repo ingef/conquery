@@ -77,7 +77,7 @@ public class DistributedNamespace extends Namespace {
 
 	@Override
 	void buildSearchForColumnValuesAsync(Set<Column> columns) {
-		log.debug("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
+		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
 		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
 	}
 

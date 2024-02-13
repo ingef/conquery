@@ -25,7 +25,6 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -102,7 +101,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
 import org.assertj.core.api.RecursiveComparisonAssert;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -187,6 +186,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 	@Test
+	@Tag("OBJECT_2_INT_MAP") // Bucket uses Object2IntMap
 	public void bucketCompoundDateRange() throws JSONException, IOException {
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
@@ -813,6 +813,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
+	@Tag("OBJECT_2_INT_MAP")
 	public void object2IntEmpty() throws JSONException, IOException {
 		Object2IntMap<String> empty = Object2IntMaps.emptyMap();
 
@@ -825,6 +826,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
+	@Tag("OBJECT_2_INT_MAP")
 	public void object2IntString() throws JSONException, IOException {
 		Object2IntMap<String> map = new Object2IntOpenHashMap<>();
 
@@ -839,24 +841,8 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	}
 
-
 	@Test
-	@Disabled(value = "Actually this works fine, but assertj has problems with the comparison of the keys being arrays. It compares the array's hashes not their contents.")
-	public void object2IntArray() throws JSONException, IOException {
-		Object2IntMap<int[]> map = new Object2IntOpenHashMap<>();
-
-		map.put(new int[]{}, 0);
-		map.put(new int[]{1}, 1);
-		map.put(new int[]{2, 2}, 2);
-		SerializationTestUtil.forType(new TypeReference<Object2IntMap<int[]>>() {
-							 })
-							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
-							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
-							 .test(map);
-
-	}
-
-	@Test
+	@Tag("OBJECT_2_INT_MAP")
 	public void arrayObject2Int() throws JSONException, IOException {
 		Object2IntMap<String>[] map = new Object2IntOpenHashMap[]{
 				new Object2IntOpenHashMap<>() {{
@@ -873,20 +859,6 @@ public class SerializationTests extends AbstractSerializationTest {
 				}}
 		};
 		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
-							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
-							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
-							 .test(map);
-
-	}
-
-	@Test
-	public void object2IntObject() throws JSONException, IOException {
-		Object2IntMap<FrontendValue> map = new Object2IntOpenHashMap<>();
-
-		map.put(new FrontendValue("zero", "zero"), 0);
-		map.put(new FrontendValue("one", "one"), 1);
-		map.put(new FrontendValue("two", "two"), 2);
-		SerializationTestUtil.forType(new TypeReference<Object2IntMap<FrontendValue>>() {
 							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);

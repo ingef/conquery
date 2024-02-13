@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.StringStoreString;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -44,51 +45,6 @@ public class StringParser extends Parser<String, StringStore> {
 		return DIGITS.matcher(value).matches();
 	}
 
-//	TODO
-	//	public NumberStringStore tryCreateNumberStringStore(ConqueryConfig config) {
-//
-//		//check if the remaining strings are all numbers
-//		final IntegerParser numberParser = new IntegerParser(config);
-//
-//		try {
-//
-//			for (String s : getStrings().keySet()) {
-//
-//				// Ensure there are only digits and no other leading zeroes.
-//				if (!isOnlyDigits(s)) {
-//					return null;
-//				}
-//
-//				long parseInt = Integer.parseInt(s);
-//				numberParser.addLine(parseInt);
-//			}
-//		}
-//		catch (NumberFormatException e) {
-//			return null;
-//		}
-//
-//
-//		numberParser.setLines(getLines());
-//
-//		/*
-//		Do not use a number type if the range is much larger than the number if distinct values
-//		e.g. if the column contains only 0 and 5M
-//		 */
-//
-//		final long span = numberParser.getMaxValue() - numberParser.getMinValue() + 1;
-//
-//		if (span > getStrings().size()) {
-//			return null;
-//		}
-//
-//		IntegerStore decision = numberParser.findBestType();
-//
-//		Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(getStrings().size());
-//		getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
-//
-//		return new NumberStringStore(new Range.IntegerRange((int) numberParser.getMinValue(), (int) numberParser.getMaxValue()), decision, inverse);
-//	}
-
 	@Override
 	protected String parseValue(String value) throws ParsingException {
 		return value.intern();
@@ -103,10 +59,9 @@ public class StringParser extends Parser<String, StringStore> {
 	protected StringStore decideType() {
 
 		//check if a singleton type is enough
-//		if (strings.isEmpty()) {
-//			return EmptyStore.INSTANCE;
-//		}
-		//TODO StringStoreNumbers
+		if (strings.isEmpty()) {
+			return EmptyStore.INSTANCE;
+		}
 
 		return StringStoreString.create(getLines());
 	}
