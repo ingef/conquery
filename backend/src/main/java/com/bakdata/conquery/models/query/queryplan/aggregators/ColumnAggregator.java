@@ -22,7 +22,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 	public abstract List<Column> getRequiredColumns();
 
 	@Override
-	public abstract void acceptEvent(Bucket bucket, int event);
+	public abstract void consumeEvent(Bucket bucket, int event);
 
 	/**
 	 * Skip all buckets where none of the required columns have values.

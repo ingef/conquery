@@ -31,8 +31,8 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		getChild().acceptEvent(bucket, event);
+	public boolean acceptEvent(Bucket bucket, int event) {
+		return getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

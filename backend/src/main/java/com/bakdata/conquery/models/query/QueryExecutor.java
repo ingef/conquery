@@ -25,16 +25,18 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@Data
 public class QueryExecutor implements Closeable {
 
 	private final Worker worker;
 
 	private final ThreadPoolExecutor executor;
+
+	private final int secondaryIdSubPlanLimit;
 
 	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
 
@@ -52,7 +54,7 @@ public class QueryExecutor implements Closeable {
 
 	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
-		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
+		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker, secondaryIdSubPlanLimit)));
 
 		if (entities.isEmpty()) {
 			log.warn("Entities for query are empty");
