@@ -21,6 +21,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public static final char DELIMITER = ',';
 	private static final String MAX_DATE_VALUE = "9999-12-31";
 	private static final String MIN_DATE_VALUE = "0001-01-01";
+	private static final String ANY_CHAR_REGEX = ".*";
 
 	@Override
 	public String getMinDateExpression() {
@@ -39,6 +40,11 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				type.getType(),
 				DSL.field("%s AS %s".formatted(field, type.getName()))
 		);
+	}
+
+	@Override
+	public String getAnyCharRegex() {
+		return ANY_CHAR_REGEX;
 	}
 
 	@Override

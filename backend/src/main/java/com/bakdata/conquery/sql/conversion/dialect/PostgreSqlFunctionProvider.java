@@ -26,6 +26,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
+	private static final String ANY_CHAR_REGEX = "%";
 
 	@Override
 	public String getMaxDateExpression() {
@@ -35,6 +36,11 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
 		return DSL.cast(field, type);
+	}
+
+	@Override
+	public String getAnyCharRegex() {
+		return ANY_CHAR_REGEX;
 	}
 
 	@Override
