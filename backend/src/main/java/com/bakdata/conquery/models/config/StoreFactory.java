@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -38,7 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
 
-	Collection<NamespaceStorage> discoverNamespaceStorages(StorageHandler storageHandler);
+	Collection<NamespaceStorage> discoverNamespaceStorages();
 
 	Collection<WorkerStorage> discoverWorkerStorages();
 

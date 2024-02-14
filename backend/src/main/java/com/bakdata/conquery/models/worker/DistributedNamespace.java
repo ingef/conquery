@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
@@ -60,12 +59,6 @@ public class DistributedNamespace extends Namespace {
 					  .orElseGet(() -> storage.assignEntityBucket(entity, bucketSize));
 	}
 
-
-	@Override
-	void updateFilterSearch() {
-		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig(), this::buildSearchForColumnValuesAsync));
-	}
-
 	@Override
 	void updateMatchingStats() {
 		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
@@ -76,7 +69,7 @@ public class DistributedNamespace extends Namespace {
 	}
 
 	@Override
-	void buildSearchForColumnValuesAsync(Set<Column> columns) {
+	void registerColumnValuesInSearch(Set<Column> columns) {
 		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
 		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
 	}

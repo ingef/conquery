@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -130,7 +131,9 @@ public abstract class Namespace extends IdResolveContext {
 	/**
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
 	 */
-	abstract void updateFilterSearch();
+	final void updateFilterSearch() {
+		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig(), this::registerColumnValuesInSearch));
+	}
 
 	/**
 	 * Issues a job that collects basic metrics for every concept and its nodes. This information is displayed in the frontend.
@@ -144,7 +147,7 @@ public abstract class Namespace extends IdResolveContext {
 	 *
 	 * @param columns
 	 */
-	abstract void buildSearchForColumnValuesAsync(Set<Column> columns);
+	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
 	/**
 	 * Hook for actions that are best done after all data has been imported and is in a consistent state.

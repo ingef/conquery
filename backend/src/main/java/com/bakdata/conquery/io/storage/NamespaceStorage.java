@@ -8,7 +8,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -34,8 +33,8 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected CachedStore<String, Integer> entity2Bucket;
 
-	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator, StorageHandler storageHandler) {
-		super(storageFactory, pathName, validator, storageHandler);
+	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+		super(storageFactory, pathName, validator);
 	}
 
 

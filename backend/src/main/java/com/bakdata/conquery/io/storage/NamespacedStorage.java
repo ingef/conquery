@@ -9,7 +9,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -51,9 +50,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	private final StoreFactory storageFactory;
 
 	@Getter
-	private final StorageHandler storageHandler;
-
-	@Getter
 	private final Validator validator;
 
 	protected SingletonStore<Dataset> dataset;
@@ -62,11 +58,10 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator, StorageHandler storageHandler) {
+	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
 		this.validator = validator;
-		this.storageHandler = storageHandler;
 	}
 
 	public void openStores(ObjectMapper objectMapper) {

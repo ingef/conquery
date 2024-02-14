@@ -47,7 +47,7 @@ public class UpdateFilterSearchJob extends Job {
 	@NonNull
 	private final IndexConfig indexConfig;
 
-	private final Consumer<Set<Column>> buildSearchForColumnValuesAsync;
+	private final Consumer<Set<Column>> registerColumnValuesInSearch;
 
 	@Override
 	public void execute() throws Exception {
@@ -123,7 +123,7 @@ public class UpdateFilterSearchJob extends Job {
 		// The following cast is save
 		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(Column.class, Collections.emptySet());
 		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
-		buildSearchForColumnValuesAsync.accept(searchableColumns);
+		registerColumnValuesInSearch.accept(searchableColumns);
 
 		service.shutdown();
 
