@@ -39,7 +39,7 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange daterange(CDateRange dateRestriction);
 
-	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
+	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.math.BigDecimal;
 import java.util.Map;

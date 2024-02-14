@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,7 +21,11 @@ import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -30,6 +34,7 @@ import org.jooq.impl.DSL;
 public class SumDistinctSqlAggregator implements SqlAggregator {
 
 	@Getter
+	@RequiredArgsConstructor
 	private enum SumDistinctCteStep implements CteStep {
 
 		GROUP_BY_DISTINCT_COLUMNS("grouped_by_distinct_columns", null),
@@ -37,16 +42,6 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 		private final String suffix;
 		private final SumDistinctCteStep predecessor;
-
-		SumDistinctCteStep(String suffix, SumDistinctCteStep predecessor) {
-			this.suffix = suffix;
-			this.predecessor = predecessor;
-		}
-
-		@Override
-		public String cteName(String nodeLabel) {
-			return "%s-%s".formatted(nodeLabel, this.suffix);
-		}
 	}
 
 	private static final String ROW_NUMBER_ALIAS = "row_number";
@@ -77,12 +72,12 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 		// sum column grouped by distinct columns
 		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-		ExtractingSqlSelect<? extends Number> qualifiedRootSelect = sumColumnRootSelect.createAliasedReference(predecessor);
+		ExtractingSqlSelect<? extends Number> qualifiedRootSelect = sumColumnRootSelect.createAliasReference(predecessor);
 		FieldWrapper<? extends Number> firstSelect = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect.select(), List.of()).as(alias));
 		QueryStep distinctColumnsStep = getGroupByDistinctColumnsStep(alias, primaryColumn, nameGenerator, predecessor, firstSelect, distinctByRootSelects);
 
 		// sum select
-		Field<? extends Number> firstSumColumn = firstSelect.createAliasedReference(distinctColumnsStep.getCteName()).select();
+		Field<? extends Number> firstSumColumn = firstSelect.createAliasReference(distinctColumnsStep.getCteName()).select();
 		FieldWrapper<BigDecimal> distinctSum = new FieldWrapper<>(DSL.sum(firstSumColumn).as(alias));
 
 		// sum aggregation
@@ -97,14 +92,14 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.build();
 			Field<BigDecimal>
 					qualifiedSumSelect =
-					distinctSum.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+					distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.builder().build();
 		}
@@ -175,7 +170,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 		List<Field<?>> groupByFields = Stream.concat(
 				Stream.of(qualifiedPrimaryColumn),
-				distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.createAliasedReference(predecessor)).map(ExtractingSqlSelect::select)
+				distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.createAliasReference(predecessor)).map(ExtractingSqlSelect::select)
 		).collect(Collectors.toList());
 
 		return QueryStep.builder()

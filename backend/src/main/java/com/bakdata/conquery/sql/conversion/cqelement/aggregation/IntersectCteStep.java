@@ -13,9 +13,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum IntersectCteStep implements DateAggregationCteStep {
 
-	OVERLAP("_overlap", OverlapCte::new, null),
-	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
-	MERGE("_merge", MergeCte::new, OVERLAP);
+	OVERLAP("overlap", OverlapCte::new, null),
+	INTERMEDIATE_TABLE("no_overlap", IntermediateTableCte::new, null),
+	MERGE("merge", MergeCte::new, OVERLAP);
 
 	private static final Set<IntersectCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;

@@ -18,7 +18,7 @@ import org.jooq.impl.DSL;
 
 class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
-	public static final char DELIMITER = ',';
+	private static final char DELIMITER = ',';
 	private static final String MAX_DATE_VALUE = "9999-12-31";
 	private static final String MIN_DATE_VALUE = "0001-01-01";
 
@@ -72,7 +72,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label) {
 
 		Column startColumn;
 		Column endColumn;
@@ -98,7 +98,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd)
-							  .asValidityDateRange(conceptLabel);
+							  .asValidityDateRange(label);
 	}
 
 	@Override

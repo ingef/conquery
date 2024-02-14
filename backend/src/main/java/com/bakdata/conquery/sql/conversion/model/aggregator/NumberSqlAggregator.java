@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,8 +11,10 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
 
