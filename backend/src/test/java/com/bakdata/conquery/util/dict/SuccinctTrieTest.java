@@ -76,7 +76,7 @@ public class SuccinctTrieTest {
 		IntStream
 				.range(0, 8192)
 				.boxed()
-				.sorted(TernaryTreeTestUtil.shuffle(random))
+				.sorted(TreeTestUtil.shuffle(random))
 				.forEach(rep -> {
 					final String prefix = Integer.toString(rep, 26);
 
