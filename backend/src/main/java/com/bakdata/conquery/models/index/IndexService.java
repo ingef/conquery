@@ -94,8 +94,7 @@ public class IndexService implements Injectable {
 			// Run finalizing operations on the index
 			int2ext.finalizer();
 
-			log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), Duration.ofMillis(timer.getStopTime()));
-
+			log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), timer);
 
 			return int2ext;
 		}
