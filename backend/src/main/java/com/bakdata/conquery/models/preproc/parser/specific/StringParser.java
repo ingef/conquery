@@ -29,17 +29,6 @@ public class StringParser extends Parser<String, StringStore> {
 		super(config);
 	}
 
-	/**
-	 * It's either exactly `0`, or a string of digits, not starting with `0`, and no leading +-.
-	 */
-	public static boolean isOnlyDigits(String value) {
-		if (value.startsWith("0")) {
-			return value.length() == 1;
-		}
-
-		return DIGITS.matcher(value).matches();
-	}
-
 	@Override
 	protected String parseValue(String value) throws ParsingException {
 		return value.intern();
