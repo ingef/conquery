@@ -103,7 +103,7 @@ class QuickSearchTest {
 	public void testNGrams() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.ngrams("baaacd"))
+		assertThat(search.ngramSplit("baaacd"))
 				.containsExactly(
 						"ba",
 						"aa",
@@ -112,10 +112,10 @@ class QuickSearchTest {
 						"cd"
 				);
 
-		assertThat(search.ngrams("acd"))
+		assertThat(search.ngramSplit("acd"))
 				.containsExactly("ac", "cd");
 
-		assertThat(search.ngrams("aacd"))
+		assertThat(search.ngramSplit("aacd"))
 				.containsExactly("aa", "ac", "cd");
 	}
 
@@ -123,10 +123,10 @@ class QuickSearchTest {
 	public void testNoNGram() {
 		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
 
-		assertThat(search.ngrams("baaacd")).isEmpty();
+		assertThat(search.ngramSplit("baaacd")).isEmpty();
 
-		assertThat(search.ngrams("acd")).isEmpty();
+		assertThat(search.ngramSplit("acd")).isEmpty();
 
-		assertThat(search.ngrams("aacd")).isEmpty();
+		assertThat(search.ngramSplit("aacd")).isEmpty();
 	}
 }

@@ -44,19 +44,27 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(of = {"ngramLength", "splitPattern"})
 public class TrieSearch<T extends Comparable<T>> {
 	/**
-	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
+	 * Weight of a search hit for query and keyword of different lengths.
+	 * Should be greater than one because the weights of hits in the whole worlds trie are squared.
 	 */
 	private static final long BASE_WEIGHT = 2;
 
+	/**
+	 * Weight of a search hit for query and keyword of the same length.
+	 * Should be greater than one because the weights of hits in the whole worlds trie are squared.
+	 */
 	private static final long EXACT_MATCH_WEIGHT = 10;
 
+	/**
+	 * For 0 and Integer.MAX_VALUE TrieSearch has the same behaviour and the ngram trie is empty.
+	 */
 	private final int ngramLength;
 
 	private final Pattern splitPattern;
 
 	// We store whole words and ngrams separately to avoid additional work,
 	// such as checking and skipping ngrams when iterating through all whole words
-	private final PatriciaTrie<List<T>> entries = new PatriciaTrie<>();
+	private final PatriciaTrie<List<T>> ngrams = new PatriciaTrie<>();
 	private final PatriciaTrie<List<T>> whole = new PatriciaTrie<>();
 	private boolean shrunk = false;
 	private long size = -1;
@@ -66,6 +74,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			throw new IllegalArgumentException("Negative ngram Length is not allowed.");
 		}
 
+		// We want TrieSearch to behave the same for ngramLength = 0 and ngramLength = Integer.MAX_VALUE.
 		if (ngramLength == 0) {
 			this.ngramLength = Integer.MAX_VALUE;
 		}
@@ -89,30 +98,30 @@ public class TrieSearch<T extends Comparable<T>> {
 			// Slightly favor whole words starting with query
 			updateWeights(query, prefixHits, itemWeights, true);
 
-
+			// If ngramLength is Integer.MAX_VALUE the ngram trie is empty.
 			final int queryLength = query.length();
-			if (queryLength == 0 || ngramLength == 0 || ngramLength == Integer.MAX_VALUE) {
+			if (queryLength == 0 || ngramLength == Integer.MAX_VALUE) {
 				continue;
 			}
 
 			if (queryLength < ngramLength) {
-				updateWeights(query, entries.prefixMap(query), itemWeights, false);
+				updateWeights(query, ngrams.prefixMap(query), itemWeights, false);
 				continue;
 			}
 
 			// Collectors::toMap throws IllegalStateException if there are duplicate keys
-			final Map<String, List<T>> ngramHits = ngrams(query)
+			final Map<String, List<T>> ngramHits = ngramSplit(query)
 					.distinct()
 					.collect(Collectors.toMap(
 							Function.identity(),
-							ng -> entries.getOrDefault(ng, Collections.emptyList())
+							ng -> ngrams.getOrDefault(ng, Collections.emptyList())
 					));
 
 			updateWeights(query, ngramHits, itemWeights, false);
 		}
 
 		// Sort items according to their weight, then limit.
-		// Note that sorting is in ascending order, meaning lower-scores are better.
+		// Note that sorting is in descending order, meaning higher-scores are better.
 		return itemWeights.object2LongEntrySet()
 						  .stream()
 						  .sorted(Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
@@ -121,6 +130,11 @@ public class TrieSearch<T extends Comparable<T>> {
 						  .collect(Collectors.toList());
 	}
 
+	/**
+	 * Normalize keyword into a stream of non-empty strings without whitespaces via the splitPattern
+	 * <p>
+	 * '@implNote This does not split keyword into ngrams
+	 */
 	private Stream<String> split(String keyword) {
 		if (Strings.isNullOrEmpty(keyword)) {
 			return Stream.empty();
@@ -156,9 +170,13 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 	}
 
-	public Stream<String> ngrams(String word) {
+	/**
+	 * Returns an empty stream if word is shorter than ngramLength or ngramLength is Integer.MAX_VALUE
+	 */
+	public Stream<String> ngramSplit(String word) {
 
-		if (word.length() < ngramLength) {
+		// Any String  is its own ngram when ngramLength is Integer.MAX_VALUE.
+		if (word.length() < ngramLength || ngramLength == Integer.MAX_VALUE) {
 			return Stream.empty();
 		}
 
@@ -167,7 +185,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	/**
-	 * A lower weight implies more relevant words.
+	 * A higher weight implies more relevant words.
 	 */
 	private long weightWord(String query, String itemWord, boolean original) {
 		// The weight function needs to be fast, as it is called frequently.
@@ -203,7 +221,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public void addItem(T item, List<String> keywords) {
 		ensureWriteable();
 
-		// This barrier avoids work when shrinking and therefore unnecessary calls to entries::computeIfAbsent
+		// This barrier avoids work when shrinking and therefore unnecessary calls to ngrams::computeIfAbsent
 		final Set<String> barrier = new HashSet<>();
 
 		// Associate item with all extracted keywords
@@ -223,9 +241,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	private void doPut(String word, T item, Set<String> barrier) {
 		whole.computeIfAbsent(word, (ignored) -> new ArrayList<>()).add(item);
 
-		ngrams(word)
+		ngramSplit(word)
 				.filter(barrier::add)
-				.forEach(key -> entries.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(item));
+				.forEach(key -> ngrams.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(item));
 	}
 
 	public boolean isWriteable() {
@@ -241,8 +259,10 @@ public class TrieSearch<T extends Comparable<T>> {
 		if (shrunk) {
 			return;
 		}
-		entries.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
-		whole.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+
+		// items can contain duplicates if an item is inserted multiple times with the same keyword or with keywords that share ngrams
+		ngrams.replaceAll((key, items) -> items.stream().distinct().collect(Collectors.toList()));
+		whole.replaceAll((key, items) -> items.stream().distinct().collect(Collectors.toList()));
 
 		size = calculateSize();
 		shrunk = true;
