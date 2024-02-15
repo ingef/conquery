@@ -63,10 +63,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private List<UniversalSelect> selects = new ArrayList<>();
 
 	@JsonIgnore
-	@Getter
-	@Setter
-	private TreeChildPrefixIndex childIndex;
-	@JsonIgnore
 	private final Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
@@ -97,11 +93,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public void initElements() throws ConfigurationException, JSONException {
 		super.initElements();
-		this.setLocalId(0);
+		setLocalId(0);
 		localIdMap.add(this);
 
-		List<ConceptTreeChild> openList = new ArrayList<>();
-		openList.addAll(this.getChildren());
+		final List<ConceptTreeChild> openList = new ArrayList<>();
+		openList.addAll(getChildren());
 
 		for (ConceptTreeConnector con : getConnectors()) {
 			if (con.getCondition() == null) {
@@ -112,7 +108,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 
 		for (int i = 0; i < openList.size(); i++) {
-			ConceptTreeChild ctc = openList.get(i);
+			final ConceptTreeChild ctc = openList.get(i);
 
 			try {
 				ctc.setLocalId(localIdMap.size());
@@ -123,7 +119,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + this.getLabel(), e);
+				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
@@ -131,19 +127,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		if (this.getChildIndex() != null) {
-			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue);
-
-			if (best != null) {
-				return findMostSpecificChild(stringValue, rowMap, best, best.getChildren());
-			}
-		}
-
-		return findMostSpecificChild(stringValue, rowMap, null, this.getChildren());
+		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
 	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
+
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;
 			boolean failed = false;
@@ -161,17 +150,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 				match = n;
 
-				if (n.getChildIndex() == null) {
-					continue;
-				}
-
-				final ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
-
-				if (specificChild == null) {
-					continue;
-				}
-
-				match = specificChild;
 			}
 
 			if (failed) {
@@ -223,7 +201,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @return the element matching the most specific local id in the array
 	 */
 	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
-		int mostSpecific = ids[ids.length - 1];
+		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
 

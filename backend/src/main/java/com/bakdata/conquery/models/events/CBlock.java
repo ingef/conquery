@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -165,13 +164,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final StringStore stringStore;
 
-		// If we have a column and it is of string-type, we create indices and caches.
+		// If we have a column, and it is of string-type, we initialize a cache.
 		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringStore) {
 
 			stringStore = (StringStore) bucket.getStores()[column.getPosition()];
-
-			// Create index and insert into Tree.
-			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
 			treeConcept.initializeIdCache(stringStore, bucket.getImp());
 		}
