@@ -32,9 +32,9 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /**
- * Conversion of a {@link SumSelect} with {@link SumSelect#getDistinctByColumn()}. Sum's the values of a column for each row which is distinct by the distinct
- * by columns by creating 2 additional CTEs. We can't use our usual {@link ConnectorCteStep#PREPROCESSING} CTE for achieving distinctness, because it's used
- * for the conversion of other selects where distinctness by distinct by columns is not required and would cause wrong results.
+ * Conversion of a {@link SumSelect} with {@link SumSelect#getDistinctByColumn()}. Sum's the values of a column for each row which is distinct by the
+ * distinct-by columns by creating 2 additional CTEs. We can't use our usual {@link ConnectorCteStep#PREPROCESSING} CTE for achieving distinctness, because
+ * it's used for the conversion of other selects where distinctness by distinct-by columns is not required and would cause wrong results.
  * <p>
  *
  * <pre>

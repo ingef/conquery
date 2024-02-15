@@ -20,7 +20,6 @@ import org.jooq.TableLike;
 /**
  * Joins the {@link ConnectorCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional additional predecessors.
  * <p>
- * <p>
  * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
  * take place. See {@link SumDistinctSqlAggregator} for an example of additional predecessors.
  *
@@ -40,7 +39,7 @@ import org.jooq.TableLike;
  *     }
  * </pre>
  */
-class JoinBranches extends ConnectorCte {
+class JoinBranchesCte extends ConnectorCte {
 
 	@Override
 	protected ConnectorCteStep cteStep() {
@@ -53,15 +52,15 @@ class JoinBranches extends ConnectorCte {
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(tableContext.getPrevious());
 
-		Optional<ColumnDateRange> validityDate =
-				Optional.of(tableContext)
-						.filter(context -> context.getValidityDate().isPresent() && !context.isExcludedFromDateAggregation())
-						.map(JoinBranches::applyIntervalPacking)
-						.map(finalIntervalPackingStep -> {
-							queriesToJoin.add(finalIntervalPackingStep);
-							return finalIntervalPackingStep;
-						})
-						.flatMap(finalIntervalPackingStep -> finalIntervalPackingStep.getQualifiedSelects().getValidityDate());
+		Optional<ColumnDateRange> validityDate;
+		if (tableContext.getValidityDate().isEmpty() || tableContext.isExcludedFromDateAggregation()) {
+			validityDate = Optional.empty();
+		}
+		else {
+			QueryStep finalIntervalPackingStep = applyIntervalPacking(tableContext);
+			queriesToJoin.add(finalIntervalPackingStep);
+			validityDate = finalIntervalPackingStep.getQualifiedSelects().getValidityDate();
+		}
 
 		tableContext.allSqlSelects().stream()
 					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessor().stream())
