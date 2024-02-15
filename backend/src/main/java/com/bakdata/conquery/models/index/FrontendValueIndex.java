@@ -67,7 +67,7 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
 		}
 
-		log.trace("DONE-FV-FIN ADDING_ITEMS in {}", timer);
+		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
 
 		timer.reset();
 		log.trace("START-FV-FIN SHRINKING");
