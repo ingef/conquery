@@ -8,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.index.IndexKey;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -53,5 +54,9 @@ public class IndexConfig {
 			return false;
 		}
 
+	}
+
+	public <K extends Comparable<K>> TrieSearch<K> createTrieSearch(boolean generateNGrams) {
+		return new TrieSearch<>(generateNGrams ? getNgramLength() : Integer.MAX_VALUE, getSearchSplitChars());
 	}
 }

@@ -30,11 +30,15 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Trie based keyword search for autocompletion and resolving.
  * <p>
- * We store not only whole words but ngrams up to length of ngramLength to enable a sort of fuzzy and partial search with longer and compound search terms.
+ * We store whole words and their ngrams to enable a sort of fuzzy and partial search with longer and compound search terms.
  * <p>
  * The output result should be in the following order:
  * 1) Original words (in order of difference)
  * 2) ngrams (in order of difference)
+ * <p>
+ *
+ * @implNote If ngramLength is Integer.MAX_VALUE, the ngram trie is empty and TrieSearch::findItems only performs a prefix search using the query keywords.
+ * If TrieSearch is instantiated with ngramLength = 0, ngramLength is set to Integer.MAX_VALUE.
  */
 @Slf4j
 @ToString(of = {"ngramLength", "splitPattern"})
@@ -61,7 +65,13 @@ public class TrieSearch<T extends Comparable<T>> {
 		if (ngramLength < 0) {
 			throw new IllegalArgumentException("Negative ngram Length is not allowed.");
 		}
-		this.ngramLength = ngramLength;
+
+		if (ngramLength == 0) {
+			this.ngramLength = Integer.MAX_VALUE;
+		}
+		else {
+			this.ngramLength = ngramLength;
+		}
 
 		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, ""))));
 	}
@@ -81,7 +91,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 
 			final int queryLength = query.length();
-			if (queryLength == 0 || ngramLength == Integer.MAX_VALUE) {
+			if (queryLength == 0 || ngramLength == 0 || ngramLength == Integer.MAX_VALUE) {
 				continue;
 			}
 
@@ -139,7 +149,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 			long weight = weightWord(query, entry.getKey(), original);
 
-			// We combine hits multiplicative to favor items with multiple hits
+			// We combine hits additively to favor items with multiple hits
 			for (T item : hits) {
 				itemWeights.put(item, itemWeights.getOrDefault(item, 1) + weight);
 			}

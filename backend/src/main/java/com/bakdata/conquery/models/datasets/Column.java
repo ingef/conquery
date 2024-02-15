@@ -151,9 +151,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
-		final int ngramLength = isGenerateSuffixes() ? config.getNgramLength() : Integer.MAX_VALUE;
 
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(ngramLength, config.getSearchSplitChars());
+		final TrieSearch<FrontendValue> search = config.createTrieSearch(isGenerateSuffixes());
 
 		StopWatch timer = StopWatch.createStarted();
 

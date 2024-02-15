@@ -130,7 +130,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getNgramLength(), config.getSearchSplitChars());
+		final TrieSearch<FrontendValue> search = config.createTrieSearch(true);
 
 		if(log.isTraceEnabled()) {
 			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
