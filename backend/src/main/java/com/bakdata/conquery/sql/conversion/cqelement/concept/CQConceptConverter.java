@@ -1,11 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +38,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				new PreprocessingCte(),
 				new EventFilterCte(),
 				new AggregationSelectCte(),
-				new JoinPredecessorsCte(),
+				new JoinBranches(),
 				new AggregationFilterCte(),
 				new FinalConnectorCte()
 		);
@@ -80,8 +78,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String conceptLabel = context.getNameGenerator().conceptName(cqConcept);
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(cqTable, tableName, conceptLabel);
 
-		Set<ConnectorCteStep> requiredSteps = getRequiredSteps(cqTable, context.dateRestrictionActive(), validityDateSelect);
-		ConnectorTables connectorTables = new ConnectorTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
+		ConnectorTables connectorTables = new ConnectorTables(conceptLabel, tableName, context.getNameGenerator());
 
 		// convert filters
 		List<SqlFilters> allFiltersForTable = new ArrayList<>();
@@ -106,30 +103,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .connectorTables(connectorTables)
 							 .conceptLabel(conceptLabel)
 							 .build();
-	}
-
-	/**
-	 * Determines if event/aggregation filter steps are required.
-	 *
-	 * <p>
-	 * {@link ConnectorCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
-	 */
-	private Set<ConnectorCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
-		Set<ConnectorCteStep> requiredSteps = new HashSet<>(ConnectorCteStep.MANDATORY_STEPS);
-
-		if (dateRestrictionApplicable(dateRestrictionRequired, validityDateSelect)) {
-			requiredSteps.add(ConnectorCteStep.EVENT_FILTER);
-		}
-
-		table.getFilters().stream()
-			 .flatMap(filterValue -> filterValue.getFilter().getRequiredSqlSteps().stream())
-			 .forEach(requiredSteps::add);
-
-		Stream.concat(table.getConcept().getSelects().stream(), table.getSelects().stream())
-			  .flatMap(select -> select.getRequiredSqlSteps().stream())
-			  .forEach(requiredSteps::add);
-
-		return requiredSteps;
 	}
 
 	private Optional<ColumnDateRange> convertValidityDate(

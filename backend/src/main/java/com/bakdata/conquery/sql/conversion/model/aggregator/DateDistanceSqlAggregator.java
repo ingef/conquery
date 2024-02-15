@@ -64,13 +64,12 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
 									 .build();
-			this.whereClauses = null;
+			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer>
-					qualifiedDateDistanceSelect =
-					dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER)).select();
+			String predecessorCte = connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER);
+			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.createAliasReference(predecessorCte).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.eventFilter(dateDistanceCondition)

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.aggregator;
+package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.sql.Date;
 
@@ -12,11 +12,9 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -34,13 +32,9 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 			SqlFunctionProvider functionProvider,
 			IRange<? extends Number, ?> filterValue
 	) {
-		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(
-				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
-				column.getName(),
-				Date.class
-		);
+		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), Date.class);
 
-		Field<Date> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<Date> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.cteName(ConnectorCteStep.EVENT_FILTER)).select();
 		FieldWrapper<Integer> countQuartersField = new FieldWrapper<>(
 				DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)).as(alias),
 				column.getName()
@@ -53,7 +47,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 		if (filterValue == null) {
 			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
-			this.whereClauses = WhereClauses.builder().build();
+			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();

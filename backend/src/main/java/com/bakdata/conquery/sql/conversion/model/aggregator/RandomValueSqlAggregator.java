@@ -25,12 +25,10 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
-		String columnName = column.getName();
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), Object.class);
 
 		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
-		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), columnName);
+		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), column.getName());
 
 		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
@@ -40,7 +38,7 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.whereClauses = WhereClauses.builder().build();
+		this.whereClauses = WhereClauses.empty();
 	}
 
 	public static RandomValueSqlAggregator create(RandomValueSelect randomValueSelect, SelectContext selectContext) {

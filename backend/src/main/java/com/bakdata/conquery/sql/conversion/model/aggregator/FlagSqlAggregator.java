@@ -78,8 +78,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		SqlFunctionProvider functionProvider = selectContext.getParentContext().getSqlDialect().getFunctionProvider();
 		SqlTables<ConnectorCteStep> connectorTables = selectContext.getConnectorTables();
 
-		String rootTable = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
-		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, rootTable);
+		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
 		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
@@ -151,7 +150,9 @@ public class FlagSqlAggregator implements SqlAggregator {
 
 		// and stuff them into 1 array field
 		Field<Object[]> flagsArray = functionProvider.asArray(flagAggregations).as(alias);
-		return new FieldWrapper<>(flagsArray);
+		// we also need the references for all flag columns for the flag aggregation of multiple columns
+		String[] requiredColumns = flagFieldsMap.values().stream().map(Field::getName).toArray(String[]::new);
+		return new FieldWrapper<>(flagsArray, requiredColumns);
 	}
 
 	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConnectorCteStep> connectorTables, Map<String, SqlSelect> flagRootSelectMap) {

@@ -30,12 +30,7 @@ public class NumberSqlAggregator implements SqlAggregator {
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
-
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
-				column.getName(),
-				numberClass
-		);
+		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), numberClass);
 
 		Field<Number> eventFilterCtePredecessor = connectorTables.qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased());
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);

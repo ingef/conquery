@@ -20,7 +20,7 @@ public class ExistsSqlAggregator implements SqlAggregator {
 		this.sqlSelects = SqlSelects.builder()
 									.finalSelect(existsSelect)
 									.build();
-		this.whereClauses = WhereClauses.builder().build();
+		this.whereClauses = WhereClauses.empty();
 	}
 
 	public static ExistsSqlAggregator create(ExistsSelect existsSelect, SelectContext selectContext) {

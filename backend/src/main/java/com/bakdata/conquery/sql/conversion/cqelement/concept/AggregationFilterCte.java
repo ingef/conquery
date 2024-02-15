@@ -1,27 +1,26 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class AggregationFilterCte extends ConnectorCte {
 
 	@Override
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_FILTER;
+	}
+
+	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
-		Field<Object> primaryColumn = QualifyingUtil.qualify(tableContext.getPrimaryColumn(), predecessorTableName);
-		Selects aggregationFilterSelects = Selects.builder()
-												  .primaryColumn(primaryColumn)
-												  .sqlSelects(getForAggregationFilterSelects(tableContext))
-												  .build()
-												  .qualify(predecessorTableName);
+		Selects aggregationFilterSelects = getAggregationFilterSelects(tableContext);
 
 		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
 																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
@@ -33,17 +32,23 @@ class AggregationFilterCte extends ConnectorCte {
 						.conditions(aggregationFilterConditions);
 	}
 
-	private List<SqlSelect> getForAggregationFilterSelects(CQTableContext tableContext) {
-		return tableContext.allSqlSelects().stream()
-						   .flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-						   .filter(sqlSelect -> !sqlSelect.isUniversal())
-						   .distinct()
-						   .toList();
-	}
+	private Selects getAggregationFilterSelects(CQTableContext tableContext) {
 
-	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.AGGREGATION_FILTER;
+		QueryStep previous = tableContext.getPrevious();
+		Selects previousSelects = previous.getQualifiedSelects();
+		List<SqlSelect> forAggregationFilterStep =
+				tableContext.allSqlSelects().stream()
+							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
+							.filter(Predicate.not(SqlSelect::isUniversal))
+							.map(sqlSelect -> sqlSelect.createAliasReference(previous.getCteName()))
+							.collect(Collectors.toList());
+
+		return Selects.builder()
+					  .primaryColumn(previousSelects.getPrimaryColumn())
+					  .validityDate(previousSelects.getValidityDate())
+					  .sqlSelects(forAggregationFilterStep)
+					  .build();
+
 	}
 
 }

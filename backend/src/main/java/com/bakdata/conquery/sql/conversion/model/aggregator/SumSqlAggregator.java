@@ -37,31 +37,26 @@ public class SumSqlAggregator implements SqlAggregator {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		List<ExtractingSqlSelect<? extends Number>> preprocessingSelects = new ArrayList<>();
 
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
-				sumColumn.getName(),
-				numberClass
-		);
+		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		String aggregationSelectPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-		Field<? extends Number> sumField;
+		String eventFilterCte = connectorTables.cteName(ConnectorCteStep.EVENT_FILTER);
+		Field<? extends Number> sumField = rootSelect.createAliasReference(eventFilterCte).select();
+		FieldWrapper<BigDecimal> sumGroupBy;
 		if (subtractColumn != null) {
 			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
-					connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING),
+					connectorTables.getRootTable(),
 					subtractColumn.getName(),
 					numberClass
 			);
 			preprocessingSelects.add(subtractColumnRootSelect);
 
-			Field<? extends Number> qualifiedRootSelect = rootSelect.createAliasReference(aggregationSelectPredecessor).select();
-			Field<? extends Number> qualifiedSubtractRootSelect = subtractColumnRootSelect.createAliasReference(aggregationSelectPredecessor).select();
-			sumField = qualifiedRootSelect.minus(qualifiedSubtractRootSelect);
+			Field<? extends Number> subtractField = subtractColumnRootSelect.createAliasReference(eventFilterCte).select();
+			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField.minus(subtractField)).as(alias), sumColumn.getName(), subtractColumn.getName());
 		}
 		else {
-			sumField = rootSelect.createAliasReference(aggregationSelectPredecessor).select();
+			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
 		}
-		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder()
 														 .preprocessingSelects(preprocessingSelects)
@@ -70,12 +65,12 @@ public class SumSqlAggregator implements SqlAggregator {
 		if (filterValue == null) {
 			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
-			this.whereClauses = null;
+			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<BigDecimal> qualifiedSumGroupBy =
-					sumGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+			String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.createAliasReference(predecessor).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)

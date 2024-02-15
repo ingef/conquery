@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.sql.Date;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
@@ -24,7 +25,6 @@ class InvertCte extends DateAggregationCte {
 
 	public static final String ROWS_LEFT_TABLE_NAME = "rows_left";
 	public static final String ROWS_RIGHT_TABLE_NAME = "rows_right";
-	public static final String PRIMARY_COLUMN_FIELD_NAME = "primary_column";
 
 	private final DateAggregationCteStep cteStep;
 
@@ -41,7 +41,7 @@ class InvertCte extends DateAggregationCte {
 		Field<Object> leftPrimaryColumn = QualifyingUtil.qualify(primaryColumn, ROWS_LEFT_TABLE_NAME);
 		Field<Object> rightPrimaryColumn = QualifyingUtil.qualify(primaryColumn, ROWS_RIGHT_TABLE_NAME);
 		Field<Object> coalescedPrimaryColumn = DSL.coalesce(leftPrimaryColumn, rightPrimaryColumn)
-												  .as(PRIMARY_COLUMN_FIELD_NAME);
+												  .as(SharedAliases.PRIMARY_COLUMN.getAlias());
 
 		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedPrimaryColumn, context);
 		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftPrimaryColumn, rightPrimaryColumn, rowNumberStep);

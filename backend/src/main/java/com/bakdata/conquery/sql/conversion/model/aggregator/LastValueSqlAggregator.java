@@ -31,9 +31,8 @@ public class LastValueSqlAggregator implements SqlAggregator {
 			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		String columnName = column.getName();
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), columnName, Object.class);
 
 		List<Field<?>> validityDateFields =
 				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
@@ -50,7 +49,7 @@ public class LastValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.whereClauses = WhereClauses.builder().build();
+		this.whereClauses = WhereClauses.empty();
 	}
 
 	public static LastValueSqlAggregator create(LastValueSelect lastValueSelect, SelectContext selectContext) {
