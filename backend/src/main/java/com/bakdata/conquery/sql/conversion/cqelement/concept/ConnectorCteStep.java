@@ -28,14 +28,8 @@ public enum ConnectorCteStep implements CteStep {
 	private final ConnectorCteStep predecessor;
 
 	public static Set<ConnectorCteStep> withOptionalSteps(ConnectorCteStep... connectorCteStep) {
-		HashSet<ConnectorCteStep> steps = new HashSet<>(MANDATORY_STEPS);
+		Set<ConnectorCteStep> steps = new HashSet<>(MANDATORY_STEPS);
 		steps.addAll(Set.of(connectorCteStep));
 		return steps;
 	}
-
-	@Override
-	public String cteName(String conceptLabel) {
-		return "%s-%s".formatted(conceptLabel, this.suffix);
-	}
-
 }

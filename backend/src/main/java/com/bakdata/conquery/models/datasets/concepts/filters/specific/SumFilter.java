@@ -34,9 +34,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Real
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;

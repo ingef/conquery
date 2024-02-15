@@ -14,23 +14,20 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
 	@Getter
+	@RequiredArgsConstructor
 	private enum PostgresDateAggregationCteStep implements DateAggregationCteStep {
 
 		DATE_AGGREGATED("dates_aggregated"),
 		DATES_INVERTED("dates_inverted");
 
 		private final String suffix;
-
-		PostgresDateAggregationCteStep(String suffix) {
-			this.suffix = suffix;
-		}
-
 	}
 
 	private final SqlFunctionProvider functionProvider;

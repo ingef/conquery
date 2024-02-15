@@ -15,7 +15,7 @@ public class QualifyingUtil {
 
 	public static List<SqlSelect> qualify(List<SqlSelect> sqlSelects, String qualifier) {
 		return sqlSelects.stream()
-						 .map(sqlSelect -> sqlSelect.createAliasedReference(qualifier))
+						 .map(sqlSelect -> sqlSelect.createAliasReference(qualifier))
 						 .collect(Collectors.toList());
 	}
 

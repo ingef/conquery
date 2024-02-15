@@ -34,5 +34,4 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 	public FilterNode createFilterNode(String value) {
 		return new PrefixTextFilterNode(getColumn(), value);
 	}
-
 }

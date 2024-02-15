@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import org.jooq.Field;
 
 public interface SqlSelect {
@@ -27,7 +26,8 @@ public interface SqlSelect {
 	/**
 	 * @return Creates a reference to the alias of this SqlSelect qualified onto the given qualifier.
 	 */
-	ExtractingSqlSelect<?> createAliasedReference(String qualifier);
+	ExtractingSqlSelect<?> createAliasReference(String qualifier);
+
 	/**
 	 * @return Creates a reference to the column of this SqlSelect qualified onto the given qualifier.
 	 */
@@ -40,7 +40,7 @@ public interface SqlSelect {
 	}
 
 	/**
-	 * @return Determines if this is only part of the {@link ConnectorCteStep#FINAL} CTE and has no predeceasing selects.
+	 * @return Determines if this SqlSelect is only part of the final concept conversion CTE and has no predeceasing selects.
 	 */
 	default boolean isUniversal() {
 		return false;

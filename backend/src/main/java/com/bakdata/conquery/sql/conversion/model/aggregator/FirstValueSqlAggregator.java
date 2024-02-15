@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +12,9 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
 
@@ -36,10 +39,10 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> firstGroupBy = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)

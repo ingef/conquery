@@ -21,7 +21,7 @@ import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
 
-	static String PRIMARY_COLUMN_NAME = "primary_column";
+	private static final String PRIMARY_COLUMN_NAME = "primary_column";
 
 	public static ConversionContext joinChildren(
 			Iterable<CQElement> children,
@@ -37,7 +37,7 @@ public class QueryStepJoiner {
 
 		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();
 
-		String joinedCteName = constructJoinedQueryStepLabel(queriesToJoin, logicalOperation);
+		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		Field<Object> primaryColumn = coalescePrimaryColumns(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
 		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
@@ -110,20 +110,6 @@ public class QueryStepJoiner {
 		return querySteps.stream()
 						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
 						 .collect(Collectors.toList());
-	}
-
-	private static String constructJoinedQueryStepLabel(List<QueryStep> queriesToJoin, LogicalOperation logicalOperation) {
-
-		String labelConnector = switch (logicalOperation) {
-			case AND -> "AND";
-			case OR -> "OR";
-		};
-
-		String concatenatedCteNames = queriesToJoin.stream()
-												   .map(QueryStep::getCteName)
-												   .collect(Collectors.joining(""));
-
-		return "%s_%8H".formatted(labelConnector, concatenatedCteNames.hashCode());
 	}
 
 	private static Table<Record> getIntitialJoinTable(List<QueryStep> queriesToJoin) {

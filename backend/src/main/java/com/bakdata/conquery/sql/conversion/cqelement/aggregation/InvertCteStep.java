@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum InvertCteStep implements DateAggregationCteStep {
 
-	ROW_NUMBER("_row_numbers", RowNumberCte::new, null),
-	INVERT("_inverted_dates", InvertCte::new, InvertCteStep.ROW_NUMBER);
+	ROW_NUMBER("row_numbers", RowNumberCte::new, null),
+	INVERT("inverted_dates", InvertCte::new, InvertCteStep.ROW_NUMBER);
 
 	private static final Set<InvertCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
