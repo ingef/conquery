@@ -33,6 +33,15 @@ public interface SqlFunctionProvider {
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
 	/**
+	 * @return The regex that matches any char repeated any times (including 0), for example:
+	 * <ul>
+	 *     <li>'%' for Postgres' regexes</li>
+	 *     <li>'.*' for HANA's regexes</li>
+	 * </ul
+	 */
+	String getAnyCharRegex();
+
+	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
 	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
