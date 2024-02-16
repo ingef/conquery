@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.Min;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
@@ -54,6 +56,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * Weight of a search hit for query and keyword of the same length.
 	 * Should be greater than one because the weights of hits in the whole worlds trie are squared.
 	 */
+	@Min(2)
 	private static final long EXACT_MATCH_WEIGHT = 10;
 
 	/**
