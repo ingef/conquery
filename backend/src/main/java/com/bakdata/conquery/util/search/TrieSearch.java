@@ -47,6 +47,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * Weight of a search hit for query and keyword of different lengths.
 	 * Should be greater than one because the weights of hits in the whole worlds trie are squared.
 	 */
+	@Min(2)
 	private static final long BASE_WEIGHT = 2;
 
 	/**
@@ -75,12 +76,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		// We want TrieSearch to behave the same for ngramLength = 0 and ngramLength = Integer.MAX_VALUE.
-		if (ngramLength == 0) {
-			this.ngramLength = Integer.MAX_VALUE;
-		}
-		else {
-			this.ngramLength = ngramLength;
-		}
+		this.ngramLength = ngramLength == 0 ? Integer.MAX_VALUE : ngramLength;
 
 		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, ""))));
 	}
@@ -176,7 +172,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public Stream<String> ngramSplit(String word) {
 
 		// Any String  is its own ngram when ngramLength is Integer.MAX_VALUE.
-		if (word.length() < ngramLength || ngramLength == Integer.MAX_VALUE) {
+		if (word.length() < ngramLength) {
 			return Stream.empty();
 		}
 
