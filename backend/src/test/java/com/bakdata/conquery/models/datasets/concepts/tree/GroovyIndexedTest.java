@@ -101,8 +101,6 @@ public class GroovyIndexedTest {
 		indexedConcept.setDataset(dataset);
 		indexedConcept.initElements();
 
-		TreeChildPrefixIndex.putIndexInto(indexedConcept);
-
 		oldConcept = conceptReader.readValue(node);
 
 		oldConcept.setDataset(dataset);

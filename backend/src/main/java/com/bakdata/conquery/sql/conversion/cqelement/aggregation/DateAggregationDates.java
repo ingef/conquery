@@ -24,7 +24,6 @@ public class DateAggregationDates {
 
 	private static final String RANGE_START = "RANGE_START";
 	private static final String RANGE_END = "RANGE_END";
-	private static final AtomicInteger validityDateCounter = new AtomicInteger();
 	private final List<ColumnDateRange> validityDates;
 
 	public static DateAggregationDates forSingleStep(QueryStep queryStep) {
@@ -36,9 +35,10 @@ public class DateAggregationDates {
 	}
 
 	public static DateAggregationDates forSteps(List<QueryStep> querySteps) {
+		AtomicInteger validityDateCounter = new AtomicInteger(0);
 		List<ColumnDateRange> validityDates = querySteps.stream()
 														.filter(queryStep -> queryStep.getSelects().getValidityDate().isPresent())
-														.map(DateAggregationDates::numerateValidityDate)
+														.map(queryStep -> numerateValidityDate(queryStep, validityDateCounter))
 														.toList();
 		return new DateAggregationDates(validityDates);
 	}
@@ -70,7 +70,7 @@ public class DateAggregationDates {
 		return new DateAggregationDates(qualified);
 	}
 
-	private static ColumnDateRange numerateValidityDate(QueryStep queryStep) {
+	private static ColumnDateRange numerateValidityDate(QueryStep queryStep, AtomicInteger validityDateCounter) {
 		ColumnDateRange validityDate = queryStep.getQualifiedSelects().getValidityDate().get();
 
 		if (validityDate.isSingleColumnRange()) {

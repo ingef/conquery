@@ -37,7 +37,7 @@ public class ExtractingSqlSelect<T> implements SqlSelect {
 	}
 
 	@Override
-	public ExtractingSqlSelect<T> createAliasedReference(String qualifier) {
+	public ExtractingSqlSelect<T> createAliasReference(String qualifier) {
 		Field<T> aliased = aliased();
 		return new ExtractingSqlSelect<>(
 				qualifier,

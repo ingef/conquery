@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.RandomValueAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.RandomValueSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.RandomValueSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 

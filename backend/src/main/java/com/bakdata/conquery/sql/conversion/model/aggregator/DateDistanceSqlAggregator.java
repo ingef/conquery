@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -19,6 +19,9 @@ import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.Value;
 import org.jooq.Field;
@@ -52,11 +55,11 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
@@ -67,7 +70,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.build();
 			Field<Integer>
 					qualifiedDateDistanceSelect =
-					dateDistanceSelect.createAliasedReference(connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER)).select();
+					dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER)).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.eventFilter(dateDistanceCondition)

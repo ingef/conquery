@@ -13,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum MergeCteStep implements DateAggregationCteStep {
 
-	OVERLAP("_overlap", OverlapCte::new, null),
-	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
-	NODE_NO_OVERLAP("_node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
-	MERGE("_merge", MergeCte::new, OVERLAP);
+	OVERLAP("overlap", OverlapCte::new, null),
+	INTERMEDIATE_TABLE("no_overlap", IntermediateTableCte::new, null),
+	NODE_NO_OVERLAP("node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
+	MERGE("merge", MergeCte::new, OVERLAP);
 
 	private static final Set<MergeCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
