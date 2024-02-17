@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 
 @Setter
@@ -129,14 +130,25 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
+		final TrieSearch<FrontendValue> search = config.createTrieSearch(true);
 
 		if(log.isTraceEnabled()) {
 			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
+		StopWatch timer = StopWatch.createStarted();
+		log.trace("START-SELECT ADDING_ITEMS for {}", getId());
+
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
+		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), timer);
+
+		timer.reset();
+		log.trace("START-SELECT SHRINKING for {}", getId());
+
+		search.shrinkToFit();
+
+		log.trace("DONE-SELECT SHRINKING for {} in {}", getId(), timer);
 
 		return search;
 	}

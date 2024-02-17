@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -93,7 +92,7 @@ public class UpdateFilterSearchJob extends Job {
 							"DONE collecting {} entries for `{}`, within {}",
 							search.calculateSize(),
 							searchable.getId(),
-							Duration.ofMillis(watch.getTime())
+							watch
 					);
 				}
 				catch (Exception e) {
