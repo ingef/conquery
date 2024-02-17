@@ -42,7 +42,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> firstGroupBy = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)

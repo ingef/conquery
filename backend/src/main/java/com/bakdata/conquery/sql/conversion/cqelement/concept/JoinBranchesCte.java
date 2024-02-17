@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
+import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -53,13 +52,14 @@ class JoinBranchesCte extends ConnectorCte {
 		queriesToJoin.add(tableContext.getPrevious());
 
 		Optional<ColumnDateRange> validityDate;
-		if (tableContext.getValidityDate().isEmpty() || tableContext.isExcludedFromDateAggregation()) {
+		if (tableContext.getIntervalPackingContext().isEmpty()) {
 			validityDate = Optional.empty();
 		}
 		else {
-			QueryStep finalIntervalPackingStep = applyIntervalPacking(tableContext);
-			queriesToJoin.add(finalIntervalPackingStep);
-			validityDate = finalIntervalPackingStep.getQualifiedSelects().getValidityDate();
+			IntervalPacker intervalPacker = tableContext.getParentContext().getSqlDialect().getIntervalPacker();
+			QueryStep lastIntervalPackingStep = intervalPacker.createIntervalPackingSteps(tableContext.getIntervalPackingContext().get());
+			queriesToJoin.add(lastIntervalPackingStep);
+			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
 		}
 
 		tableContext.allSqlSelects().stream()
@@ -74,32 +74,12 @@ class JoinBranchesCte extends ConnectorCte {
 								 .sqlSelects(mergedSqlSelects)
 								 .build();
 
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getParentContext());
 
 		return QueryStep.builder()
 						.selects(selects)
 						.fromTable(fromTable)
 						.predecessors(queriesToJoin);
-	}
-
-	private static QueryStep applyIntervalPacking(CQTableContext tableContext) {
-
-		String conceptLabel = tableContext.getConceptLabel();
-		IntervalPackingTables intervalPackingTables =
-				IntervalPackingTables.forConcept(conceptLabel, tableContext.getConnectorTables(), tableContext.getNameGenerator());
-
-		IntervalPackingContext intervalPackingContext =
-				IntervalPackingContext.builder()
-									  .nodeLabel(conceptLabel)
-									  .primaryColumn(tableContext.getPrimaryColumn())
-									  .validityDate(tableContext.getValidityDate().get())
-									  .intervalPackingTables(intervalPackingTables)
-									  .build();
-
-		return tableContext.getConversionContext()
-						   .getSqlDialect()
-						   .getIntervalPacker()
-						   .createIntervalPackingSteps(intervalPackingContext);
 	}
 
 }

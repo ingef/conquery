@@ -26,20 +26,8 @@ public class FieldWrapper<T> implements SqlSelect {
 	}
 
 	/**
-	 * @param field       The field to wrap, e.g. {@code DSL.sum(DSL.field(DSL.name("foo", "bar"))).as("foo_bar")};
-	 * @param predecessor The {@link ExtractingSqlSelect} containing the required column this {@link FieldWrapper} uses.
-	 */
-	public FieldWrapper(Field<T> field, ExtractingSqlSelect<?> predecessor) {
-		this.field = field;
-		this.requiredColumns = predecessor.requiredColumns();
-	}
-
-
-	/**
-	 * Wrapper for a {@link Field}.
-	 * <p>
-	 *
-	 * @param field @param field The field to wrap, e.g. {@code DSL.field(DSL.name("fizz", "buzz"))).as("fizz_buzz")};
+	 * @param field @param field The field to wrap, e.g. {@code DSL.field(DSL.name("fizz", "buzz"))).as("fizz_buzz")}; The column for
+	 * {@link FieldWrapper#requiredColumns()} will be taken from the alias of the wrapped field.
 	 */
 	public FieldWrapper(Field<T> field) {
 		this.field = field;

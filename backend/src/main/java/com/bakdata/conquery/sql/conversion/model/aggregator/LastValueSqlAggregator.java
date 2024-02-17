@@ -41,7 +41,7 @@ public class LastValueSqlAggregator implements SqlAggregator {
 		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> lastGroupBy = new FieldWrapper<>(functionProvider.last(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)

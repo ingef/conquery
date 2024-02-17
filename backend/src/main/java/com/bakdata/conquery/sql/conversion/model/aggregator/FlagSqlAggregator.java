@@ -83,7 +83,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
 		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 
 		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
 										  .aggregationSelect(flagAggregation)

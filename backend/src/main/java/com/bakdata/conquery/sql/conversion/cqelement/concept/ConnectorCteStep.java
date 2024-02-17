@@ -14,17 +14,11 @@ public enum ConnectorCteStep implements CteStep {
 	EVENT_FILTER("event_filter", PREPROCESSING),
 	AGGREGATION_SELECT("group_select", EVENT_FILTER),
 	JOIN_BRANCHES("join_branches", AGGREGATION_SELECT),
-	AGGREGATION_FILTER("group_filter", JOIN_BRANCHES),
-	FINAL("", AGGREGATION_FILTER);
+	AGGREGATION_FILTER("group_filter", JOIN_BRANCHES);
 
 	public static final Set<ConnectorCteStep> MANDATORY_STEPS = Set.of(values());
 
 	private final String suffix;
 	private final ConnectorCteStep predecessor;
-
-	@Override
-	public String cteName(String conceptLabel) {
-		return "%s-%s".formatted(conceptLabel, this.suffix);
-	}
 
 }

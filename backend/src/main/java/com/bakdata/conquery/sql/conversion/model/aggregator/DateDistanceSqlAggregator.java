@@ -59,7 +59,8 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			String finalPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasReference(finalPredecessor);
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)

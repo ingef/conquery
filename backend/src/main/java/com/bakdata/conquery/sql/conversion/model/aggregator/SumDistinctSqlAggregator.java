@@ -127,7 +127,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}

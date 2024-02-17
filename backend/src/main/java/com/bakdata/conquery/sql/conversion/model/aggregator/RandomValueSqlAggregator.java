@@ -30,7 +30,7 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), column.getName());
 
-		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
