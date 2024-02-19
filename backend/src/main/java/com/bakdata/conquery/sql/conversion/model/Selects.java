@@ -38,7 +38,7 @@ public class Selects {
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
-													.map(sqlSelect -> sqlSelect.createAliasReference(qualifier))
+													.map(sqlSelect -> sqlSelect.qualify(qualifier))
 													.collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()

@@ -55,11 +55,11 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
@@ -69,7 +69,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		else {
 			this.sqlSelects = builder.build();
 			String predecessorCte = connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER);
-			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.createAliasReference(predecessorCte).select();
+			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(predecessorCte).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.eventFilter(dateDistanceCondition)

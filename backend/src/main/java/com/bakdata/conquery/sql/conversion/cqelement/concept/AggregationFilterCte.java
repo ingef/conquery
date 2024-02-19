@@ -40,7 +40,7 @@ class AggregationFilterCte extends ConnectorCte {
 				tableContext.allSqlSelects().stream()
 							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 							.filter(Predicate.not(SqlSelect::isUniversal))
-							.map(sqlSelect -> sqlSelect.createAliasReference(previous.getCteName()))
+							.map(sqlSelect -> sqlSelect.qualify(previous.getCteName()))
 							.collect(Collectors.toList());
 
 		return Selects.builder()

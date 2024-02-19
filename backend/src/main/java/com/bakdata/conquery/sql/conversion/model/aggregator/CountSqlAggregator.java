@@ -35,7 +35,7 @@ public class CountSqlAggregator implements SqlAggregator {
 	) {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), countColumn.getName(), Object.class);
 
-		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		Field<Integer> countField = countType == CountType.DISTINCT
 									? DSL.countDistinct(qualifiedRootSelect)
 									: DSL.count(qualifiedRootSelect);
@@ -46,14 +46,14 @@ public class CountSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(countGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
 			String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
-			Field<Integer> qualifiedCountSelect = countGroupBy.createAliasReference(predecessor).select();
+			Field<Integer> qualifiedCountSelect = countGroupBy.qualify(predecessor).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

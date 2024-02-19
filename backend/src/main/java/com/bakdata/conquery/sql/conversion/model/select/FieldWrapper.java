@@ -62,7 +62,7 @@ public class FieldWrapper<T> implements SqlSelect {
 	}
 
 	@Override
-	public ExtractingSqlSelect<T> createAliasReference(String qualifier) {
+	public ExtractingSqlSelect<T> qualify(String qualifier) {
 		Field<T> aliased = aliased();
 		return new ExtractingSqlSelect<>(
 				qualifier,

@@ -38,10 +38,10 @@ public class LastValueSqlAggregator implements SqlAggregator {
 				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> lastGroupBy = new FieldWrapper<>(functionProvider.last(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = lastGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)

@@ -33,7 +33,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 	) {
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), Date.class);
 
-		Field<Date> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.cteName(ConnectorCteStep.EVENT_FILTER)).select();
+		Field<Date> qualifiedRootSelect = rootSelect.qualify(connectorTables.cteName(ConnectorCteStep.EVENT_FILTER)).select();
 		FieldWrapper<Integer> countQuartersField = new FieldWrapper<>(
 				DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)).as(alias),
 				column.getName()
@@ -44,13 +44,13 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(countQuartersField);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer> qualified = countQuartersField.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+			Field<Integer> qualified = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			CountCondition countCondition = new CountCondition(qualified, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

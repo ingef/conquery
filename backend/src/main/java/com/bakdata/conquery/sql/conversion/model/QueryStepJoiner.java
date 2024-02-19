@@ -22,8 +22,6 @@ import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
 
-	private static final String PRIMARY_COLUMN_NAME = "primary_column";
-
 	public static ConversionContext joinChildren(
 			Iterable<CQElement> children,
 			ConversionContext context,
