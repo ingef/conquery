@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.aggregator;
+package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.sql.Date;
 
@@ -11,12 +11,9 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -46,15 +43,14 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 														 .preprocessingSelect(rootSelect)
 														 .aggregationSelect(countQuartersField);
 
-		String aggregationFilterPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
 		if (filterValue == null) {
-			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(aggregationFilterPredecessor);
+			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer> qualified = countQuartersField.qualify(aggregationFilterPredecessor).select();
+			Field<Integer> qualified = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
 			CountCondition countCondition = new CountCondition(qualified, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

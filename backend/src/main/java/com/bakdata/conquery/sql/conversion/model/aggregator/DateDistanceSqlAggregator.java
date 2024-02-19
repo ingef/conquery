@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.D
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.Value;
@@ -59,8 +59,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			String finalPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(finalPredecessor);
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)

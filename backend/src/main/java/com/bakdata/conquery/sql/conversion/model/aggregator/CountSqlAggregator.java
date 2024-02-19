@@ -45,16 +45,15 @@ public class CountSqlAggregator implements SqlAggregator {
 														 .preprocessingSelect(rootSelect)
 														 .aggregationSelect(countGroupBy);
 
-		String finalPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
 		if (filterValue == null) {
-
-			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.qualify(finalPredecessor);
+			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer> qualifiedCountSelect = countGroupBy.qualify(finalPredecessor).select();
+			String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			Field<Integer> qualifiedCountSelect = countGroupBy.qualify(predecessor).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

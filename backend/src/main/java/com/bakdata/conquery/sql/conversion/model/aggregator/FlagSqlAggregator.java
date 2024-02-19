@@ -11,13 +11,13 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
@@ -83,7 +83,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
 		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
 										  .aggregationSelect(flagAggregation)
