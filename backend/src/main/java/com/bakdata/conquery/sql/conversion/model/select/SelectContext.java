@@ -11,7 +11,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Value;
 import org.jooq.Field;
 
-// TODO move this to conversion/model/select
 @Value
 public class SelectContext implements Context {
 
