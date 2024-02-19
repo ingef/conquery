@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuart
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SqlAggregator;

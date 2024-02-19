@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
