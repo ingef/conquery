@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;

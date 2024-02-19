@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 @ToString
@@ -41,6 +42,7 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)
 		);
+
 		addItem(feValue, FilterSearch.extractKeywords(feValue));
 	}
 
@@ -57,11 +59,22 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
+
+		StopWatch timer = StopWatch.createStarted();
+
 		// If no empty label was provided by the mapping, we insert the configured default-label
 		if (findExact(List.of(""), 1).isEmpty()) {
 			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
 		}
 
+		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
+
+		timer.reset();
+		log.trace("START-FV-FIN SHRINKING");
+
 		shrinkToFit();
+
+		log.trace("DONE-FV-FIN SHRINKING in {}", timer);
+
 	}
 }

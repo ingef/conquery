@@ -27,7 +27,7 @@ public interface SqlSelect {
 	/**
 	 * @return Creates a reference to the alias of this SqlSelect qualified onto the given qualifier.
 	 */
-	ExtractingSqlSelect<?> createAliasReference(String qualifier);
+	ExtractingSqlSelect<?> qualify(String qualifier);
 
 	/**
 	 * @return Determines if this is only part of the {@link ConnectorCteStep#FINAL} CTE and has no predeceasing selects.

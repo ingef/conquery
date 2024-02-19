@@ -10,12 +10,12 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
@@ -41,7 +41,7 @@ public class SumSqlAggregator implements SqlAggregator {
 		preprocessingSelects.add(rootSelect);
 
 		String eventFilterCte = connectorTables.cteName(ConnectorCteStep.EVENT_FILTER);
-		Field<? extends Number> sumField = rootSelect.createAliasReference(eventFilterCte).select();
+		Field<? extends Number> sumField = rootSelect.qualify(eventFilterCte).select();
 		FieldWrapper<BigDecimal> sumGroupBy;
 		if (subtractColumn != null) {
 			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
@@ -51,7 +51,7 @@ public class SumSqlAggregator implements SqlAggregator {
 			);
 			preprocessingSelects.add(subtractColumnRootSelect);
 
-			Field<? extends Number> subtractField = subtractColumnRootSelect.createAliasReference(eventFilterCte).select();
+			Field<? extends Number> subtractField = subtractColumnRootSelect.qualify(eventFilterCte).select();
 			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField.minus(subtractField)).as(alias), sumColumn.getName(), subtractColumn.getName());
 		}
 		else {
@@ -63,14 +63,14 @@ public class SumSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
 			String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
-			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.createAliasReference(predecessor).select();
+			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.qualify(predecessor).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)

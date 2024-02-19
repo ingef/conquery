@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilte
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -35,7 +35,7 @@ public class CountSqlAggregator implements SqlAggregator {
 	) {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), countColumn.getName(), Object.class);
 
-		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		Field<Integer> countField = countType == CountType.DISTINCT
 									? DSL.countDistinct(qualifiedRootSelect)
 									: DSL.count(qualifiedRootSelect);
@@ -48,13 +48,13 @@ public class CountSqlAggregator implements SqlAggregator {
 		String finalPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
 		if (filterValue == null) {
 
-			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.createAliasReference(finalPredecessor);
+			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.qualify(finalPredecessor);
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer> qualifiedCountSelect = countGroupBy.createAliasReference(finalPredecessor).select();
+			Field<Integer> qualifiedCountSelect = countGroupBy.qualify(finalPredecessor).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

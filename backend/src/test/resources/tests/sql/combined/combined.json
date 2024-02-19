@@ -36,13 +36,6 @@
               }
             }
           ]
-        },
-        {
-          "id": "concept.test_column",
-          "filters": [],
-          "selects": [
-            "concept.test_column.first_test_column"
-          ]
         }
       ],
       "selects": [
@@ -94,46 +87,6 @@
               ]
             }
           ]
-        },
-        {
-          "label": "tree_label",
-          "name": "test_column",
-          "column": "test_table.test_column",
-          "validityDates": {
-            "label": "datum",
-            "column": "test_table.datum"
-          },
-          "selects": [
-            {
-              "type": "FIRST",
-              "label": "first_test_column",
-              "column": "test_table.test_column"
-            }
-          ]
-        }
-      ],
-      "children": [
-        {
-          "label": "test_child1",
-          "description": " ",
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "A1"
-            ]
-          },
-          "children": []
-        },
-        {
-          "label": "test_child2",
-          "description": " ",
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "B2"
-            ]
-          },
-          "children": []
         }
       ],
       "selects": [
@@ -172,24 +125,6 @@
           },
           {
             "name": "k2",
-            "type": "STRING"
-          }
-        ]
-      },
-      {
-        "csv": "tests/sql/combined/content2.csv",
-        "name": "test_table",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
-        "columns": [
-          {
-            "name": "datum",
-            "type": "DATE"
-          },
-          {
-            "name": "test_column",
             "type": "STRING"
           }
         ]
