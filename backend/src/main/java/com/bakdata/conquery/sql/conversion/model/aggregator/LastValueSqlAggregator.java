@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -31,18 +31,17 @@ public class LastValueSqlAggregator implements SqlAggregator {
 			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 		String columnName = column.getName();
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), columnName, Object.class);
 
 		List<Field<?>> validityDateFields =
 				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> lastGroupBy = new FieldWrapper<>(functionProvider.last(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = lastGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = lastGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -50,7 +49,7 @@ public class LastValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.whereClauses = WhereClauses.builder().build();
+		this.whereClauses = WhereClauses.empty();
 	}
 
 	public static LastValueSqlAggregator create(LastValueSelect lastValueSelect, SelectContext selectContext) {

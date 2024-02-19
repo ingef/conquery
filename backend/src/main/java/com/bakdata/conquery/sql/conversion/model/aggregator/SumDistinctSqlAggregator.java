@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,8 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
@@ -27,9 +27,47 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+/**
+ * Conversion of a {@link SumSelect} with {@link SumSelect#getDistinctByColumn()}. Sum's the values of a column for each row which is distinct by the
+ * distinct-by columns by creating 2 additional CTEs. We can't use our usual {@link ConnectorCteStep#PREPROCESSING} CTE for achieving distinctness, because
+ * it's used for the conversion of other selects where distinctness by distinct-by columns is not required and would cause wrong results.
+ * <p>
+ *
+ * <pre>
+ *  The two additional CTEs this aggregator creates
+ * 	<ol>
+ * 	    <li>
+ * 	        Assign a row number to each row partitioned by the distinct by columns to ensure distinctness.
+ *            {@code
+ * 	        	"row_number_assigned" as (
+ *   			  select
+ *   			    "pid",
+ *   			    "value",
+ *   			    row_number() over (partition by "pid", "k1", "k2") "row_number"
+ *   			  from "event_filter"
+ *   			)
+ *            }
+ * 	    </li>
+ * 	    <li>
+ * 	        Sum all entries of a subject where the row number = 1, thus only summing distinct entries.
+ *            {@code
+ * 	        "sum_distinct_select-1-row_number_filtered" as (
+ *   		  select
+ *   		    "pid",
+ *   		    sum("value") "sum_distinct_select-1"
+ *   		  from "row_number_assigned"
+ *   		  where "row_number" = 1
+ *   		  group by "pid"
+ *   		),
+ *            }
+ * 	    </li>
+ * 	</ol>
+ * </pre>
+ */
 @Value
 public class SumDistinctSqlAggregator implements SqlAggregator {
 
@@ -37,8 +75,8 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 	@RequiredArgsConstructor
 	private enum SumDistinctCteStep implements CteStep {
 
-		GROUP_BY_DISTINCT_COLUMNS("grouped_by_distinct_columns", null),
-		SUM_DISTINCT("sum_distinct", GROUP_BY_DISTINCT_COLUMNS);
+		ROW_NUMBER_ASSIGNED("row_number_assigned", null),
+		ROW_NUMBER_FILTERED("row_number_filtered", ROW_NUMBER_ASSIGNED);
 
 		private final String suffix;
 		private final SumDistinctCteStep predecessor;
@@ -57,51 +95,41 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			IRange<? extends Number, ?> filterValue,
 			Field<Object> primaryColumn,
 			SqlTables<ConnectorCteStep> connectorTables,
-			SqlFunctionProvider functionProvider,
 			NameGenerator nameGenerator
 	) {
-		// preprocesssing
-		String rootTable = connectorTables.getRootTable();
-		Class<? extends Number> numberClass1 = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
-		ExtractingSqlSelect<? extends Number> sumColumnRootSelect = new ExtractingSqlSelect<>(rootTable, sumColumn.getName(), numberClass1);
+		// preprocessing
+		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		ExtractingSqlSelect<? extends Number> sumColumnRootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), sumColumn.getName(), numberClass);
 		List<ExtractingSqlSelect<Object>> distinctByRootSelects = distinctByColumns.stream()
 																				   .map(column -> new ExtractingSqlSelect<>(
-																						   rootTable, column.getName(), Object.class)
+																						   connectorTables.getRootTable(), column.getName(), Object.class)
 																				   )
 																				   .toList();
 
-		// sum column grouped by distinct columns
-		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-		ExtractingSqlSelect<? extends Number> qualifiedRootSelect = sumColumnRootSelect.createAliasReference(predecessor);
-		FieldWrapper<? extends Number> firstSelect = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect.select(), List.of()).as(alias));
-		QueryStep distinctColumnsStep = getGroupByDistinctColumnsStep(alias, primaryColumn, nameGenerator, predecessor, firstSelect, distinctByRootSelects);
-
-		// sum select
-		Field<? extends Number> firstSumColumn = firstSelect.createAliasReference(distinctColumnsStep.getCteName()).select();
-		FieldWrapper<BigDecimal> distinctSum = new FieldWrapper<>(DSL.sum(firstSumColumn).as(alias));
-
-		// sum aggregation
-		QueryStep sumDistinctCte = getSumDistinctStep(alias, primaryColumn, nameGenerator, distinctSum, distinctColumnsStep);
+		// additional predecessors
+		QueryStep rowNumberCte = createRowNumberCte(primaryColumn, sumColumnRootSelect, distinctByRootSelects, alias, connectorTables, nameGenerator);
+		Field<? extends Number> rootSelectQualified = sumColumnRootSelect.qualify(rowNumberCte.getCteName()).select();
+		FieldWrapper<BigDecimal> distinctSum = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
+		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, primaryColumn, distinctSum, alias, nameGenerator);
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder()
 														 .preprocessingSelect(sumColumnRootSelect)
 														 .preprocessingSelects(distinctByRootSelects)
-														 .additionalPredecessor(sumDistinctCte);
+														 .additionalPredecessor(Optional.of(rowNumberFilteredCte));
 
 		if (filterValue != null) {
 			this.sqlSelects = builder.build();
-			Field<BigDecimal>
-					qualifiedSumSelect =
-					distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+			String groupFilterPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			Field<BigDecimal> qualifiedSumSelect = distinctSum.qualify(groupFilterPredecessor).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(sumCondition)
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
-			this.whereClauses = WhereClauses.builder().build();
+			this.whereClauses = WhereClauses.empty();
 		}
 	}
 
@@ -113,7 +141,6 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				null,
 				selectContext.getParentContext().getPrimaryColumn(),
 				selectContext.getConnectorTables(),
-				selectContext.getParentContext().getSqlDialect().getFunctionProvider(),
 				selectContext.getNameGenerator()
 		);
 	}
@@ -126,58 +153,74 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				filterContext.getValue(),
 				filterContext.getParentContext().getPrimaryColumn(),
 				filterContext.getConnectorTables(),
-				filterContext.getParentContext().getSqlDialect().getFunctionProvider(),
 				filterContext.getNameGenerator()
 		);
 	}
 
-	private static QueryStep getSumDistinctStep(
-			String alias,
+	/**
+	 * Assigns row numbers for each partition over the pid and the distinct by columns. If the values per pid in the distinct by columns are duplicated,
+	 * the row number will be incremented for each duplicated entry.
+	 */
+	private static QueryStep createRowNumberCte(
 			Field<Object> primaryColumn,
-			NameGenerator nameGenerator,
-			FieldWrapper<BigDecimal> distinctSum,
-			QueryStep distinctColumnsStep
+			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
+			List<ExtractingSqlSelect<Object>> distinctByRootSelects,
+			String alias,
+			SqlTables<ConnectorCteStep> conceptTables,
+			NameGenerator nameGenerator
 	) {
-		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, distinctColumnsStep.getCteName());
+		String predecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 
-		Selects sumDistinctSelects = Selects.builder()
-											.primaryColumn(qualifiedPrimaryColumn)
-											.sqlSelect(distinctSum)
-											.build();
+		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, predecessor);
+		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
+
+		List<Field<?>> partitioningFields = Stream.concat(
+														  Stream.of(qualifiedPrimaryColumn),
+														  distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.qualify(predecessor).select())
+												  )
+												  .collect(Collectors.toList());
+		FieldWrapper<Integer> rowNumber = new FieldWrapper<>(
+				DSL.rowNumber().over(DSL.partitionBy(partitioningFields)).as(ROW_NUMBER_ALIAS),
+				partitioningFields.stream().map(Field::getName).toArray(String[]::new)
+		);
+
+		Selects rowNumberAssignedSelects = Selects.builder()
+												  .primaryColumn(qualifiedPrimaryColumn)
+												  .sqlSelects(List.of(qualifiedSumRootSelect, rowNumber))
+												  .build();
 
 		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.SUM_DISTINCT, alias))
-						.selects(sumDistinctSelects)
-						.fromTable(QueryStep.toTableLike(distinctColumnsStep.getCteName()))
-						.predecessors(List.of(distinctColumnsStep))
-						.groupBy(List.of(qualifiedPrimaryColumn))
+						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_ASSIGNED, alias))
+						.selects(rowNumberAssignedSelects)
+						.fromTable(QueryStep.toTableLike(predecessor))
 						.build();
 	}
 
-	private static QueryStep getGroupByDistinctColumnsStep(
-			String alias,
+	/**
+	 * Sums up the sum column values but only those whose row number is 1. Thus, only unique entries will be summed up.
+	 */
+	private static QueryStep createRowNumberFilteredCte(
+			QueryStep rowNumberCte,
 			Field<Object> primaryColumn,
-			NameGenerator nameGenerator,
-			String predecessor,
-			FieldWrapper<? extends Number> firstSelect,
-			List<ExtractingSqlSelect<Object>> distinctByRootSelects
+			FieldWrapper<BigDecimal> sumSelect,
+			String alias,
+			NameGenerator nameGenerator
 	) {
-		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, predecessor);
-		Selects selects = Selects.builder()
-								 .primaryColumn(qualifiedPrimaryColumn)
-								 .sqlSelect(firstSelect)
-								 .build();
+		Selects rowNumberFilteredSelects = Selects.builder()
+												  .primaryColumn(primaryColumn)
+												  .sqlSelects(List.of(sumSelect))
+												  .build();
 
-		List<Field<?>> groupByFields = Stream.concat(
-				Stream.of(qualifiedPrimaryColumn),
-				distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.createAliasReference(predecessor)).map(ExtractingSqlSelect::select)
-		).collect(Collectors.toList());
+		Condition firstOccurrence = DSL.field(DSL.name(rowNumberCte.getCteName(), ROW_NUMBER_ALIAS))
+									   .eq(DSL.val(1));
 
 		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.GROUP_BY_DISTINCT_COLUMNS, alias))
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(predecessor))
-						.groupBy(groupByFields)
+						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_FILTERED, alias))
+						.selects(rowNumberFilteredSelects)
+						.fromTable(QueryStep.toTableLike(rowNumberCte.getCteName()))
+						.conditions(List.of(firstOccurrence))
+						.predecessors(List.of(rowNumberCte))
+						.groupBy(List.of(primaryColumn))
 						.build();
 	}
 

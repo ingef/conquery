@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
@@ -20,8 +21,6 @@ import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
-
-	private static final String PRIMARY_COLUMN_NAME = "primary_column";
 
 	public static ConversionContext joinChildren(
 			Iterable<CQElement> children,
@@ -103,7 +102,7 @@ public class QueryStepJoiner {
 												  .map(queryStep -> queryStep.getQualifiedSelects().getPrimaryColumn())
 												  .collect(Collectors.toList());
 		return DSL.coalesce(primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
-				  .as(PRIMARY_COLUMN_NAME);
+				  .as(SharedAliases.PRIMARY_COLUMN.getAlias());
 	}
 
 	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {

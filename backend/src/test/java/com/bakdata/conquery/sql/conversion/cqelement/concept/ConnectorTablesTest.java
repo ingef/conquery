@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,10 +18,23 @@ class ConnectorTablesTest {
 	public static final int NAME_MAX_LENGTH = 127;
 	private static final NameGenerator NAME_GENERATOR = new NameGenerator(NAME_MAX_LENGTH);
 
+	private static class TestSqlTables extends SqlTables<ConnectorCteStep> {
+
+		public static Set<ConnectorCteStep> MANDATORY_STEPS = Set.of(
+				ConnectorCteStep.PREPROCESSING,
+				ConnectorCteStep.AGGREGATION_SELECT,
+				ConnectorCteStep.FINAL
+		);
+
+		public TestSqlTables(String nodeLabel, Set<ConnectorCteStep> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
+			super(nodeLabel, requiredSteps, rootTableName, nameGenerator);
+		}
+	}
+
 	@ParameterizedTest
 	@MethodSource("requiredStepsProvider")
 	public void getPredecessorTableName(Set<ConnectorCteStep> requiredSteps, ConnectorCteStep step, String expectedPredecessorTableName) {
-		ConnectorTables connectorTables = new ConnectorTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
+		TestSqlTables connectorTables = new TestSqlTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
 		Assertions.assertEquals(
 				expectedPredecessorTableName,
 				connectorTables.getPredecessor(step)
@@ -31,11 +45,11 @@ class ConnectorTablesTest {
 		return Stream.of(
 
 				// AGGREGATION_SELECT and FINAL direct predecessors missing
-				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.PREPROCESSING, ROOT_TABLE),
-				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.EVENT_FILTER, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_SELECT, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_FILTER, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
-				Arguments.of(ConnectorCteStep.MANDATORY_STEPS, ConnectorCteStep.FINAL, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
+				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.PREPROCESSING, ROOT_TABLE),
+				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.EVENT_FILTER, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
+				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_SELECT, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
+				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_FILTER, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
+				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.FINAL, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
 
 				// only FINAL direct predecessor missing
 				Arguments.of(
@@ -68,7 +82,7 @@ class ConnectorTablesTest {
 	}
 
 	private static Set<ConnectorCteStep> withAdditionalSteps(Set<ConnectorCteStep> additionalSteps) {
-		return Stream.concat(ConnectorCteStep.MANDATORY_STEPS.stream(), additionalSteps.stream()).collect(Collectors.toSet());
+		return Stream.concat(TestSqlTables.MANDATORY_STEPS.stream(), additionalSteps.stream()).collect(Collectors.toSet());
 	}
 
 }

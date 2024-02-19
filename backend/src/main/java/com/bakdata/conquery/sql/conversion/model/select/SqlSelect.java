@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import org.jooq.Field;
 
 public interface SqlSelect {
@@ -18,29 +20,17 @@ public interface SqlSelect {
 	Field<?> aliased();
 
 	/**
-	 * @return Plain column name of this {@link SqlSelect}.
-	 * For example, {@code "bar"}.
+	 * All column names this {@link SqlSelect} requires to build its {@link SqlSelect#select()}.
 	 */
-	String columnName();
+	List<String> requiredColumns();
 
 	/**
 	 * @return Creates a reference to the alias of this SqlSelect qualified onto the given qualifier.
 	 */
-	ExtractingSqlSelect<?> createAliasReference(String qualifier);
+	ExtractingSqlSelect<?> qualify(String qualifier);
 
 	/**
-	 * @return Creates a reference to the column of this SqlSelect qualified onto the given qualifier.
-	 */
-	default ExtractingSqlSelect<?> createColumnReference(String qualifier) {
-		return new ExtractingSqlSelect<>(
-				qualifier,
-				columnName(),
-				Object.class
-		);
-	}
-
-	/**
-	 * @return Determines if this SqlSelect is only part of the final concept conversion CTE and has no predeceasing selects.
+	 * @return Determines if this is only part of the {@link ConnectorCteStep#FINAL} CTE and has no predeceasing selects.
 	 */
 	default boolean isUniversal() {
 		return false;

@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -31,7 +31,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 			SqlTables<ConnectorCteStep> connectorTables,
 			SqlFunctionProvider functionProvider
 	) {
-		String rootTableName = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
+		String rootTableName = connectorTables.getRootTable();
 		String columnName = column.getName();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
@@ -39,10 +39,10 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> firstGroupBy = new FieldWrapper<>(functionProvider.first(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = firstGroupBy.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+		ExtractingSqlSelect<?> finalSelect = firstGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -50,7 +50,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.whereClauses = WhereClauses.builder().build();
+		this.whereClauses = WhereClauses.empty();
 	}
 
 	public static FirstValueSqlAggregator create(FirstValueSelect firstValueSelect, SelectContext selectContext) {

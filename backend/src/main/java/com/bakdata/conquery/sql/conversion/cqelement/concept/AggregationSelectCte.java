@@ -18,7 +18,6 @@ class AggregationSelectCte extends ConnectorCte {
 
 		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
 																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
-																	  .distinct()
 																	  .toList();
 
 		Selects aggregationSelectSelects = Selects.builder()

@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.D
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
@@ -55,22 +55,21 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
 									 .build();
-			this.whereClauses = null;
+			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer>
-					qualifiedDateDistanceSelect =
-					dateDistanceSelect.createAliasReference(connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER)).select();
+			String predecessorCte = connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER);
+			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(predecessorCte).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.eventFilter(dateDistanceCondition)
