@@ -80,6 +80,6 @@ public class CQNegation extends CQElement {
 		 * Additionally, it would require collectRequiredEntities to be perfect, instead of being good enough,
 		 * since excluding entities that _might_ not be included would exclude them from evaluation.
 		 */
-		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
+		return new RequiredEntities(context.getBucketManager().getEntity2Bucket().keySet());
 	}
 }

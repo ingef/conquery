@@ -52,8 +52,6 @@ public class BucketManager {
 	private final WorkerStorage storage;
 
 	private final Worker worker;
-	@Getter
-	private final Map<String, Entity> entities;
 
 	@Getter
 	private final Object2IntMap<String> entity2Bucket;
@@ -75,7 +73,6 @@ public class BucketManager {
 	private final int entityBucketSize;
 
 	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
-		final Map<String, Entity> entities = new HashMap<>();
 		final Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorCBlocks = new HashMap<>();
 		final Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
 		final Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
@@ -87,22 +84,21 @@ public class BucketManager {
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
-			registerBucket(bucket, entities, entity2Bucket, tableBuckets);
+			registerBucket(bucket, entity2Bucket, tableBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
 			registerCBlock(cBlock, connectorCBlocks);
 		}
 
-		return new BucketManager(worker.getJobManager(), storage, worker, entities, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
+		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
 
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Map<String, Entity> entities, Map<String, Integer> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+	private static void registerBucket(Bucket bucket, Map<String, Integer> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (String entity : bucket.entities()) {
-			entities.computeIfAbsent(entity, Entity::new);
 			entity2Bucket.put(entity, bucket.getBucket());
 		}
 
@@ -168,7 +164,7 @@ public class BucketManager {
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket, entities, entity2Bucket, tableToBuckets);
+		registerBucket(bucket, entity2Bucket, tableToBuckets);
 
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
@@ -216,18 +212,6 @@ public class BucketManager {
 			   .filter(cblock -> cblock.getBucket().equals(bucket))
 			   .forEach(this::removeCBlock);
 
-		for (String entityId : bucket.entities()) {
-			final Entity entity = entities.get(entityId);
-
-			if (entity == null) {
-				continue;
-			}
-
-			if (isEntityEmpty(entity)) {
-				entities.remove(entityId);
-			}
-		}
-
 		tableToBuckets.getOrDefault(bucket.getTable(), Int2ObjectMaps.emptyMap())
 					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
 					  .remove(bucket);
@@ -243,20 +227,6 @@ public class BucketManager {
 						  .remove(cBlock);
 
 		storage.removeCBlock(cBlock.getId());
-	}
-
-	/**
-	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
-	 *
-	 * @param entity
-	 */
-	public boolean isEntityEmpty(Entity entity) {
-		return !hasBucket(getBucket(entity.getId()));
-	}
-
-	private boolean hasBucket(int id) {
-		return tableToBuckets.values().stream()
-							 .anyMatch(buckets -> buckets.containsKey(id));
 	}
 
 	private int getBucket(String id) {

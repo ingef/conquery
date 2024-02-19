@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,10 +41,11 @@ public final class RequiredEntities {
 	}
 
 	public Set<Entity> resolve(BucketManager bucketManager) {
-		final Map<String,Entity> all = bucketManager.getEntities();
+		final Set<String> all = bucketManager.getEntity2Bucket().keySet();
 		return entities.stream()
-					   .map(all::get)
-					   .filter(Objects::nonNull)
+					   .filter(all::contains)
+					   // The following is just a wrapping, that is later unwrapped again in an execution
+					   .map(Entity::new)
 					   .collect(Collectors.toSet());
 	}
 }
