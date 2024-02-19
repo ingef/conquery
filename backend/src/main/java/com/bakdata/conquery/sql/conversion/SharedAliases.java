@@ -3,8 +3,7 @@ package com.bakdata.conquery.sql.conversion;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
-@RequiredArgsConstructor
+@Data
 public enum SharedAliases {
 
 	PRIMARY_COLUMN("pid");
