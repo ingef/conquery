@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { Table as ArrowTable, Vector } from "apache-arrow";
+import {
+  Table as ArrowTable,
+  AsyncRecordBatchStreamReader,
+  RecordBatch,
+  Vector,
+} from "apache-arrow";
 import RcTable from "rc-table";
 import { DefaultRecordType } from "rc-table/lib/interface";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +12,8 @@ import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
 
 interface Props {
-  data: ArrowTable;
+  arrowReader: AsyncRecordBatchStreamReader;
+  initialTableData: IteratorResult<RecordBatch>;
   queryData: GetQueryResponseT;
 }
 
@@ -46,16 +52,25 @@ export const StyledTable = styled("table")`
   }
 `;
 
-export default memo(function Table({ data, queryData }: Props) {
+export default memo(function Table({
+  arrowReader,
+  initialTableData,
+  queryData,
+}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const { getRenderFunctionByFieldName } = useCustomTableRenderers(
     queryData as GetQueryResponseDoneT,
   );
-  const tableData = useMemo(() => data.toArray(), [data]);
+
+  const [loadedTableData, setLoadedTableData] = useState(
+    [] as DefaultRecordType[],
+  );
+  const [isTableFullyLoaded, setTableFullyLoaded] = useState(false);
+  const [visibleTableRows, setVisibleTableRows] = useState(50);
 
   const columns = useMemo(
     () =>
-      data.schema.fields.map((field) => ({
+      arrowReader.schema?.fields.map((field) => ({
         title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
         dataIndex: field.name,
         key: field.name,
@@ -67,16 +82,16 @@ export default memo(function Table({ data, queryData }: Props) {
           );
         },
       })),
-    [data.schema.fields],
+    [arrowReader.schema],
   );
 
   // parse rows outside of rc-table to cache them
   const getNextTableRows = useCallback(
-    (startIndex: number = 0) => {
-      const stepCount = 50;
+    async (rowIterator?: IteratorResult<RecordBatch>) => {
       const nextRows = [] as DefaultRecordType[];
-      tableData
-        .slice(startIndex, startIndex + stepCount)
+      const batchIterator = rowIterator ?? (await arrowReader.next());
+      new ArrowTable(batchIterator.value)
+        .toArray()
         .forEach((dataEntry: Vector) => {
           const parsedValues = Object.fromEntries(
             Object.entries(dataEntry.toJSON()).map(([key, value]) => {
@@ -87,15 +102,26 @@ export default memo(function Table({ data, queryData }: Props) {
           );
           nextRows.push(parsedValues);
         });
+
+      if (batchIterator.done) {
+        setTableFullyLoaded(true);
+      }
+
       return nextRows;
     },
-    [tableData, getRenderFunctionByFieldName],
+    [arrowReader, getRenderFunctionByFieldName],
   );
 
-  const [loadedTableData, setLoadedTableData] = useState(getNextTableRows());
+  // parse initial table data
+  useEffect(() => {
+    const loadData = async () => {
+      setLoadedTableData(await getNextTableRows(initialTableData));
+    };
+    loadData();
+  }, [getNextTableRows, initialTableData]);
 
   useEffect(() => {
-    const eventFunction = () => {
+    const eventFunction = async () => {
       const div = rootRef.current;
       if (!div) {
         return;
@@ -106,22 +132,30 @@ export default memo(function Table({ data, queryData }: Props) {
       const thresholdTriggered =
         (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
       if (thresholdTriggered) {
-        setLoadedTableData([
-          ...loadedTableData,
-          ...getNextTableRows(loadedTableData.length),
-        ]);
+        if (
+          !isTableFullyLoaded &&
+          loadedTableData.length < visibleTableRows + 50
+        ) {
+          setLoadedTableData([
+            ...loadedTableData,
+            ...(await getNextTableRows()),
+          ]);
+        }
+        setVisibleTableRows((rowCount) =>
+          Math.min(rowCount + 50, loadedTableData.length),
+        );
       }
     };
 
     window.addEventListener("scroll", eventFunction, true);
     return () => window.removeEventListener("scroll", eventFunction, true);
-  }, [loadedTableData, getNextTableRows]);
+  }, [loadedTableData, getNextTableRows, isTableFullyLoaded, visibleTableRows]);
 
   return (
     <Root ref={rootRef}>
       <RcTable
         columns={columns}
-        data={loadedTableData}
+        data={loadedTableData.slice(0, visibleTableRows)}
         rowKey={(_, index) => `previewtable_row_${index}`}
         components={{
           table: StyledTable,

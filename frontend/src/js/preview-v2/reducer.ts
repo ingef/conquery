@@ -1,4 +1,4 @@
-import { Table } from "apache-arrow";
+import { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
 import { getType } from "typesafe-actions";
 import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
 
@@ -17,7 +17,8 @@ export type PreviewStateT = {
   dataLoadedForQueryId: string | null;
   statisticsData: PreviewStatisticsResponse | null;
   queryData: GetQueryResponseT | null;
-  tableData: Table | null;
+  arrowReader: AsyncRecordBatchStreamReader | null;
+  initialTableData: IteratorResult<RecordBatch> | null;
   lastQuery: string | null;
 };
 
@@ -27,7 +28,8 @@ const initialState: PreviewStateT = {
   dataLoadedForQueryId: null,
   statisticsData: null,
   queryData: null,
-  tableData: null,
+  arrowReader: null,
+  initialTableData: null,
   lastQuery: null,
 };
 
@@ -56,7 +58,8 @@ export default function reducer(
         ...state,
         dataLoadedForQueryId: null,
         statisticsData: null,
-        tableData: null,
+        arrowReader: null,
+        initialTableData: null,
         isLoading: false,
       };
     case getType(loadPreview.success):
@@ -65,7 +68,8 @@ export default function reducer(
         isLoading: false,
         dataLoadedForQueryId: action.payload.queryId,
         queryData: action.payload.queryData,
-        tableData: action.payload.tableData,
+        arrowReader: action.payload.arrowReader,
+        initialTableData: action.payload.initialTableData,
         statisticsData: action.payload.statisticsData,
       };
     case getType(updateQueryId):

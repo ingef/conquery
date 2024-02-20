@@ -1,4 +1,4 @@
-import { Table, tableFromIPC } from "apache-arrow";
+import { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
 import { t } from "i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
@@ -20,7 +20,8 @@ export type PreviewActions = ActionType<
 interface PreviewData {
   statisticsData: PreviewStatisticsResponse;
   queryData: GetQueryResponseT;
-  tableData: Table;
+  arrowReader: AsyncRecordBatchStreamReader;
+  initialTableData: IteratorResult<RecordBatch>;
   queryId: string;
 }
 
@@ -44,15 +45,25 @@ export function useLoadPreviewData() {
   const getResult = useGetResult();
   const getStatistics = usePreviewStatistics();
 
-  const { dataLoadedForQueryId, tableData, queryData, statisticsData } =
-    useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const {
+    dataLoadedForQueryId,
+    arrowReader,
+    initialTableData,
+    queryData,
+    statisticsData,
+  } = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const currentPreviewData: PreviewData | null =
-    dataLoadedForQueryId && tableData && queryData && statisticsData
+    dataLoadedForQueryId &&
+    arrowReader &&
+    initialTableData &&
+    queryData &&
+    statisticsData
       ? {
           queryId: dataLoadedForQueryId,
           statisticsData,
           queryData,
-          tableData,
+          arrowReader,
+          initialTableData,
         }
       : null;
 
@@ -69,16 +80,25 @@ export function useLoadPreviewData() {
     }
 
     try {
+      const arrowReader = await AsyncRecordBatchStreamReader.from(
+        getResult(queryId),
+      );
+      const loadInitialData = async () => {
+        await arrowReader.open({ autoDestroy: false });
+        return await arrowReader.next();
+      };
+
       // load data simultaneously
       const awaitedData = await Promise.all([
         getStatistics(queryId),
         getQuery(queryId),
-        tableFromIPC(getResult(queryId)),
+        loadInitialData(),
       ]);
       const payload = {
         statisticsData: awaitedData[0],
         queryData: awaitedData[1],
-        tableData: awaitedData[2],
+        arrowReader: arrowReader,
+        initialTableData: awaitedData[2],
         queryId,
       };
       dispatch(loadPreview.success(payload));
