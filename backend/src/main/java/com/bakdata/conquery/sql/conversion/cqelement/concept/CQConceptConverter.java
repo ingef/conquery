@@ -72,7 +72,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		String label = context.getNameGenerator().conceptName(cqConcept);
 		List<QueryStep> convertedConnectorTables = cqConcept.getTables().stream()
-															.flatMap(cqTable -> convertCqTable(label, cqConcept, cqTable, context))
+															.flatMap(cqTable -> convertCqTable(label, cqConcept, cqTable, context).stream())
 															.toList();
 
 		QueryStep lastConceptStep;
@@ -86,7 +86,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return context.withQueryStep(lastConceptStep);
 	}
 
-	private Stream<QueryStep> convertCqTable(String conceptLabel, CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
+	private Optional<QueryStep> convertCqTable(String conceptLabel, CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 		CQTableContext tableContext = createTableContext(conceptLabel, cqConcept, cqTable, context);
 		Optional<QueryStep> lastQueryStep = Optional.empty();
 		for (ConnectorCte queryStep : connectorCTEs) {
@@ -97,7 +97,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			lastQueryStep = convertedStep;
 			tableContext = tableContext.withPrevious(lastQueryStep.get());
 		}
-		return lastQueryStep.stream();
+		return lastQueryStep;
 	}
 
 	private static QueryStep finishConceptConversion(String conceptLabel, QueryStep predecessor, CQConcept cqConcept, ConversionContext context) {
