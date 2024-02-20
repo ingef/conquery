@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.time.StopWatch;
 
 @Getter
 @Setter
@@ -78,8 +77,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		final TrieSearch<FrontendValue> search = config.createTrieSearch(isGenerateSuffixes());
-
-		return new TrieSearch<>(suffixLength, config.getSearchSplitChars());
+		return config.createTrieSearch(isGenerateSuffixes());
 	}
 }
