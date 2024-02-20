@@ -22,7 +22,7 @@ import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
 
-	public static ConversionContext joinChildren(
+	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
 			ConversionContext context,
 			LogicalOperation logicalOperation,
@@ -35,7 +35,15 @@ public class QueryStepJoiner {
 		}
 
 		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();
+		return joinSteps(queriesToJoin, logicalOperation, dateAggregationAction, context);
+	}
 
+	public static QueryStep joinSteps(
+			List<QueryStep> queriesToJoin,
+			LogicalOperation logicalOperation,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context
+	) {
 		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		Field<Object> primaryColumn = coalescePrimaryColumns(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
@@ -59,8 +67,7 @@ public class QueryStepJoiner {
 		else {
 			joinedStep = buildStepAndAggregateDates(primaryColumn, mergedSelects, joinedStepBuilder, dateAggregationDates, dateAggregationAction, context);
 		}
-
-		return context.withQueryStep(joinedStep);
+		return joinedStep;
 	}
 
 	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, LogicalOperation logicalOperation, ConversionContext context) {
