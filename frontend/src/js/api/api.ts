@@ -8,7 +8,6 @@ import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker"
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
-import { Table } from "apache-arrow";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { transformQueryToApi } from "./apiHelper";
 import {
@@ -422,7 +421,7 @@ export const useGetResult = () => {
           Authorization: `Bearer ${authTokenRef.current}`,
         },
       });
-      return res as unknown as Promise<Table>;
+      return res;
     },
     [authTokenRef],
   );
