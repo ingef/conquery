@@ -3,14 +3,14 @@
   "sqlSpec": {
     "isEnabled": true
   },
-  "label": "Simple TREE concept with 1 child with EQUAL CTCondition selected",
-  "expectedCsv": "tests/sql/tree/simple/expected.csv",
+  "label": "Tree concept resolving a deep child and it's parents",
+  "expectedCsv": "tests/sql/tree/with_parent/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "test_tree.test_child1"
+        "test_tree.test_child1.test_child2"
       ],
       "tables": [
         {
@@ -36,25 +36,36 @@
       "children": [
         {
           "label": "test_child1",
-          "description": " ",
           "condition": {
-            "type": "EQUAL",
-            "values": [
-              "A1"
+            "type": "AND",
+            "conditions": [
+              {
+                "type": "EQUAL",
+                "values": [
+                  "A1"
+                ]
+              },
+              {
+                "type": "NOT",
+                "condition": {
+                  "type": "EQUAL",
+                  "values": [
+                    "B2"
+                  ]
+                }
+              }
             ]
           },
-          "children": []
-        },
-        {
-          "label": "test_child2",
-          "description": " ",
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "B2"
-            ]
-          },
-          "children": []
+          "children": [
+            {
+              "label": "test_child2",
+              "condition": {
+                "type": "PRESENT",
+                "column": "present_column"
+              },
+              "children": []
+            }
+          ]
         }
       ]
     }
@@ -62,7 +73,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/tree/simple/content.csv",
+        "csv": "tests/sql/tree/with_parent/content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",
@@ -75,6 +86,10 @@
           },
           {
             "name": "test_column",
+            "type": "STRING"
+          },
+          {
+            "name": "present_column",
             "type": "STRING"
           }
         ]
