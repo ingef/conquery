@@ -70,9 +70,11 @@ public class FormScanner extends Task {
 		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 
 		if (output == null) {
+			// Not called from a request
 			return;
 		}
 
+		// If called from a request, respond with findings
 		output.write("Registered forms:\n");
 		for (String formId : FRONTEND_FORM_CONFIGS.keySet()) {
 			output.write(String.format("\t%s\n", formId));
