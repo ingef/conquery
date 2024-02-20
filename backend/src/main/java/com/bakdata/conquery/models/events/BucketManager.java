@@ -53,7 +53,6 @@ public class BucketManager {
 
 	private final Worker worker;
 
-	@Getter
 	private final Object2IntMap<String> entity2Bucket;
 
 
@@ -227,6 +226,10 @@ public class BucketManager {
 						  .remove(cBlock);
 
 		storage.removeCBlock(cBlock.getId());
+	}
+
+	public Set<String> getEntities() {
+		return Collections.unmodifiableSet(entity2Bucket.keySet());
 	}
 
 	private int getBucket(String id) {

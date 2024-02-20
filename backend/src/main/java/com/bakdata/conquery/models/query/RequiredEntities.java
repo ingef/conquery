@@ -41,7 +41,7 @@ public final class RequiredEntities {
 	}
 
 	public Set<Entity> resolve(BucketManager bucketManager) {
-		final Set<String> all = bucketManager.getEntity2Bucket().keySet();
+		final Set<String> all = bucketManager.getEntities();
 		return entities.stream()
 					   .filter(all::contains)
 					   // The following is just a wrapping, that is later unwrapped again in an execution
