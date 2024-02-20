@@ -6,11 +6,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -21,11 +21,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.ManualConfig;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -45,16 +43,16 @@ public class FormScanner extends Task {
 	 * task accounts the change.
 	 */
 	private final ConqueryConfig config;
-	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
+	private List<FormConfigProvider> formConfigProviders = new ArrayList<>();
 
 	public FormScanner(ConqueryConfig config) {
 		super("form-scanner");
 		this.config = config;
-		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
+		registerFrontendFormConfigProvider(new FormConfigProvider("internal", ResourceFormConfigProvider::accept));
 	}
 
-	public synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider) {
-		providerChain = providerChain.andThen(provider);
+	public synchronized void registerFrontendFormConfigProvider(FormConfigProvider provider) {
+		formConfigProviders.add(provider);
 	}
 
 
@@ -70,6 +68,16 @@ public class FormScanner extends Task {
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
+
+		if (output == null) {
+			return;
+		}
+
+		output.write("Registered forms:\n");
+		for (String formId : FRONTEND_FORM_CONFIGS.keySet()) {
+			output.write(String.format("\t%s\n", formId));
+		}
+		output.flush();
 	}
 
 	private Map<String, FormType> generateFEFormConfigMap() {
@@ -170,19 +178,26 @@ public class FormScanner extends Task {
 
 	/**
 	 * Frontend form configurations can be provided from different sources.
-	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
+	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(FormConfigProvider)} beforehand.
 	 */
 	@SneakyThrows
 	private List<FormFrontendConfigInformation> findFrontendFormConfigs() {
 
 		final ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
 
-		try {
-			providerChain.accept(frontendConfigs);
+		log.trace("Begin collecting form frontend configurations");
+
+		for (FormConfigProvider formConfigProvider : formConfigProviders) {
+
+			try {
+				formConfigProvider.addFormConfigs(frontendConfigs);
+			}
+			catch (Exception e) {
+				log.error("Unable to collect frontend form configurations from {}.", formConfigProvider.getProviderName(), e);
+			}
 		}
-		catch (Exception e) {
-			log.error("Unable to collect all frontend form configurations.", e);
-		}
+
+		log.trace("Finished collecting form frontend configurations");
 		return frontendConfigs.build();
 	}
 
