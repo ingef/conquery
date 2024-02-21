@@ -80,11 +80,11 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle disabled={disableDragHandles} />
+          {!disableDragHandles && <ResizeHandle />}
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
-          <ResizeHandle disabled={disableDragHandles} />
+          {!disableDragHandles && <ResizeHandle />}
           <Panel minSize={250}>
             <RightPane />
           </SplitPane>
