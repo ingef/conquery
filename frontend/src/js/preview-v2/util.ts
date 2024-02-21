@@ -6,9 +6,16 @@ export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
 
 export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
 
-export function formatNumber(num: number, precision = 2): string {
+export function formatNumber(
+  num: number,
+  {
+    precision = 2,
+    forceFractionDigits,
+  }: { precision?: number; forceFractionDigits?: boolean } = {},
+): string {
   return new Intl.NumberFormat(navigator.language, {
     maximumFractionDigits: precision,
+    minimumFractionDigits: forceFractionDigits ? precision : undefined,
   }).format(num);
 }
 

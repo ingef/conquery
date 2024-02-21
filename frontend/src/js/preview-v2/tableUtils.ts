@@ -65,7 +65,9 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
           const num = parseFloat(value as string) / 100;
           return isNaN(num)
             ? ""
-            : `${formatNumber(num)} ${currencyConfig.unit}`;
+            : `${formatNumber(num, { forceFractionDigits: true })} ${
+                currencyConfig.unit
+              }`;
         };
       } else if (cellType == "BOOLEAN") {
         return (value) => (value ? t("common.true") : t("common.false"));
