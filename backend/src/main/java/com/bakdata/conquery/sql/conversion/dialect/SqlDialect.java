@@ -50,7 +50,7 @@ public interface SqlDialect {
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
-				new CQConceptConverter(getFunctionProvider()),
+				new CQConceptConverter(),
 				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext()))
 		);
 	}
