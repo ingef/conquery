@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
-import { parseStdDate } from "../common/helpers/dateHelper";
+import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 
 import { Theme, useTheme } from "@emotion/react";
@@ -48,8 +48,11 @@ function transformDateStatsToData(
 
   const labels: string[] = [];
   const values: number[] = [];
-  const start = parseStdDate(stats.span.min);
-  const end = parseStdDate(stats.span.max);
+  const minDate = parseStdDate(stats.span.min);
+  const maxDate = parseStdDate(stats.span.max);
+  const start = parseStdDate(`${minDate?.getFullYear()}-01-01`);
+  const end = parseStdDate(`${maxDate?.getFullYear()}-12-01`);
+
   if (start === null || end === null) {
     return {
       labels,
@@ -86,13 +89,6 @@ function transformDateStatsToData(
       },
     ],
   };
-}
-
-function getValueForIndex<T>(
-  data: ChartData | undefined,
-  index: number,
-): T | undefined {
-  return data?.labels?.[index] as T | undefined;
 }
 
 export default function Diagram({
@@ -178,10 +174,19 @@ export default function Diagram({
           },
           x: {
             ticks: {
-              callback: (valueIndex: number, index: number) => {
-                return index % 2 === 0
-                  ? getValueForIndex(data, valueIndex)
-                  : "";
+              autoSkip: false,
+              callback: (valueIndex: number) => {
+                const label = data?.labels?.[valueIndex];
+                if (label) {
+                  const date = parseDate(label as string, "dd.MM.yyyy");
+                  if (
+                    date?.getMonth() !== undefined &&
+                    date.getMonth() % 3 === 0
+                  ) {
+                    return label as string;
+                  }
+                }
+                return "";
               },
             },
           },
@@ -190,7 +195,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [stat, data]);
+  }, [data?.labels, stat]);
 
   // TODO fall back if no data is present
   return (
