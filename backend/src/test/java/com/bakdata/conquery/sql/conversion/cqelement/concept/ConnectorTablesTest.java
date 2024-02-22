@@ -23,7 +23,7 @@ class ConnectorTablesTest {
 		public static Set<ConnectorCteStep> MANDATORY_STEPS = Set.of(
 				ConnectorCteStep.PREPROCESSING,
 				ConnectorCteStep.AGGREGATION_SELECT,
-				ConnectorCteStep.FINAL
+				ConnectorCteStep.AGGREGATION_FILTER
 		);
 
 		public TestSqlTables(String nodeLabel, Set<ConnectorCteStep> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
@@ -49,7 +49,6 @@ class ConnectorTablesTest {
 				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.EVENT_FILTER, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
 				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_SELECT, ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)),
 				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.AGGREGATION_FILTER, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
-				Arguments.of(TestSqlTables.MANDATORY_STEPS, ConnectorCteStep.FINAL, ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)),
 
 				// only FINAL direct predecessor missing
 				Arguments.of(
@@ -61,21 +60,21 @@ class ConnectorTablesTest {
 				// only AGGREGATION_SELECT direct predecessor missing
 				Arguments.of(
 						withAdditionalSteps(Set.of(ConnectorCteStep.AGGREGATION_FILTER)),
-						ConnectorCteStep.FINAL,
-						ConnectorCteStep.AGGREGATION_FILTER.cteName(CONCEPT_LABEL)
+						ConnectorCteStep.AGGREGATION_FILTER,
+						ConnectorCteStep.AGGREGATION_SELECT.cteName(CONCEPT_LABEL)
 				),
 
 				// more than 1 predecessor missing of FINAL
 				Arguments.of(
-						Set.of(ConnectorCteStep.PREPROCESSING, ConnectorCteStep.FINAL),
-						ConnectorCteStep.FINAL,
+						Set.of(ConnectorCteStep.PREPROCESSING, ConnectorCteStep.AGGREGATION_FILTER),
+						ConnectorCteStep.AGGREGATION_FILTER,
 						ConnectorCteStep.PREPROCESSING.cteName(CONCEPT_LABEL)
 				),
 
 				// all predecessors missing of FINAL
 				Arguments.of(
-						Set.of(ConnectorCteStep.FINAL),
-						ConnectorCteStep.FINAL,
+						Set.of(ConnectorCteStep.AGGREGATION_FILTER),
+						ConnectorCteStep.AGGREGATION_FILTER,
 						ROOT_TABLE
 				)
 		);

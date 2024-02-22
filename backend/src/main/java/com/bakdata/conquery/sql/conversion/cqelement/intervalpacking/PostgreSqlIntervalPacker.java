@@ -42,6 +42,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 						.selects(selectsWithAggregatedValidityDate)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.groupBy(List.of(primaryColumn))
+						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
 

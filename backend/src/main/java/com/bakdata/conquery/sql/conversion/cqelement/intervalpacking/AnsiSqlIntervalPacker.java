@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +53,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
-						.predecessors(context.getPredecessor() == null ? Collections.emptyList() : List.of(context.getPredecessor()))
+						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
 
