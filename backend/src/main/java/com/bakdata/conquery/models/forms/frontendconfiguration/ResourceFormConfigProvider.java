@@ -18,15 +18,15 @@ import lombok.extern.slf4j.Slf4j;
  * In order to be found, the configuration file name must end with {@code *.frontend_conf.json}.
  */
 @Slf4j
-public class ResourceFormConfigProvider{
+public class ResourceFormConfigProvider {
 
 	public static void accept(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigInfos) {
 		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
-			.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
-		
+				.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
+
 		for (Resource config : frontendConfigs) {
-			try (config){
-				try(InputStream in = config.open()) {
+			try (config) {
+				try (InputStream in = config.open()) {
 					JsonNode configTree = Jackson.MAPPER.reader().readTree(in);
 					if (!configTree.isObject()) {
 						log.warn("Expected '{}' to be an JSON object but was '{}'. Skipping registration.", config.getPath(), configTree.getNodeType());

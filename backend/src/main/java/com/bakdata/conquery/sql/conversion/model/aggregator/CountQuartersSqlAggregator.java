@@ -43,14 +43,15 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 														 .preprocessingSelect(rootSelect)
 														 .aggregationSelect(countQuartersField);
 
+		String aggregationFilterPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
 		if (filterValue == null) {
-			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(aggregationFilterPredecessor);
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			Field<Integer> qualified = countQuartersField.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER)).select();
+			Field<Integer> qualified = countQuartersField.qualify(aggregationFilterPredecessor).select();
 			CountCondition countCondition = new CountCondition(qualified, filterValue);
 			this.whereClauses = WhereClauses.builder()
 											.groupFilter(countCondition)

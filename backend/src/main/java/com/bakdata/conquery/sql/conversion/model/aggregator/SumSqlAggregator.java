@@ -63,7 +63,7 @@ public class SumSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.FINAL));
+			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
