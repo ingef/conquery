@@ -71,7 +71,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 		this.communicationMapper = communicationMapper;
@@ -81,7 +81,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
-		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
+		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 		bucketManager = BucketManager.create(this, storage, entityBucketSize);
 	}
 
@@ -96,7 +96,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
 
 		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
@@ -112,7 +112,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {

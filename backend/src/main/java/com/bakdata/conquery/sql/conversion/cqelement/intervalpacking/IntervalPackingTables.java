@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -16,9 +16,9 @@ public class IntervalPackingTables extends SqlTables<IntervalPackingCteStep> {
 		super(nodeLabel, requiredSteps, rootTableName, nameGenerator);
 	}
 
-	public static IntervalPackingTables forConcept(String nodeLabel, SqlTables<ConceptCteStep> conceptTables, NameGenerator nameGenerator) {
-		String preprocessingCteName = conceptTables.cteName(ConceptCteStep.PREPROCESSING);
-		return new IntervalPackingTables(nodeLabel, REQUIRED_STEPS, preprocessingCteName, nameGenerator);
+	public static IntervalPackingTables forConnector(String conceptLabel, SqlTables<ConnectorCteStep> connectorTables, NameGenerator nameGenerator) {
+		String preprocessingCteName = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		return new IntervalPackingTables(conceptLabel, REQUIRED_STEPS, preprocessingCteName, nameGenerator);
 	}
 
 	public static IntervalPackingTables forGenericQueryStep(String nodeLabel, QueryStep predecessor, NameGenerator nameGenerator) {

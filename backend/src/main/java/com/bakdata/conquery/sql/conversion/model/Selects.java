@@ -38,8 +38,7 @@ public class Selects {
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
-													.map(sqlSelect -> sqlSelect.createAliasedReference(qualifier))
-													.distinct()
+													.map(sqlSelect -> sqlSelect.qualify(qualifier))
 													.collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()
@@ -61,12 +60,14 @@ public class Selects {
 					 )
 					 .flatMap(Function.identity())
 					 .map(select -> (Field<?>) select)
+					 .distinct()
 					 .collect(Collectors.toList());
 	}
 
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
 							  .map(SqlSelect::select)
+							  .distinct()
 							  .collect(Collectors.toList());
 	}
 

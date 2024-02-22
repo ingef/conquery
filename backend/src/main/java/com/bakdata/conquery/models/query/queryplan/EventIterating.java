@@ -25,7 +25,7 @@ public abstract class EventIterating {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 	}
 
-	public Set<Table> collectRequiredTables() {
+	public final Set<Table> collectRequiredTables() {
 		Set<Table> out = new HashSet<>();
 		collectRequiredTables(out);
 		return out;
@@ -42,7 +42,12 @@ public abstract class EventIterating {
 	public void nextBlock(Bucket bucket) {
 	}
 
-	public abstract void acceptEvent(Bucket bucket, int event);
+	/**
+	 * Consume the event of the bucket.
+	 *
+	 * @implSpec If the event was not consumed, may return false. This can be used to discard intermediate results. Currently, only relevant for {@link SecondaryIdQueryPlan}, where subplans are discarded if no event was consumed.
+	 */
+	public abstract boolean acceptEvent(Bucket bucket, int event);
 
 
 	public boolean isOfInterest(Bucket bucket) {

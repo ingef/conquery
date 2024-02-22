@@ -30,15 +30,15 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		//no dateRestriction or event is in date restriction
 		final boolean contained = bucket.eventIsContainedIn(event, validityDate, context.getDateRestriction());
 
 		if (!contained){
-			return;
+			return false;
 		}
 
-		getChild().acceptEvent(bucket, event);
+		return getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

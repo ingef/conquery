@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import lombok.Getter;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -37,15 +37,22 @@ public abstract class SqlTables<C extends CteStep> {
 	}
 
 	/**
+	 * @return True if the given {@link CteStep} is part of these {@link SqlTables}.
+	 */
+	public boolean isRequiredStep(CteStep cteStep) {
+		return this.cteNames.containsKey(cteStep);
+	}
+
+	/**
 	 * @return The name of the table the given {@link CteStep} will select from.
 	 */
 	public String getPredecessor(CteStep cteStep) {
-		CteStep predecessor = cteStep.predecessor();
+		CteStep predecessor = cteStep.getPredecessor();
 		while (!this.cteNames.containsKey(predecessor)) {
 			if (predecessor == null) {
 				return this.rootTable;
 			}
-			predecessor = predecessor.predecessor();
+			predecessor = predecessor.getPredecessor();
 		}
 		return this.cteNames.get(predecessor);
 	}
@@ -53,7 +60,7 @@ public abstract class SqlTables<C extends CteStep> {
 	/**
 	 * Qualify a field for a {@link CteStep}.
 	 * <p>
-	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step of {@link ConceptCteStep},
+	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step of {@link ConnectorCteStep},
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
 	 * See {@link SqlTables#getPredecessor(CteStep)}
 	 *

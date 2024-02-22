@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +69,7 @@ public class UpdateFilterSearchJob extends Job {
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = Executors.newCachedThreadPool();
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
 		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
@@ -93,7 +92,7 @@ public class UpdateFilterSearchJob extends Job {
 							"DONE collecting {} entries for `{}`, within {}",
 							search.calculateSize(),
 							searchable.getId(),
-							Duration.ofMillis(watch.getTime())
+							watch
 					);
 				}
 				catch (Exception e) {
