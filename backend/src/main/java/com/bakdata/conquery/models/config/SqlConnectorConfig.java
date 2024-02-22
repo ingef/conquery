@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class SqlConnectorConfig {
 
 	public static final String DEFAULT_PRIMARY_COLUMN = "pid";
+	public static final int DEFAULT_BACKGROUND_THREADS = 1;
 
 	boolean enabled;
 
@@ -36,5 +37,5 @@ public class SqlConnectorConfig {
 	 * The amount of threads for background tasks like calculating matching stats {@link com.bakdata.conquery.models.jobs.SqlUpdateMatchingStatsJob}.
 	 */
 	@Min(1)
-	private int backgroundThreads;
+	private int backgroundThreads = DEFAULT_BACKGROUND_THREADS;
 }
