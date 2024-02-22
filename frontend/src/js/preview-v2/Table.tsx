@@ -20,10 +20,10 @@ interface Props {
 const Root = styled("div")`
   flex-grow: 1;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  transform:rotateX(180deg);
+  transform: rotateX(180deg);
 
   table {
-    transform:rotateX(-180deg);
+    transform: rotateX(-180deg);
   }
 `;
 
