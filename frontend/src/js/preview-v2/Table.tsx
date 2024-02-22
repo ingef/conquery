@@ -67,12 +67,6 @@ export default memo(function Table({
     queryData as GetQueryResponseDoneT,
   );
 
-  const [loadedTableData, setLoadedTableData] = useState(
-    [] as DefaultRecordType[],
-  );
-  const [isTableFullyLoaded, setTableFullyLoaded] = useState(false);
-  const [visibleTableRows, setVisibleTableRows] = useState(50);
-
   const columns = useMemo(
     () =>
       arrowReader.schema?.fields.map((field) => ({
@@ -91,39 +85,30 @@ export default memo(function Table({
   );
 
   // parse rows outside of rc-table to cache them
-  const getNextTableRows = useCallback(
-    async (rowIterator?: IteratorResult<RecordBatch>) => {
+  const parseTableRows = useCallback(
+    (data: Vector[]) => {
       const nextRows = [] as DefaultRecordType[];
-      const batchIterator = rowIterator ?? (await arrowReader.next());
-      new ArrowTable(batchIterator.value)
-        .toArray()
-        .forEach((dataEntry: Vector) => {
-          const parsedValues = Object.fromEntries(
-            Object.entries(dataEntry.toJSON()).map(([key, value]) => {
-              const parsedValue =
-                getRenderFunctionByFieldName(key)?.(value) ?? value;
-              return [key, parsedValue];
-            }),
-          );
-          nextRows.push(parsedValues);
-        });
-
-      if (batchIterator.done) {
-        setTableFullyLoaded(true);
-      }
+      data.forEach((dataEntry: Vector) => {
+        const parsedValues = Object.fromEntries(
+          Object.entries(dataEntry.toJSON()).map(([key, value]) => {
+            const parsedValue =
+              getRenderFunctionByFieldName(key)?.(value) ?? value;
+            return [key, parsedValue];
+          }),
+        );
+        nextRows.push(parsedValues);
+      });
 
       return nextRows;
     },
-    [arrowReader, getRenderFunctionByFieldName],
+    [getRenderFunctionByFieldName],
   );
 
-  // parse initial table data
-  useEffect(() => {
-    const loadData = async () => {
-      setLoadedTableData(await getNextTableRows(initialTableData));
-    };
-    loadData();
-  }, [getNextTableRows, initialTableData]);
+  const loadedTableData = useMemo(
+    () => parseTableRows(new ArrowTable(initialTableData.value).toArray()),
+    [initialTableData, parseTableRows],
+  );
+  const [visibleTableRows, setVisibleTableRows] = useState(50);
 
   useEffect(() => {
     const eventFunction = async () => {
@@ -137,15 +122,6 @@ export default memo(function Table({
       const thresholdTriggered =
         (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
       if (thresholdTriggered) {
-        if (
-          !isTableFullyLoaded &&
-          loadedTableData.length < visibleTableRows + 50
-        ) {
-          setLoadedTableData([
-            ...loadedTableData,
-            ...(await getNextTableRows()),
-          ]);
-        }
         setVisibleTableRows((rowCount) =>
           Math.min(rowCount + 50, loadedTableData.length),
         );
@@ -154,7 +130,7 @@ export default memo(function Table({
 
     window.addEventListener("scroll", eventFunction, true);
     return () => window.removeEventListener("scroll", eventFunction, true);
-  }, [loadedTableData, getNextTableRows, isTableFullyLoaded, visibleTableRows]);
+  }, [loadedTableData, visibleTableRows, arrowReader]);
 
   return (
     <Root ref={rootRef}>
