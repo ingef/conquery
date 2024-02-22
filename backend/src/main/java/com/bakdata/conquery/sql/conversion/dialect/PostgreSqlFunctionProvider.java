@@ -211,9 +211,9 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.extract(dateField, DatePart.YEAR),
 				DSL.extract(dateField, DatePart.QUARTER)
 		);
-  }
-  
-  @Override
+	}
+
+	@Override
 	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)
