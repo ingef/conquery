@@ -84,7 +84,7 @@ export function useLoadPreviewData() {
         getResult(queryId),
       );
       const loadInitialData = async () => {
-        await arrowReader.open({ autoDestroy: false });
+        await arrowReader.open();
         return await arrowReader.next();
       };
 
