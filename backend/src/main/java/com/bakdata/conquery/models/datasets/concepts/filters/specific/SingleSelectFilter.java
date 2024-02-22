@@ -1,13 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.Set;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectFilterUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -35,11 +32,6 @@ public class SingleSelectFilter extends SelectFilter<String> {
 	@Override
 	public SqlFilters convertToSqlFilter(FilterContext<String> filterContext) {
 		return SelectFilterUtil.convert(this, filterContext, new String[]{filterContext.getValue()});
-	}
-
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.EVENT_FILTER);
 	}
 
 }

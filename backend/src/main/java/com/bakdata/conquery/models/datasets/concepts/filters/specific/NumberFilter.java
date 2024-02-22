@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -17,10 +16,9 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.NumberSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.NumberSqlAggregator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,11 +60,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	@Override
 	public SqlFilters convertToSqlFilter(FilterContext<RANGE> filterContext) {
 		return NumberSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.EVENT_FILTER);
 	}
 
 }

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.index;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +43,9 @@ public class IndexService implements Injectable {
 	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@Override
 		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
+
+			final StopWatch timer = StopWatch.createStarted();
+
 			log.info("Started to parse mapping {}", key);
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
@@ -86,10 +91,10 @@ public class IndexService implements Injectable {
 				throw ioException;
 			}
 
-			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
-
 			// Run finalizing operations on the index
 			int2ext.finalizer();
+
+			log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), timer);
 
 			return int2ext;
 		}

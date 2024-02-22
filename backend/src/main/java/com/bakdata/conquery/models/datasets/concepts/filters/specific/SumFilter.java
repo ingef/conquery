@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -32,11 +31,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -114,14 +112,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			return SumDistinctSqlAggregator.create(this, filterContext).getSqlFilters();
 		}
 		return SumSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.JOIN_PREDECESSORS, ConnectorCteStep.AGGREGATION_FILTER);
-		}
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.AGGREGATION_FILTER);
 	}
 
 	@JsonIgnore

@@ -25,4 +25,8 @@ public class WhereClauses {
 		);
 	}
 
+	public static WhereClauses empty() {
+		return WhereClauses.builder().build();
+	}
+
 }

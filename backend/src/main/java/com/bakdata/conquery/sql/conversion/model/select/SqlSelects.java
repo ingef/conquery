@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Builder;
@@ -18,7 +19,7 @@ public class SqlSelects {
 	// Empty if only used in aggregation select
 	@Singular
 	List<SqlSelect> finalSelects;
-	// Additional predecessors these SqlSelects require
-	@Singular
-	List<QueryStep> additionalPredecessors;
+	// An additional predecessor these SqlSelects require
+	@Builder.Default
+	Optional<QueryStep> additionalPredecessor = Optional.empty();
 }
