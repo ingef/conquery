@@ -24,6 +24,7 @@ const ScrollTopButton = styled(IconButton)`
   border: 1px solid ${({ theme }) => theme.col.gray};
   background: white;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  z-index: 3;
 `;
 
 export default function ScrollBox({
