@@ -29,7 +29,7 @@ class IntermediateTableCte extends DateAggregationCte {
 				context.getCarryThroughSelects()
 		);
 		Selects selects = Selects.builder()
-								 .primaryColumn(context.getPrimaryColumn())
+								 .ids(context.getIds())
 								 .sqlSelects(intermediateTableSelects)
 								 .build();
 

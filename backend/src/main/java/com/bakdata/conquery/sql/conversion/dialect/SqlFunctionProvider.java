@@ -109,23 +109,21 @@ public interface SqlFunctionProvider {
 	default TableOnConditionStep<Record> innerJoin(
 			Table<Record> leftPartQueryBase,
 			QueryStep rightPartQS,
-			Field<Object> leftPartPrimaryColumn,
-			Field<Object> rightPartPrimaryColumn
+			List<Condition> joinConditions
 	) {
 		return leftPartQueryBase
 				.innerJoin(DSL.name(rightPartQS.getCteName()))
-				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+				.on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default TableOnConditionStep<Record> fullOuterJoin(
 			Table<Record> leftPartQueryBase,
 			QueryStep rightPartQS,
-			Field<Object> leftPartPrimaryColumn,
-			Field<Object> rightPartPrimaryColumn
+			List<Condition> joinConditions
 	) {
 		return leftPartQueryBase
 				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
-				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+				.on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default Field<Date> toDateField(String dateExpression) {

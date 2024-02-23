@@ -10,7 +10,7 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @Getter
-public class ColumnDateRange {
+public class ColumnDateRange implements Qualifiable<ColumnDateRange> {
 
 	private static final String DATE_RESTRICTION_COLUMN_NAME = "date_restriction";
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
@@ -61,6 +61,7 @@ public class ColumnDateRange {
 					 .collect(Collectors.toList());
 	}
 
+	@Override
 	public ColumnDateRange qualify(String qualifier) {
 		if (isSingleColumnRange()) {
 			return ColumnDateRange.of(mapFieldOntoQualifier(getRange(), Object.class, qualifier));

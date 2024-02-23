@@ -11,13 +11,12 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 @Value
 @Builder(toBuilder = true)
 public class Selects {
 
-	Field<Object> primaryColumn;
+	SelectsIds ids;
 	@Builder.Default
 	Optional<ColumnDateRange> validityDate = Optional.empty();
 	@Singular
@@ -36,13 +35,11 @@ public class Selects {
 	}
 
 	public Selects qualify(String qualifier) {
-		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
-		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
-													.map(sqlSelect -> sqlSelect.qualify(qualifier))
-													.collect(Collectors.toList());
+		SelectsIds ids = this.ids.qualify(qualifier);
+		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()
-										.primaryColumn(qualifiedPrimaryColumn)
+										.ids(ids)
 										.sqlSelects(sqlSelects);
 
 		if (this.validityDate.isPresent()) {
@@ -54,7 +51,7 @@ public class Selects {
 
 	public List<Field<?>> all() {
 		return Stream.of(
-							 Stream.of(this.primaryColumn),
+							 this.ids.toFields().stream(),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
 							 this.sqlSelects.stream().map(SqlSelect::select)
 					 )

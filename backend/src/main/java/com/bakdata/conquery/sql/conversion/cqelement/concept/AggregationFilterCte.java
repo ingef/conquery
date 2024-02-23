@@ -44,7 +44,7 @@ class AggregationFilterCte extends ConnectorCte {
 							.collect(Collectors.toList());
 
 		return Selects.builder()
-					  .primaryColumn(previousSelects.getPrimaryColumn())
+					  .ids(previousSelects.getIds())
 					  .validityDate(previousSelects.getValidityDate())
 					  .sqlSelects(forAggregationFilterStep)
 					  .build();

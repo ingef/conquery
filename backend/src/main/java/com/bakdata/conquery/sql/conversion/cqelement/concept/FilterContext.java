@@ -4,6 +4,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.SelectsIds;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Value;
 
@@ -13,6 +14,7 @@ public class FilterContext<V> implements Context {
 	/**
 	 * A filter value ({@link FilterValue#getValue()})
 	 */
+	SelectsIds ids;
 	V value;
 	ConversionContext parentContext;
 	SqlTables connectorTables;

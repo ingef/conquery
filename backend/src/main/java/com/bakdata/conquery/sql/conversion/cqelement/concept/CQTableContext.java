@@ -13,12 +13,12 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.SelectsIds;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
-import org.jooq.Field;
 
 @Value
 @Builder
@@ -26,7 +26,7 @@ class CQTableContext implements Context {
 
 	String conceptLabel;
 	String conceptConnectorLabel;
-	Field<Object> primaryColumn;
+	SelectsIds ids;
 	Optional<ColumnDateRange> validityDate;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
@@ -43,11 +43,11 @@ class CQTableContext implements Context {
 		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 
-	public Field<Object> getPrimaryColumn() {
+	public SelectsIds getIds() {
 		if (previous == null) {
-			return this.primaryColumn;
+			return ids;
 		}
-		return previous.getSelects().getPrimaryColumn();
+		return previous.getQualifiedSelects().getIds();
 	}
 
 	public Optional<IntervalPackingContext> getIntervalPackingContext() {

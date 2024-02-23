@@ -110,7 +110,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			Column validityDateColumn = validityDate.getColumn();
 			dateRange = switch (validityDateColumn.getType()) {
 				// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type.
-				case DATE_RANGE -> DSL.field(validityDateColumn.getName());
+				case DATE_RANGE -> DSL.field(DSL.name(validityDateColumn.getName()));
 				// if the validity date column is not of daterange type, we construct it manually
 				case DATE -> {
 					Field<Date> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()), Date.class);

@@ -1,11 +1,12 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
 
-public interface SqlSelect {
+public interface SqlSelect extends Qualifiable<ExtractingSqlSelect<?>> {
 
 	/**
 	 * @return The whole (aliased) SQL expression of this {@link SqlSelect}.
@@ -25,12 +26,7 @@ public interface SqlSelect {
 	List<String> requiredColumns();
 
 	/**
-	 * @return Creates a reference to the alias of this SqlSelect qualified onto the given qualifier.
-	 */
-	ExtractingSqlSelect<?> qualify(String qualifier);
-
-	/**
-	 * @return Determines if this is only part of the {@link ConnectorCteStep#FINAL} CTE and has no predeceasing selects.
+	 * @return Determines if this SqlSelect is only part of the final concept conversion CTE and has no predeceasing selects.
 	 */
 	default boolean isUniversal() {
 		return false;

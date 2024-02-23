@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
@@ -51,7 +52,8 @@ public interface SqlDialect {
 				new CQOrConverter(),
 				new CQNegationConverter(),
 				new CQConceptConverter(),
-				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext()))
+				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext())),
+				new SecondaryIdQueryConverter()
 		);
 	}
 
