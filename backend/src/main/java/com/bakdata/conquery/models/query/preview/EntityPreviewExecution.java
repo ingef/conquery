@@ -186,7 +186,16 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		if (type instanceof ResultType.DateT) {
-			return CDate.toLocalDate((Integer) value);
+			// TODO this sidesteps issues with Jackson not localizing LocalDates when printing.
+			//  The proper approach would be to return LocalDates and configure Jackson/DateFormatter to request-scope localization.
+			// TODO is this actually a sneaky frontend-issue? Considering the other values are additionally rendered in the frontend?
+			return new TextNode(ResultType.DateT.INSTANCE.print(printSettings, value));
+		}
+
+		if (type instanceof ResultType.DateRangeT) {
+			//TODO this is not yet properly localised, we will need to fix this either in FE/BE
+			final List<Integer> values = (List<Integer>) value;
+			return CDateRange.fromList(values);
 		}
 
 		if (type instanceof ResultType.IntegerT) {
@@ -205,10 +214,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			return DecimalNode.valueOf((BigDecimal) value);
 		}
 
-		if (type instanceof ResultType.DateRangeT) {
-			final List<Integer> values = (List<Integer>) value;
-			return CDateRange.of(values.get(0), values.get(1)).toSimpleRange();
-		}
+
 
 
 		if (type instanceof ResultType.ListT listT) {
