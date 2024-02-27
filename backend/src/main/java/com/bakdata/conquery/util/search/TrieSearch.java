@@ -175,7 +175,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public Stream<String> ngramSplit(String word) {
 
 		// Any String  is its own ngram when ngramLength is Integer.MAX_VALUE.
-		if (word.length() < ngramLength) {
+		if (word.length() <= ngramLength) {
 			return Stream.empty();
 		}
 
