@@ -35,7 +35,8 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 	@NotNull
 	public static ResultStatistics collectResultStatistics(ManagedQuery managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, int dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
 
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5));
+		//TODO pull inner executor service from ManagerNode
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
 
 		// Yes, we are actually iterating the result for every job.
 
