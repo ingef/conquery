@@ -145,12 +145,12 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		}
 		HashEntry hashedEntry = passwordStore.get(new UserId(username));
 		if (hashedEntry == null) {
-			throw new UnknownAccountException(username);
+			throw new UnknownAccountException("Provided username or password was not valid.");
 		}
 
 		final String hash = hashedEntry.getHash();
 		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
-			throw new AuthenticationException("Provided username or password was not valid.");
+			throw new UnknownAccountException("Provided username or password was not valid.");
 		}
 
 		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
@@ -163,10 +163,12 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 
 		if (credential instanceof PasswordCredential passwordCredential) {
-			return new HashEntry(Password.hash(passwordCredential.getPassword()).addRandomSalt().with(defaultHashingFunction).getResult());
+			return new HashEntry(Password.hash(passwordCredential.password())
+										 .with(defaultHashingFunction)
+										 .getResult()); //.with(defaultHashingFunction).getResult());
 		}
 		else if (credential instanceof PasswordHashCredential passwordHashCredential) {
-			return new HashEntry(passwordHashCredential.getHash());
+			return new HashEntry(passwordHashCredential.hash());
 		}
 
 		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());

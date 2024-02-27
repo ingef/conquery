@@ -83,8 +83,10 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
 
-		int rounds = result.getPrototype().getLogarithmicRounds(); // 12
+		final BcryptFunction prototype = result.getPrototype();
+		int rounds = prototype.getLogarithmicRounds(); // 12
 		long realElapsed = result.getElapsed();
+
 
 		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", rounds, realElapsed);
 
@@ -96,7 +98,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 				directory,
 				passwordStoreConfig,
 				jwtDuration,
-				result.getPrototype()
+				prototype
 		);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, manager.getStorage());
 

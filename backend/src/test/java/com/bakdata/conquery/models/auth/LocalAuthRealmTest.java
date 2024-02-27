@@ -53,7 +53,15 @@ public class LocalAuthRealmTest {
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
 		realm =
-				new LocalAuthenticationRealm(Validators.newValidator(), Jackson.BINARY_MAPPER, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1), BcryptFunction.getInstance(1));
+				new LocalAuthenticationRealm(
+						Validators.newValidator(),
+						Jackson.BINARY_MAPPER, conqueryTokenRealm,
+						"localtestRealm",
+						tmpDir,
+						new XodusConfig(),
+						Duration.hours(4),
+						BcryptFunction.getInstance(4)
+				); // 4 is minimum
 		LifecycleUtils.init(realm);
 	}
 
@@ -100,7 +108,7 @@ public class LocalAuthRealmTest {
 	@Test
 	public void testWrongUsername() {
 		assertThatThrownBy(() -> realm.createAccessToken("NoTestUser", "testPassword"))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 	}
 
 	@Test
