@@ -34,35 +34,21 @@ public class Histogram {
 
 	private int total;
 
-	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
-		//TODO if we have integer bins, we can go further with bins and make Node.upper==Node.lower, which is very nice to read.
-		//TODO split rounded and unrounded code paths
-
+	private static Histogram rounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
 		// adjust lower/upper to start on rounded edges.
 		final double adjLower = Math.max(Math.floor(absMin), Math.floor(lower));
 		final double adjUpper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
-		if (adjLower == adjUpper) {
-			// Short circuit for degenerate cases
-			return new Histogram(new Node[0],
-								 new Node(0, 0),
-								 new Node(absMin, adjLower),
-								 new Node(adjUpper, absMax),
-								 adjLower, adjUpper,
-								 0
-			);
-		}
-
-		final double width = roundWidth ? Math.max(1, Math.round((adjUpper - adjLower) / expectedBins)) : (adjUpper - adjLower) / expectedBins;
+		final double width = (double) Math.max(1, Math.round((adjUpper - adjLower) / expectedBins));
 
 		final double newLower;
 
 		if (adjLower == 0d) {
 			newLower = 0;
 		}
-		else if (absMin <= 0) {
+		else if (adjLower < 0) {
 			// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
-			newLower = Math.signum(adjLower) * width * Math.ceil(Math.abs(adjLower) / width);
+			newLower = -width * Math.ceil(Math.abs(adjLower) / width);
 		}
 		else {
 			newLower = adjLower;
@@ -82,7 +68,39 @@ public class Histogram {
 							 new Node(newUpper, Math.max(absMax, newUpper)),
 							 newLower, newUpper,
 							 width);
+	}
 
+	private static Histogram unrounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
+
+		final double width = (upper - lower) / expectedBins;
+
+		final double newUpper = lower + width * expectedBins;
+
+		final Node[] nodes = IntStream.range(0, expectedBins)
+									  .mapToObj(index -> new Node(lower + width * index, lower + width * (index + 1)))
+									  .toArray(Node[]::new);
+
+		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax), lower, newUpper, width);
+	}
+
+	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
+		if (lower == upper) {
+			// Short circuit for degenerate cases
+			return new Histogram(new Node[0],
+								 new Node(0, 0),
+								 new Node(absMin, lower),
+								 new Node(upper, absMax),
+								 lower, upper,
+								 0
+			);
+		}
+
+		if(roundWidth){
+			return rounded(lower, upper, absMin, absMax, expectedBins);
+		}
+		else {
+			return unrounded(lower, upper, absMin, absMax, expectedBins);
+		}
 	}
 
 	public void add(double value) {
