@@ -25,8 +25,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 
+@Slf4j
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
@@ -40,21 +43,36 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final ListenableFuture<Range<LocalDate>> futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
 
 		// Count result lines (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer> futureLines = executorService.submit(() -> managedQuery.streamResults().mapToInt(result -> result.listResultLines().size()).sum());
+		final ListenableFuture<Integer>
+				futureLines =
+				executorService.submit(() -> managedQuery.streamResults().mapToInt(result -> result.listResultLines().size()).sum());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
 				futureDescriptions =
 				IntStream.range(0, resultInfos.size()).mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
-					final ResultInfo info = resultInfos.get(col);
-					final ColumnStatsCollector
-							statsCollector =
-							ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, conqueryConfig.getFrontend());
+							 final StopWatch started = StopWatch.createStarted();
 
-					managedQuery.streamResults().map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
 
-					return statsCollector.describe();
-				})
+							 final ResultInfo info = resultInfos.get(col);
+							 final ColumnStatsCollector
+									 statsCollector =
+									 ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, conqueryConfig.getFrontend());
+
+							 log.debug("BEGIN stats collection for {}", info);
+
+							 managedQuery.streamResults().map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
+
+							 log.debug("DONE collecting values for {}, in {}", info, started);
+
+							 started.reset();
+
+							 final ColumnStatsCollector.ResultColumnStatistics description = statsCollector.describe();
+
+							 log.debug("DONE description for {}, in {}", info, started);
+
+							 return description;
+						 })
 						 .map(executorService::submit)
 						 .toList();
 
