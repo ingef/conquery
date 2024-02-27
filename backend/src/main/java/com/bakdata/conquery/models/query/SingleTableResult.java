@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -44,7 +45,10 @@ public interface SingleTableResult {
 	@JsonIgnore
 	List<ResultInfo> getResultInfos();
 
-	Stream<EntityResult> streamResults();
+	/**
+	 * @param limit Optionally limits how many lines are emitted.
+	 */
+	Stream<EntityResult> streamResults(OptionalLong limit);
 
 	@JsonIgnore
 	long resultRowCount();

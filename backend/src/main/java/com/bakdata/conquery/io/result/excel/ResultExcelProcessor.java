@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.excel;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 import java.util.Locale;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
@@ -38,7 +39,7 @@ public class ResultExcelProcessor {
 
 	private final ExcelConfig excelConfig;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
@@ -57,7 +58,7 @@ public class ResultExcelProcessor {
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output);
+			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output, limit);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
