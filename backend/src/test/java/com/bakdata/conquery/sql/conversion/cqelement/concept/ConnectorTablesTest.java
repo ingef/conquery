@@ -18,7 +18,7 @@ class ConnectorTablesTest {
 	public static final int NAME_MAX_LENGTH = 127;
 	private static final NameGenerator NAME_GENERATOR = new NameGenerator(NAME_MAX_LENGTH);
 
-	private static class TestSqlTables extends SqlTables<ConnectorCteStep> {
+	private static class TestSqlTables extends SqlTables {
 
 		public static Set<ConnectorCteStep> MANDATORY_STEPS = Set.of(
 				ConnectorCteStep.PREPROCESSING,

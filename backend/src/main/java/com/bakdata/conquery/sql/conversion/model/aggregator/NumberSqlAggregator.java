@@ -26,7 +26,7 @@ public class NumberSqlAggregator implements SqlAggregator {
 
 	public NumberSqlAggregator(
 			Column column,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());

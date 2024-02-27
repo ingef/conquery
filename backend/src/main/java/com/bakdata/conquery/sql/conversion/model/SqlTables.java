@@ -15,12 +15,12 @@ import org.jooq.impl.DSL;
  * SqlTables provide a mapping from {@link CteStep}s to their respective table names/cte names in the generated SQL query.
  */
 @Getter
-public abstract class SqlTables<C extends CteStep> {
+public class SqlTables {
 
-	private final Map<C, String> cteNames;
+	private final Map<? extends CteStep, String> cteNames;
 	private final String rootTable;
 
-	public SqlTables(String nodeLabel, Set<C> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
+	public SqlTables(String nodeLabel, Set<? extends CteStep> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
 		this.cteNames = requiredSteps.stream()
 									 .collect(Collectors.toMap(
 											 Function.identity(),

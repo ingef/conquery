@@ -27,7 +27,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 	private CountQuartersSqlAggregator(
 			Column column,
 			String alias,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			SqlFunctionProvider functionProvider,
 			IRange<? extends Number, ?> filterValue
 	) {
