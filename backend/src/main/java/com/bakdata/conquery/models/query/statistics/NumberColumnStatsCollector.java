@@ -148,7 +148,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		return histogram.nodes()
 						.stream()
 						.map(bin -> {
-							final String binLabel = bin.getLabel(this::printValue);
+							final String binLabel = bin.createLabel(this::printValue, getType() instanceof ResultType.IntegerT);
 
 							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
 						})

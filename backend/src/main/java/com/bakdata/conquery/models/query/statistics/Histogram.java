@@ -152,10 +152,13 @@ public class Histogram {
 		}
 
 
-		String getLabel(Double2ObjectFunction<String> printer) {
+		String createLabel(Double2ObjectFunction<String> printer, boolean isInteger) {
 			final String lower = printer.apply(getMin());
 			final String upper = printer.apply(getMax());
 
+			if (isInteger && getMax() - getMin() <= 1){
+				return lower;
+			}
 
 			if(lower.equals(upper)){
 				return lower;
