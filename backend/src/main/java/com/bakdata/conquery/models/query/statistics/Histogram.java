@@ -57,7 +57,7 @@ public class Histogram {
 
 		final double newLower;
 
-		if (adjLower == 0) {
+		if (adjLower == 0d) {
 			newLower = 0;
 		}
 		else if (absMin <= 0) {
