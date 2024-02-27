@@ -138,7 +138,13 @@ public class Histogram {
 			final String lower = printer.apply(getMin());
 			final String upper = printer.apply(getMax());
 
-			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
+
+			if(lower.equals(upper)){
+				return lower;
+			}
+
+			final String binLabel = String.format("%s - %s", lower, upper);
+
 			return binLabel;
 		}
 

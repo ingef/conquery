@@ -53,19 +53,15 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 				IntStream.range(0, resultInfos.size()).mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
 							 final StopWatch started = StopWatch.createStarted();
 
-
 							 final ResultInfo info = resultInfos.get(col);
-							 final ColumnStatsCollector
-									 statsCollector =
+							 final ColumnStatsCollector statsCollector =
 									 ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, conqueryConfig.getFrontend());
 
-							 log.debug("BEGIN stats collection for {}", info);
+							 log.trace("BEGIN stats collection for {}", info);
 
 							 managedQuery.streamResults().map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
 
-							 log.debug("DONE collecting values for {}, in {}", info, started);
-
-							 started.reset();
+							 log.trace("DONE collecting values for {}, in {}", info, started);
 
 							 final ColumnStatsCollector.ResultColumnStatistics description = statsCollector.describe();
 
