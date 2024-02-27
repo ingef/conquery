@@ -72,7 +72,7 @@
             {
               "name": "real",
               "column": "table.real",
-              "type": "SUM"
+              "type": "DISTINCT"
             },
             {
               "name": "decimal",

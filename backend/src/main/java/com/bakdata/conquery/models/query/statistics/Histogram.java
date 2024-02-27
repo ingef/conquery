@@ -163,8 +163,10 @@ public class Histogram {
 			if(lower.equals(upper)){
 				return lower;
 			}
+			final String startBrackets = getMin() == 0 ? "(" : "[";
+			final String endBrackets = ")";
 
-			final String binLabel = String.format("%s - %s", lower, upper);
+			final String binLabel = String.format("%s%s - %s%s", startBrackets, lower, upper, endBrackets);
 
 			return binLabel;
 		}
