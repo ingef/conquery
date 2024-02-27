@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * Of note:
  * * We have over and underflow bins, if values exceed our assumed value-range.
  * * The bins are always aligned such that zero is its own separate bin, as we assume it is a special value.
- * 		- This means, distributions will be slightly shifted left to have equal-spaced bins, that have zero not intersect them.
+ * 		- This means, bin limits will be slightly adjusted left to have equal-spaced bins, that have zero not intersect them.
  */
 @Data
 @Slf4j
@@ -36,34 +36,36 @@ public class Histogram {
 
 	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
 		//TODO if we have integer bins, we can go further with bins and make Node.upper==Node.lower, which is very nice to read.
+		//TODO split rounded and unrounded code paths
 
-		lower = Math.max(Math.ceil(absMin), Math.floor(lower));
-		upper = Math.min(Math.ceil(absMax), Math.ceil(upper));
+		// adjust lower/upper to start on rounded edges.
+		final double adjLower = Math.max(Math.floor(absMin), Math.floor(lower));
+		final double adjUpper = Math.min(Math.ceil(absMax), Math.ceil(upper));
 
-		if (lower == upper) {
+		if (adjLower == adjUpper) {
 			// Short circuit for degenerate cases
 			return new Histogram(new Node[0],
 								 new Node(0, 0),
-								 new Node(absMin, lower),
-								 new Node(upper, absMax),
-								 lower, upper,
+								 new Node(absMin, adjLower),
+								 new Node(adjUpper, absMax),
+								 adjLower, adjUpper,
 								 0
 			);
 		}
 
-		final double width = roundWidth ? Math.max(1, Math.round((upper - lower) / expectedBins)) : (upper - lower) / expectedBins;
+		final double width = roundWidth ? Math.max(1, Math.round((adjUpper - adjLower) / expectedBins)) : (adjUpper - adjLower) / expectedBins;
 
 		final double newLower;
 
-		if (lower == 0) {
+		if (adjLower == 0) {
 			newLower = 0;
 		}
 		else if (absMin <= 0) {
 			// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
-			newLower = Math.signum(lower) * width * Math.ceil(Math.abs(lower) / width);
+			newLower = Math.signum(adjLower) * width * Math.ceil(Math.abs(adjLower) / width);
 		}
 		else {
-			newLower = lower;
+			newLower = adjLower;
 		}
 
 		final double newUpper = newLower + width * expectedBins;
@@ -119,7 +121,7 @@ public class Histogram {
 	@Data
 	public static final class Node {
 		@ToString.Include
-		private int hits = 0;
+		private int hits;
 
 		private final double min, max;
 

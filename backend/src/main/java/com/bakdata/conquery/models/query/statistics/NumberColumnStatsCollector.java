@@ -80,16 +80,19 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	 * If distance between bounds is less than expectedBins, we expand our bounds along percentiles.
 	 */
 	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
-		assert by > 1;
+		assert by > 0;
 
-		// limitation of DescriptiveStatistics#getPercentile
-		if (lower <= 1.d && upper >= 99d) {
-			return Range.closed(statistics.getMin(), statistics.getMax());
+		// limitation of DescriptiveStatistics#getPercentile: crashes if lower==0, so we short circuit.
+		final boolean underflow = lower <= 1.d;
+		final boolean overflow = upper >= 99;
+
+		final double min = underflow ? statistics.getMin() : statistics.getPercentile(lower);
+		final double max = overflow ? statistics.getMax() : statistics.getPercentile(upper);
+
+		// No need to walk further, if we are already at the limits.
+		if (underflow && overflow) {
+			return Range.closed(min, max);
 		}
-
-		// We need to truncate to bounds separately.
-		final double min = lower <= 1.d ? statistics.getMin() : statistics.getPercentile(lower);
-		final double max = upper >= 99 ? statistics.getMax() : statistics.getPercentile(upper);
 
 		if (max - min < expectedBins) {
 			return expandBounds(Math.max(0, lower - by), Math.min(100, upper + by), expectedBins, statistics, by);

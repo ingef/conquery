@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 @ToString
 @Getter
-public class ListColumnStatsCollector<T> extends ColumnStatsCollector {
+public class ListColumnStatsCollector extends ColumnStatsCollector {
 
 	private final ColumnStatsCollector underlying;
 
