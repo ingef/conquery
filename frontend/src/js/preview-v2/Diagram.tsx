@@ -191,7 +191,6 @@ export default function Diagram({
     throw new Error("Unknown stats type");
   }, [data?.labels, stat]);
 
-  // TODO fall back if no data is present
   return (
     <div className={className}>
       {previewStatsIsBarStats(stat) ? (

@@ -34,7 +34,6 @@ export const loadPreview = createAsyncAction(
 export const openPreview = createAction("preview/OPEN")();
 export const closePreview = createAction("preview/CLOSE")();
 
-// TODO: is there a better way?!?
 export const updateQueryId = createAction("preview/UPDATE_LAST_QUERY_ID")<{
   queryId: string;
 }>();
