@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -26,6 +26,7 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -137,12 +138,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn()));
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, functionProvider);
-		ConnectorTables connectorTables = new ConnectorTables(conceptConnectorLabel, tableName, nameGenerator);
+		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
 
 		// validity date
 		IntervalPackingContext intervalPackingContext = null;
 		if (intervalPackingRequired(tablesValidityDate, cqConcept)) {
-			IntervalPackingTables intervalPackingTables = IntervalPackingTables.forConnector(conceptConnectorLabel, connectorTables, nameGenerator);
+			String preprocessingCteName = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+			SqlTables intervalPackingTables = IntervalPackingCteStep.getTables(conceptConnectorLabel, preprocessingCteName, nameGenerator);
 			intervalPackingContext = IntervalPackingContext.builder()
 														   .nodeLabel(conceptConnectorLabel)
 														   .primaryColumn(primaryColumn)

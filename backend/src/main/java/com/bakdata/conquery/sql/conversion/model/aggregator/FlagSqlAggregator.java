@@ -11,13 +11,13 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
@@ -76,7 +76,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 	public static FlagSqlAggregator create(FlagSelect flagSelect, SelectContext selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getParentContext().getSqlDialect().getFunctionProvider();
-		SqlTables<ConnectorCteStep> connectorTables = selectContext.getConnectorTables();
+		SqlTables connectorTables = selectContext.getConnectorTables();
 
 		Map<String, SqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
@@ -94,7 +94,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 	}
 
 	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
-		SqlTables<ConnectorCteStep> connectorTables = filterContext.getConnectorTables();
+		SqlTables connectorTables = filterContext.getConnectorTables();
 		String rootTable = connectorTables.getPredecessor(ConnectorCteStep.PREPROCESSING);
 
 		List<SqlSelect> rootSelects =
@@ -131,7 +131,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 
 	private static FieldWrapper<Object[]> createFlagSelect(
 			String alias,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			SqlFunctionProvider functionProvider,
 			Map<String, SqlSelect> flagRootSelectMap
 	) {
@@ -155,7 +155,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		return new FieldWrapper<>(flagsArray, requiredColumns);
 	}
 
-	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables<ConnectorCteStep> connectorTables, Map<String, SqlSelect> flagRootSelectMap) {
+	private static Map<String, Field<Boolean>> createRootSelectReferences(SqlTables connectorTables, Map<String, SqlSelect> flagRootSelectMap) {
 		return flagRootSelectMap.entrySet().stream()
 						  .collect(Collectors.toMap(
 								  Map.Entry::getKey,

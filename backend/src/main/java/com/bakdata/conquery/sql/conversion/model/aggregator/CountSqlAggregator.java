@@ -7,13 +7,13 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilte
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
 import org.jooq.Field;
@@ -30,7 +30,7 @@ public class CountSqlAggregator implements SqlAggregator {
 			Column countColumn,
 			CountType countType,
 			String alias,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			IRange<? extends Number, ?> filterValue
 	) {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), countColumn.getName(), Object.class);

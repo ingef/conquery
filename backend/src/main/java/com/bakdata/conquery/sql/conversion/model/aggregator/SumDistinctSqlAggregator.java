@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
@@ -23,6 +22,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +94,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			String alias,
 			IRange<? extends Number, ?> filterValue,
 			Field<Object> primaryColumn,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
 		// preprocessing
@@ -166,10 +166,10 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
 			List<ExtractingSqlSelect<Object>> distinctByRootSelects,
 			String alias,
-			SqlTables<ConnectorCteStep> conceptTables,
+			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
-		String predecessor = conceptTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
 
 		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, predecessor);
 		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);

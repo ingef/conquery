@@ -10,6 +10,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables<IntersectCteStep> tableNames(NameGenerator nameGenerator) {
-		return IntersectCteStep.createTableNames(this.joinedStep, nameGenerator);
+	public SqlTables tableNames(NameGenerator nameGenerator) {
+		return IntersectCteStep.getTables(this.joinedStep, nameGenerator);
 	}
 
 	@Override
