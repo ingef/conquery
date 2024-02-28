@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -28,8 +29,8 @@ enum IntersectCteStep implements DateAggregationCteStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<IntersectCteStep> createTableNames(QueryStep joinedTable, NameGenerator nameGenerator) {
-		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName(), nameGenerator);
+	static SqlTables getTables(QueryStep joinedTable, NameGenerator nameGenerator) {
+		return new SqlTables(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName(), nameGenerator);
 	}
 
 }

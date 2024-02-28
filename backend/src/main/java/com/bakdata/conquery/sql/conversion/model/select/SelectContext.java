@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -16,7 +15,7 @@ public class SelectContext implements Context {
 
 	Field<Object> primaryColumn;
 	Optional<ColumnDateRange> validityDate;
-	SqlTables<ConnectorCteStep> connectorTables;
+	SqlTables connectorTables;
 	ConversionContext parentContext;
 
 	public static SelectContext forUniversalSelects(Field<Object> primaryColumn, Optional<ColumnDateRange> validityDate, ConversionContext conversionContext) {
@@ -26,7 +25,7 @@ public class SelectContext implements Context {
 	public static SelectContext forConnectorSelects(
 			Field<Object> primaryColumn,
 			Optional<ColumnDateRange> validityDate,
-			SqlTables<ConnectorCteStep> connectorTables,
+			SqlTables connectorTables,
 			ConversionContext conversionContext
 	) {
 		return new SelectContext(primaryColumn, validityDate, connectorTables, conversionContext);

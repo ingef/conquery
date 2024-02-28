@@ -12,6 +12,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
@@ -29,7 +30,7 @@ class CQTableContext implements Context {
 	Optional<ColumnDateRange> validityDate;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
-	ConnectorTables connectorTables;
+	SqlTables connectorTables;
 	IntervalPackingContext intervalPackingContext;
 	ConversionContext parentContext;
 	@With
