@@ -35,9 +35,9 @@ import type {
   PostLoginResponseT,
   PostQueriesResponseT,
   PostResolveEntitiesResponse,
+  PreviewStatisticsResponse,
   QueryIdT,
   UploadQueryResponseT,
-  PreviewStatisticsResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
