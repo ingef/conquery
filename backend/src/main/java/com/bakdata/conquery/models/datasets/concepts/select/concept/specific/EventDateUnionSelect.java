@@ -9,6 +9,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.EventDateUnionSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 
 /**
  * Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query.
@@ -24,5 +27,15 @@ public class EventDateUnionSelect extends UniversalSelect {
 													   .stream()
 													   .map(Connector::getTable)
 													   .collect(Collectors.toSet()));
+	}
+
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		return EventDateUnionSqlAggregator.create(this, selectContext).getSqlSelects();
+	}
+
+	@Override
+	public boolean requiresIntervalPacking() {
+		return true;
 	}
 }

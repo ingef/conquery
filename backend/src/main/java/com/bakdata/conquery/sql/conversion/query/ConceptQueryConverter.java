@@ -1,15 +1,12 @@
 package com.bakdata.conquery.sql.conversion.query;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -46,7 +43,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
 									   .selects(getFinalSelects(conceptQuery, preFinalSelects, context.getSqlDialect().getFunctionProvider()))
 									   .fromTable(QueryStep.toTableLike(preFinalStep.getCteName()))
-									   .groupBy(getFinalGroupBySelects(preFinalSelects, context.getSqlDialect()))
+									   .groupBy(getFinalGroupBySelects(preFinalSelects))
 									   .predecessors(List.of(preFinalStep))
 									   .build();
 
@@ -62,15 +59,11 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			Field<String> emptyRange = DSL.field(DSL.val("{}"));
 			return preFinalSelects.withValidityDate(ColumnDateRange.of(emptyRange));
 		}
-		Field<String> validityDateStringAggregation = functionProvider.validityDateStringAggregation(preFinalSelects.getValidityDate().get())
-																	  .as(SharedAliases.DATES_COLUMN.getAlias());
+		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation));
 	}
 
-	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects, SqlDialect sqlDialect) {
-		if (!sqlDialect.requiresAggregationInFinalStep()) {
-			return Collections.emptyList();
-		}
+	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
 		List<Field<?>> groupBySelects = new ArrayList<>();
 		groupBySelects.addAll(preFinalSelects.getIds().toFields());
 		groupBySelects.addAll(preFinalSelects.explicitSelects());
