@@ -84,7 +84,6 @@ export default memo(function Table({
     [arrowReader.schema],
   );
 
-  // parse rows outside of rc-table to cache them
   const parseTableRows = useCallback(
     (data: Vector[]) => {
       const nextRows = [] as DefaultRecordType[];

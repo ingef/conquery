@@ -41,11 +41,6 @@ function transformDateStatsToData(
   stats: DateStatistics,
   theme: Theme,
 ): ChartData<"line"> {
-  // loop over all dates in date range
-  // check if month is present in stats
-  // if yes add months value to data
-  // if no add quater values to data for the whole quater (for each month)
-
   const labels: string[] = [];
   const values: number[] = [];
   const minDate = parseStdDate(stats.span.min);
@@ -69,7 +64,6 @@ function transformDateStatsToData(
   const { monthCounts } = stats;
   let pointer = start;
   while (pointer <= end) {
-    // check month exists
     const month = format(pointer, "yyyy-MM");
     const monthLabel = format(pointer, "dd.MM.yyyy");
 

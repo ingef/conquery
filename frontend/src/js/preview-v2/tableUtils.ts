@@ -61,7 +61,6 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
         };
       } else if (cellType == "MONEY") {
         return (value) => {
-          // parse cent string
           const num = parseFloat(value as string) / 100;
           return isNaN(num)
             ? ""

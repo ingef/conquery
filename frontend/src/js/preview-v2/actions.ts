@@ -88,7 +88,6 @@ export function useLoadPreviewData() {
         return await arrowReader.next();
       };
 
-      // load data simultaneously
       const awaitedData = await Promise.all([
         getStatistics(queryId),
         getQuery(queryId),
@@ -111,7 +110,6 @@ export function useLoadPreviewData() {
         }),
       );
       dispatch(loadPreview.failure({}));
-      console.error(err);
     }
     return null;
   };
