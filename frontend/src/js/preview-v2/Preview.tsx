@@ -9,7 +9,6 @@ import { StateT } from "../app/reducers";
 import { PreviewStatistics } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
 import FaIcon from "../icon/FaIcon";
-import PreviewInfo from "../preview/PreviewInfo";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { toggleDragHandles } from "../pane/actions";
@@ -106,13 +105,6 @@ export default function Preview() {
   return (
     <FullScreen>
       <SxScrollBox>
-        <PreviewInfo
-          rawPreviewData={[]}
-          columns={[]}
-          onClose={onClose}
-          minDate={new Date()}
-          maxDate={new Date()}
-        />
         <Headline>
           <TransparentButton small onClick={onClose}>
             {t("common.back")}
