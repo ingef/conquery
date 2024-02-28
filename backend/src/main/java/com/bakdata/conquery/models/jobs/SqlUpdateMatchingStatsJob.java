@@ -207,9 +207,10 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 		Result<?> result = executionService.fetch(dateSpanQuery);
 		try {
-			LocalDate minDate = getDateFromResult(result, MIN_VALIDITY_DATE_FIELD, LocalDate.MIN);
-			LocalDate maxDate = getDateFromResult(result, MAX_VALIDITY_DATE_FIELD, LocalDate.MAX);
-			if (maxDate != LocalDate.MAX) {
+			LocalDate minDate = getDateFromResult(result, MIN_VALIDITY_DATE_FIELD, null);
+			LocalDate maxDate = getDateFromResult(result, MAX_VALIDITY_DATE_FIELD, null);
+
+			if (maxDate != null && maxDate != LocalDate.MAX) {
 				// we treat the end date as excluded internally when using ColumnDateRanges, but a CDateRange expects an inclusive range
 				maxDate = maxDate.minusDays(1);
 			}
