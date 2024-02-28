@@ -84,7 +84,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
 
 		final BcryptFunction prototype = result.getPrototype();
-		int rounds = prototype.getLogarithmicRounds(); // 12
+		int rounds = prototype.getLogarithmicRounds();
 		long realElapsed = result.getElapsed();
 
 

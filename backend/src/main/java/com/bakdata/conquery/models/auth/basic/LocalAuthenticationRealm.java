@@ -63,7 +63,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
-	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
+	// Get the path for the storage here, so it is set as soon the first class is instantiated (in the ManagerNode)
 	// In the DistributedStandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
 	private final File storageDir;
 
@@ -165,7 +165,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		if (credential instanceof PasswordCredential passwordCredential) {
 			return new HashEntry(Password.hash(passwordCredential.password())
 										 .with(defaultHashingFunction)
-										 .getResult()); //.with(defaultHashingFunction).getResult());
+										 .getResult());
 		}
 		else if (credential instanceof PasswordHashCredential passwordHashCredential) {
 			return new HashEntry(passwordHashCredential.hash());
@@ -211,6 +211,11 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	@Override
 	public boolean updateUser(User user, CredentialType credential) {
+
+		if (credential == null) {
+			log.warn("Skipping user '{}' because no credential was provided", user.getId());
+			return false;
+		}
 
 		try {
 			final HashEntry hashEntry = toHashEntry(credential);
