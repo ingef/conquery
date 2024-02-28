@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conquery;
 
 import java.util.List;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -75,8 +77,17 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults() {
-		return result.getTable().stream();
+	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+		final Stream<EntityResult> results = result.getTable().stream();
+
+		if(maybeLimit.isEmpty()){
+			return results;
+		}
+
+		final long limit = maybeLimit.getAsLong();
+		final AtomicLong consumed = new AtomicLong();
+
+		return results.takeWhile(line -> consumed.addAndGet(line.length()) < limit);
 	}
 
 	@Override

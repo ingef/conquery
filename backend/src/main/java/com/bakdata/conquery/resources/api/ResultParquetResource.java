@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -54,11 +55,12 @@ public class ResultParquetResource {
 			@Auth Subject subject,
 			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") @DefaultValue("false") boolean pretty) {
+			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
+			@QueryParam("limit") OptionalLong limit) {
 
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, execution, pretty);
+		return processor.createResultFile(subject, execution, pretty, limit);
 	}
 
 }

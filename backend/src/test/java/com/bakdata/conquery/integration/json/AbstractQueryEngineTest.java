@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.OptionalLong;
 
 import javax.validation.UnexpectedTypeException;
 import javax.ws.rs.core.Response;
@@ -58,7 +59,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		//check result info size
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
-		assertThat(executionResult.streamResults().flatMap(EntityResult::streamValues))
+		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
@@ -87,7 +88,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						  .containsExactlyInAnyOrderElementsOf(expected);
 
 		// check that getLastResultCount returns the correct size
-		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
+		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
 			// TODO find common abstraction for Sql/ManagedQuery
 			if (executionResult instanceof ManagedQuery managedQuery) {

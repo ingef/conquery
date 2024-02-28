@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.statistics;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,7 +47,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		// Count result lines (may differ in case of form or SecondaryIdQuery)
 		final ListenableFuture<Integer>
 				futureLines =
-				executorService.submit(() -> managedQuery.streamResults().mapToInt(result -> result.listResultLines().size()).sum());
+				executorService.submit(() -> managedQuery.streamResults(OptionalLong.empty()).mapToInt(result -> result.listResultLines().size()).sum());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
@@ -60,7 +61,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 log.trace("BEGIN stats collection for {}", info);
 
-							 managedQuery.streamResults().map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
+							 managedQuery.streamResults(OptionalLong.empty()).map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
 
 							 log.trace("DONE collecting values for {}, in {}", info, started);
 
@@ -87,7 +88,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final AtomicReference<CDateRange> spanRef = new AtomicReference<>(null);
 		final Consumer<Object[]> dateAggregator = getDateSpanner(dateInfo.get(), dateIndex, spanRef);
 
-		managedQuery.streamResults().flatMap(EntityResult::streamValues).forEach(dateAggregator);
+		managedQuery.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues).forEach(dateAggregator);
 
 		final CDateRange span = spanRef.get();
 

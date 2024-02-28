@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
@@ -163,7 +164,7 @@ public class FormTest extends ConqueryTestSpec {
 					resultInfos,
 					managed.getValue()
 						   .stream()
-						   .flatMap(ManagedQuery::streamResults)
+						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty()))
 			);
 
 			writer.close();
@@ -196,7 +197,7 @@ public class FormTest extends ConqueryTestSpec {
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
-					managedForm.streamResults()
+					managedForm.streamResults(OptionalLong.empty())
 			);
 			writer.close();
 

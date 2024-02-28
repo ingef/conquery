@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.result;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,7 +78,7 @@ public class ResultTestUtil {
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults() {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return getTestEntityResults().stream();
 			}
 		};

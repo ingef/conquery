@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -44,11 +45,12 @@ public class ResultExcelResource {
 			@Auth Subject subject,
 			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") @DefaultValue("true") boolean pretty) {
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
+			@QueryParam("limit") OptionalLong limit) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset()
 																										 .getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, (E) execution, pretty);
+		return processor.createResult(subject, (E) execution, pretty, limit);
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

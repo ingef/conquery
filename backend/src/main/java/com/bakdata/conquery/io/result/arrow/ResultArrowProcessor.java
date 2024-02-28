@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -53,7 +54,7 @@ public class ResultArrowProcessor {
 	private final ArrowConfig arrowConfig;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
@@ -63,21 +64,8 @@ public class ResultArrowProcessor {
 				FILE_EXTENTION_ARROW_FILE,
 				FILE_MEDIA_TYPE,
 				conqueryConfig,
-				arrowConfig
-		);
-	}
-
-	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty) {
-		return getArrowResult(
-				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-				subject,
-				((ManagedExecution & SingleTableResult) exec),
-				datasetRegistry,
-				pretty,
-				FILE_EXTENTION_ARROW_STREAM,
-				STREAM_MEDIA_TYPE,
-				conqueryConfig,
-				arrowConfig
+				arrowConfig,
+				limit
 		);
 	}
 
@@ -90,7 +78,9 @@ public class ResultArrowProcessor {
 			String fileExtension,
 			MediaType mediaType,
 			ConqueryConfig config,
-			ArrowConfig arrowConfig) {
+			ArrowConfig arrowConfig,
+			OptionalLong limit
+	) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
@@ -102,10 +92,10 @@ public class ResultArrowProcessor {
 
 		// Get the locale extracted by the LocaleFilter
 
-
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
+
 		PrintSettings settings = new PrintSettings(
 				pretty,
 				locale,
@@ -127,7 +117,7 @@ public class ResultArrowProcessor {
 						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
-						exec.streamResults()
+						exec.streamResults(limit)
 				);
 			}
 			finally {
@@ -136,6 +126,21 @@ public class ResultArrowProcessor {
 		};
 
 		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
+	}
+
+	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+		return getArrowResult(
+				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+				subject,
+				((ManagedExecution & SingleTableResult) exec),
+				datasetRegistry,
+				pretty,
+				FILE_EXTENTION_ARROW_STREAM,
+				STREAM_MEDIA_TYPE,
+				conqueryConfig,
+				arrowConfig,
+				limit
+		);
 	}
 
 

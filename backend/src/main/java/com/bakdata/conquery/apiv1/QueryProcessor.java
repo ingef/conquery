@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -534,7 +535,7 @@ public class QueryProcessor {
 		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
 
 		// For each included entity emit a Map of { Id-Name -> Id-Value }
-		return result.streamResults()
+		return result.streamResults(OptionalLong.empty())
 					 .map(printer::createId)
 					 .map(entityPrintId -> {
 						 final Map<String, String> out = new HashMap<>();

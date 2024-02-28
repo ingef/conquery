@@ -39,4 +39,9 @@ public class SinglelineEntityResult implements EntityResult {
 	public List<Object[]> listResultLines() {
 		return Collections.singletonList(values);
 	}
+
+	@Override
+	public int length() {
+		return 1;
+	}
 }

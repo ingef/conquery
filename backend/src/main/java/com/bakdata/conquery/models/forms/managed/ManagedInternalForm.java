@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -143,12 +144,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults() {
+	public Stream<EntityResult> streamResults(OptionalLong limit) {
 		if (subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().streamResults();
+		return subQueries.values().iterator().next().streamResults(limit);
 	}
 
 	@Override
