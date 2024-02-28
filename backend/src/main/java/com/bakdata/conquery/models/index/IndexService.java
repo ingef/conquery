@@ -2,8 +2,10 @@ package com.bakdata.conquery.models.index;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -13,6 +15,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
@@ -21,6 +24,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
@@ -34,15 +38,19 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
+	private final String emptyDefaultLabel;
 
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
+	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@Override
 		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
+
+			final StopWatch timer = StopWatch.createStarted();
+
 			log.info("Started to parse mapping {}", key);
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
-			final Index<?> int2ext = key.createIndex();
+			final Index<?> int2ext = key.createIndex(emptyDefaultLabel);
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
@@ -73,7 +81,7 @@ public class IndexService implements Injectable {
 					catch (IllegalArgumentException e) {
 						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
 								 internalValue, externalValue, csvParser.getContext().currentLine(),
-								 (Exception) (log.isTraceEnabled() ? e : null)
+								 (Exception) (log.isTraceEnabled() ? e : null) // Cast to Exception to satisfy format-string check
 						);
 					}
 				}
@@ -83,17 +91,18 @@ public class IndexService implements Injectable {
 				throw ioException;
 			}
 
-			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
-
 			// Run finalizing operations on the index
 			int2ext.finalizer();
+
+			log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), timer);
 
 			return int2ext;
 		}
 	});
 
-	public IndexService(CsvParserSettings csvParserSettings) {
+	public IndexService(CsvParserSettings csvParserSettings, String emptyDefaultLabel) {
 		this.csvParserSettings = csvParserSettings.clone();
+		this.emptyDefaultLabel = emptyDefaultLabel;
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
@@ -149,6 +158,14 @@ public class IndexService implements Injectable {
 		catch (ExecutionException e) {
 			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
 		}
+	}
+
+	public CacheStats getStatistics() {
+		return mappings.stats();
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return mappings.asMap().keySet();
 	}
 
 	@Override

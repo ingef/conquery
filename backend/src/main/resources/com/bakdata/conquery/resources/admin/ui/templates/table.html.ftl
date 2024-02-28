@@ -1,9 +1,12 @@
 <#import "copyableText.html.ftl" as copyableText>
 
-<#macro table columns items deleteButton="" link="" renderers={}>
+<#macro table columns items deleteButton="" link="" renderers={} cypressId="">
   <div class="row">
     <div class="col m-0 table-responsive">
-      <table class="table table-sm table-striped text-break">
+      <#if cypressId?has_content>
+        <#assign cypressIdAttr="data-cy=\""+cypressId+"\"" >
+      </#if>
+      <table class="table table-sm table-striped text-break" ${(cypressIdAttr!"")?no_esc}>
         <thead class="text-nowrap">
           <tr>
             <#list columns as column>
@@ -48,6 +51,14 @@
                     <#else>
                       <#stop "Expected macro for deleteButton">
                     </#if>
+                  </td>
+                <#elseif item[column]?is_sequence >
+                  <td scope="row">
+                    <ul>
+                      <#list item[column] as data>
+                        <li>${data}</li>
+                      </#list>
+                    </ul>
                   </td>
                 <#else>
                   <td scope="row">${item[column]}</td>

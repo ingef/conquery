@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -40,6 +41,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -268,11 +270,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		setStatusFull(status, subject);
 		status.setQuery(getValuesQuery().getQuery());
 
-		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
+
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
 
 		return status;
 	}
@@ -388,12 +390,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions());
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getNamespace(), getConfig()));
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions();
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, Namespace namespace, ConqueryConfig config) {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, namespace, config);
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			// Add grouping semantics to secondaryIds to group by
@@ -423,7 +425,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions());
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getNamespace(), getConfig()));
 	}
 
 	@Override

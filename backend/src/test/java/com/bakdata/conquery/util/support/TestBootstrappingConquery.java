@@ -34,7 +34,7 @@ public class TestBootstrappingConquery extends Conquery {
 					@Override
 					protected ConqueryConfig build(JsonNode node, String path) throws IOException, ConfigurationException {
 						final ConqueryConfig config = super.build(node, path);
-						TestConquery.configurePathsAndLogging(config, tmpDir);
+						ConfigOverride.configurePathsAndLogging(config, tmpDir);
 						return config;
 					}
 				};

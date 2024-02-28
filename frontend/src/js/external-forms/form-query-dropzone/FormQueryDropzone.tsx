@@ -7,7 +7,6 @@ import type { DragItemQuery } from "../../standard-query-editor/types";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone from "../../ui-components/Dropzone";
 import Label from "../../ui-components/Label";
-import Optional from "../../ui-components/Optional";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
@@ -23,7 +22,6 @@ const DROP_TYPES = [
 interface PropsT {
   label: string;
   tooltip?: string;
-  optional?: boolean;
   dropzoneText: string;
   className?: string;
   value: DragItemQuery | null;
@@ -33,7 +31,6 @@ interface PropsT {
 const FormQueryDropzone: FC<PropsT> = ({
   label,
   tooltip,
-  optional,
   dropzoneText,
   className,
   value,
@@ -60,7 +57,6 @@ const FormQueryDropzone: FC<PropsT> = ({
   return (
     <div className={className}>
       <Label>
-        {optional && <Optional />}
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>

@@ -3,7 +3,8 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
-import com.bakdata.conquery.sql.conversion.model.StepJoiner;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 
 public class CQAndConverter implements NodeConverter<CQAnd> {
 
@@ -17,7 +18,13 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 		if (andNode.getChildren().size() == 1) {
 			return context.getNodeConversions().convert(andNode.getChildren().get(0), context);
 		}
-		return StepJoiner.joinChildren(andNode.getChildren(), context, LogicalOperation.AND);
+		QueryStep joined = QueryStepJoiner.joinChildren(
+				andNode.getChildren(),
+				context,
+				LogicalOperation.AND,
+				andNode.getDateAction()
+		);
+		return context.withQueryStep(joined);
 	}
 
 }

@@ -19,6 +19,8 @@ import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import io.dropwizard.setup.Environment;
 import org.jooq.DSLContext;
 
@@ -32,14 +34,16 @@ public class LocalManagerProvider implements ManagerProvider {
 
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
 		DSLContext dslContext = DslContextFactory.create(sqlConnectorConfig);
-		SqlDialect sqlDialect = switch (sqlConnectorConfig.getDialect()) {
-			case POSTGRESQL -> new PostgreSqlDialect(dslContext);
-			case HANA -> new HanaSqlDialect(dslContext);
-		};
+		SqlDialect sqlDialect = createSqlDialect(sqlConnectorConfig, dslContext);
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
 
-		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
-		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+		SqlExecutionService sqlExecutionService = new SqlExecutionService(
+				sqlDialect.getDSLContext(),
+				ResultSetProcessorFactory.create(sqlDialect)
+		);
+
+		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext, sqlExecutionService);
+		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createLocalDatasetRegistry(namespaceHandler, config, creator, sqlExecutionService);
 		creator.init(datasetRegistry);
 
 		return new DelegateManager<>(
@@ -53,5 +57,12 @@ public class LocalManagerProvider implements ManagerProvider {
 				creator,
 				ManagerProvider.newJobManager(config)
 		);
+	}
+
+	protected SqlDialect createSqlDialect(SqlConnectorConfig sqlConnectorConfig, DSLContext dslContext) {
+		return switch (sqlConnectorConfig.getDialect()) {
+			case POSTGRESQL -> new PostgreSqlDialect(dslContext);
+			case HANA -> new HanaSqlDialect(dslContext);
+		};
 	}
 }

@@ -10,14 +10,14 @@ import type { DragItemQuery } from "../standard-query-editor/types";
 import TimebasedCondition from "./TimebasedCondition";
 import {
   addTimebasedCondition,
-  removeTimebasedCondition,
-  setTimebasedConditionOperator,
   dropTimebasedNode,
-  setTimebasedNodeTimestamp,
+  removeTimebasedCondition,
   removeTimebasedNode,
-  setTimebasedConditionMinDays,
   setTimebasedConditionMaxDays,
+  setTimebasedConditionMinDays,
   setTimebasedConditionMinDaysOrNoEvent,
+  setTimebasedConditionOperator,
+  setTimebasedNodeTimestamp,
 } from "./actions";
 import type {
   TimebasedOperatorType,

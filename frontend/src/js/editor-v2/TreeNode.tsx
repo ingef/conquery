@@ -11,6 +11,10 @@ import { getRootNodeLabel } from "../standard-query-editor/helper";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
+import {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+} from "../standard-query-editor/types";
 import { Connector, Grid } from "./EditorLayout";
 import { TreeNodeConcept } from "./TreeNodeConcept";
 import { EDITOR_DROP_TYPES } from "./config";
@@ -77,7 +81,7 @@ const InvisibleDropzoneContainer = styled(Dropzone)<{ bare?: boolean }>`
 `;
 
 const InvisibleDropzone = (
-  props: Omit<DropzoneProps<any>, "acceptedDropTypes">,
+  props: Omit<DropzoneProps<unknown>, "acceptedDropTypes">,
 ) => {
   return (
     <InvisibleDropzoneContainer
@@ -168,7 +172,7 @@ export function TreeNode({
   }: {
     direction: "h" | "v";
     pos: "b" | "a";
-    item: any;
+    item: unknown;
   }) => {
     // Create a new "parent" and create a new "item", make parent contain tree and item
     const newParentId = createId();
@@ -179,7 +183,7 @@ export function TreeNode({
         {
           id: newItemId,
           negation: false,
-          data: item,
+          data: item as DragItemQuery | DragItemConceptTreeNode | undefined,
           parentId: newParentId,
         },
         {
@@ -205,7 +209,13 @@ export function TreeNode({
     setSelectedNodeId(newItemId);
   };
 
-  const onDropAtChildrenIdx = ({ idx, item }: { idx: number; item: any }) => {
+  const onDropAtChildrenIdx = ({
+    idx,
+    item,
+  }: {
+    idx: number;
+    item: unknown;
+  }) => {
     const newItemId = createId();
     // Create a new "item" and insert it at idx of tree.children
     updateTreeNode(tree.id, (node) => {
@@ -213,7 +223,7 @@ export function TreeNode({
         node.children.items.splice(idx, 0, {
           id: newItemId,
           negation: false,
-          data: item,
+          data: item as DragItemQuery | DragItemConceptTreeNode | undefined,
           parentId: node.id,
         });
       }

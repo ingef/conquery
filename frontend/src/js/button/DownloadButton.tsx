@@ -9,7 +9,7 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useContext, forwardRef, useMemo } from "react";
+import { ReactNode, forwardRef, useContext, useMemo } from "react";
 
 import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";

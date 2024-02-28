@@ -16,7 +16,6 @@ config.version = version;
 
 const FRONTEND_CONFIG = config;
 
-
 const chance = new Chance();
 
 // Taken from:
@@ -111,16 +110,12 @@ export default function mockApi(app: Application) {
     },
   );
 
-  app.delete(
-    "/api/queries/:id",
-    mockAuthMiddleware,
-    function response(_, res) {
-      setTimeout(() => {
-        res.setHeader("Content-Type", "application/json");
-        res.send(JSON.stringify({ id: 1 }));
-      }, SHORT_DELAY);
-    },
-  );
+  app.delete("/api/queries/:id", mockAuthMiddleware, function response(_, res) {
+    setTimeout(() => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(JSON.stringify({ id: 1 }));
+    }, SHORT_DELAY);
+  });
 
   app.get("/api/queries/:id", mockAuthMiddleware, function response(req, res) {
     if (req.params.id !== "1") {
@@ -150,7 +145,7 @@ export default function mockApi(app: Application) {
               id: 1,
               status: "FAILED",
               error: {
-                message: "This is an example message"
+                message: "This is an example message",
               },
             }),
           );
@@ -161,21 +156,25 @@ export default function mockApi(app: Application) {
               status: "DONE",
               label: "Test result",
               numberOfResults: 5,
-              resultUrls: (dice > 0.85) ? [
-                {
-                  label: "XLSX",
-                  url: "/api/results/results.xlsx",
-                },
-                {
-                  label: "CSV",
-                  url: "/api/results/results.csv",
-                }
-              ] : [
-                {
-                  label: "Some File with a long label and an exotic file type, which the frontend probably never heard of",
-                  url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
-                }
-              ],
+              resultUrls:
+                dice > 0.85
+                  ? [
+                      {
+                        label: "XLSX",
+                        url: "/api/results/results.xlsx",
+                      },
+                      {
+                        label: "CSV",
+                        url: "/api/results/results.csv",
+                      },
+                    ]
+                  : [
+                      {
+                        label:
+                          "Some File with a long label and an exotic file type, which the frontend probably never heard of",
+                        url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
+                      },
+                    ],
               columnDescriptions: [
                 {
                   label: "Money Range",
@@ -310,26 +309,18 @@ export default function mockApi(app: Application) {
     },
   );
 
-  app.patch(
-    "/api/queries/:id",
-    mockAuthMiddleware,
-    function response(_, res) {
-      setTimeout(() => {
-        res.send(JSON.stringify({}));
-      }, LONG_DELAY);
-    },
-  );
+  app.patch("/api/queries/:id", mockAuthMiddleware, function response(_, res) {
+    setTimeout(() => {
+      res.send(JSON.stringify({}));
+    }, LONG_DELAY);
+  });
 
-  app.delete(
-    "/api/queries/:id",
-    mockAuthMiddleware,
-    function response(_, res) {
-      setTimeout(() => {
-        res.setHeader("Content-Type", "application/json");
-        res.send(JSON.stringify({ id: 1 }));
-      }, SHORT_DELAY);
-    },
-  );
+  app.delete("/api/queries/:id", mockAuthMiddleware, function response(_, res) {
+    setTimeout(() => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(JSON.stringify({ id: 1 }));
+    }, SHORT_DELAY);
+  });
 
   app.get(
     "/api/datasets/:datasetId/form-queries",
@@ -444,8 +435,12 @@ export default function mockApi(app: Application) {
         if (req.params.filterId !== "production_country") return null;
 
         const countries = require("./autocomplete/countries");
-        const unknownCodes = (values as string[]).filter((val) => !countries.includes(val));
-        const resolvedValues = (values as string[]).filter((val) => countries.includes(val));
+        const unknownCodes = (values as string[]).filter(
+          (val) => !countries.includes(val),
+        );
+        const resolvedValues = (values as string[]).filter((val) =>
+          countries.includes(val),
+        );
 
         res.send({
           unknownCodes: unknownCodes,
@@ -494,6 +489,8 @@ export default function mockApi(app: Application) {
       datasetAbilities: {
         imdb: {
           canUpload: true,
+          canViewEntityPreview: true,
+          canViewQueryPreview: true,
         },
       },
       groups: [],
@@ -601,4 +598,4 @@ export default function mockApi(app: Application) {
       }, LONG_DELAY);
     },
   );
-};
+}

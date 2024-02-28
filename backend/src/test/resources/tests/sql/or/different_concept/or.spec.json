@@ -1,7 +1,10 @@
 {
   "label": "Simple OR query for 3 different concepts",
-  "expectedCsv": "expected.csv",
-  "type": "SQL_TEST",
+  "expectedCsv": "tests/sql/or/different_concept/expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

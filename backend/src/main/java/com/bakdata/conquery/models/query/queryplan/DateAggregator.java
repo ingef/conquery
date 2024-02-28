@@ -48,7 +48,7 @@ public class DateAggregator extends Aggregator<CDateSet> {
 	}
 
 	@Override
-    public void acceptEvent(Bucket bucket, int event) {
+    public void consumeEvent(Bucket bucket, int event) {
         throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accept events");
     }
 

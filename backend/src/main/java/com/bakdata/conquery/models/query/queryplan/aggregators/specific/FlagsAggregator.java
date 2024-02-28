@@ -25,7 +25,7 @@ public class FlagsAggregator extends Aggregator<Set<String>> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		for (Map.Entry<String, Column> entry : labels.entrySet()) {
 
 			final Column column = entry.getValue();

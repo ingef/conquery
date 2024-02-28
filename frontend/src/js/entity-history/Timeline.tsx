@@ -15,7 +15,7 @@ import type { StateT } from "../app/reducers";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { EntityCard } from "./EntityCard";
-import type { EntityHistoryStateT, EntityEvent } from "./reducer";
+import type { DateRow, EntityEvent, EntityHistoryStateT } from "./reducer";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
 import {
@@ -140,20 +140,21 @@ const Timeline = ({
 
 export default memo(Timeline);
 
-const diffObjects = (objects: Object[]): string[] => {
+const diffObjects = (objects: object[]): string[] => {
   if (objects.length < 2) return [];
 
   const keysWithDifferentValues = new Set<string>();
 
   for (let i = 0; i < objects.length - 1; i++) {
-    const o1 = objects[i] as any;
-    const o2 = objects[i + 1] as any;
+    const o1 = objects[i];
+    const o2 = objects[i + 1];
     const keys = Object.keys(o1); // Assumption: all objs have same keys
 
     for (const key of keys) {
       if (
-        o1.hasOwnProperty(key) &&
-        o2.hasOwnProperty(key) &&
+        Object.prototype.hasOwnProperty.call(o1, key) &&
+        Object.prototype.hasOwnProperty.call(o2, key) &&
+        // @ts-ignore should be fine
         JSON.stringify(o1[key]) !== JSON.stringify(o2[key])
       ) {
         keysWithDifferentValues.add(key);
@@ -207,8 +208,8 @@ const findGroupsWithinQuarter =
           {
             ...events[0],
             [dateColumn.label]: {
-              from: events[0][dateColumn.label].from,
-              to: events[events.length - 1][dateColumn.label].to,
+              from: (events[0][dateColumn.label] as DateRow).from,
+              to: (events[events.length - 1][dateColumn.label] as DateRow).to,
             },
           },
           ...events.slice(1),
@@ -287,7 +288,7 @@ const useTimeBucketedSortedData = (
     const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
 
     for (const row of entityData) {
-      const [year, month] = row[dateColumn.label].from.split("-");
+      const [year, month] = (row[dateColumn.label] as DateRow).from.split("-");
       const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
 
       if (!result[year]) {
@@ -296,7 +297,7 @@ const useTimeBucketedSortedData = (
         result[year][quarter] = [];
       }
 
-      if (sources.has(row[sourceColumn.label])) {
+      if (sources.has(row[sourceColumn.label] as string)) {
         result[year][quarter].push(row);
       }
     }

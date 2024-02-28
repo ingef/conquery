@@ -19,9 +19,13 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -31,6 +35,7 @@ import lombok.ToString;
  *
  * The selected flags are logically or-ed.
  */
+@Getter
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
@@ -87,4 +92,10 @@ public class FlagFilter extends Filter<String[]> {
 	public boolean isAllColumnsBoolean() {
 		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
+
+	@Override
+	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
+		return FlagSqlAggregator.create(this, filterContext).getSqlFilters();
+	}
+
 }

@@ -36,6 +36,7 @@ import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
+import com.bakdata.conquery.resources.admin.ui.IndexServiceUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
@@ -166,7 +167,8 @@ public class AdminServlet {
 				.register(TablesUIResource.class)
 				.register(ConceptsUIResource.class)
 				.register(ConnectorUIResource.class)
-				.register(AuthOverviewUIResource.class);
+				.register(AuthOverviewUIResource.class)
+				.register(IndexServiceUIResource.class);
 
 	}
 }

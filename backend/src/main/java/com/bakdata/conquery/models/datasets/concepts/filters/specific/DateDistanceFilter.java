@@ -16,6 +16,9 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -48,4 +51,10 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	public FilterNode createFilterNode(Range.LongRange value) {
 		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
 	}
+
+	@Override
+	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
+		return DateDistanceSqlAggregator.create(this, filterContext).getSqlFilters();
+	}
+
 }

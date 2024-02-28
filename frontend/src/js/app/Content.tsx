@@ -1,7 +1,5 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
-import SplitPane from "react-split-pane";
 
 import { History } from "../entity-history/History";
 import PreviewV1 from "../preview/Preview";
@@ -17,20 +15,10 @@ import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
 
-// ADDING TO react-split-pane STYLES
-// Because otherwise, vertical panes don't expand properly in Safari
-const reactSplitPaneSafariFix = css`
-  .vertical {
-    height: 100%;
-  }
-`;
-
 const Root = styled("div")`
   width: 100%;
   height: 100%;
   position: relative;
-
-  ${reactSplitPaneSafariFix};
 `;
 
 const Content = () => {
@@ -87,8 +75,8 @@ const Content = () => {
           {!disableDragHandles && <ResizeHandle />}
           <Panel minSize={250}>
             <RightPane />
-          </SplitPane>
-        </SplitPane>
+          </Panel>
+        </PanelGroup>
       </Root>
     </DndProvider>
   );

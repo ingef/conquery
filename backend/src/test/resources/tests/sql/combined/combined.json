@@ -1,0 +1,134 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Query that utilizes all possible select conversion steps in 1 query",
+  "expectedCsv": "tests/sql/combined/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.first_value",
+            "concept.connector.sum_distinct"
+          ],
+          "filters": [
+            {
+              "filter": "concept.connector.value",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 0.0,
+                "max": 1.5
+              }
+            },
+            {
+              "filter": "concept.connector.count_value",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 1
+              }
+            }
+          ]
+        }
+      ],
+      "selects": [
+        "concept.exists"
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": [
+            {
+              "label": "datum",
+              "startColumn": "table.datum_start",
+              "endColumn": "table.datum_end"
+            }
+          ],
+          "filters": [
+            {
+              "label": "count_value",
+              "column": "table.value",
+              "type": "COUNT"
+            },
+            {
+              "label": "value",
+              "description": "xy",
+              "column": "table.value",
+              "type": "NUMBER"
+            }
+          ],
+          "selects": [
+            {
+              "label": "first_value",
+              "column": "table.value",
+              "type": "FIRST"
+            },
+            {
+              "name": "sum_distinct",
+              "type": "SUM",
+              "column": "table.value",
+              "distinctByColumn": [
+                "table.k1",
+                "table.k2"
+              ]
+            }
+          ]
+        }
+      ],
+      "selects": [
+        {
+          "type": "EXISTS",
+          "name": "exists"
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/combined/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "k1",
+            "type": "STRING"
+          },
+          {
+            "name": "k2",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

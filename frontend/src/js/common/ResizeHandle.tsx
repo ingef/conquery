@@ -1,8 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  PanelResizeHandle,
-  PanelResizeHandleProps,
-} from "react-resizable-panels";
+import { CSSProperties } from "react";
+import { PanelResizeHandle } from "react-resizable-panels";
 
 const SxPanelResizeHandle = styled(PanelResizeHandle)`
   position: relative;
@@ -36,11 +34,15 @@ const Line = styled("div")`
   background-color: ${({ theme }) => theme.col.grayMediumLight};
 `;
 
-type ResizeHandleProps = PanelResizeHandleProps;
-
-export const ResizeHandle = (props: ResizeHandleProps) => {
+export const ResizeHandle = ({
+  style,
+  disabled,
+}: {
+  style?: CSSProperties;
+  disabled?: boolean;
+}) => {
   return (
-    <SxPanelResizeHandle {...props}>
+    <SxPanelResizeHandle style={style} disabled={disabled}>
       <Handle>
         <Line />
       </Handle>

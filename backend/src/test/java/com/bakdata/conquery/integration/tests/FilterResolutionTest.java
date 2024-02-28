@@ -77,7 +77,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
 		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "HEADER", "", "",  2, true, indexService));
 

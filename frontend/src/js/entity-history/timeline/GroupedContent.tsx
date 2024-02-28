@@ -1,6 +1,6 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import { NumericFormat } from "react-number-format";
 
 import {
@@ -9,8 +9,8 @@ import {
   CurrencyConfigT,
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
+import { DateRow, EntityEvent } from "../reducer";
 import { formatHistoryDayRange } from "../RowDates";
-import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
@@ -133,6 +133,7 @@ const SxConceptName = styled(ConceptName)`
 const SxNumericFormat = styled(NumericFormat)`
   ${({ theme }) => cellStyles(theme)};
 `;
+
 const Cell = memo(
   ({
     columnDescription,
@@ -142,15 +143,16 @@ const Cell = memo(
   }: {
     columnDescription: ColumnDescription;
     currencyConfig: CurrencyConfigT;
-    cell: any;
+    cell: unknown;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
     if (isDateColumn(columnDescription)) {
-      return cell.from === cell.to ? (
-        <CellWrap>{formatHistoryDayRange(cell.from)}</CellWrap>
+      return (cell as DateRow).from === (cell as DateRow).to ? (
+        <CellWrap>{formatHistoryDayRange((cell as DateRow).from)}</CellWrap>
       ) : (
         <CellWrap>
-          {formatHistoryDayRange(cell.from)} - {formatHistoryDayRange(cell.to)}
+          {formatHistoryDayRange((cell as DateRow).from)} -{" "}
+          {formatHistoryDayRange((cell as DateRow).to)}
         </CellWrap>
       );
     }
@@ -159,7 +161,7 @@ const Cell = memo(
       return (
         <SxConceptName
           rootConceptId={rootConceptIdsByColumn[columnDescription.label]}
-          conceptId={cell}
+          conceptId={cell as string}
           title={columnDescription.defaultLabel}
         />
       );
@@ -170,12 +172,12 @@ const Cell = memo(
         <SxNumericFormat
           {...currencyConfig}
           displayType="text"
-          value={parseInt(cell) / 100}
+          value={parseInt(cell as string) / 100}
         />
       );
     }
 
-    return <CellWrap>{cell}</CellWrap>;
+    return <CellWrap>{cell as ReactNode}</CellWrap>;
   },
 );
 

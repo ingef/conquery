@@ -16,11 +16,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.With;
 
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-@With
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PrintSettings {
 

@@ -6,6 +6,7 @@ import type {
   CurrencyConfigT,
   FilterT,
   PostFilterSuggestionsResponseT,
+  RangeFilterValueT,
 } from "../api/types";
 import { StateT } from "../app/reducers";
 import { FilterWithValueType } from "../standard-query-editor/types";
@@ -22,7 +23,10 @@ export interface BaseTableFilterProps {
   className?: string;
   excludeTable?: boolean;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
-  onSetFilterValue: (filterIdx: number, value: unknown) => void;
+  onSetFilterValue: (
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
     filterId: FilterT["id"],
@@ -117,7 +121,9 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
@@ -135,7 +141,9 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
@@ -155,7 +163,9 @@ const TableFilter = ({
             moneyRange
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             unit={filter.unit}
             label={filter.label}
             tooltip={filter.tooltip}

@@ -59,8 +59,8 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 
 		private void finishBuffer(boolean end) {
 			buffer.flip();
-			if (buffer.remaining() - HEADER_SIZE == 0) {
-				throw new IllegalStateException();
+			if (buffer.remaining() - HEADER_SIZE <= 0) {
+				throw new IllegalStateException("Buffer of size %s is too small for header of length %s".formatted(buffer.remaining(), HEADER_SIZE));
 			}
 			buffer.put(0, end ? LAST_MESSAGE : CONTINUED_MESSAGE);
 			buffer.putInt(Byte.BYTES, buffer.remaining() - HEADER_SIZE);

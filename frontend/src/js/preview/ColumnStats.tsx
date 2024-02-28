@@ -2,31 +2,28 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatCurrency } from "../entity-history/timeline/util";
+
 import { ColumnDescriptionType } from "./Preview";
 
-const Stats = styled("div")`
-  padding: 0 10px 10px 0;
-`;
-const Stat = styled("code")`
-  display: block;
-  margin: 0;
-`;
 const Name = styled("code")`
   display: block;
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.xs};
-  max-width: 130px;
-  margin-bottom: 8px;
+  max-width: 200px;
 `;
 const Label = styled("span")`
   font-style: italic;
-  padding-right: 10px;
 `;
 const Values = styled("div")`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0px 10px;
   font-size: ${({ theme }) => theme.font.xs};
 `;
 const Value = styled("span")`
   font-weight: 700;
+  text-align: right;
 `;
 interface Props {
   colName: string;
@@ -71,10 +68,6 @@ function toRoundedDecimalsString(num: number, decimals: number) {
   return rounded.toFixed(decimals).replace(".", ",");
 }
 
-function toLocalizedNumberString(num: number) {
-  return num.toString().replace(".", ",");
-}
-
 const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
   const { t } = useTranslation();
 
@@ -107,40 +100,35 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
       const decimals = 2;
       // Might come in handy at some point
       // const variance = getVarianceFromAvg(cleanSortedData, avg);
-      const toMoneyMaybe = (num: number) => {
-        return columnType === "MONEY" ? num / 100 : num;
+      const formatValue = (
+        num: number,
+        { alwaysDecimals }: { alwaysDecimals?: boolean } = {},
+      ) => {
+        return columnType === "MONEY"
+          ? formatCurrency(num / 100, decimals)
+          : alwaysDecimals
+          ? toRoundedDecimalsString(num, decimals)
+          : num;
       };
 
       return (
-        <Stats>
+        <>
           <Name>{colName}</Name>
           <Values>
-            <Stat>
-              <Label>{t("common.average")}:</Label>
-              <Value>
-                {toRoundedDecimalsString(toMoneyMaybe(avg), decimals)}
-              </Value>
-            </Stat>
-            <Stat>
-              <Label>{t("common.median")}:</Label>
-              <Value>{toLocalizedNumberString(toMoneyMaybe(median))}</Value>
-            </Stat>
-            <Stat>
-              <Label>{t("common.min")}:</Label>
-              <Value>{toLocalizedNumberString(toMoneyMaybe(min))}</Value>
-            </Stat>
-            <Stat>
-              <Label>{t("common.max")}:</Label>
-              <Value>{toLocalizedNumberString(toMoneyMaybe(max))}</Value>
-            </Stat>
-            <Stat>
-              <Label>{t("common.std")}:</Label>
-              <Value>
-                {toRoundedDecimalsString(toMoneyMaybe(std), decimals)}
-              </Value>
-            </Stat>
+            <Label>{t("common.average")}:</Label>
+            <Value>{formatValue(avg, { alwaysDecimals: true })}</Value>
+            <Label>{t("common.median")}:</Label>
+            <Value>{formatValue(median)}</Value>
+            <Label>{t("common.min")}:</Label>
+            <Value>{formatValue(min)}</Value>
+            <Label>{t("common.max")}:</Label>
+            <Value>{formatValue(max)}</Value>
+            <Label>{t("common.std")}:</Label>
+            <Value>{formatValue(std, { alwaysDecimals: true })}</Value>
+            <Label>{t("common.sum")}:</Label>
+            <Value>{formatValue(sum)}</Value>
           </Values>
-        </Stats>
+        </>
       );
     }
     default:

@@ -6,7 +6,7 @@ import type { ConceptT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { getNodeIcon } from "../model/node";
 
-import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
+import { displayAdditionalInfos, toggleAdditionalInfos } from "./actions";
 import { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`

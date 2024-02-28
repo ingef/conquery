@@ -42,8 +42,8 @@ import net.sourceforge.argparse4j.inf.Subparser;
 @Slf4j
 public class CollectEntitiesCommand extends Command {
 
-	private ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
-	private boolean verbose = false;
+	private final ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
+	private boolean verbose;
 
 	public CollectEntitiesCommand() {
 		super("collectEntities", "Collect all entities from the given preprocessing directories.");
@@ -67,9 +67,9 @@ public class CollectEntitiesCommand extends Command {
 	@Override
 	public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
-		Collection<EntityExtractor> jobs = findPreprocessedJobs(namespace.<File>getList("file"));
+		final Collection<EntityExtractor> jobs = findPreprocessedJobs(namespace.getList("file"));
 
-		ExecutorService pool = Executors.newCachedThreadPool();
+		final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
 		for (EntityExtractor job : jobs) {
 			pool.submit(() -> {
@@ -99,7 +99,7 @@ public class CollectEntitiesCommand extends Command {
 	}
 
 	public List<EntityExtractor> findPreprocessedJobs(List<File> files) throws IOException, JSONException {
-		List<EntityExtractor> l = new ArrayList<>();
+		final List<EntityExtractor> l = new ArrayList<>();
 		for (File preprocessedFile : files) {
 			if (!preprocessedFile.getName().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
 				continue;
@@ -136,7 +136,7 @@ public class CollectEntitiesCommand extends Command {
 		}
 
 		private void add(EncodedDictionary primDict, File file) {
-			Set<String> list = entities.computeIfAbsent(file, f -> Sets.newConcurrentHashSet());
+			final Set<String> list = entities.computeIfAbsent(file, f -> Sets.newConcurrentHashSet());
 			for (int id = 0; id < primDict.getSize(); id++) {
 				list.add(primDict.getElement(id));
 			}

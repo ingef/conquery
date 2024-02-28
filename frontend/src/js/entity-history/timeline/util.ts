@@ -25,12 +25,11 @@ export const isMoneyColumn = (columnDescription: ColumnDescription) =>
 export const isSecondaryIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "SECONDARY_ID");
 
-export const formatCurrency = (value: number) =>
+export const formatCurrency = (value: number, digits?: number) =>
   value.toLocaleString(navigator.language, {
     style: "currency",
-
     currency: "EUR",
     unitDisplay: "short",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   });

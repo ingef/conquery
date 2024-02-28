@@ -42,15 +42,6 @@ export const getH1Index = (fields: GeneralField[], field: GeneralField) => {
   return h1Fields.indexOf(field);
 };
 
-export const isOptionalField = (field: GeneralField) => {
-  return (
-    isFormField(field) &&
-    (!("validations" in field) ||
-      ("validations" in field &&
-        (!field.validations || !field.validations.includes("NOT_EMPTY"))))
-  );
-};
-
 export const isFormField = (field: GeneralField): field is FormField => {
   return !nonFormFieldTypes.has(field.type);
 };

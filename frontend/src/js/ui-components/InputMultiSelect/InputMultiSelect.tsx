@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -125,10 +126,11 @@ const InputMultiSelect = ({
   useDebounce(
     () => {
       if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
+        const prefix = inputValue.length < 2 ? "" : inputValue;
+        onLoadMore(prefix, { shouldReset: true });
       }
     },
-    200,
+    350,
     [inputValue],
   );
 
@@ -168,6 +170,7 @@ const InputMultiSelect = ({
             return state;
           }
 
+          /* eslint-disable no-case-declarations */
           // Make sure we're staying around the index of the item that was just selected
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
@@ -186,6 +189,7 @@ const InputMultiSelect = ({
           const isNotSelectedYet =
             !!selectedItem &&
             !selectedItems.find((item) => selectedItem.value === item.value);
+          /* eslint-enable no-case-declarations */
 
           if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
@@ -363,7 +367,11 @@ const InputMultiSelect = ({
                     ...selectedItems,
                     ...optionsWithoutCreatable,
                   ]);
-                  setInputValue("");
+                  setTimeout(() => {
+                    // To let the above state change propagage
+                    // before triggering another "load more" request
+                    setInputValue("");
+                  }, 100);
                 }
               }}
             />
@@ -384,7 +392,9 @@ const InputMultiSelect = ({
                       <LoadMoreSentinel
                         onLoadMore={() => {
                           if (!loading) {
-                            onLoadMore(inputValue);
+                            const prefix =
+                              inputValue.length < 2 ? "" : inputValue;
+                            onLoadMore(prefix);
                           }
                         }}
                       />
@@ -410,7 +420,12 @@ const InputMultiSelect = ({
       {!hasTooManyValues && !onResolve && Select}
       {!hasTooManyValues && !!onResolve && (
         <DropzoneWithFileInput
-          onDrop={() => {}}
+          onDrop={async (item) => {
+            if (item.files) {
+              const rows = await getFileRows(item.files[0]);
+              onResolve(rows);
+            }
+          }}
           disableClick
           tight
           importButtonOutside

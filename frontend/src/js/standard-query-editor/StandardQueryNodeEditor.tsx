@@ -3,28 +3,32 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { ConceptIdT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 import { ModeT } from "../ui-components/InputRange";
 
 import {
-  updateNodeLabel,
   addConceptToNode,
   removeConceptFromNode,
-  toggleTable,
-  setFilterValue,
-  switchFilterMode,
   resetAllSettings,
   resetTable,
-  toggleTimestamps,
+  setDateColumn,
+  setFilterValue,
   setSelects,
   setTableSelects,
-  setDateColumn,
+  switchFilterMode,
   toggleSecondaryIdExclude,
+  toggleTable,
+  toggleTimestamps,
+  updateNodeLabel,
   useLoadFilterSuggestions,
 } from "./actions";
-import { DragItemConceptTreeNode, StandardQueryNodeT } from "./types";
+import {
+  DragItemConceptTreeNode,
+  FilterWithValueType,
+  StandardQueryNodeT,
+} from "./types";
 
 interface EditedNodePosition {
   andIdx: number;
@@ -89,7 +93,11 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
   );
 
   const onSetFilterValue = useCallback(
-    (tableIdx: number, filterIdx: number, value: unknown) =>
+    (
+      tableIdx: number,
+      filterIdx: number,
+      value: FilterWithValueType["value"],
+    ) =>
       dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value })),
     [dispatch, andIdx, orIdx],
   );

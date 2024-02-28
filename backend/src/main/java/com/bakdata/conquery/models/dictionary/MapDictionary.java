@@ -52,8 +52,10 @@ public class MapDictionary extends Dictionary {
 
 	@JsonProperty
 	public byte[][] getId2Value() {
-		byte[][] result = new byte[id2Value.size()][];
-		for (int i = 0; i < id2Value.size(); i++) {
+		final int size = id2Value.size();
+		final byte[][] result = new byte[size][];
+
+		for (int i = 0; i < size; i++) {
 			result[i] = id2Value.get(i).elements();
 		}
 		return result;

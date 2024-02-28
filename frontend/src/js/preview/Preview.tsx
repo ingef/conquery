@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -123,7 +123,7 @@ function getMinMaxDates(
 
   if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
 
-  for (let row of rows) {
+  for (const row of rows) {
     // To cut off '{' and '}'
     const cell = row[dateColumnIdx];
     const { first, last } = getFirstAndLastDateOfRange(cell);

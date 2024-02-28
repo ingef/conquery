@@ -1,7 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -54,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
-public class FormTest extends ConqueryTestSpec<StandaloneSupport> {
+public class FormTest extends ConqueryTestSpec {
 
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
@@ -85,31 +83,9 @@ public class FormTest extends ConqueryTestSpec<StandaloneSupport> {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-		importSecondaryIds(support, content.getSecondaryIds());
-		support.waitUntilWorkDone();
-
-		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
-		support.waitUntilWorkDone();
-		log.info("{} IMPORT TABLES", getLabel());
-
-		importConcepts(support, rawConcepts);
-		support.waitUntilWorkDone();
-		log.info("{} IMPORT CONCEPTS", getLabel());
-
-		LoadingUtil.importTableContents(support, content.getTables());
-		support.waitUntilWorkDone();
-
-		importIdMapping(support, content);
-		support.waitUntilWorkDone();
-
-		log.info("{} IMPORT TABLE CONTENTS", getLabel());
-		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
-
-		support.waitUntilWorkDone();
-
+		support.getTestImporter().importFormTestData(support, this);
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
-
 	}
 
 	@Override

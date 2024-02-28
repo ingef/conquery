@@ -53,14 +53,13 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 16
-- `yarn`
+- `node` >= 18
 
 **Install and start**
 
 ```bash
-yarn
-yarn dev
+npm
+npm run dev
 ```
 
 Adjust your local `.env` file as necessary to apply environment variables during development
@@ -68,7 +67,7 @@ Adjust your local `.env` file as necessary to apply environment variables during
 **Mock API**
 
 ```bash
-$ yarn server
+$ npm run server
 ```
 
 **Login**
@@ -88,7 +87,7 @@ We recommend you configure your editor to auto-format on save. If you're using V
 
 You could also invoke prettier on the command line:
 ```
-yarn prettier --write /path/to/file
+npm run prettier --write /path/to/file
 ```
 
 ## Glossary

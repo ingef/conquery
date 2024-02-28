@@ -32,7 +32,7 @@ public class IndexServiceTest {
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
-	private final IndexService indexService = new IndexService(new CsvParserSettings());
+	private final IndexService indexService = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
 
 	@BeforeAll
 	@SneakyThrows

@@ -79,6 +79,7 @@
         type="button"
         class="btn btn-secondary"
         onclick="rest('/admin/datasets/${c.ds.id}/update-matching-stats',{method: 'post'})"
+        data-cy="update-matching-stats"
       >
         Update Matching Stats
       </button>

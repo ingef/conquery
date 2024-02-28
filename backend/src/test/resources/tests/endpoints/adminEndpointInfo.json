@@ -215,6 +215,11 @@
     "clazz": "GroupResource"
   },
   {
+    "method": "POST",
+    "path": "/index-service/reset",
+    "clazz": "AdminResource"
+  },
+  {
     "method": "DELETE",
     "path": "/permissions/{ownerId}",
     "clazz": "PermissionResource"

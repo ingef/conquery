@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -31,6 +30,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Getter
 @Setter
@@ -152,22 +152,26 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		final int suffixLength = isGenerateSuffixes() ? config.getSearchSuffixLength() : Integer.MAX_VALUE;
+		final TrieSearch<FrontendValue> search = config.createTrieSearch(isGenerateSuffixes());
 
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
+		StopWatch timer = StopWatch.createStarted();
 
-		storage.getAllImports().stream()
-			   .filter(imp -> imp.getTable().equals(getTable()))
-			   .flatMap(imp -> {
-				   final ImportColumn importColumn = imp.getColumns()[getPosition()];
+		log.trace("START-COLUMN ADDING_ITEMS for {}", getId());
 
-				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
-			   })
+		storage.getStorageHandler()
+			   .lookupColumnValues(storage, this)
 			   .map(value -> new FrontendValue(value, value))
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
-
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
+		log.trace("DONE-COLUMN ADDING_ITEMS for {} in {}", getId(), timer);
+
+		timer.reset();
+		log.trace("START-COLUMN SHRINKING for {}", getId());
+
+		search.shrinkToFit();
+
+		log.trace("DONE-COLUMN SHRINKING for {} in {}", getId(), timer);
 
 		return search;
 	}

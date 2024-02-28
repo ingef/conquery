@@ -4,14 +4,14 @@ import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
 import {
-  useGetQueries,
-  usePatchQuery,
-  useGetQuery,
-  useDeleteQuery,
-  usePatchFormConfig,
   useDeleteFormConfig,
+  useDeleteQuery,
   useGetFormConfig,
   useGetFormConfigs,
+  useGetQueries,
+  useGetQuery,
+  usePatchFormConfig,
+  usePatchQuery,
 } from "../../api/api";
 import {
   DatasetT,

@@ -1,12 +1,18 @@
 const DB_NAME = "cache-db";
 const OBJECT_STORE_NAME = "dataStore";
 const VERSION = 1;
+interface CustomWindow {
+  mozIndexedDB: IDBFactory;
+  webkitIndexedDB: IDBFactory;
+  msIndexedDB: IDBFactory;
+  shimIndexedDB: IDBFactory;
+}
 const indexedDB =
   window.indexedDB ||
-  (window as any).mozIndexedDB ||
-  (window as any).webkitIndexedDB ||
-  (window as any).msIndexedDB ||
-  (window as any).shimIndexedDB;
+  (window as unknown as CustomWindow).mozIndexedDB ||
+  (window as unknown as CustomWindow).webkitIndexedDB ||
+  (window as unknown as CustomWindow).msIndexedDB ||
+  (window as unknown as CustomWindow).shimIndexedDB;
 
 function openIndexedDB({
   dbName,

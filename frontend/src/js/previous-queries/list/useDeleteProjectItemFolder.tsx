@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../../app/reducers";
 import { useDatasetId } from "../../dataset/selectors";
