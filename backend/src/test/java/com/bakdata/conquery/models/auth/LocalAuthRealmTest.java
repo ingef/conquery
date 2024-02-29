@@ -18,8 +18,8 @@ import com.password4j.BcryptFunction;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Duration;
 import org.apache.commons.io.FileUtils;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.CredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.util.LifecycleUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -102,13 +102,13 @@ public class LocalAuthRealmTest {
 	@Test
 	public void testWrongPassword() {
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "wrongPassword"))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was was invalid for user");
 	}
 
 	@Test
 	public void testWrongUsername() {
 		assertThatThrownBy(() -> realm.createAccessToken("NoTestUser", "testPassword"))
-				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class LocalAuthRealmTest {
 		realm.updateUser(user1, new PasswordCredential("newTestPassword"));
 		// Wrong (old) password
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was was invalid for user");
 
 		// Right (new) password
 		String jwt = realm.createAccessToken("TestUser", "newTestPassword");
@@ -139,7 +139,7 @@ public class LocalAuthRealmTest {
 		realm.removeUser(user1);
 		// Wrong password
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");
 
 	}
 }

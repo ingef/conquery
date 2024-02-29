@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.basic;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
@@ -29,7 +28,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MoreCollectors;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
 import io.dropwizard.util.Duration;
@@ -42,8 +40,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.CredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.util.Destroyable;
 
@@ -136,24 +134,24 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	//////////////////// FOR USERNAME/PASSWORD
 
 	public String createAccessToken(String username, String password) {
-		// Check the password which is afterwards cleared
 		if (username.isEmpty()) {
 			throw new IncorrectCredentialsException("Username was empty");
 		}
 		if (password.isEmpty()) {
 			throw new IncorrectCredentialsException("Password was empty");
 		}
-		HashEntry hashedEntry = passwordStore.get(new UserId(username));
+		final UserId userId = new UserId(username);
+		HashEntry hashedEntry = passwordStore.get(userId);
 		if (hashedEntry == null) {
-			throw new UnknownAccountException("Provided username or password was not valid.");
+			throw new CredentialsException("No password hash was found for user: " + username);
 		}
 
 		final String hash = hashedEntry.getHash();
 		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
-			throw new UnknownAccountException("Provided username or password was not valid.");
+			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
 		}
 
-		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
+		return centralTokenRealm.createTokenForUser(userId, validDuration);
 	}
 
 	/**
@@ -172,25 +170,6 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		}
 
 		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());
-	}
-
-	/**
-	 * Checks the provided credentials for the realm-compatible
-	 * {@link PasswordCredential}. However only one credential of this type is
-	 * allowed to be provided.
-	 *
-	 * @param credentials
-	 *            A list of possible credentials.
-	 * @return The password credential.
-	 */
-	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
-		if(credentials == null) {
-			return Optional.empty();
-		}
-		return credentials.stream()
-			.filter(PasswordCredential.class::isInstance)
-			.map(PasswordCredential.class::cast)
-			.collect(MoreCollectors.toOptional());
 	}
 
 	//////////////////// USER MANAGEMENT ////////////////////
