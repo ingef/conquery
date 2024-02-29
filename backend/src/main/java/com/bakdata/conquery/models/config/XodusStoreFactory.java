@@ -225,7 +225,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			try (Environment environment = findEnvironment(directory)) {
 				if (!environmentHasStores(environment, storesToTest)) {
-					log.warn("No valid WorkerStorage found in {}", directory);
+					log.warn("No valid {}storage found in {}", prefix, directory);
 					continue;
 				}
 			}
