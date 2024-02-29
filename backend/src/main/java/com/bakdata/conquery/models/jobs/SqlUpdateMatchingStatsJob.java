@@ -296,12 +296,12 @@ public class SqlUpdateMatchingStatsJob extends Job {
 			long events = collectEventCount(connectors, childCondition);
 
 			log.debug("DONE collecting eventCount for {} within {}", treeNode.getId(), timer);
-			timer.reset();
+			timer.reset().start();
 
 			long entities = collectEntityCount(connectors, childCondition);
 
 			log.debug("DONE collecting entityCount for {} within {}", treeNode.getId(), timer);
-			timer.reset();
+			timer.reset().start();
 
 			CDateRange span = collectDateSpan(connectors, childCondition);
 
