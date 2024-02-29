@@ -30,6 +30,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
@@ -131,7 +132,6 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 		SelectJoinStep<Record1<BigDecimal>> eventsQuery = dslContext.select(DSL.sum(eventsUnioned.field(EVENTS_FIELD, BigDecimal.class)).as(EVENTS_FIELD))
 																	.from(eventsUnioned);
-
 		Result<?> result = executionService.fetch(eventsQuery);
 		try {
 			BigDecimal events = (BigDecimal) result.getValue(0, EVENTS_FIELD);
@@ -290,9 +290,23 @@ public class SqlUpdateMatchingStatsJob extends Job {
 												   ? Optional.of(treeChild.getCondition())
 												   : Optional.empty();
 
+
+			final Stopwatch timer = Stopwatch.createStarted();
+
 			long events = collectEventCount(connectors, childCondition);
+
+			log.debug("DONE collecting eventCount for {} within {}", treeNode, timer);
+			timer.reset();
+
 			long entities = collectEntityCount(connectors, childCondition);
+
+			log.debug("DONE collecting entityCount for {} within {}", treeNode, timer);
+			timer.reset();
+
 			CDateRange span = collectDateSpan(connectors, childCondition);
+
+			log.debug("DONE collecting dateSpan for {} within {}", treeNode, timer);
+
 
 			SqlMatchingStats matchingStats = new SqlMatchingStats(events, entities, span);
 			treeNode.setMatchingStats(matchingStats);
