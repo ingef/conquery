@@ -20,11 +20,13 @@ import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.Manager;
+import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
@@ -244,19 +246,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
+		StorageHandler storageHandler = registry.getStorageHandler();
+		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages(storageHandler);
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				getDatasetRegistry().createNamespace(namespaceStorage);
+				registry.createNamespace(namespaceStorage);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = getDatasetRegistry().getDatasets().size();
+			final int coundLoaded = registry.getDatasets().size();
 			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
 																												  - coundLoaded);
 		}

@@ -33,7 +33,7 @@ public class IntervalPackingContext implements Context {
 	 */
 	QueryStep predecessor;
 
-	SqlTables<IntervalPackingCteStep> intervalPackingTables;
+	SqlTables intervalPackingTables;
 
 	/**
 	 * The selects you want to carry through all interval packing steps. They won't get touched besides qualifying.

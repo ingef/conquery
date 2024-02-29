@@ -32,7 +32,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
 		}

@@ -60,7 +60,7 @@ public class StoredQueriesProcessorTest {
 	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null, null);
+	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null, null, null);
 	private static final QueryProcessor processor = new QueryProcessor(datasetRegistry, STORAGE, CONFIG);
 
 	private static final Dataset DATASET_0 = new Dataset() {{

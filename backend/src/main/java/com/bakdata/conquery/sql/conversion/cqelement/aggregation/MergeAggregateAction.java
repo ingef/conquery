@@ -10,6 +10,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -20,7 +21,7 @@ class MergeAggregateAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables<MergeCteStep> tableNames(NameGenerator nameGenerator) {
+	public SqlTables tableNames(NameGenerator nameGenerator) {
 		return MergeCteStep.tableNames(this.joinedStep, nameGenerator);
 	}
 

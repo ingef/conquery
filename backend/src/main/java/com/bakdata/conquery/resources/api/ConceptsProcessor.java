@@ -288,7 +288,6 @@ public class ConceptsProcessor {
 			return Collections.emptyList();
 		}
 
-		// Quicksearch can split and also schedule for us.
 		final List<FrontendValue> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {

@@ -45,10 +45,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Setter
 	private CTCondition condition = null;
 
-	@JsonIgnore
-	@Getter
-	@Setter
-	private TreeChildPrefixIndex childIndex;
 
 	@Override
 	public void clearMatchingStats() {
