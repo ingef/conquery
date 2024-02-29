@@ -418,8 +418,11 @@ export const useGetResult = () => {
     [authToken],
   );
   return useCallback(
-    (queryId: string) => {
-      const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
+    (queryId: string, limit = 1000) => {
+      const url =
+        `/result/arrow/${queryId}.arrs` +
+        new URLSearchParams({ limit: limit.toString() });
+      const res = fetch(getProtectedUrl(url), {
         headers: {
           Authorization: `Bearer ${authTokenRef.current}`,
         },
