@@ -12,11 +12,12 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -25,12 +26,12 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -137,12 +138,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn()));
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, functionProvider);
-		ConnectorTables connectorTables = new ConnectorTables(conceptConnectorLabel, tableName, nameGenerator);
+		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
 
 		// validity date
 		IntervalPackingContext intervalPackingContext = null;
 		if (intervalPackingRequired(tablesValidityDate, cqConcept)) {
-			IntervalPackingTables intervalPackingTables = IntervalPackingTables.forConnector(conceptConnectorLabel, connectorTables, nameGenerator);
+			String preprocessingCteName = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+			SqlTables intervalPackingTables = IntervalPackingCteStep.getTables(conceptConnectorLabel, preprocessingCteName, nameGenerator);
 			intervalPackingContext = IntervalPackingContext.builder()
 														   .nodeLabel(conceptConnectorLabel)
 														   .primaryColumn(primaryColumn)
@@ -201,9 +203,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private static Optional<SqlFilters> collectConditionFilters(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
 		return collectConditions(conceptElements, cqTable, functionProvider)
 				.stream()
-				.map(WhereCondition::condition)
-				.reduce(Condition::or)
-				.map(condition -> new WhereConditionWrapper(condition, ConditionType.PREPROCESSING))
+				.reduce(WhereCondition::or)
 				.map(whereCondition -> new SqlFilters(
 						SqlSelects.builder().build(),
 						WhereClauses.builder().preprocessingCondition(whereCondition).build()
@@ -211,17 +211,31 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static List<WhereCondition> collectConditions(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
+
 		List<WhereCondition> conditions = new ArrayList<>();
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
-		conceptElements.stream()
-					   .filter(conceptElement -> conceptElement instanceof ConceptTreeChild)
-					   .forEach(conceptElement -> {
-						   ConceptTreeChild child = (ConceptTreeChild) conceptElement;
-						   Connector connector = cqTable.getConnector();
-						   WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.create(connector, functionProvider));
-						   conditions.add(childCondition);
-					   });
+
+		for (ConceptElement<?> conceptElement : conceptElements) {
+			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement, functionProvider)
+					.reduce(WhereCondition::and)
+					.ifPresent(conditions::add);
+		}
+
 		return conditions;
+	}
+
+	/**
+	 * Collects all conditions of a given {@link ConceptTreeNode} by resolving the condition of the given node and all of its parent nodes.
+	 */
+	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptTreeNode<?> conceptElement, SqlFunctionProvider functionProvider) {
+		if (!(conceptElement instanceof ConceptTreeChild child)) {
+			return Stream.empty();
+		}
+		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.create(cqTable.getConnector(), functionProvider));
+		return Stream.concat(
+				collectConditions(cqTable, child.getParent(), functionProvider),
+				Stream.of(childCondition)
+		);
 	}
 
 	private static Optional<WhereCondition> convertConnectorCondition(CQTable cqTable, SqlFunctionProvider functionProvider) {

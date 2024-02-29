@@ -37,7 +37,7 @@ abstract class ConnectorCte {
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext);
 
-	private boolean isRequired(SqlTables<ConnectorCteStep> connectorTables) {
+	private boolean isRequired(SqlTables connectorTables) {
 		return connectorTables.isRequiredStep(cteStep());
 	}
 
