@@ -192,7 +192,7 @@ function postScriptHandler(event, jsonOut, responseTargetTextfield) {
 			body: document.getElementById('script').value,
 			headers: {
 				'Content-Type': 'text/plain',
-				'Accept': jsonOut ? 'application/json' : 'text/plain'
+				'Accept': !!jsonOut ? 'application/json' : 'text/plain'
 			}
 		}).then(response => response.text().then(function (text) { responseTargetTextfield.innerHTML = text }))
 }
