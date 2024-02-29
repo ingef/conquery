@@ -74,13 +74,23 @@ public class Histogram {
 
 		final double width = (upper - lower) / expectedBins;
 
-		final double newUpper = lower + width * expectedBins;
+		final double adjLower;
+
+		// We have to adjust left if we have a zero-crossing, to ensure partitioning out the zero-bin
+		if (lower < 0 && absMax > 0) {
+			adjLower = -Math.ceil(Math.abs(lower) / width) * width;
+		}
+		else {
+			adjLower = lower;
+		}
+
+		final double newUpper = adjLower + width * expectedBins;
 
 		final Node[] nodes = IntStream.range(0, expectedBins)
-									  .mapToObj(index -> new Node(lower + width * index, lower + width * (index + 1)))
+									  .mapToObj(index -> new Node(adjLower + width * index, adjLower + width * (index + 1)))
 									  .toArray(Node[]::new);
 
-		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax), lower, newUpper, width);
+		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax), adjLower, newUpper, width);
 	}
 
 	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
