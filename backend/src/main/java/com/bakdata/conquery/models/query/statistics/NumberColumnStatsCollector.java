@@ -1,36 +1,62 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import c10n.C10N;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
+import com.google.common.collect.Range;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
-public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
+@Slf4j
+public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector {
+
+	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final AtomicLong nulls = new AtomicLong(0);
 
-	private final List<TYPE> samples = new ArrayList<>();
-
-
-	private final BooleanSupplier samplePicker;
 
 	private final Comparator<TYPE> comparator;
 
-	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker, PrintSettings printSettings) {
-		super(name, label, description, type, printSettings);
-		this.samplePicker = samplePicker;
-		this.comparator = selectComparator(type);
+	private final NumberFormat formatter;
+	private final int expectedBins;
+	private final double upperPercentile;
+	private final double lowerPercentile;
+
+	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, int expectedBins, double lowerPercentile, double upperPercentile) {
+		super(name, label, description, printSettings);
+
+		this.type = type;
+
+		comparator = selectComparator(type);
+
+		if (type instanceof ResultType.MoneyT) {
+			formatter = DecimalFormat.getCurrencyInstance(I18n.LOCALE.get());
+			formatter.setCurrency(printSettings.getCurrency());
+			formatter.setMaximumFractionDigits(printSettings.getCurrency().getDefaultFractionDigits());
+		}
+		else if (type instanceof ResultType.IntegerT) {
+			formatter = printSettings.getIntegerFormat();
+		}
+		else {
+			formatter = printSettings.getDecimalFormat();
+		}
+		this.expectedBins = expectedBins;
+		this.upperPercentile = upperPercentile;
+		this.lowerPercentile = lowerPercentile;
 	}
 
 	private Comparator<TYPE> selectComparator(ResultType resultType) {
@@ -50,73 +76,121 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
 	}
 
+	/**
+	 * If distance between bounds is less than expectedBins, we expand our bounds along percentiles.
+	 */
+	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
+		assert by > 0;
+
+		// limitation of DescriptiveStatistics#getPercentile: crashes if lower==0, so we short circuit.
+		final boolean underflow = lower <= 1.d;
+		final boolean overflow = upper >= 99;
+
+		final double min = underflow ? statistics.getMin() : statistics.getPercentile(lower);
+		final double max = overflow ? statistics.getMax() : statistics.getPercentile(upper);
+
+		// No need to walk further, if we are already at the limits.
+		if (underflow && overflow) {
+			return Range.closed(min, max);
+		}
+
+		if (max - min < expectedBins) {
+			return expandBounds(Math.max(0, lower - by), Math.min(100, upper + by), expectedBins, statistics, by);
+		}
+
+		return Range.closed(min, max);
+	}
+
 	@Override
-	public void consume(Number value) {
+	public void consume(Object value) {
 		if (value == null) {
 			nulls.incrementAndGet();
 			return;
 		}
 
+		Number number = (Number) value;
+
 		// TODO this feels like a pretty borked abstraction
 		if (getType() instanceof ResultType.MoneyT moneyT) {
-			value = moneyT.readIntermediateValue(getPrintSettings(), value);
+			number = moneyT.readIntermediateValue(getPrintSettings(), number);
 		}
 
-		statistics.addValue(value.doubleValue());
+		statistics.addValue(number.doubleValue());
 
-		if (samplePicker.getAsBoolean()) {
-			samples.add((TYPE) value);
-		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
 		// If no real samples were collected, we short-circuit, as Statistics will throw an exception when empty.
 		if (getStatistics().getN() == 0) {
-			return new ColumnDescription(
-					getName(), getLabel(), getDescription(), getType().toString(),
-					getNulls().intValue(), getNulls().intValue(),
-					Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Collections.emptyList()
-			);
+			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
 		}
 
-		final double p99 = getStatistics().getPercentile(99d);
-		final double maybeP01 = getStatistics().getPercentile(1d);
+		final List<HistogramColumnDescription.Entry> bins = createBins();
+		final Map<String, String> extras = getExtras();
 
-		// If min is basically 0, we don't prune for it, as those are usually relevant values.
-		final double p01 = (Math.abs(maybeP01) < 2 * Double.MIN_VALUE) ? Double.MIN_VALUE : maybeP01;
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
 
-		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(), (int) (getStatistics().getN() + getNulls().intValue()), getNulls().intValue(), getStatistics().getMean(), getStatistics().getPercentile(50d /*This is the median.*/), getStatistics().getStandardDeviation(), (int) getStatistics().getMin(), (int) getStatistics().getMax(),
-									 // We cull extremes, as that can cause distortions when displayed.
-									 samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
-		);
 	}
 
-	@Getter
-	@CPSType(id = "DESCRIPTIVE", base = ResultColumnStatistics.class)
-	@ToString(callSuper = true)
-	public static class ColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
+	@NotNull
+	private List<HistogramColumnDescription.Entry> createBins() {
 
-		private final int count;
-		private final int nullValues;
-		private final double mean;
-		private final double median;
-		private final double stdDev;
-		private final Number min;
-		private final Number max;
+		final Range<Double> bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
 
-		private final Collection<? extends Number> samples;
+		log.trace("Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}", getLabel(), bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins);
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Collection<? extends Number> samples) {
-			super(name, label, description, type);
-			this.count = count;
-			this.nullValues = nullValues;
-			this.mean = mean;
-			this.median = median;
-			this.stdDev = stdDev;
-			this.min = min;
-			this.max = max;
-			this.samples = samples;
+		final Histogram histogram =
+				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins, bounds.upperEndpoint() - bounds.lowerEndpoint() > 1);
+
+		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
+
+		return histogram.nodes()
+						.stream()
+						.map(bin -> {
+							final String binLabel = bin.createLabel(this::printValue, getType() instanceof ResultType.IntegerT);
+
+							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
+						})
+						.toList();
+	}
+
+	@NotNull
+	private Map<String, String> getExtras() {
+		final StatisticsLabels labels = C10N.get(StatisticsLabels.class, getPrintSettings().getLocale());
+
+
+		// LinkedHashMap remembers insertion order
+		final LinkedHashMap<String, String> out = new LinkedHashMap<>();
+
+		out.put(labels.min(), printValue(getStatistics().getMin()));
+		out.put(labels.max(), printValue(getStatistics().getMax()));
+
+		// mean is always a decimal number, therefore integer needs special handling
+		if(getType() instanceof ResultType.IntegerT){
+			out.put(labels.mean(), getPrintSettings().getDecimalFormat().format(getStatistics().getMean()));
 		}
+		else {
+			out.put(labels.mean(), printValue(getStatistics().getMean()));
+		}
+
+		out.put(labels.p25(), printValue(getStatistics().getPercentile(25)));
+		out.put(labels.median(), printValue(getStatistics().getPercentile(50)));
+		out.put(labels.p75(), printValue(getStatistics().getPercentile(75)));
+
+		out.put(labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()));
+
+		out.put(labels.sum(), printValue(getStatistics().getSum()));
+		out.put(labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()));
+		out.put(labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get()));
+
+		return out;
 	}
+
+
+	private String printValue(Number value) {
+		return formatter.format(value.doubleValue());
+	}
+
+
 }
