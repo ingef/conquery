@@ -34,21 +34,21 @@ async function rest(url, options) {
 			},
 			...options
 		}
-		);
-		return res;
-	}
-	
-	function getToast(type, title, text, smalltext = "", customButton) {
-		if (!type) type = ToastTypes.INFO;
-		
-		let toast = document.createElement("div");
-		toast.classList.add("toast");
-		toast.setAttribute("role", "alert");
-		toast.setAttribute("aria-live", "assertive");
-		toast.setAttribute("aria-atomic", "true");
-		toast.setAttribute("style", "width: 500px; max-width: none");
-		toast.setAttribute('data-test-id', 'toast');
-		toast.innerHTML = `
+	);
+	return res;
+}
+
+function getToast(type, title, text, smalltext = "", customButton) {
+	if (!type) type = ToastTypes.INFO;
+
+	let toast = document.createElement("div");
+	toast.classList.add("toast");
+	toast.setAttribute("role", "alert");
+	toast.setAttribute("aria-live", "assertive");
+	toast.setAttribute("aria-atomic", "true");
+	toast.setAttribute("style", "width: 500px; max-width: none");
+	toast.setAttribute('data-test-id', 'toast');
+	toast.innerHTML = `
 		<div class="toast-header">
 		<strong class="mr-auto badge badge-pill ${type}" style="font-size: 1rem;">${title}</strong>
 		${smalltext ? '<small class="text-muted">' + smalltext + '</small>' : ''}
@@ -62,139 +62,154 @@ async function rest(url, options) {
 		</div>
 		</div>
 		`;
-		if (customButton) {
-			toast.querySelector('.toast-body').appendChild(customButton);
-		}
-		return toast;
+	if (customButton) {
+		toast.querySelector('.toast-body').appendChild(customButton);
 	}
-	
-	
-	
-	function showToastMessage(type, title, text, smalltext = "", customButton) {
-		let toastContainer = document.getElementById("toast-container");
-		let toast = getToast(type, title, text, smalltext, customButton);
-		toastContainer.appendChild(toast);
-		$(toast).toast({ delay: 10000 });
-		$(toast).toast('show');
-	}
-	
-	async function showMessageForResponse(response, customButton) {
-		if(response){
-			try {
-				let body = await response.json();
-				if(!response.ok){
-					showToastMessage(
-						ToastTypes.ERROR,
-						"Error",
-						"The send request came back with the following error: " + JSON.stringify(body),
-						"Status " + response.status,
-						response.status == 409 ? customButton : undefined
-						);
-					}
-				} catch (e) {
-					// ignore, because some responses don't have a body
-				}
+	return toast;
+}
+
+
+
+function showToastMessage(type, title, text, smalltext = "", customButton) {
+	let toastContainer = document.getElementById("toast-container");
+	let toast = getToast(type, title, text, smalltext, customButton);
+	toastContainer.appendChild(toast);
+	$(toast).toast({ delay: 10000 });
+	$(toast).toast('show');
+}
+
+async function showMessageForResponse(response, customButton) {
+	if (response) {
+		try {
+			let body = await response.json();
+			if (!response.ok) {
+				showToastMessage(
+					ToastTypes.ERROR,
+					"Error",
+					"The send request came back with the following error: " + JSON.stringify(body),
+					"Status " + response.status,
+					response.status == 409 ? customButton : undefined
+				);
 			}
+		} catch (e) {
+			// ignore, because some responses don't have a body
 		}
-		
-		
-		function loginClickHandler(){
-			event.preventDefault();
-			fetch(
-				'/auth',
-				{
-					method: 'POST',
-					headers: {'Content-Type': 'application/json'},
-					body: JSON.stringify({
-						user: document.getElementById("inputEmail").value,
-						password: document.getElementById("inputPassword").value
-					})
+	}
+}
+
+
+function loginClickHandler() {
+	event.preventDefault();
+	fetch(
+		'/auth',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				user: document.getElementById("inputEmail").value,
+				password: document.getElementById("inputPassword").value
+			})
+		})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Error fetching token");
+			}
+			return response.json();
+		})
+		.then((json) => {
+			var searchParams = new URLSearchParams(window.location.search);
+			searchParams.set("access_token", json.access_token);
+			// This triggers a page reload
+			window.location.search = searchParams.toString();
+		}
+		)
+		.catch(function (error) {
+			var p = document.createElement('p');
+			p.appendChild(
+				document.createTextNode('Error: ' + error.message)
+			);
+			document.body.insertBefore(p, myImage);
+		});
+}
+
+function logout() {
+	event.preventDefault();
+	rest('/admin/logout')
+		.then(function () { location.reload() });
+}
+
+function postFile(event, url) {
+	event.preventDefault();
+
+	let inputs = event.target.getElementsByClassName("restparam");
+	if (inputs.length != 1) {
+		console.log('Unexpected number of inputs in ' + inputs);
+	}
+
+	var file;
+
+	for (var i = 0; i < inputs[0].files.length; i++) {
+		let file = inputs[0].files[i];
+		let reader = new FileReader();
+		reader.onload = function () {
+			let json = reader.result;
+			fetch(url, {
+				method: 'post', credentials: 'same-origin', body: json, headers: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(function (response) {
+					if (response.ok) {
+						setTimeout(() => location.reload(), 2000);
+						showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
+					} else {
+						// force button in case of 409 status
+						let customButton;
+						// only apply for concept uploads
+						if (toForceURL(url).pathname.includes('/concepts')) {
+							customButton = createCustomButton('Replace file');
+							customButton.onclick = () => postFile(event, toForceURL(url));
+						}
+						showMessageForResponse(response, customButton);
+					}
 				})
-				.then((response) => {
-					if(!response.ok) {
-						throw new Error("Error fetching token");
-					}
-					return response.json();
-				})
-				.then( (json) => {
-					var searchParams = new URLSearchParams(window.location.search);
-					searchParams.set("access_token", json.access_token);
-					// This triggers a page reload
-					window.location.search = searchParams.toString();
-				}
-				)
-				.catch(function(error) {
-					var p = document.createElement('p');
-					p.appendChild(
-						document.createTextNode('Error: ' + error.message)
-						);
-						document.body.insertBefore(p, myImage);
-					});
-				}
-				
-				function logout() {
-					event.preventDefault();
-					rest('/admin/logout')
-					.then(function () { location.reload() });
-				}
-				
-				function postFile(event, url) {
-					event.preventDefault();
-					
-					let inputs = event.target.getElementsByClassName("restparam");
-					if (inputs.length != 1) {
-						console.log('Unexpected number of inputs in ' + inputs);
-					}
-					
-					var file;
-					
-					for (var i = 0; i < inputs[0].files.length; i++) {
-						let file = inputs[0].files[i];
-						let reader = new FileReader();
-						reader.onload = function () {
-							let json = reader.result;
-							fetch(url, {
-								method: 'post', credentials: 'same-origin', body: json, headers: {
-									"Content-Type": "application/json"
-								}
-							})
-							.then(function (response) {
-								if (response.ok) {
-									setTimeout(() => location.reload(), 2000);
-									showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
-								} else {
-									// force button in case of 409 status
-									let customButton;
-									// only apply for concept uploads
-									if (toForceURL(url).pathname.includes('/concepts')) {
-										customButton = createCustomButton('Replace file');
-										customButton.onclick = () => postFile(event, toForceURL(url));
-									}
-									showMessageForResponse(response, customButton);
-								}
-							})
-							.catch(function (error) {
-								showToastMessage(ToastTypes.ERROR, "Error", "There has been a problem with posting a file: " + error.message);
-								console.log('There has been a problem with posting a file', error.message);
-							});
-						};
-						reader.readAsText(file);
-					}
-				}
-				
-				
-				// Get to recent tab: https://stackoverflow.com/a/19015027
-				$('#myTab a').click(function (e) {
-					e.preventDefault();
-					$(this).tab('show');
+				.catch(function (error) {
+					showToastMessage(ToastTypes.ERROR, "Error", "There has been a problem with posting a file: " + error.message);
+					console.log('There has been a problem with posting a file', error.message);
 				});
-				
-				// store the currently selected tab in the hash value
-				$("ul.nav-tabs > li > a").on("shown.bs.tab", function (e) {
-					var id = $(e.target).attr("href").substr(1);
-					window.location.hash = id;
-				});
-				
-				// on load of the page: switch to the currently selected tab
-				var hash = window.location.hash;
-				$('#myTab a[href="' + hash + '"]').tab('show');
+		};
+		reader.readAsText(file);
+	}
+}
+
+function postScriptHandler(event, jsonOut, responseTargetTextfield) {
+	event.preventDefault();
+	responseTargetTextfield.innerHTML = 'waiting for response';
+	fetch('/admin/script',
+		{
+			method: 'post',
+			credentials: 'same-origin',
+			body: document.getElementById('script').value,
+			headers: {
+				'Content-Type': 'text/plain',
+				'Accept': jsonOut ? 'application/json' : 'text/plain'
+			}
+		}).then(response => response.text().then(function (text) { responseTargetTextfield.innerHTML = text }))
+}
+
+
+// Get to recent tab: https://stackoverflow.com/a/19015027
+$('#myTab a').click(function (e) {
+	e.preventDefault();
+	$(this).tab('show');
+});
+
+// store the currently selected tab in the hash value
+$("ul.nav-tabs > li > a").on("shown.bs.tab", function (e) {
+	var id = $(e.target).attr("href").substr(1);
+	window.location.hash = id;
+});
+
+// on load of the page: switch to the currently selected tab
+var hash = window.location.hash;
+$('#myTab a[href="' + hash + '"]').tab('show');
