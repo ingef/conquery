@@ -22,7 +22,11 @@ public class PasswordHelper {
 			CompressedPBKDF2Function.class, CompressedPBKDF2Function::getInstanceFromHash
 	);
 
-	HashingFunction getHashingFunction(String hash) {
+	/**
+	 * Determines the function used to create the provided hash.
+	 * The function can be used to hash a plain credential in order to check the hashes for equality.
+	 */
+	public HashingFunction getHashingFunction(String hash) {
 		for (Map.Entry<Class<? extends HashingFunction>, Function<String, HashingFunction>> hashFunctionGenerator : HASH_FUNCTION_GENERATORS.entrySet()) {
 			try {
 				return hashFunctionGenerator.getValue().apply(hash);
