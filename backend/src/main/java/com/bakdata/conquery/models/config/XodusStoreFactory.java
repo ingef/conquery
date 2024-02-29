@@ -223,9 +223,11 @@ public class XodusStoreFactory implements StoreFactory {
 
 			ConqueryMDC.setLocation(directory.toString());
 
-			if (!environmentHasStores(directory, storesToTest)) {
-				log.warn("No valid WorkerStorage found in {}", directory);
-				continue;
+			try (Environment environment = findEnvironment(directory)) {
+				if (!environmentHasStores(environment, storesToTest)) {
+					log.warn("No valid WorkerStorage found in {}", directory);
+					continue;
+				}
 			}
 
 			final T namespacedStorage = creator.apply(name);
@@ -236,9 +238,8 @@ public class XodusStoreFactory implements StoreFactory {
 		return storages;
 	}
 
-	private boolean environmentHasStores(File pathName, Set<String> storesToTest) {
-		final Environment env = findEnvironment(pathName);
-		final boolean exists = env.computeInTransaction(t -> {
+	private boolean environmentHasStores(Environment env, Set<String> storesToTest) {
+		return env.computeInTransaction(t -> {
 			final List<String> allStoreNames = env.getAllStoreNames(t);
 			final boolean complete = new HashSet<>(allStoreNames).containsAll(storesToTest);
 			if (complete) {
@@ -256,10 +257,6 @@ public class XodusStoreFactory implements StoreFactory {
 
 			return loadEnvironmentWithMissingStores;
 		});
-		if (!exists) {
-			closeEnvironment(env);
-		}
-		return exists;
 	}
 
 	@Override
