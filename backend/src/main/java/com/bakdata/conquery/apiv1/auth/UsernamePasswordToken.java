@@ -17,5 +17,5 @@ public class UsernamePasswordToken {
 	@NotEmpty
 	private String user;
 	@NotEmpty
-	private char[] password;
+	private String password;
 }
