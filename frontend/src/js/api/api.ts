@@ -418,7 +418,7 @@ export const useGetResult = () => {
     [authToken],
   );
   return useCallback(
-    (queryId: string, limit = 1000) => {
+    (queryId: string, limit = 100) => {
       const url =
         `/result/arrow/${queryId}.arrs?` +
         new URLSearchParams({ limit: limit.toString() });
