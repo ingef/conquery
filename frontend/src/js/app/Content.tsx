@@ -2,14 +2,13 @@ import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 
 import { History } from "../entity-history/History";
-import PreviewV1 from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
 
 import { useMemo } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
-import Preview from "../preview-v2/Preview";
+import Preview from "../preview/Preview";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
@@ -28,10 +27,6 @@ const Content = () => {
 
   const isPreviewOpen = useSelector<StateT, boolean>(
     (state) => state.preview.isOpen,
-  );
-
-  const isPreviewV1Open = useSelector<StateT, boolean>(
-    (state) => state.previewV1.isOpen,
   );
 
   const isHistoryOpen = useSelector<StateT, boolean>(
@@ -58,7 +53,6 @@ const Content = () => {
       <Root>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
-        {isPreviewV1Open && <PreviewV1 />}
         <PanelGroup direction="horizontal" units="pixels">
           <Panel
             style={collapsedStyles}

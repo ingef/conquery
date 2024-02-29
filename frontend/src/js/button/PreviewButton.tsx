@@ -2,16 +2,14 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import type { ColumnDescription } from "../api/types";
-
 import {
   faMagnifyingGlass,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useMemo, useState } from "react";
 import { StateT } from "../app/reducers";
-import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
-import IconButton from "./IconButton";
+import { openPreview, useLoadPreviewData } from "../preview/actions";
+import IconButton, { IconButtonPropsT } from "./IconButton";
 
 const Button = styled(IconButton)`
   white-space: nowrap;
@@ -19,14 +17,7 @@ const Button = styled(IconButton)`
   padding: 5px 12px;
 `;
 
-const PreviewButton = ({
-  url,
-  columns,
-  ...restProps
-}: {
-  columns: ColumnDescription[];
-  url: string;
-}) => {
+const PreviewButton = (buttonProps: Partial<IconButtonPropsT>) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -55,7 +46,7 @@ const PreviewButton = ({
           });
         }
       }}
-      {...restProps}
+      {...buttonProps}
     >
       {t("preview.preview")}
     </Button>

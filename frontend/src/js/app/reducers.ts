@@ -12,10 +12,7 @@ import {
   availableFormsReducer,
 } from "../external-forms/reducer";
 import panes, { PanesStateT } from "../pane/reducer";
-import preview, { PreviewStateT } from "../preview-v2/reducer";
-import previewV1, {
-  PreviewStateT as PreviewV1StateT,
-} from "../preview/reducer";
+import preview, { PreviewStateT } from "../preview/reducer";
 import projectItemsFilter, {
   ProjectItemsFilterStateT,
 } from "../previous-queries/filter/reducer";
@@ -66,7 +63,6 @@ export type StateT = {
   projectItemsTypeFilter: ProjectItemsTypeFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
-  previewV1: PreviewV1StateT;
   snackMessage: SnackMessageStateT;
   editorV2QueryRunner: QueryRunnerStateT;
   queryEditor: {
@@ -104,7 +100,6 @@ const buildAppReducer = () => {
     previousQueriesFolderFilter,
     snackMessage,
     preview,
-    previewV1,
     user,
     entityHistory,
     editorV2QueryRunner: createQueryRunnerReducer("editorV2"),
