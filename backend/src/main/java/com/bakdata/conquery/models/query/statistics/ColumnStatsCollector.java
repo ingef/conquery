@@ -33,10 +33,7 @@ public abstract class ColumnStatsCollector {
 		final String label = info.defaultColumnName(printSettings);
 
 		if (type instanceof ResultType.NumericT || type instanceof ResultType.MoneyT || type instanceof ResultType.IntegerT) {
-			final int lowerPercentile = config.getVisualisationPercentiles().hasLowerBound() ? config.getVisualisationPercentiles().lowerEndpoint() : 0;
-			final int upperPercentile = config.getVisualisationPercentiles().hasUpperBound() ? config.getVisualisationPercentiles().upperEndpoint() : 100;
-
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit(), lowerPercentile, upperPercentile);
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit(), config.getVisualisationPercentiles().lowerEndpoint(), config.getVisualisationPercentiles().upperEndpoint());
 		}
 
 
