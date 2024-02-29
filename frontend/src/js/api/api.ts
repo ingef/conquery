@@ -420,7 +420,7 @@ export const useGetResult = () => {
   return useCallback(
     (queryId: string, limit = 1000) => {
       const url =
-        `/result/arrow/${queryId}.arrs` +
+        `/result/arrow/${queryId}.arrs?` +
         new URLSearchParams({ limit: limit.toString() });
       const res = fetch(getProtectedUrl(url), {
         headers: {
