@@ -305,7 +305,8 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 			CDateRange span = collectDateSpan(connectors, childCondition);
 
-			log.debug("DONE collecting dateSpan for {} within {}", treeNode.getId(), timer);
+			log.debug("DONE collecting dateSpan for {} within {}",
+					  treeNode.getId(), timer);
 
 
 			SqlMatchingStats matchingStats = new SqlMatchingStats(events, entities, span);
