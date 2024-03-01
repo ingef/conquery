@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -61,50 +62,30 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(CDateRange dateRestriction) {
-
-		String startDateExpression = MIN_DATE_VALUE;
-		String endDateExpression = MAX_DATE_VALUE;
-
-		if (dateRestriction.hasLowerBound()) {
-			startDateExpression = dateRestriction.getMin().toString();
-		}
-		if (dateRestriction.hasUpperBound()) {
-			endDateExpression = dateRestriction.getMax().toString();
-		}
-
-		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression))
-							  .asDateRestrictionRange();
+	public ColumnDateRange forDateRestriction(CDateRange dateRestriction) {
+		return toColumnDateRange(dateRestriction).asDateRestrictionRange();
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label) {
+	public ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias) {
+		return toColumnDateRange(cqTable).asValidityDateRange(alias);
+	}
 
-		Column startColumn;
-		Column endColumn;
+	@Override
+	public ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias) {
 
-		if (validityDate.getEndColumn() != null) {
-			startColumn = validityDate.getStartColumn();
-			endColumn = validityDate.getEndColumn();
-		}
-		else {
-			startColumn = validityDate.getColumn();
-			endColumn = validityDate.getColumn();
-		}
+		ColumnDateRange validityDate = toColumnDateRange(cqTable);
+		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 
-		Field<Date> rangeStart = DSL.coalesce(
-				DSL.field(DSL.name(qualifier, startColumn.getName()), Date.class),
-				toDateField(MIN_DATE_VALUE)
-		);
-		// when aggregating date ranges, we want to treat the last day of the range as excluded,
-		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(qualifier, endColumn.getName()), Date.class), 1),
-				toDateField(MAX_DATE_VALUE)
-		);
+		Field<Date> lowerBound = DSL.when(validityDate.getStart().lessThan(restriction.getStart()), restriction.getStart())
+									.otherwise(validityDate.getStart());
 
-		return ColumnDateRange.of(rangeStart, rangeEnd)
-							  .asValidityDateRange(label);
+		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
+		Field<Date> restrictionUpperBound = DSL.when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), 1));
+		Field<Date> upperBound = DSL.when(validityDate.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
+									.otherwise(validityDate.getEnd());
+
+		return ColumnDateRange.of(lowerBound, upperBound).as(alias);
 	}
 
 	@Override
@@ -265,6 +246,52 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.keyword("AS VARCHAR"),
 				dateExpressionLength
 		);
+	}
+
+	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {
+
+		String startDateExpression = MIN_DATE_VALUE;
+		String endDateExpression = MAX_DATE_VALUE;
+
+		if (dateRestriction.hasLowerBound()) {
+			startDateExpression = dateRestriction.getMin().toString();
+		}
+		if (dateRestriction.hasUpperBound()) {
+			endDateExpression = dateRestriction.getMax().toString();
+		}
+
+		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
+	}
+
+	private ColumnDateRange toColumnDateRange(CQTable cqTable) {
+
+		ValidityDate validityDate = cqTable.findValidityDate();
+		String tableName = cqTable.getConnector().getTable().getName();
+
+		Column startColumn;
+		Column endColumn;
+
+		if (validityDate.getEndColumn() != null) {
+			startColumn = validityDate.getStartColumn();
+			endColumn = validityDate.getEndColumn();
+		}
+		else {
+			startColumn = validityDate.getColumn();
+			endColumn = validityDate.getColumn();
+		}
+
+		Field<Date> rangeStart = DSL.coalesce(
+				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),
+				toDateField(MIN_DATE_VALUE)
+		);
+		// when aggregating date ranges, we want to treat the last day of the range as excluded,
+		// so when using the date value of the end column, we add +1 day as end of the date range
+		Field<Date> rangeEnd = DSL.coalesce(
+				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), 1),
+				toDateField(MAX_DATE_VALUE)
+		);
+
+		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
 
 }
