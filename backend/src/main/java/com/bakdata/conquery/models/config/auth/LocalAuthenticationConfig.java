@@ -24,21 +24,27 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
+import com.password4j.BcryptFunction;
+import com.password4j.BenchmarkResult;
+import com.password4j.SystemChecker;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @CPSType(base = AuthenticationRealmFactory.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 @Setter
+@Slf4j
 public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 	public static final String REDIRECT_URI = "redirect_uri";
+	public static final int BCRYPT_MAX_MILLISECONDS = 300;
 	/**
-	 * Configuration for the password store. An encryption for the store it self might be set here.
+	 * Configuration for the password store. An encryption for the store itself might be set here.
 	 */
 	@NotNull
 	private XodusConfig passwordStoreConfig = new XodusConfig();
@@ -74,6 +80,15 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
 		manager.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
+		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
+		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
+
+		final BcryptFunction prototype = result.getPrototype();
+		int rounds = prototype.getLogarithmicRounds();
+		long realElapsed = result.getElapsed();
+
+
+		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", rounds, realElapsed);
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
 				manager.getValidator(),
@@ -82,7 +97,9 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 				storeName,
 				directory,
 				passwordStoreConfig,
-				jwtDuration);
+				jwtDuration,
+				prototype
+		);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, manager.getStorage());
 
 		// Register resources for users to exchange username and password for an access token

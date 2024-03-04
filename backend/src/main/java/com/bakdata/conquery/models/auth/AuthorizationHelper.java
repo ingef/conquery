@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,8 +13,8 @@ import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -129,7 +128,7 @@ public class AuthorizationHelper {
 	}
 
 
-	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
+	public static boolean registerForAuthentication(UserManageable userManager, User user, CredentialType credentials, boolean override) {
 		if(override) {
 			return userManager.updateUser(user, credentials);
 		}

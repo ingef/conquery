@@ -98,7 +98,7 @@ public class IdpDelegatingAccessTokenCreatorTest {
 
 	@Test
 	public void vaildUsernamePassword() {
-		String jwt = idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, USER_1_PASSWORD.toCharArray());
+		String jwt = idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, USER_1_PASSWORD);
 
 		assertThat(jwt).isEqualTo(USER_1_TOKEN);
 	}
@@ -107,7 +107,7 @@ public class IdpDelegatingAccessTokenCreatorTest {
 	public void invaildUsernamePassword() {
 		log.info("This test will print an Error below.");
 		assertThatThrownBy(
-				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password".toCharArray()))
+				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password"))
 				.isInstanceOf(IllegalStateException.class);
 	}
 

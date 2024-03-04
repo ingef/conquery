@@ -5,11 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,9 +34,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.auth.apitoken.ApiToken;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
-import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -80,7 +75,6 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -102,7 +96,6 @@ import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.util.CharArrayBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -124,7 +117,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void passwordCredential() throws IOException, JSONException {
-		PasswordCredential credential = new PasswordCredential("testPassword".toCharArray());
+		PasswordCredential credential = new PasswordCredential("testPassword");
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
@@ -563,31 +556,6 @@ public class SerializationTests extends AbstractSerializationTest {
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(centralRegistry)
 				.test(query);
-	}
-
-	@Test
-	public void testApiTokenData() throws JSONException, IOException {
-		final CharArrayBuffer buffer = new CharArrayBuffer(5);
-		buffer.append("testtest");
-		final ApiToken apiToken = new ApiToken(buffer);
-		final ApiTokenData
-				apiTokenData =
-				new ApiTokenData(
-						UUID.randomUUID(),
-						apiToken.hashToken(),
-						"tokenName",
-						new UserId("tokenUser"),
-						LocalDate.now(),
-						LocalDate.now().plus(1, ChronoUnit.DAYS),
-						EnumSet.of(Scopes.DATASET),
-						getMetaStorage()
-				);
-
-
-		SerializationTestUtil
-				.forType(ApiTokenData.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(apiTokenData);
 	}
 
 	@Test
