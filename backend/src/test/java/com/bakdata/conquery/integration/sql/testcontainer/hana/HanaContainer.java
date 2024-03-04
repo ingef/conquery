@@ -65,7 +65,11 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 
 	private String composeHanaArgs() {
 		return "--agree-to-sap-license " +
-			   "--passwords-url file:///home/secrets/password.json";
+			   "--passwords-url file:///home/secrets/password.json" +
+			   "--dont-check-consistency" +
+			   "--dont-check-mount-points" +
+			   "--dont-check-version" +
+			   "--dont-check-system";
 	}
 
 }
