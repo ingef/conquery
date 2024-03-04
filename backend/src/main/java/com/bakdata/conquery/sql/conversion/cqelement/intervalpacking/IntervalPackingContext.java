@@ -9,7 +9,7 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
@@ -24,7 +24,7 @@ public class IntervalPackingContext implements Context {
 	 */
 	String nodeLabel;
 
-	SelectsIds ids;
+	SqlIdColumns ids;
 
 	ColumnDateRange validityDate;
 

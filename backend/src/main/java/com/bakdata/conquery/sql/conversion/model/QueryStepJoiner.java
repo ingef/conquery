@@ -44,7 +44,7 @@ public class QueryStepJoiner {
 			ConversionContext context
 	) {
 		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
-		SelectsIds ids = coalesceIds(queriesToJoin);
+		SqlIdColumns ids = coalesceIds(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
 		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
 
@@ -84,10 +84,10 @@ public class QueryStepJoiner {
 			QueryStep leftPartQS = queriesToJoin.get(i);
 			QueryStep rightPartQS = queriesToJoin.get(i + 1);
 
-			SelectsIds leftIds = leftPartQS.getQualifiedSelects().getIds();
-			SelectsIds rightIds = rightPartQS.getQualifiedSelects().getIds();
+			SqlIdColumns leftIds = leftPartQS.getQualifiedSelects().getIds();
+			SqlIdColumns rightIds = rightPartQS.getQualifiedSelects().getIds();
 
-			List<Condition> joinConditions = SelectsIds.join(leftIds, rightIds);
+			List<Condition> joinConditions = SqlIdColumns.join(leftIds, rightIds);
 
 			joinedQuery = joinType.join(joinedQuery, rightPartQS, joinConditions);
 		}
@@ -101,9 +101,9 @@ public class QueryStepJoiner {
 						 .collect(Collectors.toList());
 	}
 
-	public static SelectsIds coalesceIds(List<QueryStep> querySteps) {
-		List<SelectsIds> ids = querySteps.stream().map(QueryStep::getQualifiedSelects).map(Selects::getIds).toList();
-		return SelectsIds.coalesce(ids);
+	public static SqlIdColumns coalesceIds(List<QueryStep> querySteps) {
+		List<SqlIdColumns> ids = querySteps.stream().map(QueryStep::getQualifiedSelects).map(Selects::getIds).toList();
+		return SqlIdColumns.coalesce(ids);
 	}
 
 	private static Table<Record> getIntitialJoinTable(List<QueryStep> queriesToJoin) {
@@ -111,7 +111,7 @@ public class QueryStepJoiner {
 	}
 
 	private static QueryStep buildJoinedStep(
-			SelectsIds ids,
+			SqlIdColumns ids,
 			List<SqlSelect> mergedSelects,
 			Optional<ColumnDateRange> validityDate,
 			QueryStep.QueryStepBuilder builder
@@ -125,7 +125,7 @@ public class QueryStepJoiner {
 	}
 
 	private static QueryStep buildStepAndAggregateDates(
-			SelectsIds ids,
+			SqlIdColumns ids,
 			List<SqlSelect> mergedSelects,
 			QueryStep.QueryStepBuilder builder,
 			DateAggregationDates dateAggregationDates,

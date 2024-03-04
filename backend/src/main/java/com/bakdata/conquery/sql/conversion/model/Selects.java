@@ -16,7 +16,7 @@ import org.jooq.Field;
 @Builder(toBuilder = true)
 public class Selects {
 
-	SelectsIds ids;
+	SqlIdColumns ids;
 	@Builder.Default
 	Optional<ColumnDateRange> validityDate = Optional.empty();
 	@Singular
@@ -35,7 +35,7 @@ public class Selects {
 	}
 
 	public Selects qualify(String qualifier) {
-		SelectsIds ids = this.ids.qualify(qualifier);
+		SqlIdColumns ids = this.ids.qualify(qualifier);
 		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()

@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -39,10 +39,10 @@ class InvertCte extends DateAggregationCte {
 
 		QueryStep rowNumberStep = context.getStep(InvertCteStep.ROW_NUMBER);
 
-		SelectsIds ids = context.getIds();
-		SelectsIds leftIds = ids.qualify(ROWS_LEFT_TABLE_NAME);
-		SelectsIds rightIds = ids.qualify(ROWS_RIGHT_TABLE_NAME);
-		SelectsIds coalescedIds = SelectsIds.coalesce(List.of(leftIds, rightIds));
+		SqlIdColumns ids = context.getIds();
+		SqlIdColumns leftIds = ids.qualify(ROWS_LEFT_TABLE_NAME);
+		SqlIdColumns rightIds = ids.qualify(ROWS_RIGHT_TABLE_NAME);
+		SqlIdColumns coalescedIds = SqlIdColumns.coalesce(List.of(leftIds, rightIds));
 
 		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedIds, context);
 		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftIds, rightIds, rowNumberStep);
@@ -52,7 +52,7 @@ class InvertCte extends DateAggregationCte {
 						.fromTable(fromTable);
 	}
 
-	private Selects getInvertSelects(QueryStep rowNumberStep, SelectsIds coalescedIds, DateAggregationContext context) {
+	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
@@ -74,7 +74,7 @@ class InvertCte extends DateAggregationCte {
 					  .build();
 	}
 
-	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SelectsIds leftPrimaryColumn, SelectsIds rightPrimaryColumn, QueryStep rowNumberStep) {
+	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftPrimaryColumn, SqlIdColumns rightPrimaryColumn, QueryStep rowNumberStep) {
 
 		Field<Integer> leftRowNumber = DSL.field(DSL.name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
 										  .plus(1);
@@ -82,7 +82,7 @@ class InvertCte extends DateAggregationCte {
 
 		Condition[] joinConditions = Stream.concat(
 												   Stream.of(leftRowNumber.eq(rightRowNumber)),
-												   SelectsIds.join(leftPrimaryColumn, rightPrimaryColumn).stream()
+												   SqlIdColumns.join(leftPrimaryColumn, rightPrimaryColumn).stream()
 										   )
 										   .toArray(Condition[]::new);
 

@@ -6,7 +6,7 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
@@ -29,7 +29,7 @@ class RowNumberCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		SelectsIds ids = context.getIds();
+		SqlIdColumns ids = context.getIds();
 
 		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
 		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))

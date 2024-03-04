@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
@@ -22,7 +22,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 class DateAggregationContext implements Context, Qualifiable<DateAggregationContext> {
 
-	SelectsIds ids;
+	SqlIdColumns ids;
 	List<SqlSelect> carryThroughSelects;
 	SqlTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;

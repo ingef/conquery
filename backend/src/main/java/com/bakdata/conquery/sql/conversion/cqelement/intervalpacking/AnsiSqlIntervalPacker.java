@@ -11,7 +11,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 	private QueryStep createPreviousEndStep(IntervalPackingContext context) {
 
 		String sourceTableName = context.getIntervalPackingTables().getRootTable();
-		SelectsIds ids = context.getIds().qualify(sourceTableName);
+		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
 		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
 
 		Field<Date> previousEnd = DSL.max(validityDate.getEnd())
@@ -62,7 +62,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		String previousEndCteName = previousEndStep.getCteName();
 		Selects previousEndSelects = previousEndStep.getQualifiedSelects();
-		SelectsIds ids = previousEndSelects.getIds();
+		SqlIdColumns ids = previousEndSelects.getIds();
 		ColumnDateRange validityDate = previousEndSelects.getValidityDate().get();
 		Field<Date> previousEnd = DSL.field(DSL.name(previousEndCteName, IntervalPacker.PREVIOUS_END_FIELD_NAME), Date.class);
 
@@ -96,7 +96,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		String rangeIndexCteName = rangeIndexStep.getCteName();
 		Selects rangeIndexSelects = rangeIndexStep.getQualifiedSelects();
-		SelectsIds ids = rangeIndexSelects.getIds();
+		SqlIdColumns ids = rangeIndexSelects.getIds();
 		ColumnDateRange validityDate = rangeIndexSelects.getValidityDate().get();
 
 		Field<Date> rangeStart = DSL.min(validityDate.getStart()).as(IntervalPacker.RANGE_START_MIN_FIELD_NAME);

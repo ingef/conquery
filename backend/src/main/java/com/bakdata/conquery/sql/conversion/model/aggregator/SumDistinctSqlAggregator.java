@@ -16,7 +16,7 @@ import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
@@ -93,7 +93,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			List<Column> distinctByColumns,
 			String alias,
 			IRange<? extends Number, ?> filterValue,
-			SelectsIds ids,
+			SqlIdColumns ids,
 			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
@@ -162,7 +162,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 	 * the row number will be incremented for each duplicated entry.
 	 */
 	private static QueryStep createRowNumberCte(
-			SelectsIds ids,
+			SqlIdColumns ids,
 			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
 			List<ExtractingSqlSelect<Object>> distinctByRootSelects,
 			String alias,
@@ -170,7 +170,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			NameGenerator nameGenerator
 	) {
 		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-		SelectsIds qualifiedIds = ids.qualify(predecessor);
+		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
 		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
 
 		List<Field<?>> partitioningFields = Stream.concat(
@@ -204,7 +204,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			String alias,
 			NameGenerator nameGenerator
 	) {
-		SelectsIds ids = rowNumberCte.getQualifiedSelects().getIds();
+		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
 
 		Selects rowNumberFilteredSelects = Selects.builder()
 												  .ids(ids)

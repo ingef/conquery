@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
@@ -37,7 +37,7 @@ class EventFilterCte extends ConnectorCte {
 
 	private Selects getEventFilterSelects(CQTableContext tableContext) {
 		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
-		SelectsIds ids = tableContext.getIds().qualify(predecessorTableName);
+		SqlIdColumns ids = tableContext.getIds().qualify(predecessorTableName);
 
 		Optional<ColumnDateRange> validityDate = tableContext.getValidityDate();
 		if (validityDate.isPresent()) {

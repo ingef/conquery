@@ -28,7 +28,7 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
@@ -140,7 +140,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String conceptConnectorLabel = nameGenerator.conceptConnectorName(cqConcept, connector);
 		String tableName = connector.getTable().getName();
 
-		SelectsIds ids = convertIds(cqConcept, cqTable, conversionContext);
+		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, functionProvider);
 		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
 
@@ -184,7 +184,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .build();
 	}
 
-	private static SelectsIds convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
+	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn())).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 
@@ -192,7 +192,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			|| conversionContext.getSecondaryIdDescription() == null
 			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
 		) {
-			return new SelectsIds(primaryColumn);
+			return new SqlIdColumns(primaryColumn);
 		}
 
 		Column secondaryIdColumn = cqTable.getConnector().getTable().findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
@@ -206,7 +206,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		);
 
 		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName())).as(SharedAliases.SECONDARY_ID.getAlias());
-		return new SelectsIds(primaryColumn, secondaryId);
+		return new SqlIdColumns(primaryColumn, secondaryId);
 	}
 
 

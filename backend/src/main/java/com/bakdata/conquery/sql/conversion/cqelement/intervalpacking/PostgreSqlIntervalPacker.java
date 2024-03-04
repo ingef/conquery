@@ -7,7 +7,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SelectsIds;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,7 +24,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 
 		String sourceTableName = context.getIntervalPackingTables().getRootTable();
-		SelectsIds ids = context.getIds().qualify(sourceTableName);
+		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
 		ColumnDateRange qualifiedValidityDate = context.getValidityDate().qualify(sourceTableName);
 		ColumnDateRange aggregatedValidityDate = this.functionProvider.aggregated(qualifiedValidityDate)
 																	  .asValidityDateRange(context.getNodeLabel());

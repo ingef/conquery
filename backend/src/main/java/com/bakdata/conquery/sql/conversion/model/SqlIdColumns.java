@@ -15,7 +15,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class SelectsIds implements Qualifiable<SelectsIds> {
+public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	@Getter
 	private final Field<Object> primaryColumn;
@@ -25,26 +25,26 @@ public class SelectsIds implements Qualifiable<SelectsIds> {
 
 	private final List<Field<?>> ids;
 
-	public SelectsIds(Field<Object> primaryColumn, @NonNull Field<Object> secondaryId) {
+	public SqlIdColumns(Field<Object> primaryColumn, @NonNull Field<Object> secondaryId) {
 		this.primaryColumn = primaryColumn;
 		this.secondaryId = secondaryId;
 		this.ids = Stream.concat(Stream.of(this.primaryColumn), Stream.ofNullable(this.secondaryId)).collect(Collectors.toList());
 	}
 
-	public SelectsIds(Field<Object> primaryColumn) {
+	public SqlIdColumns(Field<Object> primaryColumn) {
 		this.primaryColumn = primaryColumn;
 		this.secondaryId = null;
 		this.ids = List.of(this.primaryColumn);
 	}
 
 	@Override
-	public SelectsIds qualify(String qualifier) {
+	public SqlIdColumns qualify(String qualifier) {
 		Field<Object> primaryColumn = QualifyingUtil.qualify(this.primaryColumn, qualifier);
 		if (this.secondaryId == null) {
-			return new SelectsIds(primaryColumn);
+			return new SqlIdColumns(primaryColumn);
 		}
 		Field<Object> secondaryId = QualifyingUtil.qualify(this.secondaryId, qualifier);
-		return new SelectsIds(primaryColumn, secondaryId);
+		return new SqlIdColumns(primaryColumn, secondaryId);
 	}
 
 	public Optional<Field<Object>> getSecondaryId() {
@@ -55,7 +55,7 @@ public class SelectsIds implements Qualifiable<SelectsIds> {
 		return this.ids;
 	}
 
-	public static List<Condition> join(SelectsIds leftIds, SelectsIds rightIds) {
+	public static List<Condition> join(SqlIdColumns leftIds, SqlIdColumns rightIds) {
 		Condition joinPrimariesCondition = leftIds.getPrimaryColumn().eq(rightIds.getPrimaryColumn());
 		Condition joinSecondariesCondition;
 		if (leftIds.getSecondaryId().isPresent() && rightIds.getSecondaryId().isPresent()) {
@@ -67,7 +67,7 @@ public class SelectsIds implements Qualifiable<SelectsIds> {
 		return List.of(joinPrimariesCondition, joinSecondariesCondition);
 	}
 
-	public static SelectsIds coalesce(List<SelectsIds> selectsIds) {
+	public static SqlIdColumns coalesce(List<SqlIdColumns> selectsIds) {
 
 		List<Field<?>> primaryColumns = new ArrayList<>(selectsIds.size());
 		List<Field<?>> secondaryIds = new ArrayList<>(selectsIds.size());
@@ -78,10 +78,10 @@ public class SelectsIds implements Qualifiable<SelectsIds> {
 
 		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		if (secondaryIds.isEmpty()) {
-			return new SelectsIds(coalescedPrimaryColumn);
+			return new SqlIdColumns(coalescedPrimaryColumn);
 		}
 		Field<Object> coalescedSecondaryIds = coalesceFields(secondaryIds).as(SharedAliases.SECONDARY_ID.getAlias());
-		return new SelectsIds(coalescedPrimaryColumn, coalescedSecondaryIds);
+		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}
 
 	private static Field<Object> coalesceFields(List<Field<?>> fields) {
