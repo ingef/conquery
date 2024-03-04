@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -252,6 +253,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+
 	}
 
 	/**
