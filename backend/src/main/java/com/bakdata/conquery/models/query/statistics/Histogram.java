@@ -65,7 +65,7 @@ public class Histogram {
 		return new Histogram(nodes,
 							 new Node(0, 0),
 							 new Node(Math.min(absMin, newLower), newLower),
-							 new Node(newUpper, Math.max(absMax, newUpper)),
+							 new Node(newUpper, Math.max(absMax, newUpper), true),
 							 newLower, newUpper,
 							 width);
 	}
@@ -142,7 +142,7 @@ public class Histogram {
 					 )
 					 .flatMap(Function.identity())
 					 // We compare by Max as well to fix zeroNode and underflowNode sorting when absMin >= 0
-					 .sorted(Comparator.comparingDouble(Node::getMin).thenComparing(Comparator.comparingDouble(Node::getMax)))
+					 .sorted(Comparator.comparingDouble(Node::getMin).thenComparingDouble(Node::getMax))
 					 .toList();
 	}
 
