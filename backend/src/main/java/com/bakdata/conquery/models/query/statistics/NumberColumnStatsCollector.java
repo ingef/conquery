@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import c10n.C10N;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.Range;
@@ -43,20 +42,24 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		comparator = selectComparator(type);
 
-		if (type instanceof ResultType.MoneyT) {
-			formatter = DecimalFormat.getCurrencyInstance(I18n.LOCALE.get());
-			formatter.setCurrency(printSettings.getCurrency());
-			formatter.setMaximumFractionDigits(printSettings.getCurrency().getDefaultFractionDigits());
-		}
-		else if (type instanceof ResultType.IntegerT) {
-			formatter = printSettings.getIntegerFormat();
-		}
-		else {
-			formatter = printSettings.getDecimalFormat();
-		}
+		// We have to clone, as NumberFormat is not thread-safe and shared.
+		formatter = selectFormatter(type, printSettings);
+
 		this.expectedBins = expectedBins;
 		this.upperPercentile = upperPercentile;
 		this.lowerPercentile = lowerPercentile;
+	}
+
+	private NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
+		if (type instanceof ResultType.MoneyT) {
+			return ((DecimalFormat) printSettings.getCurrencyFormat().clone());
+		}
+		else if (type instanceof ResultType.IntegerT) {
+			return ((NumberFormat) printSettings.getIntegerFormat().clone());
+		}
+		else {
+			return ((NumberFormat) printSettings.getDecimalFormat().clone());
+		}
 	}
 
 	private Comparator<TYPE> selectComparator(ResultType resultType) {

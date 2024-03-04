@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
@@ -41,6 +42,7 @@ public class PrintSettings {
 	private final DateTimeFormatter dateFormatter;
 	private final NumberFormat decimalFormat;
 	private final NumberFormat integerFormat;
+	private final NumberFormat currencyFormat;
 	private final Currency currency;
 
 	/**
@@ -76,6 +78,10 @@ public class PrintSettings {
 
 		this.dateFormat = config.getLocale().findDateFormat(locale);
 		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;
+
+		this.currencyFormat = DecimalFormat.getCurrencyInstance(locale);
+		currencyFormat.setCurrency(currency);
+		currencyFormat.setMaximumFractionDigits(currency.getDefaultFractionDigits());
 
 	}
 

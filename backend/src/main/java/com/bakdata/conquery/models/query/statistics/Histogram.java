@@ -163,22 +163,29 @@ public class Histogram {
 
 
 		String createLabel(Double2ObjectFunction<String> printer, boolean isInteger) {
+			if(getMin() == getMax()){
+				return printer.apply(getMin());
+			}
 			final String lower = printer.apply(getMin());
+
+			if(isInteger){
+
+				if (getMax() - getMin() <= 1){
+					return lower;
+				}
+
+				// Integers allow us to forfeit the brace notation by closing the range
+				final String upper = printer.apply(getMax() - 1);
+
+				return String.format("%s - %s", lower, upper);
+			}
+
 			final String upper = printer.apply(getMax());
 
-			if (isInteger && getMax() - getMin() <= 1){
-				return lower;
-			}
-
-			if(lower.equals(upper)){
-				return lower;
-			}
 			final String startBrackets = getMin() == 0 ? "(" : "[";
 			final String endBrackets = ")";
 
-			final String binLabel = String.format("%s%s - %s%s", startBrackets, lower, upper, endBrackets);
-
-			return binLabel;
+			return String.format("%s%s - %s%s", startBrackets, lower, upper, endBrackets);
 		}
 
 	}

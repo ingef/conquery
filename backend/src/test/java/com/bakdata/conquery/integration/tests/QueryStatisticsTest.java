@@ -189,19 +189,19 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept money",
 								null,
 								List.of(
-										new HistogramColumnDescription.Entry("[€ 10.00 - € 13.00)", 1),
-										new HistogramColumnDescription.Entry("[€ 13.00 - € 16.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 16.00 - € 19.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 19.00 - € 22.00)", 1),
-										new HistogramColumnDescription.Entry("[€ 22.00 - € 25.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 25.00 - € 28.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 28.00 - € 31.00)", 2),
-										new HistogramColumnDescription.Entry("[€ 31.00 - € 34.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 34.00 - € 37.00)", 0),
-										new HistogramColumnDescription.Entry("[€ 37.00 - € 40.00)", 0),
-										new HistogramColumnDescription.Entry("€ 40.00", 1)
+										new HistogramColumnDescription.Entry("[€10.00 - €13.00)", 1),
+										new HistogramColumnDescription.Entry("[€13.00 - €16.00)", 0),
+										new HistogramColumnDescription.Entry("[€16.00 - €19.00)", 0),
+										new HistogramColumnDescription.Entry("[€19.00 - €22.00)", 1),
+										new HistogramColumnDescription.Entry("[€22.00 - €25.00)", 0),
+										new HistogramColumnDescription.Entry("[€25.00 - €28.00)", 0),
+										new HistogramColumnDescription.Entry("[€28.00 - €31.00)", 2),
+										new HistogramColumnDescription.Entry("[€31.00 - €34.00)", 0),
+										new HistogramColumnDescription.Entry("[€34.00 - €37.00)", 0),
+										new HistogramColumnDescription.Entry("[€37.00 - €40.00)", 0),
+										new HistogramColumnDescription.Entry("€40.00", 1)
 								),
-								Map.of(labels.p25(), "€ 15.00", labels.p75(), "€ 35.00", labels.max(), "€ 40.00", labels.mean(), "€ 26.00", labels.median(), "€ 30.00", labels.min(), "€ 10.00", labels.missing(), "1", labels.std(), "11.4", labels.sum(), "€ 130.00", labels.count(), "5")
+								Map.of(labels.p25(), "€15.00", labels.p75(), "€35.00", labels.max(), "€40.00", labels.mean(), "€26.00", labels.median(), "€30.00", labels.min(), "€10.00", labels.missing(), "1", labels.std(), "11.4", labels.sum(), "€130.00", labels.count(), "5")
 						),
 						new HistogramColumnDescription(
 								"concept boolean",
