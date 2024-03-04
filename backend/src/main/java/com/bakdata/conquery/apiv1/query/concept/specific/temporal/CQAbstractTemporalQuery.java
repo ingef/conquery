@@ -2,9 +2,11 @@ package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -89,5 +91,13 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		return getIndex().getChild().collectRequiredEntities(context); //TODO preceeding also?
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> out) {
+
+		out.addAll(getIndex().getChild().collectRequiredQueries());
+		out.addAll(getPreceding().getChild().collectRequiredQueries());
+
 	}
 }

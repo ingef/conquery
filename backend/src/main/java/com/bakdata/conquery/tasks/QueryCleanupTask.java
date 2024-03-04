@@ -12,12 +12,9 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -39,7 +36,7 @@ public class QueryCleanupTask extends Task {
 			Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
 
 	private final MetaStorage storage;
-	private Duration queryExpiration;
+	private final Duration queryExpiration;
 
 	public QueryCleanupTask(MetaStorage storage, Duration queryExpiration) {
 		super("query-cleanup");
@@ -72,20 +69,14 @@ public class QueryCleanupTask extends Task {
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
-			final QueryUtils.AllReusedFinder reusedChecker = new QueryUtils.AllReusedFinder();
-			Set<ManagedExecution> toDelete = new HashSet<>();
+			final Set<ManagedExecutionId> requiredQueries = new HashSet<>();
+
+			final Set<ManagedExecution> toDelete = new HashSet<>();
 
 			for (ManagedExecution execution : storage.getAllExecutions()) {
 
 				// Gather all referenced queries via reused checker.
-				if (execution instanceof ManagedQuery) {
-					((ManagedQuery) execution).getQuery().visit(reusedChecker);
-				}
-				else if (execution instanceof ManagedInternalForm<?> internalForm) {
-					internalForm.getFlatSubQueries().values()
-								.forEach(q -> q.getQuery().visit(reusedChecker));
-				}
-
+				requiredQueries.addAll(execution.getSubmitted().collectRequiredQueries());
 
 				if (execution.isSystem()) {
 					// System Queries will always be deleted.
@@ -122,8 +113,7 @@ public class QueryCleanupTask extends Task {
 
 			// remove all queries referenced in reused queries.
 			final Collection<ManagedExecution> referenced =
-					reusedChecker.getReusedElements().stream()
-								 .map(CQReusedQuery::getQueryId)
+					requiredQueries.stream()
 								 .map(storage::getExecution)
 								 .collect(Collectors.toSet());
 
