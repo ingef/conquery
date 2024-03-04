@@ -116,6 +116,12 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
+		// HANA does not support single column ranges
+		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
+	}
+
+	@Override
 	public Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {

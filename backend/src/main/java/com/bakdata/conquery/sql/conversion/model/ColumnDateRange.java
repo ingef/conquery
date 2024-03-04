@@ -9,6 +9,10 @@ import lombok.Getter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+/**
+ * This class represents a date range in SQL. It supports both single-column and two-column representations of date ranges.
+ * It provides functionality to handle date ranges as either a single field (e.g., in Postgres) or as separate start and end fields (e.g., in HANA).
+ */
 @Getter
 public class ColumnDateRange {
 

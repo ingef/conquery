@@ -25,8 +25,6 @@ import org.jooq.impl.DSL;
 @CPSType(id="PREFIX_RANGE", base=CTCondition.class)
 public class PrefixRangeCondition implements CTCondition {
 
-	private static final String ANY_CHAR_REGEX = ".*";
-
 	@Getter @Setter @NotEmpty
 	private String min;
 	@Getter @Setter @NotEmpty

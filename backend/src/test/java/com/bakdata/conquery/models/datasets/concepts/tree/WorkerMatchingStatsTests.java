@@ -2,18 +2,15 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bakdata.conquery.mode.cluster.WorkerMatchingStats;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class MatchingStatsTests {
+public class WorkerMatchingStatsTests {
 
     private final WorkerId workerId1 = new WorkerId(new DatasetId("sampleDataset"), "sampleWorker");
     private final WorkerId workerId2 = new WorkerId(new DatasetId("sampleDataset2"), "sampleWorker2");
@@ -21,17 +18,17 @@ public class MatchingStatsTests {
     @Test
     public void entitiesCountTest() {
 
-        MatchingStats stats = new MatchingStats();
+		WorkerMatchingStats stats = new WorkerMatchingStats();
 
         assertThat(stats.countEntities()).isEqualTo(0);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
+		stats.putEntry(workerId1, new WorkerMatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(5);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
+		stats.putEntry(workerId1, new WorkerMatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(8);
 
-        stats.putEntry(workerId2, new MatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
+		stats.putEntry(workerId2, new WorkerMatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(10);
 
 
@@ -39,7 +36,7 @@ public class MatchingStatsTests {
 
     @Test
     public void addEventTest(){
-        MatchingStats stats = new MatchingStats();
+		WorkerMatchingStats stats = new WorkerMatchingStats();
         Table table = new Table();
         table.setColumns(new Column[0]);
 
@@ -47,7 +44,7 @@ public class MatchingStatsTests {
         assertThat(stats.countEntities()).isEqualTo(0);
 
 
-        MatchingStats.Entry entry1 =  new MatchingStats.Entry();
+		WorkerMatchingStats.Entry entry1 = new WorkerMatchingStats.Entry();
         entry1.addEvent(table, null, 1, 1);
         entry1.addEvent(table, null, 2, 1);
 
@@ -67,7 +64,7 @@ public class MatchingStatsTests {
         assertThat(stats.countEntities()).isEqualTo(4);
 
 
-        MatchingStats.Entry entry2 =  new MatchingStats.Entry();
+		WorkerMatchingStats.Entry entry2 = new WorkerMatchingStats.Entry();
 
         entry2.addEvent(table, null, 1, 1);
         entry2.addEvent(table, null, 2, 2);

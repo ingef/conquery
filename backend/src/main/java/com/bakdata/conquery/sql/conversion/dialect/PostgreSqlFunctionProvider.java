@@ -89,7 +89,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String alias) {
 
 		Field<?> dateRange;
 
@@ -125,12 +125,20 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		}
 
 		return ColumnDateRange.of(dateRange)
-							  .asValidityDateRange(label);
+							  .asValidityDateRange(alias);
 	}
 
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(DSL.function("range_agg", Object.class, columnDateRange.getRange()));
+	}
+
+	@Override
+	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
+		Field<?> daterange = columnDateRange.getRange();
+		Field<Date> start = DSL.function("lower", Date.class, daterange);
+		Field<Date> end = DSL.function("upper", Date.class, daterange);
+		return ColumnDateRange.of(start, end);
 	}
 
 	@Override
@@ -211,9 +219,9 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.extract(dateField, DatePart.YEAR),
 				DSL.extract(dateField, DatePart.QUARTER)
 		);
-	}
-
-	@Override
+  }
+  
+  @Override
 	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)

@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
+import com.bakdata.conquery.mode.cluster.WorkerMatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
-import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
@@ -23,22 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage {
+
 	private final WorkerId source;
 
 	@ToString.Exclude
 	@NsIdRefKeys
-	private final Map<ConceptElement<?>, MatchingStats.Entry> values;
+	private final Map<ConceptElement<?>, WorkerMatchingStats.Entry> values;
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		for (Entry<ConceptElement<?>, MatchingStats.Entry> entry : values.entrySet()) {
+		for (Entry<ConceptElement<?>, WorkerMatchingStats.Entry> entry : values.entrySet()) {
 			try {
 				final ConceptElement<?> target = entry.getKey();
-				final MatchingStats.Entry value = entry.getValue();
+				final WorkerMatchingStats.Entry value = entry.getValue();
 
-				MatchingStats matchingStats = target.getMatchingStats();
+				WorkerMatchingStats matchingStats = (WorkerMatchingStats) target.getMatchingStats();
 				if (matchingStats == null) {
-					matchingStats = new MatchingStats();
+					matchingStats = new WorkerMatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
 				matchingStats.putEntry(source, value);

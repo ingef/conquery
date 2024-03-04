@@ -70,6 +70,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 									  .databasePassword(PASSWORD)
 									  .withPrettyPrinting(true)
 									  .primaryColumn("pid")
+									  .backgroundThreads(Runtime.getRuntime().availableProcessors())
 									  .build();
 		dslContext = DslContextFactory.create(sqlConfig);
 		testSqlDialect = new TestPostgreSqlDialect(dslContext);

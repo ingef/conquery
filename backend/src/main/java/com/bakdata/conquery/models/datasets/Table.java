@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -33,7 +34,12 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@Valid
 	@JsonManagedReference
 	private Column[] columns = new Column[0];
-
+	/**
+	 * Defines the primary key/column of this table. Only required for SQL mode.
+	 */
+	@Nullable
+	@JsonManagedReference
+	private Column primaryColum;
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
