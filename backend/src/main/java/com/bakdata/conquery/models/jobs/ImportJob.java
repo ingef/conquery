@@ -201,14 +201,13 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table, IdMutex<DictionaryId> sharedDictionaryLocks) {
+	private static Map<Column, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
 			return Collections.emptyMap();
 		}
 
-		final Map<String, DictionaryMapping> out = new ConcurrentHashMap<>();
 
 		log.debug("BEGIN importing {} Dictionaries", dicts.size());
 
@@ -228,18 +227,22 @@ public class ImportJob extends Job {
 				  storeAndDistributeDictionary(namespace, dictionary);
 			  });
 
+		final Map<Column, DictionaryMapping> out = new ConcurrentHashMap<>();
+
+		// We group by sharedDictionary to avoid sending dictionaries multliple times
 		Arrays.stream(columns)
 			  .parallel()
 			  .filter(column -> column.getType() == MajorTypeId.STRING)
 			  .filter(col -> col.getSharedDictionary() != null)
 			  .filter(col -> dicts.containsKey(col.getName()))
-			  .forEach(column -> {
-				  final Dictionary importDictionary = dicts.get(column.getName());
-
-				  final String sharedDictionaryName = column.getSharedDictionary();
-				  log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
-
+			  .collect(Collectors.groupingBy(Column::getSharedDictionary))
+			  .values()
+			  .forEach(allColumns -> {
+				  final Column refColumn = allColumns.get(0);
+				  final String sharedDictionaryName = refColumn.getSharedDictionary();
 				  final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
+
+				  log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, refColumn.getName(), sharedDictionaryName);
 
 				  // We have to lock here, as sibling columns might both use the same shared-dictionary
 				  try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(dictionaryId)) {
@@ -248,13 +251,20 @@ public class ImportJob extends Job {
 					  ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
 					  log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
 
-					  final DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+					  int newIds = 0;
 
-					  if (mapping.getNumberOfNewIds() != 0) {
-						  storeAndDistributeDictionary(namespace, mapping.getTargetDictionary());
+					  for (Column column : allColumns) {
+						  final Dictionary importDictionary = dicts.get(column.getName());
+
+						  final DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+
+						  newIds += mapping.getNumberOfNewIds();
+						  out.put(column, mapping);
 					  }
 
-					  out.put(column.getName(), mapping);
+					  if (newIds > 0) {
+						  storeAndDistributeDictionary(namespace, sharedDictionary);
+					  }
 				  }
 			  });
 		return out;
@@ -287,7 +297,7 @@ public class ImportJob extends Job {
 
 		log.info("Importing Dictionaries");
 
-		Map<String, DictionaryMapping> sharedDictionaryMappings =
+		Map<Column, DictionaryMapping> sharedDictionaryMappings =
 				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table, sharedDictionaryLocks);
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
@@ -476,7 +486,7 @@ public class ImportJob extends Job {
 	/**
 	 * Apply new positions into incoming shared dictionaries.
 	 */
-	private void remapToSharedDictionary(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+	private void remapToSharedDictionary(Map<Column, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
 
 		if (mappings.isEmpty()) {
 			log.trace("No columns with shared dictionary appear to be in the import.");
@@ -488,11 +498,11 @@ public class ImportJob extends Job {
 		// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
 		mappings.entrySet().parallelStream()
 				.forEach(entry -> {
-					final String columnName = entry.getKey();
+					final Column column = entry.getKey();
 					final DictionaryMapping mapping = entry.getValue();
 
-					final StringStore stringStore = (StringStore) values.get(columnName);
-					log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
+					final StringStore stringStore = (StringStore) values.get(column.getName());
+					log.debug("Remapping Column[{}] = {} with {}", column, stringStore, mapping);
 					final IntegerParser indexParser = new IntegerParser(config);
 					final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 

@@ -5,7 +5,6 @@ import java.util.List;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -58,8 +57,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
 		Selects predecessorSelects = finalDateAggregationStep.getSelects();
 		String joinedCteLabel = joinedStep.getCteName();
-		SqlTables<IntervalPackingCteStep> intervalPackingTables =
-				IntervalPackingTables.forGenericQueryStep(joinedCteLabel, finalDateAggregationStep, context.getNameGenerator());
+		SqlTables intervalPackingTables = IntervalPackingCteStep.getTables(joinedCteLabel, finalDateAggregationStep.getCteName(), context.getNameGenerator());
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()
@@ -84,7 +82,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		}
 
 		Selects baseStepQualifiedSelects = baseStep.getQualifiedSelects();
-		DateAggregationTables<InvertCteStep> dateAggregationTables = InvertCteStep.createTableNames(baseStep, nameGenerator);
+		SqlTables dateAggregationTables = InvertCteStep.getTables(baseStep, nameGenerator);
 
 		DateAggregationContext context = DateAggregationContext.builder()
 															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied

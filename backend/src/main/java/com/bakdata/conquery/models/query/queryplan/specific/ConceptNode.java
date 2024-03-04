@@ -27,9 +27,9 @@ public class ConceptNode extends QPChainNode {
 	private final long requiredBits;
 	private final CQTable table;
 	private final SecondaryIdDescription selectedSecondaryId;
-	private boolean tableActive = false;
-	private Map<Bucket, CBlock> preCurrentRow = null;
-	private CBlock currentRow = null;
+	private boolean tableActive;
+	private Map<Bucket, CBlock> preCurrentRow;
+	private CBlock currentRow;
 
 	public ConceptNode(QPNode child, List<ConceptElement<?>> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
 		this(child, concepts, calculateBitMask(concepts), table, selectedSecondaryId);
@@ -94,7 +94,7 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
+		final CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
 
 		if(cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
 			return super.isOfInterest(bucket);
@@ -103,30 +103,23 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		if (!tableActive) {
-			return;
+			return false;
 		}
 
 		//check concepts
-		int[] mostSpecificChildren = currentRow.getPathToMostSpecificChild(event);
-		if (mostSpecificChildren == null) {
-			for (ConceptElement<?> ce : concepts) {
-				// having no specific child set maps directly to root.
-				// This means we likely have a VirtualConcept
-				if (ce.getConcept() == ce) {
-					getChild().acceptEvent(bucket, event);
-				}
-			}
-			return;
-		}
+		final int[] mostSpecificChildren = currentRow.getPathToMostSpecificChild(event);
+
+		boolean consumed = false;
 
 		for (ConceptElement<?> ce : concepts) {
-			//see #177  we could improve this by building a prefix tree over concepts.prefix
-			if (ce.matchesPrefix(mostSpecificChildren)) {
-				getChild().acceptEvent(bucket, event);
+			if ((mostSpecificChildren != null && ce.matchesPrefix(mostSpecificChildren)) || ce.getConcept() == ce) {
+				consumed |= getChild().acceptEvent(bucket, event);
 			}
 		}
+
+		return consumed;
 	}
 
 	@Override

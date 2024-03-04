@@ -60,7 +60,7 @@ public class PreprocessedHeader {
 		StringJoiner errors = new StringJoiner("\n");
 
 		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
+			errors.add(String.format("Import column count=`%d` does not match table column count=`%d`", getColumns().length, table.getColumns().length));
 		}
 
 		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
@@ -70,7 +70,7 @@ public class PreprocessedHeader {
 			final Column column = table.getColumns()[i];
 
 			if(!typesByName.containsKey(column.getName())){
-				errors.add(String.format("Column[%s] is missing in Import.", column.getName()));
+				errors.add(String.format("Column[%s] is missing.", column.getName()));
 			}
 			else if (!typesByName.get(column.getName()).equals(column.getType())) {
 				errors.add(String.format("Column[%s] Types do not match %s != %s"
@@ -80,8 +80,8 @@ public class PreprocessedHeader {
 		}
 
 		if (errors.length() != 0) {
-			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More Info in Logs.", getTable(), getName(), table.getId()));
+			log.error("Problems concerning Import `{}`:\n{}", name, errors);
+			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More info in logs.", getTable(), getName(), table.getId()));
 		}
 	}
 

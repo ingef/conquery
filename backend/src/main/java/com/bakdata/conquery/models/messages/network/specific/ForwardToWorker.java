@@ -1,12 +1,7 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Objects;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -60,16 +55,11 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	@SneakyThrows(IOException.class)
 	private static byte[] serializeMessage(WorkerMessage message, ObjectWriter writer) {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (OutputStream outputStream = new GZIPOutputStream(baos)) {
-			writer.writeValue(outputStream, message);
-		}
-
-		return baos.toByteArray();
+		return writer.writeValueAsBytes(message);
 	}
 
 	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper mapper) throws java.io.IOException {
-		return mapper.readerFor(WorkerMessage.class).readValue(new GZIPInputStream(new ByteArrayInputStream(messageRaw)));
+		return mapper.readerFor(WorkerMessage.class).readValue(messageRaw);
 	}
 
 	@Override

@@ -145,7 +145,8 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		super.visit(visitor);
+		visitor.accept(this);
+
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}

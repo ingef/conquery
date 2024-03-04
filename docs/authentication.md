@@ -29,7 +29,7 @@ Finally, you can retrieve the well-known url to the new realm which will be late
 
 ### Step 2: Configure Keycloak Client
 
-The next step is to configure a Keycloak client for Conquery. You can either import the [preconfigured OIDC-Client](./resources/conquery.json) or follow these steps:
+The next step is to configure a Keycloak client for Conquery. You can either import the [/resources/conquery.json](https://github.com/ingef/conquery/blob/develop/docs/resources/conquery-oidc-client.json) or follow these steps:
 
 1. In the Keycloak Administration Console, navigate to the Realm in which the client needs to be created.
 2. Click on the "Clients" tab in the left sidebar and then click on the "Create" button.

@@ -1,13 +1,13 @@
 package com.bakdata.conquery.sql.conversion.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
@@ -22,69 +22,52 @@ import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
 
-	static String PRIMARY_COLUMN_NAME = "primary_column";
-
-	public static ConversionContext joinChildren(
+	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
 			ConversionContext context,
 			LogicalOperation logicalOperation,
 			DateAggregationAction dateAggregationAction
 	) {
+		ConversionContext childrenContext = context.createChildContext();
 
-		ConversionContext childrenContext = context;
 		for (CQElement childNode : children) {
 			childrenContext = context.getNodeConversions().convert(childNode, childrenContext);
 		}
 
 		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();
+		return joinSteps(queriesToJoin, logicalOperation, dateAggregationAction, context);
+	}
+
+	public static QueryStep joinSteps(
+			List<QueryStep> queriesToJoin,
+			LogicalOperation logicalOperation,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context
+	) {
+		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		Field<Object> primaryColumn = coalescePrimaryColumns(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
+		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
 
-		QueryStep.QueryStepBuilder andQueryStep = QueryStep.builder()
-														   .cteName(constructJoinedQueryStepLabel(queriesToJoin, logicalOperation))
-														   .fromTable(constructJoinedTable(queriesToJoin, logicalOperation, context))
-														   .conditions(Collections.emptyList())
-														   .predecessors(queriesToJoin);
+		QueryStep joinedStep;
+		QueryStep.QueryStepBuilder joinedStepBuilder = QueryStep.builder()
+																.cteName(joinedCteName)
+																.fromTable(joinedTable)
+																.predecessors(queriesToJoin);
 
 		DateAggregationDates dateAggregationDates = DateAggregationDates.forSteps(queriesToJoin);
 		if (dateAggregationAction == DateAggregationAction.BLOCK || dateAggregationDates.dateAggregationImpossible()) {
-			Selects selects = Selects.builder()
-									 .primaryColumn(primaryColumn)
-									 .sqlSelects(mergedSelects)
-									 .build();
-			andQueryStep = andQueryStep.selects(selects);
-			return context.withQuerySteps(List.of(andQueryStep.build()));
+			joinedStep = buildJoinedStep(primaryColumn, mergedSelects, Optional.empty(), joinedStepBuilder);
 		}
 		// if there is only 1 child node containing a validity date, we just keep it as overall validity date for the joined node
 		else if (dateAggregationDates.getValidityDates().size() == 1) {
 			ColumnDateRange validityDate = dateAggregationDates.getValidityDates().get(0);
-			Selects selects = Selects.builder()
-									 .primaryColumn(primaryColumn)
-									 .validityDate(Optional.ofNullable(validityDate))
-									 .sqlSelects(mergedSelects)
-									 .build();
-			andQueryStep = andQueryStep.selects(selects);
-			return context.withQuerySteps(List.of(andQueryStep.build()));
+			joinedStep = buildJoinedStep(primaryColumn, mergedSelects, Optional.of(validityDate), joinedStepBuilder);
 		}
-
-		List<SqlSelect> mergedSelectsWithAllValidityDates = new ArrayList<>(mergedSelects);
-		mergedSelectsWithAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
-		Selects selects = Selects.builder()
-								 .primaryColumn(primaryColumn)
-								 .sqlSelects(mergedSelectsWithAllValidityDates)
-								 .build();
-		andQueryStep = andQueryStep.selects(selects);
-
-		SqlDateAggregator sqlDateAggregator = context.getSqlDialect().getDateAggregator();
-		QueryStep mergeIntervalsStep = sqlDateAggregator.apply(
-				andQueryStep.build(),
-				mergedSelects,
-				dateAggregationDates,
-				dateAggregationAction,
-				context.getNameGenerator()
-		);
-
-		return context.withQuerySteps(List.of(mergeIntervalsStep));
+		else {
+			joinedStep = buildStepAndAggregateDates(primaryColumn, mergedSelects, joinedStepBuilder, dateAggregationDates, dateAggregationAction, context);
+		}
+		return joinedStep;
 	}
 
 	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, LogicalOperation logicalOperation, ConversionContext context) {
@@ -111,12 +94,22 @@ public class QueryStepJoiner {
 		return joinedQuery;
 	}
 
+	@FunctionalInterface
+	private interface JoinType {
+		TableOnConditionStep<Record> join(
+				Table<Record> leftPartQueryBase,
+				QueryStep rightPartQS,
+				Field<Object> leftPartPrimaryColumn,
+				Field<Object> rightPartPrimaryColumn
+		);
+	}
+
 	public static Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
 		List<Field<?>> primaryColumns = querySteps.stream()
 												  .map(queryStep -> queryStep.getQualifiedSelects().getPrimaryColumn())
 												  .collect(Collectors.toList());
 		return DSL.coalesce(primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
-				  .as(PRIMARY_COLUMN_NAME);
+				  .as(SharedAliases.PRIMARY_COLUMN.getAlias());
 	}
 
 	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
@@ -125,31 +118,43 @@ public class QueryStepJoiner {
 						 .collect(Collectors.toList());
 	}
 
-	private static String constructJoinedQueryStepLabel(List<QueryStep> queriesToJoin, LogicalOperation logicalOperation) {
-
-		String labelConnector = switch (logicalOperation) {
-			case AND -> "AND";
-			case OR -> "OR";
-		};
-
-		String concatenatedCteNames = queriesToJoin.stream()
-												   .map(QueryStep::getCteName)
-												   .collect(Collectors.joining(""));
-
-		return "%s_%8H".formatted(labelConnector, concatenatedCteNames.hashCode());
-	}
-
 	private static Table<Record> getIntitialJoinTable(List<QueryStep> queriesToJoin) {
 		return DSL.table(DSL.name(queriesToJoin.get(0).getCteName()));
 	}
 
-	@FunctionalInterface
-	private interface JoinType {
-		TableOnConditionStep<Record> join(
-				Table<Record> leftPartQueryBase,
-				QueryStep rightPartQS,
-				Field<Object> leftPartPrimaryColumn,
-				Field<Object> rightPartPrimaryColumn
+	private static QueryStep buildJoinedStep(
+			Field<Object> primaryColumn,
+			List<SqlSelect> mergedSelects,
+			Optional<ColumnDateRange> validityDate,
+			QueryStep.QueryStepBuilder builder
+	) {
+		Selects selects = Selects.builder()
+								 .primaryColumn(primaryColumn)
+								 .sqlSelects(mergedSelects)
+								 .validityDate(validityDate)
+								 .build();
+		return builder.selects(selects).build();
+	}
+
+	private static QueryStep buildStepAndAggregateDates(
+			Field<Object> primaryColumn,
+			List<SqlSelect> mergedSelects,
+			QueryStep.QueryStepBuilder builder,
+			DateAggregationDates dateAggregationDates,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context
+	) {
+		List<SqlSelect> withAllValidityDates = new ArrayList<>(mergedSelects);
+		withAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
+		QueryStep joinedStep = buildJoinedStep(primaryColumn, withAllValidityDates, Optional.empty(), builder);
+
+		SqlDateAggregator sqlDateAggregator = context.getSqlDialect().getDateAggregator();
+		return sqlDateAggregator.apply(
+				joinedStep,
+				mergedSelects,
+				dateAggregationDates,
+				dateAggregationAction,
+				context.getNameGenerator()
 		);
 	}
 

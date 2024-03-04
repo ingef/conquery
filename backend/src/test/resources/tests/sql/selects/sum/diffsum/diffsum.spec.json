@@ -1,6 +1,9 @@
 {
   "label": "SUM with subtract column select",
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/selects/sum/diffsum/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

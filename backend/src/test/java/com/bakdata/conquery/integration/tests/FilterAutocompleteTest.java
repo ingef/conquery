@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +47,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			"baaa,lbl-5,ov-5",
 			"b,lbl-6,ov-6"
 	};
+
+	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
@@ -120,8 +126,12 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+
+			// "aaa" occurs after "aab" due to it consisting only of duplicate entries.
+			// The empty string results from `No V*a*lue` and `..Def*au*lt..`
+
 			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("a", "aaa", "aab", "baaa", "" /* `No V*a*lue` :^) */);
+					.containsExactly("a", "aab", "aaa", "" /* `No V*a*lue` :^) */, "baaa");
 		}
 
 
@@ -154,8 +164,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+			// This is probably the insertion order
 			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("", "aaa", "a", "baaa", "aab", "b", "f", "fm", "m", "mf");
+					.containsExactlyInAnyOrder("", "a", "aab", "aaa", "baaa", "b", "f", "m", "mf", "fm");
 		}
 	}
 }

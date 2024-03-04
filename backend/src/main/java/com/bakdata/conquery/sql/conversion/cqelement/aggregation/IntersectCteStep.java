@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,25 +14,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum IntersectCteStep implements DateAggregationCteStep {
 
-	OVERLAP("_overlap", OverlapCte::new, null),
-	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
-	MERGE("_merge", MergeCte::new, OVERLAP);
+	OVERLAP("overlap", OverlapCte::new, null),
+	INTERMEDIATE_TABLE("no_overlap", IntermediateTableCte::new, null),
+	MERGE("merge", MergeCte::new, OVERLAP);
 
 	private static final Set<IntersectCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
-	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
 	private final IntersectCteStep predecessor;
-
-	@Override
-	public String suffix() {
-		return this.suffix;
-	}
-
-	@Override
-	public DateAggregationCteStep predecessor() {
-		return this.predecessor;
-	}
 
 	static List<DateAggregationCte> requiredSteps() {
 		return Arrays.stream(values())
@@ -39,8 +29,8 @@ enum IntersectCteStep implements DateAggregationCteStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<IntersectCteStep> createTableNames(QueryStep joinedTable, NameGenerator nameGenerator) {
-		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName(), nameGenerator);
+	static SqlTables getTables(QueryStep joinedTable, NameGenerator nameGenerator) {
+		return new SqlTables(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName(), nameGenerator);
 	}
 
 }

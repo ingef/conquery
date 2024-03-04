@@ -15,7 +15,7 @@ public class FilterContext<V> implements Context {
 	 */
 	V value;
 	ConversionContext parentContext;
-	SqlTables<ConceptCteStep> conceptTables;
+	SqlTables connectorTables;
 
 	@Override
 	public NameGenerator getNameGenerator() {

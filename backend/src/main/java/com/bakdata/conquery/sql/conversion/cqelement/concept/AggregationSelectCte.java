@@ -2,33 +2,37 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import org.jooq.Field;
 
-class AggregationSelectCte extends ConceptCte {
+class AggregationSelectCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> requiredInAggregationFilterStep = conceptCteContext.allConceptSelects()
-																		   .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
-																		   .distinct()
-																		   .toList();
+		String predecessor = tableContext.getConnectorTables().getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		Field<Object> primaryColumn = QualifyingUtil.qualify(tableContext.getPrimaryColumn(), predecessor);
+
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
+																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
+																	  .toList();
 
 		Selects aggregationSelectSelects = Selects.builder()
-												  .primaryColumn(conceptCteContext.getPrimaryColumn())
+												  .primaryColumn(primaryColumn)
 												  .sqlSelects(requiredInAggregationFilterStep)
 												  .build();
 
 		return QueryStep.builder()
 						.selects(aggregationSelectSelects)
-						.groupBy(List.of(conceptCteContext.getPrimaryColumn()));
+						.groupBy(List.of(primaryColumn));
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_SELECT;
+	public ConnectorCteStep cteStep() {
+		return ConnectorCteStep.AGGREGATION_SELECT;
 	}
 
 }
