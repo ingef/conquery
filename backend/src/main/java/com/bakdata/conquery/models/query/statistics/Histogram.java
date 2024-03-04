@@ -90,7 +90,7 @@ public class Histogram {
 									  .mapToObj(index -> new Node(adjLower + width * index, adjLower + width * (index + 1)))
 									  .toArray(Node[]::new);
 
-		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax), adjLower, newUpper, width);
+		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax, true), adjLower, newUpper, width);
 	}
 
 	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
@@ -99,7 +99,7 @@ public class Histogram {
 			return new Histogram(new Node[0],
 								 new Node(0, 0),
 								 new Node(absMin, lower),
-								 new Node(upper, absMax),
+								 new Node(upper, absMax, true),
 								 lower, upper,
 								 0
 			);
@@ -153,6 +153,18 @@ public class Histogram {
 
 		private final double min, max;
 
+		private final boolean overflow;
+
+		public Node(double min, double max, boolean overflow) {
+			this.min = min;
+			this.max = max;
+			this.overflow = overflow;
+		}
+
+		public Node(double min, double max){
+			this(min, max, false);
+		}
+
 		public int getCount() {
 			return hits;
 		}
@@ -174,10 +186,10 @@ public class Histogram {
 					return lower;
 				}
 
-				// Integers allow us to forfeit the brace notation by closing the range
-				final String upper = printer.apply(getMax() - 1);
+				// Integers allow us to forfeit the brace notation by closing the range (unless we are the overflow bin which tracks real values)
+				final String upper = printer.apply(getMax() - (isOverflow() ? 0 : 1));
 
-				return String.format("%s - %s", lower, upper);
+				return lower + " – " + upper;
 			}
 
 			final String upper = printer.apply(getMax());
@@ -185,7 +197,7 @@ public class Histogram {
 			final String startBrackets = getMin() == 0 ? "(" : "[";
 			final String endBrackets = ")";
 
-			return String.format("%s%s - %s%s", startBrackets, lower, upper, endBrackets);
+			return startBrackets + lower + " – " + upper + endBrackets;
 		}
 
 	}
