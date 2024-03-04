@@ -74,14 +74,18 @@ public class FrontendConfig {
 	 */
 	private boolean alwaysAllowCreateValue = false;
 
-	@ValidationMethod(message = "Percentiles must be within 0 - 100")
+	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore
 	public boolean isValidPercentiles() {
-		if (visualisationPercentiles.hasLowerBound() && visualisationPercentiles.lowerEndpoint() < 0) {
+		if(!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()){
 			return false;
 		}
 
-		if (visualisationPercentiles.hasUpperBound() && visualisationPercentiles.upperEndpoint() > 100) {
+		if (visualisationPercentiles.lowerEndpoint() < 0) {
+			return false;
+		}
+
+		if (visualisationPercentiles.upperEndpoint() > 100) {
 			return false;
 		}
 
