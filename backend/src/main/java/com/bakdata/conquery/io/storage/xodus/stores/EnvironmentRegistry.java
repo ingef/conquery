@@ -84,8 +84,10 @@ public class EnvironmentRegistry {
 			if (method.getName().equals("close")) {
 				log.debug("Environment was closed: {}", target.getLocation());
 				synchronized (activeEnvironments) {
-					// Use proxy here because activeEnvironments holds the proxy
-					unregister((Environment) proxy);
+					// It does not matter if we use proxy or target for unregistering
+					unregister((Environment) target);
+
+					// Use target here to avoid endless loop
 					return method.invoke(target, args);
 				}
 			}
