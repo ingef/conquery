@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -45,9 +44,8 @@ public class ProtoUser {
 	 * {@link UserManageable}, such as {@link LocalAuthenticationRealm}).
 	 */
 	@Builder.Default
-	@NotNull
 	@Valid
-	private List<CredentialType> credentials = Collections.emptyList();
+	private CredentialType credential = null;
 
 	public User createOrOverwriteUser(@NonNull MetaStorage storage) {
 		if (label == null) {

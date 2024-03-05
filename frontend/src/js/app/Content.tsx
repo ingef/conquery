@@ -2,13 +2,13 @@ import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 
 import { History } from "../entity-history/History";
-import Preview from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
 
 import { useMemo } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
+import Preview from "../preview/Preview";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
@@ -31,6 +31,10 @@ const Content = () => {
 
   const isHistoryOpen = useSelector<StateT, boolean>(
     (state) => state.entityHistory.isOpen,
+  );
+
+  const disableDragHandles = useSelector<StateT, boolean>(
+    (state) => state.panes.disableDragHandles,
   );
 
   const collapsedStyles = useMemo(() => {
@@ -58,11 +62,11 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle disabled={!displayTooltip} />
+          {!disableDragHandles && <ResizeHandle />}
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
-          <ResizeHandle />
+          {!disableDragHandles && <ResizeHandle />}
           <Panel minSize={250}>
             <RightPane />
           </Panel>

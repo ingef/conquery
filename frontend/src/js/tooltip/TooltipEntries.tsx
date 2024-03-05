@@ -6,18 +6,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
+import { HTMLAttributes } from "react";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
-const Root = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 12px;
-  align-items: center;
-`;
+const Root = styled("div")``;
 
 const Date = styled("p")`
   margin: 0;
@@ -75,7 +71,7 @@ const Suffix = styled("span")`
   margin-left: 5px;
 `;
 
-interface Props {
+interface Props extends HTMLAttributes<HTMLDivElement> {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
@@ -104,7 +100,7 @@ const TooltipEntries = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <Root>
+    <Root {...props}>
       <StyledFaIcon icon={faHashtag} />
       <Info>
         <Number zero={isZero}>

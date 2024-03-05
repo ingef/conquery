@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -25,11 +24,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -134,14 +132,6 @@ public class SumSelect extends Select {
 			return SumDistinctSqlAggregator.create(this, selectContext).getSqlSelects();
 		}
 		return SumSqlAggregator.create(this, selectContext).getSqlSelects();
-	}
-
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.JOIN_PREDECESSORS);
-		}
-		return ConnectorCteStep.MANDATORY_STEPS;
 	}
 
 }

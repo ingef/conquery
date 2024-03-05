@@ -583,3 +583,37 @@ export type GetEntityHistoryResponse = {
 export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
 }[];
+
+export type BaseStatistics = {
+  label: string;
+  description?: string;
+  count: number;
+  nullValues: number;
+};
+
+export type BarStatistics = BaseStatistics & {
+  chart: "HISTO";
+  type: "INTEGER" | "DECIMAL" | "MONEY" | "STRING" | "REAL";
+  entries: { label: string; value: number }[];
+  extras: { [key: string]: string };
+};
+
+export type DateStatistics = BaseStatistics & {
+  chart: "DATES";
+  type: "DATE_RANGE" | "DATE";
+  quarterCounts: Record<string, number>;
+  monthCounts: Record<string, number>;
+  span: {
+    min: string; // format "yyyy-MM-dd"
+    max: string;
+  };
+};
+
+export type PreviewStatistics = BarStatistics | DateStatistics;
+
+export type PreviewStatisticsResponse = {
+  entities: number;
+  total: number; // Number of rows
+  statistics: PreviewStatistics[];
+  dateRange: DateRangeT;
+};

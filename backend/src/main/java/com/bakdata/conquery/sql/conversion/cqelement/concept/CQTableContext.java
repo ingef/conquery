@@ -8,9 +8,11 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
@@ -19,16 +21,18 @@ import lombok.With;
 import org.jooq.Field;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 class CQTableContext implements Context {
 
-	ConversionContext conversionContext;
 	String conceptLabel;
+	String conceptConnectorLabel;
+	Field<Object> primaryColumn;
 	Optional<ColumnDateRange> validityDate;
-	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
-	ConnectorTables connectorTables;
+	SqlTables connectorTables;
+	IntervalPackingContext intervalPackingContext;
+	ConversionContext parentContext;
 	@With
 	QueryStep previous;
 
@@ -41,14 +45,17 @@ class CQTableContext implements Context {
 
 	public Field<Object> getPrimaryColumn() {
 		if (previous == null) {
-			return conversionContext.getPrimaryColumn();
+			return this.primaryColumn;
 		}
-		return previous.getQualifiedSelects().getPrimaryColumn();
+		return previous.getSelects().getPrimaryColumn();
+	}
+
+	public Optional<IntervalPackingContext> getIntervalPackingContext() {
+		return Optional.ofNullable(intervalPackingContext);
 	}
 
 	@Override
 	public NameGenerator getNameGenerator() {
-		return conversionContext.getNameGenerator();
+		return parentContext.getNameGenerator();
 	}
-
 }

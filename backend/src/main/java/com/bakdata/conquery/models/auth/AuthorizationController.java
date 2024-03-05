@@ -145,7 +145,7 @@ public final class AuthorizationController implements Managed{
 			final User user = pUser.createOrOverwriteUser(storage);
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
-					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredentials(), true);
+					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredential(), true);
 				}
 			}
 		}

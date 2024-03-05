@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
@@ -39,7 +40,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset, OptionalLong limit) {
 
 		final Dataset dataset = exec.getDataset();
 
@@ -62,7 +63,7 @@ public class ResultCsvProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
+				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults(limit));
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");

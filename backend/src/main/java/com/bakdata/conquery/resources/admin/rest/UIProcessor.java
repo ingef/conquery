@@ -3,12 +3,14 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -84,11 +86,18 @@ public class UIProcessor {
 		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
-			Set<Role> effectiveRoles = user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toSet());
-			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream().map(getStorage()::getRole).sorted().collect(Collectors.toList())));
+			Set<Role> effectiveRoles = user.getRoles().stream()
+										   .map(getStorage()::getRole)
+										   // Filter role_ids that might not map TODO how do we handle those
+										   .filter(Predicate.not(Objects::isNull))
+										   .collect(Collectors.toCollection(HashSet::new));
+			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream()
+														   .map(getStorage()::getRole)
+														   // Filter role_ids that might not map TODO how do we handle those
+														   .filter(Predicate.not(Objects::isNull))
+														   .sorted().toList()));
 			overview.add(FrontendAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
-
 		return FrontendAuthOverview.builder().overview(overview).build();
 	}
 

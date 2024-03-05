@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -50,7 +51,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 			QueryStep predecessor
 	) {
 
-		DateAggregationTables<?> dateAggregationTables = context.getDateAggregationTables();
+		SqlTables dateAggregationTables = context.getDateAggregationTables();
 
 		Field<Date> start = validityDate.getStart();
 		Field<Date> end = validityDate.getEnd();

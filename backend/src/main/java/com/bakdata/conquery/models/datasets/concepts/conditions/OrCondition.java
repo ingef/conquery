@@ -10,13 +10,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
-import org.jooq.Condition;
 
 /**
  * This condition connects multiple conditions with an or.
@@ -51,9 +48,7 @@ public class OrCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		return conditions.stream()
 						 .map(condition -> condition.convertToSqlCondition(context))
-						 .map(WhereCondition::condition)
-						 .reduce(Condition::or)
-						 .map(condition -> new WhereConditionWrapper(condition, ConditionType.PREPROCESSING))
+						 .reduce(WhereCondition::or)
 						 .orElseThrow(
 								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
 						 );
