@@ -106,6 +106,10 @@ public class CQExternal extends CQElement {
 		this.onlySingles = onlySingles;
 	}
 
+	public boolean containsDates() {
+		return format.stream().anyMatch(DateFormat.NAMES::contains);
+	}
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		if (valuesResolved == null) {
