@@ -4,54 +4,68 @@ import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
-
+/**
+ * Keeps transparently track of open environments using a map.
+ * If an environment is closed it is automatically unregistered.
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class EnvironmentRegistry {
 
 	@JsonIgnore
-	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
+	private final Map<String, Environment> activeEnvironments = new HashMap<>();
 
-	public Environment register(File path, Environment environment) {
+	public Environment register(Environment environment) {
 
-		final Environment proxyInstance = (Environment) Proxy.newProxyInstance(
+		final Environment proxyInstance = createProxy(environment);
+
+		synchronized (activeEnvironments) {
+			activeEnvironments.put(environment.getLocation(), proxyInstance);
+		}
+		return proxyInstance;
+	}
+
+	@NotNull
+	private Environment createProxy(Environment environment) {
+		return (Environment) Proxy.newProxyInstance(
 				EnvironmentRegistry.class.getClassLoader(),
 				new Class[]{Environment.class},
 				new RegisteredEnvironment(environment)
 		);
-
-		synchronized (activeEnvironments) {
-			activeEnvironments.put(path, proxyInstance);
-		}
-		return proxyInstance;
 	}
 
 	private void unregister(Environment environment) {
 		log.debug("Unregister environment: {}", environment.getLocation());
 		synchronized (activeEnvironments) {
-			activeEnvironments.remove(activeEnvironments.inverse().get(environment));
+			final Environment remove = activeEnvironments.remove(environment.getLocation());
+
+			if (remove == null) {
+				log.warn("Could not unregister environment, because it was not registered: {}", environment.getLocation());
+			}
 		}
 	}
 
-	public Environment findEnvironment(@NonNull File path, XodusConfig xodusConfig) {
+	public Environment findOrCreateEnvironment(@NonNull File path, XodusConfig xodusConfig) {
 		synchronized (activeEnvironments) {
 
 			try {
-				return activeEnvironments.computeIfAbsent(path, newPath -> {
-					final Environment environment = Environments.newInstance(newPath, xodusConfig.createConfig());
-					return register(newPath, environment);
-				});
+				// Check for old env or register new env
+				return activeEnvironments.computeIfAbsent(
+						path.toString(),
+						newPath -> createProxy(Environments.newInstance(newPath, xodusConfig.createConfig()))
+				);
 			}
 			catch (Exception e) {
 				throw new IllegalStateException("Unable to open environment: " + path, e);

@@ -221,7 +221,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			ConqueryMDC.setLocation(directory.toString());
 
-			try (Environment environment = registry.findEnvironment(directory, xodus)) {
+			try (Environment environment = registry.findOrCreateEnvironment(directory, xodus)) {
 				if (!environmentHasStores(environment, storesToTest)) {
 					log.warn("No valid {}storage found in {}", prefix, directory);
 					continue;
@@ -417,11 +417,11 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private Environment findEnvironment(String pathName) {
 		final File path = getStorageDir(pathName);
-		return registry.findEnvironment(path, getXodus());
+		return registry.findOrCreateEnvironment(path, getXodus());
 	}
 
 	private Environment findEnvironment(File path) {
-		return registry.findEnvironment(path, getXodus());
+		return registry.findOrCreateEnvironment(path, getXodus());
 	}
 
 	private void closeStore(XodusStore store) {
