@@ -148,11 +148,16 @@ public class Histogram {
 
 	@Data
 	public static final class Node {
-		@ToString.Include
+		/**
+		 * This is an em-dash.
+		 */
+		private static final String  FROM_TO = " – ";
+
 		private int hits;
 
 		private final double min, max;
 
+		@ToString.Exclude
 		private final boolean overflow;
 
 		public Node(double min, double max, boolean overflow) {
@@ -175,10 +180,11 @@ public class Histogram {
 
 
 		String createLabel(Double2ObjectFunction<String> printer, boolean isInteger) {
-			if(getMin() == getMax()){
-				return printer.apply(getMin());
-			}
 			final String lower = printer.apply(getMin());
+
+			if(getMin() == getMax()){
+				return lower;
+			}
 
 			if(isInteger){
 
@@ -189,7 +195,7 @@ public class Histogram {
 				// Integers allow us to forfeit the brace notation by closing the range (unless we are the overflow bin which tracks real values)
 				final String upper = printer.apply(getMax() - (isOverflow() ? 0 : 1));
 
-				return lower + " – " + upper;
+				return lower + FROM_TO + upper;
 			}
 
 			final String upper = printer.apply(getMax());
@@ -197,7 +203,7 @@ public class Histogram {
 			final String startBrackets = getMin() == 0 ? "(" : "[";
 			final String endBrackets = ")";
 
-			return startBrackets + lower + " – " + upper + endBrackets;
+			return startBrackets + lower + FROM_TO + upper + endBrackets;
 		}
 
 	}
