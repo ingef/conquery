@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -43,11 +44,13 @@ public class ResultArrowResource {
 			@Auth Subject subject,
 			@PathParam(QUERY) ManagedExecution query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") @DefaultValue("false") boolean pretty) {
+			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
+			@QueryParam("limit") OptionalLong limit
+			) {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, pretty);
+		return processor.createResultFile(subject, query, pretty, limit);
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
@@ -78,9 +81,11 @@ public class ResultArrowResource {
 			@Auth Subject subject,
 			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") Optional<Boolean> pretty) {
+			@QueryParam("pretty") Optional<Boolean> pretty,
+			@QueryParam("limit") OptionalLong limit
+	) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultStream(subject, execution, pretty.orElse(false));
+		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}
 }

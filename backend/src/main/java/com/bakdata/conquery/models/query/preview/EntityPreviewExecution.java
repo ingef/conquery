@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -293,7 +294,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
@@ -329,7 +330,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.label());
 
-			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
+			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 
 			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
 					description.selects().stream()
@@ -447,8 +448,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults() {
-		return getValuesQuery().streamResults();
+	public Stream<EntityResult> streamResults(OptionalLong limit) {
+		return getValuesQuery().streamResults(limit);
 	}
 
 	@Override

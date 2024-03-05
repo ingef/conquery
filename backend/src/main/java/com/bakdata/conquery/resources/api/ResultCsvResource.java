@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -54,11 +55,13 @@ public class ResultCsvResource {
 			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") @DefaultValue("true") boolean pretty) {
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
+			@QueryParam("limit") OptionalLong limit
+	) {
 
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
 
-		return processor.createResult(subject, (E) execution, pretty, determineCharset(userAgent, queryCharset));
+		return processor.createResult(subject, (E) execution, pretty, determineCharset(userAgent, queryCharset), limit);
 	}
 }

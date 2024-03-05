@@ -2,7 +2,9 @@ package com.bakdata.conquery.models.query;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,13 +100,23 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 
 	@Override
 	protected void finish(ExecutionState executionState) {
-		lastResultCount = query.countResults(streamResults());
+		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
 		super.finish(executionState);
 	}
 
-	public Stream<EntityResult> streamResults() {
-		return getNamespace().getExecutionManager().streamQueryResults(this);
+
+	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+		final Stream<EntityResult> results = getNamespace().getExecutionManager().streamQueryResults(this);
+
+		if(maybeLimit.isEmpty()){
+			return results;
+		}
+
+		final long limit = maybeLimit.getAsLong();
+		final AtomicLong consumed = new AtomicLong();
+
+		return results.takeWhile(line -> consumed.addAndGet(line.length()) < limit);
 	}
 
 	@Override
