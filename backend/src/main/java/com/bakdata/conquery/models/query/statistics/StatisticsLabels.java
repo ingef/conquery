@@ -25,7 +25,7 @@ public interface StatisticsLabels {
 	public String sum();
 
 	@En("Standard Deviation")
-	@De("Standartabweichung")
+	@De("Standardabweichung")
 	public String std();
 
 	@En("3rd Quartile")
