@@ -2,8 +2,10 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -22,6 +24,11 @@ public class CQYes extends CQElement {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		return new Yes(context.getDataset().getAllIdsTable());
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+
 	}
 
 	@Override

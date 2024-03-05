@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -42,6 +44,11 @@ public class CQNegation extends CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		Preconditions.checkNotNull(dateAction);
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		child.collectRequiredQueries(requiredQueries);
 	}
 
 	@Override

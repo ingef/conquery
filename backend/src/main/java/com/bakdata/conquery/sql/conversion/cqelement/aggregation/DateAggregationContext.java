@@ -11,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Value;
@@ -22,7 +23,7 @@ class DateAggregationContext implements Context {
 
 	Field<Object> primaryColumn;
 	List<SqlSelect> carryThroughSelects;
-	DateAggregationTables<?> dateAggregationTables;
+	SqlTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
 	@Builder.Default
 	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();

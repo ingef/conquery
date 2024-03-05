@@ -23,6 +23,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -123,6 +124,11 @@ public class CQExternal extends CQElement {
 			return createExternalNodeOnlySingle(context, plan, extraHeaders);
 		}
 		return createExternalNodeForList(context, plan, extraHeaders);
+
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 
 	}
 
