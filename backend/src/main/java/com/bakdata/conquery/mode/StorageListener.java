@@ -1,6 +1,5 @@
 package com.bakdata.conquery.mode;
 
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -21,7 +20,5 @@ public interface StorageListener {
 	void onAddConcept(Concept<?> concept);
 
 	void onDeleteConcept(Concept<?> concept);
-
-	void onUpdateMatchingStats(final Dataset dataset);
 
 }

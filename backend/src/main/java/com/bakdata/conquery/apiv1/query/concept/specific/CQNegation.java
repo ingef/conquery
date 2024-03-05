@@ -11,10 +11,8 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -77,16 +75,5 @@ public class CQNegation extends CQElement {
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		child.visit(visitor);
-	}
-
-	@Override
-	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		/*
-		 * We cannot realistically handle negation as that would require translating most if not all query logic into collectRequiredTables. Specifically CQConcept/Filters.
-		 *
-		 * Additionally, it would require collectRequiredEntities to be perfect, instead of being good enough,
-		 * since excluding entities that _might_ not be included would exclude them from evaluation.
-		 */
-		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
 	}
 }

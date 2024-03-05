@@ -3,7 +3,6 @@ package com.bakdata.conquery;
 import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
-import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.MigrateCommand;
@@ -54,7 +53,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		bootstrap.addCommand(new ShardNode());
 		bootstrap.addCommand(new PreprocessorCommand());
-		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new DistributedStandaloneCommand(this));
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());

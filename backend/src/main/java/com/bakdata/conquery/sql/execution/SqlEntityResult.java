@@ -20,7 +20,6 @@ import lombok.ToString;
 @CPSType(id="SQL_RESULT", base= EntityResult.class)
 public class SqlEntityResult implements EntityResult {
 
-	private final int entityId;
 	private final String id;
 	private Object[] values;
 
@@ -29,8 +28,8 @@ public class SqlEntityResult implements EntityResult {
 	}
 
 	@Override
-	public int getEntityId() {
-		return entityId;
+	public String getEntityId() {
+		return id;
 	}
 
 	@Override

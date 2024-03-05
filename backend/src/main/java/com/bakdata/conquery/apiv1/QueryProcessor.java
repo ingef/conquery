@@ -96,8 +96,6 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -618,7 +616,7 @@ public class QueryProcessor {
 																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer))
 																	  .collect(Collectors.toList());
 
-		final IntSet entities = new IntOpenHashSet();
+		final HashSet<String> entities = new HashSet();
 		final AtomicInteger lines = new AtomicInteger();
 
 		final AtomicReference<CDateRange> span = new AtomicReference<>(null);
