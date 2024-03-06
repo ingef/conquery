@@ -87,6 +87,7 @@ public class MatchingStats {
 		private int minDate = Integer.MAX_VALUE;
 		private int maxDate = Integer.MIN_VALUE;
 
+		@JsonIgnore
 		public CDateRange getSpan() {
 			if(minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
 				return null;
