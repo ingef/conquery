@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.common;
 import java.time.LocalDate;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-
 import lombok.experimental.UtilityClass;
 
 /**
