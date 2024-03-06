@@ -33,6 +33,7 @@ import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
@@ -62,15 +63,12 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
-import jetbrains.exodus.env.Environments;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -129,6 +127,9 @@ public class XodusStoreFactory implements StoreFactory {
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
 
+	@JsonIgnore
+	private EnvironmentRegistry registry = new EnvironmentRegistry();
+
 	/**
 	 * Number of threads reading from XoduStore.
 	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
@@ -184,9 +185,6 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
-
-	@JsonIgnore
 	private final transient Multimap<Environment, XodusStore>
 			openStoresInEnv =
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
@@ -217,9 +215,11 @@ public class XodusStoreFactory implements StoreFactory {
 
 			ConqueryMDC.setLocation(directory.toString());
 
-			if (!environmentHasStores(directory, storesToTest)) {
-				log.warn("No valid WorkerStorage found in {}", directory);
-				continue;
+			try (Environment environment = registry.findOrCreateEnvironment(directory, xodus)) {
+				if (!environmentHasStores(environment, storesToTest)) {
+					log.warn("No valid {}storage found in {}", prefix, directory);
+					continue;
+				}
 			}
 
 			final T namespacedStorage = creator.apply(name);
@@ -230,9 +230,8 @@ public class XodusStoreFactory implements StoreFactory {
 		return storages;
 	}
 
-	private boolean environmentHasStores(File pathName, Set<String> storesToTest) {
-		final Environment env = findEnvironment(pathName);
-		final boolean exists = env.computeInTransaction(t -> {
+	private boolean environmentHasStores(Environment env, Set<String> storesToTest) {
+		return env.computeInTransaction(t -> {
 			final List<String> allStoreNames = env.getAllStoreNames(t);
 			final boolean complete = new HashSet<>(allStoreNames).containsAll(storesToTest);
 			if (complete) {
@@ -250,10 +249,6 @@ public class XodusStoreFactory implements StoreFactory {
 
 			return loadEnvironmentWithMissingStores;
 		});
-		if (!exists) {
-			closeEnvironment(env);
-		}
-		return exists;
 	}
 
 	@Override
@@ -385,20 +380,15 @@ public class XodusStoreFactory implements StoreFactory {
 		return getDirectory().resolve(pathName).toFile();
 	}
 
-	private Environment findEnvironment(@NonNull File path) {
-		synchronized (activeEnvironments) {
-			try {
-				return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(path, getXodus().createConfig()));
-			}
-			catch (Exception e) {
-				throw new IllegalStateException("Unable to open environment: " + path, e);
-			}
-		}
-	}
+
 
 	private Environment findEnvironment(String pathName) {
 		final File path = getStorageDir(pathName);
-		return findEnvironment(path);
+		return registry.findOrCreateEnvironment(path, getXodus());
+	}
+
+	private Environment findEnvironment(File path) {
+		return registry.findOrCreateEnvironment(path, getXodus());
 	}
 
 	private void closeStore(XodusStore store) {
@@ -414,17 +404,7 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
 
-		closeEnvironment(env);
-	}
-
-	private void closeEnvironment(Environment env) {
-		synchronized (activeEnvironments) {
-
-			if (activeEnvironments.remove(activeEnvironments.inverse().get(env)) == null) {
-				return;
-			}
-			env.close();
-		}
+		env.close();
 	}
 
 	private void removeStore(XodusStore store) {
@@ -451,7 +431,7 @@ public class XodusStoreFactory implements StoreFactory {
 			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);
 		}
 
-		closeEnvironment(env);
+		env.close();
 
 		try {
 			FileUtil.deleteRecursive(Path.of(env.getLocation()));
