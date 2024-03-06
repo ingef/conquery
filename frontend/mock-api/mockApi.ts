@@ -244,7 +244,7 @@ export default function mockApi(app: Application) {
 
       setTimeout(() => {
         const ids: unknown[] = [];
-        const possibleTagsWithProbabilities = [
+        const possibleTagsWithProbabilities : [string, number][] = [
           ["research", 0.3],
           ["fun", 0.02],
           ["test", 0.02],

@@ -25,13 +25,16 @@ const useVersion = () => {
   const backendVersion = useSelector<StateT, string>(
     (state) => state.startup.config.version,
   );
+  const formBackendVersions = useSelector<StateT, string>(
+    (state) => state.startup.config.formBackendVersions,
+  );
 
   // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DOCKER CONTAINER
   // const frontendGitCommit = preval`
   //   const { execSync } = require('child_process');
   //   module.exports = execSync('git rev-parse --short HEAD').toString();
   // `;
-  // const frontendGitTag = preval`
+  // const frontendGitTag = preval`n
   //   const { execSync } = require('child_process');
   //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
   // `;
@@ -42,12 +45,13 @@ const useVersion = () => {
   return {
     backendVersion,
     frontendVersion,
+    formBackendVersions,
   };
 };
 
 export const About = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const { backendVersion, frontendVersion } = useVersion();
+  const { backendVersion, frontendVersion, formBackendVersions } = useVersion();
 
   const copyVersionToClipboard = () => {
     navigator.clipboard.writeText(
@@ -67,6 +71,8 @@ export const About = memo(() => {
         <Version>{backendVersion}</Version>
         <div>Frontend</div>
         <Version>{frontendVersion}</Version>
+        <div>Form Backends:</div>
+        <Version>{formBackendVersions}</Version>
       </Grid>
       <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
         Copy version info

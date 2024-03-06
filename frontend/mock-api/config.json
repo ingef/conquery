@@ -1,5 +1,6 @@
 {
   "version": "",
+  "formBackendVersions": "hello",
   "production": true,
   "currency": {
     "factor": 1,

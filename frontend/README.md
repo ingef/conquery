@@ -58,7 +58,7 @@ Commands analogoues to `start_production.sh` script.
 **Install and start**
 
 ```bash
-npm
+npm install
 npm run dev
 ```
 
