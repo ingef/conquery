@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.auth.ProtoRole;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -141,8 +142,14 @@ public final class AuthorizationController implements Managed{
 	 *            A storage, where the handler might add a new users.
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
+		for (ProtoRole pRole : config.getInitialRoles()) {
+			pRole.createOrOverwriteUser(storage);
+		}
+
 		for (ProtoUser pUser : config.getInitialUsers()) {
+
 			final User user = pUser.createOrOverwriteUser(storage);
+
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
 					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredential(), true);
