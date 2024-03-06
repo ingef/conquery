@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -28,6 +29,9 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 		DistributedNamespace ns = Objects.requireNonNull(context.getDatasetRegistry().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
 		message.react(ns);
+		if (message instanceof ReactionMessage reactionMessage) {
+			ns.getWorkerHandler().handleReactionMessage(reactionMessage);
+		}
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		test.importRequiredData(conquery);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		conquery.getClient().target(matchingStatsUri)

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -119,7 +119,7 @@ public class ArrowResultGenerationTest {
                 Locale.ROOT,
                 null,
                 CONFIG,
-                (cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+                (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = getTestEntityResults();
