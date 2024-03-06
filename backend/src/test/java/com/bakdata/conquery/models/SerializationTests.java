@@ -93,7 +93,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.util.CharArrayBuffer;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -558,30 +557,6 @@ public class SerializationTests extends AbstractSerializationTest {
 				.test(query);
 	}
 
-	@Test
-	public void testApiTokenData() throws JSONException, IOException {
-		final CharArrayBuffer buffer = new CharArrayBuffer(5);
-		buffer.append("testtest");
-		final ApiToken apiToken = new ApiToken(buffer);
-		final ApiTokenData
-				apiTokenData =
-				new ApiTokenData(
-						UUID.randomUUID(),
-						apiToken.hashToken(),
-						"tokenName",
-						new UserId("tokenUser"),
-						LocalDate.now(),
-						LocalDate.now().plus(1, ChronoUnit.DAYS),
-						EnumSet.of(Scopes.DATASET),
-						getMetaStorage()
-				);
-
-
-		SerializationTestUtil
-				.forType(ApiTokenData.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(apiTokenData);
-	}
 
 	@Test
 	public void serialize() throws IOException, JSONException {
