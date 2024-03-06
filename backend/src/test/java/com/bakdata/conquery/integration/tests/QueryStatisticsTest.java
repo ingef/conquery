@@ -115,7 +115,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("b", 1),
 										new HistogramColumnDescription.Entry("d", 1)
 								),
-								Map.of()
+								Map.of(
+										labels.missing(), "1"
+								)
 						),
 						new HistogramColumnDescription(
 								"concept mapped",
@@ -127,7 +129,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("BEH", 1),
 										new HistogramColumnDescription.Entry("d", 1)
 								),
-								Map.of()
+								Map.of(
+										labels.missing(), "0"
+								)
 						),
 						new HistogramColumnDescription(
 								"concept int",
@@ -211,7 +215,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 										new HistogramColumnDescription.Entry("Yes", 4),
 										new HistogramColumnDescription.Entry("No", 1)
 								),
-								Map.of()
+								Map.of(
+										labels.missing(), "1"
+								)
 						)
 				),
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))
