@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.oidc;
 
 import java.security.PublicKey;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -155,7 +156,23 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	private void handleRoleClaims(AccessToken accessToken, User user) {
 		//TODO handle removal of role claim? (probably not!?)
 
-		final Set<String> roleClaims = accessToken.getResourceAccess().get(getAllowedAudience()[0]).getRoles();
+		final Map<String, AccessToken.Access> resourceAccess = accessToken.getResourceAccess();
+
+		if(resourceAccess == null){
+			return;
+		}
+
+		final AccessToken.Access access = resourceAccess.get(getAllowedAudience()[0]);
+
+		if(access == null){
+			return;
+		}
+
+		final Set<String> roleClaims = access.getRoles();
+
+		if (roleClaims == null){
+			return;
+		}
 
 		for (String roleClaim : roleClaims) {
 			final RoleId roleId = new RoleId(roleClaim);
