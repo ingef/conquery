@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuartersFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -33,7 +33,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 	) {
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), Date.class);
 
-		Field<Date> qualifiedRootSelect = rootSelect.qualify(connectorTables.cteName(ConnectorCteStep.EVENT_FILTER)).select();
+		Field<Date> qualifiedRootSelect = rootSelect.qualify(connectorTables.cteName(ConceptCteStep.EVENT_FILTER)).select();
 		FieldWrapper<Integer> countQuartersField = new FieldWrapper<>(
 				DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)).as(alias),
 				column.getName()
@@ -43,7 +43,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 														 .preprocessingSelect(rootSelect)
 														 .aggregationSelect(countQuartersField);
 
-		String aggregationFilterPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+		String aggregationFilterPredecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 		if (filterValue == null) {
 			ExtractingSqlSelect<Integer> finalSelect = countQuartersField.qualify(aggregationFilterPredecessor);
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
@@ -63,8 +63,8 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 		return new CountQuartersSqlAggregator(
 				countQuartersSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(countQuartersSelect),
-				selectContext.getConnectorTables(),
-				selectContext.getParentContext().getSqlDialect().getFunctionProvider(),
+				selectContext.getTables(),
+				selectContext.getConversionContext().getSqlDialect().getFunctionProvider(),
 				null
 		);
 	}
@@ -73,8 +73,8 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 		return new CountQuartersSqlAggregator(
 				countQuartersFilter.getColumn(),
 				filterContext.getNameGenerator().selectName(countQuartersFilter),
-				filterContext.getConnectorTables(),
-				filterContext.getParentContext().getSqlDialect().getFunctionProvider(),
+				filterContext.getTables(),
+				filterContext.getConversionContext().getSqlDialect().getFunctionProvider(),
 				filterContext.getValue()
 		);
 	}

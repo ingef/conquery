@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
@@ -40,7 +40,7 @@ public class SumSqlAggregator implements SqlAggregator {
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		String eventFilterCte = connectorTables.cteName(ConnectorCteStep.EVENT_FILTER);
+		String eventFilterCte = connectorTables.cteName(ConceptCteStep.EVENT_FILTER);
 		Field<? extends Number> sumField = rootSelect.qualify(eventFilterCte).select();
 		FieldWrapper<BigDecimal> sumGroupBy;
 		if (subtractColumn != null) {
@@ -63,13 +63,13 @@ public class SumSqlAggregator implements SqlAggregator {
 														 .aggregationSelect(sumGroupBy);
 
 		if (filterValue == null) {
-			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
 		else {
 			this.sqlSelects = builder.build();
-			String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.qualify(predecessor).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
 			this.whereClauses = WhereClauses.builder()
@@ -83,7 +83,7 @@ public class SumSqlAggregator implements SqlAggregator {
 				sumSelect.getColumn(),
 				sumSelect.getSubtractColumn(),
 				selectContext.getNameGenerator().selectName(sumSelect),
-				selectContext.getConnectorTables(),
+				selectContext.getTables(),
 				null
 		);
 	}
@@ -93,7 +93,7 @@ public class SumSqlAggregator implements SqlAggregator {
 				sumFilter.getColumn(),
 				sumFilter.getSubtractColumn(),
 				filterContext.getNameGenerator().selectName(sumFilter),
-				filterContext.getConnectorTables(),
+				filterContext.getTables(),
 				filterContext.getValue()
 		);
 	}

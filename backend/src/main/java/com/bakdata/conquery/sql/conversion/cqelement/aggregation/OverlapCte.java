@@ -24,21 +24,19 @@ class OverlapCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(
-				context.getDateAggregationDates(),
-				context.getFunctionProvider()
-		);
+		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(context.getDateAggregationDates(), functionProvider);
 		Selects overlapSelects = Selects.builder()
 										.ids(context.getIds())
 										.validityDate(Optional.of(overlapValidityDate))
 										.sqlSelects(context.getCarryThroughSelects())
 										.build();
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
 		Condition allStartsNotNull = allStarts.stream()
 											  .map(Field::isNotNull)

@@ -142,7 +142,7 @@ public class QueryStepJoiner {
 				mergedSelects,
 				dateAggregationDates,
 				dateAggregationAction,
-				context.getNameGenerator()
+				context
 		);
 	}
 

@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -29,9 +27,7 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	@Builder.Default
 	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();
 	SqlAggregationAction sqlAggregationAction;
-	SqlFunctionProvider functionProvider;
-	IntervalPacker intervalPacker;
-	NameGenerator nameGenerator;
+	ConversionContext conversionContext;
 
 	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
 		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())
@@ -48,7 +44,7 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	}
 
 	public List<QueryStep> getSteps(DateAggregationCteStep dateAggregationCteStep) {
-		if (dateAggregationCteStep != MergeCteStep.NODE_NO_OVERLAP) {
+		if (dateAggregationCteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
 			throw new UnsupportedOperationException(
 					"Only MergeCteStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
 			);

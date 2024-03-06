@@ -24,6 +24,7 @@ class IntermediateTableCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
+
 		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction().getIntermediateTableSelects(
 				context.getDateAggregationDates(),
 				context.getCarryThroughSelects()
@@ -37,7 +38,7 @@ class IntermediateTableCte extends DateAggregationCte {
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
 
 		Condition startIsNull = allStarts.stream()

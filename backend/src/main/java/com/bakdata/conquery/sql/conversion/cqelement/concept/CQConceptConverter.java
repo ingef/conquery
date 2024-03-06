@@ -19,17 +19,15 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.conversion.model.ConceptConversionTables;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -40,20 +38,11 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.google.common.base.Preconditions;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
-
-	@Getter
-	@RequiredArgsConstructor
-	private enum ConceptCteStep implements CteStep {
-		UNIVERSAL_SELECTS("universal_selects");
-		private final String suffix;
-	}
 
 	private final List<ConnectorCte> connectorCTEs;
 
@@ -75,24 +64,24 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	@Override
 	public ConversionContext convert(CQConcept cqConcept, ConversionContext context) {
 
-		String label = context.getNameGenerator().conceptName(cqConcept);
+		TablePathGenerator pathGenerator = new TablePathGenerator(context);
 		List<QueryStep> convertedConnectorTables = cqConcept.getTables().stream()
-															.flatMap(cqTable -> convertCqTable(label, cqConcept, cqTable, context).stream())
+															.flatMap(cqTable -> convertCqTable(pathGenerator, cqConcept, cqTable, context).stream())
 															.toList();
 
 		QueryStep lastConceptStep;
 		if (convertedConnectorTables.size() == 1) {
-			lastConceptStep = finishConceptConversion(label, convertedConnectorTables.get(0), cqConcept, context);
+			lastConceptStep = finishConceptConversion(convertedConnectorTables.get(0), cqConcept, pathGenerator, context);
 		}
 		else {
 			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, LogicalOperation.OR, DateAggregationAction.MERGE, context);
-			lastConceptStep = finishConceptConversion(label, joinedStep, cqConcept, context);
+			lastConceptStep = finishConceptConversion(joinedStep, cqConcept, pathGenerator, context);
 		}
 		return context.withQueryStep(lastConceptStep);
 	}
 
-	private Optional<QueryStep> convertCqTable(String conceptLabel, CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
-		CQTableContext tableContext = createTableContext(conceptLabel, cqConcept, cqTable, context);
+	private Optional<QueryStep> convertCqTable(TablePathGenerator pathGenerator, CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
+		CQTableContext tableContext = createTableContext(pathGenerator, cqConcept, cqTable, context);
 		Optional<QueryStep> lastQueryStep = Optional.empty();
 		for (ConnectorCte queryStep : connectorCTEs) {
 			Optional<QueryStep> convertedStep = queryStep.convert(tableContext, lastQueryStep);
@@ -105,55 +94,57 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return lastQueryStep;
 	}
 
-	private static QueryStep finishConceptConversion(String conceptLabel, QueryStep predecessor, CQConcept cqConcept, ConversionContext context) {
+	private static QueryStep finishConceptConversion(QueryStep predecessor, CQConcept cqConcept, TablePathGenerator pathGenerator, ConversionContext context) {
+
+		ConceptConversionTables universalTables = pathGenerator.createUniversalTables(predecessor, cqConcept);
 
 		Selects predecessorSelects = predecessor.getQualifiedSelects();
-		SelectContext selectContext = SelectContext.forUniversalSelects(predecessorSelects.getIds(), predecessorSelects.getValidityDate(), context);
-		List<SqlSelect> universalSelects = cqConcept.getSelects().stream()
-													.map(select -> select.convertToSqlSelects(selectContext))
-													.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-													.toList();
+		SelectContext selectContext = new SelectContext(predecessorSelects.getIds(), predecessorSelects.getValidityDate(), universalTables, context);
+		List<SqlSelects> converted = cqConcept.getSelects().stream()
+											  .map(select -> select.convertToSqlSelects(selectContext))
+											  .toList();
 
-		List<SqlSelect> allConceptSelects = Stream.of(universalSelects, predecessorSelects.getSqlSelects())
-												  .flatMap(List::stream)
+		// combine all universal selects and connector selects from preceding step
+		List<SqlSelect> allConceptSelects = Stream.concat(
+														  converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
+														  predecessor.getQualifiedSelects().getSqlSelects().stream()
+												  )
 												  .toList();
 
-		Selects finalSelects = predecessorSelects.toBuilder()
-												 .clearSqlSelects()
-												 .sqlSelects(allConceptSelects)
-												 .build();
+		Selects finalSelects = Selects.builder()
+									  .ids(predecessorSelects.getIds())
+									  .validityDate(predecessorSelects.getValidityDate())
+									  .sqlSelects(allConceptSelects)
+									  .build();
 
 		return QueryStep.builder()
-						.cteName(context.getNameGenerator().cteStepName(ConceptCteStep.UNIVERSAL_SELECTS, conceptLabel))
+						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
 						.selects(finalSelects)
 						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
 						.predecessors(List.of(predecessor))
 						.build();
 	}
 
-	private CQTableContext createTableContext(String conceptLabel, CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
+	private CQTableContext createTableContext(TablePathGenerator pathGenerator, CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		NameGenerator nameGenerator = conversionContext.getNameGenerator();
 		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
 
 		Connector connector = cqTable.getConnector();
 		String conceptConnectorLabel = nameGenerator.conceptConnectorName(cqConcept, connector);
-		String tableName = connector.getTable().getName();
 
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
-		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, conversionContext);
-		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
+		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, conceptConnectorLabel, conversionContext);
+		ConceptConversionTables connectorTables = pathGenerator.createConnectorTables(cqConcept, cqTable, conceptConnectorLabel);
 
 		// validity date
 		IntervalPackingContext intervalPackingContext = null;
-		if (intervalPackingRequired(tablesValidityDate, cqConcept)) {
-			String preprocessingCteName = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-			SqlTables intervalPackingTables = IntervalPackingCteStep.getTables(conceptConnectorLabel, preprocessingCteName, nameGenerator);
+		if (connectorTables.isWithIntervalPacking()) {
 			intervalPackingContext = IntervalPackingContext.builder()
 														   .nodeLabel(conceptConnectorLabel)
 														   .ids(ids)
 														   .validityDate(tablesValidityDate.get())
-														   .intervalPackingTables(intervalPackingTables)
+														   .tables(connectorTables)
 														   .build();
 		}
 
@@ -166,21 +157,19 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		getDateRestriction(conversionContext, tablesValidityDate).ifPresent(allSqlFiltersForTable::add);
 
 		// convert selects
-		SelectContext selectContext = SelectContext.forConnectorSelects(ids, tablesValidityDate, connectorTables, conversionContext);
+		SelectContext selectContext = new SelectContext(ids, tablesValidityDate, connectorTables, conversionContext);
 		List<SqlSelects> allSelectsForTable = cqTable.getSelects().stream()
 													 .map(select -> select.convertToSqlSelects(selectContext))
 													 .toList();
 
 		return CQTableContext.builder()
-							 .conceptLabel(conceptLabel)
-							 .conceptConnectorLabel(conceptConnectorLabel)
 							 .ids(ids)
 							 .validityDate(tablesValidityDate)
 							 .sqlSelects(allSelectsForTable)
 							 .sqlFilters(allSqlFiltersForTable)
 							 .connectorTables(connectorTables)
 							 .intervalPackingContext(intervalPackingContext)
-							 .parentContext(conversionContext)
+							 .conversionContext(conversionContext)
 							 .build();
 	}
 
@@ -221,10 +210,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, connectorLabel);
 		}
 		return Optional.of(validityDate);
-	}
-
-	private static boolean intervalPackingRequired(Optional<ColumnDateRange> validityDate, CQConcept cqConcept) {
-		return validityDate.isPresent() && !cqConcept.isExcludeFromTimeAggregation();
 	}
 
 	private static boolean dateRestrictionApplicable(boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {

@@ -17,7 +17,7 @@ import org.jooq.Record;
 import org.jooq.TableLike;
 
 /**
- * Joins the {@link ConnectorCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional additional predecessors.
+ * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional additional predecessors.
  * <p>
  * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
  * take place. See {@link SumDistinctSqlAggregator} for an example of additional predecessors.
@@ -41,8 +41,8 @@ import org.jooq.TableLike;
 class JoinBranchesCte extends ConnectorCte {
 
 	@Override
-	protected ConnectorCteStep cteStep() {
-		return ConnectorCteStep.JOIN_BRANCHES;
+	protected ConceptCteStep cteStep() {
+		return ConceptCteStep.JOIN_BRANCHES;
 	}
 
 	@Override
@@ -56,7 +56,7 @@ class JoinBranchesCte extends ConnectorCte {
 			validityDate = Optional.empty();
 		}
 		else {
-			IntervalPacker intervalPacker = tableContext.getParentContext().getSqlDialect().getIntervalPacker();
+			IntervalPacker intervalPacker = tableContext.getConversionContext().getSqlDialect().getIntervalPacker();
 			QueryStep lastIntervalPackingStep = intervalPacker.createIntervalPackingSteps(tableContext.getIntervalPackingContext().get());
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
@@ -74,7 +74,7 @@ class JoinBranchesCte extends ConnectorCte {
 								 .sqlSelects(mergedSqlSelects)
 								 .build();
 
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getParentContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)

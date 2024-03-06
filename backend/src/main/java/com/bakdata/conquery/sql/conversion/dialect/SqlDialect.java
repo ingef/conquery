@@ -45,6 +45,10 @@ public interface SqlDialect {
 		return true;
 	}
 
+	default boolean supportsSingleColumnRanges() {
+		return false;
+	}
+
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
 		return List.of(
 				new CQDateRestrictionConverter(),

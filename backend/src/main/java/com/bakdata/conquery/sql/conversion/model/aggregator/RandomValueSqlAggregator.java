@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
@@ -27,10 +27,10 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 	) {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), Object.class);
 
-		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), column.getName());
 
-		ExtractingSqlSelect<?> finalSelect = randomGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<?> finalSelect = randomGroupBy.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -45,8 +45,8 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 		return new RandomValueSqlAggregator(
 				randomValueSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(randomValueSelect),
-				selectContext.getConnectorTables(),
-				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
+				selectContext.getTables(),
+				selectContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
 	}
 

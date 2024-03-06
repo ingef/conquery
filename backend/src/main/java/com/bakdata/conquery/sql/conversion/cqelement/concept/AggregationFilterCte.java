@@ -13,8 +13,8 @@ import org.jooq.Condition;
 class AggregationFilterCte extends ConnectorCte {
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.AGGREGATION_FILTER;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.AGGREGATION_FILTER;
 	}
 
 	@Override

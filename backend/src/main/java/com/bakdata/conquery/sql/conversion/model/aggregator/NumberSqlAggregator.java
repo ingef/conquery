@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
@@ -32,7 +32,7 @@ public class NumberSqlAggregator implements SqlAggregator {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), column.getName(), numberClass);
 
-		Field<Number> eventFilterCtePredecessor = connectorTables.qualifyOnPredecessor(ConnectorCteStep.EVENT_FILTER, rootSelect.aliased());
+		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
 		this.sqlSelects = SqlSelects.builder()
@@ -49,7 +49,7 @@ public class NumberSqlAggregator implements SqlAggregator {
 	) {
 		return new NumberSqlAggregator(
 				numberFilter.getColumn(),
-				filterContext.getConnectorTables(),
+				filterContext.getTables(),
 				prepareFilterValue(numberFilter.getColumn(), filterContext.getValue())
 		);
 	}

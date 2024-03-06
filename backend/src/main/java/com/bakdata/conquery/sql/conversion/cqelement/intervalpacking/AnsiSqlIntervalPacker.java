@@ -30,7 +30,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 	private QueryStep createPreviousEndStep(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getRootTable();
+		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.PREVIOUS_END);
 		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
 		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
 
@@ -51,7 +51,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 											.build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
@@ -85,7 +85,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 										   .build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
 						.selects(rangeIndexSelects)
 						.fromTable(QueryStep.toTableLike(previousEndCteName))
 						.predecessors(List.of(previousEndStep))
@@ -117,7 +117,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		qualifiedSelects.stream().map(SqlSelect::select).forEach(groupBySelects::add);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
 						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))
