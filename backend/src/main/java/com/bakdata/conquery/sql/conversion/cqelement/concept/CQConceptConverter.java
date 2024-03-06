@@ -9,12 +9,14 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
@@ -26,6 +28,7 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
@@ -36,6 +39,7 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -104,7 +108,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private static QueryStep finishConceptConversion(String conceptLabel, QueryStep predecessor, CQConcept cqConcept, ConversionContext context) {
 
 		Selects predecessorSelects = predecessor.getQualifiedSelects();
-		SelectContext selectContext = SelectContext.forUniversalSelects(predecessorSelects.getPrimaryColumn(), predecessorSelects.getValidityDate(), context);
+		SelectContext selectContext = SelectContext.forUniversalSelects(predecessorSelects.getIds(), predecessorSelects.getValidityDate(), context);
 		List<SqlSelect> universalSelects = cqConcept.getSelects().stream()
 													.map(select -> select.convertToSqlSelects(selectContext))
 													.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
@@ -136,8 +140,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String conceptConnectorLabel = nameGenerator.conceptConnectorName(cqConcept, connector);
 		String tableName = connector.getTable().getName();
 
-		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn()));
-		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, functionProvider);
+		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
+		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, conversionContext);
 		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
 
 		// validity date
@@ -147,7 +151,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			SqlTables intervalPackingTables = IntervalPackingCteStep.getTables(conceptConnectorLabel, preprocessingCteName, nameGenerator);
 			intervalPackingContext = IntervalPackingContext.builder()
 														   .nodeLabel(conceptConnectorLabel)
-														   .primaryColumn(primaryColumn)
+														   .ids(ids)
 														   .validityDate(tablesValidityDate.get())
 														   .intervalPackingTables(intervalPackingTables)
 														   .build();
@@ -156,13 +160,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// convert filters
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 		cqTable.getFilters().stream()
-			   .map(filterValue -> filterValue.convertToSqlFilter(conversionContext, connectorTables))
+			   .map(filterValue -> filterValue.convertToSqlFilter(ids, conversionContext, connectorTables))
 			   .forEach(allSqlFiltersForTable::add);
 		collectConditionFilters(cqConcept.getElements(), cqTable, functionProvider).ifPresent(allSqlFiltersForTable::add);
 		getDateRestriction(conversionContext, tablesValidityDate).ifPresent(allSqlFiltersForTable::add);
 
 		// convert selects
-		SelectContext selectContext = SelectContext.forConnectorSelects(primaryColumn, tablesValidityDate, connectorTables, conversionContext);
+		SelectContext selectContext = SelectContext.forConnectorSelects(ids, tablesValidityDate, connectorTables, conversionContext);
 		List<SqlSelects> allSelectsForTable = cqTable.getSelects().stream()
 													 .map(select -> select.convertToSqlSelects(selectContext))
 													 .toList();
@@ -170,7 +174,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return CQTableContext.builder()
 							 .conceptLabel(conceptLabel)
 							 .conceptConnectorLabel(conceptConnectorLabel)
-							 .primaryColumn(primaryColumn)
+							 .ids(ids)
 							 .validityDate(tablesValidityDate)
 							 .sqlSelects(allSelectsForTable)
 							 .sqlFilters(allSqlFiltersForTable)
@@ -180,15 +184,42 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .build();
 	}
 
-	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String label, SqlFunctionProvider functionProvider) {
+	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
+
+		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn())).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+
+		if (cqConcept.isExcludeFromSecondaryId()
+			|| conversionContext.getSecondaryIdDescription() == null
+			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
+		) {
+			return new SqlIdColumns(primaryColumn);
+		}
+
+		Column secondaryIdColumn = cqTable.getConnector().getTable().findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
+
+		Preconditions.checkArgument(
+				secondaryIdColumn != null,
+				"Expecting Table %s to have a matching secondary id for %s".formatted(
+						cqTable.getConnector().getTable(),
+						conversionContext.getSecondaryIdDescription()
+				)
+		);
+
+		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName())).as(SharedAliases.SECONDARY_ID.getAlias());
+		return new SqlIdColumns(primaryColumn, secondaryId);
+	}
+
+	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
 		if (Objects.isNull(cqTable.findValidityDate())) {
 			return Optional.empty();
 		}
-		ColumnDateRange validityDate = functionProvider.daterange(
-				cqTable.findValidityDate(),
-				cqTable.getConnector().getTable().getName(),
-				label
-		);
+		ColumnDateRange validityDate;
+		if (context.getDateRestrictionRange() != null) {
+			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, context.getDateRestrictionRange(), connectorLabel);
+		}
+		else {
+			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, connectorLabel);
+		}
 		return Optional.of(validityDate);
 	}
 
@@ -250,7 +281,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		ColumnDateRange dateRestriction = functionProvider.daterange(context.getDateRestrictionRange())
+		ColumnDateRange dateRestriction = functionProvider.forDateRestriction(context.getDateRestrictionRange())
 														  .asDateRestrictionRange();
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()

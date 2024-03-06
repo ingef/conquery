@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface EntityResult {
 
-	int getEntityId();
+	String getEntityId();
 	/**
 	 * Provides the number of columns this result contains.
 	 */

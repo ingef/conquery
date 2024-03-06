@@ -144,17 +144,19 @@ public class EntityIdMap {
 	 *
 	 * Return -1 when not resolved.
 	 */
-	public int resolve(ExternalId key) {
-		String value = external2Internal.get(key);
+	public String resolve(ExternalId key) {
+		final String value = external2Internal.get(key);
 
 		if (value != null) {
-			return getStorage().getPrimaryDictionary().getId(value);
+			return value;
 		}
 
 		// Maybe we can find them directly in the dictionary?
-		final int id = getStorage().getPrimaryDictionary().getId(key.getId());
+		if (storage.getEntityBucket(key.getId()).isPresent()) {
+			return key.getId();
+		}
 
-		return id;
+		return null;
 	}
 
 	public void addOutputMapping(String csvEntityId, EntityPrintId externalEntityId) {

@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -70,8 +71,8 @@ public abstract class FilterValue<VALUE> {
 		return getFilter().createFilterNode(getValue());
 	}
 
-	public SqlFilters convertToSqlFilter(ConversionContext context, SqlTables connectorTables) {
-		FilterContext<VALUE> filterContext = new FilterContext<>(value, context, connectorTables);
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, SqlTables connectorTables) {
+		FilterContext<VALUE> filterContext = new FilterContext<>(ids, value, context, connectorTables);
 		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());

@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -22,8 +21,8 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -377,7 +376,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 							}
 
 							if (visitable instanceof CQExternal external) {
-								return Arrays.stream(DateFormat.values()).anyMatch(external.getFormat()::contains);
+								return external.containsDates();
+							}
+
+							if (visitable instanceof CQReusedQuery reusedQuery && reusedQuery.getResolvedQuery() != null){
+								return containsDates(reusedQuery.getResolvedQuery());
 							}
 
 							return false;

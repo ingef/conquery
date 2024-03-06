@@ -9,19 +9,20 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Value;
-import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-class DateAggregationContext implements Context {
+class DateAggregationContext implements Context, Qualifiable<DateAggregationContext> {
 
-	Field<Object> primaryColumn;
+	SqlIdColumns ids;
 	List<SqlSelect> carryThroughSelects;
 	SqlTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
@@ -55,9 +56,10 @@ class DateAggregationContext implements Context {
 		return this.intervalMergeSteps.get(dateAggregationCteStep);
 	}
 
+	@Override
 	public DateAggregationContext qualify(String qualifier) {
 		return this.toBuilder()
-				   .primaryColumn(QualifyingUtil.qualify(this.primaryColumn, qualifier))
+				   .ids(this.ids.qualify(qualifier))
 				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
 				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
 				   .build();
