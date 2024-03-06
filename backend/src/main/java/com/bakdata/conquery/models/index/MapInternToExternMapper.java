@@ -11,7 +11,6 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -31,7 +30,7 @@ import org.jetbrains.annotations.TestOnly;
 @ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
 @Getter
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId> {
+public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper {
 
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
@@ -61,18 +60,21 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@NotEmpty
 	private final String externalTemplate;
 
+	@ToString.Include
+	private final boolean allowMultiples;
+
 
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
-	private MapIndex int2ext = null;
+	private MapIndex int2ext;
 
 
 	@Override
 	public synchronized void init() {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
-		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
+		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
 
 		int2ext = mapIndex.getIndex(new MapIndexKey(resolvedURI, internalColumn, externalTemplate));
 	}
@@ -89,7 +91,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 			return internalValue;
 		}
 
-		return int2ext.getOrDefault(internalValue, internalValue);
+		return int2ext.get(internalValue, internalValue);
 	}
 
 	@Override
