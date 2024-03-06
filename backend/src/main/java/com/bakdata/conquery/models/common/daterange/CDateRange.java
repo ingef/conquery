@@ -31,7 +31,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @param value The value this range contains, as {@link CDate}.
 	 */
 	public static CDateRange exactly(int value) {
-		return new CDateRangeExactly(value);
+		return of(value, value);
 	}
 
 	/**
@@ -55,22 +55,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 	
 	public static CDateRange of(int min, int max) {
-		if(min == NEGATIVE_INFINITY && max == POSITIVE_INFINITY){
-			return CDateRange.all();
-		}
-
-		if(max == POSITIVE_INFINITY){
-			return atLeast(min);
-		}
-
-		if(min == NEGATIVE_INFINITY){
-			return atMost(max);
-		}
-
-		if(min == max){
-			return exactly(min);
-		}
-
 		return new CDateRangeClosed(min, max);
 	}
 
@@ -89,7 +73,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange atLeast(int value) {
-		return new CDateRangeStarting(value);
+		return of(value, POSITIVE_INFINITY);
 	}
 
 	/**
@@ -98,7 +82,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange atMost(int value) {
-		return new CDateRangeEnding(value);
+		return of(NEGATIVE_INFINITY, value);
 	}
 
 	/**
@@ -130,7 +114,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange all() {
-		return CDateRangeOpen.INSTANCE;
+		return of(NEGATIVE_INFINITY, POSITIVE_INFINITY);
 	}
 
 	@Override
