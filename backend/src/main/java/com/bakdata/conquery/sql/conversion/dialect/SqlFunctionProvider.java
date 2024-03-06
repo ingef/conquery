@@ -4,8 +4,8 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
@@ -46,9 +46,18 @@ public interface SqlFunctionProvider {
 	 */
 	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
 
-	ColumnDateRange daterange(CDateRange dateRestriction);
+	ColumnDateRange forDateRestriction(CDateRange dateRestriction);
 
-	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String label);
+	/**
+	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date.
+	 */
+	ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias);
+
+	/**
+	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
+	 * restriction.
+	 */
+	ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 

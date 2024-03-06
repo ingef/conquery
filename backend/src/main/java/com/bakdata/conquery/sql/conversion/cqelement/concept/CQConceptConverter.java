@@ -141,7 +141,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String tableName = connector.getTable().getName();
 
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
-		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, functionProvider);
+		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, tableName, conversionContext);
 		SqlTables connectorTables = ConnectorCteStep.createTables(conceptConnectorLabel, tableName, nameGenerator);
 
 		// validity date
@@ -209,16 +209,17 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return new SqlIdColumns(primaryColumn, secondaryId);
 	}
 
-
-	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String label, SqlFunctionProvider functionProvider) {
+	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
 		if (Objects.isNull(cqTable.findValidityDate())) {
 			return Optional.empty();
 		}
-		ColumnDateRange validityDate = functionProvider.daterange(
-				cqTable.findValidityDate(),
-				cqTable.getConnector().getTable().getName(),
-				label
-		);
+		ColumnDateRange validityDate;
+		if (context.getDateRestrictionRange() != null) {
+			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, context.getDateRestrictionRange(), connectorLabel);
+		}
+		else {
+			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, connectorLabel);
+		}
 		return Optional.of(validityDate);
 	}
 
@@ -280,7 +281,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		ColumnDateRange dateRestriction = functionProvider.daterange(context.getDateRestrictionRange())
+		ColumnDateRange dateRestriction = functionProvider.forDateRestriction(context.getDateRestrictionRange())
 														  .asDateRestrictionRange();
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
