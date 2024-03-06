@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
@@ -22,13 +21,13 @@ public class MatchingStatsTests {
 
         assertThat(stats.countEntities()).isEqualTo(0);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
+        stats.putEntry(workerId1, new MatchingStats.Entry(5, 5, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(5);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
+        stats.putEntry(workerId1, new MatchingStats.Entry(5, 8, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(8);
 
-        stats.putEntry(workerId2, new MatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
+        stats.putEntry(workerId2, new MatchingStats.Entry(5, 2, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(10);
 
 
