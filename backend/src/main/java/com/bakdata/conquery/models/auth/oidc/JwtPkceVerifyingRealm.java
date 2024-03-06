@@ -1,17 +1,19 @@
 package com.bakdata.conquery.models.auth.oidc;
 
-import java.lang.reflect.Array;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.Data;
 import lombok.NonNull;
@@ -49,8 +51,8 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		this.storage = storage;
 		this.idpConfigurationSupplier = idpConfigurationSupplier;
 		this.allowedAudience = new String[]{allowedAudience};
-		tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[]) Array.newInstance(TokenVerifier.Predicate.class, 0));
 		this.alternativeIdClaims = alternativeIdClaims;
+		this.tokenChecks = additionalTokenChecks.toArray(TokenVerifier.Predicate[]::new);
 		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
@@ -118,8 +120,12 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 		if (user != null) {
 			log.trace("Successfully authenticated user {}", userId);
+
+			handleRoleClaims(accessToken, user);
+
 			return new ConqueryAuthenticationInfo(user, token, this, true);
 		}
+
 
 		// Try alternative ids
 		for (String alternativeIdClaim : alternativeIdClaims) {
@@ -136,11 +142,38 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 			if (user != null) {
 				log.trace("Successfully mapped subject {} using user id {}", subject, userId);
+
+				handleRoleClaims(accessToken, user);
+
 				return new ConqueryAuthenticationInfo(user, token, this, true);
 			}
 		}
 
 		throw new UnknownAccountException("The user id was unknown: " + subject);
+	}
+
+	private void handleRoleClaims(AccessToken accessToken, User user) {
+		//TODO handle removal of role claim? (probably not!?)
+
+		final Set<String> roleClaims = accessToken.getResourceAccess().get(getAllowedAudience()[0]).getRoles();
+
+		for (String roleClaim : roleClaims) {
+			final RoleId roleId = new RoleId(roleClaim);
+
+			if (user.getRoles().contains(roleId)) {
+				continue;
+			}
+
+			final Role role = storage.getRole(roleId);
+
+			if (role == null) {
+				continue;
+			}
+
+			log.trace("Adding {} to {}", role, user);
+
+			user.addRole(role);
+		}
 	}
 
 }
