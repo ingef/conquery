@@ -1,9 +1,6 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.File;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +10,7 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +27,7 @@ public class EnvironmentRegistry {
 
 	public Environment register(Environment environment) {
 
-		final Environment proxyInstance = createProxy(environment);
+		final Environment proxyInstance = createManaged(environment);
 
 		synchronized (activeEnvironments) {
 			activeEnvironments.put(environment.getLocation(), proxyInstance);
@@ -38,12 +36,8 @@ public class EnvironmentRegistry {
 	}
 
 	@NotNull
-	private Environment createProxy(Environment environment) {
-		return (Environment) Proxy.newProxyInstance(
-				EnvironmentRegistry.class.getClassLoader(),
-				new Class[]{Environment.class},
-				new RegisteredEnvironment(environment)
-		);
+	private Environment createManaged(Environment environment) {
+		return new ManagedEnvironment(environment);
 	}
 
 	private void unregister(Environment environment) {
@@ -64,7 +58,7 @@ public class EnvironmentRegistry {
 				// Check for old env or register new env
 				return activeEnvironments.computeIfAbsent(
 						path.toString(),
-						newPath -> createProxy(Environments.newInstance(newPath, xodusConfig.createConfig()))
+						newPath -> createManaged(Environments.newInstance(newPath, xodusConfig.createConfig()))
 				);
 			}
 			catch (Exception e) {
@@ -74,25 +68,17 @@ public class EnvironmentRegistry {
 	}
 
 	@RequiredArgsConstructor
-	private class RegisteredEnvironment implements InvocationHandler {
+	public class ManagedEnvironment implements Environment {
 
-		private final Environment target;
+		@Delegate
+		private final Environment delegate;
 
-		@Override
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-			if (method.getName().equals("close")) {
-				log.debug("Environment was closed: {}", target.getLocation());
-				synchronized (activeEnvironments) {
-					// It does not matter if we use proxy or target for unregistering
-					unregister((Environment) target);
-
-					// Use target here to avoid endless loop
-					return method.invoke(target, args);
-				}
+		public void close() {
+			synchronized (activeEnvironments) {
+				log.debug("Environment was closed: {}", delegate.getLocation());
+				unregister(delegate);
+				delegate.close();
 			}
-
-			return method.invoke(target, args);
 		}
 	}
 }
