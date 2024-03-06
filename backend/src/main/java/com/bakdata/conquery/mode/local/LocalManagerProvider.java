@@ -43,7 +43,7 @@ public class LocalManagerProvider implements ManagerProvider {
 		);
 
 		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext, sqlExecutionService);
-		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createLocalDatasetRegistry(namespaceHandler, config, creator, sqlExecutionService);
+		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createLocalDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
 		return new DelegateManager<>(

@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 import lombok.Getter;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 @Getter
 public class ColumnDateRange {
@@ -17,24 +16,39 @@ public class ColumnDateRange {
 	private static final String START_SUFFIX = "_start";
 	private static final String END_SUFFIX = "_end";
 
-	private final boolean isEmpty;
 	private final Field<?> range;
 	private final Field<Date> start;
 	private final Field<Date> end;
+	private final String alias;
 
-	private ColumnDateRange(boolean isEmpty, Field<?> range, Field<Date> startColumn, Field<Date> endColumn) {
-		this.isEmpty = isEmpty;
-		this.range = range;
+	protected ColumnDateRange(Field<Date> startColumn, Field<Date> endColumn, String alias) {
+		this.range = null;
 		this.start = startColumn;
 		this.end = endColumn;
+		this.alias = alias;
+	}
+
+	protected ColumnDateRange(Field<?> range, String alias) {
+		this.range = range;
+		this.start = null;
+		this.end = null;
+		this.alias = alias;
+	}
+
+	public static ColumnDateRange of(Field<?> rangeColumn, String alias) {
+		return new ColumnDateRange(rangeColumn, alias);
 	}
 
 	public static ColumnDateRange of(Field<?> rangeColumn) {
-		return new ColumnDateRange(false, rangeColumn, null, null);
+		return new ColumnDateRange(rangeColumn, "");
 	}
 
 	public static ColumnDateRange of(Field<Date> startColumn, Field<Date> endColumn) {
-		return new ColumnDateRange(true, null, startColumn, endColumn);
+		return new ColumnDateRange(startColumn, endColumn, "");
+	}
+
+	public static ColumnDateRange of(Field<Date> startColumn, Field<Date> endColumn, String alias) {
+		return new ColumnDateRange(startColumn, endColumn, alias);
 	}
 
 	public ColumnDateRange asDateRestrictionRange() {
@@ -63,26 +77,24 @@ public class ColumnDateRange {
 
 	public ColumnDateRange qualify(String qualifier) {
 		if (isSingleColumnRange()) {
-			return ColumnDateRange.of(mapFieldOntoQualifier(getRange(), Object.class, qualifier));
+			return new ColumnDateRange(QualifyingUtil.qualify(getRange(), qualifier), getAlias());
 		}
-		return ColumnDateRange.of(
-				mapFieldOntoQualifier(getStart(), Date.class, qualifier),
-				mapFieldOntoQualifier(getEnd(), Date.class, qualifier)
+		return new ColumnDateRange(
+				QualifyingUtil.qualify(getStart(), qualifier),
+				QualifyingUtil.qualify(getEnd(), qualifier),
+				getAlias()
 		);
 	}
 
-	private ColumnDateRange as(String alias) {
+	public ColumnDateRange as(String alias) {
 		if (isSingleColumnRange()) {
-			return ColumnDateRange.of(this.range.as(alias));
+			return new ColumnDateRange(this.range.as(alias), alias);
 		}
-		return ColumnDateRange.of(
+		return new ColumnDateRange(
 				this.start.as(alias + START_SUFFIX),
-				this.end.as(alias + END_SUFFIX)
+				this.end.as(alias + END_SUFFIX),
+				alias
 		);
-	}
-
-	private <Z> Field<Z> mapFieldOntoQualifier(Field<?> field, Class<Z> fieldType, String qualifier) {
-		return DSL.field(DSL.name(qualifier, field.getName()), fieldType);
 	}
 
 }

@@ -110,7 +110,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			final int entityId = entity.getId();
+			String entityId = entity.getId();
 
 			nextBlock(bucket);
 
@@ -165,7 +165,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			final int entityId = entity.getId();
+			String entityId = entity.getId();
 			nextBlock(bucket);
 			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
 				continue;

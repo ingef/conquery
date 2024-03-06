@@ -56,6 +56,7 @@ public class Workers extends IdResolveContext {
 	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
+		// TODO This shouldn't be coupled to the query thread pool definition
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
 		this.persistenceMapperSupplier = persistenceMapperSupplier;

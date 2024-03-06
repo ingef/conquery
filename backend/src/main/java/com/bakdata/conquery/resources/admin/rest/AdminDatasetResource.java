@@ -242,11 +242,15 @@ public class AdminDatasetResource {
 		processor.deleteDataset(dataset);
 	}
 
+	/**
+	 * @param dataset the namespace to postprocess
+	 * @implNote The path mapping is historical named. Renaming the path requires some coordination.
+	 */
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
-		processor.updateMatchingStats(dataset);
+	public void postprocessNamespace(@PathParam(DATASET) Dataset dataset) {
+		processor.postprocessNamespace(dataset);
 	}
 
 	@POST
