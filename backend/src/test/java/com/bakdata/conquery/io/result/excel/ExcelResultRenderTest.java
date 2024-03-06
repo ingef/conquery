@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,7 +74,7 @@ public class ExcelResultRenderTest {
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults() {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
 			}
 		};
@@ -86,7 +87,8 @@ public class ExcelResultRenderTest {
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,
 				mquery,
-				output);
+				output, OptionalLong.empty()
+		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

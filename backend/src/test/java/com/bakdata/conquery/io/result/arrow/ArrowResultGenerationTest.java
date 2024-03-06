@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -135,7 +136,7 @@ public class ArrowResultGenerationTest {
 				new ArrowConfig(BATCH_SIZE),
 				ResultTestUtil.ID_FIELDS,
 				mquery.getResultInfos(),
-				mquery.streamResults()
+				mquery.streamResults(OptionalLong.empty())
 		);
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());

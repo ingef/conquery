@@ -23,10 +23,6 @@ public class SqlEntityResult implements EntityResult {
 	private final String id;
 	private Object[] values;
 
-	public String getId() {
-		return id;
-	}
-
 	@Override
 	public String getEntityId() {
 		return id;
@@ -40,6 +36,11 @@ public class SqlEntityResult implements EntityResult {
 	@Override
 	public int columnCount() {
 		return values.length;
+	}
+
+	@Override
+	public int length() {
+		return 1;
 	}
 
 	@Override

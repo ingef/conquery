@@ -47,4 +47,9 @@ public class MultilineEntityResult implements EntityResult {
 	public List<Object[]> listResultLines() {
 		return values;
 	}
+
+	@Override
+	public int length() {
+		return values.size();
+	}
 }

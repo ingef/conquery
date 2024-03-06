@@ -21,6 +21,8 @@ public interface EntityResult {
 	 * Returns a list of the computed result line for this entity on the query.
 	 */
 	List<Object[]> listResultLines();
+
+	int length();
 	
 	/**
 	 * Allows to modify the underlying result directly. The return value of the line modifier is the new line.

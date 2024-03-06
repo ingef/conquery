@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.parquet;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 import java.util.Locale;
+import java.util.OptionalLong;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
@@ -35,7 +36,7 @@ public class ResultParquetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
@@ -68,7 +69,7 @@ public class ResultParquetProcessor {
 					config.getIdColumns().getIdResultInfos(),
 					singleTableResult.getResultInfos(),
 					settings,
-					singleTableResult.streamResults()
+					singleTableResult.streamResults(limit)
 			);
 
 		};

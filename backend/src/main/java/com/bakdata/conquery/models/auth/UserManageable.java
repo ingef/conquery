@@ -20,13 +20,13 @@ public interface UserManageable {
 	 * @param credentials A List of credentials that are provided by the user.
 	 * @return True upon successful adding of the user. False if the user could not be added or was already present.
 	 */
-	boolean addUser(User user, List<CredentialType> credentials);
+	boolean addUser(User user, CredentialType credential);
 
 	
 	/**
 	 * Similar to {@link UserManageable#addUser(User, List)} but if the user already existed it is overridden, when a fitting {@link CredentialType} was found.
 	 */
-	boolean updateUser(User user, List<CredentialType> credentials);
+	boolean updateUser(User user, CredentialType credential);
 
 	/**
 	 * Removes a user from the realm only but not from the local permission storage (i.e. {@link MetaStorage}).

@@ -2,12 +2,13 @@ import { getType } from "typesafe-actions";
 
 import type { Action } from "../app/actions";
 
-import { clickPaneTab } from "./actions";
+import { clickPaneTab, toggleDragHandles } from "./actions";
 
 export type LeftPaneTab = "conceptTrees" | "previousQueries" | "formConfigs";
 export interface PanesStateT {
   left: { activeTab: LeftPaneTab };
   right: { activeTab: string | null };
+  disableDragHandles: boolean;
 }
 
 const initialState: PanesStateT = {
@@ -17,6 +18,7 @@ const initialState: PanesStateT = {
   right: {
     activeTab: "queryEditor",
   },
+  disableDragHandles: false,
 };
 
 const reducer = (
@@ -33,6 +35,11 @@ const reducer = (
           ...state[paneType],
           activeTab: tab,
         },
+      };
+    case getType(toggleDragHandles):
+      return {
+        ...state,
+        disableDragHandles: !state.disableDragHandles,
       };
     default:
       return state;
