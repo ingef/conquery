@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
@@ -15,7 +15,6 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
@@ -38,8 +37,7 @@ class EventFilterCte extends ConnectorCte {
 
 	private Selects getEventFilterSelects(CQTableContext tableContext) {
 		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
-
-		Field<Object> primaryColumn = QualifyingUtil.qualify(tableContext.getPrimaryColumn(), predecessorTableName);
+		SqlIdColumns ids = tableContext.getIds().qualify(predecessorTableName);
 
 		Optional<ColumnDateRange> validityDate = tableContext.getValidityDate();
 		if (validityDate.isPresent()) {
@@ -53,7 +51,7 @@ class EventFilterCte extends ConnectorCte {
 							.toList();
 
 		return Selects.builder()
-					  .primaryColumn(primaryColumn)
+					  .ids(ids)
 					  .validityDate(validityDate)
 					  .sqlSelects(eventFilterSelects)
 					  .build();

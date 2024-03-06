@@ -10,9 +10,9 @@ import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
@@ -66,10 +66,10 @@ class JoinBranchesCte extends ConnectorCte {
 					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessor().stream())
 					.forEach(queriesToJoin::add);
 
-		Field<Object> primaryColumn = QueryStepJoiner.coalescePrimaryColumns(queriesToJoin);
+		SqlIdColumns ids = QueryStepJoiner.coalesceIds(queriesToJoin);
 		List<SqlSelect> mergedSqlSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
 		Selects selects = Selects.builder()
-								 .primaryColumn(primaryColumn)
+								 .ids(ids)
 								 .validityDate(validityDate)
 								 .sqlSelects(mergedSqlSelects)
 								 .build();

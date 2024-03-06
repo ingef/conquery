@@ -49,7 +49,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(dateAggregationDates, dateAggregationAction, joinedStepCteName);
 
 		Selects dateAggregationSelects = Selects.builder()
-												.primaryColumn(joinedStep.getQualifiedSelects().getPrimaryColumn())
+												.ids(joinedStep.getQualifiedSelects().getIds())
 												.validityDate(Optional.ofNullable(aggregatedValidityDate))
 												.sqlSelects(QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName))
 												.build();
