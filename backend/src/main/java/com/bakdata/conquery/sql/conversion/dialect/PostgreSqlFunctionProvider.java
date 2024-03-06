@@ -247,36 +247,35 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 					toDateField(INFINITY_DATE_VALUE)
 			);
 
-			dateRange = daterange(startColumn, endColumn, "[]");
+			return ColumnDateRange.of(daterange(startColumn, endColumn, "[]"));
 		}
-		else {
-			Column validityDateColumn = validityDate.getColumn();
-			dateRange = switch (validityDateColumn.getType()) {
-				// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
-				case DATE_RANGE -> {
-					Field<Object> daterange = DSL.field(DSL.name(validityDateColumn.getName()));
-					Field<Date> startColumn = DSL.coalesce(
-							DSL.function("lower", Date.class, daterange),
-							toDateField(MINUS_INFINITY_DATE_VALUE)
-					);
-					Field<Date> endColumn = DSL.coalesce(
-							DSL.function("upper", Date.class, daterange),
-							toDateField(INFINITY_DATE_VALUE)
-					);
-					yield daterange(startColumn, endColumn, "[]");
-				}
-				// if the validity date column is not of daterange type, we construct it manually
-				case DATE -> {
-					Field<Date> column = DSL.field(DSL.name(tableName, validityDate.getColumn().getName()), Date.class);
-					Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
-					Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
-					yield daterange(startColumn, endColumn, "[]");
-				}
-				default -> throw new IllegalArgumentException(
-						"Given column type '%s' can't be converted to a proper date restriction.".formatted(validityDateColumn.getType())
+
+		Column validityDateColumn = validityDate.getColumn();
+		dateRange = switch (validityDateColumn.getType()) {
+			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
+			case DATE_RANGE -> {
+				Field<Object> daterange = DSL.field(DSL.name(validityDateColumn.getName()));
+				Field<Date> startColumn = DSL.coalesce(
+						DSL.function("lower", Date.class, daterange),
+						toDateField(MINUS_INFINITY_DATE_VALUE)
 				);
-			};
-		}
+				Field<Date> endColumn = DSL.coalesce(
+						DSL.function("upper", Date.class, daterange),
+						toDateField(INFINITY_DATE_VALUE)
+				);
+				yield daterange(startColumn, endColumn, "[]");
+			}
+			// if the validity date column is not of daterange type, we construct it manually
+			case DATE -> {
+				Field<Date> column = DSL.field(DSL.name(tableName, validityDate.getColumn().getName()), Date.class);
+				Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
+				Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
+				yield daterange(startColumn, endColumn, "[]");
+			}
+			default -> throw new IllegalArgumentException(
+					"Given column type '%s' can't be converted to a proper date restriction.".formatted(validityDateColumn.getType())
+			);
+		};
 
 		return ColumnDateRange.of(dateRange);
 	}

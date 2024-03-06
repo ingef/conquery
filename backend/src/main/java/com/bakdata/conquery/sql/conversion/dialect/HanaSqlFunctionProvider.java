@@ -271,13 +271,14 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Column startColumn;
 		Column endColumn;
 
-		if (validityDate.getEndColumn() != null) {
-			startColumn = validityDate.getStartColumn();
-			endColumn = validityDate.getEndColumn();
-		}
-		else {
+		// if no end column is present, the only existing column is both start and end of the date range
+		if (validityDate.getEndColumn() == null) {
 			startColumn = validityDate.getColumn();
 			endColumn = validityDate.getColumn();
+		}
+		else {
+			startColumn = validityDate.getStartColumn();
+			endColumn = validityDate.getEndColumn();
 		}
 
 		Field<Date> rangeStart = DSL.coalesce(
