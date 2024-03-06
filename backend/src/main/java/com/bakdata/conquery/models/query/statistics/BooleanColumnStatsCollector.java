@@ -42,7 +42,7 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 				),
 				Map.of(
 						C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),
-						ResultType.IntegerT.INSTANCE.print(getPrintSettings(), getMissing())
+						getPrintSettings().getIntegerFormat().format(getMissing())
 				)
 		);
 	}

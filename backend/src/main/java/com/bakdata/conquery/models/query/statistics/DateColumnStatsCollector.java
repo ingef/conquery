@@ -5,8 +5,6 @@ import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -24,8 +22,8 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
 	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
 
-	private final AtomicInteger totalCount = new AtomicInteger();
-	private final AtomicLong nulls = new AtomicLong(0);
+	private int totalCount = 0;
+	private int nulls = 0;
 	private final Function<Object, CDateRange> dateExtractor;
 	private CDateRange span = null;
 
@@ -49,10 +47,10 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 	@Override
 	public void consume(Object value) {
-		totalCount.incrementAndGet();
+		totalCount++;
 
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
@@ -89,8 +87,8 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	public ResultColumnStatistics describe() {
 
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
-									 totalCount.get(),
-									 getNulls().intValue(),
+									 totalCount,
+									 nulls,
 									 quarterCounts,
 									 monthCounts,
 									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
