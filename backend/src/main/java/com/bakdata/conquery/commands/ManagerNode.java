@@ -20,7 +20,6 @@ import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.Manager;
-import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -249,8 +248,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		StorageHandler storageHandler = registry.getStorageHandler();
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages(storageHandler);
+		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
 				registry.createNamespace(namespaceStorage);

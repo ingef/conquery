@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -18,13 +17,12 @@ import lombok.ToString;
 @CPSType(id="MULTI_LINE", base= EntityResult.class)
 public class MultilineEntityResult implements EntityResult {
 	
-	@Min(0)
-	private final int entityId;
+	private final String entityId;
 	@NotNull
 	private final List<Object[]> values;
 
 	//this is needed because of https://github.com/FasterXML/jackson-databind/issues/2024
-	public MultilineEntityResult(int entityId, List<Object[]> values) {
+	public MultilineEntityResult(String entityId, List<Object[]> values) {
 		this.entityId = entityId;
 		this.values = Objects.requireNonNullElse(values, Collections.emptyList());
 	}
