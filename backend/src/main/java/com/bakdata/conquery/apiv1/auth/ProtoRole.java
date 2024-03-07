@@ -38,7 +38,7 @@ public class ProtoRole {
 	@NotNull
 	private Set<String> permissions = Collections.emptySet();
 
-	public Role createOrOverwriteUser(@NonNull MetaStorage storage) {
+	public Role createOrOverwriteRole(@NonNull MetaStorage storage) {
 		label = Objects.requireNonNullElse(label, name);
 
 

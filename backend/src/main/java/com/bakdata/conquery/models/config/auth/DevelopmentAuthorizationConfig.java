@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.config.auth;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -20,13 +19,17 @@ import lombok.Getter;
 @Getter
 public class DevelopmentAuthorizationConfig implements AuthorizationConfig {
 
-	private List<ProtoRole> initialRoles = Collections.emptyList();
+	private List<ProtoRole> initialRoles = List.of(ProtoRole.builder()
+															.name("admin")
+															.permissions(Set.of(AdminPermission.DOMAIN))
+															.build());
 
 	@NotEmpty
 	private List<ProtoUser> initialUsers = List.of(ProtoUser.builder()
 															.name("SUPERUSER@SUPERUSER")
 															.label("SUPERUSER")
 															.permissions(Set.of("*"))
+															.roles(Set.of("admin"))
 															.build());
 
 	@NotNull

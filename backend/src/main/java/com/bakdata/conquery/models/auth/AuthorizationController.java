@@ -143,7 +143,7 @@ public final class AuthorizationController implements Managed{
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
 		for (ProtoRole pRole : config.getInitialRoles()) {
-			pRole.createOrOverwriteUser(storage);
+			pRole.createOrOverwriteRole(storage);
 		}
 
 		for (ProtoUser pUser : config.getInitialUsers()) {
