@@ -1,5 +1,21 @@
 package com.bakdata.conquery.models.auth.web;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.annotation.Priority;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServiceUnavailableException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.auth.AuthFilter;
@@ -7,16 +23,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
-
-import javax.annotation.Priority;
-import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * The {@link RedirectingAuthFilter} first delegates a request to the actual authentication filter.
@@ -34,14 +40,16 @@ import java.util.function.Function;
 @Priority(Priorities.AUTHENTICATION)
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
+	public static final String REDIRECT_URI = "redirect_uri";
+
 	/**
 	 * The Filter that checks if a request was authenticated
 	 */
 	private final DefaultAuthFilter delegate;
 
 	/**
-	 * Request processors that check if an request belongs to its multi-step authentication schema.
-	 * E.g. the request contains an authorization code, then this checker tries to redeemed the code for an access token.
+	 * Request processors that check if a request belongs to its multi-step authentication schema.
+	 * E.g. the request contains an authorization code, then this checker tries to redeem the code for an access token.
 	 * If that succeeds, it produces a response that sets a cookie with the required authentication data for that schema.
 	 *
 	 * If the request does not fit the schema, the processor returns null.
@@ -82,8 +90,6 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 			// The request was not authenticated, nor was it a step towards an authentication, so we redirect the user to a login.
 
 			log.info("Redirecting unauthenticated user to login schema");
-
-
 			List<URI> loginRedirects = new ArrayList<>();
 			for ( Function<ContainerRequestContext,URI> loginInitiator : loginInitiators) {
 				URI uri = loginInitiator.apply(request);
@@ -97,8 +103,14 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 				throw new ServiceUnavailableException("No login schema configured");
 			}
 
-			// Give the user a choice to choose between them. (If there is only one schema, still redirect the user there)
-			// to prevent too many redirects if there was a problem wit the authentication
+			// shortcut when only one login provider is configured
+			if (loginRedirects.size() == 1) {
+				final URI loginUri = loginRedirects.get(0);
+				log.trace("One login redirect configured. Short cutting to: {}", loginUri);
+				throw new WebApplicationException(Response.seeOther(loginUri).build());
+			}
+
+			// Give the user a choice to choose between them.
 			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}

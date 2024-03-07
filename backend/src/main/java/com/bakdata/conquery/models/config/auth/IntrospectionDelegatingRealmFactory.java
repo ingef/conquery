@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.ws.rs.client.Client;
 
-import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
@@ -18,6 +18,7 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.servlets.tasks.Task;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,17 +46,17 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	private transient AuthzClient authClient;
 
-	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+		authorizationController.getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
 
 		// Register task to retrieve the idp client api, so the realm can be used, when the idp service is available.
-		if (managerNode.getEnvironment().admin() != null) {
-			managerNode.getEnvironment().admin().addTask(new Task("keycloak-update-authz-client") {
+		if (environment.admin() != null) {
+			environment.admin().addTask(new Task("keycloak-update-authz-client") {
 
 				@Override
 				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
@@ -66,10 +67,10 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 		}
 
 		// Setup keycloak api
-		final Client client = new JerseyClientBuilder(managerNode.getEnvironment()).build("keycloak-api");
+		final Client client = new JerseyClientBuilder(environment).build("keycloak-api");
 		final KeycloakApi keycloakApi = new KeycloakApi(this, client);
 
-		return new IntrospectionDelegatingRealm(managerNode.getStorage(), this, keycloakApi);
+		return new IntrospectionDelegatingRealm(authorizationController.getStorage(), this, keycloakApi);
 	}
 
 

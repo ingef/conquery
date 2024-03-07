@@ -17,7 +17,7 @@
 		  <p class="h1 text-center mb-3 display-4">Conquery</p>
 		  <p class="text-center lead">Admin Login</p>
 		  <p class="h3 text-center font-weight-normal">Please sign in</p>
-		  <form>
+		  <form id="login-form">
 			  <div class="form-group">
 				<label for="inputEmail">Username</label>
 				<input type="text" id="inputEmail" autocomplete="username" class="form-control" placeholder="Enter username" required autofocus>
