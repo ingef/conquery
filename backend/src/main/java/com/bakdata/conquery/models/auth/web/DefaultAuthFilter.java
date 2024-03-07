@@ -1,5 +1,16 @@
 package com.bakdata.conquery.models.auth.web;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.Priority;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.core.SecurityContext;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -15,16 +26,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-
-import javax.annotation.Priority;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.SecurityContext;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
@@ -71,7 +72,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 					continue;
 				}
 				// Success an extracted token could be authenticated
-				log.trace("Authentication was successfull for token type {}", token.getClass().getName());
+				log.trace("Authentication was successful for token type {}", token.getClass().getName());
 				return;
 			} catch (AuthenticationException e) {
 				// This is the shiro way to indicate that authentication failed

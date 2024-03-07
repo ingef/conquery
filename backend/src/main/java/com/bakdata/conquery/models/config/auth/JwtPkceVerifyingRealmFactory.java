@@ -27,12 +27,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -52,6 +53,8 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -131,6 +134,9 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	@JsonIgnore
 	public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
 
+	@JsonIgnore
+	private Client httpClient;
+
 
 	@ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
 	@JsonIgnore
@@ -146,26 +152,28 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			@NonNull Map<String, PublicKey> signingKeys,
 			@NonNull URI authorizationEndpoint,
 			@NonNull URI tokenEndpoint,
+			@NonNull URI logoutEndpoint,
 			@NotEmpty String issuer) {
 	}
 
-	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
 		for (String additionalTokenCheck : additionalTokenChecks) {
 			additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
 		}
 
-		idpConfigurationSupplier = getIdpOptionsSupplier(manager.getClient());
-		authCookieCreator = manager.getConfig().getAuthentication()::createAuthCookie;
+
+		idpConfigurationSupplier = getIdpOptionsSupplier(environment, config);
+		authCookieCreator = config.getAuthentication()::createAuthCookie;
 
 		// Add login schema for admin end
-		final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
+		final RedirectingAuthFilter redirectingAuthFilter = authorizationController.getRedirectingAuthFilter();
 		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemAuthzCode);
 		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemRefreshToken);
 		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
 
-        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, manager.getStorage(), tokenLeeway);
+		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway);
 	}
 
 	@Data
@@ -173,15 +181,21 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		List<JWK> keys;
 	}
 
-	private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(final Client client) {
+	private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(Environment environment, ConqueryConfig config) {
 
 		return () -> {
 			if (idpConfiguration == null) {
 				synchronized (this) {
 					// check again since we are now in an exclusive section
 					if (idpConfiguration == null) {
+
+
+						Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
+																				.build(this.getClass().getSimpleName());
 						// retrieve the configuration and cache it
-						idpConfiguration = retrieveIdpConfiguration(client);
+						idpConfiguration = retrieveIdpConfiguration(httpClient);
+
+						httpClient.close();
 					}
 				}
 			}
@@ -219,6 +233,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		String issuer = response.get("issuer").asText();
 		URI authorizationEndpoint = URI.create(response.get("authorization_endpoint").asText());
 		URI tokenEndpoint = URI.create(response.get("token_endpoint").asText());
+		URI logoutEndpoint = URI.create(response.get("end_session_endpoint").asText());
 
 		URI jwksUri = URI.create(response.get("jwks_uri").asText());
 
@@ -251,7 +266,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 																																.map(JWK::getKeyId).toList());
 		}
 
-		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, issuer);
+		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, logoutEndpoint, issuer);
 	}
 
 

@@ -80,7 +80,7 @@
 			</div>
 
 			<div class="pl-2">
-				<button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
+				<a href="/admin-ui/logout" class="btn btn-secondary">Logout</a>
 			</div>
 		</nav>
 

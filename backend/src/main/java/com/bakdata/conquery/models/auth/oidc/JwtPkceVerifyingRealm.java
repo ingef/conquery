@@ -111,7 +111,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		User user = storage.getUser(userId);
 		if (user != null) {
 			log.trace("Successfully authenticated user {}", userId);
-			return new ConqueryAuthenticationInfo(user, token, this, true);
+			return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 		}
 
 		// Try alternative ids
@@ -125,7 +125,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			user = storage.getUser(userId);
 			if (user != null) {
 				log.trace("Successfully mapped subject {} using user id {}", subject, userId);
-				return new ConqueryAuthenticationInfo(user, token, this, true);
+				return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 			}
 		}
 

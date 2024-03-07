@@ -118,24 +118,19 @@ function loginClickHandler() {
 		})
 		.then((json) => {
 			var searchParams = new URLSearchParams(window.location.search);
-			searchParams.set("access_token", json.access_token);
+			var redirect = new URL(searchParams.get("redirect_uri"))
+			redirect.searchParams.append("access_token", json.access_token)
+
 			// This triggers a page reload
-			window.location.search = searchParams.toString();
-		}
-		)
+			window.location = redirect.toString();
+		})
 		.catch(function (error) {
 			var p = document.createElement('p');
 			p.appendChild(
 				document.createTextNode('Error: ' + error.message)
 			);
-			document.body.insertBefore(p, myImage);
+			document.getElementById('login-form').insertBefore(p, document.getElementById('login-button'));
 		});
-}
-
-function logout() {
-	event.preventDefault();
-	rest('/admin/logout')
-		.then(function () { location.reload() });
 }
 
 function postFile(event, url) {
