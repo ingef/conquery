@@ -112,7 +112,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withClaim("groups", "conquery")
-						  .withClaim("resource_access", Map.of("test_aud", Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
+						  .withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
