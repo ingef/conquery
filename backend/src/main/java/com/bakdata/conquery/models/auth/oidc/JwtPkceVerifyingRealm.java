@@ -43,6 +43,7 @@ import org.keycloak.representations.JsonWebToken;
 public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
+	//TODO FK/MT: Investigate difference between current allowedAudience impl and supposed audience (without mapper).
 	private final String[] allowedAudience;
 	private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
 	private final List<String> alternativeIdClaims;
@@ -166,12 +167,12 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 	private void handleRoleClaims(AccessToken accessToken, User user) {
 
-		if (processedRoleClaims.getIfPresent(accessToken.getAccessTokenHash()) != null) {
+		if (processedRoleClaims.getIfPresent(accessToken.getId()) != null) {
 			log.trace("Already handled role claims of {}", accessToken.getId());
 			return;
 		}
 
-		processedRoleClaims.put(accessToken.getAccessTokenHash(), accessToken.getAccessTokenHash());
+		processedRoleClaims.put(accessToken.getId(), accessToken.getId());
 
 		//TODO handle removal of role claim? (probably not!?)
 
