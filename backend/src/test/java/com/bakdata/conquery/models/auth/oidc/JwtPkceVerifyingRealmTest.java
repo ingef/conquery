@@ -18,6 +18,7 @@ import java.util.UUID;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -34,13 +35,13 @@ import org.keycloak.common.VerificationException;
 class JwtPkceVerifyingRealmTest {
 
 
+	public static final int TOKEN_LEEWAY = 60;
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private static final String HTTP_REALM_URL = "http://realm.url";
 	private static final String AUDIENCE = "test_aud";
 	private static final String ALTERNATIVE_ID_CLAIM = "alternativeId";
-	public static final int TOKEN_LEEWAY = 60;
-	private static JwtPkceVerifyingRealm REALM;
 	private static final String KEY_ID = "valid_key_id";
+	private static JwtPkceVerifyingRealm REALM;
 	private static RSAPrivateKey PRIVATE_KEY;
 	private static RSAPublicKey PUBLIC_KEY;
 
@@ -85,10 +86,43 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
 		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+	}
+
+	@Test
+	void verifyTokenAndAddRole() {
+
+		// Setup the expected user id
+		User expected = new User("Test", "Test", STORAGE);
+		Role role = new Role("admin", "admin", STORAGE);
+
+		STORAGE.updateRole(role);
+		STORAGE.updateUser(expected);
+
+		Date issueDate = new Date();
+		Date expDate = DateUtils.addMinutes(issueDate, 1);
+		String token = JWT.create()
+						  .withIssuer(HTTP_REALM_URL)
+						  .withAudience(AUDIENCE)
+						  .withSubject(expected.getName())
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withClaim("groups", "conquery")
+						  .withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
+						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+
+		BearerToken accessToken = new BearerToken(token);
+
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThat(expected.getRoles()).contains(role.getId());
 	}
 
 	@Test
@@ -113,6 +147,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -139,7 +174,9 @@ class JwtPkceVerifyingRealmTest {
 						  .withExpiresAt(expDate)
 						  .withClaim(ALTERNATIVE_ID_CLAIM, expected.getName())
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+
 		BearerToken accessToken = new BearerToken(token);
 
 		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
@@ -183,6 +220,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -203,6 +241,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -227,6 +266,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -252,6 +292,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId("unknown_key_id")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
