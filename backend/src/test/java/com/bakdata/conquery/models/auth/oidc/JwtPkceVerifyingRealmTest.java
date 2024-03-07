@@ -86,7 +86,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
-						  .withJWTId("THIS IS AN ID")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -116,7 +116,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
-						  .withJWTId("THIS IS AN ID")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 
 		BearerToken accessToken = new BearerToken(token);
@@ -147,7 +147,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
-						  .withJWTId("jwtid")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -174,7 +174,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withExpiresAt(expDate)
 						  .withClaim(ALTERNATIVE_ID_CLAIM, expected.getName())
 						  .withKeyId(KEY_ID)
-						  .withJWTId("jwtid")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 
 		BearerToken accessToken = new BearerToken(token);
@@ -220,6 +220,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -240,6 +241,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -264,6 +266,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
@@ -289,6 +292,7 @@ class JwtPkceVerifyingRealmTest {
 						  .withIssuedAt(issueDate)
 						  .withExpiresAt(expDate)
 						  .withKeyId("unknown_key_id")
+						  .withJWTId(UUID.randomUUID().toString())
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
