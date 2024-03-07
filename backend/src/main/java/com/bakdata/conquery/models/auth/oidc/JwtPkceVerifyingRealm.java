@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +48,17 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	private final List<String> alternativeIdClaims;
 	private final ActiveWithLeewayVerifier activeVerifier;
 	private final MetaStorage storage;
+
+	/**
+	 * Used in handleRoleClaims as size-limited set, with LRU characteristics.
+	 * @implNote maximumSize is an arbitrary medium high number to avoid stuffing memory with token hashes, while avoiding reprocessing known access tokens.
+	 */
+	private final Cache<String, String> processedRoleClaims = CacheBuilder.newBuilder()
+																		  .maximumSize(1_000)
+																		  .build();
+
 	Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier;
+
 
 	public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims, MetaStorage storage, int tokenLeeway) {
 		this.storage = storage;
@@ -58,7 +70,6 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
 	}
-
 
 	@Override
 	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -154,30 +165,45 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	}
 
 	private void handleRoleClaims(AccessToken accessToken, User user) {
+
+		if (processedRoleClaims.getIfPresent(accessToken.getAccessTokenHash()) != null) {
+			log.trace("Already handled role claims of {}", accessToken.getId());
+			return;
+		}
+
+		processedRoleClaims.put(accessToken.getAccessTokenHash(), accessToken.getAccessTokenHash());
+
 		//TODO handle removal of role claim? (probably not!?)
 
 		final Map<String, AccessToken.Access> resourceAccess = accessToken.getResourceAccess();
 
-		if(resourceAccess == null){
+		if (resourceAccess == null) {
+			log.trace("No resource Access present.");
 			return;
 		}
 
 		final AccessToken.Access access = resourceAccess.get(getAllowedAudience()[0]);
 
-		if(access == null){
+		if (access == null) {
+			log.trace("No resource access found for {}.", getAllowedAudience()[0]);
 			return;
 		}
 
 		final Set<String> roleClaims = access.getRoles();
 
-		if (roleClaims == null){
+		if (roleClaims == null) {
+			log.trace("No role claims found.");
 			return;
 		}
+
+		log.trace("Found role claims for {}: {}.", user, roleClaims);
+
 
 		for (String roleClaim : roleClaims) {
 			final RoleId roleId = new RoleId(roleClaim);
 
 			if (user.getRoles().contains(roleId)) {
+				log.trace("Role {} already registered.", roleId);
 				continue;
 			}
 
