@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.CsvResultProvider;
 import com.bakdata.conquery.models.config.ExcelResultProvider;
 import com.bakdata.conquery.models.config.ParquetResultProvider;
-import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -51,13 +50,13 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
+import io.dropwizard.setup.Environment;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
-	// Marked Unused, but does inject itself.
-	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null, null);
@@ -116,6 +115,11 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_10, DONE, DATASET_0, 2_000_000L)        // included, but no result url for xlsx (result has too many rows)
 
 	);
+
+	@BeforeAll
+	public static void beforeAll() {
+		new AuthorizationController(STORAGE, CONFIG, new Environment(StoredQueriesProcessorTest.class.getSimpleName()), null);
+	}
 
 
 	@Test

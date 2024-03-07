@@ -9,6 +9,7 @@ import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -93,6 +94,7 @@ public class IntrospectionDelegatingRealmTest {
 	public static final KeycloakGroup
 			KEYCLOAK_GROUP_2 =
 			new KeycloakGroup(UUID.randomUUID().toString(), "Group2", "g2", Map.of(GROUP_ID_ATTRIBUTE, new GroupId(GROUPNAME_2).toString()), Set.of());
+	public static final URI FRONT_CHANNEL_LOGOUT = URI.create("http://localhost:1080/realms/test_realm/protocol/openid-connect/logout");
 
 	private static OIDCMockServer OIDC_SERVER;
 	private static TestRealm REALM;
@@ -206,7 +208,7 @@ public class IntrospectionDelegatingRealmTest {
 				.usingRecursiveComparison()
 				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 				.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
-			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true));
+				.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE));
 	}
 	
@@ -219,7 +221,7 @@ public class IntrospectionDelegatingRealmTest {
 		assertThat(info)
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true));
+			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_1);
 	}
 	
@@ -229,7 +231,7 @@ public class IntrospectionDelegatingRealmTest {
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_2_TOKEN_WRAPPED);
 
-		final ConqueryAuthenticationInfo expected = new ConqueryAuthenticationInfo(USER_2, USER_2_TOKEN_WRAPPED, REALM, true);
+		final ConqueryAuthenticationInfo expected = new ConqueryAuthenticationInfo(USER_2, USER_2_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT);
 		assertThat(info)
 			.usingRecursiveComparison()
 			.isEqualTo(expected);
@@ -251,7 +253,7 @@ public class IntrospectionDelegatingRealmTest {
 		assertThat(info)
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-			.isEqualTo(new ConqueryAuthenticationInfo(USER_3, USER_3_TOKEN_WRAPPED, REALM, true));
+			.isEqualTo(new ConqueryAuthenticationInfo(USER_3, USER_3_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_3);
 		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group 
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(new UserId(USER_3_NAME));

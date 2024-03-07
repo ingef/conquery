@@ -57,7 +57,7 @@ class JwtPkceVerifyingRealmTest {
 
 		// Create the realm
 		REALM = new JwtPkceVerifyingRealm(
-				() -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration(Map.of(KEY_ID, PUBLIC_KEY), URI.create("auth"), URI.create("token"), HTTP_REALM_URL)),
+				() -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration(Map.of(KEY_ID, PUBLIC_KEY), URI.create("auth"), URI.create("token"), URI.create("logout"), HTTP_REALM_URL)),
 				AUDIENCE,
 				List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
 				List.of(ALTERNATIVE_ID_CLAIM),

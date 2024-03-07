@@ -133,10 +133,8 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 		if (user != null) {
 			log.trace("Successfully authenticated user {}", userId);
-
 			handleRoleClaims(accessToken, user);
-
-			return new ConqueryAuthenticationInfo(user, token, this, true);
+			return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 		}
 
 
@@ -155,10 +153,8 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 			if (user != null) {
 				log.trace("Successfully mapped subject {} using user id {}", subject, userId);
-
 				handleRoleClaims(accessToken, user);
-
-				return new ConqueryAuthenticationInfo(user, token, this, true);
+				return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 			}
 		}
 

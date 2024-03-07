@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.auth;
 
+import java.net.URI;
+
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.util.SubjectPrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -29,12 +33,25 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	/**
 	 * A realm can indicate whether a logout button is shown for the user or not
 	 */
-	private final boolean displayLogout; 
+	private final boolean displayLogout;
 
-	public ConqueryAuthenticationInfo(Subject subject, Object credentials, ConqueryAuthenticationRealm realm, boolean displayLogout) {
+	/**
+	 * An uri a user can be redirected to perform an external logout.
+	 */
+	@Nullable
+	private final URI frontChannelLogout;
+
+	public ConqueryAuthenticationInfo(
+			Subject subject,
+			Object credentials,
+			ConqueryAuthenticationRealm realm,
+			boolean displayLogout,
+			@Nullable URI frontChannelLogout
+	) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
 		principals = new SubjectPrincipalCollection(subject, realm);
+		this.frontChannelLogout = frontChannelLogout;
 	}
 
 }
