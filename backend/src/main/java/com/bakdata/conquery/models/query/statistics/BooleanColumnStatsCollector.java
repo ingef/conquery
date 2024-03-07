@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.List;
+import java.util.Map;
+
+import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
@@ -7,22 +11,40 @@ import lombok.Getter;
 @Getter
 public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 
-	private final StringColumnStatsCollector delegate;
+	private int trues, falses, missing;
 
 	public BooleanColumnStatsCollector(String name, String label, String description, PrintSettings printSettings) {
 		super(name, label, description, printSettings);
-		delegate = new StringColumnStatsCollector(name, label, description, ResultType.StringT.INSTANCE, printSettings, Integer.MAX_VALUE);
 	}
 
 	@Override
 	public void consume(Object value) {
-		final String printed = value == null ? null : ResultType.BooleanT.INSTANCE.printNullable(getPrintSettings(), value);
-		delegate.consume(printed);
+		if (value == null) {
+			missing++;
+			return;
+		}
+
+		if (((Boolean) value)) {
+			trues++;
+		}
+		else {
+			falses++;
+		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
-		return delegate.describe();
+		return new HistogramColumnDescription(
+				getName(), getLabel(), getDescription(),
+				List.of(
+						new HistogramColumnDescription.Entry(ResultType.BooleanT.INSTANCE.print(getPrintSettings(), true), trues),
+						new HistogramColumnDescription.Entry(ResultType.BooleanT.INSTANCE.print(getPrintSettings(), false), falses)
+				),
+				Map.of(
+						C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),
+						getPrintSettings().getIntegerFormat().format(getMissing())
+				)
+		);
 	}
 
 }

@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -25,7 +24,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
-	private final AtomicLong nulls = new AtomicLong(0);
+	private int nulls = 0;
 
 
 	private final Comparator<TYPE> comparator;
@@ -107,7 +106,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	@Override
 	public void consume(Object value) {
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
@@ -185,7 +184,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		out.put(labels.sum(), printValue(getStatistics().getSum()));
 		out.put(labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()));
-		out.put(labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get()));
+		out.put(labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls()));
 
 		return out;
 	}

@@ -84,8 +84,20 @@ public class MatchingStats {
         @JsonIgnore
         private final Set<String> foundEntities = new HashSet<>();
         private long numberOfEntities;
-        private CDateRange span;
+		private int minDate = Integer.MAX_VALUE;
+		private int maxDate = Integer.MIN_VALUE;
 
+		@JsonIgnore
+		public CDateRange getSpan() {
+			if(minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
+				return null;
+			}
+
+			return CDateRange.of(
+					minDate == Integer.MAX_VALUE ? Integer.MIN_VALUE : minDate,
+					maxDate == Integer.MIN_VALUE ? Integer.MAX_VALUE : maxDate
+			);
+		}
 
         public void addEvent(Table table, Bucket bucket, int event, String entityForEvent) {
             numberOfEvents++;
@@ -103,7 +115,14 @@ public class MatchingStats {
                 }
 
                 final CDateRange time = bucket.getAsDateRange(event, c);
-                span = time.spanClosed(span);
+
+				if (time.hasUpperBound()){
+					maxDate = Math.max(time.getMaxValue(), maxDate);
+				}
+
+				if (time.hasLowerBound()){
+					minDate = Math.min(time.getMinValue(), minDate);
+				}
             }
         }
     }
