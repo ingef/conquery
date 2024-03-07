@@ -16,14 +16,12 @@ import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.google.common.base.Preconditions;
 import lombok.Data;
 import lombok.Value;
 
 @Value
 class TablePathGenerator {
-
-	private static final int MAX_CONNECTOR_STEPS = 10;
-	private static final int MAX_UNIVERSAL_STEPS = 4;
 
 	SqlDialect sqlDialect;
 	NameGenerator nameGenerator;
@@ -46,6 +44,7 @@ class TablePathGenerator {
 
 	private ConceptConversionTables create(TablePathInfo tableInfo, String label) {
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), label, nameGenerator);
+		Preconditions.checkArgument(tableInfo.getLastPredecessor() != null, "TablePathInfo %s must contain a last predecessor CTE".formatted(tableInfo));
 		String lastPredecessorName = cteNameMap.get(tableInfo.getLastPredecessor());
 		return new ConceptConversionTables(
 				tableInfo.getRootTable(),
@@ -58,7 +57,7 @@ class TablePathGenerator {
 
 	private TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable) {
 
-		TablePathInfo tableInfo = new TablePathInfo(MAX_CONNECTOR_STEPS);
+		TablePathInfo tableInfo = new TablePathInfo();
 		tableInfo.setRootTable(cqTable.getConnector().getTable().getName());
 		tableInfo.addRequiredSteps(MANDATORY_STEPS);
 		tableInfo.setLastPredecessor(JOIN_BRANCHES);
@@ -79,7 +78,7 @@ class TablePathGenerator {
 
 	private TablePathInfo collectConceptTables(QueryStep predecessor, CQConcept cqConcept) {
 
-		TablePathInfo tableInfo = new TablePathInfo(MAX_UNIVERSAL_STEPS);
+		TablePathInfo tableInfo = new TablePathInfo();
 		tableInfo.setRootTable(predecessor.getCteName()); // last table of a single connector or merged and aggregated table of multiple connectors
 		tableInfo.addRequiredStep(UNIVERSAL_SELECTS);
 
@@ -112,8 +111,8 @@ class TablePathGenerator {
 		 */
 		private boolean containsIntervalPacking;
 
-		public TablePathInfo(int maxSteps) {
-			this.mappings = new HashMap<>(maxSteps);
+		public TablePathInfo() {
+			this.mappings = new HashMap<>();
 		}
 
 		public void addMappings(Map<CteStep, CteStep> mappings) {
