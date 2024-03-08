@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.auth.develop;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
+import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
@@ -60,6 +60,6 @@ public class DefaultInitialUserRealm extends AuthenticatingRealm implements Conq
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
 		final User user = getUserOrThrowUnknownAccount(storage, devToken.getPrincipal());
-		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true);
+		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true, null);
 	}
 }
