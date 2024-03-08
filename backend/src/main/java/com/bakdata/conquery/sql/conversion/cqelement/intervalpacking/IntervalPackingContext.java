@@ -6,8 +6,8 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.sql.conversion.Context;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -33,7 +33,7 @@ public class IntervalPackingContext implements Context {
 	 */
 	QueryStep predecessor;
 
-	SqlTables intervalPackingTables;
+	SqlTables tables;
 
 	/**
 	 * The selects you want to carry through all interval packing steps. They won't get touched besides qualifying.
@@ -41,7 +41,7 @@ public class IntervalPackingContext implements Context {
 	@Builder.Default
 	List<SqlSelect> carryThroughSelects = Collections.emptyList();
 
-	NameGenerator nameGenerator;
+	ConversionContext conversionContext;
 
 	@CheckForNull
 	public QueryStep getPredecessor() {

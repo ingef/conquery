@@ -37,7 +37,7 @@ class InvertCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		QueryStep rowNumberStep = context.getStep(InvertCteStep.ROW_NUMBER);
+		QueryStep rowNumberStep = context.getStep(DateAggregationCteStep.ROW_NUMBER);
 
 		SqlIdColumns ids = context.getIds();
 		SqlIdColumns leftIds = ids.qualify(ROWS_LEFT_TABLE_NAME);
@@ -54,7 +54,7 @@ class InvertCte extends DateAggregationCte {
 
 	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
 
 		Field<Date> rangeStart = DSL.coalesce(

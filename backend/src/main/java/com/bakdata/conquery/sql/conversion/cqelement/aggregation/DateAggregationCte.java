@@ -23,11 +23,11 @@ abstract class DateAggregationCte {
 
 		QueryStep.QueryStepBuilder builder = this.convertStep(context);
 
-		if (cteStep != MergeCteStep.NODE_NO_OVERLAP) {
+		if (cteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
 			builder = builder.cteName(dateAggregationTables.cteName(cteStep))
 							 .predecessors(List.of(previous));
 		}
-		if (cteStep != InvertCteStep.INVERT) {
+		if (cteStep != DateAggregationCteStep.INVERT) {
 			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getPredecessor(cteStep)));
 		}
 

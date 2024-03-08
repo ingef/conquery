@@ -73,4 +73,8 @@ public class ConversionContext implements Context {
 		return this.toBuilder().clearQuerySteps().build();
 	}
 
+	@Override
+	public ConversionContext getConversionContext() {
+		return this;
+	}
 }

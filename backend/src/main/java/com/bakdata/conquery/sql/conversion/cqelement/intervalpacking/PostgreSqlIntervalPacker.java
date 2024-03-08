@@ -23,7 +23,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	@Override
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getRootTable();
+		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.INTERVAL_COMPLETE);
 		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
 		ColumnDateRange qualifiedValidityDate = context.getValidityDate().qualify(sourceTableName);
 		ColumnDateRange aggregatedValidityDate = this.functionProvider.aggregated(qualifiedValidityDate)
@@ -36,7 +36,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 														   .build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(selectsWithAggregatedValidityDate)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.groupBy(ids.toFields())

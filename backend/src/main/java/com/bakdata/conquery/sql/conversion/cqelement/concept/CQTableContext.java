@@ -10,8 +10,8 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -32,7 +32,7 @@ class CQTableContext implements Context {
 	List<SqlFilters> sqlFilters;
 	SqlTables connectorTables;
 	IntervalPackingContext intervalPackingContext;
-	ConversionContext parentContext;
+	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
 
@@ -54,8 +54,4 @@ class CQTableContext implements Context {
 		return Optional.ofNullable(intervalPackingContext);
 	}
 
-	@Override
-	public NameGenerator getNameGenerator() {
-		return parentContext.getNameGenerator();
-	}
 }

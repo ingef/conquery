@@ -12,7 +12,7 @@ class AggregationSelectCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		String predecessor = tableContext.getConnectorTables().getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
+		String predecessor = tableContext.getConnectorTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		SqlIdColumns ids = tableContext.getIds().qualify(predecessor);
 
 		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
@@ -30,8 +30,8 @@ class AggregationSelectCte extends ConnectorCte {
 	}
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.AGGREGATION_SELECT;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.AGGREGATION_SELECT;
 	}
 
 }

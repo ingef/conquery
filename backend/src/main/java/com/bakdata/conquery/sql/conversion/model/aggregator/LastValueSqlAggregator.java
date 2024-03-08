@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -35,13 +35,13 @@ public class LastValueSqlAggregator implements SqlAggregator {
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(connectorTables.getRootTable(), columnName, Object.class);
 
 		List<Field<?>> validityDateFields =
-				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)))
+				validityDate.map(_validityDate -> _validityDate.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)))
 							.map(ColumnDateRange::toFields)
 							.orElse(Collections.emptyList());
-		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<?> lastGroupBy = new FieldWrapper<>(functionProvider.last(qualifiedRootSelect, validityDateFields).as(alias), columnName);
 
-		ExtractingSqlSelect<?> finalSelect = lastGroupBy.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<?> finalSelect = lastGroupBy.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelect(rootSelect)
@@ -57,8 +57,8 @@ public class LastValueSqlAggregator implements SqlAggregator {
 				lastValueSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(lastValueSelect),
 				selectContext.getValidityDate(),
-				selectContext.getConnectorTables(),
-				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
+				selectContext.getTables(),
+				selectContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
 	}
 

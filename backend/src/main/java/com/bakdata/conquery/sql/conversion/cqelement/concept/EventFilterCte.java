@@ -31,8 +31,8 @@ class EventFilterCte extends ConnectorCte {
 	}
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.EVENT_FILTER;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.EVENT_FILTER;
 	}
 
 	private Selects getEventFilterSelects(CQTableContext tableContext) {
@@ -58,7 +58,7 @@ class EventFilterCte extends ConnectorCte {
 	}
 
 	/**
-	 * Collects the columns required in {@link ConnectorCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
+	 * Collects the columns required in {@link ConceptCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
 	 * {@link SumDistinctSqlAggregator}). An additional predecessor can contain an N-ary tree of predecessors itself (like all {@link QueryStep}s), so we want to
 	 * look for the deepest predeceasing QueryStep leafs and collect their {@link SqlSelects}, because they expect this CTE to contain all their
 	 * {@link SqlSelect#requiredColumns()}.
