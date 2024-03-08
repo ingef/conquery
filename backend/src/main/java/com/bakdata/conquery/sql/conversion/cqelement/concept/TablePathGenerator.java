@@ -1,6 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.JOIN_BRANCHES;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +19,6 @@ import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.google.common.base.Preconditions;
 import lombok.Data;
 import lombok.Value;
 
@@ -43,9 +45,12 @@ class TablePathGenerator {
 	}
 
 	private ConceptConversionTables create(TablePathInfo tableInfo, String label) {
+
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), label, nameGenerator);
-		Preconditions.checkArgument(tableInfo.getLastPredecessor() != null, "TablePathInfo %s must contain a last predecessor CTE".formatted(tableInfo));
-		String lastPredecessorName = cteNameMap.get(tableInfo.getLastPredecessor());
+		String lastPredecessorName = tableInfo.getLastPredecessor() != null
+									 ? cteNameMap.get(tableInfo.getLastPredecessor())
+									 : tableInfo.getRootTable();
+
 		return new ConceptConversionTables(
 				tableInfo.getRootTable(),
 				cteNameMap,
