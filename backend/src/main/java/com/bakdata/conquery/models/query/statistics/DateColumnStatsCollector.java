@@ -13,13 +13,15 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector {
 
-	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
+	private final Object2IntMap<String> monthCounts = new Object2IntOpenHashMap<>();
 
 	private int totalCount = 0;
 	private int nulls = 0;
@@ -84,7 +86,7 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
 									 totalCount,
 									 nulls,
-									 monthCounts,
+									 new TreeMap<>(monthCounts),
 									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
 		);
 	}
