@@ -75,8 +75,8 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								6,
 								0,
 								new TreeMap<>(Map.of(
-										"2021-1", 5,
-										"2021-4", 1
+										"2021-01", 5,
+										"2021-10", 1
 								)),
 								Range.of(
 										LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1)
@@ -90,8 +90,8 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								6,
 								0,
 								new TreeMap<>(Map.of(
-										"2021-1", 5,
-										"2021-4", 1
+										"2021-01", 5,
+										"2021-10", 1
 								)),
 								Range.of(
 										LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1)
