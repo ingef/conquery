@@ -21,7 +21,7 @@ import lombok.ToString;
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector {
 
-	private final Object2IntMap<String> quarterCounts = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<String> monthCounts = new Object2IntOpenHashMap<>();
 
 	private int totalCount = 0;
 	private int nulls = 0;
@@ -72,19 +72,21 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 		final LocalDate date = CDate.toLocalDate(day);
 		final int year = date.getYear();
 		final int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
+		final int month = date.getMonthValue();
 
-		final String yearQuarter = year + "-" + quarter;
+		// This code is pretty hot, therefore I want to avoid String.format
+		final String yearMonth = year + "-" + (month < 10 ? "0" : "") + month;
 
-		quarterCounts.compute(yearQuarter, (ignored, current) -> current == null ? 1 : current + 1);
+		monthCounts.compute(yearMonth, (ignored, current) -> current == null ? 1 : current + 1);
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
+
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
 									 totalCount,
 									 nulls,
-									 // we only need to sort for output, so using a fastmap for computation is sensible.
-									 new TreeMap<>(quarterCounts),
+									 new TreeMap<>(monthCounts),
 									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
 		);
 	}
@@ -96,15 +98,15 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 		private final int count;
 		private final int nullValues;
-		private final SortedMap<String, Integer> quarterCounts;
+		private final SortedMap<String, Integer> monthCounts;
 
 		private final Range<LocalDate> span;
 
-		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> quarterCounts, Range<LocalDate> span) {
+		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> monthCounts, Range<LocalDate> span) {
 			super(name, label, description);
 			this.count = count;
 			this.nullValues = nullValues;
-			this.quarterCounts = quarterCounts;
+			this.monthCounts = monthCounts;
 			this.span = span;
 		}
 	}
