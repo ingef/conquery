@@ -44,10 +44,12 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		// Span date-column
 		final ListenableFuture<Range<LocalDate>> futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
 
-		// Count result lines (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer>
-				futureLines =
-				executorService.submit(() -> managedQuery.streamResults(OptionalLong.empty()).mapToInt(result -> result.listResultLines().size()).sum());
+		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
+		final ListenableFuture<Integer> futureLines =
+				executorService.submit(() -> (int) managedQuery.getQuery().countResults(managedQuery.streamResults(OptionalLong.empty())));
+
+		final ListenableFuture<Integer> futureEntities =
+				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
@@ -77,7 +79,11 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final Range<LocalDate> span = futureSpan.get();
 		final List<ColumnStatsCollector.ResultColumnStatistics> descriptions = Futures.allAsList(futureDescriptions).get();
 		final int lines = futureLines.get();
-		return new ResultStatistics(managedQuery.getLastResultCount().intValue(), lines, descriptions, span);
+		final int entities = futureEntities.get();
+
+		executorService.shutdown();
+
+		return new ResultStatistics(entities, lines, descriptions, span);
 	}
 
 	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex) {
