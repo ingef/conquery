@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.Manager;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public interface StandaloneCommand {

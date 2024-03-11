@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.error;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.constraints.NotNull;
-
 import c10n.C10N;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -16,6 +14,7 @@ import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

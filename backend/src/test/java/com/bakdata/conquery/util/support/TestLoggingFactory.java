@@ -3,22 +3,13 @@ package com.bakdata.conquery.util.support;
 import static java.util.Objects.requireNonNull;
 
 import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 
 import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.jmx.JMXConfigurator;
 import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
@@ -29,15 +20,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import io.dropwizard.logging.ConsoleAppenderFactory;
-import io.dropwizard.logging.LoggingFactory;
-import io.dropwizard.logging.LoggingUtil;
-import io.dropwizard.logging.async.AsyncAppenderFactory;
-import io.dropwizard.logging.async.AsyncLoggingEventAppenderFactory;
-import io.dropwizard.logging.filter.LevelFilterFactory;
-import io.dropwizard.logging.filter.ThresholdLevelFilterFactory;
-import io.dropwizard.logging.layout.DropwizardLayoutFactory;
-import io.dropwizard.logging.layout.LayoutFactory;
+import io.dropwizard.logging.common.ConsoleAppenderFactory;
+import io.dropwizard.logging.common.LoggingFactory;
+import io.dropwizard.logging.common.LoggingUtil;
+import io.dropwizard.logging.common.async.AsyncAppenderFactory;
+import io.dropwizard.logging.common.async.AsyncLoggingEventAppenderFactory;
+import io.dropwizard.logging.common.filter.LevelFilterFactory;
+import io.dropwizard.logging.common.filter.ThresholdLevelFilterFactory;
+import io.dropwizard.logging.common.layout.DropwizardLayoutFactory;
+import io.dropwizard.logging.common.layout.LayoutFactory;
 
 public class TestLoggingFactory implements LoggingFactory {
 
@@ -91,20 +82,21 @@ public class TestLoggingFactory implements LoggingFactory {
 			StatusPrinter.setPrintStream(System.out);
 		}
 
-		final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-		MBEAN_REGISTRATION_LOCK.lock();
-		try {
-			final ObjectName objectName = new ObjectName("io.dropwizard:type=Logging");
-			if (!server.isRegistered(objectName)) {
-				server.registerMBean(new JMXConfigurator(loggerContext, server, objectName), objectName);
-			}
-		}
-		catch (MalformedObjectNameException | InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
-			throw new RuntimeException(e);
-		}
-		finally {
-			MBEAN_REGISTRATION_LOCK.unlock();
-		}
+		//TODO whatt does this even do!?
+//		final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+//		MBEAN_REGISTRATION_LOCK.lock();
+//		try {
+//			final ObjectName objectName = new ObjectName("io.dropwizard:type=Logging");
+//			if (!server.isRegistered(objectName)) {
+//				server.registerMBean(new JMXConfigurator(loggerContext, server, objectName), objectName);
+//			}
+//		}
+//		catch (MalformedObjectNameException | InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
+//			throw new RuntimeException(e);
+//		}
+//		finally {
+//			MBEAN_REGISTRATION_LOCK.unlock();
+//		}
 
 		configureInstrumentation(root, metricRegistry);
 	}

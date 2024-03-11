@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;

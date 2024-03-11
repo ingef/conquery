@@ -1,7 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.Getter;

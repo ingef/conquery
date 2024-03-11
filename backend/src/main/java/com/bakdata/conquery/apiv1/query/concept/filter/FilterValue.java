@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;

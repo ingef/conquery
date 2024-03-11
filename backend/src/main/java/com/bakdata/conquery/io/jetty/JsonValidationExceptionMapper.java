@@ -1,12 +1,12 @@
 package com.bakdata.conquery.io.jetty;
 
-import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 import org.glassfish.jersey.server.ContainerRequest;
 
@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class JsonValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-	private final javax.inject.Provider<ContainerRequest> requestContext;
+	private final jakarta.inject.Provider<ContainerRequest> requestContext;
 	
 	@Override
 	public Response toResponse(ConstraintViolationException exception) {

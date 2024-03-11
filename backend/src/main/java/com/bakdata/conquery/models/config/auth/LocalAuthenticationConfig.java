@@ -5,10 +5,10 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -29,7 +29,7 @@ import com.password4j.BcryptFunction;
 import com.password4j.BenchmarkResult;
 import com.password4j.SystemChecker;
 import io.dropwizard.jersey.DropwizardResourceConfig;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;

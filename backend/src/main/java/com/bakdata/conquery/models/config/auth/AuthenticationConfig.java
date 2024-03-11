@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.config.auth;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.NewCookie;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.NewCookie;
-import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor
 @Getter

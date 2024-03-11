@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.introspection.Introspection;
 import com.bakdata.conquery.io.cps.CPSType;

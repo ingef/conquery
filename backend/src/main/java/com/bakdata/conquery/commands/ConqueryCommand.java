@@ -1,9 +1,9 @@
 package com.bakdata.conquery.commands;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.cli.ConfiguredCommand;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;

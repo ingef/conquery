@@ -5,8 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -41,11 +39,12 @@ import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import com.bakdata.conquery.resources.admin.ui.model.ConnectorUIResource;
+import io.dropwizard.core.setup.AdminEnvironment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
-import io.dropwizard.setup.AdminEnvironment;
-import io.dropwizard.views.ViewMessageBodyWriter;
+import io.dropwizard.views.common.ViewMessageBodyWriter;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;

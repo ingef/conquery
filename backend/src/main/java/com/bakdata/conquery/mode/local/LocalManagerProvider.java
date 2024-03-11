@@ -21,7 +21,7 @@ import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import org.jooq.DSLContext;
 
 public class LocalManagerProvider implements ManagerProvider {
