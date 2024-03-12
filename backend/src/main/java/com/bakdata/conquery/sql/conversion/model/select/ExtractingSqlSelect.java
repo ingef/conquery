@@ -14,7 +14,7 @@ import org.jooq.impl.DSL;
  * @param <T> type of column
  */
 @Value
-public class ExtractingSqlSelect<T> implements SqlSelect {
+public class ExtractingSqlSelect<T> implements SingleColumnSqlSelect {
 
 	String table;
 	String column;

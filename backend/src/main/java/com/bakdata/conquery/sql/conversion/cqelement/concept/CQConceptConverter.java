@@ -153,9 +153,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		IntervalPackingContext intervalPackingContext = null;
 		if (connectorTables.isWithIntervalPacking()) {
 			intervalPackingContext = IntervalPackingContext.builder()
-														   .nodeLabel(conceptConnectorLabel)
 														   .ids(ids)
-														   .validityDate(tablesValidityDate.get())
+														   .daterange(tablesValidityDate.get())
 														   .tables(connectorTables)
 														   .build();
 		}

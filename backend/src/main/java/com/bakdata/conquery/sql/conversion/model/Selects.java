@@ -53,7 +53,7 @@ public class Selects {
 		return Stream.of(
 							 this.ids.toFields().stream(),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.sqlSelects.stream().map(SqlSelect::select)
+							 this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
 					 )
 					 .flatMap(Function.identity())
 					 .map(select -> (Field<?>) select)
@@ -63,7 +63,7 @@ public class Selects {
 
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
-							  .map(SqlSelect::select)
+							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
 							  .distinct()
 							  .collect(Collectors.toList());
 	}

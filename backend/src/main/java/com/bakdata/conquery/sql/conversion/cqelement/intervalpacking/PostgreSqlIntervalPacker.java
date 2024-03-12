@@ -21,27 +21,39 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	private final SqlFunctionProvider functionProvider;
 
 	@Override
-	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
+	public QueryStep aggregateAsValidityDate(IntervalPackingContext context) {
+		return aggregateDate(context, AggregationMode.VALIDITY_DATE);
+	}
+
+	@Override
+	public QueryStep aggregateAsArbitrarySelect(IntervalPackingContext context) {
+		return aggregateDate(context, AggregationMode.ARBITRARY_SELECT);
+	}
+
+	private QueryStep aggregateDate(IntervalPackingContext context, AggregationMode aggregationMode) {
 
 		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.INTERVAL_COMPLETE);
 		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
-		ColumnDateRange qualifiedValidityDate = context.getValidityDate().qualify(sourceTableName);
-		ColumnDateRange aggregatedValidityDate = this.functionProvider.aggregated(qualifiedValidityDate)
-																	  .asValidityDateRange(context.getNodeLabel());
+		ColumnDateRange qualifiedDaterange = context.getDaterange().qualify(sourceTableName);
+		ColumnDateRange aggregatedDaterange = this.functionProvider.aggregated(qualifiedDaterange);
 
-		Selects selectsWithAggregatedValidityDate = Selects.builder()
-														   .ids(ids)
-														   .validityDate(Optional.of(aggregatedValidityDate))
-														   .sqlSelects(context.getCarryThroughSelects())
-														   .build();
+		Selects.SelectsBuilder selectsBuilder = Selects.builder()
+													   .ids(ids)
+													   .sqlSelects(context.getCarryThroughSelects());
+
+		switch (aggregationMode) {
+			case VALIDITY_DATE -> selectsBuilder.validityDate(Optional.of(aggregatedDaterange));
+			case ARBITRARY_SELECT -> selectsBuilder.sqlSelect(aggregatedDaterange);
+		}
 
 		return QueryStep.builder()
 						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
-						.selects(selectsWithAggregatedValidityDate)
+						.selects(selectsBuilder.build())
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.groupBy(ids.toFields())
 						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
+
 
 }

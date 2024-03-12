@@ -1,32 +1,48 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.EnumSet;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "DURATION_SUM", base = Select.class)
-public class DurationSumSelect extends SingleColumnSelect {
+public class DurationSumSelect extends Select implements DaterangeSelect {
+
+	@NsIdRef
+	@Nullable
+	private Column column;
+	@NsIdRef
+	@Nullable
+	private Column startColumn;
+	@NsIdRef
+	@Nullable
+	private Column endColumn;
 
 	@Override
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE);
-	}
-
-	@JsonCreator
-	public DurationSumSelect(@NsIdRef Column column) {
-		super(column);
+	public List<Column> getRequiredColumns() {
+		if (column != null) {
+			return List.of(column);
+		}
+		return List.of(startColumn, endColumn);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
+		// TODO fix this for 2 columns
 		return new DurationSumAggregator(getColumn());
 	}
 }
