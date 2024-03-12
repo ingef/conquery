@@ -296,12 +296,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		try {
-			/*
-			 Files::createDirectories creates a directory by creating all nonexistent parent directories first.
-			 Each directory creation attempt uses Files::createDirectory, through Files::createAndCheckIsDirectory.
-			 Files::createDirectory is atomic and Files::createAndCheckIsDirectory catches and ignores FileAlreadyExistsException for directories.
-			 Thus, after leaving Files::createDirectories the parent of dumpfile exists.
-			 */
+			// This will create all necessary parent directories.
 			Files.createDirectories(dumpfile.toPath().getParent());
 
 			// Should be a redundant check, due to the above reasoning
@@ -310,8 +305,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 		}
 		catch (IOException e) {
-			// Files::createDirectories throws java.io.IOException
-			throw new IllegalStateException("Could not create `%s` due to an IOException:%s".formatted(dumpfile.getParentFile(), e.getMessage()));
+			log.warn("Could not create `{}`", dumpfile.getParentFile(), e);
 		}
 
 		// Write json
