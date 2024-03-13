@@ -5,11 +5,6 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -18,6 +13,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
+import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
@@ -28,11 +24,15 @@ import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.password4j.BcryptFunction;
 import com.password4j.BenchmarkResult;
 import com.password4j.SystemChecker;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -79,17 +79,15 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
-		authorizationController.getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, environment.jersey().getResourceConfig());
 
 		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
 
 		final BcryptFunction prototype = result.getPrototype();
-		int rounds = prototype.getLogarithmicRounds();
-		long realElapsed = result.getElapsed();
 
 
-		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", rounds, realElapsed);
+		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", prototype.getLogarithmicRounds(), result.getElapsed());
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
 				environment.getValidator(),
@@ -110,8 +108,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		registerAuthenticationAdminResources(authorizationController.getAdminServlet().getJerseyConfig(), processor);
 
 		// Add login schema for admin end
-		final RedirectingAuthFilter redirectingAuthFilter = authorizationController.getRedirectingAuthFilter();
-		redirectingAuthFilter.getLoginInitiators().add(loginProvider(authorizationController.getUnprotectedAuthAdmin()));
+//TODO		redirectingAuthFilter.getLoginInitiators().add(loginProvider(authorizationController.getUnprotectedAuthAdmin()));
 
 		return realm;
 	}

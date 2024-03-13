@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.auth.AuthFilter;
 import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.Priorities;
@@ -17,9 +18,10 @@ import jakarta.ws.rs.RedirectionException;
 import jakarta.ws.rs.ServiceUnavailableException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
 
@@ -34,17 +36,21 @@ import org.apache.shiro.authc.AuthenticationToken;
  * is directly forwarded to that schema. If multiple schemas are possible the user is presented a webpage, where
  * the login schema can be chosen.
  */
-@RequiredArgsConstructor
 @Slf4j
 @Priority(Priorities.AUTHENTICATION)
+@PreMatching
+@Provider
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	public static final String REDIRECT_URI = "redirect_uri";
 
+
+
 	/**
 	 * The Filter that checks if a request was authenticated
 	 */
-	private final DefaultAuthFilter delegate;
+	@Inject
+	private DefaultAuthFilter delegate;
 
 	/**
 	 * Request processors that check if a request belongs to its multi-step authentication schema.

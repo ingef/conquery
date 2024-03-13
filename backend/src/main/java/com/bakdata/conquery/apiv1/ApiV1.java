@@ -8,6 +8,8 @@ import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
+import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -32,7 +34,7 @@ public class ApiV1 implements ResourcesProvider {
 	@Override
 	public void registerResources(ManagerNode manager) {
 
-		JerseyEnvironment jersey = manager.getEnvironment().jersey();
+		final JerseyEnvironment jersey = manager.getEnvironment().jersey();
 		// TODO this does not work, if we really want to do api versioning
 		jersey.setUrlPattern("/api");
 
@@ -60,7 +62,11 @@ public class ApiV1 implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		jersey.register(manager.getAuthController().getAuthenticationFilter());
+		jersey.register(DefaultAuthFilter.asDropwizardFeature());
+		//TODO investigate, why this is not registered on ApiV1, but admin side.
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, jersey.getResourceConfig());
+
+
 		jersey.register(IdParamConverter.Provider.INSTANCE);
 
 		jersey.register(QueryResource.class);

@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
-import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
@@ -50,7 +49,7 @@ import org.apache.shiro.util.LifecycleUtils;
  */
 @Slf4j
 @RequiredArgsConstructor
-public final class AuthorizationController implements Managed{
+public final class AuthorizationController implements Managed {
 
 	@NonNull
 	private final ConqueryConfig config;
@@ -65,10 +64,6 @@ public final class AuthorizationController implements Managed{
 	private final ConqueryTokenRealm conqueryTokenRealm;
 	@Getter
 	private final List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
-	@Getter
-	private final DefaultAuthFilter authenticationFilter;
-	@Getter
-	private final RedirectingAuthFilter redirectingAuthFilter;
 	@Getter
 	private final List<Realm> realms = new ArrayList<>();
 
@@ -89,12 +84,12 @@ public final class AuthorizationController implements Managed{
 
 		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
-		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
-		redirectingAuthFilter = new RedirectingAuthFilter(authenticationFilter);
 
 		if (adminServlet != null) {
-			adminServlet.getJerseyConfig().register(authenticationFilter);
-			adminServlet.getJerseyConfigUI().register(redirectingAuthFilter);
+			adminServlet.getJerseyConfig().register(DefaultAuthFilter.asDropwizardFeature());
+			//TODO properly link			adminServlet.getJerseyConfigUI().register(new RedirectingAuthFilter());
+
+			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, adminServlet.getJerseyConfig());
 		}
 
 
@@ -106,49 +101,17 @@ public final class AuthorizationController implements Managed{
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(conqueryTokenRealm);
 		realms.add(conqueryTokenRealm);
-		authenticationFilter.registerTokenExtractor(JWTokenHandler::extractToken);
 
 		// Add the central authorization realm
-		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
+		final AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
 
 		securityManager = new DefaultSecurityManager(realms);
-		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		final ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
 		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
 
 		registerStaticSecurityManager();
 
-	}
-
-	private void externalInit() {
-
-
-		// Init authentication realms provided by the config.
-		for (AuthenticationRealmFactory authenticationConf : config.getAuthenticationRealms()) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(environment, config, this);
-			authenticationRealms.add(realm);
-			realms.add(realm);
-		}
-
-		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		securityManager.setRealms(realms);
-	}
-
-	@Override
-	public void start() throws Exception {
-		// Call Shiros init on all realms
-		LifecycleUtils.init(realms);
-
-		externalInit();
-
-		// Register initial users for authorization and authentication (if the realm is able to)
-		initializeAuthConstellation(config.getAuthorizationRealms(), realms, storage);
-	}
-
-	@Override
-	public void stop() throws Exception {
-		LifecycleUtils.destroy(authenticationRealms);
 	}
 
 	/**
@@ -162,12 +125,37 @@ public final class AuthorizationController implements Managed{
 		log.debug("Security manager registered");
 	}
 
+	@Override
+	public void start() throws Exception {
+		// Call Shiros init on all realms
+		LifecycleUtils.init(realms);
+
+		externalInit();
+
+		// Register initial users for authorization and authentication (if the realm is able to)
+		initializeAuthConstellation(config.getAuthorizationRealms(), realms, storage);
+	}
+
+	private void externalInit() {
+
+
+		// Init authentication realms provided by the config.
+		for (AuthenticationRealmFactory authenticationConf : config.getAuthenticationRealms()) {
+			final ConqueryAuthenticationRealm realm = authenticationConf.createRealm(environment, config, this);
+			authenticationRealms.add(realm);
+			realms.add(realm);
+		}
+
+		// Register all realms in Shiro
+		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		securityManager.setRealms(realms);
+	}
+
 	/**
 	 * Sets up the initial subjects and permissions for the authentication system
 	 * that are found in the config.
 	 *
-	 * @param storage
-	 *            A storage, where the handler might add a new users.
+	 * @param storage A storage, where the handler might add a new users.
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
 		for (ProtoRole pRole : config.getInitialRoles()) {
@@ -186,10 +174,23 @@ public final class AuthorizationController implements Managed{
 		}
 	}
 
+	@Override
+	public void stop() throws Exception {
+		LifecycleUtils.destroy(authenticationRealms);
+	}
+
+	/**
+	 * @see AuthorizationController#flatCopyUser(User, String, MetaStorage)
+	 */
+	public User flatCopyUser(@NonNull User originUser, String namePrefix) {
+		return flatCopyUser(originUser, namePrefix, storage);
+	}
+
 	/**
 	 * Creates a copy of an existing user. The copied user has the same effective permissions as the original user
 	 * at the time of copying, but these are flatted. This means that the original user might hold certain permissions
 	 * through inheritance from roles or groups, the copy will hold the permissions directly.
+	 *
 	 * @param originUser The user to make a flat copy of
 	 * @param namePrefix The prefix for the id of the new copied user
 	 * @return A flat copy of the referenced user
@@ -210,7 +211,7 @@ public final class AuthorizationController implements Managed{
 		// Retrieve original user and its effective permissions
 
 		// Copy inherited permissions
-		Set<ConqueryPermission> copiedPermission = new HashSet<>();
+		final Set<ConqueryPermission> copiedPermission = new HashSet<>();
 
 		// This collects all permissions from the user, its groups and inherited roles
 		copiedPermission.addAll(originUser.getEffectivePermissions());
@@ -226,24 +227,17 @@ public final class AuthorizationController implements Managed{
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
 				storage.getAllFormConfigs().stream()
-						.filter(originUser::isOwner)
-						.map(conf -> conf.createPermission(Ability.READ.asSet()))
-						.collect(Collectors.toSet())
+					   .filter(originUser::isOwner)
+					   .map(conf -> conf.createPermission(Ability.READ.asSet()))
+					   .collect(Collectors.toSet())
 		);
 
 		// Create copied user
-		User copy = new User(name, originUser.getLabel(), storage);
+		final User copy = new User(name, originUser.getLabel(), storage);
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 
 		return copy;
-	}
-
-	/**
-	 * @see AuthorizationController#flatCopyUser(User, String, MetaStorage)
-	 */
-	public User flatCopyUser(@NonNull User originUser, String namePrefix) {
-		return flatCopyUser(originUser, namePrefix, storage);
 	}
 
 }

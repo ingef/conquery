@@ -4,22 +4,22 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.ws.rs.client.Client;
-
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
+import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.ws.rs.client.Client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		authorizationController.getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, environment.jersey().getResourceConfig());
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
