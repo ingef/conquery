@@ -45,6 +45,8 @@ public abstract class ExecutionStatus {
 	private SecondaryIdDescriptionId secondaryId;
 
 	private boolean containsDates;
+	private boolean allowStatistics;
+	private boolean allowPreview;
 
 
 	/**
