@@ -63,8 +63,7 @@ public class ApiV1 implements ResourcesProvider {
 		 * point for authentication.
 		 */
 		jersey.register(DefaultAuthFilter.asDropwizardFeature());
-		//TODO investigate, why this is not registered on ApiV1, but admin side.
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, jersey.getResourceConfig());
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
 
 		jersey.register(IdParamConverter.Provider.INSTANCE);

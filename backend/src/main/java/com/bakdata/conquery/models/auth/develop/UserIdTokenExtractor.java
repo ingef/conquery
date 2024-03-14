@@ -1,22 +1,24 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import jakarta.inject.Named;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.jvnet.hk2.annotations.Service;
 
 @Slf4j
 @RequiredArgsConstructor
+@Service
+@Named("user-id")
 public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 
 	private static final String UID_QUERY_STRING_PARAMETER = "access_token";
 
-	private final User defaultUser;
+//	private final User defaultUser;
 
 	/**
 	 * Tries to extract a plain {@link UserId} from the request to submit it for the authentication process.
@@ -40,11 +42,11 @@ public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 
 		UserId userId = null;
 
-		if (StringUtils.isEmpty(uid)) {
-			// If nothing was found execute the request as the default user
-			userId = defaultUser.getId();
-			return new DevelopmentToken(userId, uid);
-		}
+//		if (StringUtils.isEmpty(uid)) {
+//			// If nothing was found execute the request as the default user
+//			userId = defaultUser.getId();
+//			return new DevelopmentToken(userId, uid);
+//		}
 
 		try {
 			userId = UserId.Parser.INSTANCE.parse(uid);

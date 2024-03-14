@@ -23,7 +23,7 @@ public class DevAuthConfig implements AuthenticationRealmFactory {
 								 .get(0)
 								 .createOrOverwriteUser(authorizationController.getStorage());
 
-		DefaultAuthFilter.registerTokenExtractor(new UserIdTokenExtractor(defaultUser), environment.jersey().getResourceConfig());
+		DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		return new DefaultInitialUserRealm(authorizationController.getStorage());
 	}

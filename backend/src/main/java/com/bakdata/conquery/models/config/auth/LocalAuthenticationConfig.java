@@ -79,7 +79,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, environment.jersey().getResourceConfig());
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);

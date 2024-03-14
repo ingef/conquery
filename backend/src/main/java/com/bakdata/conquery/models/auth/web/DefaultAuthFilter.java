@@ -28,8 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.glassfish.hk2.api.IterableProvider;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.spi.Contract;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
@@ -105,14 +105,8 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
-	public static void registerTokenExtractor(TokenExtractor extractor, ResourceConfig config) {
-		config.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(extractor)
-						.to(TokenExtractor.class);
-			}
-		});
+	public static void registerTokenExtractor(Class<? extends TokenExtractor> extractor, ResourceConfig config) {
+		config.register(extractor);
 	}
 
 	@Override
@@ -133,6 +127,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
 	 * token could be parsed.
 	 */
+	@Contract
 	public interface TokenExtractor extends Function<ContainerRequestContext, AuthenticationToken> {
 
 	}

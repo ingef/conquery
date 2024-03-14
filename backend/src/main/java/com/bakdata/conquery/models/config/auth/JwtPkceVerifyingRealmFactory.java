@@ -20,6 +20,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
+import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,6 +44,7 @@ import groovy.lang.Script;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.inject.Named;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -57,6 +59,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -155,7 +158,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	}
 
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
-		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
+		final List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
 		for (String additionalTokenCheck : additionalTokenChecks) {
 			additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
@@ -166,10 +169,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		authCookieCreator = config.getAuthentication()::createAuthCookie;
 
 		// Add login schema for admin end
-//TODO		final RedirectingAuthFilter redirectingAuthFilter = authorizationController.getRedirectingAuthFilter();
-//		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemAuthzCode);
-//		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemRefreshToken);
-//		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
+
+
+		RedirectingAuthFilter.registerLoginInitiator(environment.jersey().getResourceConfig(), this::initiateLogin, "jwt-initiator");
+		RedirectingAuthFilter.registerAuthAttemptChecker(environment.jersey().getResourceConfig(), this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
+		RedirectingAuthFilter.registerAuthAttemptChecker(environment.jersey().getResourceConfig(), this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
 
 		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway);
 	}
@@ -276,7 +280,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return JWKParser.create().parse(jwkString).toPublicKey();
 	}
 
-	public static abstract class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
+	public abstract static class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
 
 		private final static GroovyShell SHELL;
 
@@ -304,6 +308,29 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			setBinding(binding);
 
 			return run();
+		}
+	}
+
+	@Named("jwt-login")
+	@RequiredArgsConstructor
+	private static class LoginInitiator implements RedirectingAuthFilter.LoginInitiator {
+		private final Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
+		private final String client;
+
+		@Override
+		public URI apply(ContainerRequestContext request) {
+			final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+			if (idpConfigurationOpt.isEmpty()) {
+				log.warn("Unable to initiate authentication, because idp configuration is not available.");
+				return null;
+			}
+			JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+			return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
+							 .queryParam("response_type", "code")
+							 .queryParam("client_id", client)
+							 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+							 .queryParam("scope", "openid")
+							 .queryParam("state", UUID.randomUUID()).build();
 		}
 	}
 

@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
@@ -87,11 +88,11 @@ public final class AuthorizationController implements Managed {
 
 		if (adminServlet != null) {
 			adminServlet.getJerseyConfig().register(DefaultAuthFilter.asDropwizardFeature());
-			//TODO properly link			adminServlet.getJerseyConfigUI().register(new RedirectingAuthFilter());
+			adminServlet.getJerseyConfig().register(new RedirectingAuthFilter());
 
-			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, adminServlet.getJerseyConfig());
+			// TODO necessary?
+			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
 		}
-
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());

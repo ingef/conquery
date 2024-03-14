@@ -49,7 +49,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler::extractToken, environment.jersey().getResourceConfig());
+		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
