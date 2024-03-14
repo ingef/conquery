@@ -189,7 +189,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	}
 
 	@Override
-	protected void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState) {
 		if (getState().equals(executionState)) {
 			return;
 		}

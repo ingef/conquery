@@ -222,7 +222,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	protected void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
@@ -246,7 +246,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				"{} {} {} within {}",
 				getState(),
 				queryId,
-				this.getClass().getSimpleName(),
+				getClass().getSimpleName(),
 				getExecutionTime()
 		);
 	}

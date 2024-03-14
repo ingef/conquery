@@ -88,7 +88,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return getSubmitted().createSubQueries()
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
-						e -> e.getKey(),
+						Map.Entry::getKey,
 						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
 
 				));

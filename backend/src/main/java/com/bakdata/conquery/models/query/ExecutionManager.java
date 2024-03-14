@@ -14,6 +14,8 @@ public interface ExecutionManager {
 
 	ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system);
 
+
+
 	void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config);
 
 	ManagedExecution createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system);

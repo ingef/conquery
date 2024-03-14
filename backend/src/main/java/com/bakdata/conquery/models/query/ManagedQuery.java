@@ -99,7 +99,7 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 	}
 
 	@Override
-	protected void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState) {
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
 		super.finish(executionState);

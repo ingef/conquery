@@ -59,7 +59,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 		final ManagedExecution execution = storage.getExecution(executionId);
 
 		// The query might already be deleted
-		if(execution != null) {
+		if (execution != null) {
 			execution.reset();
 		}
 	}
@@ -71,6 +71,11 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 		return execution;
 
+	}
+
+	@Override
+	public ManagedExecution createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
+		return createQuery(query, UUID.randomUUID(), user, submittedDataset, system);
 	}
 
 	@Override
@@ -104,12 +109,6 @@ public class DistributedExecutionManager implements ExecutionManager {
 			clusterState.getWorkerHandlers().get(execution.getDataset().getId()).sendToAll(internalExecution.createExecutionMessage());
 		}
 	}
-
-	@Override
-	public ManagedExecution createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		return createQuery(query, UUID.randomUUID(), user, submittedDataset, system);
-	}
-
 
 	// Visible for testing
 	public ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
