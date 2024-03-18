@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "code")
 @CPSBase
 @ToString(onlyExplicitlyIncluded = true)
+@JsonIgnoreProperties({"suppressed", "localizedMessage"})
 public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
 
 	private static final String NO_MESSAGE = "Unable to provide error message. No message template was provided by error.";
@@ -41,6 +43,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@NotNull
 	@ToString.Include
 	private UUID id = UUID.randomUUID();
+
 	/**
 	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
 	 */
