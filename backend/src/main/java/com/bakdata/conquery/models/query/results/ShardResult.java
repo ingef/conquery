@@ -7,10 +7,12 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
+import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -76,6 +78,10 @@ public class ShardResult {
 		log.trace("Sending collected Results\n{}", results);
 
 		worker.send(new CollectQueryResult(this));
+	}
+
+	public void addResult(DistributedExecutionManager executionManager, MetaStorage storage) {
+		executionManager.handleQueryResult(this, getQueryId());
 	}
 
 }

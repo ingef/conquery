@@ -1,8 +1,12 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -20,9 +24,12 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.WorkerHandler;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
@@ -42,6 +49,8 @@ public class DistributedExecutionManager implements ExecutionManager {
 						.softValues()
 						.removalListener(this::executionRemoved)
 						.build();
+
+	private final Map<ManagedExecutionId, Set<WorkerId>> runningQueries = new ConcurrentHashMap<>();
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -100,14 +109,23 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 		execution.start();
 
-
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
 			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
-			clusterState.getWorkerHandlers().get(execution.getDataset().getId()).sendToAll(internalExecution.createExecutionMessage());
+
+			final WorkerHandler workerHandler = getWorkerHandler(execution);
+
+			runningQueries.put(execution.getId(), Collections.synchronizedSet(workerHandler.getAllWorkerIds()));
+
+			workerHandler.sendToAll(internalExecution.createExecutionMessage());
 		}
+	}
+
+	private WorkerHandler getWorkerHandler(ManagedExecution execution) {
+		return clusterState.getWorkerHandlers()
+						   .get(execution.getDataset().getId());
 	}
 
 	// Visible for testing
@@ -127,17 +145,34 @@ public class DistributedExecutionManager implements ExecutionManager {
 	 * Receive part of query result and store into query.
 	 *
 	 * @param result
+	 * @param queryId
 	 */
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, ManagedExecutionId queryId) {
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), queryId);
+		log.trace("Received Result\n{}", result.getResults());
 
-		final ManagedExecutionId executionId = result.getQueryId();
+		final ManagedExecutionId executionId = queryId;
 		final E query = (E) storage.getExecution(executionId);
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
 		}
 
-		query.addResult(result);
+		if(result.getError().isPresent()){
+			query.fail(result.getError().get());
+		}
+		else {
+
+			addQueryResult(query, result.getResults());
+
+			final Set<WorkerId> involvedWorkers = runningQueries.get(query.getId());
+
+			involvedWorkers.remove(result.getWorkerId());
+
+			if (involvedWorkers.isEmpty()) {
+				query.finish(ExecutionState.DONE);
+			}
+		}
 
 		// State changed to DONE or FAILED
 		if (query.getState() != ExecutionState.RUNNING) {
@@ -186,7 +221,9 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		query.cancel();
+		log.debug("Sending cancel message to all workers.");
+
+		getWorkerHandler(query).sendToAll(new CancelQuery(query.getId()));
 	}
 
 }
