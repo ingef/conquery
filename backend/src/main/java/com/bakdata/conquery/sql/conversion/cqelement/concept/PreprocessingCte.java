@@ -14,11 +14,10 @@ class PreprocessingCte extends ConnectorCte {
 
 		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
 													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
-													   .distinct()
 													   .toList();
 
 		Selects preprocessingSelects = Selects.builder()
-											  .primaryColumn(tableContext.getPrimaryColumn())
+											  .ids(tableContext.getIds())
 											  .validityDate(tableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
@@ -32,12 +31,12 @@ class PreprocessingCte extends ConnectorCte {
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
 						.conditions(conditions)
-						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 	}
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.PREPROCESSING;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.PREPROCESSING;
 	}
 
 }

@@ -23,7 +23,6 @@ public class RequiredColumn {
 	private String name;
 	@NotNull
 	private MajorTypeId type;
-	private String sharedDictionary;
 
 	@Nullable
 	private String description;
@@ -48,7 +47,6 @@ public class RequiredColumn {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
-		col.setSharedDictionary(sharedDictionary);
 		col.setTable(table);
 		col.setDescription(description);
 

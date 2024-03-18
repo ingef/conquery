@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.query.results;
 
-import com.bakdata.conquery.io.cps.CPSBase;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface EntityResult {
 
-	int getEntityId();
+	String getEntityId();
 	/**
 	 * Provides the number of columns this result contains.
 	 */
@@ -21,6 +21,8 @@ public interface EntityResult {
 	 * Returns a list of the computed result line for this entity on the query.
 	 */
 	List<Object[]> listResultLines();
+
+	int length();
 	
 	/**
 	 * Allows to modify the underlying result directly. The return value of the line modifier is the new line.

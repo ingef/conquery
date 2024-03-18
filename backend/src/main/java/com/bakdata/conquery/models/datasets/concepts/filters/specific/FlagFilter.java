@@ -19,10 +19,9 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.FlagSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -99,8 +98,4 @@ public class FlagFilter extends Filter<String[]> {
 		return FlagSqlAggregator.create(this, filterContext).getSqlFilters();
 	}
 
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.EVENT_FILTER);
-	}
 }

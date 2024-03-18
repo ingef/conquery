@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -186,7 +187,16 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		if (type instanceof ResultType.DateT) {
-			return CDate.toLocalDate((Integer) value);
+			// TODO this sidesteps issues with Jackson not localizing LocalDates when printing.
+			//  The proper approach would be to return LocalDates and configure Jackson/DateFormatter to request-scope localization.
+			// TODO is this actually a sneaky frontend-issue? Considering the other values are additionally rendered in the frontend?
+			return new TextNode(ResultType.DateT.INSTANCE.print(printSettings, value));
+		}
+
+		if (type instanceof ResultType.DateRangeT) {
+			//TODO this is not yet properly localised, we will need to fix this either in FE/BE
+			final List<Integer> values = (List<Integer>) value;
+			return CDateRange.fromList(values);
 		}
 
 		if (type instanceof ResultType.IntegerT) {
@@ -205,10 +215,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			return DecimalNode.valueOf((BigDecimal) value);
 		}
 
-		if (type instanceof ResultType.DateRangeT) {
-			final List<Integer> values = (List<Integer>) value;
-			return CDateRange.of(values.get(0), values.get(1)).toSimpleRange();
-		}
+
 
 
 		if (type instanceof ResultType.ListT listT) {
@@ -287,7 +294,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
@@ -323,7 +330,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.label());
 
-			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
+			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 
 			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
 					description.selects().stream()
@@ -441,8 +448,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults() {
-		return getValuesQuery().streamResults();
+	public Stream<EntityResult> streamResults(OptionalLong limit) {
+		return getValuesQuery().streamResults(limit);
 	}
 
 	@Override

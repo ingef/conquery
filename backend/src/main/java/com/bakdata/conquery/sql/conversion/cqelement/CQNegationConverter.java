@@ -35,7 +35,7 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
 		}
 		QueryStep withInvertedValidityDate = converted.getSqlDialect()
 													  .getDateAggregator()
-													  .invertAggregatedIntervals(queryStep, context.getNameGenerator());
+													  .invertAggregatedIntervals(queryStep, context);
 		return context.toBuilder().queryStep(withInvertedValidityDate).build();
 	}
 

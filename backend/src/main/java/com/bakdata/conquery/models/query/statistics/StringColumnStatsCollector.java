@@ -1,31 +1,37 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.Frequency;
 
 @Getter
-public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
+@Slf4j
+public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 	private final Frequency frequencies = new Frequency();
-	private final AtomicLong nulls = new AtomicLong(0);
+	private final long limit;
+	private final ResultType.StringT type;
+	private int nulls = 0;
 
-	public StringColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
-		super(name, label, description, type, printSettings);
+	public StringColumnStatsCollector(String name, String label, String description, ResultType.StringT type, PrintSettings printSettings, long limit) {
+		super(name, label, description, printSettings);
+		this.limit = limit;
+		this.type = type;
 	}
 
 	@Override
-	public void consume(String value) {
+	public void consume(Object value) {
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
@@ -36,23 +42,40 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 	@Override
 	public ResultColumnStatistics describe() {
-		final Map<String, Long> repr =
+		final List<Map.Entry<Comparable<?>, Long>> entriesSorted =
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
-							 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
+							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed())
+							 .toList();
 
+		final long end = Math.min(limit, entriesSorted.size());
 
-		return new ColumnDescription(getName(), getLabel(), getDescription(), repr);
-	}
+		final List<HistogramColumnDescription.Entry> head = new ArrayList<>();
+		long shownTotal = 0;
 
-	@Getter
-	@CPSType(id = "HISTO", base = ResultColumnStatistics.class)
-	@ToString(callSuper = true)
-	public static class ColumnDescription extends ResultColumnStatistics {
-		private final Map<String, Long> histogram;
+		for (int i = 0; i < end; i++) {
+			final Map.Entry<Comparable<?>, Long> counts = entriesSorted.get(i);
 
-		public ColumnDescription(String name, String label, String description, Map<String, Long> histogram) {
-			super(name, label, description, "STRING");
-			this.histogram = histogram;
+			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
+			head.add(entry);
+
+			shownTotal += counts.getValue();
+
 		}
+
+		final StatisticsLabels statisticsLabels = C10N.get(StatisticsLabels.class, getPrintSettings().getLocale());
+
+		final Map<String, String> extras = new HashMap<>();
+
+		if (entriesSorted.size() > limit) {
+			extras.put(
+					statisticsLabels.remainingValues(entriesSorted.size() - limit),
+					statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
+			);
+		}
+
+		extras.put(statisticsLabels.missing(), getPrintSettings().getIntegerFormat().format(getNulls()));
+
+		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras);
 	}
+
 }

@@ -2,14 +2,10 @@ package com.bakdata.conquery.models.query.statistics;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
@@ -17,37 +13,49 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
+public class DateColumnStatsCollector extends ColumnStatsCollector {
 
-	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
-	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
+	private final Object2IntMap<String> monthCounts = new Object2IntOpenHashMap<>();
 
-	private final AtomicInteger totalCount = new AtomicInteger();
-	private final AtomicLong nulls = new AtomicLong(0);
-	private final List<LocalDate> samples = new ArrayList<>();
-	private final BooleanSupplier samplePicker;
+	private int totalCount = 0;
+	private int nulls = 0;
+	private final Function<Object, CDateRange> dateExtractor;
 	private CDateRange span = null;
 
-	public DateColumnStatsCollector(String name, String label, String description, BooleanSupplier samplePicker, ResultType type, PrintSettings printSettings) {
-		super(name, label, description, type, printSettings);
-		this.samplePicker = samplePicker;
+
+	public DateColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
+		super(name, label, description, printSettings);
+		dateExtractor = getDateExtractor(type);
+	}
+
+	private static Function<Object, CDateRange> getDateExtractor(ResultType dateType) {
+		if (dateType instanceof ResultType.DateRangeT) {
+			return dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
+		}
+
+		if (dateType instanceof ResultType.DateT) {
+			return dateValue -> CDateRange.exactly((Integer) dateValue);
+		}
+
+		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
 	}
 
 	@Override
 	public void consume(Object value) {
-		totalCount.incrementAndGet();
+		totalCount++;
 
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
-
-		final CDateRange dateRange = extractDateRange(getType(), value);
+		final CDateRange dateRange = dateExtractor.apply(value);
 		span = dateRange.spanClosed(span);
 
 		if (dateRange.isOpen()) {
@@ -60,51 +68,26 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 	}
 
-	private static CDateRange extractDateRange(ResultType dateType, Object dateValue) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return CDateRange.fromList((List<? extends Number>) dateValue);
-
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return CDateRange.exactly((Integer) dateValue);
-		}
-
-
-		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
-	}
-
 	private void handleDay(int day) {
 		final LocalDate date = CDate.toLocalDate(day);
 		final int year = date.getYear();
 		final int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
 		final int month = date.getMonthValue();
 
-		final String yearQuarter = year + "-" + quarter;
 		// This code is pretty hot, therefore I want to avoid String.format
 		final String yearMonth = year + "-" + (month < 10 ? "0" : "") + month;
 
-
-		quarterCounts.compute(yearQuarter, (ignored, current) -> current == null ? 1 : current + 1);
 		monthCounts.compute(yearMonth, (ignored, current) -> current == null ? 1 : current + 1);
-
-
-		if (samplePicker.getAsBoolean()) {
-			samples.add(CDate.toLocalDate(day));
-		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
-		samples.sort(LocalDate::compareTo);
 
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
-									 totalCount.get(),
-									 getNulls().intValue(),
-									 quarterCounts,
-									 monthCounts,
-									 span.toSimpleRange(),
-									 samples
+									 totalCount,
+									 nulls,
+									 new TreeMap<>(monthCounts),
+									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
 		);
 	}
 
@@ -115,21 +98,16 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 		private final int count;
 		private final int nullValues;
-		private final SortedMap<String, Integer> quarterCounts;
 		private final SortedMap<String, Integer> monthCounts;
 
 		private final Range<LocalDate> span;
 
-		private final Collection<LocalDate> samples;
-
-		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> quarterCounts, SortedMap<String, Integer> monthCounts, Range<LocalDate> span, Collection<LocalDate> samples) {
-			super(name, label, description, "DATES");
+		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> monthCounts, Range<LocalDate> span) {
+			super(name, label, description);
 			this.count = count;
 			this.nullValues = nullValues;
-			this.quarterCounts = quarterCounts;
 			this.monthCounts = monthCounts;
 			this.span = span;
-			this.samples = samples;
 		}
 	}
 }

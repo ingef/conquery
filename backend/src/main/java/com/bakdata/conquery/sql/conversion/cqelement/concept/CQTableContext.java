@@ -8,27 +8,31 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
-import org.jooq.Field;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 class CQTableContext implements Context {
 
-	ConversionContext conversionContext;
 	String conceptLabel;
+	String conceptConnectorLabel;
+	SqlIdColumns ids;
 	Optional<ColumnDateRange> validityDate;
-	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
-	ConnectorTables connectorTables;
+	SqlTables connectorTables;
+	IntervalPackingContext intervalPackingContext;
+	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
 
@@ -39,16 +43,15 @@ class CQTableContext implements Context {
 		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 
-	public Field<Object> getPrimaryColumn() {
+	public SqlIdColumns getIds() {
 		if (previous == null) {
-			return conversionContext.getPrimaryColumn();
+			return ids;
 		}
-		return previous.getQualifiedSelects().getPrimaryColumn();
+		return previous.getQualifiedSelects().getIds();
 	}
 
-	@Override
-	public NameGenerator getNameGenerator() {
-		return conversionContext.getNameGenerator();
+	public Optional<IntervalPackingContext> getIntervalPackingContext() {
+		return Optional.ofNullable(intervalPackingContext);
 	}
 
 }

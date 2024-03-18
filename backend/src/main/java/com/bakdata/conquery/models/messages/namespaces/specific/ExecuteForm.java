@@ -66,7 +66,7 @@ public class ExecuteForm extends WorkerMessage {
 
 			// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 			try {
-				query.createQueryPlan(new QueryPlanContext(worker));
+				query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
 			}
 			catch (Exception e) {
 				ConqueryError err = asConqueryError(e);

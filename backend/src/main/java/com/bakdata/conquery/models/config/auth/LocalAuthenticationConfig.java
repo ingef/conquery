@@ -11,34 +11,41 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
+import com.password4j.BcryptFunction;
+import com.password4j.BenchmarkResult;
+import com.password4j.SystemChecker;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @CPSType(base = AuthenticationRealmFactory.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 @Setter
+@Slf4j
 public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
-	public static final String REDIRECT_URI = "redirect_uri";
+	public static final int BCRYPT_MAX_MILLISECONDS = 300;
 	/**
-	 * Configuration for the password store. An encryption for the store it self might be set here.
+	 * Configuration for the password store. An encryption for the store itself might be set here.
 	 */
 	@NotNull
 	private XodusConfig passwordStoreConfig = new XodusConfig();
@@ -61,7 +68,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	boolean isStorageEncrypted() {
 		// Check if a cipher is configured for xodus according to https://github.com/JetBrains/xodus/wiki/Database-Encryption
 		// in the config
-		if(passwordStoreConfig.getCipherId() != null){
+		if (passwordStoreConfig.getCipherId() != null) {
 			return true;
 		}
 
@@ -70,30 +77,41 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	}
 	
 	@Override
-	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
-		manager.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+		authorizationController.getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
+		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
+		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
+
+		final BcryptFunction prototype = result.getPrototype();
+		int rounds = prototype.getLogarithmicRounds();
+		long realElapsed = result.getElapsed();
+
+
+		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", rounds, realElapsed);
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
-				manager.getValidator(),
+				environment.getValidator(),
 				Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER),
-				manager.getAuthController().getConqueryTokenRealm(),
+				authorizationController.getConqueryTokenRealm(),
 				storeName,
 				directory,
 				passwordStoreConfig,
-				jwtDuration);
-		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, manager.getStorage());
+				jwtDuration,
+				prototype
+		);
+		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, authorizationController.getStorage());
 
 		// Register resources for users to exchange username and password for an access token
-		registerAdminUnprotectedAuthenticationResources(manager.getUnprotectedAuthAdmin(), realm);
-		registerApiUnprotectedAuthenticationResources(manager.getUnprotectedAuthApi(), realm);
+		registerAdminUnprotectedAuthenticationResources(authorizationController.getUnprotectedAuthAdmin(), realm);
+		registerApiUnprotectedAuthenticationResources(authorizationController.getUnprotectedAuthApi(), realm);
 
-		registerAuthenticationAdminResources(manager.getAdmin().getJerseyConfig(), processor);
+		registerAuthenticationAdminResources(authorizationController.getAdminServlet().getJerseyConfig(), processor);
 
 		// Add login schema for admin end
-		final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
-		redirectingAuthFilter.getLoginInitiators().add(loginProvider(manager.getUnprotectedAuthAdmin()));
+		final RedirectingAuthFilter redirectingAuthFilter = authorizationController.getRedirectingAuthFilter();
+		redirectingAuthFilter.getLoginInitiators().add(loginProvider(authorizationController.getUnprotectedAuthAdmin()));
 
 		return realm;
 	}
@@ -102,7 +120,9 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		return (ContainerRequestContext request) -> {
 			return UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
 							 .path(LoginResource.class)
-							 .queryParam(REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+							 .queryParam(RedirectingAuthFilter.REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request))
+																					   .path(AdminServlet.ADMIN_UI)
+																					   .build())
 							 .build();
 		};
 

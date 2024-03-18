@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,10 +19,9 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.CountSqlAggregator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -77,11 +75,6 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
 		return CountSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.AGGREGATION_FILTER);
 	}
 
 }

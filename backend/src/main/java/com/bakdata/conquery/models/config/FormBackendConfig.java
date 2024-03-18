@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
 import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProvider;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigInformation;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -101,7 +102,8 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		managerNode.getEnvironment().healthChecks().register(getId(), externalApi.createHealthCheck());
 
 		// Register form configuration provider
-		managerNode.getFormScanner().registerFrontendFormConfigProvider(this::registerFormConfigs);
+		log.info("Registering frontend form config provider for '{}'", getId());
+		managerNode.getFormScanner().registerFrontendFormConfigProvider(new FormConfigProvider(getId(), this::registerFormConfigs));
 	}
 
 	/**

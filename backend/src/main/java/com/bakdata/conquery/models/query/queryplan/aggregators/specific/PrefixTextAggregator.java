@@ -32,14 +32,13 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
 		String value = (String) bucket.createScriptValue(event, getColumn());
 
-		// if performance is a problem we could find the prefix once in the dictionary
 		// and then only check the values
 		if (value.startsWith(prefix)) {
 			entries.add(value);

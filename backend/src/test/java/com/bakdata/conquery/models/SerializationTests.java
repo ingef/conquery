@@ -5,11 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,9 +34,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.auth.apitoken.ApiToken;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
-import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -54,8 +49,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -80,15 +73,12 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.util.SerialisationObjectsUtil;
-import com.bakdata.conquery.util.dict.SuccinctTrie;
-import com.bakdata.conquery.util.dict.SuccinctTrieTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -96,19 +86,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
-import lombok.Getter;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.util.CharArrayBuffer;
+import org.assertj.core.api.RecursiveComparisonAssert;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+
 @Slf4j
-@Getter
 public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
@@ -124,7 +116,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void passwordCredential() throws IOException, JSONException {
-		PasswordCredential credential = new PasswordCredential("testPassword".toCharArray());
+		PasswordCredential credential = new PasswordCredential("testPassword");
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
@@ -187,6 +179,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 	@Test
+	@Tag("OBJECT_2_INT_MAP") // Bucket uses Object2IntMap
 	public void bucketCompoundDateRange() throws JSONException, IOException {
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
@@ -219,15 +212,14 @@ public class SerializationTests extends AbstractSerializationTest {
 		imp.setName("importTest");
 
 
-		CompoundDateRangeStore
-				compoundStore =
+		CompoundDateRangeStore compoundStore =
 				new CompoundDateRangeStore(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
 		//0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 1, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
 
 		compoundStore.setParent(bucket);
 
@@ -491,7 +483,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(null));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity("5"), new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -565,49 +557,6 @@ public class SerializationTests extends AbstractSerializationTest {
 				.test(query);
 	}
 
-	@Test
-	public void testApiTokenData() throws JSONException, IOException {
-		final CharArrayBuffer buffer = new CharArrayBuffer(5);
-		buffer.append("testtest");
-		final ApiToken apiToken = new ApiToken(buffer);
-		final ApiTokenData
-				apiTokenData =
-				new ApiTokenData(
-						UUID.randomUUID(),
-						apiToken.hashToken(),
-						"tokenName",
-						new UserId("tokenUser"),
-						LocalDate.now(),
-						LocalDate.now().plus(1, ChronoUnit.DAYS),
-						EnumSet.of(Scopes.DATASET),
-						getMetaStorage()
-				);
-
-
-		SerializationTestUtil
-				.forType(ApiTokenData.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(apiTokenData);
-	}
-
-	@Test
-	void testMapDictionary() throws IOException, JSONException {
-
-		MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
-
-		map.add("a".getBytes());
-		map.add("b".getBytes());
-		map.add("c".getBytes());
-
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(Dataset.PLACEHOLDER);
-
-		SerializationTestUtil
-				.forType(MapDictionary.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
-				.registry(registry)
-				.test(map);
-	}
 
 	@Test
 	public void serialize() throws IOException, JSONException {
@@ -633,7 +582,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, 0, new ColumnStore[0], Collections.emptySet(), new int[10], new int[10], imp);
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
@@ -650,27 +599,6 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .registry(registry)
 							 .test(cBlock);
 	}
-
-	@Test
-	public void testSuccinctTrie()
-			throws IOException, JSONException {
-
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(Dataset.PLACEHOLDER);
-
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
-
-		In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines()
-		  .forEach(value -> dict.put(value.getBytes()));
-
-		dict.compress();
-		SerializationTestUtil
-				.forType(Dictionary.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
-				.registry(registry)
-				.test(dict);
-	}
-
 
 	@Test
 	public void testBiMapSerialization() throws JSONException, IOException {
@@ -700,11 +628,11 @@ public class SerializationTests extends AbstractSerializationTest {
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())
 				.test(
-						new MultilineEntityResult(4, List.of(
+						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
 						)),
-						new MultilineEntityResult(4, List.of(
+						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{null, null, null}
 						))
@@ -851,6 +779,59 @@ public class SerializationTests extends AbstractSerializationTest {
 				}
 				""".replaceAll("[\\n\\t]", "");
 		assertThat(actual).as("Result of mixin for form backend").isEqualTo(expected);
+	}
+
+	@Test
+	@Tag("OBJECT_2_INT_MAP")
+	public void object2IntEmpty() throws JSONException, IOException {
+		Object2IntMap<String> empty = Object2IntMaps.emptyMap();
+
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
+							 })
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(empty);
+
+	}
+
+	@Test
+	@Tag("OBJECT_2_INT_MAP")
+	public void object2IntString() throws JSONException, IOException {
+		Object2IntMap<String> map = new Object2IntOpenHashMap<>();
+
+		map.put("zero", 0);
+		map.put("one", 1);
+		map.put("two", 2);
+		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
+							 })
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
+	}
+
+	@Test
+	@Tag("OBJECT_2_INT_MAP")
+	public void arrayObject2Int() throws JSONException, IOException {
+		Object2IntMap<String>[] map = new Object2IntOpenHashMap[]{
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+				}},
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+					put("one", 1);
+				}},
+				new Object2IntOpenHashMap<>() {{
+					put("zero", 0);
+					put("one", 1);
+					put("two", 2);
+				}}
+		};
+		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
+							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+							 .test(map);
+
 	}
 
 }

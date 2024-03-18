@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.auth.ProtoRole;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
@@ -21,7 +21,11 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.resources.admin.AdminServlet;
+import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -49,9 +53,14 @@ import org.apache.shiro.util.LifecycleUtils;
 public final class AuthorizationController implements Managed{
 
 	@NonNull
-	private final AuthorizationConfig authorizationConfig;
+	private final ConqueryConfig config;
 	@NonNull
+	private final Environment environment;
+	@NonNull
+	@Getter
 	private final MetaStorage storage;
+	@Getter
+	private final AdminServlet adminServlet;
 	@Getter
 	private final ConqueryTokenRealm conqueryTokenRealm;
 	@Getter
@@ -65,13 +74,32 @@ public final class AuthorizationController implements Managed{
 
 	private final DefaultSecurityManager securityManager;
 
-	public AuthorizationController(MetaStorage storage, AuthorizationConfig authorizationConfig) {
+
+	// Resources without authentication
+	@Getter
+	private DropwizardResourceConfig unprotectedAuthApi;
+	@Getter
+	private DropwizardResourceConfig unprotectedAuthAdmin;
+
+	public AuthorizationController(MetaStorage storage, ConqueryConfig config, Environment environment, AdminServlet adminServlet) {
 		this.storage = storage;
-		this.authorizationConfig = authorizationConfig;
+		this.config = config;
+		this.environment = environment;
+		this.adminServlet = adminServlet;
+
 		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
 		redirectingAuthFilter = new RedirectingAuthFilter(authenticationFilter);
+
+		if (adminServlet != null) {
+			adminServlet.getJerseyConfig().register(authenticationFilter);
+			adminServlet.getJerseyConfigUI().register(redirectingAuthFilter);
+		}
+
+
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
 
 		// Add the user token realm
@@ -90,18 +118,14 @@ public final class AuthorizationController implements Managed{
 
 		registerStaticSecurityManager();
 
-		// Register initial users for authorization and authentication (if the realm is able to)
-		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
-	
-	public void externalInit(ManagerNode manager, List<AuthenticationRealmFactory> authenticationRealmFactories) {
-		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
-		manager.getEnvironment().jersey().register(authenticationFilter);
+
+	private void externalInit() {
 
 
 		// Init authentication realms provided by the config.
-		for (AuthenticationRealmFactory authenticationConf : authenticationRealmFactories) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(manager);
+		for (AuthenticationRealmFactory authenticationConf : config.getAuthenticationRealms()) {
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(environment, config, this);
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}
@@ -115,6 +139,11 @@ public final class AuthorizationController implements Managed{
 	public void start() throws Exception {
 		// Call Shiros init on all realms
 		LifecycleUtils.init(realms);
+
+		externalInit();
+
+		// Register initial users for authorization and authentication (if the realm is able to)
+		initializeAuthConstellation(config.getAuthorizationRealms(), realms, storage);
 	}
 
 	@Override
@@ -141,11 +170,17 @@ public final class AuthorizationController implements Managed{
 	 *            A storage, where the handler might add a new users.
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
+		for (ProtoRole pRole : config.getInitialRoles()) {
+			pRole.createOrOverwriteRole(storage);
+		}
+
 		for (ProtoUser pUser : config.getInitialUsers()) {
+
 			final User user = pUser.createOrOverwriteUser(storage);
+
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
-					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredentials(), true);
+					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredential(), true);
 				}
 			}
 		}

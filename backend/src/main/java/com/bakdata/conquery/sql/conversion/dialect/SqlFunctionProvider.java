@@ -4,8 +4,8 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
@@ -33,13 +33,31 @@ public interface SqlFunctionProvider {
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
 
 	/**
+	 * @return The regex that matches any char repeated any times (including 0), for example:
+	 * <ul>
+	 *     <li>'%' for Postgres' regexes</li>
+	 *     <li>'.*' for HANA's regexes</li>
+	 * </ul
+	 */
+	String getAnyCharRegex();
+
+	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
 	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
 
-	ColumnDateRange daterange(CDateRange dateRestriction);
+	ColumnDateRange forDateRestriction(CDateRange dateRestriction);
 
-	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
+	/**
+	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date.
+	 */
+	ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias);
+
+	/**
+	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
+	 * restriction.
+	 */
+	ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
@@ -100,23 +118,21 @@ public interface SqlFunctionProvider {
 	default TableOnConditionStep<Record> innerJoin(
 			Table<Record> leftPartQueryBase,
 			QueryStep rightPartQS,
-			Field<Object> leftPartPrimaryColumn,
-			Field<Object> rightPartPrimaryColumn
+			List<Condition> joinConditions
 	) {
 		return leftPartQueryBase
 				.innerJoin(DSL.name(rightPartQS.getCteName()))
-				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+				.on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default TableOnConditionStep<Record> fullOuterJoin(
 			Table<Record> leftPartQueryBase,
 			QueryStep rightPartQS,
-			Field<Object> leftPartPrimaryColumn,
-			Field<Object> rightPartPrimaryColumn
+			List<Condition> joinConditions
 	) {
 		return leftPartQueryBase
 				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
-				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+				.on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default Field<Date> toDateField(String dateExpression) {

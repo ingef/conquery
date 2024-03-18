@@ -4,7 +4,7 @@
     "isEnabled": true
   },
   "label": "PREFIX_RANGE condition test",
-  "expectedCsv": "tests/query/MULTIPLE_CONNECTORS_QUERY/expected.csv",
+  "expectedCsv": "tests/sql/tree/prefix_range/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

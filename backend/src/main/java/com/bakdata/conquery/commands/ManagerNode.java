@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
-import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.Manager;
-import com.bakdata.conquery.mode.StorageHandler;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -31,7 +29,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
-import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
@@ -39,7 +36,6 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.google.common.base.Throwables;
-import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -69,13 +65,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private AuthorizationController authController;
 	private ScheduledExecutorService maintenanceService;
 	private final List<ResourcesProvider> providers = new ArrayList<>();
-	private Client client;
 	@Delegate(excludes = Managed.class)
 	private Manager manager;
-
-	// Resources without authentication
-	private DropwizardResourceConfig unprotectedAuthApi;
-	private DropwizardResourceConfig unprotectedAuthAdmin;
 
 	// For registering form providers
 	private FormScanner formScanner;
@@ -92,9 +83,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		Environment environment = manager.getEnvironment();
 		ConqueryConfig config = manager.getConfig();
 		validator = environment.getValidator();
-
-		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-													 .build(getName());
 
 		this.manager = manager;
 
@@ -125,17 +113,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadMetaStorage();
 
-		authController = new AuthorizationController(getStorage(), config.getAuthorizationRealms());
-		environment.lifecycle().manage(authController);
-
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), objectMapper);
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), objectMapper);
-
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController.externalInit(this, config.getAuthenticationRealms());
-
+		authController = new AuthorizationController(getStorage(), config, environment, admin);
+		environment.lifecycle().manage(authController);
 
 		// Register default components for the admin interface
 		admin.register();
@@ -249,8 +231,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		StorageHandler storageHandler = registry.getStorageHandler();
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages(storageHandler);
+		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
 				registry.createNamespace(namespaceStorage);
@@ -290,8 +271,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		catch (Exception e) {
 			log.error("{} could not be closed", getStorage(), e);
 		}
-
-		client.close();
 
 	}
 }

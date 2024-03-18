@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.CountQuartersSqlAggregator;
@@ -53,8 +51,4 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 		return CountQuartersSqlAggregator.create(this, filterContext).getSqlFilters();
 	}
 
-	@Override
-	public Set<ConnectorCteStep> getRequiredSqlSteps() {
-		return ConnectorCteStep.withOptionalSteps(ConnectorCteStep.AGGREGATION_FILTER);
-	}
 }

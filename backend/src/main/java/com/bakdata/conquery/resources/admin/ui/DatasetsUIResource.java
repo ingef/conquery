@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -85,17 +83,6 @@ public class DatasetsUIResource {
 								 ))
 								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
-						// total size of dictionaries
-						namespace
-								.getStorage()
-								.getAllImports()
-								.stream()
-								.flatMap(i -> i.getDictionaries().stream())
-								.filter(Objects::nonNull)
-								.map(namespace.getStorage()::getDictionary)
-								.distinct()
-								.mapToLong(Dictionary::estimateMemoryConsumption)
-								.sum(),
 						// Total size of CBlocks
 						namespace
 								.getStorage().getTables()
@@ -142,7 +129,6 @@ public class DatasetsUIResource {
 		private Collection<SearchIndex> searchIndices;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
-		private long dictionariesSize;
 		private long cBlocksSize;
 		private long size;
 	}

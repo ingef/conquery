@@ -1,24 +1,25 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 
-import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
-import type { StateT } from "../app/reducers";
-import {
-  getDiffInDays,
-  getFirstAndLastDateOfRange,
-} from "../common/helpers/dateHelper";
+import { StateT } from "../app/reducers";
 
-import { Cell } from "./Cell";
-import DateCell from "./DateCell";
-import PreviewInfo from "./PreviewInfo";
-import { StatsHeadline } from "./StatsHeadline";
-import StatsSubline from "./StatsSubline";
+import { PreviewStatistics } from "../api/types";
+import { TransparentButton } from "../button/TransparentButton";
+import FaIcon from "../icon/FaIcon";
+
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { toggleDragHandles } from "../pane/actions";
+import Charts from "./Charts";
+import DiagramModal from "./DiagramModal";
+import HeadlineStats from "./HeadlineStats";
+import ScrollBox from "./ScrollBox";
+import SelectBox from "./SelectBox";
+import Table from "./Table";
 import { closePreview } from "./actions";
-import type { PreviewStateT } from "./reducer";
+import { PreviewStateT } from "./reducer";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -27,220 +28,128 @@ const FullScreen = styled("div")`
   top: 0;
   left: 0;
   background-color: ${({ theme }) => theme.col.bgAlt};
-  padding: 60px 20px 20px;
   z-index: 2;
   display: flex;
   flex-direction: column;
+  gap: 15px;
 `;
 
-const Line = styled("div")<{ isHeader?: boolean }>`
+const Headline = styled("div")`
   display: flex;
-  width: 100%;
+  flex-direction: row;
   align-items: center;
-  line-height: 10px;
-
-  ${({ isHeader }) =>
-    isHeader &&
-    css`
-      border-bottom: "1px solid #ccc";
-      align-items: flex-end;
-      margin: "0 0 10px";
-    `};
+  gap: 30px;
 `;
 
-const CSVFrame = styled("div")`
-  flex-grow: 1;
-  overflow: hidden;
-  padding: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  background-color: white;
-`;
-
-const ScrollWrap = styled("div")`
-  overflow: auto;
+const SxScrollBox = styled(ScrollBox)`
+  padding: 60px 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 20px;
 `;
 
-const List = styled("div")`
-  position: relative;
-  height: 100%;
-  flex-grow: 1;
+const SxCharts = styled(Charts)`
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
 `;
 
-export type ColumnDescriptionType = ColumnDescriptionKind | "OTHER";
+const SxChartLoadingBlocker = styled("div")`
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  align-items: center;
+  height: 65vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
-const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
-  "BOOLEAN",
-  "INTEGER",
-  "NUMERIC",
-  "MONEY",
-  "DATE",
-  "DATE_RANGE",
-  "LIST[DATE_RANGE]",
-  "STRING",
-]);
+const SxFaIcon = styled(FaIcon)`
+  width: 30px;
+  height: 30px;
+`;
 
-function detectColumnType(
-  cell: string,
-  resultColumns: ColumnDescription[],
-): ColumnDescriptionType {
-  if (cell === "dates") return "DATE_RANGE";
+const SxSelectBox = styled(SelectBox)`
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
+`;
 
-  const maybeColumn = resultColumns.find((column) => column.label === cell);
-
-  if (maybeColumn && SUPPORTED_COLUMN_DESCRIPTION_KINDS.has(maybeColumn.type)) {
-    if (maybeColumn.type === "LIST[DATE_RANGE]") {
-      return "DATE_RANGE";
-    }
-    return maybeColumn.type;
-  }
-
-  return "OTHER";
-}
-
-function detectColumnTypesByHeader(
-  line: string[],
-  resultColumns: ColumnDescription[],
-) {
-  return line.map((cell) => detectColumnType(cell, resultColumns));
-}
-
-function getMinMaxDates(
-  rows: string[][],
-  columns: string[],
-): {
-  min: Date | null;
-  max: Date | null;
-  diff: number;
-} {
-  let min = null;
-  let max = null;
-
-  const dateColumn = columns.find((col) => col === "DATE_RANGE");
-  const dateColumnIdx = dateColumn ? columns.indexOf(dateColumn) : -1;
-
-  if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
-
-  for (const row of rows) {
-    // To cut off '{' and '}'
-    const cell = row[dateColumnIdx];
-    const { first, last } = getFirstAndLastDateOfRange(cell);
-
-    if (!!first && (!min || first < min)) {
-      min = first;
-    }
-    if (!!last && (!max || last > max)) {
-      max = last;
-    }
-  }
-
-  return {
-    min,
-    max,
-    diff: min && max ? getDiffInDays(min, max) : 0,
-  };
-}
-
-const Preview: FC = () => {
+export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
-
+  const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(0);
+  const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
+  const statistics = preview.statisticsData;
 
   useHotkeys("esc", () => {
-    onClose();
+    if (!selectBoxOpen && !popOver) onClose();
   });
 
-  if (!preview.data.csv || !preview.data.resultColumns) return null;
-
-  // Limit size:
-  const RENDER_ROWS_LIMIT = 500;
-  const previewData = preview.data.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
-
-  if (previewData.length < 2) return null;
-
-  const columns = detectColumnTypesByHeader(
-    previewData[0],
-    preview.data.resultColumns,
-  );
-
-  const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
-
-  const Row = ({ index }: { index: number }) => (
-    <Line key={index}>
-      {previewData[index + 1].map((cell, j) => {
-        if (columns[j] === "DATE_RANGE" && min && max) {
-          return (
-            <DateCell cell={cell} key={j} minDate={min} dateDiffInDays={diff} />
-          );
-        }
-
-        if (columns[j] === "MONEY") {
-          const cellAsCents = parseInt(cell);
-
-          return (
-            <Cell
-              title={cell}
-              key={j}
-              style={{
-                textAlign: "right",
-              }}
-            >
-              {isNaN(cellAsCents)
-                ? cell
-                : (cellAsCents / 100).toFixed(2).replace(".", ",")}
-            </Cell>
-          );
-        }
-
-        return (
-          <Cell title={cell} key={j}>
-            {cell}
-          </Cell>
-        );
-      })}
-    </Line>
-  );
+  const store = useStore();
+  useEffect(() => {
+    if (!(store.getState() as StateT).panes.disableDragHandles) {
+      dispatch(toggleDragHandles());
+      return () => {
+        dispatch(toggleDragHandles());
+      };
+    }
+  }, [preview.statisticsData, dispatch, store]);
 
   return (
     <FullScreen>
-      <PreviewInfo
-        rawPreviewData={preview.data.csv}
-        columns={columns}
-        onClose={onClose}
-        minDate={min}
-        maxDate={max}
-      />
-      <StatsHeadline>{t("preview.previewHeadline")}</StatsHeadline>
-      <StatsSubline>
-        {t("preview.previewSubline", { count: RENDER_ROWS_LIMIT })}
-      </StatsSubline>
-      <CSVFrame>
-        <ScrollWrap>
-          <Line isHeader>
-            {previewData[0].map((cell, k) => (
-              <Cell
-                isHeader
-                key={k}
-                title={cell}
-                isDates={columns[k] === "DATE_RANGE"}
-              >
-                {cell}
-              </Cell>
-            ))}
-          </Line>
-          <List>
-            {previewData.slice(1).map((_, i) => (
-              <Row key={i} index={i} />
-            ))}
-          </List>
-        </ScrollWrap>
-      </CSVFrame>
+      <SxScrollBox>
+        <Headline>
+          <TransparentButton small onClick={onClose}>
+            {t("common.back")}
+          </TransparentButton>
+          Ergebnisvorschau
+          <SxSelectBox
+            items={statistics?.statistics ?? ([] as PreviewStatistics[])}
+            onChange={(res) => {
+              const stat = statistics?.statistics.find(
+                (stat) => stat.label === res.label,
+              );
+              setPopOver(stat ?? null);
+            }}
+            isOpen={selectBoxOpen}
+            setIsOpen={setSelectBoxOpen}
+          />
+          <HeadlineStats statistics={statistics} />
+        </Headline>
+        {statistics ? (
+          <SxCharts
+            statistics={statistics.statistics}
+            showPopup={(statistic: PreviewStatistics) => {
+              setPopOver(statistic);
+            }}
+            page={page}
+            setPage={setPage}
+          />
+        ) : (
+          <SxChartLoadingBlocker>
+            <SxFaIcon icon={faSpinner} />
+          </SxChartLoadingBlocker>
+        )}
+        {popOver && (
+          <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
+        )}
+        {preview.arrowReader &&
+          preview.initialTableData &&
+          preview.queryData && (
+            <Table
+              arrowReader={preview.arrowReader}
+              initialTableData={preview.initialTableData}
+              queryData={preview.queryData}
+            />
+          )}
+      </SxScrollBox>
     </FullScreen>
   );
-};
-
-export default Preview;
+}

@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +30,12 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 	private QueryStep createPreviousEndStep(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getRootTable();
-		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
+		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.PREVIOUS_END);
+		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
 		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
 
 		Field<Date> previousEnd = DSL.max(validityDate.getEnd())
-									 .over(DSL.partitionBy(primaryColumn)
+									 .over(DSL.partitionBy(ids.toFields())
 											  .orderBy(validityDate.getStart(), validityDate.getEnd())
 											  .rowsBetweenUnboundedPreceding()
 											  .andPreceding(1))
@@ -45,16 +45,16 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		qualifiedSelects.add(new FieldWrapper<>(previousEnd));
 
 		Selects previousEndSelects = Selects.builder()
-											.primaryColumn(primaryColumn)
+											.ids(ids)
 											.validityDate(Optional.of(validityDate))
 											.sqlSelects(qualifiedSelects)
 											.build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
-						.predecessors(context.getPredecessor() == null ? Collections.emptyList() : List.of(context.getPredecessor()))
+						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
 
@@ -62,7 +62,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		String previousEndCteName = previousEndStep.getCteName();
 		Selects previousEndSelects = previousEndStep.getQualifiedSelects();
-		Field<Object> primaryColumn = previousEndSelects.getPrimaryColumn();
+		SqlIdColumns ids = previousEndSelects.getIds();
 		ColumnDateRange validityDate = previousEndSelects.getValidityDate().get();
 		Field<Date> previousEnd = DSL.field(DSL.name(previousEndCteName, IntervalPacker.PREVIOUS_END_FIELD_NAME), Date.class);
 
@@ -70,7 +70,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 				DSL.sum(
 						   DSL.when(validityDate.getStart().greaterThan(previousEnd), DSL.val(1))
 							  .otherwise(DSL.inline(null, Integer.class)))
-				   .over(DSL.partitionBy(primaryColumn)
+				   .over(DSL.partitionBy(ids.toFields())
 							.orderBy(validityDate.getStart(), validityDate.getEnd())
 							.rowsUnboundedPreceding())
 				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);
@@ -79,13 +79,13 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		qualifiedSelects.add(new FieldWrapper<>(rangeIndex));
 
 		Selects rangeIndexSelects = Selects.builder()
-										   .primaryColumn(primaryColumn)
+										   .ids(ids)
 										   .validityDate(Optional.of(validityDate))
 										   .sqlSelects(qualifiedSelects)
 										   .build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
 						.selects(rangeIndexSelects)
 						.fromTable(QueryStep.toTableLike(previousEndCteName))
 						.predecessors(List.of(previousEndStep))
@@ -96,7 +96,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		String rangeIndexCteName = rangeIndexStep.getCteName();
 		Selects rangeIndexSelects = rangeIndexStep.getQualifiedSelects();
-		Field<Object> primaryColumn = rangeIndexSelects.getPrimaryColumn();
+		SqlIdColumns ids = rangeIndexSelects.getIds();
 		ColumnDateRange validityDate = rangeIndexSelects.getValidityDate().get();
 
 		Field<Date> rangeStart = DSL.min(validityDate.getStart()).as(IntervalPacker.RANGE_START_MIN_FIELD_NAME);
@@ -105,19 +105,19 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
 		Selects intervalCompleteSelects = Selects.builder()
-												 .primaryColumn(primaryColumn)
+												 .ids(ids)
 												 .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
 												 .sqlSelects(qualifiedSelects)
 												 .build();
 
 		// we group range start and end by range index
 		List<Field<?>> groupBySelects = new ArrayList<>();
-		groupBySelects.add(primaryColumn);
+		groupBySelects.addAll(ids.toFields());
 		groupBySelects.add(rangeIndex);
 		qualifiedSelects.stream().map(SqlSelect::select).forEach(groupBySelects::add);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
 						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))

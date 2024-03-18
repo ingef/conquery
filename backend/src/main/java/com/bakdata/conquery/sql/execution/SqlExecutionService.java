@@ -80,7 +80,7 @@ public class SqlExecutionService {
 		String sqlString = sqlQuery.getSqlQuery().getSql();
 		List<ResultType<?>> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
 
-		log.debug("Executing query: \n{}", sqlString);
+		log.info("Executing query: \n{}", sqlString);
 
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
@@ -123,7 +123,6 @@ public class SqlExecutionService {
 
 	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
 
-		int rowNumber = resultSet.getRow();
 		String id = resultSet.getString(PID_COLUMN_INDEX);
 		Object[] resultRow = new Object[columnCount - 1];
 
@@ -132,7 +131,7 @@ public class SqlExecutionService {
 			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
 		}
 
-		return new SqlEntityResult(rowNumber, id, resultRow);
+		return new SqlEntityResult(id, resultRow);
 	}
 
 }
