@@ -51,6 +51,7 @@ export function useLoadPreviewData() {
     queryData,
     statisticsData,
   } = useSelector<StateT, PreviewStateT>((state) => state.preview);
+
   const currentPreviewData: PreviewData | null =
     dataLoadedForQueryId &&
     arrowReader &&
@@ -84,7 +85,7 @@ export function useLoadPreviewData() {
       );
       const loadInitialData = async () => {
         await arrowReader.open();
-        return await arrowReader.next();
+        return arrowReader.next();
       };
 
       const awaitedData = await Promise.all([
