@@ -22,7 +22,7 @@ const Version = styled("code")`
 `;
 
 const useVersion = () => {
-  const backendVersion = useSelector<StateT, string>(
+  const backendGitDescribe = useSelector<StateT, string>(
     (state) => state.startup.config.version,
   );
 
@@ -37,21 +37,24 @@ const useVersion = () => {
   // `;
 
   // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendVersion = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendTimestamp = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendGitDescribe = `__BUILD_GIT_DESCRIBE__`.replace(/"/g, "");
 
   return {
-    backendVersion,
-    frontendVersion,
+    backendGitDescribe,
+    frontendTimestamp,
+    frontendGitDescribe,
   };
 };
 
 export const About = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const { backendVersion, frontendVersion } = useVersion();
+  const { backendGitDescribe, frontendTimestamp, frontendGitDescribe } =
+    useVersion();
 
   const copyVersionToClipboard = () => {
     navigator.clipboard.writeText(
-      `BE: ${backendVersion} FE: ${frontendVersion}`,
+      `BE: ${backendGitDescribe} FE: ${frontendGitDescribe}`,
     );
     setIsOpen(false);
   };
@@ -64,9 +67,11 @@ export const About = memo(() => {
     <Modal headline="Version" onClose={() => setIsOpen(false)}>
       <Grid>
         <div>Backend</div>
-        <Version>{backendVersion}</Version>
+        <Version>{backendGitDescribe}</Version>
         <div>Frontend</div>
-        <Version>{frontendVersion}</Version>
+        <Version>
+          {frontendGitDescribe} – {frontendTimestamp}
+        </Version>
       </Grid>
       <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
         Copy version info

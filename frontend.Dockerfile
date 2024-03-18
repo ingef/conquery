@@ -1,11 +1,23 @@
+# Version Extractor
+FROM bitnami/git:2.38.1 AS version-extractor
+
+WORKDIR /app
+COPY .git .
+
+RUN git describe --tags |  sed 's/^v//' > git_describe.txt
+
+# Builder
 FROM node:18-alpine AS builder
 
 WORKDIR /app
-COPY ./package.json ./package-lock.json ./
+COPY ./frontend/package.json ./package-lock.json ./
 
 RUN npm ci
 
-COPY . .
+COPY ./frontend .
+
+# Get the version from previous step
+COPY --from=version-extractor /app/git_describe.txt .
 
 # Uses env variables from .env file (BUILD TIME)
 RUN PUBLIC_URL=/ npm run build
@@ -28,7 +40,7 @@ ENV REACT_APP_IDP_CLIENT_ID=$REACT_APP_IDP_CLIENT_ID
 # Copy the build artifacts from the builder phase
 COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy the env replacer
-COPY ./scripts/replace-env-at-runtime.sh /
+COPY ./frontend/scripts/replace-env-at-runtime.sh /
 
 # The default command replaces the environment variables and starts nginx as a subprocess
 CMD [ "/bin/sh", "-c", "/replace-env-at-runtime.sh /usr/share/nginx/html/index.html && nginx -g \"daemon off;\""]

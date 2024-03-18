@@ -1,4 +1,5 @@
 import react from "@vitejs/plugin-react";
+import fs from "fs";
 import { defineConfig } from "vite";
 import eslint from "vite-plugin-eslint";
 
@@ -23,6 +24,9 @@ export default defineConfig({
     open: true,
   },
   define: {
+    __BUILD_GIT_DESCRIBE__: fs
+      .readFileSync("./git_describe.txt", "utf-8")
+      .trim(),
     __BUILD_TIMESTAMP__: JSON.stringify(
       new Date().toISOString().split(".")[0].split("T").join(" "),
     ),
