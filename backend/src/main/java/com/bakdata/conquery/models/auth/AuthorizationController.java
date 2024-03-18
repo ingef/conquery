@@ -87,8 +87,10 @@ public final class AuthorizationController implements Managed {
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 
 		if (adminServlet != null) {
-			adminServlet.getJerseyConfig().register(DefaultAuthFilter.create());
-			adminServlet.getJerseyConfig().register(new RedirectingAuthFilter());
+			final DefaultAuthFilter authFilter = DefaultAuthFilter.create();
+			adminServlet.getJerseyConfig().register(authFilter);
+			adminServlet.getJerseyConfigUI().register(authFilter);
+			adminServlet.getJerseyConfigUI().register(new RedirectingAuthFilter());
 
 			// TODO necessary?
 			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
@@ -128,10 +130,11 @@ public final class AuthorizationController implements Managed {
 
 	@Override
 	public void start() throws Exception {
-		// Call Shiros init on all realms
-		LifecycleUtils.init(realms);
 
 		externalInit();
+
+		// Call Shiros init on all realms
+		LifecycleUtils.init(realms);
 
 		// Register initial users for authorization and authentication (if the realm is able to)
 		initializeAuthConstellation(config.getAuthorizationRealms(), realms, storage);

@@ -25,7 +25,7 @@ public class DevelopmentAuthorizationConfig implements AuthorizationConfig {
 
 	@NotEmpty
 	private List<ProtoUser> initialUsers = List.of(ProtoUser.builder()
-															.name("SUPERUSER@SUPERUSER")
+															.name("SUPERUSER")
 															.label("SUPERUSER")
 															.permissions(Set.of("*"))
 															.roles(Set.of("admin"))
