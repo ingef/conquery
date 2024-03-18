@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "../app/reducers";
 import { openHistory, useNewHistorySession } from "../entity-history/actions";
 
+import { ColumnDescription } from "../api/types";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
@@ -13,17 +15,22 @@ const SxIconButton = styled(IconButton)`
   height: 35px;
 `;
 
-interface PropsT {
+export const QueryResultHistoryButton = ({
+  url,
+  label,
+  columns,
+}: {
+  columns: ColumnDescription[];
   label: string;
-}
-
-export const QueryResultHistoryButton = ({ label }: PropsT) => {
+  url: string;
+}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.entityHistory.isLoading,
   );
 
+  const getAuthorizedUrl = useGetAuthorizedUrl();
   const newHistorySession = useNewHistorySession();
 
   return (
@@ -31,7 +38,7 @@ export const QueryResultHistoryButton = ({ label }: PropsT) => {
       icon={isLoading ? faSpinner : faListUl}
       frame
       onClick={async () => {
-        await newHistorySession(label);
+        await newHistorySession(getAuthorizedUrl(url), columns, label);
         dispatch(openHistory());
       }}
     >
