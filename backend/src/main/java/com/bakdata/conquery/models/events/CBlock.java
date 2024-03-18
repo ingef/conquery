@@ -327,6 +327,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return true;
 		}
 
+		if(!includedConceptElementsPerEntity.containsKey(entity)){
+			return false;
+		}
+
 
 		final long bits = includedConceptElementsPerEntity.get(entity);
 
