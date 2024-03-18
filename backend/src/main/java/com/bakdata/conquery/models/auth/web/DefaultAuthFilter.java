@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -17,8 +16,6 @@ import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
-import jakarta.ws.rs.core.Feature;
-import jakarta.ws.rs.core.FeatureContext;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 import lombok.NoArgsConstructor;
@@ -43,14 +40,14 @@ import org.glassfish.jersey.spi.Contract;
 @NoArgsConstructor
 @Priority(Priorities.AUTHENTICATION)
 @Provider
-public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> implements Feature {
+public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
 
 	@Inject
 	@Setter
 	private IterableProvider<TokenExtractor> tokenExtractors;
 
 
-	public static DefaultAuthFilter asDropwizardFeature() {
+	public static DefaultAuthFilter create() {
 		final DefaultAuthFilter authFilter =
 				new Builder()
 						.setAuthenticator(new ConqueryAuthenticator())
@@ -109,13 +106,6 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 		config.register(extractor);
 	}
 
-	@Override
-	public boolean configure(FeatureContext context) {
-		//TODO what does need to be initialized here?
-		// NOTE that initialization fails, if we dont implement Feature for some reason.
-		return true;
-	}
-
 	/**
 	 * Authenticating realms need to be able to extract a token from a request. How
 	 * it performs the extraction is implementation dependent. Anyway the realm
@@ -134,10 +124,6 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 
 	/**
 	 * Builder for {@link DefaultAuthFilter}.
-	 * <p>
-	 * An {@link AuthorizationController} must be provided during the building
-	 * process.
-	 * </p>
 	 */
 	@Accessors(chain = true)
 	@Setter

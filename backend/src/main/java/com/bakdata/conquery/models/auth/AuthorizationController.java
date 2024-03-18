@@ -87,7 +87,7 @@ public final class AuthorizationController implements Managed {
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 
 		if (adminServlet != null) {
-			adminServlet.getJerseyConfig().register(DefaultAuthFilter.asDropwizardFeature());
+			adminServlet.getJerseyConfig().register(DefaultAuthFilter.create());
 			adminServlet.getJerseyConfig().register(new RedirectingAuthFilter());
 
 			// TODO necessary?

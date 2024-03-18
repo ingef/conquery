@@ -62,7 +62,7 @@ public class ApiV1 implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		jersey.register(DefaultAuthFilter.asDropwizardFeature());
+		jersey.register(DefaultAuthFilter.create());
 		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
 
