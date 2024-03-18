@@ -10,7 +10,7 @@ RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 FROM node:18-alpine AS builder
 
 WORKDIR /app
-COPY ./frontend/package.json ./package-lock.json ./
+COPY ./frontend/package.json ./frontend/package-lock.json ./
 
 RUN npm ci
 
