@@ -1,6 +1,13 @@
 import styled from "@emotion/styled";
 import { faCopy } from "@fortawesome/free-regular-svg-icons";
-import { memo, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 
@@ -8,6 +15,27 @@ import IconButton from "../button/IconButton";
 import Modal from "../modal/Modal";
 
 import { StateT } from "./reducers";
+
+const initialState = {
+  isOpen: false,
+  setOpen: () => {},
+};
+
+const Context = createContext<ReturnType<typeof useContextValue>>(initialState);
+
+const useContextValue = () => {
+  const [isOpen, setOpen] = useState(false);
+
+  return { isOpen, setOpen };
+};
+
+export const AboutProvider = ({ children }: { children: ReactNode }) => (
+  <Context.Provider value={useContextValue()}>{children}</Context.Provider>
+);
+
+export const useAbout = () => {
+  return useContext(Context);
+};
 
 const Grid = styled("div")`
   display: grid;
@@ -48,7 +76,8 @@ const useVersion = () => {
 };
 
 export const About = memo(() => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setOpen } = useAbout();
+  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
   const { backendGitDescribe, frontendTimestamp, frontendGitDescribe } =
     useVersion();
 
@@ -56,15 +85,15 @@ export const About = memo(() => {
     navigator.clipboard.writeText(
       `BE: ${backendGitDescribe} FE: ${frontendGitDescribe}`,
     );
-    setIsOpen(false);
+    setOpen(false);
   };
 
-  useHotkeys("shift+?", () => setIsOpen((open) => !open));
+  useHotkeys("shift+?", toggleOpen, [toggleOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <Modal headline="Version" onClose={() => setIsOpen(false)}>
+    <Modal headline="Version" onClose={() => setOpen(false)}>
       <Grid>
         <div>Backend</div>
         <Version>{backendGitDescribe}</Version>
