@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
@@ -281,6 +282,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setFinishTime(finishTime);
 		status.setStatus(getState());
 		status.setContainsDates(containsDates);
+
+		status.setAllowPreview(this instanceof SingleTableResult);
+		status.setAllowStatistics(this instanceof SingleTableResult);
 
 		if (owner != null) {
 			status.setOwner(owner.getId());
