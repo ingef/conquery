@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBuck
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class WorkerHandler {
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
+	@Getter
 	private final IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
 
 	/**
@@ -45,11 +47,7 @@ public class WorkerHandler {
 
 	private final NamespaceStorage storage;
 
-	public IdMap<WorkerId, WorkerInformation> getWorkers() {
-		return this.workers;
-	}
-
-	private Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
+	private final Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
 
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {
