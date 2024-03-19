@@ -78,6 +78,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		log.trace("Received Result\n{}", result.getResults());
 
 		if (query.getState() != ExecutionState.RUNNING) {
+			log.warn("Received result for Query[{}] that is not RUNNING but {}", query.getId(), query.getState());
 			return;
 		}
 
