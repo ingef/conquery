@@ -38,6 +38,7 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * The central class for the initialization of authorization and authentication.
@@ -87,10 +88,14 @@ public final class AuthorizationController implements Managed {
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 
 		if (adminServlet != null) {
-			final DefaultAuthFilter authFilter = DefaultAuthFilter.create();
-			adminServlet.getJerseyConfig().register(authFilter);
-			adminServlet.getJerseyConfigUI().register(authFilter);
-			adminServlet.getJerseyConfigUI().register(new RedirectingAuthFilter());
+			adminServlet.getJerseyConfig().register(DefaultAuthFilter.class);
+			adminServlet.getJerseyConfigUI().register(new AbstractBinder() {
+				@Override
+				protected void configure() {
+					bind(DefaultAuthFilter.class).to(DefaultAuthFilter.class);
+				}
+			});
+			adminServlet.getJerseyConfigUI().register(RedirectingAuthFilter.class);
 
 			// TODO necessary?
 			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());

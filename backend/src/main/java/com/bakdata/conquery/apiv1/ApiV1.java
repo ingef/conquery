@@ -63,7 +63,7 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		jersey.register(DefaultAuthFilter.create());
+		jersey.register(DefaultAuthFilter.class);
 		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
 

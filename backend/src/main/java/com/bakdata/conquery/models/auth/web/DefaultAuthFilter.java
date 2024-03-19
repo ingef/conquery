@@ -18,9 +18,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -37,7 +35,6 @@ import org.glassfish.jersey.spi.Contract;
  */
 @Slf4j
 @PreMatching
-@NoArgsConstructor
 @Priority(Priorities.AUTHENTICATION)
 @Provider
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
@@ -46,14 +43,9 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	@Setter
 	private IterableProvider<TokenExtractor> tokenExtractors;
 
-
-	public static DefaultAuthFilter create() {
-		final DefaultAuthFilter authFilter =
-				new Builder()
-						.setAuthenticator(new ConqueryAuthenticator())
-						.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
-						.buildAuthFilter();
-		return authFilter;
+	public DefaultAuthFilter() {
+		this.authenticator = new ConqueryAuthenticator();
+		this.unauthorizedHandler = new DefaultUnauthorizedHandler();
 	}
 
 	@Override
@@ -120,18 +112,5 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	@Contract
 	public interface TokenExtractor extends Function<ContainerRequestContext, AuthenticationToken> {
 
-	}
-
-	/**
-	 * Builder for {@link DefaultAuthFilter}.
-	 */
-	@Accessors(chain = true)
-	@Setter
-	private static class Builder extends AuthFilterBuilder<AuthenticationToken, Subject, DefaultAuthFilter> {
-
-		@Override
-		protected DefaultAuthFilter newInstance() {
-			return new DefaultAuthFilter();
-		}
 	}
 }
