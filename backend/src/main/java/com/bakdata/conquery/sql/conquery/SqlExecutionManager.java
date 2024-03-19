@@ -43,7 +43,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			managedForm.getSubQueries().values().forEach(subQuery -> doExecute(namespace, managedForm));
+			managedForm.getSubQueries().values().forEach(subQuery -> doExecute(namespace, subQuery));
 			managedForm.finish(ExecutionState.DONE);
 			return;
 		}
