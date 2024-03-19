@@ -152,7 +152,7 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery());
+		return new ExecuteQuery(getId(), getQuery(), getStorage());
 	}
 
 	@Override

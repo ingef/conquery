@@ -4,18 +4,21 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
-public class ShardResult  extends NamespaceMessage {
+public class ShardResult extends NamespaceMessage implements ReactionMessage {
 
 
 	@ToString.Include
@@ -82,12 +85,18 @@ public class ShardResult  extends NamespaceMessage {
 		worker.send(this);
 	}
 
+	@Override
+	public void react(DistributedNamespace context) throws Exception {
+		addResult(context.getExecutionManager());
+	}
+
 	public void addResult(DistributedExecutionManager executionManager) {
 		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
 	}
 
 	@Override
-	public void react(DistributedNamespace context) throws Exception {
-		addResult(context.getExecutionManager());
+	@JsonIgnore
+	public UUID getCallerId() {
+		return queryId.getExecution();
 	}
 }
