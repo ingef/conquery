@@ -106,9 +106,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ExecutionState state = ExecutionState.NEW;
+
+	//TODO FK: This is only locked/unlocked, there should be better primitives for that.
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient CountDownLatch execution;
+	private transient CountDownLatch executingLock;
+
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime startTime;
@@ -216,10 +219,17 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			namespace.getExecutionManager().clearQueryResults(this);
 
-			execution = new CountDownLatch(1);
+			resetLock();
 		}
+	}
+
+	private void resetLock() {
+		executingLock = new CountDownLatch(1);
+	}
+
+	private void clearLock() {
+		executingLock.countDown();
 	}
 
 	public void finish(ExecutionState executionState) {
@@ -230,10 +240,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
 			progress = null;
+
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			execution.countDown();
+			clearLock();
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if (getState() == ExecutionState.DONE) {
@@ -241,15 +252,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 		}
 
-
-		log.info(
-				"{} {} {} within {}",
-				getState(),
-				queryId,
-				getClass().getSimpleName(),
-				getExecutionTime()
-		);
+		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
 	}
+
+
 
 	@JsonIgnore
 	public Duration getExecutionTime() {
@@ -263,7 +269,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (getState() != ExecutionState.RUNNING) {
 			return getState();
 		}
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		Uninterruptibles.awaitUninterruptibly(executingLock, time, unit);
 
 		return getState();
 	}
@@ -338,7 +344,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
-		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {

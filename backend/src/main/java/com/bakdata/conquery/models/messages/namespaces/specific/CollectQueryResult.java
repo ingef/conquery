@@ -30,6 +30,6 @@ public class CollectQueryResult extends NamespaceMessage {
 	public void react(DistributedNamespace context) throws Exception {
 		log.info("Received {} of size {}", result, result.getResults().size());
 
-		result.addResult(context.getExecutionManager(), null /*TODO*/);
+		result.addResult(context.getExecutionManager()  /*TODO*/);
 	}
 }

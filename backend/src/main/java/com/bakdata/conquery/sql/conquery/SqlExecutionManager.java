@@ -10,7 +10,9 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -88,21 +90,33 @@ public class SqlExecutionManager implements ExecutionManager {
 
 	@Override
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		if (!(execution instanceof ManagedQuery managedQuery)) {
-			throw new UnsupportedOperationException("The SQL execution manager can only execute SQL queries, but got a %s".formatted(execution.getClass()));
-		}
-
 		execution.initExecutable(namespace, config);
 		execution.start();
 
-		// todo(tm): Non-blocking execution
-		final SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
+		if(execution instanceof InternalExecution<?>){
+			doExecute(execution);
+		}
+	}
 
-		final SqlExecutionResult result = executionService.execute(sqlQuery);
-		executionResults.put(execution.getId(), result);
-		managedQuery.setLastResultCount(((long) result.getRowCount()));
+	private void doExecute(ManagedExecution execution) {
+		if (execution instanceof ManagedQuery managedQuery) {
+			// todo(tm): Non-blocking execution
+			final SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 
-		execution.finish(ExecutionState.DONE);
+			final SqlExecutionResult result = executionService.execute(sqlQuery);
+			executionResults.put(execution.getId(), result);
+			managedQuery.setLastResultCount(((long) result.getRowCount()));
+
+			execution.finish(ExecutionState.DONE);
+			return;
+		}
+
+		if (execution instanceof ManagedInternalForm<?> managedForm){
+			for (ManagedQuery subQuery : managedForm.getSubQueries().values()) {
+				doExecute(subQuery);
+			}
+			//TODO handle finishing etc here.
+		}
 
 	}
 

@@ -1,13 +1,10 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -44,18 +41,21 @@ public class DistributedExecutionManager implements ExecutionManager {
 	private final MetaStorage storage;
 	private final ClusterState clusterState;
 
-	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults =
+	private final Cache<ManagedExecutionId, Map<WorkerId, List<EntityResult>>> executionResults =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
 						.build();
 
-	private final Map<ManagedExecutionId, Set<WorkerId>> runningQueries = new ConcurrentHashMap<>();
+	public ManagedExecution getExecution(ManagedExecutionId execution) {
+		return storage.getExecution(execution);
+	}
+
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, List<?>> removalNotification) {
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, Map<?,?>> removalNotification) {
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
@@ -89,6 +89,9 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 	@Override
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
+
+		clearQueryResults(execution);
+
 		try {
 			execution.initExecutable(namespace, config);
 		}
@@ -113,14 +116,16 @@ public class DistributedExecutionManager implements ExecutionManager {
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
-			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
-
-			final WorkerHandler workerHandler = getWorkerHandler(execution);
-
-			runningQueries.put(execution.getId(), Collections.synchronizedSet(workerHandler.getAllWorkerIds()));
-
-			workerHandler.sendToAll(internalExecution.createExecutionMessage());
+			doExecute(namespace, execution, internalExecution);
 		}
+	}
+
+	private void doExecute(Namespace namespace, ManagedExecution execution, InternalExecution<?> internalExecution) {
+		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
+
+		final WorkerHandler workerHandler = getWorkerHandler(execution);
+
+		workerHandler.sendToAll(internalExecution.createExecutionMessage());
 	}
 
 	private WorkerHandler getWorkerHandler(ManagedExecution execution) {
@@ -144,15 +149,15 @@ public class DistributedExecutionManager implements ExecutionManager {
 	/**
 	 * Receive part of query result and store into query.
 	 *
-	 * @param result
-	 * @param queryId
+	 * @implNote subQueries of Forms are managed by the form itself, so need to be passed from outside.
 	 */
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, ManagedExecutionId queryId) {
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), queryId);
-		log.trace("Received Result\n{}", result.getResults());
 
-		final ManagedExecutionId executionId = queryId;
-		final E query = (E) storage.getExecution(executionId);
+	@SneakyThrows
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, E query) {
+
+
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
+		log.trace("Received Result\n{}", result.getResults());
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
@@ -163,13 +168,14 @@ public class DistributedExecutionManager implements ExecutionManager {
 		}
 		else {
 
-			addQueryResult(query, result.getResults());
+			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
+			final Map<WorkerId, List<EntityResult>> results = executionResults.get(query.getId(), ConcurrentHashMap::new);
+			results.put(result.getWorkerId(), result.getResults());
 
-			final Set<WorkerId> involvedWorkers = runningQueries.get(query.getId());
+			final Set<WorkerId> finishedWorkers = results.keySet();
 
-			involvedWorkers.remove(result.getWorkerId());
-
-			if (involvedWorkers.isEmpty()) {
+			// If all known workers have returned a result, the query is DONE.
+			if (finishedWorkers.equals(getWorkerHandler(query).getAllWorkerIds())) {
 				query.finish(ExecutionState.DONE);
 			}
 		}
@@ -184,22 +190,12 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
 			 existed anymore after the query finished and immediately was reset */
-			log.trace("Collected metrics for execution {}. Last result received: {}:", executionId, result.getResults());
+			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getQueryId(), result.getResults());
 		}
 
 	}
 
 
-	/**
-	 * Register another result for the execution.
-	 */
-
-	@SneakyThrows(ExecutionException.class) // can only occur if ArrayList::new fails which is unlikely and would have other problems also
-	public void addQueryResult(ManagedExecution execution, List<EntityResult> queryResults) {
-		// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-		executionResults.get(execution.getId(), ArrayList::new)
-						.add(queryResults);
-	}
 
 	/**
 	 * Discard the query's results.
@@ -211,11 +207,11 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 	@Override
 	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
-		final List<List<EntityResult>> resultParts = executionResults.getIfPresent(execution.getId());
+		final Map<?, List<EntityResult>> resultParts = executionResults.getIfPresent(execution.getId());
 
 		return resultParts == null
 			   ? Stream.empty()
-			   : resultParts.stream().flatMap(List::stream);
+			   : resultParts.values().stream().flatMap(List::stream);
 
 	}
 
