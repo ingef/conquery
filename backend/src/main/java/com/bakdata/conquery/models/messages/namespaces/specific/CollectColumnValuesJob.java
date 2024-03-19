@@ -94,6 +94,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 			}
 		}
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
+		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}
 
 	@Override

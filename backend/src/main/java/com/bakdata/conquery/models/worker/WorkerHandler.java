@@ -49,7 +49,7 @@ public class WorkerHandler {
 		return this.workers;
 	}
 
-	public Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
+	private Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
 
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {
@@ -76,7 +76,7 @@ public class WorkerHandler {
 			throw new IllegalStateException(String.format("No pending action registered (anymore) for caller id %s from reaction message: %s", callerId, message));
 		}
 
-		if (pendingReaction.checkoffWorker(message.getWorkerId())) {
+		if (pendingReaction.checkoffWorker(message)) {
 			log.debug("Removing pending reaction '{}' as last pending message was received.", callerId);
 			pendingReactions.remove(callerId);
 		}
@@ -189,7 +189,12 @@ public class WorkerHandler {
 		/**
 		 * Marks the given worker as not pending. If the last pending worker checks off the afterAllReaction is executed.
 		 */
-		public synchronized boolean checkoffWorker(WorkerId workerId) {
+		public synchronized boolean checkoffWorker(ReactionMessage message) {
+			final WorkerId workerId = message.getWorkerId();
+			if (!message.lastMessageFromWorker()) {
+				log.trace("Received reacting message, but was not the last one: {}", message);
+				return false;
+			}
 			if (!pendingWorkers.remove(workerId)) {
 				throw new IllegalStateException(String.format("Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.", workerId, callerId));
 			}
@@ -199,6 +204,7 @@ public class WorkerHandler {
 			}
 
 			log.debug("Checked off last worker '{}' for action-reaction message '{}'. Calling hook", workerId, callerId);
+
 			afterAllHook.run();
 			return true;
 
