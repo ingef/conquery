@@ -6,10 +6,8 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,10 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "COLLECT_QUERY_RESULT", base = NamespacedMessage.class)
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@ToString(of = "result")
+@Data
 @Slf4j
+//TODO flatten this into ShardResult
 public class CollectQueryResult extends NamespaceMessage {
 
 	private ShardResult result;
@@ -30,6 +27,6 @@ public class CollectQueryResult extends NamespaceMessage {
 	public void react(DistributedNamespace context) throws Exception {
 		log.info("Received {} of size {}", result, result.getResults().size());
 
-		result.addResult(context.getExecutionManager()  /*TODO*/);
+		result.addResult(context.getExecutionManager());
 	}
 }
