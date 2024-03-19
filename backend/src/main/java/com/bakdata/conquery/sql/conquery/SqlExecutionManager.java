@@ -23,7 +23,6 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
 
-
 	public SqlExecutionManager(final SqlContext context, SqlExecutionService sqlExecutionService, MetaStorage storage) {
 		super(storage);
 		executionService = sqlExecutionService;
@@ -33,27 +32,23 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	@Override
 	protected void doExecute(Namespace namespace, InternalExecution<?> execution) {
 
+		// todo(tm): Non-blocking execution
 		if (execution instanceof ManagedQuery managedQuery) {
-			// todo(tm): Non-blocking execution
-			final SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
-
-			final SqlExecutionResult result = executionService.execute(sqlQuery);
-
+			SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
+			SqlExecutionResult result = executionService.execute(sqlQuery);
 			addResult(managedQuery, result);
-
 			managedQuery.setLastResultCount(((long) result.getRowCount()));
-
 			managedQuery.finish(ExecutionState.DONE);
 			return;
 		}
 
-		if (execution instanceof ManagedInternalForm<?> managedForm){
-			for (ManagedQuery subQuery : managedForm.getSubQueries().values()) {
-				doExecute(namespace, subQuery);
-			}
-			//TODO handle finishing etc here.
+		if (execution instanceof ManagedInternalForm<?> managedForm) {
+			managedForm.getSubQueries().values().forEach(subQuery -> doExecute(namespace, managedForm));
+			managedForm.finish(ExecutionState.DONE);
+			return;
 		}
 
+		throw new IllegalStateException("Unexpected type of execution: %s".formatted(execution.getClass()));
 	}
 
 	@Override
