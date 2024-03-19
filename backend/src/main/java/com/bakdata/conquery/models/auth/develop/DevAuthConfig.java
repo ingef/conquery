@@ -20,8 +20,10 @@ public class DevAuthConfig implements AuthenticationRealmFactory {
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 
 		DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, environment.jersey().getResourceConfig());
-		DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfig());
-		DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfigUI());
+		if (authorizationController.getAdminServlet() != null) {
+			DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfig());
+			DefaultAuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfigUI());
+		}
 
 		// Use the first defined user als the default user. This is usually the superuser if the DevelopmentAuthorizationConfig is set
 		final UserId defaultUserId = new UserId(config.getAuthorizationRealms().getInitialUsers().get(0).getName());
