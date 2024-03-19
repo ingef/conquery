@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
-import java.util.function.BiFunction;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.base.Strings;
 import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -30,12 +31,13 @@ import org.eclipse.jetty.http.HttpHeader;
 @PreMatching
 // Chain this filter before the Authentication filter
 @Priority(Priorities.AUTHENTICATION-100)
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
 	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
-	public final BiFunction<ContainerRequestContext, String, Cookie> cookieCreator;
+
+	private final ConqueryConfig config;
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -81,7 +83,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 			}
 			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
-					cookieCreator.apply(request,token)
+					config.getAuthentication().createAuthCookie(request, token)
 			);
 
 		}

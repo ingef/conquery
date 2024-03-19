@@ -103,8 +103,6 @@ public class AdminServlet {
 				manager.getStorageListener()
 		);
 
-		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
-
 		jerseyConfig.register(new AbstractBinder() {
 						@Override
 						protected void configure() {
@@ -122,7 +120,7 @@ public class AdminServlet {
 					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
-					.register(authCookieFilter);
+					.register(AuthCookieFilter.class);
 
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
@@ -133,12 +131,13 @@ public class AdminServlet {
 							  bindAsContract(UIProcessor.class);
 							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 							  bind(manager.getStorage()).to(MetaStorage.class);
+							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
 					  .register(AdminPermissionFilter.class)
 					  .register(IdRefPathParamConverterProvider.class)
-					  .register(authCookieFilter);
-		;
+					  .register(AuthCookieFilter.class);
+
 	}
 
 	public void register() {
