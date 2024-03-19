@@ -237,6 +237,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
 
+		if(getState() == ExecutionState.FAILED){
+			return;
+		}
+
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
 			progress = null;

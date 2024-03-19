@@ -8,8 +8,12 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -19,6 +23,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +39,14 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString(callSuper = true)
 @AllArgsConstructor
-public class ExecuteForm extends WorkerMessage {
+public class ExecuteForm extends WorkerMessage implements ActionReactionMessage {
 
 	private final ManagedExecutionId formId;
 
 	private final Map<ManagedExecutionId, Query> queries;
+
+	@JsonIgnore
+	private MetaStorage storage;
 
 	private FormShardResult createResult(Worker worker, ManagedExecutionId subQueryId) {
 		return new FormShardResult(
@@ -88,4 +96,10 @@ public class ExecuteForm extends WorkerMessage {
 	}
 
 
+	@Override
+	public void afterAllReaction() {
+		final ManagedExecution execution = getStorage().getExecution(formId);
+
+		execution.finish(ExecutionState.DONE);
+	}
 }
