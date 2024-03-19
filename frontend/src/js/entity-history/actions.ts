@@ -27,11 +27,9 @@ import {
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
-import { useLoadPreviewData } from "../preview/actions";
 import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 
-import { Table } from "apache-arrow";
 import { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util";
 
@@ -102,29 +100,44 @@ export const loadHistoryData = createAsyncAction(
 export const PREFERRED_ID_KINDS = ["EGK", "PID"];
 export const DEFAULT_ID_KIND = "EGK";
 
+function getPreferredIdColumns(columns: ColumnDescription[]) {
+  const findColumnIdxWithIdKind = (kind: string) =>
+    columns.findIndex((col) =>
+      col.semantics.some((s) => s.type === "ID" && s.kind === kind),
+    );
+
+  return PREFERRED_ID_KINDS.map((kind) => ({
+    columnIdx: findColumnIdxWithIdKind(kind),
+    idKind: kind,
+  }));
+}
+
+async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
+  try {
+    const result = await loadCSV(url);
+    return {
+      csv: result.data,
+      columns,
+      resultUrl: url,
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
 // - from a dropped file with a list of entities
 // - from a previous query
 export function useNewHistorySession() {
   const dispatch = useDispatch();
-  const loadPreviewData = useLoadPreviewData();
-  const queryId = useSelector<StateT, string | null>(
-    (state) => state.preview.lastQuery,
-  );
   const { updateHistorySession } = useUpdateHistorySession();
 
-  return async (label: string) => {
-    if (!queryId) {
-      dispatch(loadHistoryData.failure(new Error("Could not load query data")));
-      return;
-    }
-
+  return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(queryId, {
-      noLoading: true,
-    });
+    const result = await onLoadHistoryData(url, columns);
 
     if (!result) {
       dispatch(
@@ -133,16 +146,24 @@ export function useNewHistorySession() {
       return;
     }
 
-    const entityIds = new Table(result.initialTableData.value)
-      .toArray()
+    const preferredIdColumns = getPreferredIdColumns(columns);
+    if (preferredIdColumns.length === 0) {
+      dispatch(loadHistoryData.failure(new Error("No valid ID columns found")));
+      return;
+    }
+
+    const entityIds = result.csv
+      .slice(1)
       .map((row) => {
-        for (const [k, v] of Object.entries(row)) {
-          if (PREFERRED_ID_KINDS.includes(v as string)) {
+        for (const col of preferredIdColumns) {
+          // some values might be empty, search for defined values
+          if (row[col.columnIdx]) {
             return {
-              id: v as string,
-              kind: k,
+              id: row[col.columnIdx],
+              kind: col.idKind,
             };
           }
+          return null;
         }
       })
       .filter(exists);
