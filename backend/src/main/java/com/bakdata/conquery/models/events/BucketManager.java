@@ -96,8 +96,15 @@ public class BucketManager {
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Map<String, Integer> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+	private static void registerBucket(Bucket bucket, Object2IntMap<String> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (String entity : bucket.entities()) {
+
+			if(entity2Bucket.containsKey(entity)){
+				// This is an unrecoverable state, but should not happen in practice. Just a precaution.
+				assert entity2Bucket.getInt(entity) == bucket.getBucket();
+				continue;
+			}
+
 			entity2Bucket.put(entity, bucket.getBucket());
 		}
 
