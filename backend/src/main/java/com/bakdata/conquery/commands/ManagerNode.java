@@ -44,7 +44,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.service.IoHandlerAdapter;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -54,7 +53,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
  */
 @Slf4j
 @Getter
-public class ManagerNode extends IoHandlerAdapter implements Managed {
+public class ManagerNode implements Managed {
 
 	public static final String DEFAULT_NAME = "manager";
 

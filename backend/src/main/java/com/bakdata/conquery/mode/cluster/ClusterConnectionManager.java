@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,8 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	public void sessionOpened(IoSession session) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
+
+		SharedMetricRegistries.getDefault().registerAll(new ClusterMetrics(session));
 	}
 
 	@Override

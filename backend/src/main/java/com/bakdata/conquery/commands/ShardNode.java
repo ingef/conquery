@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.mode.cluster.ClusterMetrics;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -207,6 +209,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
+		SharedMetricRegistries.getDefault().registerAll(new ClusterMetrics(session));
+
 		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
@@ -214,7 +218,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		context.send(new AddShardNode());
 
 		for (Worker w : workers.getWorkers().values()) {
-			w.setSession(new NetworkSession(session));
+			w.setSession(networkSession);
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
