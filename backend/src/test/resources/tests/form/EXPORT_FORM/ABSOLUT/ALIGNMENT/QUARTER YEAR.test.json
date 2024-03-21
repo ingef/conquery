@@ -1,8 +1,8 @@
 {
   "type": "FORM_TEST",
-  "label": "ABS-EXPORT-FORM WITH SELECT SET Test",
+  "label": "YEAR Alignment, QUARTER Resolution",
   "expectedCsv": {
-    "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
+    "results": "tests/form/EXPORT_FORM/ABSOLUT/ALIGNMENT/quarter year.csv"
   },
   "form": {
     "type": "EXPORT_FORM",
@@ -12,32 +12,28 @@
     "features": [
       {
         "ids": [
-          "two_connector"
+          "alter"
         ],
         "type": "CONCEPT",
-        "label": "explicitly set select",
         "tables": [
           {
-            "id": "two_connector.table1",
-            "selects": "two_connector.table1.liste_geburtsdatum"
-          },
-          {
-            "id": "two_connector.table2"
+            "id": "alter.alter",
+            "filters": []
           }
         ]
       }
     ],
     "timeMode": {
       "value": "ABSOLUTE",
+      "alignmentHint" : "YEAR",
       "dateRange": {
-        "min": "2012-01-16",
-        "max": "2012-12-17"
+        "min": "2012-06-16",
+        "max": "2013-01-17"
       }
-    },
-    "values": "Some arbitrary data that is frontend/user provided"
+    }
   },
   "concepts": [
-    "/tests/form/shared/two_connector.concept.json"
+    "/tests/form/shared/alter.concept.json"
   ],
   "content": {
     "tables": [
