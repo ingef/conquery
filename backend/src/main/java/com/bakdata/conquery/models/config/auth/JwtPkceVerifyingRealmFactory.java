@@ -43,6 +43,7 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.inject.Named;
 import jakarta.validation.constraints.Min;
@@ -168,12 +169,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		idpConfigurationSupplier = getIdpOptionsSupplier(environment, config);
 		authCookieCreator = config.getAuthentication()::createAuthCookie;
 
-		// Add login schema for admin end
-
-
-		RedirectingAuthFilter.registerLoginInitiator(environment.jersey().getResourceConfig(), this::initiateLogin, "jwt-initiator");
-		RedirectingAuthFilter.registerAuthAttemptChecker(environment.jersey().getResourceConfig(), this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
-		RedirectingAuthFilter.registerAuthAttemptChecker(environment.jersey().getResourceConfig(), this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
+		// Add login schema for admin UI
+		final DropwizardResourceConfig jerseyAdminUi = authorizationController.getAdminServlet().getJerseyConfigUI();
+		RedirectingAuthFilter.registerLoginInitiator(jerseyAdminUi, this::initiateLogin, "jwt-initiator");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
 
 		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway);
 	}
@@ -311,7 +311,6 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 	}
 
-	@Named("jwt-login")
 	@RequiredArgsConstructor
 	private static class LoginInitiator implements RedirectingAuthFilter.LoginInitiator {
 		private final Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;

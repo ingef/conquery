@@ -20,6 +20,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.glassfish.hk2.api.IterableProvider;
@@ -41,6 +42,7 @@ import org.glassfish.jersey.spi.Contract;
 @Slf4j
 @Priority(Priorities.AUTHENTICATION - 1)
 @PreMatching
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	public static final String REDIRECT_URI = "redirect_uri";
@@ -51,17 +53,14 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 	 * <p>
 	 * If the request does not fit the schema, the processor returns null.
 	 */
-	@Inject
-	private IterableProvider<AuthAttemptChecker> authAttemptCheckers;
+	private final IterableProvider<AuthAttemptChecker> authAttemptCheckers;
 	/**
 	 * Request processors that produce a link to initiate a login procedure.
 	 */
-	@Inject
-	private IterableProvider<LoginInitiator> loginInitiators;
+	private final IterableProvider<LoginInitiator> loginInitiators;
 	/**
 	 * The Filter that checks if a request was authenticated
 	 */
-	@Inject
 	private DefaultAuthFilter delegate;
 
 	public static void registerLoginInitiator(ResourceConfig resourceConfig, LoginInitiator initiator, final String name) {
