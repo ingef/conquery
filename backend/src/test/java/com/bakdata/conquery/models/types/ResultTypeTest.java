@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class ResultTypeTest {
 		// Initialization of the internationalization
 		I18n.init();
 		//init global default config
-		CONFIG.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
+		CONFIG.getFrontend().setCurrencyCode("EUR");
 		CONFIG.getLocale().setDateFormatMapping(Map.of(Locale.GERMAN, "dd.MM.yyyy"));
 	}
 

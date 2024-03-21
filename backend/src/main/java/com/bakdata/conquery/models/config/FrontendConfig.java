@@ -2,15 +2,14 @@ package com.bakdata.conquery.models.config;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Currency;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Range;
 import io.dropwizard.validation.ValidationMethod;
@@ -26,9 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 @With
 @Data
 public class FrontendConfig {
-	@Valid
 	@NotNull
-	private CurrencyConfig currency = new CurrencyConfig();
+	private String currencyCode = "EUR";
+
+	@JsonIgnore
+	public Currency getCurrency() {
+		return Currency.getInstance(currencyCode);
+	}
 
 	/**
 	 * Years to include in entity preview.
@@ -77,7 +80,7 @@ public class FrontendConfig {
 	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore
 	public boolean isValidPercentiles() {
-		if(!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()){
+		if (!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()) {
 			return false;
 		}
 
@@ -92,14 +95,10 @@ public class FrontendConfig {
 		return true;
 	}
 
-	@Data
-	public static class CurrencyConfig {
-		@JsonAlias("prefix")
-		private String unit = "€";
-		private String thousandSeparator = ".";
-		private String decimalSeparator = ",";
-		private int decimalScale = 2;
+	@ValidationMethod(message = "Currency Code unknown.")
+	@JsonIgnore
+	public boolean isValidCurrencyCode() {
+		return Currency.getInstance(getCurrencyCode()) != null;
 	}
-
 
 }

@@ -66,7 +66,7 @@ public class PrintSettings {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.namespace = namespace;
-		this.currency = config.getPreprocessor().getParsers().getCurrency();
+		this.currency = config.getFrontend().getCurrency();
 		this.columnNamer = columnNamer;
 		this.idMapper = idMapper;
 

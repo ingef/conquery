@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.net.URL;
 import java.time.LocalDate;
 
-import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 
 /**
@@ -17,7 +16,7 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
  */
 public record FrontendConfiguration(
 		String version,
-		FrontendConfig.CurrencyConfig currency,
+		String currency,
 		IdColumnConfig queryUpload,
 		URL manualUrl,
 		String contactEmail,
