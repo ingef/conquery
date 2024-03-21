@@ -118,6 +118,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
 		log.debug("Sending cancel message to all workers.");
 
+		query.cancel();
 		getWorkerHandler(query).sendToAll(new CancelQuery(query.getId()));
 	}
 
