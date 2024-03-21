@@ -84,23 +84,19 @@ public final class AuthorizationController implements Managed {
 		this.environment = environment;
 		this.adminServlet = adminServlet;
 
-		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
-		// any servlet. In the following configured realms can register TokenExtractors in the filter.
-
 		if (adminServlet != null) {
 			adminServlet.getJerseyConfig().register(DefaultAuthFilter.class);
+			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
 
 			// The binding is necessary here because the RedirectingAuthFitler delegates to the DefaultAuthfilter at the moment
 			adminServlet.getJerseyConfigUI().register(new AbstractBinder() {
 				@Override
 				protected void configure() {
-					bind(DefaultAuthFilter.class).to(DefaultAuthFilter.class);
+					bindAsContract(DefaultAuthFilter.class);
 				}
 			});
 			adminServlet.getJerseyConfigUI().register(RedirectingAuthFilter.class);
-
-			// TODO necessary?
-			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
+			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfigUI());
 		}
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
