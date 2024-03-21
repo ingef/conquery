@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.SqlTestDataImporter;
@@ -16,7 +15,6 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.DslContextFactory;
-import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
@@ -82,11 +80,11 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
 		SqlExecutionService executionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(testSqlDialect));
-		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery("SELECT 1"));
+		SqlQuery validQuery = toSqlQuery("SELECT 1");
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
-		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery(""));
+		SqlQuery emptyQuery = toSqlQuery("");
 		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
 				  .hasMessageContaining("$org.postgresql.util.PSQLException");
