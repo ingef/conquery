@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 
 /**
- * Interface for {@link WorkerMessage}s that require postprocessing on the manager, after all workers responded with a {@link ReactionMessage}.
+ * Interface for {@link WorkerMessage}s that require postprocessing on the manager, after all workers responded with possibly multiple {@link ReactionMessage} that are not final and a single {@link com.bakdata.conquery.models.messages.namespaces.specific.FinalizeReactionMessage}.
  */
 public interface ActionReactionMessage {
 

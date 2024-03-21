@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBuck
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class WorkerHandler {
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
+	@Getter
 	private final IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
 
 	/**
@@ -47,7 +49,9 @@ public class WorkerHandler {
 
 	private final NamespaceStorage storage;
 
-	@NotNull
+	private final Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
+
+  @NotNull
 	public Set<WorkerId> getAllWorkerIds() {
 		return getWorkers().stream()
 							.map(WorkerInformation::getId)
@@ -58,8 +62,7 @@ public class WorkerHandler {
 		return this.workers;
 	}
 
-	public Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
-
+	
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
@@ -85,7 +88,7 @@ public class WorkerHandler {
 			throw new IllegalStateException(String.format("No pending action registered (anymore) for caller id %s from reaction message: %s", callerId, message));
 		}
 
-		if (pendingReaction.checkoffWorker(message.getWorkerId())) {
+		if (pendingReaction.checkoffWorker(message)) {
 			log.debug("Removing pending reaction '{}' as last pending message was received.", callerId);
 			pendingReactions.remove(callerId);
 		}
@@ -198,7 +201,12 @@ public class WorkerHandler {
 		/**
 		 * Marks the given worker as not pending. If the last pending worker checks off the afterAllReaction is executed.
 		 */
-		public synchronized boolean checkoffWorker(WorkerId workerId) {
+		public synchronized boolean checkoffWorker(ReactionMessage message) {
+			final WorkerId workerId = message.getWorkerId();
+			if (!message.lastMessageFromWorker()) {
+				log.trace("Received reacting message, but was not the last one: {}", message);
+				return false;
+			}
 			if (!pendingWorkers.remove(workerId)) {
 				throw new IllegalStateException(String.format("Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.", workerId, callerId));
 			}
@@ -208,6 +216,7 @@ public class WorkerHandler {
 			}
 
 			log.debug("Checked off last worker '{}' for action-reaction message '{}'. Calling hook", workerId, callerId);
+
 			afterAllHook.run();
 			return true;
 
