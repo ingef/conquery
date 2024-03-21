@@ -17,11 +17,15 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.dropwizard.configuration.ConfigurationFactory;
+import io.dropwizard.configuration.ConfigurationSourceProvider;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @Getter
@@ -56,7 +60,50 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		configuration.getServerFactory().configure(environment);
 
 		bootstrap.run(configuration, environment);
+
+		// Instantiate ShardNodes
+
+		for (int i = 0; i < configuration.getStandalone().getNumberOfShardNodes(); i++) {
+			final Bootstrap<ConqueryConfig> bootstrapShard = getShardBootstrap(configuration, i);
+
+			ShardNode sc = new ShardNode(conquery, ShardNode.DEFAULT_NAME + i);
+
+			sc.run(bootstrapShard, namespace);
+
+			shardNodes.add(sc);
+
+		}
+
 		startStandalone(environment, namespace, configuration);
+	}
+
+	@NotNull
+	private Bootstrap<ConqueryConfig> getShardBootstrap(ConqueryConfig configuration, int id) {
+		final Bootstrap<ConqueryConfig> bootstrapShard = new Bootstrap<>(conquery);
+
+
+		bootstrapShard.setConfigurationFactoryFactory((aClass, validator, objectMapper, s) -> new ConfigurationFactory<ConqueryConfig>() {
+			@Override
+			public ConqueryConfig build(ConfigurationSourceProvider configurationSourceProvider, String s) {
+				return build();
+			}
+
+			@Override
+			public ConqueryConfig build() {
+				ConqueryConfig clone = configuration;
+
+				if (configuration.getStorage() instanceof XodusStoreFactory) {
+					final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
+					clone = configuration
+							.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
+					final DefaultServerFactory factory = new DefaultServerFactory();
+					factory.
+							clone.setServerFactory(factory);
+				}
+				return clone;
+			}
+		});
+		return bootstrapShard;
 	}
 
 	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
@@ -89,25 +136,10 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		);
 
 		List<Future<ShardNode>> tasks = new ArrayList<>();
-		for (int i = 0; i < config.getStandalone().getNumberOfShardNodes(); i++) {
-
-			final int id = i;
+		for (ShardNode sc : shardNodes) {
 
 			tasks.add(starterPool.submit(() -> {
-				ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
-
-				shardNodes.add(sc);
-
-				ConqueryMDC.setLocation(sc.getName());
-
-				ConqueryConfig clone = config;
-
-				if (config.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
-				}
-
-				sc.run(environment, namespace, clone);
+				sc.run(new Environment(sc.getName()), namespace, sc.getConfiguration());
 				return sc;
 			}));
 		}

@@ -43,6 +43,18 @@ public class Conquery extends Application<ConqueryConfig> {
 		this("Conquery");
 	}
 
+
+	@Override
+	protected void addDefaultCommands(Bootstrap<ConqueryConfig> bootstrap) {
+		super.addDefaultCommands(bootstrap);
+
+		bootstrap.addCommand(new ShardNode(this));
+		bootstrap.addCommand(new PreprocessorCommand());
+		bootstrap.addCommand(new DistributedStandaloneCommand(this));
+		bootstrap.addCommand(new RecodeStoreCommand());
+		bootstrap.addCommand(new MigrateCommand());
+	}
+
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
@@ -50,12 +62,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
-
-		bootstrap.addCommand(new ShardNode());
-		bootstrap.addCommand(new PreprocessorCommand());
-		bootstrap.addCommand(new DistributedStandaloneCommand(this));
-		bootstrap.addCommand(new RecodeStoreCommand());
-		bootstrap.addCommand(new MigrateCommand());
 
 		((MutableInjectableValues) confMapper.getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
