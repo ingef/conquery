@@ -39,7 +39,6 @@ import org.glassfish.jersey.spi.Contract;
 @Priority(Priorities.AUTHENTICATION)
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
 
-	@Inject
 	private final IterableProvider<TokenExtractor> tokenExtractors;
 
 	@Inject

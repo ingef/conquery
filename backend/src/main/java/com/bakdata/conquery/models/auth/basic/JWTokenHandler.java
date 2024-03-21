@@ -100,8 +100,6 @@ public class JWTokenHandler {
 	 * @param request
 	 * @return
 	 */
-	@Named("jwt-extractor")
-	@Service
 	public static class JWTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 
 		@Override
