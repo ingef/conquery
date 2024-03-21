@@ -6,8 +6,7 @@ import {
   Vector,
 } from "apache-arrow";
 import RcTable from "rc-table";
-import { DefaultRecordType } from "rc-table/lib/interface";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef } from "react";
 import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
 
@@ -63,79 +62,35 @@ export default memo(function Table({
   queryData,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { getRenderFunctionByFieldName } = useCustomTableRenderers(
-    queryData as GetQueryResponseDoneT,
-  );
+  const { getRenderFunctionByFieldName } = useCustomTableRenderers(queryData as GetQueryResponseDoneT);
 
   const columns = useMemo(
     () =>
-      arrowReader.schema?.fields.map((field) => ({
+      arrowReader.schema?.fields.map((field) => {
+        const renderer = getRenderFunctionByFieldName(field.name)
+        
+        return ({
         title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
         dataIndex: field.name,
         key: field.name,
         render: (value: string | Vector) => {
-          return typeof value === "string" ? (
-            <span title={value as string}>{value}</span>
-          ) : (
-            value
-          );
+          const rendered = renderer(value)
+          return <span title={rendered as string}>{rendered}</span>;
         },
-      })),
-    [arrowReader.schema],
+      })}),
+    [arrowReader.schema, getRenderFunctionByFieldName, queryData],
   );
-
-  const parseTableRows = useCallback(
-    (data: Vector[]) => {
-      const nextRows = [] as DefaultRecordType[];
-      data.forEach((dataEntry: Vector) => {
-        const parsedValues = Object.fromEntries(
-          Object.entries(dataEntry.toJSON()).map(([key, value]) => {
-            const parsedValue =
-              getRenderFunctionByFieldName(key)?.(value) ?? value;
-            return [key, parsedValue];
-          }),
-        );
-        nextRows.push(parsedValues);
-      });
-
-      return nextRows;
-    },
-    [getRenderFunctionByFieldName],
-  );
-
+  
   const loadedTableData = useMemo(
-    () => parseTableRows(new ArrowTable(initialTableData.value).toArray()),
-    [initialTableData, parseTableRows],
+    () => new ArrowTable(initialTableData.value).toArray(),
+    [initialTableData],
   );
-  const [visibleTableRows, setVisibleTableRows] = useState(50);
-
-  useEffect(() => {
-    const eventFunction = async () => {
-      const div = rootRef.current;
-      if (!div) {
-        return;
-      }
-      const maxScroll =
-        (div.parentElement?.scrollHeight || div.scrollHeight) -
-        window.innerHeight;
-      const thresholdTriggered =
-        (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
-      if (thresholdTriggered) {
-        setVisibleTableRows((rowCount) =>
-          Math.min(rowCount + 50, loadedTableData.length),
-        );
-      }
-    };
-
-    window.addEventListener("scroll", eventFunction, true);
-    return () => window.removeEventListener("scroll", eventFunction, true);
-  }, [loadedTableData, visibleTableRows, arrowReader]);
 
   return (
     <Root ref={rootRef}>
       <RcTable
         columns={columns}
-        data={loadedTableData.slice(0, visibleTableRows)}
+        data={loadedTableData}
         rowKey={(_, index) => `previewtable_row_${index}`}
         components={{
           table: StyledTable,
