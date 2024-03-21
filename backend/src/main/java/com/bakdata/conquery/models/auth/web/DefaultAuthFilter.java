@@ -18,6 +18,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
@@ -36,14 +37,14 @@ import org.glassfish.jersey.spi.Contract;
 @Slf4j
 @PreMatching
 @Priority(Priorities.AUTHENTICATION)
-@Provider
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
 
 	@Inject
-	@Setter
-	private IterableProvider<TokenExtractor> tokenExtractors;
+	private final IterableProvider<TokenExtractor> tokenExtractors;
 
-	public DefaultAuthFilter() {
+	@Inject
+	public DefaultAuthFilter(IterableProvider<TokenExtractor> tokenExtractors) {
+		this.tokenExtractors = tokenExtractors;
 		this.authenticator = new ConqueryAuthenticator();
 		this.unauthorizedHandler = new DefaultUnauthorizedHandler();
 	}

@@ -6,7 +6,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
+import jakarta.inject.Provider;
 
 import org.glassfish.jersey.server.ContainerRequest;
 
@@ -17,11 +17,11 @@ import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @Provider
+@Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class JsonValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-	private final jakarta.inject.Provider<ContainerRequest> requestContext;
+	private final Provider<ContainerRequest> requestContext;
 	
 	@Override
 	public Response toResponse(ConstraintViolationException exception) {

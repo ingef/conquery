@@ -114,16 +114,15 @@ public class JWTokenHandler {
 				return null;
 			}
 			else if (tokenHeader != null && tokenQuery != null) {
-				log.warn(
-						"There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
+				log.warn("There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
 				return null;
 			}
 			else if (tokenHeader != null) {
-				log.trace("Extraced the request header token");
+				log.trace("Extracted the request header token");
 				token = tokenHeader;
 			}
 			else {
-				log.trace("Extraced the query string token");
+				log.trace("Extracted the query string token");
 				token = tokenQuery;
 			}
 

@@ -89,6 +89,8 @@ public final class AuthorizationController implements Managed {
 
 		if (adminServlet != null) {
 			adminServlet.getJerseyConfig().register(DefaultAuthFilter.class);
+
+			// The binding is necessary here because the RedirectingAuthFitler delegates to the DefaultAuthfilter at the moment
 			adminServlet.getJerseyConfigUI().register(new AbstractBinder() {
 				@Override
 				protected void configure() {

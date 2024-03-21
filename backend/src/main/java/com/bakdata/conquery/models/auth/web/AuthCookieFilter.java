@@ -14,6 +14,7 @@ import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,9 +82,10 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 			if (cookie != null) {
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
+			final NewCookie authCookie = config.getAuthentication().createAuthCookie(request, token);
 			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
-					config.getAuthentication().createAuthCookie(request, token)
+					authCookie
 			);
 
 		}
