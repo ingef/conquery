@@ -81,7 +81,7 @@ export function useLoadPreviewData() {
 
     try {
       const arrowReader = await AsyncRecordBatchStreamReader.from(
-        getResult(queryId),
+        getResult(queryId, 100),
       );
       const loadInitialData = async () => {
         await arrowReader.open();
