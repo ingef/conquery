@@ -12,6 +12,7 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import FaIcon from "../icon/FaIcon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 
+import { exists } from "../common/helpers/exists";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const Root = styled("div")`
@@ -48,9 +49,11 @@ const QueryResults: FC<PropsT> = ({
   resultLabel,
   resultUrls,
   resultCount,
+  resultColumns,
   queryType,
 }) => {
   const { t } = useTranslation();
+  const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
   const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
   const canViewPreview = useSelector<StateT, boolean>(canViewQueryPreview);
 
@@ -70,7 +73,13 @@ const QueryResults: FC<PropsT> = ({
         </LgText>
       )}
       {canViewPreview && <PreviewButton />}
-      {canViewHistory && <QueryResultHistoryButton label={resultLabel} />}
+      {!!csvUrl && canViewHistory && exists(resultColumns) && (
+        <QueryResultHistoryButton
+          columns={resultColumns}
+          url={csvUrl.url}
+          label={resultLabel}
+        />
+      )}
       {resultUrls.length > 0 && (
         <DownloadResultsDropdownButton resultUrls={resultUrls} />
       )}

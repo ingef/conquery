@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Import;
@@ -25,6 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Handler for worker in a single namespace.
@@ -49,6 +51,18 @@ public class WorkerHandler {
 
 	private final Map<UUID, PendingReaction> pendingReactions = new HashMap<>();
 
+  @NotNull
+	public Set<WorkerId> getAllWorkerIds() {
+		return getWorkers().stream()
+							.map(WorkerInformation::getId)
+							.collect(Collectors.toSet());
+	}
+
+	public IdMap<WorkerId, WorkerInformation> getWorkers() {
+		return this.workers;
+	}
+
+	
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
