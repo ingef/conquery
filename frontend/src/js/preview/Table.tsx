@@ -62,25 +62,28 @@ export default memo(function Table({
   queryData,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { getRenderFunctionByFieldName } = useCustomTableRenderers(queryData as GetQueryResponseDoneT);
+  const { getRenderFunctionByFieldName } = useCustomTableRenderers(
+    queryData as GetQueryResponseDoneT,
+  );
 
   const columns = useMemo(
     () =>
       arrowReader.schema?.fields.map((field) => {
-        const renderer = getRenderFunctionByFieldName(field.name)
-        
-        return ({
-        title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
-        dataIndex: field.name,
-        key: field.name,
-        render: (value: string | Vector) => {
-          const rendered = renderer(value)
-          return <span title={rendered as string}>{rendered}</span>;
-        },
-      })}),
-    [arrowReader.schema, getRenderFunctionByFieldName, queryData],
+        const renderer = getRenderFunctionByFieldName(field.name);
+
+        return {
+          title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+          dataIndex: field.name,
+          key: field.name,
+          render: (value: string | Vector) => {
+            const rendered = renderer(value);
+            return <span title={rendered as string}>{rendered}</span>;
+          },
+        };
+      }),
+    [arrowReader.schema, getRenderFunctionByFieldName],
   );
-  
+
   const loadedTableData = useMemo(
     () => new ArrowTable(initialTableData.value).toArray(),
     [initialTableData],

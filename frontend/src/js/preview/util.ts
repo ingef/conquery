@@ -4,19 +4,17 @@ export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
 
 export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
 
-
-
-export function currencyFromSymbol(symbol: string) : string {
+export function currencyFromSymbol(symbol: string): string {
   //TODO this is a workaround until the backend sends currency-codes
-  if(symbol == "€"){
-    return "EUR"
+  if (symbol == "€") {
+    return "EUR";
   }
 
-  if(symbol == "$"){
-    return "USD"
+  if (symbol == "$") {
+    return "USD";
   }
 
-  return "USD"
+  return "USD";
 }
 
 export function formatNumber(
@@ -31,7 +29,6 @@ export function formatNumber(
     minimumFractionDigits: forceFractionDigits ? precision : undefined,
   }).format(num);
 }
-
 
 export function previewStatsIsBarStats(
   stats: PreviewStatistics,
