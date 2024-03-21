@@ -61,7 +61,7 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 	/**
 	 * The Filter that checks if a request was authenticated
 	 */
-	private DefaultAuthFilter delegate;
+	private final DefaultAuthFilter delegate;
 
 	public static void registerLoginInitiator(ResourceConfig resourceConfig, LoginInitiator initiator, final String name) {
 		resourceConfig.register(new AbstractBinder() {
