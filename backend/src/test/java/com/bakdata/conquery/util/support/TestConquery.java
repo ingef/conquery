@@ -130,6 +130,9 @@ public class TestConquery {
 		// start server
 		dropwizard.before();
 
+		// Wait until all nodes are up
+		waitUntilWorkDone();
+
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
 				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
@@ -204,7 +207,6 @@ public class TestConquery {
 	}
 
 	private synchronized StandaloneSupport buildDistributedSupport(DatasetId datasetId, String name) {
-
 		ClusterManager manager = (ClusterManager) standaloneCommand.getManager();
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
 		assertThat(clusterState.getShardNodes()).hasSize(2);

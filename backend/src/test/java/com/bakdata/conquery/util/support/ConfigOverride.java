@@ -39,6 +39,7 @@ public interface ConfigOverride {
 		config.setLoggingFactory(new TestLoggingFactory());
 
 		config.getCluster().setEntityBucketSize(3);
+		config.getCluster().setWaitReconnect(1);
 
 	}
 
@@ -51,9 +52,7 @@ public interface ConfigOverride {
 						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
 						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
 				)) {
-			try (ServerSocket s = new ServerSocket(0)) {
-				((HttpConnectorFactory) con).setPort(s.getLocalPort());
-			}
+			((HttpConnectorFactory) con).setPort(0);
 		}
 		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());

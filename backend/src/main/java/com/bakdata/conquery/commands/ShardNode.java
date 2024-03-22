@@ -105,8 +105,8 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 				config.getQueries().getExecutionPool(),
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
-				getConfiguration().getCluster().getEntityBucketSize(),
-				getConfiguration().getQueries().getSecondaryIdSubPlanRetention()
+				config.getCluster().getEntityBucketSize(),
+				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
@@ -138,7 +138,8 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 																													 - workersDone.size());
 		}
 
-		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+		log.info("All Workers loaded: {}", this.workers.getWorkers().size());
+
 		super.run(environment, namespace, config);
 	}
 
@@ -151,7 +152,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		final ObjectMapper objectMapper = super.getConfiguration().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = getConfiguration().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
@@ -288,7 +289,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 
 				future.cancel();
 				// Sleep thirty seconds then retry.
-				TimeUnit.SECONDS.sleep(30);
+				TimeUnit.SECONDS.sleep(configuration.getCluster().getWaitReconnect());
 
 			}
 			catch (RuntimeIoException e) {
