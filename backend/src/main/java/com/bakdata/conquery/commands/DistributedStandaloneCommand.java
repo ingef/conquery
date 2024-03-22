@@ -3,12 +3,7 @@ package com.bakdata.conquery.commands;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
@@ -16,9 +11,9 @@ import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
+import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -34,7 +29,8 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 	private final Conquery conquery;
 	private ClusterManager manager;
 	private ManagerNode managerNode = new ManagerNode();
-	private final List<ShardNode> shardNodes = new Vector<>();
+
+	private final List<CompletableFuture<ShardNode>> shardFutures = new ArrayList<>();
 
 	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
 	private Environment environment;
@@ -61,20 +57,27 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 		bootstrap.run(configuration, environment);
 
-		// Instantiate ShardNodes
-
 		for (int i = 0; i < configuration.getStandalone().getNumberOfShardNodes(); i++) {
 			final Bootstrap<ConqueryConfig> bootstrapShard = getShardBootstrap(configuration, i);
 
 			ShardNode sc = new ShardNode(conquery, ShardNode.DEFAULT_NAME + i);
 
-			sc.run(bootstrapShard, namespace);
-
-			shardNodes.add(sc);
+			shardFutures.add(CompletableFuture.supplyAsync(
+					() -> {
+						try {
+							sc.run(bootstrapShard, namespace);
+						}
+						catch (Exception e) {
+							log.error("during ShardNodes creation", e);
+							System.exit(-1);
+						}
+						return sc;
+					}
+			));
 
 		}
 
-		startStandalone(environment, namespace, configuration);
+		run(environment, namespace, configuration);
 	}
 
 	@NotNull
@@ -82,7 +85,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		final Bootstrap<ConqueryConfig> bootstrapShard = new Bootstrap<>(conquery);
 
 
-		bootstrapShard.setConfigurationFactoryFactory((aClass, validator, objectMapper, s) -> new ConfigurationFactory<ConqueryConfig>() {
+		bootstrapShard.setConfigurationFactoryFactory((aClass, validator, objectMapper, s) -> new ConfigurationFactory<>() {
 			@Override
 			public ConqueryConfig build(ConfigurationSourceProvider configurationSourceProvider, String s) {
 				return build();
@@ -96,9 +99,14 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 					final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
 					clone = configuration
 							.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
+
+					// Define random ports for shard http endpoints
 					final DefaultServerFactory factory = new DefaultServerFactory();
-					factory.
-							clone.setServerFactory(factory);
+					HttpConnectorFactory randomPortHttpConnectorFactory = new HttpConnectorFactory();
+					randomPortHttpConnectorFactory.setPort(0);
+					factory.setApplicationConnectors(List.of(randomPortHttpConnectorFactory));
+					factory.setAdminConnectors(List.of(randomPortHttpConnectorFactory));
+					clone.setServerFactory(factory);
 				}
 				return clone;
 			}
@@ -106,7 +114,19 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		return bootstrapShard;
 	}
 
-	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	@Override
+	public List<ShardNode> getShardNodes() {
+		return shardFutures.stream().map(f -> {
+			try {
+				return f.get();
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}).toList();
+	}
+
+	public void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start ManagerNode
 		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
@@ -120,49 +140,9 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 		manager = new ClusterManagerProvider().provideManager(managerConfig, environment);
 
-		conquery.setManagerNode(managerNode);
-		conquery.run(manager);
+		managerNode.run(manager);
 
-		//create thread pool to start multiple ShardNodes at the same time
-		ExecutorService starterPool = Executors.newFixedThreadPool(
-				config.getStandalone().getNumberOfShardNodes(),
-				new ThreadFactoryBuilder()
-						.setNameFormat("ShardNode Storage Loader %d")
-						.setUncaughtExceptionHandler((t, e) -> {
-							ConqueryMDC.setLocation(t.getName());
-							log.error(t.getName() + " failed to init storage of ShardNode", e);
-						})
-						.build()
-		);
-
-		List<Future<ShardNode>> tasks = new ArrayList<>();
-		for (ShardNode sc : shardNodes) {
-
-			tasks.add(starterPool.submit(() -> {
-				sc.run(new Environment(sc.getName()), namespace, sc.getConfiguration());
-				return sc;
-			}));
-		}
 		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Waiting for ShardNodes to start");
-		starterPool.shutdown();
-		starterPool.awaitTermination(1, TimeUnit.HOURS);
-		//catch exceptions on tasks
-		boolean failed = false;
-		for (Future<ShardNode> f : tasks) {
-			try {
-				f.get();
-			}
-			catch (ExecutionException e) {
-				log.error("during ShardNodes creation", e);
-				failed = true;
-			}
-		}
-		if (failed) {
-			System.exit(-1);
-		}
-
-		// starts the Jersey Server
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);

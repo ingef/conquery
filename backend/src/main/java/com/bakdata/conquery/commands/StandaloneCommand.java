@@ -11,8 +11,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public interface StandaloneCommand {
 
-	void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception;
-
 	Manager getManager();
 
 	List<ShardNode> getShardNodes();
