@@ -35,8 +35,8 @@ public interface ConfigOverride {
 		storageConfig.setDirectory(tmpDir.toPath());
 		config.setStorage(storageConfig);
 		config.getStandalone().setNumberOfShardNodes(2);
-		// configure logging
-		config.setLoggingFactory(new TestLoggingFactory());
+		//		// configure logging
+		//		config.setLoggingFactory(new TestLoggingFactory());
 
 		config.getCluster().setEntityBucketSize(3);
 		config.getCluster().setWaitReconnect(1);

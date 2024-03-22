@@ -116,7 +116,8 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 		try {
 			log.info("Disposing NioSocketAcceptor: {}", acceptor);
-			acceptor.dispose();
+			acceptor.dispose(true);
+			log.info("Disposed NioSocketAcceptor: {}", acceptor);
 		}
 		catch (RuntimeException e) {
 			log.error("{} could not be closed", acceptor, e);
