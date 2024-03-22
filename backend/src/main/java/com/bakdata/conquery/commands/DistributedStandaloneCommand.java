@@ -101,14 +101,15 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 					clone = configuration
 							.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
 
-					// Define random ports for shard http endpoints
-					final DefaultServerFactory factory = new DefaultServerFactory();
-					HttpConnectorFactory randomPortHttpConnectorFactory = new HttpConnectorFactory();
-					randomPortHttpConnectorFactory.setPort(0);
-					factory.setApplicationConnectors(List.of(randomPortHttpConnectorFactory));
-					factory.setAdminConnectors(List.of(randomPortHttpConnectorFactory));
-					clone.setServerFactory(factory);
 				}
+
+				// Define random ports for shard http endpoints
+				final DefaultServerFactory factory = new DefaultServerFactory();
+				HttpConnectorFactory randomPortHttpConnectorFactory = new HttpConnectorFactory();
+				randomPortHttpConnectorFactory.setPort(0);
+				factory.setApplicationConnectors(List.of(randomPortHttpConnectorFactory));
+				factory.setAdminConnectors(List.of(randomPortHttpConnectorFactory));
+				clone.setServerFactory(factory);
 				return clone;
 			}
 		});
