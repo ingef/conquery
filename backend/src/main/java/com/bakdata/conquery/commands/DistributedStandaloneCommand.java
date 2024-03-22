@@ -64,6 +64,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 			shardFutures.add(CompletableFuture.supplyAsync(
 					() -> {
+						ConqueryMDC.setLocation(sc.getName());
 						try {
 							sc.run(bootstrapShard, namespace);
 						}
