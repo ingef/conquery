@@ -62,7 +62,7 @@ public abstract class AbstractSerializationTest {
 
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(config);
+		when(shardNode.getConfiguration()).thenReturn(config);
 		when(shardNode.getValidator()).thenReturn(validator);
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
