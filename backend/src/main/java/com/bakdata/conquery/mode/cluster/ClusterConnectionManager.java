@@ -115,6 +115,11 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
 
 		try {
+			for (IoSession value : acceptor.getManagedSessions().values()) {
+				log.info("Closing session: {}", value);
+				value.closeNow().awaitUninterruptibly();
+			}
+
 			log.info("Disposing NioSocketAcceptor: {}", acceptor);
 			acceptor.unbind();
 			acceptor.dispose(true);

@@ -38,6 +38,11 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	public static final Dataset TEST_DATASET_6 = new Dataset("testDataset6");
 
 	@Override
+	public boolean isExclusiveInstance() {
+		return true;
+	}
+
+	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		//read test specification
@@ -178,7 +183,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 													  .getIdMapping();
 		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
-		// We need to reassign the dataset processor because the instance prio to the restart became invalid
+		// We need to reassign the dataset processor because the instance previous to the restart became invalid
 		adminDatasetProcessor = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getAdminDatasetProcessor();
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1);
@@ -187,5 +192,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		adminDatasetProcessor.deleteDataset(dataset4);
 		adminDatasetProcessor.deleteDataset(dataset5);
 		adminDatasetProcessor.deleteDataset(dataset6);
+
 	}
 }

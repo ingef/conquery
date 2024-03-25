@@ -37,17 +37,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import io.github.classgraph.Resource;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
 public class IntegrationTests {
@@ -75,16 +72,14 @@ public class IntegrationTests {
 	@Getter
 	private final File workDir;
 	@Getter
-	@RegisterExtension
-	public TestConqueryConfig config;
+	public ConqueryConfig config;
 
 	@SneakyThrows(IOException.class)
 	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
 		this.defaultTestRoot = defaultTestRoot;
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
-		this.config = new TestConqueryConfig();
-		ConfigOverride.configurePathsAndLogging(this.config, this.workDir);
+		this.config = ConfigOverride.defaultConfig(workDir);
 	}
 
 	public List<DynamicNode> jsonTests() {
@@ -242,33 +237,38 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf, TestDataImporter testDataImporter) {
+	public synchronized TestConquery getCachedConqueryInstance(
+			File workDir,
+			ConqueryConfig conf,
+			TestDataImporter testDataImporter,
+			@Nullable String exclusiveInstance
+	) {
+		if (exclusiveInstance != null) {
+			return createNewConquery(new File(workDir, exclusiveInstance), conf, testDataImporter);
+		}
 		// This should be fast enough and a stable comparison
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
-		if (!reusedInstances.containsKey(confString)) {
-			// For the overriden config we must override the ports so there are no clashes
-			// We do it here so the config "hash" is not influenced by the port settings
-			ConfigOverride.configureRandomPorts(conf);
-			log.trace("Creating a new test conquery instance for test {}", conf);
-			TestConquery conquery = new TestConquery(workDir, conf, testDataImporter);
-			reusedInstances.put(confString, conquery);
-			conquery.beforeAll();
+
+		synchronized (this) {
+			if (!reusedInstances.containsKey(confString)) {
+				// For the overriden config we must override the ports so there are no clashes
+				// We do it here so the config "hash" is not influenced by the port settings
+				final TestConquery conquery = createNewConquery(new File(workDir, "cached_" + reusedInstances.size()), conf, testDataImporter);
+
+				reusedInstances.put(confString, conquery);
+			}
+			return reusedInstances.get(confString);
 		}
-		TestConquery conquery = reusedInstances.get(confString);
-		return conquery;
 	}
 
-	@EqualsAndHashCode(callSuper = true)
-	public static class TestConqueryConfig extends ConqueryConfig implements Extension, BeforeAllCallback {
-
-		@Override
-		public void beforeAll(ExtensionContext context) throws Exception {
-
-			context.getTestInstance()
-				   .filter(ConfigOverride.class::isInstance)
-				   .map(ConfigOverride.class::cast)
-				   .ifPresent(co -> co.override(this));
-		}
+	@NotNull
+	private TestConquery createNewConquery(File workDir, ConqueryConfig conf, TestDataImporter testDataImporter) throws Exception {
+		ConfigOverride.configureRandomPorts(conf);
+		ConfigOverride.configureStoragePath(conf, workDir.toPath());
+		log.trace("Creating a new test conquery instance for config {}", conf);
+		TestConquery conquery = new TestConquery(workDir, conf, testDataImporter);
+		conquery.beforeAll();
+		return conquery;
 	}
 
 	private static ResourceTree scanForResources(String testRoot, String pattern) {

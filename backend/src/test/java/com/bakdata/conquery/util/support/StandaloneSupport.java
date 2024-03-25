@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -59,6 +60,8 @@ public class StandaloneSupport implements TestSupport {
 	private final User testUser;
 	@Getter
 	private final TestDataImporter testImporter;
+
+	private Client client;
 
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
@@ -120,8 +123,13 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public Client getClient() {
-		return testConquery.getClient()
-						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(getTestUser().getId())));
+		if (client != null) {
+			return client;
+		}
+		client = testConquery.getClientBuilder().build(dataset.getName() + "-http-client")
+							 .register(new ConqueryAuthenticationFilter(() -> getAuthorizationController().getConqueryTokenRealm()
+																										  .createTokenForUser(getTestUser().getId())));
+		return client;
 	}
 
 	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<ID>> VALUE resolve(ID id) {
@@ -130,16 +138,16 @@ public class StandaloneSupport implements TestSupport {
 
 	@Data
 	private static class ConqueryAuthenticationFilter implements ClientRequestFilter {
-		private final String token;
-
+		private final Supplier<String> tokenSupplier;
 		@Override
 		public void filter(ClientRequestContext requestContext) throws IOException {
 			// If none set to provided token
-			if(requestContext.getHeaders().containsKey("Authorization")){
+			if (requestContext.getHeaders().containsKey("Authorization")) {
 				return;
 			}
 
-			requestContext.getHeaders().add("Authorization", "Bearer " + getToken());
+			final String token = tokenSupplier.get();
+			requestContext.getHeaders().add("Authorization", "Bearer " + token);
 		}
 	}
 

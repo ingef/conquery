@@ -396,7 +396,7 @@ public class XodusStoreFactory implements StoreFactory {
 		synchronized (openStoresInEnv) {
 			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 			stores.remove(store);
-			log.info("Closed XodusStore: {}", store);
+			log.debug("Closed XodusStore: {}", store);
 
 			if (!stores.isEmpty()) {
 				return;

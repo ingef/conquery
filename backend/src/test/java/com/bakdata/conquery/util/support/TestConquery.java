@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.validation.Validator;
-import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
@@ -64,7 +63,7 @@ public class TestConquery {
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
-	private Client client;
+	private JerseyClientBuilder clientBuilder;
 
 	private AtomicBoolean started = new AtomicBoolean(false);
 
@@ -134,14 +133,12 @@ public class TestConquery {
 		waitUntilWorkDone();
 
 		// create HTTP client for api tests
-		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
+		clientBuilder = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
 				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
-				.build("test client");
+				.withProperty(ClientProperties.READ_TIMEOUT, 10000);
 	}
 
 	public void afterAll() throws Exception {
-		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);
 	}
@@ -206,6 +203,7 @@ public class TestConquery {
 		return buildDistributedSupport(datasetId, name);
 	}
 
+	// Todo might not be necessary
 	private synchronized StandaloneSupport buildDistributedSupport(DatasetId datasetId, String name) {
 		ClusterManager manager = (ClusterManager) standaloneCommand.getManager();
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
