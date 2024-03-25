@@ -6,11 +6,9 @@ import java.nio.file.Path;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
-import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
@@ -45,16 +43,11 @@ public interface ConfigOverride {
 	@SneakyThrows
 	static void configureRandomPorts(ConqueryConfig config) {
 
-		// set random open ports
-		for (ConnectorFactory con : CollectionUtils
-				.union(
-						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
-				)) {
-			((HttpConnectorFactory) con).setPort(0);
-		}
-		try (ServerSocket s = new ServerSocket(0)) {
-			config.getCluster().setPort(s.getLocalPort());
+		try (ServerSocket s0 = new ServerSocket(0); ServerSocket s1 = new ServerSocket(0); ServerSocket s2 = new ServerSocket(0)) {
+			// set random open ports
+			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getAdminConnectors()).setPort(s0.getLocalPort());
+			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()).setPort(s1.getLocalPort());
+			config.getCluster().setPort(s2.getLocalPort());
 		}
 	}
 
