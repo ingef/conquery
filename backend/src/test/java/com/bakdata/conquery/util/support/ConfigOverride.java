@@ -45,8 +45,8 @@ public interface ConfigOverride {
 
 		try (ServerSocket s0 = new ServerSocket(0); ServerSocket s1 = new ServerSocket(0); ServerSocket s2 = new ServerSocket(0)) {
 			// set random open ports
-			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getAdminConnectors()).setPort(s0.getLocalPort());
-			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()).setPort(s1.getLocalPort());
+			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getAdminConnectors().get(0)).setPort(s0.getLocalPort());
+			((HttpConnectorFactory) ((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors().get(0)).setPort(s1.getLocalPort());
 			config.getCluster().setPort(s2.getLocalPort());
 		}
 	}
