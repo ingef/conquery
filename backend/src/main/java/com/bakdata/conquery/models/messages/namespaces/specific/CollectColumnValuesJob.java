@@ -93,6 +93,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
 			}
 		}
+		
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}

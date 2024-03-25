@@ -38,10 +38,13 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		log.debug("Registering {} values for column '{}'", values.size(), column.getId());
 		if (log.isTraceEnabled()) {
 			log.trace("Registering values for column '{}': {}", column.getId(), Arrays.toString(values.toArray()));
 		}
+		else {
+			log.debug("Registering {} values for column '{}'", values.size(), column.getId());
+		}
+
 		context.getFilterSearch().registerValues(column, values);
 	}
 
