@@ -20,7 +20,7 @@ public enum ConceptCteStep implements CteStep {
 
 	// interval packing selects
 	UNNEST_DATE("unnested", null),
-	INTERVAL_PACKING_SELECTS("validity_date_selects", null),
+	INTERVAL_PACKING_SELECTS("interval_packing_selects", null),
 
 	// universal selects / final step
 	UNIVERSAL_SELECTS("universal_selects", null);

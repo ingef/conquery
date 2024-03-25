@@ -13,7 +13,6 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
@@ -24,8 +23,6 @@ import lombok.With;
 @Builder
 class CQTableContext implements Context {
 
-	String conceptLabel;
-	String conceptConnectorLabel;
 	SqlIdColumns ids;
 	Optional<ColumnDateRange> validityDate;
 	List<SqlSelects> sqlSelects;

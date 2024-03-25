@@ -99,14 +99,15 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		SqlIdColumns ids = rangeIndexSelects.getIds();
 		ColumnDateRange validityDate = rangeIndexSelects.getValidityDate().get();
 
-		Field<Date> rangeStart = DSL.min(validityDate.getStart()).as(IntervalPacker.RANGE_START_MIN_FIELD_NAME);
-		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(IntervalPacker.RANGE_END_MAX_FIELD_NAME);
+		Field<Date> rangeStart = DSL.min(validityDate.getStart()).as(validityDate.getStart().getName());
+		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(validityDate.getEnd().getName());
+		ColumnDateRange minMax = ColumnDateRange.of(rangeStart, rangeEnd);
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
 		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
 		Selects intervalCompleteSelects = Selects.builder()
 												 .ids(ids)
-												 .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+												 .validityDate(Optional.of(minMax))
 												 .sqlSelects(qualifiedSelects)
 												 .build();
 

@@ -125,4 +125,9 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
 	}
 
+	@JsonIgnore
+	public boolean requiresIntervalPacking() {
+		return false;
+	}
+
 }
