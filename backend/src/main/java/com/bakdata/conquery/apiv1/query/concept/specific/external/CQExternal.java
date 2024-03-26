@@ -80,7 +80,7 @@ public class CQExternal extends CQElement {
 	/**
 	 * Maps from Entity to the computed time-frame.
 	 */
-	@Getter(AccessLevel.PRIVATE)
+	@Getter
 	@JsonView(View.InternalCommunication.class)
 	private Map<String, CDateSet> valuesResolved;
 
@@ -249,7 +249,8 @@ public class CQExternal extends CQElement {
 								context.getNamespace().getStorage().getIdMapping(),
 								context.getConfig().getIdColumns(),
 								context.getConfig().getLocale().getDateReader(),
-								onlySingles
+								onlySingles,
+								context.getConfig().getSqlConnectorConfig().isEnabled()
 				);
 
 		if (resolved.getResolved().isEmpty()) {
@@ -296,7 +297,7 @@ public class CQExternal extends CQElement {
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
-	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles) {
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles, boolean isInSqlMode) {
 		final Map<String, CDateSet> resolved = new HashMap<>();
 
 		final List<String[]> unresolvedDate = new ArrayList<>();
@@ -329,7 +330,9 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			String resolvedId = tryResolveId(row, readers, mapping);
+			String resolvedId = isInSqlMode
+								? String.valueOf(row[0])
+								: tryResolveId(row, readers, mapping);
 
 			if (resolvedId == null) {
 				unresolvedId.add(row);

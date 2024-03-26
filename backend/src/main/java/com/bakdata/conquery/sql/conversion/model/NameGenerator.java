@@ -72,6 +72,7 @@ public class NameGenerator {
 		return switch (logicalOperation) {
 			case AND -> "AND-%d".formatted(++andCount);
 			case OR -> "OR-%d".formatted(++orCount);
+			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
 		};
 	}
 

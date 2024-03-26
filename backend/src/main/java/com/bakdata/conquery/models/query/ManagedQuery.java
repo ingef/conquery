@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-public class ManagedQuery extends ManagedExecution implements EditorQuery, SingleTableResult, InternalExecution<ShardResult> {
+public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
@@ -100,12 +100,18 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 		return lastResultCount;
 	}
 
-
-
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+
 		super.setStatusBase(subject, status);
-		enrichStatusBase(status);
+		status.setNumberOfResults(getLastResultCount());
+
+		Query query1 = getQuery();
+		status.setQueryType(query1.getClass().getAnnotation(CPSType.class).id());
+
+		if (query1 instanceof SecondaryIdQuery) {
+			status.setSecondaryId(((SecondaryIdQuery) query1).getSecondaryId().getId());
+		}
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {

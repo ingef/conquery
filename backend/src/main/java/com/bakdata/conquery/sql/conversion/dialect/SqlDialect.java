@@ -10,10 +10,15 @@ import com.bakdata.conquery.sql.conversion.Converter;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.CQExternalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
+import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
+import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
@@ -31,6 +36,8 @@ public interface SqlDialect {
 
 	SqlDateAggregator getDateAggregator();
 
+	StratificationTableFactory getStratificationTableFactory(QueryStep base, ConversionContext context);
+
 	List<NodeConverter<? extends Visitable>> getNodeConverters();
 
 	DSLContext getDSLContext();
@@ -46,14 +53,17 @@ public interface SqlDialect {
 	}
 
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
+		QueryStepTransformer queryStepTransformer = new QueryStepTransformer(getDSLContext());
 		return List.of(
 				new CQDateRestrictionConverter(),
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
 				new CQConceptConverter(),
-				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext())),
-				new SecondaryIdQueryConverter()
+				new CQExternalConverter(),
+				new ConceptQueryConverter(queryStepTransformer),
+				new SecondaryIdQueryConverter(),
+				new AbsoluteFormQueryConverter(queryStepTransformer)
 		);
 	}
 

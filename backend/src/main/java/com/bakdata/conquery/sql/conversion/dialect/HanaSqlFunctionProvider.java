@@ -1,14 +1,17 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -16,6 +19,8 @@ import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Param;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 class HanaSqlFunctionProvider implements SqlFunctionProvider {
@@ -24,6 +29,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String MAX_DATE_VALUE = "9999-12-31";
 	private static final String MIN_DATE_VALUE = "0001-01-01";
 	private static final String ANY_CHAR_REGEX = ".*";
+	private static final String NOP_TABLE = "DUMMY";
 
 	@Override
 	public String getMinDateExpression() {
@@ -50,21 +56,48 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
+	public Table<? extends Record> getNoOpTable() {
+		// see https://help.sap.com/docs/SAP_DATA_HUB/e8d3e271a4554a35a5a6136d3d6af3f8/4d4b939b37b84bea8b2aa2ada640c392.html
+		return DSL.table(DSL.name(NOP_TABLE));
+	}
 
-		if (dateRestriction.isSingleColumnRange() || validityDate.isSingleColumnRange()) {
+	@Override
+	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
+
+		if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single column ranges.");
 		}
 
-		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessOrEqual(validityDate.getEnd());
-		Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterOrEqual(validityDate.getStart());
+		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
+		Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
 
 		return DSL.condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
 	}
 
 	@Override
-	public ColumnDateRange forDateRestriction(CDateRange dateRestriction) {
-		return toColumnDateRange(dateRestriction).asDateRestrictionRange();
+	public ColumnDateRange forCDateRange(CDateRange daterange) {
+
+		String startDateExpression = MIN_DATE_VALUE;
+		String endDateExpression = MAX_DATE_VALUE;
+
+		if (daterange.hasLowerBound()) {
+			startDateExpression = daterange.getMin().toString();
+		}
+		if (daterange.hasUpperBound()) {
+			// end is handled as exclusive
+			LocalDate exclusiveMaxDate = daterange.getMax() == LocalDate.MAX ? LocalDate.MAX : daterange.getMax().plusDays(1);
+			endDateExpression = exclusiveMaxDate.toString();
+		}
+
+		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
+	}
+
+	@Override
+	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
+		return dateset.asRanges().stream()
+					  .map(this::forCDateRange)
+					  .map(dateRange -> dateRange.as(alias.getAlias()))
+					  .toList();
 	}
 
 	@Override
@@ -104,6 +137,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
 	}
 
+
 	@Override
 	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
 		// HANA does not support single column datemultiranges
@@ -112,6 +146,23 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
+
+		Field<String> stringAggregation = DSL.field(
+				"{0}({1}, {2} {3})",
+				String.class,
+				DSL.keyword("STRING_AGG"),
+				daterangeStringExpression(columnDateRange),
+				DSL.toChar(DELIMITER),
+				DSL.orderBy(columnDateRange.getStart())
+		);
+
+		// encapsulate all ranges (including empty ranges) within curly braces
+		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
+				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
+	}
+
+	@Override
+	public Field<String> daterangeStringExpression(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
@@ -132,20 +183,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Field<String> enclosedMaxDate = DSL.when(withMaxDateReplaced.like(INFINITY_SIGN), DSL.field("{0} || ']'", String.class, withMaxDateReplaced))
 										   .otherwise(DSL.field("{0} || ')'", String.class, withMaxDateReplaced));
 
-		Field<String> rangeConcatenated = DSL.field("{0} || ',' || {1}", String.class, enclosedMinDate, enclosedMaxDate);
-
-		Field<String> stringAggregation = DSL.field(
-				"{0}({1}, {2} {3})",
-				String.class,
-				DSL.keyword("STRING_AGG"),
-				rangeConcatenated,
-				DSL.toChar(DELIMITER),
-				DSL.orderBy(startDate)
-		);
-
-		// encapsulate all ranges (including empty ranges) within curly braces
-		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
-				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
+		return DSL.field("{0} || ',' || {1}", String.class, enclosedMinDate, enclosedMaxDate);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
@@ -55,13 +56,15 @@ class JoinBranchesCte extends ConnectorCte {
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(tableContext.getPrevious());
 
+		// validity date aggregation
 		Optional<ColumnDateRange> validityDate;
-		if (tableContext.getIntervalPackingContext().isEmpty()) {
+		if (!tableContext.getConnectorTables().isWithIntervalPacking()) {
 			validityDate = Optional.empty();
 		}
 		else {
+			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
 			IntervalPacker intervalPacker = tableContext.getConversionContext().getSqlDialect().getIntervalPacker();
-			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(tableContext.getIntervalPackingContext().get());
+			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
 
@@ -71,24 +74,41 @@ class JoinBranchesCte extends ConnectorCte {
 			}
 		}
 
+		// additional preceding tables
 		tableContext.allSqlSelects().stream()
 					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessor().stream())
 					.forEach(queriesToJoin::add);
 
-		SqlIdColumns ids = QueryStepJoiner.coalesceIds(queriesToJoin);
-		List<SqlSelect> mergedSqlSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .validityDate(validityDate)
-								 .sqlSelects(mergedSqlSelects)
-								 .build();
-
+		Selects selects = collectSelects(validityDate, queriesToJoin, tableContext);
 		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)
 						.fromTable(fromTable)
 						.predecessors(queriesToJoin);
+	}
+
+	private static IntervalPackingContext createIntervalPackingContext(CQTableContext tableContext) {
+		Selects predcessorSelects = tableContext.getPrevious().getQualifiedSelects();
+		return IntervalPackingContext.builder()
+									 .ids(predcessorSelects.getIds())
+									 .daterange(tableContext.getValidityDate().get())
+									 .tables(tableContext.getConnectorTables())
+									 .build();
+	}
+
+	private static Selects collectSelects(Optional<ColumnDateRange> validityDate, List<QueryStep> queriesToJoin, CQTableContext tableContext) {
+
+		SqlIdColumns ids = QueryStepJoiner.coalesceIds(queriesToJoin);
+		List<SqlSelect> mergedSqlSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
+		Optional<ColumnDateRange> stratificationDate = tableContext.getPrevious().getQualifiedSelects().getStratificationDate();
+
+		return Selects.builder()
+					  .ids(ids)
+					  .stratificationDate(stratificationDate)
+					  .validityDate(validityDate)
+					  .sqlSelects(mergedSqlSelects)
+					  .build();
 	}
 
 }

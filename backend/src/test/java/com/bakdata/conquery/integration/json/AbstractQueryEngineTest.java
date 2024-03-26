@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.OptionalLong;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -88,7 +88,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		// check that getLastResultCount returns the correct size
 		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
-			if (executionResult instanceof EditorQuery editorQuery) {
+			if (executionResult instanceof ManagedQuery editorQuery) {
 				lastResultCount = editorQuery.getLastResultCount();
 			}
 			else {
