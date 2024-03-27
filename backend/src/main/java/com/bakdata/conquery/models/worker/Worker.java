@@ -2,6 +2,9 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
@@ -96,7 +99,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(directory);
+		info.setName(generateWorkerName());
 		info.setEntityBucketSize(entityBucketSize);
 
 		workerStorage.openStores(persistenceMapper);
@@ -106,6 +109,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.close();
 
 		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+	}
+
+	public static String generateWorkerName() {
+		final String uuid = UUID.randomUUID().toString();
+		try{
+			//The UUID suffix is necessary for shards running on the same hostname.
+			return InetAddress.getLocalHost().getHostName() + "#" + uuid;
+		}catch (UnknownHostException exception){
+			return uuid;
+		}
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
