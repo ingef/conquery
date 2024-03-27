@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ public class CancelJobMessage extends MessageToShardNode {
 
 	@Override
 	public void react(NetworkMessageContext.ShardNodeNetworkContext context) throws Exception {
-		context.getWorkers().getWorkers().forEach((id, worker) -> worker.getJobManager().cancelJob(getJobId()));
+		for (Worker worker : context.getWorkers().getWorkers()) {
+			worker.getJobManager().cancelJob(getJobId());
+		}
 	}
 }

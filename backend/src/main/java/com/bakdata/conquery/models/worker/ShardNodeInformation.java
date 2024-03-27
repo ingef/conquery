@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(callSuper = true)
-public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> implements Identifiable<ShardId> {
+public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> implements Named<ShardId> {
 	/**
 	 * Threshold of jobs at which transmission of new messages will block for ManagerNode until below threshold.
 	 */
@@ -51,10 +51,6 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 		);
 	}
 
-	@Override
-	public ShardId getId() {
-		return new ShardId(session.getRemoteAddress().toString());
-	}
 
 	private String getLatenessMetricName() {
 		return String.join(".", "jobs", "latency", getRemoteAddress().toString());
@@ -111,5 +107,15 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 			log.trace("Have to wait for free JobQueue");
 			jobManagerSync.wait();
 		}
+	}
+
+	@Override
+	public String getName() {
+		return session.getRemoteAddress().toString();
+	}
+
+	@Override
+	public ShardId createId() {
+		return new ShardId(getName());
 	}
 }

@@ -25,6 +25,8 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	private DatasetId dataset;
 	@NotNull
 	private IntArraySet includedBuckets = new IntArraySet();
+
+
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
 	@JsonIgnore
@@ -46,6 +48,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public MessageToShardNode transform(WorkerMessage message) {
-		return ForwardToWorker.create(getId(), message, communicationWriter);
+		return ForwardToWorker.create(getDataset(), message, communicationWriter);
 	}
 }

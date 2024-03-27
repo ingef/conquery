@@ -51,8 +51,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 		final Concept<?> concept;
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test2 = JsonIntegrationTest.readJson(dataset, testJson2);
 
 		// Manually import data, so we can do our own work.
 		{
@@ -89,7 +89,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.isNotEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -134,7 +134,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.isNotEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -183,7 +183,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.isNotEmpty();
 
 				for (ShardNode node : conquery.getShardNodes()) {
-					for (Worker value : node.getWorkers().getWorkers().values()) {
+					for (Worker value : node.getWorkers().getWorkers()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}
@@ -231,7 +231,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			assertThat(
 					conquery.getShardNodes().stream()
-							.flatMap(node -> node.getWorkers().getWorkers().values().stream())
+							.flatMap(node -> node.getWorkers().getWorkers().stream())
 							.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
 							.map(Worker::getStorage)
 			)
@@ -273,7 +273,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				assertThat(
 						conquery.getShardNodes().stream()
-								.flatMap(node -> node.getWorkers().getWorkers().values().stream())
+								.flatMap(node -> node.getWorkers().getWorkers().stream())
 								.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
 								.map(Worker::getStorage)
 				)
