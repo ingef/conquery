@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
@@ -43,8 +44,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final JobManager jobManager;
 	@Getter
 	private final QueryExecutor queryExecutor;
-	@Setter
-	private NetworkSession session;
 	/**
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
@@ -52,9 +51,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final ExecutorService jobsExecutorService;
 	@Getter
 	private final BucketManager bucketManager;
-
 	@Getter
 	private final ObjectMapper communicationMapper;
+	@Setter
+	private NetworkSession session;
 
 
 	public Worker(
@@ -96,7 +96,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(directory);
+		info.setName(InetAddress.getLocalHost().getHostName());
 		info.setEntityBucketSize(entityBucketSize);
 
 		workerStorage.openStores(persistenceMapper);
@@ -112,10 +112,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return new ModificationShieldedWorkerStorage(storage);
 	}
 
-	public WorkerInformation getInfo() {
-		return storage.getWorker();
-	}
-
 	@Override
 	public NetworkSession getMessageParent() {
 		return session;
@@ -124,6 +120,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
+	}
+
+	public WorkerInformation getInfo() {
+		return storage.getWorker();
 	}
 
 	public ObjectMapper inject(ObjectMapper binaryMapper) {
@@ -158,7 +158,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@Override
 	public String toString() {
-		return "Worker[" + getInfo().getId() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
+		return "Worker[" + getInfo().getDataset() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
 	}
 
 	public boolean isBusy() {

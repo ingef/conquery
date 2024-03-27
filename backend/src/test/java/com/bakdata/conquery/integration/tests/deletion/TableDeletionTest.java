@@ -86,7 +86,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.isNotEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -156,7 +156,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -207,7 +207,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -225,7 +225,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker value : node.getWorkers().getWorkers().values()) {
+				for (Worker value : node.getWorkers().getWorkers()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -259,7 +259,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
 				for (ShardNode node : conquery2.getShardNodes()) {
-					for (Worker value : node.getWorkers().getWorkers().values()) {
+					for (Worker value : node.getWorkers().getWorkers()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}

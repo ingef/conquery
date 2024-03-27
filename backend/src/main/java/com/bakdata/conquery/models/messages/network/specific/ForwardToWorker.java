@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -34,7 +34,7 @@ import lombok.ToString;
 @ToString(of = {"workerId", "text"})
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
-	private final WorkerId workerId;
+	private final DatasetId workerId;
 	private final byte[] messageRaw;
 	// We cache these on the sender side.
 	@Getter(onMethod_ = @JsonIgnore(false))
@@ -44,7 +44,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 	@Setter
 	private ProgressReporter progressReporter;
 
-	public static ForwardToWorker create(WorkerId worker, WorkerMessage message, ObjectWriter writer) {
+	public static ForwardToWorker create(DatasetId worker, WorkerMessage message, ObjectWriter writer) {
 		return new ForwardToWorker(
 				worker,
 				serializeMessage(message, writer),

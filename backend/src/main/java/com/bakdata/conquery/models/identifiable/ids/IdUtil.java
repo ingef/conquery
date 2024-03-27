@@ -37,12 +37,7 @@ public final class IdUtil {
 
 	public static void checkConflict(Id<?> id, Id<?> cached) {
 		if (!cached.equals(id)) {
-			throw new IllegalStateException("The cached id '"
-											+ cached
-											+ "'("
-											+ cached.getClass().getSimpleName()
-											+ ") conflicted with a new entry of "
-											+ id.getClass().getSimpleName());
+			throw new IllegalStateException("The cached id `%s`(%s) conflicted with new entry `%s`".formatted(cached, cached.getClass().getSimpleName(), id));
 		}
 	}
 
