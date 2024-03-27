@@ -73,6 +73,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Setter
 	private ScheduledExecutorService scheduler;
 	private Environment environment;
+	@Setter
+	private boolean isStandalone;
 
 	public ShardNode() {
 		this(DEFAULT_NAME);
@@ -107,7 +109,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
 				getConfig().getCluster().getEntityBucketSize(),
-				getConfig().getQueries().getSecondaryIdSubPlanRetention()
+				getConfig().getQueries().getSecondaryIdSubPlanRetention(),
+				isStandalone ? getName() : null
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
@@ -119,7 +122,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.tryLoadWorker(workerStorage, config.isFailOnError()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

@@ -94,20 +94,14 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 			final int id = i;
 
 			tasks.add(starterPool.submit(() -> {
-				ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+				final ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+				sc.setStandalone(true);
 
 				shardNodes.add(sc);
 
 				ConqueryMDC.setLocation(sc.getName());
 
-				ConqueryConfig clone = config;
-
-				if (config.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
-				}
-
-				sc.run(environment, namespace, clone);
+				sc.run(environment, namespace, config);
 				return sc;
 			}));
 		}

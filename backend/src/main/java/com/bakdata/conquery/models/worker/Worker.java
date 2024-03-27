@@ -82,24 +82,15 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	@SneakyThrows(IOException.class)
-	public static Worker newWorker(
-			@NonNull Dataset dataset,
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService jobsExecutorService,
-			@NonNull StoreFactory config,
-			@NonNull String directory,
-			@NonNull Validator validator,
-			boolean failOnError,
-			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+	public static Worker newWorker(@NonNull Dataset dataset, @NonNull ThreadPoolDefinition queryThreadPoolDefinition, @NonNull ExecutorService jobsExecutorService, @NonNull StoreFactory config, @NonNull String directory, @NonNull Validator validator, boolean failOnError, int entityBucketSize, ObjectMapper persistenceMapper, ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
 
 		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(generateWorkerName());
+		final String workerName = generateWorkerName();
+		info.setName(workerName);
 		info.setEntityBucketSize(entityBucketSize);
 
 		workerStorage.openStores(persistenceMapper);

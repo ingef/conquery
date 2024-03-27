@@ -22,17 +22,18 @@ public class AddWorker extends MessageToShardNode.Slow {
 
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
-		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
 
-		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), workerDir(), context.getValidator(), config.isFailOnError());
+
+
+		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), context.getValidator(), config.isFailOnError());
 
 		worker.setSession(context.getRawSession());
+
+		log.info("Created new worker for {}: {}", dataset, worker.getInfo());
 
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
-	private String workerDir() {
-		return "worker_" + dataset.getName();
-	}
+
 }

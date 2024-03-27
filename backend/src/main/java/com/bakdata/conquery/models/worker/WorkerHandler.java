@@ -59,7 +59,7 @@ public class WorkerHandler {
 	}
 
 	public IdMap<WorkerId, WorkerInformation> getWorkers() {
-		return this.workers;
+		return workers;
 	}
 
 	
@@ -108,14 +108,14 @@ public class WorkerHandler {
 	}
 
 	private synchronized void sendUpdatedWorkerInformation() {
-		for (WorkerInformation w : this.workers.values()) {
+		for (WorkerInformation w : workers.values()) {
 			w.send(new UpdateWorkerBucket(w));
 		}
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
 		// Ensure that only one map is created and populated in the storage
-		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
 		if (workerBuckets != null) {
 			return workerBuckets;
 		}
@@ -147,7 +147,7 @@ public class WorkerHandler {
 	 */
 
 	public synchronized void addResponsibility(int bucket) {
-		WorkerInformation smallest = workers
+		final WorkerInformation smallest = workers
 				.stream()
 				.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
 				.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
@@ -177,15 +177,12 @@ public class WorkerHandler {
 	}
 
 	public void register(ShardNodeInformation node, WorkerInformation info) {
-		WorkerInformation old = this.getWorkers().getOptional(info.getId()).orElse(null);
-		if (old != null) {
-			old.setIncludedBuckets(info.getIncludedBuckets());
-			old.setConnectedShardNode(node);
-		}
-		else {
-			info.setConnectedShardNode(node);
-		}
-		this.addWorker(info);
+		final WorkerInformation old = getWorkers().getOptional(info.getId())
+												  .orElse(info);
+
+		old.setIncludedBuckets(info.getIncludedBuckets());
+		old.setConnectedShardNode(node);
+		addWorker(old);
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
