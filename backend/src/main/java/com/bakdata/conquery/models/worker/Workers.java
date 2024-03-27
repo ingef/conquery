@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -17,12 +17,9 @@ import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,12 +29,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class Workers extends IdResolveContext {
-	@Getter @Setter
-	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
-	private final ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
-	@JsonIgnore
-	private final transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
+	private final ConcurrentHashMap<DatasetId, Worker> workers = new ConcurrentHashMap<>();
 
 	/**
 	 * Shared ExecutorService among Workers for Jobs.
@@ -52,8 +45,11 @@ public class Workers extends IdResolveContext {
 
 	private final int secondaryIdSubPlanRetention;
 
-	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanRetention) {
+	@Nullable
+	private final String workerStorageRoot;
+
+
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanRetention, String workerStorageRoot) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition
@@ -63,11 +59,22 @@ public class Workers extends IdResolveContext {
 		this.communicationMapperSupplier = communicationMapperSupplier;
 		this.entityBucketSize = entityBucketSize;
 		this.secondaryIdSubPlanRetention = secondaryIdSubPlanRetention;
+		this.workerStorageRoot = workerStorageRoot;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+	public String workerDirectory(DatasetId dataset){
+		final String dir = "worker_" + dataset.toString();
+
+		if(Strings.isNullOrEmpty(workerStorageRoot)){
+			return dir;
+		}
+
+		return workerStorageRoot + "/" + dir;
+	}
+
+	public Worker tryLoadWorker(WorkerStorage storage, boolean failOnError) {
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -83,7 +90,9 @@ public class Workers extends IdResolveContext {
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, Validator validator, boolean failOnError) {
+
+		final String name = workerDirectory(dataset.getId());
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -101,23 +110,28 @@ public class Workers extends IdResolveContext {
 	}
 
 	private void addWorker(Worker worker) {
-		nextWorker.incrementAndGet();
-		workers.put(worker.getInfo().getId(), worker);
-		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
+		final DatasetId datasetId = worker.getStorage().getDataset().getId();
+		if (workers.put(datasetId, worker) != null) {
+			log.warn("Already have a worker for dataset {}: {}", datasetId, worker);
+		}
 	}
 
-	public Worker getWorker(WorkerId worker) {
+	public Worker getWorker(DatasetId worker) {
 		return Objects.requireNonNull(workers.get(worker));
 	}
 
 
+	public Collection<Worker> getWorkers() {
+		return Collections.unmodifiableCollection(workers.values());
+	}
+
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
-		if (!dataset2Worker.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
+		if (!workers.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, workers.keySet()));
 		}
 
-		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
+		return workers.get(dataset).getStorage().getCentralRegistry();
 	}
 
 	@Override
@@ -126,7 +140,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public void removeWorkerFor(DatasetId dataset) {
-		final Worker worker = dataset2Worker.get(dataset);
+		final Worker worker = workers.get(dataset);
 
 		/*
 		 Close the job manager first, so all jobs are done and none can be added, when the worker is
@@ -134,12 +148,11 @@ public class Workers extends IdResolveContext {
 		 */
 		worker.getJobManager().close();
 
-		final Worker removed = dataset2Worker.remove(dataset);
+		final Worker removed = workers.remove(dataset);
 		if (removed == null) {
 			return;
 		}
 
-		workers.remove(removed.getInfo().getId());
 		try {
 			removed.remove();
 		}
@@ -147,7 +160,7 @@ public class Workers extends IdResolveContext {
 			log.error("Failed to remove storage "+removed, e);
 		}
 	}
-	
+
 	public boolean isBusy() {
 		for( Worker worker : workers.values()) {
 			if(worker.isBusy()) {

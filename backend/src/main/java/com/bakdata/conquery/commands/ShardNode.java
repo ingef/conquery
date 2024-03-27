@@ -73,6 +73,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Setter
 	private ScheduledExecutorService scheduler;
 	private Environment environment;
+	@Setter
+	private boolean isStandalone;
 
 	public ShardNode() {
 		this(DEFAULT_NAME);
@@ -107,7 +109,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
 				getConfig().getCluster().getEntityBucketSize(),
-				getConfig().getQueries().getSecondaryIdSubPlanRetention()
+				getConfig().getQueries().getSecondaryIdSubPlanRetention(),
+				isStandalone ? getName() : null
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
@@ -119,7 +122,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.tryLoadWorker(workerStorage, config.isFailOnError()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);
@@ -213,7 +216,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		// Authenticate with ManagerNode
 		context.send(new AddShardNode());
 
-		for (Worker w : workers.getWorkers().values()) {
+		for (Worker w : workers.getWorkers()) {
 			w.setSession(new NetworkSession(session));
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
@@ -254,7 +257,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	public void start() throws Exception {
-		for (Worker value : workers.getWorkers().values()) {
+		for (Worker value : workers.getWorkers()) {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
@@ -316,7 +319,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		// Collect the ShardNode and all its workers jobs into a single queue
 
-		for (Worker worker : workers.getWorkers().values()) {
+		for (Worker worker : workers.getWorkers()) {
 			final JobManagerStatus jobManagerStatus = new JobManagerStatus(
 					null, worker.getInfo().getDataset(),
 					worker.getJobManager().getJobStatus()

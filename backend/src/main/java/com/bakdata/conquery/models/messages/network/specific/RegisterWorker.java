@@ -23,16 +23,17 @@ public class RegisterWorker extends MessageToManagerNode {
 	
 	@Override
 	public void react(ManagerNodeNetworkContext context) throws Exception {
-		ShardNodeInformation node = getShardNode(context);
-		Wait
-			.builder()
+
+		Wait.builder()
 			.stepTime(Duration.ofMillis(5))
 			.total(Duration.ofSeconds(10))
 			.build()
-			.until(()->getShardNode(context) != null);
-		
+			.until(() -> getShardNode(context) != null);
+
+		ShardNodeInformation node = getShardNode(context);
+
 		if(node == null) {
-			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
+			throw new IllegalStateException("Could not find the shard %s to register worker %s".formatted(context.getRemoteAddress(), info.getId()));
 		}
 
 		info.setConnectedShardNode(node);
