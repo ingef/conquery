@@ -38,19 +38,6 @@ public class SqlStandaloneCommand extends io.dropwizard.cli.ServerCommand<Conque
 	}
 
 	@Override
-	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Starting ManagerNode");
-		this.manager = new TestLocalManagerProvider().provideManager(config, environment);
-		this.conquery.setManagerNode(managerNode);
-		this.conquery.run(manager);
-		// starts the Jersey Server
-		log.debug("Starting REST Server");
-		ConqueryMDC.setLocation(null);
-		super.run(environment, namespace, config);
-	}
-
-	@Override
 	public List<ShardNode> getShardNodes() {
 		return Collections.emptyList();
 	}
@@ -70,7 +57,18 @@ public class SqlStandaloneCommand extends io.dropwizard.cli.ServerCommand<Conque
 		configuration.getServerFactory().configure(environment);
 
 		bootstrap.run(configuration, environment);
-		startStandalone(environment, namespace, configuration);
+	}
+
+	@Override
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
+		ConqueryMDC.setLocation("ManagerNode");
+		log.debug("Starting ManagerNode");
+		this.manager = new TestLocalManagerProvider().provideManager(configuration, environment);
+		managerNode.run(manager);
+		// starts the Jersey Server
+		log.debug("Starting REST Server");
+		ConqueryMDC.setLocation(null);
+		super.run(environment, namespace, configuration);
 	}
 
 	private static class TestLocalManagerProvider extends LocalManagerProvider {

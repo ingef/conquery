@@ -34,8 +34,17 @@ public interface IntegrationTest {
 	 * return conf.withStorage(storageConfig.withDirectory(storageDir));
 	 * </pre>
 	 */
-	public default ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workdir) {
+	default ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workdir) {
 		return conf;
+	}
+
+	/**
+	 * If true, use an exclusive conquery instance for this test, even if no configuration was overridden.
+	 *
+	 * @return If true, create a new instance, that is not cached.
+	 */
+	default boolean isExclusiveInstance() {
+		return false;
 	}
 
 	abstract class Simple implements IntegrationTest {
@@ -44,8 +53,6 @@ public interface IntegrationTest {
 		@Override
 		public void execute(String name, TestConquery testConquery) throws Exception {
 			StandaloneSupport conquery = testConquery.getSupport(name);
-			// Because Shiro works with a static Security manager
-			testConquery.getStandaloneCommand().getManagerNode().getAuthController().registerStaticSecurityManager();
 
 			try {
 				execute(conquery);
@@ -77,7 +84,13 @@ public interface IntegrationTest {
 			final ConqueryConfig clonedConfig = Cloner.clone(integrationTests.getConfig(), Map.of(), IntegrationTests.MAPPER);
 			final ConqueryConfig overridenConfig = test.overrideConfig(clonedConfig, integrationTests.getWorkDir());
 
-			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig, testImporter);
+			final TestConquery
+					testConquery =
+					integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig, testImporter, test.isExclusiveInstance()
+																															 ? name
+																															 : null);
+			// Because Shiro works with a static Security manager
+			testConquery.getStandaloneCommand().getManagerNode().getAuthController().registerStaticSecurityManager();
 
 			try {
 				testConquery.beforeEach();
