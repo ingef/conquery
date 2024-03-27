@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(callSuper = true)
-public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
+public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> implements Identifiable<ShardId> {
 	/**
 	 * Threshold of jobs at which transmission of new messages will block for ManagerNode until below threshold.
 	 */
@@ -48,6 +49,11 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 				getLatenessMetricName(),
 				() -> this::getMillisSinceLastStatus
 		);
+	}
+
+	@Override
+	public ShardId getId() {
+		return new ShardId(session.getRemoteAddress().toString());
 	}
 
 	private String getLatenessMetricName() {

@@ -7,12 +7,13 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.worker.ShardId;
 import org.junit.jupiter.api.Test;
 
 public class MatchingStatsTests {
 
-    private final WorkerId workerId1 = new WorkerId(new DatasetId("sampleDataset"), "sampleWorker");
-    private final WorkerId workerId2 = new WorkerId(new DatasetId("sampleDataset2"), "sampleWorker2");
+    private final WorkerId workerId1 = new WorkerId(new ShardId("shard"), new DatasetId("sampleDataset"));
+    private final WorkerId workerId2 = new WorkerId(new ShardId("shard2"), new DatasetId("sampleDataset2"));
 
     @Test
     public void entitiesCountTest() {

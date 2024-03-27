@@ -36,7 +36,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public WorkerId createId() {
-		return new WorkerId(dataset, getName());
+		return new WorkerId(connectedShardNode.getId(), dataset);
 	}
 
 	@Override
