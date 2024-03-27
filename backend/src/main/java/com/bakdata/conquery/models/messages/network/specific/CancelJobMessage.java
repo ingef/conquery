@@ -19,6 +19,6 @@ public class CancelJobMessage extends MessageToShardNode {
 
 	@Override
 	public void react(NetworkMessageContext.ShardNodeNetworkContext context) throws Exception {
-		context.getWorkers().getWorkers().forEach((id, worker) -> worker.getJobManager().cancelJob(getJobId()));
+		context.getWorkers().getWorkers().forEach((worker) -> worker.getJobManager().cancelJob(getJobId()));
 	}
 }

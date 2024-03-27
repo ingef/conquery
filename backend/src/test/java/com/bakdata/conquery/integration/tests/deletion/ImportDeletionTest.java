@@ -105,7 +105,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.isNotEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker worker : node.getWorkers().getWorkers().values()) {
+				for (Worker worker : node.getWorkers().getWorkers()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -164,7 +164,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker worker : node.getWorkers().getWorkers().values()) {
+				for (Worker worker : node.getWorkers().getWorkers()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -251,7 +251,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
 			for (ShardNode node : conquery.getShardNodes()) {
-				for (Worker worker : node.getWorkers().getWorkers().values()) {
+				for (Worker worker : node.getWorkers().getWorkers()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -286,7 +286,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
 				for (ShardNode node : conquery2.getShardNodes()) {
-					for (Worker worker : node.getWorkers().getWorkers().values()) {
+					for (Worker worker : node.getWorkers().getWorkers()) {
 
 						if (!worker.getInfo().getDataset().equals(dataset.getId()))
 							continue;

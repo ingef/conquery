@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,8 +17,6 @@ import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,9 +33,7 @@ public class Workers extends IdResolveContext {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
-	private final ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
-	@JsonIgnore
-	private final transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
+	private final ConcurrentHashMap<DatasetId, Worker> workers = new ConcurrentHashMap<>();
 
 	/**
 	 * Shared ExecutorService among Workers for Jobs.
@@ -102,22 +98,25 @@ public class Workers extends IdResolveContext {
 
 	private void addWorker(Worker worker) {
 		nextWorker.incrementAndGet();
-		workers.put(worker.getInfo().getId(), worker);
-		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
+		workers.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
-	public Worker getWorker(WorkerId worker) {
+	public Worker getWorker(DatasetId worker) {
 		return Objects.requireNonNull(workers.get(worker));
 	}
 
 
+	public Collection<Worker> getWorkers() {
+		return Collections.unmodifiableCollection(workers.values());
+	}
+
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
-		if (!dataset2Worker.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
+		if (!workers.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, workers.keySet()));
 		}
 
-		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
+		return workers.get(dataset).getStorage().getCentralRegistry();
 	}
 
 	@Override
@@ -126,7 +125,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public void removeWorkerFor(DatasetId dataset) {
-		final Worker worker = dataset2Worker.get(dataset);
+		final Worker worker = workers.get(dataset);
 
 		/*
 		 Close the job manager first, so all jobs are done and none can be added, when the worker is
@@ -134,12 +133,11 @@ public class Workers extends IdResolveContext {
 		 */
 		worker.getJobManager().close();
 
-		final Worker removed = dataset2Worker.remove(dataset);
+		final Worker removed = workers.remove(dataset);
 		if (removed == null) {
 			return;
 		}
 
-		workers.remove(removed.getInfo().getId());
 		try {
 			removed.remove();
 		}
