@@ -6,9 +6,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -29,6 +26,8 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 
 /**

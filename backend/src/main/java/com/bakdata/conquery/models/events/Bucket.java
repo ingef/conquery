@@ -6,9 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -35,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

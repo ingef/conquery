@@ -1,9 +1,8 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.CQElement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

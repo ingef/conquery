@@ -9,8 +9,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -20,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;

@@ -4,12 +4,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import io.dropwizard.cli.Command;
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.core.cli.Command;
+import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.util.DataSize;
-import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;

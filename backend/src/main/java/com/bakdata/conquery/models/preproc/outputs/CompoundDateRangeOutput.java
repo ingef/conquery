@@ -2,9 +2,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.util.Arrays;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -16,6 +13,8 @@ import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 

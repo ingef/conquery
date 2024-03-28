@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.jackson;
 
-import javax.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverter;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;

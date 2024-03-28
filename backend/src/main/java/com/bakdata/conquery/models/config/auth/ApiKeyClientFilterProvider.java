@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.config.auth;
 
 
-import javax.validation.constraints.NotEmpty;
-import javax.ws.rs.client.ClientRequestFilter;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.ws.rs.client.ClientRequestFilter;
 
 
 @CPSType(id = "API_KEY", base = AuthenticationClientFilterProvider.class)

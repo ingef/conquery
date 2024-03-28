@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

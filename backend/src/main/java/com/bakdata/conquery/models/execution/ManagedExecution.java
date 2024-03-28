@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;

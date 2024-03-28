@@ -1,11 +1,8 @@
 package com.bakdata.conquery.integration.common;
 
-import javax.validation.Valid;
-
 import com.bakdata.conquery.integration.tests.TestUser;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;

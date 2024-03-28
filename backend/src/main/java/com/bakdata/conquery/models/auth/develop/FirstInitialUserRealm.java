@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -21,10 +22,13 @@ import org.apache.shiro.realm.AuthenticatingRealm;
  * 
  */
 @Slf4j
-public class DefaultInitialUserRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
+@RequiredArgsConstructor
+public class FirstInitialUserRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 
 	public final MetaStorage storage;
+
+	private final UserId defaultUserId;
 
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
@@ -43,23 +47,30 @@ public class DefaultInitialUserRealm extends AuthenticatingRealm implements Conq
 		+ " §                    §\n"
 		+ " §§§§§§§§§§§§§§§§§§§§§§";
 
-	/**
-	 * Standard constructor.
-	 */
-	public DefaultInitialUserRealm(MetaStorage storage) {
+	static {
 		log.warn(WARNING);
-		this.storage = storage;
+	}
+
+	@Override
+	protected void onInit() {
+		super.onInit();
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
 	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		if (!(token instanceof DevelopmentToken)) {
+		if (!(token instanceof DevelopmentToken devToken)) {
 			return null;
 		}
-		DevelopmentToken devToken = (DevelopmentToken) token;
-		final User user = getUserOrThrowUnknownAccount(storage, devToken.getPrincipal());
+		final UserId userId = devToken.getPrincipal();
+
+		if (userId == null) {
+			final User defaultUser = getUserOrThrowUnknownAccount(storage, defaultUserId);
+			return new ConqueryAuthenticationInfo(defaultUser, devToken.getCredentials(), this, true, null);
+		}
+
+		final User user = getUserOrThrowUnknownAccount(storage, userId);
 		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true, null);
 	}
 }

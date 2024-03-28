@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.auth.oidc.keycloak;
 import java.net.URI;
 import java.util.Set;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
 
 import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.util.ResourceUtil;

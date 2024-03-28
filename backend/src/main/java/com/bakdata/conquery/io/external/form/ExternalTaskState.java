@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import javax.validation.Valid;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.models.error.SimpleErrorInfo;

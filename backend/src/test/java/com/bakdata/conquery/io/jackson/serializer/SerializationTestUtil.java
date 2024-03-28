@@ -9,8 +9,6 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -25,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

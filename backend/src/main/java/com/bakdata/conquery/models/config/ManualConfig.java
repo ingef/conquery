@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.validation.ManualURI;

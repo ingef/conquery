@@ -2,9 +2,6 @@ package com.bakdata.conquery.apiv1.forms.export_form;
 
 import java.util.function.Consumer;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
@@ -17,6 +14,8 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

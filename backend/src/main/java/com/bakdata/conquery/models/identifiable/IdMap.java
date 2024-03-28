@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;

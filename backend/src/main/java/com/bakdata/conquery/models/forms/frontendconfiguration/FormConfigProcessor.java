@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.validation.Validator;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;

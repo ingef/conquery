@@ -1,8 +1,8 @@
 package com.bakdata.conquery.io.result.external;
 
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.io.result.ResultUtil;

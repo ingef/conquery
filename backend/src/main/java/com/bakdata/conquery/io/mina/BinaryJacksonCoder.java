@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.mina;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.IdResolveContext;
@@ -10,6 +8,7 @@ import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

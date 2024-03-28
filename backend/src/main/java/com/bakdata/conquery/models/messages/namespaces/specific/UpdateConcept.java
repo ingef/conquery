@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -13,6 +10,8 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

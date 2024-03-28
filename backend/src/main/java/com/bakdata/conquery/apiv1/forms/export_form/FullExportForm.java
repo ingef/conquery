@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;

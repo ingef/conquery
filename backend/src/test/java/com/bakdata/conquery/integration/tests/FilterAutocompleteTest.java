@@ -12,10 +12,10 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;

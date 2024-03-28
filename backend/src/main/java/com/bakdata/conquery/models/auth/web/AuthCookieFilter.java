@@ -1,25 +1,23 @@
 package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.UriBuilder;
-
-import io.dropwizard.util.Strings;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.google.common.base.Strings;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.util.StringUtil;
 import org.eclipse.jetty.http.HttpHeader;
 
 /**
@@ -34,12 +32,13 @@ import org.eclipse.jetty.http.HttpHeader;
 @PreMatching
 // Chain this filter before the Authentication filter
 @Priority(Priorities.AUTHENTICATION-100)
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
 	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
-	public final BiFunction<ContainerRequestContext, String, Cookie> cookieCreator;
+
+	private final ConqueryConfig config;
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -83,9 +82,10 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 			if (cookie != null) {
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
+			final NewCookie authCookie = config.getAuthentication().createAuthCookie(request, token);
 			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
-					cookieCreator.apply(request,token)
+					authCookie
 			);
 
 		}

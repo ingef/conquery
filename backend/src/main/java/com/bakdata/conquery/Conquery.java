@@ -1,7 +1,5 @@
 package com.bakdata.conquery;
 
-import javax.validation.Validator;
-
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -17,12 +15,13 @@ import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.Application;
-import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

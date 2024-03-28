@@ -4,22 +4,19 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

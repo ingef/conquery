@@ -14,18 +14,6 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -54,11 +42,25 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.inject.Named;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -157,7 +159,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	}
 
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
-		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
+		final List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
 		for (String additionalTokenCheck : additionalTokenChecks) {
 			additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
@@ -167,11 +169,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		idpConfigurationSupplier = getIdpOptionsSupplier(environment, config);
 		authCookieCreator = config.getAuthentication()::createAuthCookie;
 
-		// Add login schema for admin end
-		final RedirectingAuthFilter redirectingAuthFilter = authorizationController.getRedirectingAuthFilter();
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemAuthzCode);
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemRefreshToken);
-		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
+		// Add login schema for admin UI
+		final DropwizardResourceConfig jerseyAdminUi = authorizationController.getAdminServlet().getJerseyConfigUI();
+		RedirectingAuthFilter.registerLoginInitiator(jerseyAdminUi, this::initiateLogin, "jwt-initiator");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
 
 		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway);
 	}
@@ -278,7 +280,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return JWKParser.create().parse(jwkString).toPublicKey();
 	}
 
-	public static abstract class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
+	public abstract static class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
 
 		private final static GroovyShell SHELL;
 
@@ -306,6 +308,28 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			setBinding(binding);
 
 			return run();
+		}
+	}
+
+	@RequiredArgsConstructor
+	private static class LoginInitiator implements RedirectingAuthFilter.LoginInitiator {
+		private final Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
+		private final String client;
+
+		@Override
+		public URI apply(ContainerRequestContext request) {
+			final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+			if (idpConfigurationOpt.isEmpty()) {
+				log.warn("Unable to initiate authentication, because idp configuration is not available.");
+				return null;
+			}
+			JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+			return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
+							 .queryParam("response_type", "code")
+							 .queryParam("client_id", client)
+							 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+							 .queryParam("scope", "openid")
+							 .queryParam("state", UUID.randomUUID()).build();
 		}
 	}
 

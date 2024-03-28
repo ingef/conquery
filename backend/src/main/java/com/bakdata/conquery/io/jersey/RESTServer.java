@@ -12,10 +12,10 @@ import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.views.ViewRenderExceptionMapper;
+import io.dropwizard.views.common.ViewRenderExceptionMapper;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ResourceConfig;
 

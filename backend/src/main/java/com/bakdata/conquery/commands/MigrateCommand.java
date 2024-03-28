@@ -103,7 +103,7 @@ public class MigrateCommand extends ConqueryCommand {
 	}
 
 	@Override
-	protected void run(io.dropwizard.setup.Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
+	protected void run(io.dropwizard.core.setup.Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");

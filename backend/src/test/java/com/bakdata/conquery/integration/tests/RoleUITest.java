@@ -7,8 +7,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -22,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Tests the mandator UI interface. Before the request is done, a mandator, a

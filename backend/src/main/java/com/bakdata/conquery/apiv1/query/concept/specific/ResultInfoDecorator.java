@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -19,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

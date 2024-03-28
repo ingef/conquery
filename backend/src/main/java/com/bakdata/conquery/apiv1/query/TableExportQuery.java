@@ -15,10 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -55,6 +51,9 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

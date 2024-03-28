@@ -4,8 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class ManualURIValidator implements ConstraintValidator<ManualURI, URI> {
 

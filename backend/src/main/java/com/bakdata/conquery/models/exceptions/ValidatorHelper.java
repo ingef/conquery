@@ -7,11 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ValidationException;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ValidationException;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 
 @UtilityClass

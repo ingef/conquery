@@ -2,8 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -25,6 +23,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

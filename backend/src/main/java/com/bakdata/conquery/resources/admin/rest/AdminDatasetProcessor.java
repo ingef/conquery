@@ -9,13 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -42,6 +35,12 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

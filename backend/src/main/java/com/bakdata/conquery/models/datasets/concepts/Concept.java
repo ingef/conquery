@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

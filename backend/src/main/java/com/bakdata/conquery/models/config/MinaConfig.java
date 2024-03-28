@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.config;
 
+import io.dropwizard.util.DataSize;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSessionConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.primitives.Ints;
 
-import io.dropwizard.util.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +20,7 @@ public class MinaConfig implements IoSessionConfig {
 	private int readBufferSize = 8192;
 
 	/** The maximum size of the buffer used to read incoming data */
-	private int maxReadBufferSize = Ints.checkedCast(Size.megabytes(500).toBytes());
+	private int maxReadBufferSize = Ints.checkedCast(DataSize.megabytes(500).toBytes());
 
 	/** The delay before we notify a session that it has been idle on read. Default to infinite */
 	private int readerIdleTime;

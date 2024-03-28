@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -31,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

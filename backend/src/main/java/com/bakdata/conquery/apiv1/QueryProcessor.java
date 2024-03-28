@@ -22,12 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -89,6 +83,11 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

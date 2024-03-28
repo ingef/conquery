@@ -3,10 +3,10 @@ package com.bakdata.conquery.io.jersey;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Context;
 
 import com.bakdata.conquery.models.i18n.I18n;
 

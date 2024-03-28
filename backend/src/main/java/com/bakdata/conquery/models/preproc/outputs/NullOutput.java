@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;

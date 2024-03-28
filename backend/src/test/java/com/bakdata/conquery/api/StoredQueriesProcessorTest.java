@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -50,7 +48,8 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -3,8 +3,8 @@ package com.bakdata.conquery.apiv1.forms;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;

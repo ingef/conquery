@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.config.auth;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * Allows a {@link com.bakdata.conquery.models.config.PluginConfig} to be defined multiple times with different ids.

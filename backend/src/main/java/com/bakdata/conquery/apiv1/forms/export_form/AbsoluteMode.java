@@ -4,9 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -18,6 +15,8 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

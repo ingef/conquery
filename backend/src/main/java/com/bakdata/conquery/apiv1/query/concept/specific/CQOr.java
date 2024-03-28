@@ -8,9 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -34,6 +31,8 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

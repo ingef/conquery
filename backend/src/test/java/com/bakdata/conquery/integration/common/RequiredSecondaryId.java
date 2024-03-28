@@ -3,8 +3,6 @@ package com.bakdata.conquery.integration.common;
 import java.io.IOException;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -14,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMappe
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data

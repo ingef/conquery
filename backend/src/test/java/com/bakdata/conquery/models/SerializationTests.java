@@ -15,8 +15,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -92,6 +90,7 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;

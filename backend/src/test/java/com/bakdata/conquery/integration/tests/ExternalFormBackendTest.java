@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 
@@ -10,8 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
@@ -113,7 +114,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 		log.info("Download Result");
 		final String
 				response =
-				support.getClient().target(executionStatus.getResultUrls().get(0).url()).request(javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE).get(String.class);
+				support.getClient().target(executionStatus.getResultUrls().get(0).url()).request(TEXT_PLAIN_TYPE).get(String.class);
 
 		assertThat(response).isEqualTo("Hello");
 

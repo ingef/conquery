@@ -6,13 +6,6 @@ import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBl
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -24,7 +17,13 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.bakdata.conquery.resources.hierarchies;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import lombok.Getter;

@@ -4,10 +4,10 @@ import java.net.URI;
 import java.net.URL;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.fasterxml.jackson.annotation.JsonAlias;

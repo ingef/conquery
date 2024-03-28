@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.filter.event;
 import java.util.Arrays;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;

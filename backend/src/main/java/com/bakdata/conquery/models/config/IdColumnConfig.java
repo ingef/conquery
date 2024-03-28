@@ -10,8 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;

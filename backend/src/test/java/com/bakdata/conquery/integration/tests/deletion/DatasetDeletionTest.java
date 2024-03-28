@@ -4,8 +4,6 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import javax.ws.rs.WebApplicationException;
-
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -24,6 +22,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.WebApplicationException;
 import lombok.extern.slf4j.Slf4j;
 
 /**

@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;

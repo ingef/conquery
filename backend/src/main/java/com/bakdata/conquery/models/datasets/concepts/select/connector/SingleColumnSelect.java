@@ -4,8 +4,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,6 +15,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -1,15 +1,14 @@
 package com.bakdata.conquery.resources.unprotected;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import com.bakdata.conquery.apiv1.auth.JwtWrapper;
 import com.bakdata.conquery.apiv1.auth.UsernamePasswordToken;
 import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;

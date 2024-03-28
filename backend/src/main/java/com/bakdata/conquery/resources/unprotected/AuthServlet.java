@@ -13,7 +13,7 @@ import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.jetty.setup.ServletEnvironment;
-import io.dropwizard.views.ViewMessageBodyWriter;
+import io.dropwizard.views.common.ViewMessageBodyWriter;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.servlet.ServletContainer;
 

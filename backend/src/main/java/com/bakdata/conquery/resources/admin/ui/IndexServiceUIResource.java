@@ -4,17 +4,17 @@ import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PAT
 
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.google.common.cache.CacheStats;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 

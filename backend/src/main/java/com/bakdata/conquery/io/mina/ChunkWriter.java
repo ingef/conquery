@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.bakdata.conquery.util.SoftPool;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 
 	@Getter
 	@Setter
-	private int bufferSize = Ints.checkedCast(Size.megabytes(2).toBytes());
+	private int bufferSize = Ints.checkedCast(DataSize.megabytes(2).toBytes());
 	private final SoftPool<IoBuffer> bufferPool = new SoftPool<>(() -> IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;

@@ -2,13 +2,12 @@ package com.bakdata.conquery.io.jetty;
 
 import java.io.IOException;
 
-import javax.annotation.Priority;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Response;
-
 import com.google.common.net.HttpHeaders;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.jetty.http.HttpMethod;
 
 @PreMatching

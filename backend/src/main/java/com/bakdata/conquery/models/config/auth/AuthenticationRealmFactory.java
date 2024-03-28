@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase

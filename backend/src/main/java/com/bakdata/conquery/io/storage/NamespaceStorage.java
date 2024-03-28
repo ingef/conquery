@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
