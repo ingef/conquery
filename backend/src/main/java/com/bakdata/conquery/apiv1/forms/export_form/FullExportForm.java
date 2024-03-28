@@ -127,6 +127,6 @@ public class FullExportForm extends Form implements InternalForm {
 
 	@Override
 	public ManagedInternalForm<FullExportForm> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
 	}
 }

@@ -15,4 +15,6 @@ public interface ReactionMessage {
 	UUID getCallerId();
 
 	WorkerId getWorkerId();
+
+	boolean lastMessageFromWorker();
 }
