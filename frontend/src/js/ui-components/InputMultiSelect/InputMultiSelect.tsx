@@ -95,14 +95,18 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
+  const { t } = useTranslation();
+
   useResolvableSelect({
     defaultValue,
     onResolve,
   });
 
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [inputValue, setInputValue] = useState("");
-  const { t } = useTranslation();
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     getSelectedItemProps,
@@ -193,6 +197,7 @@ const InputMultiSelect = ({
 
           if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
+            inputRef.current?.select();
           }
 
           return {
@@ -246,8 +251,6 @@ const InputMultiSelect = ({
     getDropdownProps({ autoFocus }),
   );
   const labelProps = getLabelProps({});
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 

@@ -82,7 +82,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "HEADER", "", "",  2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		final Response post = conquery.getClient().target(matchingStatsUri)

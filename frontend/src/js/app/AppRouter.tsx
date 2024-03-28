@@ -10,6 +10,7 @@ import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 import { basename } from "../environment";
 
+import { AboutProvider } from "./About";
 import App from "./App";
 
 const ContextProviders = ({ children }: { children: ReactNode }) => {
@@ -17,7 +18,9 @@ const ContextProviders = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthTokenContextProvider value={authTokenContextValue}>
-      <KeycloakProvider>{children}</KeycloakProvider>
+      <KeycloakProvider>
+        <AboutProvider>{children}</AboutProvider>
+      </KeycloakProvider>
     </AuthTokenContextProvider>
   );
 };

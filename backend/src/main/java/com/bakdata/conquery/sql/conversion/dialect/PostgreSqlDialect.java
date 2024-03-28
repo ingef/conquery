@@ -42,6 +42,11 @@ public class PostgreSqlDialect implements SqlDialect {
 	}
 
 	@Override
+	public boolean supportsSingleColumnRanges() {
+		return true;
+	}
+
+	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters() {
 		return getDefaultNodeConverters();
 	}

@@ -293,6 +293,7 @@ export interface QueryUploadConfigT {
 
 export interface GetFrontendConfigResponseT {
   version: string;
+  formBackendVersions: Record<string, string>;
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;

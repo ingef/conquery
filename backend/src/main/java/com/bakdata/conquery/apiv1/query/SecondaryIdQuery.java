@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -110,7 +109,7 @@ public class SecondaryIdQuery extends Query {
 
 			for (CQTable connector : concept.getTables()) {
 				final Table table = connector.getConnector().getTable();
-				final Column secondaryIdColumn = findSecondaryIdColumn(table);
+				final Column secondaryIdColumn = table.findSecondaryIdColumn(secondaryId);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryId()) {
 					withSecondaryId.add(secondaryIdColumn);
@@ -125,23 +124,6 @@ public class SecondaryIdQuery extends Query {
 		if (withSecondaryId.isEmpty()) {
 			throw new ConqueryError.NoSecondaryIdSelectedError();
 		}
-	}
-
-	/**
-	 * selects the right column for the given secondaryId from a table
-	 */
-	@CheckForNull
-	private Column findSecondaryIdColumn(Table table) {
-
-		for (Column col : table.getColumns()) {
-			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
-				continue;
-			}
-
-			return col;
-		}
-
-		return null;
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import org.jooq.Field;
 
 public interface SqlSelect {
@@ -30,7 +30,7 @@ public interface SqlSelect {
 	ExtractingSqlSelect<?> qualify(String qualifier);
 
 	/**
-	 * @return Determines if this is only part of the {@link ConnectorCteStep#FINAL} CTE and has no predeceasing selects.
+	 * @return Determines if this is only part of the {@link ConceptCteStep#FINAL} CTE and has no predeceasing selects.
 	 */
 	default boolean isUniversal() {
 		return false;

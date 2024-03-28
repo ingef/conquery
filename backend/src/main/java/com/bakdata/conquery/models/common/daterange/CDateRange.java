@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,24 +17,36 @@ import com.bakdata.conquery.models.common.Range;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.EqualsAndHashCode;
+import lombok.With;
 
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
+@With
+public final class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	public static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
 	public static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
+	private final int min;
+	private final int max;
+
+	private CDateRange(int min, int max) {
+		this.min = min;
+		this.max = max;
+
+		if (min > max) {
+			throw new IllegalArgumentException(
+					String.format("Min(%s) is not less than max(%s)", CDate.toLocalDate(min), CDate.toLocalDate(max)));
+		}
+	}
 
 	/**
 	 * Create a Range containing only the supplied date. The value needs to be a valid CDate.
 	 * @param value The value this range contains, as {@link CDate}.
 	 */
 	public static CDateRange exactly(int value) {
-		return new CDateRangeExactly(value);
+		return of(value, value);
 	}
 
 	/**
-	 * Creates a new Range containing containing only the supplied date.
+	 * Creates a new Range containing only the supplied date.
 	 * @param value the value the resulting range will contain.
 	 */
 	public static CDateRange exactly(LocalDate value) {
@@ -53,25 +64,9 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			CDate.ofLocalDate(value.getMax(), POSITIVE_INFINITY)
 		);
 	}
-	
+
 	public static CDateRange of(int min, int max) {
-		if(min == NEGATIVE_INFINITY && max == POSITIVE_INFINITY){
-			return CDateRange.all();
-		}
-
-		if(max == POSITIVE_INFINITY){
-			return atLeast(min);
-		}
-
-		if(min == NEGATIVE_INFINITY){
-			return atMost(max);
-		}
-
-		if(min == max){
-			return exactly(min);
-		}
-
-		return new CDateRangeClosed(min, max);
+		return new CDateRange(min, max);
 	}
 
 	/**
@@ -89,7 +84,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange atLeast(int value) {
-		return new CDateRangeStarting(value);
+		return of(value, POSITIVE_INFINITY);
 	}
 
 	/**
@@ -98,7 +93,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange atMost(int value) {
-		return new CDateRangeEnding(value);
+		return of(NEGATIVE_INFINITY, value);
 	}
 
 	/**
@@ -109,7 +104,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	public static CDateRange atMost(LocalDate value) {
 		return atMost(CDate.ofLocalDate(value));
 	}
-
 
 	/**
 	 * Creates a new range containing all values between {@code min} and {@code max}.
@@ -130,23 +124,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange all() {
-		return CDateRangeOpen.INSTANCE;
-	}
-
-	@Override
-	public LocalDate getMax() {
-		return getMaxValue() == POSITIVE_INFINITY ? null : CDate.toLocalDate(getMaxValue());
-	}
-
-	@EqualsAndHashCode.Include
-	public abstract int getMaxValue();
-
-	@EqualsAndHashCode.Include
-	public abstract int getMinValue();
-
-	@Override
-	public LocalDate getMin() {
-		return getMinValue() == NEGATIVE_INFINITY ? null : CDate.toLocalDate(getMinValue());
+		return of(NEGATIVE_INFINITY, POSITIVE_INFINITY);
 	}
 
 	@JsonCreator
@@ -166,6 +144,36 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return of(values.get(0).intValue(), values.get(1).intValue());
 	}
 
+	public boolean contains(int rep) {
+		return rep >= getMinValue() && rep <= getMaxValue();
+	}
+
+	public int getMinValue() {
+		return min;
+	}
+
+	public int getMaxValue() {
+		return max;
+	}
+
+	@Override
+	public String toString() {
+		final String min = hasLowerBound() ? getMin().toString() : "-∞";
+		final String max = hasUpperBound() ? getMax().toString() : "∞";
+
+		return min + "/" + max;
+	}
+
+	@Override
+	public LocalDate getMax() {
+		return getMaxValue() == POSITIVE_INFINITY ? null : CDate.toLocalDate(getMaxValue());
+	}
+
+	@Override
+	public LocalDate getMin() {
+		return getMinValue() == NEGATIVE_INFINITY ? null : CDate.toLocalDate(getMinValue());
+	}
+
 	public CDateRange intersection(CDateRange other) {
 		if (!intersects(other)) {
 			throw new IllegalArgumentException("Ranges do not intersect.");
@@ -179,7 +187,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return new int[] { getMinValue(), getMaxValue() };
 	}
 
-
 	@Override
 	public boolean contains(LocalDate value) {
 		return value != null && contains(CDate.ofLocalDate(value));
@@ -189,8 +196,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	public boolean contains(CDateRange other) {
 		return other != null && contains(other.getMinValue()) && contains(other.getMaxValue());
 	}
-
-	public abstract boolean contains(int rep);
 
 	@Override
 	public CDateRange span(CDateRange other) {
@@ -270,7 +275,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return of(min, max);
 	}
 
-
 	@Override
 	public boolean isOpen() {
 		return getMinValue() == NEGATIVE_INFINITY || getMaxValue() == POSITIVE_INFINITY;
@@ -318,12 +322,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 
 		return !(
-			this.getMinValue() > other.getMaxValue()
+			getMinValue() > other.getMaxValue()
 			||
-			this.getMaxValue() < other.getMinValue()
+			getMaxValue() < other.getMinValue()
 		);
 	}
-
 
 	public boolean encloses(CDateRange other) {
 		if (other == null) {
@@ -358,13 +361,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	public Range<LocalDate> toSimpleRange() {
 		return new Range<>(getMin(), getMax());
 	}
-	
-	/**
-	 * The String representation of a DateRange follows the ISO definition.
-	 * For open ended ranges a positive or negative ∞ is used. 
-	 */
-	@Override
-	public abstract String toString();
 
 	/**
 	 * Returns the years that are part of this date range.
@@ -377,28 +373,28 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			return Collections.emptyList();
 		}
 
-		int startYear = this.getMin().getYear();
-		int endYear = this.getMax().getYear();
+		final int startYear = getMin().getYear();
+		final int endYear = getMax().getYear();
 
 		if(startYear == endYear) {
-			return Arrays.asList(this);
+			return List.of(this);
 		}
 		// Range covers multiple years
-		List<CDateRange> ranges = new ArrayList<>();
-		
+		final List<CDateRange> ranges = new ArrayList<>();
+
 		// First year begins with this range
-		ranges.add(CDateRange.of(this.getMin(), LocalDate.of(startYear, 12, 31)));
-		
+		ranges.add(CDateRange.of(getMin(), LocalDate.of(startYear, 12, 31)));
+
 		// Years in between
 		if(endYear-startYear > 1) {
 			ranges.addAll(IntStream
 				.rangeClosed(startYear+1, endYear-1)
-				// Create date range with first days of year and the last day 
+				// Create date range with first days of year and the last day
 				.mapToObj(year -> CDateRange.of(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
 				.collect(Collectors.toList()));
 		}
 		// Last year end with this range
-		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), this.getMax()));
+		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), getMax()));
 		return ranges;
 	}
 
@@ -415,31 +411,31 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 
 		// If dateRange is shorter than a quarter, only add that first quarter.
-		if(QuarterUtils.getFirstDayOfQuarter(getMin()).isEqual( QuarterUtils.getFirstDayOfQuarter(getMax()))){
+		if(QuarterUtils.getFirstDayOfQuarter(getMin()).isEqual(QuarterUtils.getFirstDayOfQuarter(getMax()))){
 			return List.of(this);
 		}
-		List<CDateRange> ranges = new ArrayList<>();
+		final List<CDateRange> ranges = new ArrayList<>();
 
 		// First quarter begins with this range
-		CDateRange start = CDateRange.of(getMin(), QuarterUtils.getLastDayOfQuarter(getMin()));
-		CDateRange end = CDateRange.of(QuarterUtils.getFirstDayOfQuarter(getMax()), getMax());
+		final CDateRange start = CDateRange.of(getMin(), QuarterUtils.getLastDayOfQuarter(getMin()));
+		final CDateRange end = CDateRange.of(QuarterUtils.getFirstDayOfQuarter(getMax()), getMax());
 
 		ranges.add(start);
 
-		LocalDate nextQuarterDate = this.getMin().plus(1, IsoFields.QUARTER_YEARS);
+		LocalDate nextQuarterDate = getMin().plus(1, IsoFields.QUARTER_YEARS);
 		while(nextQuarterDate.isBefore(end.getMin())) {
 			ranges.add(QuarterUtils.fromDate(nextQuarterDate));
 			nextQuarterDate = nextQuarterDate.plus(1, IsoFields.QUARTER_YEARS);
 		}
-		// Don't add the end if its the same quarter as start
+		// Don't add the end if it's the same quarter as start
 		if(!start.equals(end)) {
-			// Last year end with this range
+			// Last year ends with this range
 			ranges.add(end);
 		}
 
 		return ranges;
 	}
-	
+
 	/**
 	 * Returns the days that are part of this date range as ranges.
 	 *
@@ -448,12 +444,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 */
 	public List<CDateRange> getCoveredDays() {
 		if(isOpen()){
-			// TODO: 22.04.2020 throw exception?
 			return Collections.emptyList();
 		}
 
-		List<CDateRange> ranges = new ArrayList<>();
-		for(int i = this.getMinValue(); i <= this.getMaxValue(); i++) {
+		final List<CDateRange> ranges = new ArrayList<>();
+		for(int i = getMinValue(); i <= getMaxValue(); i++) {
 			ranges.add(CDateRange.exactly(i));
 		}
 		return ranges;
@@ -465,7 +460,28 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 
 
-		int quarterStart = CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(getMinValue()));
+		final int quarterStart = CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(getMinValue()));
 		return getMinValue() == quarterStart && getMaxValue() == CQuarter.getLastDay(quarterStart);
+	}
+
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+
+		if (!(o instanceof CDateRange other)) {
+			return false;
+		}
+
+		return getMaxValue() == other.getMaxValue() && getMinValue() == other.getMinValue();
+	}
+
+	public int hashCode() {
+
+		final int PRIME = 59;
+		int result = 1;
+		result = result * PRIME + getMaxValue();
+		result = result * PRIME + getMinValue();
+		return result;
 	}
 }

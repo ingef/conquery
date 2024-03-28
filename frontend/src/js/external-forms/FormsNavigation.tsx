@@ -20,7 +20,8 @@ const Root = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.col.bg};
-  z-index: 1;
+  position: relative;
+  z-index: 2;
 `;
 
 const Row = styled("div")`

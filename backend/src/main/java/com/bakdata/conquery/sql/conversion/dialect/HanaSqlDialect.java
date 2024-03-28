@@ -22,7 +22,7 @@ public class HanaSqlDialect implements SqlDialect {
 		this.dslContext = dslContext;
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
-		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaSqlFunctionProvider, this.hanaIntervalPacker);
+		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
 		this.defaultNotationParser = new DefaultSqlCDateSetParser();
 	}
 

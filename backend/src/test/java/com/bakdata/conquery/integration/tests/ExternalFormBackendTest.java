@@ -4,16 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
+import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -26,7 +28,9 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import lombok.SneakyThrows;
@@ -66,6 +70,18 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 		final String externalFormId = FormBackendConfig.createSubTypedId("SOME_EXTERNAL_FORM");
 		assertThat(FormScanner.FRONTEND_FORM_CONFIGS.keySet()).contains(externalFormId);
 
+		log.info("Get version info");
+		final UriBuilder apiUriBuilder = testConquery.getSupport(name).defaultApiURIBuilder();
+		final URI frontendConfigURI = HierarchyHelper.hierarchicalPath(apiUriBuilder.clone(), ConfigResource.class, "getFrontendConfig")
+													 .build();
+		final FrontendConfiguration
+				frontendConfiguration =
+				support.getClient().target(frontendConfigURI).request(MediaType.APPLICATION_JSON_TYPE).get().readEntity(FrontendConfiguration.class);
+
+		assertThat(frontendConfiguration.formBackendVersions())
+				.describedAs("Checking health of form backend")
+				.containsExactlyEntriesOf(Map.of(FORM_BACKEND_ID, "3.2.1-ge966c285")); // example value from OpenAPI Spec
+
 		log.info("Send an external form");
 		final User testUser = support.getTestUser();
 		final ManagedExecutionId
@@ -73,11 +89,11 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 				IntegrationUtils.assertQueryResult(support, String.format("{\"type\": \"%s\", \"testProp\": \"testVal\"}", externalFormId), -1, ExecutionState.DONE, testUser, 201);
 
 		log.info("Request state");
+		assert managedExecutionId != null;
 		final FullExecutionStatus executionStatus = IntegrationUtils.getExecutionStatus(support, managedExecutionId, testUser, 200);
 
 
 		// Generate asset urls and check them in the status
-		final UriBuilder apiUriBuilder = testConquery.getSupport(name).defaultApiURIBuilder();
 		final ManagedExecution storedExecution = testConquery.getSupport(name).getMetaStorage().getExecution(managedExecutionId);
 		final URI
 				downloadURLasset1 =
@@ -106,7 +122,6 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 	}
 
 	@Override
-	@SneakyThrows(IOException.class)
 	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
 		// Prepare mock server
 		final URI baseURI = createFormServer();
@@ -133,7 +148,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 	@SneakyThrows
 	@NotNull
-	private URI createFormServer() throws IOException {
+	private URI createFormServer() {
 		log.info("Starting mock form backend server");
 		formBackend = ClientAndServer.startClientAndServer(1080);
 

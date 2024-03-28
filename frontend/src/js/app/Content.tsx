@@ -33,10 +33,6 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
-  const disableDragHandles = useSelector<StateT, boolean>(
-    (state) => state.panes.disableDragHandles,
-  );
-
   const collapsedStyles = useMemo(() => {
     if (displayTooltip) return {};
 
@@ -51,8 +47,6 @@ const Content = () => {
   return (
     <DndProvider>
       <Root>
-        {isHistoryOpen && <History />}
-        {isPreviewOpen && <Preview />}
         <PanelGroup direction="horizontal" units="pixels">
           <Panel
             style={collapsedStyles}
@@ -62,15 +56,17 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          {!disableDragHandles && <ResizeHandle />}
+          <ResizeHandle />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
-          {!disableDragHandles && <ResizeHandle />}
+          <ResizeHandle />
           <Panel minSize={250}>
             <RightPane />
           </Panel>
         </PanelGroup>
+        {isHistoryOpen && <History />}
+        {isPreviewOpen && <Preview />}
       </Root>
     </DndProvider>
   );

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;

@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
@@ -15,7 +15,6 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
@@ -32,14 +31,13 @@ class EventFilterCte extends ConnectorCte {
 	}
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.EVENT_FILTER;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.EVENT_FILTER;
 	}
 
 	private Selects getEventFilterSelects(CQTableContext tableContext) {
 		String predecessorTableName = tableContext.getConnectorTables().getPredecessor(cteStep());
-
-		Field<Object> primaryColumn = QualifyingUtil.qualify(tableContext.getPrimaryColumn(), predecessorTableName);
+		SqlIdColumns ids = tableContext.getIds().qualify(predecessorTableName);
 
 		Optional<ColumnDateRange> validityDate = tableContext.getValidityDate();
 		if (validityDate.isPresent()) {
@@ -53,14 +51,14 @@ class EventFilterCte extends ConnectorCte {
 							.toList();
 
 		return Selects.builder()
-					  .primaryColumn(primaryColumn)
+					  .ids(ids)
 					  .validityDate(validityDate)
 					  .sqlSelects(eventFilterSelects)
 					  .build();
 	}
 
 	/**
-	 * Collects the columns required in {@link ConnectorCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
+	 * Collects the columns required in {@link ConceptCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
 	 * {@link SumDistinctSqlAggregator}). An additional predecessor can contain an N-ary tree of predecessors itself (like all {@link QueryStep}s), so we want to
 	 * look for the deepest predeceasing QueryStep leafs and collect their {@link SqlSelects}, because they expect this CTE to contain all their
 	 * {@link SqlSelect#requiredColumns()}.

@@ -43,11 +43,12 @@ public class ExternalFormBackendApi {
 	private final WebTarget getStatusTarget;
 	private final WebTarget cancelTaskTarget;
 	private final WebTarget getHealthTarget;
+	private final WebTarget getVersionTarget;
 	private final Function<User, String> tokenCreator;
 	private final WebTarget baseTarget;
 	private final URL conqueryApiUrl;
 
-	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
+	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, String versionPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
 
 		this.client = client;
 		this.tokenCreator = tokenCreator;
@@ -65,6 +66,7 @@ public class ExternalFormBackendApi {
 		cancelTaskTarget = baseTarget.path(cancelTaskPath);
 
 		getHealthTarget = baseTarget.path(healthCheckPath);
+		getVersionTarget = baseTarget.path(versionPath);
 	}
 
 	public List<ObjectNode> getFormConfigs() {
@@ -125,6 +127,10 @@ public class ExternalFormBackendApi {
 
 	public HealthCheck createHealthCheck() {
 		return new HttpHealthCheck(getHealthTarget.getUri().toString(), client);
+	}
+
+	public String getVersion() {
+		return getVersionTarget.request(MediaType.APPLICATION_JSON_TYPE).get(FormBackendVersion.class).getVersion();
 	}
 
 	public ExternalTaskState cancelTask(UUID taskId) {

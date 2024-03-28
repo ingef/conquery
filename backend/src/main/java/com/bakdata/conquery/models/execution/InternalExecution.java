@@ -15,10 +15,4 @@ public interface InternalExecution<R extends ShardResult> {
 	 */
 	WorkerMessage createExecutionMessage();
 
-	/**
-	 * The callback for the results the shard nodes return.
-	 * Is called once per shard node
-	 */
-	void addResult(R result);
-
 }

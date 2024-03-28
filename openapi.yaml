@@ -115,8 +115,6 @@ components:
           type: boolean
         searchDisabled:
           type: boolean
-        sharedDictionary:
-          type: string
         secondaryId:
           $ref: "#/components/schemas/SecondaryIdId"
     Table:

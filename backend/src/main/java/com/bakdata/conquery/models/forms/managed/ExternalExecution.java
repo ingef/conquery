@@ -169,6 +169,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 
 	@Override
 	public void cancel() {
+		//TODO this is no longer called as the ExecutionManager used to call this.
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
 		updateStatus(api.cancelTask(externalTaskId));
@@ -189,7 +190,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	}
 
 	@Override
-	protected void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState) {
 		if (getState().equals(executionState)) {
 			return;
 		}

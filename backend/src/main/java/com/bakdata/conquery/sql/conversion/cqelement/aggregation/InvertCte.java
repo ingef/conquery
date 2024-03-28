@@ -1,14 +1,16 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -35,31 +37,26 @@ class InvertCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		QueryStep rowNumberStep = context.getStep(InvertCteStep.ROW_NUMBER);
+		QueryStep rowNumberStep = context.getStep(DateAggregationCteStep.ROW_NUMBER);
 
-		Field<Object> primaryColumn = context.getPrimaryColumn();
-		Field<Object> leftPrimaryColumn = QualifyingUtil.qualify(primaryColumn, ROWS_LEFT_TABLE_NAME);
-		Field<Object> rightPrimaryColumn = QualifyingUtil.qualify(primaryColumn, ROWS_RIGHT_TABLE_NAME);
-		Field<Object> coalescedPrimaryColumn = DSL.coalesce(leftPrimaryColumn, rightPrimaryColumn)
-												  .as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		SqlIdColumns ids = context.getIds();
+		SqlIdColumns leftIds = ids.qualify(ROWS_LEFT_TABLE_NAME);
+		SqlIdColumns rightIds = ids.qualify(ROWS_RIGHT_TABLE_NAME);
+		SqlIdColumns coalescedIds = SqlIdColumns.coalesce(List.of(leftIds, rightIds));
 
-		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedPrimaryColumn, context);
-		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftPrimaryColumn, rightPrimaryColumn, rowNumberStep);
+		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedIds, context);
+		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftIds, rightIds, rowNumberStep);
 
 		return QueryStep.builder()
 						.selects(invertSelects)
 						.fromTable(fromTable);
 	}
 
-	private Selects getInvertSelects(
-			QueryStep rowNumberStep,
-			Field<Object> coalescedPrimaryColumn,
-			DateAggregationContext context
-	) {
+	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
-		
+
 		Field<Date> rangeStart = DSL.coalesce(
 				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
 				functionProvider.toDateField(functionProvider.getMinDateExpression())
@@ -71,26 +68,28 @@ class InvertCte extends DateAggregationCte {
 		).as(DateAggregationCte.RANGE_END);
 
 		return Selects.builder()
-					  .primaryColumn(coalescedPrimaryColumn)
+					  .ids(coalescedIds)
 					  .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
 					  .sqlSelects(context.getCarryThroughSelects())
 					  .build();
 	}
 
-	private TableOnConditionStep<Record> selfJoinWithShiftedRows(Field<Object> leftPrimaryColumn, Field<Object> rightPrimaryColumn, QueryStep rowNumberStep) {
+	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftPrimaryColumn, SqlIdColumns rightPrimaryColumn, QueryStep rowNumberStep) {
 
 		Field<Integer> leftRowNumber = DSL.field(DSL.name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
 										  .plus(1);
 		Field<Integer> rightRowNumber = DSL.field(DSL.name(ROWS_RIGHT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class);
 
-		Condition joinCondition = leftPrimaryColumn.eq(rightPrimaryColumn)
-												   .and(leftRowNumber.eq(rightRowNumber));
+		Condition[] joinConditions = Stream.concat(
+												   Stream.of(leftRowNumber.eq(rightRowNumber)),
+												   SqlIdColumns.join(leftPrimaryColumn, rightPrimaryColumn).stream()
+										   )
+										   .toArray(Condition[]::new);
 
 		TableLike<Record> rowNumberTable = QueryStep.toTableLike(rowNumberStep.getCteName());
 		return rowNumberTable.asTable(ROWS_LEFT_TABLE_NAME)
 							 .fullJoin(rowNumberTable.asTable(ROWS_RIGHT_TABLE_NAME))
-							 .on(joinCondition);
+							 .on(joinConditions);
 	}
-
 
 }

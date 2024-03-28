@@ -10,7 +10,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
+import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
+import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
+import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -22,13 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@CPSType(id = "SHARD_RESULT", base = ShardResult.class)
+@CPSType(id = "SHARD_RESULT", base = NamespacedMessage.class)
 @Getter
 @Setter
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
-public class ShardResult {
+public class ShardResult  extends NamespaceMessage {
 
 
 	@ToString.Include
@@ -63,7 +67,7 @@ public class ShardResult {
 		finishTime = LocalDateTime.now();
 
 		if (exc.isPresent()) {
-			log.info("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
+			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
 
 			setError(exc.map(ConqueryError::asConqueryError));
 		}
@@ -75,7 +79,15 @@ public class ShardResult {
 
 		log.trace("Sending collected Results\n{}", results);
 
-		worker.send(new CollectQueryResult(this));
+		worker.send(this);
 	}
 
+	public void addResult(DistributedExecutionManager executionManager) {
+		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
+	}
+
+	@Override
+	public void react(DistributedNamespace context) throws Exception {
+		addResult(context.getExecutionManager());
+	}
 }

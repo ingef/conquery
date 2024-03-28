@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -8,7 +7,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,9 +38,6 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 	@JsonManagedReference
 	@NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
-
-	@NotNull
-	private Set<DictionaryId> dictionaries;
 
 	@Override
 	public ImportId createId() {

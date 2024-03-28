@@ -1,12 +1,11 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 
 public enum DateFormat {
@@ -73,5 +72,7 @@ public enum DateFormat {
 	 * Try and parse value using dateReader, adding result into out set.
 	 */
 	public abstract void readDates(String value, DateReader dateReader, CDateSet out);
+
+	public static final Set<String> NAMES = Arrays.stream(DateFormat.values()).map(Enum::name).collect(Collectors.toSet());
 
 }

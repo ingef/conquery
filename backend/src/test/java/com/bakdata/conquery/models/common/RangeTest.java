@@ -143,20 +143,20 @@ class RangeTest {
 	public static List<Arguments> deserialize() {
 		return Arrays.asList(
 			Arguments.of(
-				"{\"min\":\"2017-01-01\", \"max\":\"2017-01-01\"}", 
-				new Range<>(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1)), 
-				CDateRange.of(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1))
+					"{\"min\":\"2017-01-01\", \"max\":\"2017-01-01\"}",
+					new Range<>(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1)),
+					CDateRange.of(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1))
 			),
 			Arguments.of(
-				"{\"min\":\"2017-01-01\"}", 
-				new Range<>(LocalDate.of(2017, 1, 1), null), 
-				CDateRange.atLeast(LocalDate.of(2017, 1, 1))
+					"{\"min\":\"2017-01-01\"}",
+					new Range<>(LocalDate.of(2017, 1, 1), null),
+					CDateRange.atLeast(LocalDate.of(2017, 1, 1))
 			)
 			,
 			Arguments.of(
-				"{\"max\":\"2017-01-01\"}", 
-				new Range<>(null, LocalDate.of(2017, 1, 1)), 
-				CDateRange.atMost(LocalDate.of(2017, 1, 1))
+					"{\"max\":\"2017-01-01\"}",
+					new Range<>(null, LocalDate.of(2017, 1, 1)),
+					CDateRange.atMost(LocalDate.of(2017, 1, 1))
 			)
 		);
 	}

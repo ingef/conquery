@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 import javax.validation.Validator;
 
@@ -61,12 +62,18 @@ public class SerializationTestUtil<T> {
 
 	private boolean forceHashCodeEqual = false;
 
+	private UnaryOperator<RecursiveComparisonAssert<?>> assertCustomizer = UnaryOperator.identity();
+
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
 	}
 
 	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.copy().getTypeFactory().constructType(type));
+	}
+
+	public static <T> SerializationTestUtil<T[]> forArrayType(TypeReference<T> elementType) {
+		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructArrayType(Jackson.MAPPER.getTypeFactory().constructType(elementType)));
 	}
 
 	public SerializationTestUtil<T> objectMappers(ObjectMapper... objectMappers) {
@@ -81,6 +88,11 @@ public class SerializationTestUtil<T> {
 
 	public SerializationTestUtil<T> checkHashCode() {
 		this.forceHashCodeEqual = true;
+		return this;
+	}
+
+	public SerializationTestUtil<T> customizingAssertion(UnaryOperator<RecursiveComparisonAssert<?>> assertCustomizer) {
+		this.assertCustomizer = assertCustomizer;
 		return this;
 	}
 
@@ -134,7 +146,11 @@ public class SerializationTestUtil<T> {
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
-				.usingRecursiveComparison().ignoringFieldsOfTypes(TYPES_TO_IGNORE);
+				.usingRecursiveComparison()
+				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
+
+		// Apply assertion customizations
+		ass = assertCustomizer.apply(ass);
 
 		ass.isEqualTo(expected);
 	}

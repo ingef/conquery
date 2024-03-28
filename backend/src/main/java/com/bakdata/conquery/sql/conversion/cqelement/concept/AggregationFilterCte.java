@@ -13,8 +13,8 @@ import org.jooq.Condition;
 class AggregationFilterCte extends ConnectorCte {
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.AGGREGATION_FILTER;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.AGGREGATION_FILTER;
 	}
 
 	@Override
@@ -44,7 +44,7 @@ class AggregationFilterCte extends ConnectorCte {
 							.collect(Collectors.toList());
 
 		return Selects.builder()
-					  .primaryColumn(previousSelects.getPrimaryColumn())
+					  .ids(previousSelects.getIds())
 					  .validityDate(previousSelects.getValidityDate())
 					  .sqlSelects(forAggregationFilterStep)
 					  .build();

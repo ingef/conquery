@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -78,4 +79,22 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 					 .findFirst()
 					 .orElseThrow(() -> new IllegalStateException(String.format("Column %s not found", columnName)));
 	}
+
+	/**
+	 * selects the right column for the given secondaryId from this table
+	 */
+	@CheckForNull
+	public Column findSecondaryIdColumn(SecondaryIdDescription secondaryId) {
+
+		for (Column col : columns) {
+			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
+				continue;
+			}
+
+			return col;
+		}
+
+		return null;
+	}
+
 }

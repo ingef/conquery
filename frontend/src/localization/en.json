@@ -133,6 +133,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "version": "Version",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",

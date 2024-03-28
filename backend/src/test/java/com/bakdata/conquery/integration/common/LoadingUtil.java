@@ -376,7 +376,7 @@ public class LoadingUtil {
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
 
 		final Response post = support.getClient().target(matchingStatsUri)

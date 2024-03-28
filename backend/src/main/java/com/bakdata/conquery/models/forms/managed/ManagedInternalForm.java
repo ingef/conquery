@@ -39,6 +39,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
@@ -73,6 +74,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		super(form, user, submittedDataset, storage);
 	}
 
+	@Nullable
+	public ManagedQuery getSubQuery(ManagedExecutionId subQueryId) {
+		return flatSubQueries.get(subQueryId);
+	}
+
 	@Override
 	public void doInitExecutable() {
 		// Convert sub queries to sub executions
@@ -88,7 +94,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return getSubmitted().createSubQueries()
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
-						e -> e.getKey(),
+						Map.Entry::getKey,
 						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
 
 				));
@@ -167,44 +173,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
-	/**
-	 * Distribute the result to a sub query.
-	 */
-	@Override
-	public void addResult(FormShardResult result) {
-		if (result.getError().isPresent()) {
-			fail(result.getError().get());
-			return;
-		}
 
-		ManagedExecutionId subQueryId = result.getSubQueryId();
-
-		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
-		subQuery.addResult(result);
-
-		switch (subQuery.getState()) {
-			case DONE -> {
-				if (allSubQueriesDone()) {
-					finish(ExecutionState.DONE);
-				}
-			}
-			// Fail the whole execution if a subquery fails
-			case FAILED -> {
-				fail(
-						result.getError().orElseThrow(
-								() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
-						)
-				);
-			}
-
-			default -> {
-			}
-		}
-
-	}
-
-
-	private boolean allSubQueriesDone() {
+	public boolean allSubQueriesDone() {
 		synchronized (this) {
 			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}

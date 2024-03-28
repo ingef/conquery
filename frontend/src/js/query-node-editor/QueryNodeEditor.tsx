@@ -35,7 +35,7 @@ const Root = styled("div")`
   right: 0;
   bottom: 0;
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   background-color: ${({ theme }) => theme.col.bg};
 `;
 

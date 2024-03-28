@@ -27,6 +27,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importQueryTestData(StandaloneSupport support, QueryTest test) throws Exception {
 		RequiredData content = test.getContent();
+		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), true);
 		importConcepts(support, test.getRawConcepts());
 		importTableContents(support, content.getTables());

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -55,11 +55,11 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			String finalPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			String finalPredecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(finalPredecessor);
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
@@ -69,7 +69,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		}
 		else {
 			this.sqlSelects = builder.build();
-			String predecessorCte = connectorTables.getPredecessor(ConnectorCteStep.EVENT_FILTER);
+			String predecessorCte = connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER);
 			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(predecessorCte).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
@@ -85,12 +85,12 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		return new DateDistanceSqlAggregator(
 				dateDistanceSelect.getColumn(),
 				selectContext.getNameGenerator().selectName(dateDistanceSelect),
-				selectContext.getParentContext().getDateRestrictionRange(),
+				selectContext.getConversionContext().getDateRestrictionRange(),
 				dateDistanceSelect.getTimeUnit(),
-				selectContext.getConnectorTables(),
-				selectContext.getParentContext().getSqlDialect().getDateNowSupplier(),
+				selectContext.getTables(),
+				selectContext.getConversionContext().getSqlDialect().getDateNowSupplier(),
 				null,
-				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
+				selectContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
 	}
 
@@ -101,12 +101,12 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		return new DateDistanceSqlAggregator(
 				dateDistanceFilter.getColumn(),
 				filterContext.getNameGenerator().selectName(dateDistanceFilter),
-				filterContext.getParentContext().getDateRestrictionRange(),
+				filterContext.getConversionContext().getDateRestrictionRange(),
 				dateDistanceFilter.getTimeUnit(),
-				filterContext.getConnectorTables(),
-				filterContext.getParentContext().getSqlDialect().getDateNowSupplier(),
+				filterContext.getTables(),
+				filterContext.getConversionContext().getSqlDialect().getDateNowSupplier(),
 				filterContext.getValue(),
-				filterContext.getParentContext().getSqlDialect().getFunctionProvider()
+				filterContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
 	}
 

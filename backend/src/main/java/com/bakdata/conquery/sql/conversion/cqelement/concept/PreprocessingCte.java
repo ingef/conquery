@@ -2,13 +2,11 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class PreprocessingCte extends ConnectorCte {
 
@@ -18,11 +16,8 @@ class PreprocessingCte extends ConnectorCte {
 													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
 													   .toList();
 
-		// we alias the primary column, so we can rely upon in other places that it has a specific name
-		Field<Object> aliasesPrimaryColumn = tableContext.getPrimaryColumn().as(SharedAliases.PRIMARY_COLUMN.getAlias());
-
 		Selects preprocessingSelects = Selects.builder()
-											  .primaryColumn(aliasesPrimaryColumn)
+											  .ids(tableContext.getIds())
 											  .validityDate(tableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
@@ -36,12 +31,12 @@ class PreprocessingCte extends ConnectorCte {
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
 						.conditions(conditions)
-						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConnectorCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 	}
 
 	@Override
-	public ConnectorCteStep cteStep() {
-		return ConnectorCteStep.PREPROCESSING;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.PREPROCESSING;
 	}
 
 }

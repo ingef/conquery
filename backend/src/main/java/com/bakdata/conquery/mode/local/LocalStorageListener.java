@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
 import com.bakdata.conquery.mode.StorageListener;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -32,9 +31,5 @@ public class LocalStorageListener implements StorageListener {
 
 	@Override
 	public void onDeleteConcept(Concept<?> concept) {
-	}
-
-	@Override
-	public void onUpdateMatchingStats(Dataset dataset) {
 	}
 }

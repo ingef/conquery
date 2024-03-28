@@ -51,8 +51,6 @@ public class EntityDateQuery extends Query {
 	@NotEmpty
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
 
-	@NotNull
-	@Valid
 	private final CDateRange dateRange;
 
 	@NotNull

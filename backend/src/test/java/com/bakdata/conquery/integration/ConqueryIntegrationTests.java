@@ -22,6 +22,7 @@ public class ConqueryIntegrationTests extends IntegrationTests {
 
 	@Override
 	@TestFactory
+
 	@Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() {
 		return super.jsonTests();

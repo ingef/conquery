@@ -93,5 +93,10 @@
     "method": "GET",
     "path": "/index-service",
     "clazz": "IndexServiceUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/logout",
+    "clazz": "AdminUIResource"
   }
 ]

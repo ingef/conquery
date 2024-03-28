@@ -13,8 +13,8 @@ import lombok.Data;
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 public class PreprocessedData {
 
-	private final Map<Integer, Integer> starts;
-	private final Map<Integer, Integer> lengths;
+	private final Map<String, Integer> starts;
+	private final Map<String, Integer> lengths;
 
 	private final Map<String, ColumnStore> stores;
 
@@ -27,7 +27,7 @@ public class PreprocessedData {
 		return starts.size();
 	}
 
-	public Set<Integer> entities() {
+	public Set<String> entities() {
 		return starts.keySet();
 	}
 }

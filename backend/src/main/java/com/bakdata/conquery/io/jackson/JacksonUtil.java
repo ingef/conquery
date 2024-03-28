@@ -7,6 +7,8 @@ import java.io.SequenceInputStream;
 import com.bakdata.conquery.io.mina.ChunkedMessage;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
@@ -105,5 +107,11 @@ public class JacksonUtil {
 
 	public static String toJsonDebug(ChunkedMessage msg) {
 		return toJsonDebug(msg.createInputStream());
+	}
+
+	public static void expect(Class<?> parseTargetType, DeserializationContext ctxt, JsonToken token, JsonToken expected) throws JsonMappingException {
+		if (token != expected) {
+			ctxt.reportInputMismatch(parseTargetType, "Expected " + expected + " but found " + token);
+		}
 	}
 }

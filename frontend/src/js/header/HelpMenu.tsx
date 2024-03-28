@@ -1,12 +1,14 @@
 import styled from "@emotion/styled";
 import {
   faBook,
+  faInfoCircle,
   faPaperPlane,
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useAbout } from "../app/About";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -36,6 +38,7 @@ const dropdownOffset: [number, number] = [-47, 5]; // [skidding, distance] / def
 
 export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const { t } = useTranslation();
+  const { setOpen } = useAbout();
 
   const Dropdown = useMemo(
     () => (
@@ -59,9 +62,17 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
             {t("common.manual")}
           </DropdownItemButton>
         </a>
+        <DropdownItemButton
+          bgHover
+          fixedIconWidth={14}
+          icon={faInfoCircle}
+          onClick={() => setOpen(true)}
+        >
+          {t("common.version")}
+        </DropdownItemButton>
       </List>
     ),
-    [t, manualUrl, contactEmail],
+    [t, manualUrl, contactEmail, setOpen],
   );
   return (
     <WithTooltip
@@ -70,6 +81,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
       arrow={false}
       html={Dropdown}
       offset={dropdownOffset}
+      hideOnClick
     >
       <SxIconButton icon={faQuestion} frame data-test-id="help-menu" />
     </WithTooltip>

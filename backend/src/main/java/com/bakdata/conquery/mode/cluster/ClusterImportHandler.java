@@ -9,9 +9,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -27,7 +25,6 @@ import lombok.SneakyThrows;
 public
 class ClusterImportHandler implements ImportHandler {
 
-	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 	private final ConqueryConfig config;
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 
@@ -38,7 +35,6 @@ class ClusterImportHandler implements ImportHandler {
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
-				sharedDictionaryLocks,
 				config,
 				true
 		);
@@ -48,6 +44,18 @@ class ClusterImportHandler implements ImportHandler {
 		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
 	}
 
+	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
+		for (Concept<?> c : allConcepts) {
+			for (Connector con : c.getConnectors()) {
+				if (!con.getTable().equals(table)) {
+					continue;
+				}
+
+				con.getConcept().clearMatchingStats();
+			}
+		}
+	}
+
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
@@ -55,7 +63,6 @@ class ClusterImportHandler implements ImportHandler {
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
-				sharedDictionaryLocks,
 				config,
 				false
 		);
@@ -77,17 +84,5 @@ class ClusterImportHandler implements ImportHandler {
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);
-	}
-
-	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
-		for (Concept<?> c : allConcepts) {
-			for (Connector con : c.getConnectors()) {
-				if (!con.getTable().equals(table)) {
-					continue;
-				}
-
-				con.getConcept().clearMatchingStats();
-			}
-		}
 	}
 }

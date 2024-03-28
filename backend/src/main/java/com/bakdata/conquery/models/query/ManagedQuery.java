@@ -1,12 +1,9 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -25,15 +22,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,8 +52,6 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 	private Long lastResultCount;
 
 	@JsonIgnore
-	private transient Set<WorkerId> involvedWorkers;
-	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
 
@@ -78,28 +69,10 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
 	}
 
-	@Override
-	public void addResult(ShardResult result) {
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
-
-		log.trace("Received Result\n{}", result.getResults());
-
-		if (result.getError().isPresent()) {
-			fail(result.getError().get());
-			return;
-		}
-
-		involvedWorkers.remove(result.getWorkerId());
-
-		getNamespace().getExecutionManager().addQueryResult(this, result.getResults());
-
-		if (involvedWorkers.isEmpty() && getState() == ExecutionState.RUNNING) {
-			finish(ExecutionState.DONE);
-		}
-	}
 
 	@Override
-	protected void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState) {
+		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
 		super.finish(executionState);
@@ -127,13 +100,7 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 		return lastResultCount;
 	}
 
-	@Override
-	public void start() {
-		super.start();
-		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkerHandler().getWorkers().stream()
-																	.map(WorkerInformation::getId)
-																	.collect(Collectors.toSet()));
-	}
+
 
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
@@ -161,9 +128,7 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 
 	@Override
 	public void cancel() {
-		log.debug("Sending cancel message to all workers.");
 
-		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
 	}
 
 	@Override
@@ -194,10 +159,6 @@ public class ManagedQuery extends ManagedExecution implements EditorQuery, Singl
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		query.visit(visitor);
-	}
-
-	public DistributedNamespace getNamespace() {
-		return (DistributedNamespace) super.getNamespace();
 	}
 
 }

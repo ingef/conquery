@@ -146,11 +146,11 @@ public class Preprocessor {
 					}
 
 					try {
-						int primaryId =
-								(int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+						String primaryId =
+								(String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 
-						final int primary = result.addPrimary(primaryId);
+						final String primary = result.addPrimary(primaryId);
 						final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
 
 						result.addRow(primary, columns, outRow);

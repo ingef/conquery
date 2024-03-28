@@ -1,7 +1,9 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
@@ -10,6 +12,8 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -86,6 +90,13 @@ public class CQTable {
 		}
 
 		return null;
+	}
+
+	public boolean hasSelectedSecondaryId(SecondaryIdDescription secondaryId) {
+		return Arrays.stream(connector.getTable().getColumns())
+					 .map(Column::getSecondaryId)
+					 .filter(Objects::nonNull)
+					 .anyMatch(o -> Objects.equals(secondaryId, o));
 	}
 
 }

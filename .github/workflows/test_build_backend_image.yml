@@ -12,13 +12,13 @@ on:
       - develop
       - master
     paths:
-      - 'backend/**'
-      - 'executable/**'
-      - 'Dockerfile'
-      - 'pom.xml'
-      - 'lombok.config'
-      - 'scripts/**'
-      - '.github/workflows/test_build_backend_image.yml'
+      - "backend/**"
+      - "executable/**"
+      - "Dockerfile"
+      - "pom.xml"
+      - "lombok.config"
+      - "scripts/**"
+      - ".github/workflows/test_build_backend_image.yml"
 
 env:
   REGISTRY: ghcr.io
@@ -42,4 +42,5 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
+          file: backend.Dockerfile
           push: false

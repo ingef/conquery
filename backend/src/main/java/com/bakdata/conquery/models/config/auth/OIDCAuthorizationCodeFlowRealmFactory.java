@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.config.auth;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +21,7 @@ public class OIDCAuthorizationCodeFlowRealmFactory implements AuthenticationReal
 	private IntrospectionDelegatingRealmFactory client;
 
 	@Override
-	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
-		return client.createRealm(managerNode);
+	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
+		return client.createRealm(environment, authorizationController);
 	}
 }

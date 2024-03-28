@@ -1,10 +1,9 @@
 package com.bakdata.conquery.models.query.statistics;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
 import c10n.C10N;
@@ -19,10 +18,9 @@ import org.apache.commons.math3.stat.Frequency;
 public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 	private final Frequency frequencies = new Frequency();
-	private final AtomicLong nulls = new AtomicLong(0);
 	private final long limit;
-
 	private final ResultType.StringT type;
+	private int nulls = 0;
 
 	public StringColumnStatsCollector(String name, String label, String description, ResultType.StringT type, PrintSettings printSettings, long limit) {
 		super(name, label, description, printSettings);
@@ -33,7 +31,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 	@Override
 	public void consume(Object value) {
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
@@ -66,13 +64,16 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 		final StatisticsLabels statisticsLabels = C10N.get(StatisticsLabels.class, getPrintSettings().getLocale());
 
-		final Map<String, String> extras =
-				entriesSorted.size() <= limit
-				? Collections.emptyMap()
-				: Map.of(
-						statisticsLabels.remainingValues(entriesSorted.size() - limit),
-						statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
-				);
+		final Map<String, String> extras = new HashMap<>();
+
+		if (entriesSorted.size() > limit) {
+			extras.put(
+					statisticsLabels.remainingValues(entriesSorted.size() - limit),
+					statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
+			);
+		}
+
+		extras.put(statisticsLabels.missing(), getPrintSettings().getIntegerFormat().format(getNulls()));
 
 		return new HistogramColumnDescription(getName(), getLabel(), getDescription(), head, extras);
 	}

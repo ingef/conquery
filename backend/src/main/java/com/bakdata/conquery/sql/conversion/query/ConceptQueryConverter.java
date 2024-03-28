@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.sql.ConceptSqlQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -22,7 +22,6 @@ import org.jooq.impl.DSL;
 
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
-	public static final String FINAL_VALIDITY_DATE_COLUMN_NAME = "dates";
 	private final QueryStepTransformer queryStepTransformer;
 
 	public ConceptQueryConverter(QueryStepTransformer queryStepTransformer) {
@@ -64,7 +63,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.withValidityDate(ColumnDateRange.of(emptyRange));
 		}
 		Field<String> validityDateStringAggregation = functionProvider.validityDateStringAggregation(preFinalSelects.getValidityDate().get())
-																	  .as(FINAL_VALIDITY_DATE_COLUMN_NAME);
+																	  .as(SharedAliases.DATES_COLUMN.getAlias());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation));
 	}
 
@@ -73,7 +72,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return Collections.emptyList();
 		}
 		List<Field<?>> groupBySelects = new ArrayList<>();
-		groupBySelects.add(preFinalSelects.getPrimaryColumn());
+		groupBySelects.addAll(preFinalSelects.getIds().toFields());
 		groupBySelects.addAll(preFinalSelects.explicitSelects());
 		return groupBySelects;
 	}

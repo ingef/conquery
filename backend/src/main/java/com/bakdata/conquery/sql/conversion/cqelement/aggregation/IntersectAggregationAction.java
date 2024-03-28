@@ -24,12 +24,12 @@ class IntersectAggregationAction implements SqlAggregationAction {
 
 	@Override
 	public SqlTables tableNames(NameGenerator nameGenerator) {
-		return IntersectCteStep.getTables(this.joinedStep, nameGenerator);
+		return DateAggregationCteStep.createIntersectTables(this.joinedStep, nameGenerator);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return IntersectCteStep.requiredSteps();
+		return DateAggregationCteStep.createIntersectCtes();
 	}
 
 	@Override
@@ -62,12 +62,12 @@ class IntersectAggregationAction implements SqlAggregationAction {
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return List.of(dateAggregationContext.getStep(IntersectCteStep.INTERMEDIATE_TABLE));
+		return List.of(dateAggregationContext.getStep(DateAggregationCteStep.INTERMEDIATE_TABLE));
 	}
 
 	@Override
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getStep(IntersectCteStep.OVERLAP);
+		return dateAggregationContext.getStep(DateAggregationCteStep.OVERLAP);
 	}
 
 	@Override

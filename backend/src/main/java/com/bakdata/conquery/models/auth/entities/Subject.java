@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.auth.entities;
 
-import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.Authorized;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import lombok.NonNull;
-
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import lombok.NonNull;
 
 /**
  * An interface for classes that facade a user or represent a user.
@@ -35,6 +34,8 @@ public interface Subject extends Principal {
 	boolean isOwner(Authorized object);
 
 	boolean isDisplayLogout();
+
+	ConqueryAuthenticationInfo getAuthenticationInfo();
 
 	void setAuthenticationInfo(ConqueryAuthenticationInfo info);
 

@@ -31,9 +31,9 @@ abstract class ConnectorCte {
 	}
 
 	/**
-	 * @return The {@link ConnectorCteStep} this instance belongs to.
+	 * @return The {@link ConceptCteStep} this instance belongs to.
 	 */
-	protected abstract ConnectorCteStep cteStep();
+	protected abstract ConceptCteStep cteStep();
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext);
 

@@ -122,7 +122,8 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 		final User user = storage.getUser(userId);
 
-		return new ConqueryAuthenticationInfo(user, token, this, true);
+		final String logoutEndpoint = authProviderConf.getAuthClient(true).getServerConfiguration().getLogoutEndpoint();
+		return new ConqueryAuthenticationInfo(user, token, this, true, URI.create(logoutEndpoint));
 	}
 
 

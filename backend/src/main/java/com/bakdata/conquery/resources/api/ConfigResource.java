@@ -36,6 +36,7 @@ public class ConfigResource {
 		final FrontendConfig frontendConfig = config.getFrontend();
 		return new FrontendConfiguration(
 				VersionInfo.INSTANCE.getProjectVersion(),
+				VersionInfo.INSTANCE.getFormBackendVersions(),
 				frontendConfig.getCurrency(),
 				idColumns,
 				frontendConfig.getManualUrl(),

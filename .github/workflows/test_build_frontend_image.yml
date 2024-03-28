@@ -12,9 +12,9 @@ on:
       - develop
       - master
     paths:
-      - 'frontend/*'
-      - 'scripts/*'
-      - '.github/workflows/test_build_frontend_image.yml'
+      - "frontend/*"
+      - "scripts/*"
+      - ".github/workflows/test_build_frontend_image.yml"
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-frontend
@@ -36,5 +36,6 @@ jobs:
       - name: Build docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: ./frontend
+          context: .
+          file: frontend.Dockerfile
           push: false

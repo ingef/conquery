@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
-import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
+import io.dropwizard.setup.Environment;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -15,15 +16,15 @@ import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 public class DevAuthConfig implements AuthenticationRealmFactory {
 		
 	@Override
-	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
-		User defaultUser = managerNode.getConfig()
+	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
+		User defaultUser = config
 									  .getAuthorizationRealms()
 									  .getInitialUsers()
 									  .get(0)
-									  .createOrOverwriteUser(managerNode.getStorage());
+									  .createOrOverwriteUser(authorizationController.getStorage());
 
-		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new UserIdTokenExtractor(defaultUser));
+		authorizationController.getAuthenticationFilter().registerTokenExtractor(new UserIdTokenExtractor(defaultUser));
 
-		return new DefaultInitialUserRealm(managerNode.getStorage());
+		return new DefaultInitialUserRealm(authorizationController.getStorage());
 	}
 }

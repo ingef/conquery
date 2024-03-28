@@ -1,6 +1,13 @@
 import styled from "@emotion/styled";
 import { faCopy } from "@fortawesome/free-regular-svg-icons";
-import { memo, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 
@@ -8,6 +15,27 @@ import IconButton from "../button/IconButton";
 import Modal from "../modal/Modal";
 
 import { StateT } from "./reducers";
+
+const initialState = {
+  isOpen: false,
+  setOpen: () => {},
+};
+
+const Context = createContext<ReturnType<typeof useContextValue>>(initialState);
+
+const useContextValue = () => {
+  const [isOpen, setOpen] = useState(false);
+
+  return { isOpen, setOpen };
+};
+
+export const AboutProvider = ({ children }: { children: ReactNode }) => (
+  <Context.Provider value={useContextValue()}>{children}</Context.Provider>
+);
+
+export const useAbout = () => {
+  return useContext(Context);
+};
 
 const Grid = styled("div")`
   display: grid;
@@ -22,7 +50,7 @@ const Version = styled("code")`
 `;
 
 const useVersion = () => {
-  const backendVersion = useSelector<StateT, string>(
+  const backendGitDescribe = useSelector<StateT, string>(
     (state) => state.startup.config.version,
   );
 
@@ -37,36 +65,42 @@ const useVersion = () => {
   // `;
 
   // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendVersion = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendTimestamp = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendGitDescribe = `__BUILD_GIT_DESCRIBE__`.replace(/"/g, "");
 
   return {
-    backendVersion,
-    frontendVersion,
+    backendGitDescribe,
+    frontendTimestamp,
+    frontendGitDescribe,
   };
 };
 
 export const About = memo(() => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { backendVersion, frontendVersion } = useVersion();
+  const { isOpen, setOpen } = useAbout();
+  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+  const { backendGitDescribe, frontendTimestamp, frontendGitDescribe } =
+    useVersion();
 
   const copyVersionToClipboard = () => {
     navigator.clipboard.writeText(
-      `BE: ${backendVersion} FE: ${frontendVersion}`,
+      `BE: ${backendGitDescribe} FE: ${frontendGitDescribe}`,
     );
-    setIsOpen(false);
+    setOpen(false);
   };
 
-  useHotkeys("shift+?", () => setIsOpen((open) => !open));
+  useHotkeys("shift+?", toggleOpen, [toggleOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <Modal headline="Version" onClose={() => setIsOpen(false)}>
+    <Modal headline="Version" onClose={() => setOpen(false)}>
       <Grid>
         <div>Backend</div>
-        <Version>{backendVersion}</Version>
+        <Version>{backendGitDescribe}</Version>
         <div>Frontend</div>
-        <Version>{frontendVersion}</Version>
+        <Version>
+          {frontendGitDescribe} – {frontendTimestamp}
+        </Version>
       </Grid>
       <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
         Copy version info

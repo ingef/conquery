@@ -41,7 +41,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		if (dateContexts.size() <= 0) {
 			// There is nothing to do for this FormQueryPlan, but we will return an empty result when its executed
-			log.warn("dateContexts are empty. Will not produce a result.");
+			log.trace("dateContexts are empty. Will not produce a result.");
 			constantCount = 3;
 			withRelativeEventDate = false;
 			return;

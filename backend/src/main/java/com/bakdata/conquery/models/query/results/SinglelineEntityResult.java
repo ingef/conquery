@@ -17,7 +17,7 @@ import lombok.ToString;
 @CPSType(id="SINGLE_LINE", base= EntityResult.class)
 public class SinglelineEntityResult implements EntityResult {
 
-	private final int entityId;
+	private final String entityId;
 	private Object[] values;
 
 	@Override
