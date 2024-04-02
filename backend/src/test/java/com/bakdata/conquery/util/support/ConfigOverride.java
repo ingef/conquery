@@ -32,8 +32,6 @@ public interface ConfigOverride {
 
 		config.setFailOnError(true);
 
-		config.getStandalone().setNumberOfShardNodes(2);
-
 		config.getCluster().setEntityBucketSize(3);
 		config.getCluster().setWaitReconnect(1);
 
@@ -52,7 +50,9 @@ public interface ConfigOverride {
 	}
 
 	static void configureStoragePath(ConqueryConfig config, Path workdir) {
-		((XodusStoreFactory) config.getStorage()).setDirectory(workdir);
+		if (config.getStorage() instanceof XodusStoreFactory xodusStoreFactory) {
+			xodusStoreFactory.setDirectory(workdir);
+		}
 	}
 
 }

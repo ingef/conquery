@@ -125,7 +125,6 @@ public class AdminServlet {
 					.register(IdParamConverter.Provider.INSTANCE)
 					.register(authCookieFilter);
 
-
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
 					  .register(new AbstractBinder() {
 						  @Override

@@ -228,7 +228,7 @@ public class TestConquery {
 
 		if (!localTmpDir.exists()) {
 			if (!localTmpDir.mkdir()) {
-				throw new IllegalStateException("Could not create directory for Support");
+				throw new IllegalStateException("Could not create directory for Support:" + localTmpDir);
 			}
 		}
 		else {

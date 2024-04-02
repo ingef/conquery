@@ -9,11 +9,11 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
-import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -57,7 +57,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 		bootstrap.run(configuration, environment);
 
-		for (int i = 0; i < configuration.getStandalone().getNumberOfShardNodes(); i++) {
+		for (int i = 0; i < configuration.getStandalone().getShards().size(); i++) {
 			final Bootstrap<ConqueryConfig> bootstrapShard = getShardBootstrap(configuration, i);
 
 			ShardNode sc = new ShardNode(conquery, ShardNode.DEFAULT_NAME + i);
@@ -84,33 +84,39 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 	@NotNull
 	private Bootstrap<ConqueryConfig> getShardBootstrap(ConqueryConfig configuration, int id) {
 		final Bootstrap<ConqueryConfig> bootstrapShard = new Bootstrap<>(conquery);
+		ConqueryConfig clone = configuration;
 
+		if (configuration.getStorage() instanceof XodusStoreFactory) {
+			final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
+			clone = configuration
+					.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
+
+		}
+		else {
+			// Clone anyway so we get an independent config object
+			clone =
+					new ConqueryConfig(configuration.getCluster(), configuration.getPreprocessor(), configuration.getCsv(), configuration.getResultProviders(), configuration.getLocale(), configuration.getStandalone(), configuration.getStorage(), configuration.getQueries(), configuration.getApi(), configuration.getFrontend(), configuration.getIdColumns(), configuration.getIndex(), configuration.getMetricsConfig(), configuration.getAuthentication(), configuration.getAuthenticationRealms(), configuration.getAuthorizationRealms(), configuration.getJerseyClient(), configuration.getPlugins(), configuration.getSqlConnectorConfig(), configuration.getDebugMode(), configuration.isFailOnError());
+		}
+
+
+		final DefaultServerFactory serverFactory = new DefaultServerFactory();
+		final StandaloneConfig.StandaloneShardConfig standaloneShardConfig = configuration.getStandalone().getShards().get(id);
+		serverFactory.setAdminConnectors(standaloneShardConfig.getAdminConnectors());
+		serverFactory.setApplicationConnectors(standaloneShardConfig.getApplicationConnectors());
+		clone.setServerFactory(serverFactory);
+
+
+		final ConqueryConfig finalClone = clone;
 
 		bootstrapShard.setConfigurationFactoryFactory((aClass, validator, objectMapper, s) -> new ConfigurationFactory<>() {
 			@Override
 			public ConqueryConfig build(ConfigurationSourceProvider configurationSourceProvider, String s) {
-				return build();
+				return finalClone;
 			}
 
 			@Override
 			public ConqueryConfig build() {
-				ConqueryConfig clone = configuration;
-
-				if (configuration.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = configuration
-							.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
-
-				}
-
-				// Define random ports for shard http endpoints
-				final DefaultServerFactory factory = new DefaultServerFactory();
-				HttpConnectorFactory randomPortHttpConnectorFactory = new HttpConnectorFactory();
-				randomPortHttpConnectorFactory.setPort(0);
-				factory.setApplicationConnectors(List.of(randomPortHttpConnectorFactory));
-				factory.setAdminConnectors(List.of(randomPortHttpConnectorFactory));
-				clone.setServerFactory(factory);
-				return clone;
+				return finalClone;
 			}
 		});
 		return bootstrapShard;
