@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -98,7 +97,6 @@ public class Preprocessor {
 			final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 			final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
-			ConqueryMDC.setLocation(name);
 
 			if (!(sourceFile.exists() && sourceFile.canRead())) {
 				throw new FileNotFoundException(sourceFile.getAbsolutePath());

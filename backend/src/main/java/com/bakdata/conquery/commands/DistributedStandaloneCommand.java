@@ -62,7 +62,6 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start ManagerNode
-		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
 
 		ConqueryConfig managerConfig = config;
@@ -83,8 +82,9 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 				new ThreadFactoryBuilder()
 						.setNameFormat("ShardNode Storage Loader %d")
 						.setUncaughtExceptionHandler((t, e) -> {
-							ConqueryMDC.setLocation(t.getName());
+							ConqueryMDC.LOCATION.set(t.getName());
 							log.error(t.getName() + " failed to init storage of ShardNode", e);
+							ConqueryMDC.LOCATION.clear();
 						})
 						.build()
 		);
@@ -99,20 +99,26 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 				shardNodes.add(sc);
 
-				ConqueryMDC.setLocation(sc.getName());
+				try {
 
-				ConqueryConfig clone = config;
+					ConqueryMDC.LOCATION.set(sc.getName());
 
-				if (config.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
+					ConqueryConfig clone = config;
+
+					if (config.getStorage() instanceof XodusStoreFactory) {
+						final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
+						clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
+					}
+
+					sc.run(environment, namespace, clone);
+					return sc;
 				}
-
-				sc.run(environment, namespace, clone);
-				return sc;
+				finally {
+					ConqueryMDC.LOCATION.clear();
+				}
 			}));
 		}
-		ConqueryMDC.setLocation("ManagerNode");
+		ConqueryMDC.LOCATION.set("ManagerNode");
 		log.debug("Waiting for ShardNodes to start");
 		starterPool.shutdown();
 		starterPool.awaitTermination(1, TimeUnit.HOURS);
@@ -133,7 +139,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 		// starts the Jersey Server
 		log.debug("Starting REST Server");
-		ConqueryMDC.setLocation(null);
+		ConqueryMDC.LOCATION.clear();
 		super.run(environment, namespace, config);
 	}
 }

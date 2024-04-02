@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -80,8 +79,6 @@ public class ResultArrowProcessor {
 			ArrowConfig arrowConfig,
 			OptionalLong limit
 	) {
-
-		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
 

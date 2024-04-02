@@ -11,13 +11,10 @@ import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  * This interface allows to override the configuration used in tests.
  */
-@TestInstance(Lifecycle.PER_CLASS)
 public interface ConfigOverride {
 
 	@SneakyThrows

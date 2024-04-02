@@ -55,7 +55,6 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -212,8 +211,6 @@ public class XodusStoreFactory implements StoreFactory {
 		for (File directory : Objects.requireNonNull(baseDir.listFiles((file, name) -> file.isDirectory() && name.startsWith(prefix)))) {
 
 			final String name = directory.getName();
-
-			ConqueryMDC.setLocation(directory.toString());
 
 			try (Environment environment = registry.findOrCreateEnvironment(directory, xodus)) {
 				if (!environmentHasStores(environment, storesToTest)) {

@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -39,8 +38,6 @@ public class ResultExcelProcessor {
 	private final ExcelConfig excelConfig;
 
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, OptionalLong limit) {
-
-		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
 

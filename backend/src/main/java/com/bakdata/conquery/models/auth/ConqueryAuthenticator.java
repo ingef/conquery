@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.auth.Authenticator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -34,7 +33,6 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 
 		// If the subject was present, all further authorization can now be performed on the subject object
 		log.trace("Using subject {} for further authorization", subject);
-		ConqueryMDC.setLocation(subject.getId().toString());
 		subject.setAuthenticationInfo(info);
 		return Optional.of(subject);
 	}

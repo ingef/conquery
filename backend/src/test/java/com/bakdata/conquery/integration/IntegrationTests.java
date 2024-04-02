@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
@@ -30,9 +32,11 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
+import com.bakdata.conquery.util.support.TestLoggingFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
@@ -47,7 +51,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class IntegrationTests {
@@ -58,6 +62,13 @@ public class IntegrationTests {
 	public static final String SQL_TEST_PATTERN = ".*\\.json$";
 
 	static {
+
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		final Logger logger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
+
+		logger.detachAppender("console");
+		logger.addAppender(TestLoggingFactory.getConsoleAppender("console", lc));
+		ConqueryMDC.NODE.set("test");
 
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
@@ -75,7 +86,6 @@ public class IntegrationTests {
 	@Getter
 	private final File workDir;
 	@Getter
-	@RegisterExtension
 	public TestConqueryConfig config;
 
 	@SneakyThrows(IOException.class)

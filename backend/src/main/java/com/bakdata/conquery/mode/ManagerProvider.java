@@ -1,7 +1,5 @@
 package com.bakdata.conquery.mode;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.index.IndexService;
@@ -11,13 +9,14 @@ import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.core.setup.Environment;
+import jakarta.validation.Validator;
 
 /**
  * Provider for {@link Manager}.
  */
 public interface ManagerProvider {
 
-	String JOB_MANAGER_NAME = "ManagerNode";
+	String JOB_MANAGER_NAME = "manager";
 
 	Manager provideManager(ConqueryConfig config, Environment environment);
 

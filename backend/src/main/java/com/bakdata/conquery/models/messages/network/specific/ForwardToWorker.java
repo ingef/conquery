@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,8 +64,6 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
 		final Worker worker = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
-		ConqueryMDC.setLocation(worker.toString());
-
 
 		// Jobception: this is to ensure that no subsequent message is deserialized before one message is processed
 		worker.getJobManager().addSlowJob(new SimpleJob("Process %s".formatted(getText()), () -> {

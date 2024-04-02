@@ -207,7 +207,7 @@ public class MigrateCommand extends ConqueryCommand {
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();
 
-		ConqueryMDC.setLocation(inEnvironment.getLocation() + "\t" + inStore.getName());
+		ConqueryMDC.LOCATION.set(inEnvironment.getLocation() + "\t" + inStore.getName());
 
 		final Transaction readTx = inEnvironment.beginReadonlyTransaction();
 		final Transaction writeTx = outEnvironment.beginExclusiveTransaction();
@@ -262,6 +262,7 @@ public class MigrateCommand extends ConqueryCommand {
 		}
 		finally {
 			readTx.abort();
+			ConqueryMDC.LOCATION.clear();
 		}
 
 		log.info("Processed {} / {} ({}%)", processed, count, 100);

@@ -14,6 +14,7 @@ import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.annotations.VisibleForTesting;
@@ -21,13 +22,18 @@ import com.google.common.base.MoreObjects;
 import io.dropwizard.logging.common.ConsoleAppenderFactory;
 import io.dropwizard.logging.common.LoggingFactory;
 import io.dropwizard.logging.common.LoggingUtil;
+import io.dropwizard.logging.common.async.AsyncAppenderFactory;
 import io.dropwizard.logging.common.async.AsyncLoggingEventAppenderFactory;
+import io.dropwizard.logging.common.filter.LevelFilterFactory;
 import io.dropwizard.logging.common.filter.ThresholdLevelFilterFactory;
 import io.dropwizard.logging.common.layout.DropwizardLayoutFactory;
+import io.dropwizard.logging.common.layout.LayoutFactory;
 
 public class TestLoggingFactory implements LoggingFactory {
 
-	public static final String LOG_PATTERN = "[%level] [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
+	public static final String
+			LOG_PATTERN =
+			"%mdc{" + ConqueryMDC.NODE + "} %level [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{" + ConqueryMDC.LOCATION + "}\t%message%n";
 
 	private static final Condition CHANGE_LOGGER_CONTEXT_LOCK = new ReentrantLock().newCondition();
 
@@ -58,10 +64,8 @@ public class TestLoggingFactory implements LoggingFactory {
 			root = configureLoggers();
 		}
 
-		final ConsoleAppenderFactory<ILoggingEvent> consoleAppender = new ConsoleAppenderFactory<>();
-		consoleAppender.setLogFormat(LOG_PATTERN);
-
-		root.addAppender(consoleAppender.build(loggerContext, name, new DropwizardLayoutFactory(), new ThresholdLevelFilterFactory(), new AsyncLoggingEventAppenderFactory()));
+		final Appender<ILoggingEvent> build = getConsoleAppender(name, loggerContext);
+		root.addAppender(build);
 
 		StatusPrinter.setPrintStream(configurationErrorsStream);
 		try {
@@ -88,6 +92,17 @@ public class TestLoggingFactory implements LoggingFactory {
 		loggerContext.getLogger("com.bakdata").setLevel(Level.DEBUG);
 
 		return root;
+	}
+
+	public static Appender<ILoggingEvent> getConsoleAppender(String name, LoggerContext loggerContext) {
+		final LevelFilterFactory<ILoggingEvent> levelFilterFactory = new ThresholdLevelFilterFactory();
+		final AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory = new AsyncLoggingEventAppenderFactory();
+		final LayoutFactory<ILoggingEvent> layoutFactory = new DropwizardLayoutFactory();
+
+		ConsoleAppenderFactory<ILoggingEvent> consoleAppender = new ConsoleAppenderFactory<>();
+		consoleAppender.setLogFormat(LOG_PATTERN);
+		final Appender<ILoggingEvent> build = consoleAppender.build(loggerContext, name, layoutFactory, levelFilterFactory, asyncAppenderFactory);
+		return build;
 	}
 
 	@Override

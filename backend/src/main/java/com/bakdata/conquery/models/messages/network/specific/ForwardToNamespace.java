@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 
 
 		DistributedNamespace ns = Objects.requireNonNull(context.getDatasetRegistry().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
-		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
 		message.react(ns);
 
 		if (message instanceof ReactionMessage reactionMessage) {

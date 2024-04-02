@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.ConqueryMdcFilter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -44,6 +45,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.mina.core.RuntimeIoException;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
@@ -78,12 +80,13 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	public ShardNode(String name) {
-		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
+		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");
 	}
 
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		ConqueryMDC.NODE.set(getName());
 		this.environment = environment;
 		this.config = config;
 
@@ -117,6 +120,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		Queue<Worker> workersDone = new ConcurrentLinkedQueue<>();
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
+				ConqueryMDC.NODE.set(getName());
 				try {
 					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
 				}
@@ -125,7 +129,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				}
 				finally {
 					log.debug("DONE reading Storage {}", workerStorage);
-					ConqueryMDC.clearLocation();
+					ConqueryMDC.LOCATION.clear();
 				}
 			});
 		}
@@ -176,7 +180,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		setLocation(session);
 		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
@@ -197,13 +200,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		setLocation(session);
 		log.error("Exception caught", cause);
 	}
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
 		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
@@ -222,7 +223,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	public void sessionClosed(IoSession session) {
-		setLocation(session);
 		log.info("Disconnected from ManagerNode");
 	}
 
@@ -246,11 +246,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	public void event(IoSession session, FilterEvent event) throws Exception {
 	}
 
-	private void setLocation(IoSession session) {
-		String loc = session.getLocalAddress().toString();
-		ConqueryMDC.setLocation(loc);
-	}
-
 	@Override
 	public void start() throws Exception {
 		for (Worker value : workers.getWorkers().values()) {
@@ -260,7 +255,9 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		final DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
+		filterChain.addFirst("mdc", new ConqueryMdcFilter(ConqueryMDC.NODE.get()));
+		filterChain.addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 

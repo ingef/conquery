@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -44,8 +43,6 @@ public class ResultCsvProcessor {
 		final Dataset dataset = exec.getDataset();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-
-		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);

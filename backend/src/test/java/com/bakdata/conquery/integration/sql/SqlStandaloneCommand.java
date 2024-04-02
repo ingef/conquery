@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.cli.ServerCommand;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -40,14 +39,12 @@ public class SqlStandaloneCommand extends ServerCommand<ConqueryConfig> implemen
 
 	@Override
 	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
 		this.manager = new TestLocalManagerProvider().provideManager(config, environment);
 		this.conquery.setManagerNode(managerNode);
 		this.conquery.run(manager);
 		// starts the Jersey Server
 		log.debug("Starting REST Server");
-		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
 	}
 

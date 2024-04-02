@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultParquetResource;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -36,8 +35,6 @@ public class ResultParquetProcessor {
 	private final ConqueryConfig config;
 
 	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
-
-		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
 

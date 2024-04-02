@@ -2,15 +2,24 @@ package com.bakdata.conquery.util.io;
 
 import org.slf4j.MDC;
 
-public class ConqueryMDC {
+public enum ConqueryMDC {
 
-	private static final String LOCATION = "location";
+	LOCATION,
+	/**
+	 * Use to set the node name (e.g. manager, shard-0, ...) in log message
+	 */
+	NODE,
+	SUBJECT;
 
-	public static void setLocation(String location) {
-		MDC.put(LOCATION, location);
+	public void set(String value) {
+		MDC.put(name(), value);
 	}
 
-	public static void clearLocation() {
-		MDC.remove(LOCATION);
+	public void clear() {
+		MDC.remove(name());
+	}
+
+	public String get() {
+		return MDC.get(name());
 	}
 }

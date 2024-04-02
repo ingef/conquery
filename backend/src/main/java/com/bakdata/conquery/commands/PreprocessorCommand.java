@@ -66,8 +66,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 	@SneakyThrows
 	public static boolean requiresProcessing(PreprocessingJob preprocessingJob) {
-		ConqueryMDC.setLocation(preprocessingJob.toString());
-		if (preprocessingJob.getPreprocessedFile().exists()) {
+		try {
+			ConqueryMDC.LOCATION.set(preprocessingJob.toString());
+
+			if (!preprocessingJob.getPreprocessedFile().exists()) {
+				log.info("DOES NOT EXIST");
+				return true;
+			}
 
 			log.info("EXISTS ALREADY");
 
@@ -90,12 +95,12 @@ public class PreprocessorCommand extends ConqueryCommand {
 				log.error("\tHEADER READING FAILED", e);
 				return false;
 			}
-		}
-		else {
-			log.info("DOES NOT EXIST");
-		}
 
-		return true;
+			return true;
+		}
+		finally {
+			ConqueryMDC.LOCATION.clear();
+		}
 	}
 
 	/**
@@ -226,8 +231,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		for (PreprocessingJob job : jobs) {
 			pool.submit(() -> {
-				ConqueryMDC.setLocation(job.toString());
 				try {
+					ConqueryMDC.LOCATION.set(job.toString());
 					Preprocessor.preprocess(job, totalProgress, config);
 					success.add(job.toString());
 				}
@@ -239,13 +244,16 @@ public class PreprocessorCommand extends ConqueryCommand {
 					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), e);
 					addFailed(job);
 				}
+				finally {
+					ConqueryMDC.LOCATION.clear();
+				}
 			});
 		}
 
 		pool.shutdown();
 		pool.awaitTermination(24, TimeUnit.HOURS);
 
-		ConqueryMDC.clearLocation();
+		ConqueryMDC.LOCATION.clear();
 
 
 		if (!success.isEmpty()) {

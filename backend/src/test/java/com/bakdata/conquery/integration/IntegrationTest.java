@@ -68,7 +68,7 @@ public interface IntegrationTest {
 		@Override
 		public void execute() throws Throwable {
 
-			ConqueryMDC.setLocation(name);
+			ConqueryMDC.LOCATION.set(name);
 			log.info("STARTING integration test {}", name);
 
 			// we clone the default config to ensure that nothing mangles the config of others.
@@ -82,17 +82,16 @@ public interface IntegrationTest {
 			try {
 				testConquery.beforeEach();
 				test.execute(name, testConquery);
+				log.info("SUCCESS integration test {}", name);
 			}
 			catch (Exception e) {
-				ConqueryMDC.setLocation(name);
 				log.info("FAILED integration test " + name, e);
 				throw e;
 			}
 			finally {
 				testConquery.afterEach();
+				ConqueryMDC.LOCATION.clear();
 			}
-			ConqueryMDC.setLocation(name);
-			log.info("SUCCESS integration test {}", name);
 		}
 	}
 }

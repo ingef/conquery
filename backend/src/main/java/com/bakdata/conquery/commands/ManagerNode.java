@@ -30,6 +30,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -79,6 +80,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void run(Manager manager) throws InterruptedException {
+		ConqueryMDC.NODE.set(getName());
 		Environment environment = manager.getEnvironment();
 		ConqueryConfig config = manager.getConfig();
 		validator = environment.getValidator();

@@ -45,7 +45,8 @@ public class TestBootstrappingConquery extends Conquery {
 	@Override
 	protected void bootstrapLogging() {
 		BootstrapLogging.bootstrap(bootstrapLogLevel(), (ctx, timeZone) -> {
-			DropwizardLayout layout = new DropwizardLayout(ctx, timeZone);
+			final DropwizardLayout dropwizardLayout = new DropwizardLayout(ctx, timeZone);
+			DropwizardLayout layout = dropwizardLayout;
 			layout.setPattern(TestLoggingFactory.LOG_PATTERN);
 			return layout;
 		});

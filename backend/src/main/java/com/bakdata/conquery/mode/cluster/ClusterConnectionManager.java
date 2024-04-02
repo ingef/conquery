@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.ConqueryMdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
@@ -27,6 +28,7 @@ import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
@@ -50,25 +52,21 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		if (message instanceof MessageToManagerNode toManagerNode) {
 
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
@@ -100,11 +98,13 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		ObjectMapper om = internalObjectMapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		final DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
+		filterChain.addFirst("mdc", new ConqueryMdcFilter(ConqueryMDC.NODE.get()));
+		filterChain.addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
-		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
+		log.info("Started Cluster Socket @ {}", acceptor.getLocalAddress());
 	}
 
 	public void stop() {
@@ -118,4 +118,5 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		}
 
 	}
+
 }
