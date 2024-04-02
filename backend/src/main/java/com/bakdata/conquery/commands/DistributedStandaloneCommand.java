@@ -84,7 +84,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 	@NotNull
 	private Bootstrap<ConqueryConfig> getShardBootstrap(ConqueryConfig configuration, int id) {
 		final Bootstrap<ConqueryConfig> bootstrapShard = new Bootstrap<>(conquery);
-		ConqueryConfig clone = configuration;
+		ConqueryConfig clone;
 
 		if (configuration.getStorage() instanceof XodusStoreFactory) {
 			final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);

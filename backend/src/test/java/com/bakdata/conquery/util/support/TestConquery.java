@@ -227,7 +227,7 @@ public class TestConquery {
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 
 		if (!localTmpDir.exists()) {
-			if (!localTmpDir.mkdir()) {
+			if (!localTmpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create directory for Support:" + localTmpDir);
 			}
 		}

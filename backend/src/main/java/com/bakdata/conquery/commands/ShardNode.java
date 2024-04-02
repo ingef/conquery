@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerSta
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +75,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
+	ShutdownTask shutdown;
 
 
 	public ShardNode(Conquery conquery) {
@@ -139,6 +141,10 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 		}
 
 		log.info("All Workers loaded: {}", this.workers.getWorkers().size());
+
+		shutdown = new ShutdownTask();
+		environment.admin().addTask(shutdown);
+		environment.lifecycle().addServerLifecycleListener(shutdown);
 
 		super.run(environment, namespace, config);
 	}
