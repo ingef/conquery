@@ -20,6 +20,7 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.mode.cluster.ClusterConnectionManager;
 import com.bakdata.conquery.mode.cluster.ClusterMetrics;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -49,6 +50,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.mina.core.RuntimeIoException;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
@@ -88,6 +90,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		ConqueryMDC.setNode(getName());
 
 		connector = new NioSocketConnector();
 
@@ -119,6 +122,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 		Queue<Worker> workersDone = new ConcurrentLinkedQueue<>();
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
+				ConqueryMDC.setNode(getName());
 				try {
 					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
 				}
@@ -270,7 +274,9 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		final DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
+		filterChain.addFirst("mdc", new ClusterConnectionManager.ConqueryMdcFilter(ConqueryMDC.getNode()));
+		filterChain.addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		final ConqueryConfig configuration = getConfiguration();
 		connector.getSessionConfig().setAll(configuration.getCluster().getMina());

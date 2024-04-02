@@ -24,9 +24,12 @@ public class JobExecutor extends Thread {
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final boolean failOnError;
 
-	public JobExecutor(String name, boolean failOnError) {
+	private final String node;
+
+	public JobExecutor(String name, String node, boolean failOnError) {
 		super(name);
 
+		this.node = node;
 		this.failOnError = failOnError;
 		JobMetrics.createJobQueueGauge(name, jobs);
 	}
@@ -95,6 +98,7 @@ public class JobExecutor extends Thread {
 	@Override
 	@SneakyThrows // If failOnError is true
 	public void run() {
+		ConqueryMDC.setNode(node);
 		ConqueryMDC.setLocation(this.getName());
 
 		while(!closed.get()) {

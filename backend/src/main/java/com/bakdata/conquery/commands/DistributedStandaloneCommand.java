@@ -105,6 +105,9 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		serverFactory.setApplicationConnectors(standaloneShardConfig.getApplicationConnectors());
 		clone.setServerFactory(serverFactory);
 
+		// Lombok's With does not cover super class members
+		clone.setLoggingFactory(configuration.getLoggingFactory());
+
 
 		final ConqueryConfig finalClone = clone;
 
@@ -136,7 +139,6 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 	public void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start ManagerNode
-		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
 
 		ConqueryConfig managerConfig = config;
@@ -150,7 +152,6 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 
 		managerNode.run(manager);
 
-		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);

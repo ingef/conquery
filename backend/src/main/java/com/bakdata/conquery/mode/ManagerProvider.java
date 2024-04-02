@@ -17,7 +17,7 @@ import io.dropwizard.setup.Environment;
  */
 public interface ManagerProvider {
 
-	String JOB_MANAGER_NAME = "ManagerNode";
+	String JOB_MANAGER_NAME = "manager";
 
 	Manager provideManager(ConqueryConfig config, Environment environment);
 

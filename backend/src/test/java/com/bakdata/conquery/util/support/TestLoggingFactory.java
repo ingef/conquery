@@ -41,7 +41,7 @@ import io.dropwizard.logging.layout.LayoutFactory;
 
 public class TestLoggingFactory implements LoggingFactory {
 
-	public static final String LOG_PATTERN = "[%level] [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
+	public static final String LOG_PATTERN = "%mdc{node} %level [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
 	
 	private static final ReentrantLock MBEAN_REGISTRATION_LOCK = new ReentrantLock();
 	private static final ReentrantLock CHANGE_LOGGER_CONTEXT_LOCK = new ReentrantLock();
@@ -75,13 +75,8 @@ public class TestLoggingFactory implements LoggingFactory {
 			CHANGE_LOGGER_CONTEXT_LOCK.unlock();
 		}
 
-		final LevelFilterFactory<ILoggingEvent> levelFilterFactory = new ThresholdLevelFilterFactory();
-		final AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory = new AsyncLoggingEventAppenderFactory();
-		final LayoutFactory<ILoggingEvent> layoutFactory = new DropwizardLayoutFactory();
-
-		ConsoleAppenderFactory<ILoggingEvent> consoleAppender = new ConsoleAppenderFactory<>();
-		consoleAppender.setLogFormat(LOG_PATTERN);
-		root.addAppender(consoleAppender.build(loggerContext, name, layoutFactory, levelFilterFactory, asyncAppenderFactory));
+		final Appender<ILoggingEvent> build = getConsoleAppender(name, loggerContext);
+		root.addAppender(build);
 
 		StatusPrinter.setPrintStream(configurationErrorsStream);
 		try {
@@ -107,6 +102,17 @@ public class TestLoggingFactory implements LoggingFactory {
 		}
 
 		configureInstrumentation(root, metricRegistry);
+	}
+
+	public static Appender<ILoggingEvent> getConsoleAppender(String name, LoggerContext loggerContext) {
+		final LevelFilterFactory<ILoggingEvent> levelFilterFactory = new ThresholdLevelFilterFactory();
+		final AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory = new AsyncLoggingEventAppenderFactory();
+		final LayoutFactory<ILoggingEvent> layoutFactory = new DropwizardLayoutFactory();
+
+		ConsoleAppenderFactory<ILoggingEvent> consoleAppender = new ConsoleAppenderFactory<>();
+		consoleAppender.setLogFormat(LOG_PATTERN);
+		final Appender<ILoggingEvent> build = consoleAppender.build(loggerContext, name, layoutFactory, levelFilterFactory, asyncAppenderFactory);
+		return build;
 	}
 
 	@Override
