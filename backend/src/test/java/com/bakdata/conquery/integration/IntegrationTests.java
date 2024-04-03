@@ -32,7 +32,6 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -66,7 +65,6 @@ public class IntegrationTests {
 
 		logger.detachAppender("console");
 		logger.addAppender(TestLoggingFactory.getConsoleAppender("console", lc));
-		ConqueryMDC.setNode("test");
 
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 

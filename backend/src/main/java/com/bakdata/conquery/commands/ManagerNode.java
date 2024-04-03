@@ -250,11 +250,14 @@ public class ManagerNode implements Managed {
 
 	@Override
 	public void start() throws Exception {
+		ConqueryMDC.setNode(getName());
 		manager.start();
+		ConqueryMDC.clearNode();
 	}
 
 	@Override
 	public void stop() throws Exception {
+		ConqueryMDC.setNode(getName());
 		manager.stop();
 		for (ResourcesProvider provider : providers) {
 			try {
@@ -273,5 +276,6 @@ public class ManagerNode implements Managed {
 			log.error("{} could not be closed", getStorage(), e);
 		}
 
+		ConqueryMDC.clearNode();
 	}
 }

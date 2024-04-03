@@ -41,7 +41,7 @@ import io.dropwizard.logging.layout.LayoutFactory;
 
 public class TestLoggingFactory implements LoggingFactory {
 
-	public static final String LOG_PATTERN = "%mdc{node} %level [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
+	public static final String LOG_PATTERN = "%mdc{node:-none} %level [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
 	
 	private static final ReentrantLock MBEAN_REGISTRATION_LOCK = new ReentrantLock();
 	private static final ReentrantLock CHANGE_LOGGER_CONTEXT_LOCK = new ReentrantLock();

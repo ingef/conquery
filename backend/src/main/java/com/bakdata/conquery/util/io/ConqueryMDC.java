@@ -4,8 +4,8 @@ import org.slf4j.MDC;
 
 public class ConqueryMDC {
 
-	private static final String LOCATION = "location";
-	private static final String NODE = "node";
+	public static final String LOCATION = "location";
+	public static final String NODE = "node";
 
 	public static void setLocation(String location) {
 		MDC.put(LOCATION, location);

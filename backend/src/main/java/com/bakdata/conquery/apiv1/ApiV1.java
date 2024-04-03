@@ -4,6 +4,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
+import com.bakdata.conquery.io.jersey.MdcProvider;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -48,6 +49,8 @@ public class ApiV1 implements ResourcesProvider {
 			}
 		});
 
+
+		jersey.register(new MdcProvider(manager.getName()));
 		jersey.register(CORSPreflightRequestFilter.class);
 		jersey.register(CORSResponseFilter.class);
 		jersey.register(IdRefPathParamConverterProvider.class);

@@ -267,6 +267,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 
 	@Override
 	public void start() throws Exception {
+		ConqueryMDC.setNode(getName());
 		for (Worker value : workers.getWorkers().values()) {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
@@ -308,10 +309,12 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 				log.warn("Failed to connect to " + address, e);
 			}
 		}
+		ConqueryMDC.clearNode();
 	}
 
 	@Override
 	public void stop() throws Exception {
+		ConqueryMDC.setNode(getName());
 		getJobManager().close();
 		
 		workers.stop();
@@ -322,6 +325,7 @@ public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandle
 		}
 		log.info("Connection was closed by ManagerNode");
 		connector.dispose();
+		ConqueryMDC.clearNode();
 	}
 
 	private void reportJobManagerStatus() {
