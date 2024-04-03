@@ -67,7 +67,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
-		importManually(conquery, test);
+		test.importRequiredData(conquery);
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 

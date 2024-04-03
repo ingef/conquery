@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 
@@ -15,10 +15,14 @@ public class ReactingJob<MESSAGE extends NetworkMessage<CTX>, CTX extends Networ
 	
 	@Override
 	public void execute() {
+		ConqueryMDC.setLocation(message.toString());
 		try {
 			message.react(context);
 		} catch(Exception e) {
 			throw new RuntimeException("Failed while processing the message "+message, e);
+		}
+		finally {
+			ConqueryMDC.clearLocation();
 		}
 	}
 

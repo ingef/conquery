@@ -32,6 +32,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -44,7 +45,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.service.IoHandlerAdapter;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -54,7 +54,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
  */
 @Slf4j
 @Getter
-public class ManagerNode extends IoHandlerAdapter implements Managed {
+public class ManagerNode implements Managed {
 
 	public static final String DEFAULT_NAME = "manager";
 
@@ -80,6 +80,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void run(Manager manager) throws InterruptedException {
+		ConqueryMDC.setNode(getName());
 		Environment environment = manager.getEnvironment();
 		ConqueryConfig config = manager.getConfig();
 		validator = environment.getValidator();
@@ -249,11 +250,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void start() throws Exception {
+		ConqueryMDC.setNode(getName());
 		manager.start();
+		ConqueryMDC.clearNode();
 	}
 
 	@Override
 	public void stop() throws Exception {
+		ConqueryMDC.setNode(getName());
 		manager.stop();
 		for (ResourcesProvider provider : providers) {
 			try {
@@ -272,5 +276,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			log.error("{} could not be closed", getStorage(), e);
 		}
 
+		ConqueryMDC.clearNode();
 	}
 }

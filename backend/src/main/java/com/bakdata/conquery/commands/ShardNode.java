@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -19,6 +20,8 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.mode.cluster.ClusterConnectionManager;
+import com.bakdata.conquery.mode.cluster.ClusterMetrics;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -34,10 +37,12 @@ import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerSta
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -45,6 +50,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.mina.core.RuntimeIoException;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
@@ -59,34 +65,32 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
  */
 @Slf4j
 @Getter
-public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
+public class ShardNode extends ServerCommand<ConqueryConfig> implements IoHandler, Managed {
 
 	public static final String DEFAULT_NAME = "shard-node";
 
 	private NioSocketConnector connector;
 	private JobManager jobManager;
 	private Validator validator;
-	private ConqueryConfig config;
 	private ShardNodeNetworkContext context;
 	@Setter
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
-	private Environment environment;
+	ShutdownTask shutdown;
 
-	public ShardNode() {
-		this(DEFAULT_NAME);
+
+	public ShardNode(Conquery conquery) {
+		this(conquery, DEFAULT_NAME);
 	}
 
-	public ShardNode(String name) {
-		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
+	public ShardNode(Conquery conquery, String name) {
+		super(conquery, name, "Connects this instance as a ShardNode to a running ManagerNode.");
 	}
-
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		this.environment = environment;
-		this.config = config;
+		ConqueryMDC.setNode(getName());
 
 		connector = new NioSocketConnector();
 
@@ -103,11 +107,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 
 		workers = new Workers(
-				getConfig().getQueries().getExecutionPool(),
+				config.getQueries().getExecutionPool(),
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
-				getConfig().getCluster().getEntityBucketSize(),
-				getConfig().getQueries().getSecondaryIdSubPlanRetention()
+				config.getCluster().getEntityBucketSize(),
+				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
@@ -118,6 +122,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		Queue<Worker> workersDone = new ConcurrentLinkedQueue<>();
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
+				ConqueryMDC.setNode(getName());
 				try {
 					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
 				}
@@ -139,7 +144,13 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 																													 - workersDone.size());
 		}
 
-		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+		log.info("All Workers loaded: {}", this.workers.getWorkers().size());
+
+		shutdown = new ShutdownTask();
+		environment.admin().addTask(shutdown);
+		environment.lifecycle().addServerLifecycleListener(shutdown);
+
+		super.run(environment, namespace, config);
 	}
 
 
@@ -151,7 +162,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = getConfiguration().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
@@ -207,14 +218,16 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
+		getEnvironment().lifecycle().getMetricRegistry().registerAll(new ClusterMetrics(session));
+
+		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, getConfiguration(), validator);
 		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
 		context.send(new AddShardNode());
 
 		for (Worker w : workers.getWorkers().values()) {
-			w.setSession(new NetworkSession(session));
+			w.setSession(networkSession);
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
@@ -254,6 +267,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	public void start() throws Exception {
+		ConqueryMDC.setNode(getName());
 		for (Worker value : workers.getWorkers().values()) {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
@@ -261,13 +275,16 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		final DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
+		filterChain.addFirst("mdc", new ClusterConnectionManager.ConqueryMdcFilter(ConqueryMDC.getNode()));
+		filterChain.addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
-		connector.getSessionConfig().setAll(config.getCluster().getMina());
+		final ConqueryConfig configuration = getConfiguration();
+		connector.getSessionConfig().setAll(configuration.getCluster().getMina());
 
 		InetSocketAddress address = new InetSocketAddress(
-				config.getCluster().getManagerURL().getHostAddress(),
-				config.getCluster().getPort()
+				configuration.getCluster().getManagerURL().getHostAddress(),
+				configuration.getCluster().getPort()
 		);
 
 		while (true) {
@@ -285,17 +302,19 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 				future.cancel();
 				// Sleep thirty seconds then retry.
-				TimeUnit.SECONDS.sleep(30);
+				TimeUnit.SECONDS.sleep(configuration.getCluster().getWaitReconnect());
 
 			}
 			catch (RuntimeIoException e) {
 				log.warn("Failed to connect to " + address, e);
 			}
 		}
+		ConqueryMDC.clearNode();
 	}
 
 	@Override
 	public void stop() throws Exception {
+		ConqueryMDC.setNode(getName());
 		getJobManager().close();
 		
 		workers.stop();
@@ -306,6 +325,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 		log.info("Connection was closed by ManagerNode");
 		connector.dispose();
+		ConqueryMDC.clearNode();
 	}
 
 	private void reportJobManagerStatus() {
@@ -328,7 +348,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			catch (Exception e) {
 				log.warn("Failed to report job manager status", e);
 
-				if (config.isFailOnError()) {
+				if (getConfiguration().isFailOnError()) {
 					System.exit(1);
 				}
 			}

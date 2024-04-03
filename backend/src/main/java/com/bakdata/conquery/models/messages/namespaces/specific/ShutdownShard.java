@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Collections;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
@@ -21,7 +25,7 @@ public class ShutdownShard extends MessageToShardNode.Slow {
 			@Override
 			public void run() {
 				try {
-					context.getShardNode().stop();
+					context.getShardNode().getShutdown().execute(Collections.emptyMap(), new PrintWriter(OutputStream.nullOutputStream(), false));
 				}
 				catch (Exception e) {
 					log.error("Failed while shutting down Shard", e);

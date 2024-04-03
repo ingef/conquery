@@ -64,7 +64,7 @@ public class ColumnStoreSerializationTests {
 
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(new ConqueryConfig());
+		when(shardNode.getConfiguration()).thenReturn(new ConqueryConfig());
 		when(shardNode.getValidator()).thenReturn(Validators.newValidator());
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();

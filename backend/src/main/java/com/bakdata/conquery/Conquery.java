@@ -4,14 +4,12 @@ import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.MigrateCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.mode.Manager;
 import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
@@ -37,10 +35,22 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
 	@Setter
-	private ManagerNode managerNode;
+	private ManagerProvider managerProvider;
 
 	public Conquery() {
 		this("Conquery");
+	}
+
+
+	@Override
+	protected void addDefaultCommands(Bootstrap<ConqueryConfig> bootstrap) {
+		super.addDefaultCommands(bootstrap);
+
+		bootstrap.addCommand(new ShardNode(this));
+		bootstrap.addCommand(new PreprocessorCommand());
+		bootstrap.addCommand(new DistributedStandaloneCommand(this));
+		bootstrap.addCommand(new RecodeStoreCommand());
+		bootstrap.addCommand(new MigrateCommand());
 	}
 
 	@Override
@@ -50,12 +60,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
-
-		bootstrap.addCommand(new ShardNode());
-		bootstrap.addCommand(new PreprocessorCommand());
-		bootstrap.addCommand(new DistributedStandaloneCommand(this));
-		bootstrap.addCommand(new RecodeStoreCommand());
-		bootstrap.addCommand(new MigrateCommand());
 
 		((MutableInjectableValues) confMapper.getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
@@ -92,17 +96,10 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
+		managerProvider = configuration.getSqlConnectorConfig().isEnabled() ?
 								   new LocalManagerProvider() : new ClusterManagerProvider();
-		run(provider.provideManager(configuration, environment));
 	}
 
-	public void run(Manager manager) throws InterruptedException {
-		if (managerNode == null) {
-			managerNode = new ManagerNode();
-		}
-		managerNode.run(manager);
-	}
 
 	public static void main(String... args) throws Exception {
 		new Conquery().run(args);

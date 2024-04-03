@@ -35,6 +35,10 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 
 	@Override
+	public boolean isExclusiveInstance() {
+		return true;
+	}
+	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 

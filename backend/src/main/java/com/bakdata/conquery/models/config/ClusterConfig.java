@@ -32,4 +32,10 @@ public class ClusterConfig extends Configuration {
 	 */
 	@Min(0)
 	private int backpressure = 1500;
+
+	/**
+	 * The seconds to wait for a shard node to retry a connection to a manager node.
+	 */
+	@Min(1)
+	private int waitReconnect = 30;
 }

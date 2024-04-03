@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
+import com.bakdata.conquery.io.jersey.MdcProvider;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
@@ -118,13 +119,13 @@ public class AdminServlet {
 							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
 						}
 					})
+					.register(new MdcProvider(manager.getName()))
 					.register(PathParamInjector.class)
 					.register(AdminPermissionFilter.class)
 					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
 					.register(authCookieFilter);
-
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
 					  .register(new AbstractBinder() {
@@ -136,6 +137,7 @@ public class AdminServlet {
 							  bind(manager.getStorage()).to(MetaStorage.class);
 						  }
 					  })
+					  .register(new MdcProvider(manager.getName()))
 					  .register(AdminPermissionFilter.class)
 					  .register(IdRefPathParamConverterProvider.class)
 					  .register(authCookieFilter);

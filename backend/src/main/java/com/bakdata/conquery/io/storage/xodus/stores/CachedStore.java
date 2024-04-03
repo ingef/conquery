@@ -107,7 +107,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.debug("\tloaded store {}: {} entries, {} within {}",
+		log.debug(
+				"Loaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.sum()),
