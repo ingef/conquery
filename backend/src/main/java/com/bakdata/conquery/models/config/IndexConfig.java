@@ -4,8 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.util.search.TrieSearch;

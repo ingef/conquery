@@ -8,8 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.ws.rs.core.UriBuilder;
-
 import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

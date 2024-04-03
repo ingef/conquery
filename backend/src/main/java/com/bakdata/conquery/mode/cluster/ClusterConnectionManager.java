@@ -3,8 +3,6 @@ package com.bakdata.conquery.mode.cluster;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -25,6 +23,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
@@ -59,8 +58,6 @@ public class IntegrationTests {
 	public static final String SQL_TEST_PATTERN = ".*\\.json$";
 
 	static {
-
-		SharedMetricRegistries.setDefault("test");
 
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 

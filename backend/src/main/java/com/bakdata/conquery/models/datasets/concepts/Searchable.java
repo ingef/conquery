@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.List;
 
-import javax.validation.constraints.Min;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
@@ -13,6 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Min;
 
 /**
  * @implNote This class is tightly coupled with {@link FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.

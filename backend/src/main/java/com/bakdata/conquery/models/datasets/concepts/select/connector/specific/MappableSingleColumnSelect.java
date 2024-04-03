@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;

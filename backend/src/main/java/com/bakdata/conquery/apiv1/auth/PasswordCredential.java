@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1.auth;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;

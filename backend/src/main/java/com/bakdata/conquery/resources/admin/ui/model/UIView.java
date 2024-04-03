@@ -2,7 +2,7 @@ package com.bakdata.conquery.resources.admin.ui.model;
 
 import java.nio.charset.StandardCharsets;
 
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
 import lombok.Getter;
 
 @Getter

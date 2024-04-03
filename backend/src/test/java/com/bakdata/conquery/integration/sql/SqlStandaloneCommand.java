@@ -16,8 +16,9 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.cli.ServerCommand;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -25,7 +26,7 @@ import org.jooq.DSLContext;
 
 @Slf4j
 @Getter
-public class SqlStandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> implements StandaloneCommand {
+public class SqlStandaloneCommand extends ServerCommand<ConqueryConfig> implements StandaloneCommand {
 
 	private final Conquery conquery;
 	private ManagerNode managerNode = new ManagerNode();
