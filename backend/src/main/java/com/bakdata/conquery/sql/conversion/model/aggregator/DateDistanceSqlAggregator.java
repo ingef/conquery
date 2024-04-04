@@ -11,10 +11,10 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptConversionTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -25,7 +25,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.Value;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 @Value
@@ -39,28 +38,27 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			String alias,
 			CDateRange dateRestriction,
 			ChronoUnit timeUnit,
-			SqlTables connectorTables,
+			ConceptConversionTables tables,
 			DateNowSupplier dateNowSupplier,
 			Range.LongRange filterValue,
 			SqlFunctionProvider functionProvider
 	) {
-		Date endDate = getEndDate(dateRestriction, dateNowSupplier);
+		Field<Date> endDate = getEndDate(dateRestriction, dateNowSupplier, functionProvider);
 		if (column.getType() != MajorTypeId.DATE) {
 			throw new UnsupportedOperationException("Can't calculate date distance to column of type " + column.getType());
 		}
-		Name dateColumnName = DSL.name(connectorTables.getRootTable(), column.getName());
-		FieldWrapper<Integer> dateDistanceSelect = new FieldWrapper<>(functionProvider.dateDistance(timeUnit, dateColumnName, endDate).as(alias));
+		Field<Date> startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
+		FieldWrapper<Integer> dateDistanceSelect = new FieldWrapper<>(functionProvider.dateDistance(timeUnit, startDate, endDate).as(alias));
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder().preprocessingSelect(dateDistanceSelect);
 
 		if (filterValue == null) {
 
-			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT))
+			Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT))
 																	 .select();
 			FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
 
-			String finalPredecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
-			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(finalPredecessor);
+			ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
@@ -69,7 +67,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		}
 		else {
 			this.sqlSelects = builder.build();
-			String predecessorCte = connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER);
+			String predecessorCte = tables.getPredecessor(ConceptCteStep.EVENT_FILTER);
 			Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(predecessorCte).select();
 			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
@@ -110,7 +108,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 		);
 	}
 
-	private Date getEndDate(CDateRange dateRange, DateNowSupplier dateNowSupplier) {
+	private Field<Date> getEndDate(CDateRange dateRange, DateNowSupplier dateNowSupplier, SqlFunctionProvider functionProvider) {
 		LocalDate endDate;
 		// if a date restriction is set, the max of the date restriction equals the end date of the date distance
 		// but there is also the possibility that the user set's an empty daterange which will be non-null but with null values
@@ -121,8 +119,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			// otherwise the current date is the upper bound
 			endDate = dateNowSupplier.getLocalDateNow();
 		}
-		return Date.valueOf(endDate);
+		return functionProvider.toDateField(Date.valueOf(endDate).toString());
 	}
-
 
 }

@@ -16,6 +16,8 @@
         {
           "id": "concept.connector",
           "selects": [
+            "concept.connector.event-date",
+            "concept.connector.event_duration_sum",
             "concept.connector.first_value",
             "concept.connector.sum_distinct"
           ],
@@ -36,10 +38,19 @@
               }
             }
           ]
+        },
+        {
+          "id": "concept.test_column",
+          "filters": [],
+          "selects": [
+            "concept.test_column.first_test_column"
+          ]
         }
       ],
       "selects": [
-        "concept.exists"
+        "concept.exists",
+        "concept.event-date",
+        "concept.event_duration_sum"
       ]
     }
   },
@@ -73,6 +84,14 @@
           ],
           "selects": [
             {
+              "type": "EVENT_DATE_UNION",
+              "name": "event-date"
+            },
+            {
+              "type": "EVENT_DURATION_SUM",
+              "name": "event_duration_sum"
+            },
+            {
               "label": "first_value",
               "column": "table.value",
               "type": "FIRST"
@@ -87,9 +106,57 @@
               ]
             }
           ]
+        },
+        {
+          "label": "tree_label",
+          "name": "test_column",
+          "column": "test_table.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table.datum"
+          },
+          "selects": [
+            {
+              "type": "FIRST",
+              "label": "first_test_column",
+              "column": "test_table.test_column"
+            }
+          ]
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "A1"
+            ]
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "description": " ",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "B2"
+            ]
+          },
+          "children": []
         }
       ],
       "selects": [
+        {
+          "type": "EVENT_DATE_UNION",
+          "name": "event-date"
+        },
+        {
+          "type": "EVENT_DURATION_SUM",
+          "name": "event_duration_sum"
+        },
         {
           "type": "EXISTS",
           "name": "exists"
@@ -125,6 +192,24 @@
           },
           {
             "name": "k2",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/combined/content2.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
             "type": "STRING"
           }
         ]

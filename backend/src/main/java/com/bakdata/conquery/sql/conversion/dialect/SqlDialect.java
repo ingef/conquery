@@ -41,10 +41,6 @@ public interface SqlDialect {
 		return SYSTEM_DATE_NOW_SUPPLIER;
 	}
 
-	default boolean requiresAggregationInFinalStep() {
-		return true;
-	}
-
 	default boolean supportsSingleColumnRanges() {
 		return false;
 	}
