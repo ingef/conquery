@@ -10,7 +10,7 @@ import org.jooq.impl.DSL;
  * Wrapper for a {@link Field}.
  */
 @EqualsAndHashCode
-public class FieldWrapper<T> implements SqlSelect {
+public class FieldWrapper<T> implements SingleColumnSqlSelect {
 
 	private final Field<T> field;
 	@EqualsAndHashCode.Exclude
