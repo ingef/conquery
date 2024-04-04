@@ -40,8 +40,8 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<Searchable<?>> totals = Object2LongMaps.emptyMap();
+	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Object2LongMap<Searchable> totals = Object2LongMaps.emptyMap();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -62,11 +62,11 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public final List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
-		final List<? extends Searchable<?>> references = searchable.getSearchReferences();
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
+			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
 		}
 
 		return references.stream()
@@ -75,15 +75,15 @@ public class FilterSearch {
 						 .collect(Collectors.toList());
 	}
 
-	public long getTotal(Searchable<?> searchable) {
-		return totals.getOrDefault(searchable, 0);
+	public long getTotal(SelectFilter<?> searchable) {
+		return searchable.getSearchReferences().stream().mapToLong(totals::getLong).sum();
 	}
 
 
 	/**
 	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void addSearches(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
 		log.debug("BEGIN counting Search totals.");
@@ -97,7 +97,7 @@ public class FilterSearch {
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
-	public void registerValues(Searchable<?> searchable, Collection<String> values) {
+	public void registerValues(Searchable searchable, Collection<String> values) {
 		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig, storage));
 
 		synchronized (search) {
@@ -110,8 +110,8 @@ public class FilterSearch {
 		}
 	}
 
-	private void updateTotals(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
-		final Object2LongOpenHashMap<Searchable<?>> partialTotals = new Object2LongOpenHashMap<>(searchCache.keySet().stream()
+	private void updateTotals(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
+		final Object2LongOpenHashMap<Searchable> partialTotals = new Object2LongOpenHashMap<>(searchCache.keySet().stream()
 																											.collect(Collectors.toMap(
 																													Functions.identity(),
 																													this::getTotalFor
@@ -119,21 +119,17 @@ public class FilterSearch {
 		totals.putAll(partialTotals);
 	}
 
-	private long getTotalFor(Searchable<?> searchable) {
-		return searchable.getSearchReferences()
-						 .stream()
-						 .map(searchCache::get)
-						 .filter(Objects::nonNull) // Failed or disabled searches are null
-						 .flatMap(TrieSearch::stream)
-						 .mapToInt(FrontendValue::hashCode)
-						 .distinct()
-						 .count();
+	private long getTotalFor(Searchable searchable) {
+		return searchCache.get(searchable).stream()
+						  .mapToInt(FrontendValue::hashCode) // TODO Use distinct directly?
+						  .distinct()
+						  .count();
 	}
 
 	/**
 	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
 	 */
-	public void shrinkSearch(Searchable<?> searchable) {
+	public void shrinkSearch(Searchable searchable) {
 		final TrieSearch<FrontendValue> search = getSearchCache().get(searchable);
 
 		if (search == null) {

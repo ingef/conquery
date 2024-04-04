@@ -26,7 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable<ColumnId> {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
 
 	public static final int UNKNOWN_POSITION = -1;
 
