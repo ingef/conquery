@@ -1,12 +1,11 @@
 name: "Test Backend"
 
+# Run always concurrency:  push and pr, because the commits may differ
+# See https://medium.com/silicon-hemisphere/the-difference-between-push-and-pull-request-triggers-in-github-d7c0f2bc19db
 on:
   push:
-    branches:
-      # Always run on protected branches
-      - master
-      - develop
-      - release
+    paths:
+      - "backend/**"
   pull_request:
     paths:
       - "backend/**"
