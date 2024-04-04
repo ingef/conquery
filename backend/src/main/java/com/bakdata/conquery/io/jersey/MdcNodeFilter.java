@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -18,13 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 public class MdcNodeFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
 	@Inject
-	@Named(ConqueryMDC.NODE)
-	private String node;
+	private MdcProvider.MdcNode nodeContainer;
 
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		ConqueryMDC.setNode(node);
+		ConqueryMDC.setNode(nodeContainer.node());
 	}
 
 	@Override

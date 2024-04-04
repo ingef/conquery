@@ -20,10 +20,13 @@ public class MdcProvider implements Feature {
 
 			@Override
 			protected void configure() {
-				bind(node).named(ConqueryMDC.NODE).to(String.class);
+				bind(new MdcNode(node)).named(ConqueryMDC.NODE).to(MdcNode.class);
 			}
 		});
 		context.register(MdcNodeFilter.class);
 		return true;
+	}
+
+	public record MdcNode(String node) {
 	}
 }
