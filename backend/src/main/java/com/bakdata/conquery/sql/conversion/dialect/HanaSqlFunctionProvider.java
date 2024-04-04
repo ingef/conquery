@@ -10,10 +10,11 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.Param;
 import org.jooq.impl.DSL;
 
@@ -91,13 +92,26 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(
-				DSL.min(columnDateRange.getStart()),
-				DSL.max(columnDateRange.getEnd())
-		);
+									  DSL.min(columnDateRange.getStart()),
+									  DSL.max(columnDateRange.getEnd())
+							  )
+							  .as(columnDateRange.getAlias());
 	}
 
 	@Override
-	public Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange) {
+	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
+		// HANA does not support single column ranges
+		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
+	}
+
+	@Override
+	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
+		// HANA does not support single column datemultiranges
+		return predecessor;
+	}
+
+	@Override
+	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
@@ -105,7 +119,7 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		Field<Date> startDate = columnDateRange.getStart();
 		Field<Date> endDate = columnDateRange.getEnd();
-		
+
 		Param<Integer> dateLength = DSL.val(DEFAULT_DATE_FORMAT.length());
 		Field<String> startDateExpression = toVarcharField(startDate, dateLength);
 		Field<String> endDateExpression = toVarcharField(endDate, dateLength);
@@ -135,21 +149,19 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Integer> dateDistance(ChronoUnit timeUnit, Name startDateColumnName, Date endDateExpression) {
+	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
-		String betweenFunction = switch (timeUnit) {
+		String betweenFunction = switch (datePart) {
 			case DAYS -> "DAYS_BETWEEN";
 			case MONTHS -> "MONTHS_BETWEEN";
 			case YEARS, DECADES, CENTURIES -> "YEARS_BETWEEN";
 			default -> throw new UnsupportedOperationException("Given ChronoUnit %s is not supported.");
 		};
 
-		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
-		Field<Date> endDate = toDateField(endDateExpression.toString());
 		Field<Integer> dateDistance = DSL.function(betweenFunction, Integer.class, startDate, endDate);
 
 		// HANA does not support decades or centuries directly
-		dateDistance = switch (timeUnit) {
+		dateDistance = switch (datePart) {
 			case DECADES -> dateDistance.divide(10);
 			case CENTURIES -> dateDistance.divide(100);
 			default -> dateDistance;
@@ -217,9 +229,9 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
 		return DSL.function("QUARTER", String.class, dateField);
-  }
-  
-  @Override
+	}
+
+	@Override
 	public Field<Object[]> asArray(List<Field<?>> fields) {
 		String arrayExpression = fields.stream()
 									   .map(Field::toString)

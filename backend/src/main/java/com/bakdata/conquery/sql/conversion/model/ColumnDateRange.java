@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import org.jooq.Field;
 
 @Getter
-public class ColumnDateRange implements Qualifiable<ColumnDateRange> {
+public class ColumnDateRange implements SqlSelect {
 
 	private static final String DATE_RESTRICTION_COLUMN_NAME = "date_restriction";
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
@@ -67,6 +68,7 @@ public class ColumnDateRange implements Qualifiable<ColumnDateRange> {
 		return this.range != null;
 	}
 
+	@Override
 	public List<Field<?>> toFields() {
 		if (isSingleColumnRange()) {
 			return List.of(this.range);
@@ -85,6 +87,11 @@ public class ColumnDateRange implements Qualifiable<ColumnDateRange> {
 				QualifyingUtil.qualify(getEnd(), qualifier),
 				getAlias()
 		);
+	}
+
+	@Override
+	public List<String> requiredColumns() {
+		return toFields().stream().map(Field::getName).toList();
 	}
 
 	public ColumnDateRange as(String alias) {

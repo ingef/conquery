@@ -8,10 +8,10 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
@@ -62,6 +62,21 @@ public interface SqlFunctionProvider {
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
 	/**
+	 * Given a single-column {@link ColumnDateRange}, it will create a new {@link ColumnDateRange} with a start and end field.
+	 * For dialects that don't support single-column ranges, it will create a copy of the given {@link ColumnDateRange}.
+	 *
+	 * @return A {@link ColumnDateRange} which has a start and end field.
+	 */
+	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
+
+	/**
+	 * @param predecessor The predeceasing step containing an aggregated validity date.
+	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
+	 * multiranges, the given predecessor will be returned as is.
+	 */
+	QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables);
+
+	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
 	 * <p>
 	 * Example: {[2013-11-10,2013-11-11),[2015-11-10,2015-11-11)}
@@ -72,9 +87,9 @@ public interface SqlFunctionProvider {
 	 * <p>
 	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */
-	Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange);
+	Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange);
 
-	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
+	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
@@ -90,7 +105,7 @@ public interface SqlFunctionProvider {
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
-  
+
 	Field<Object[]> asArray(List<Field<?>> fields);
 
 	default <T> Field<T> least(List<Field<T>> fields) {

@@ -17,7 +17,8 @@ import org.jooq.Record;
 import org.jooq.TableLike;
 
 /**
- * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional additional predecessors.
+ * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional validity date selects
+ * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
  * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
  * take place. See {@link SumDistinctSqlAggregator} for an example of additional predecessors.
@@ -26,12 +27,15 @@ import org.jooq.TableLike;
  *     {@code
  *     "join_branches" as (
  *  	  select
- *  	    coalesce("group_select"."pid", "interval_complete"."pid", "row_number_filtered"."pid") as "pid",
+ *  	    coalesce("group_select"."pid", "interval_complete"."pid", "interval_packing_selects"."pid", "row_number_filtered"."pid") as "pid",
  *  	    "interval_complete"."concept_concept-1_validity_date",
+ *  	    "interval_packing_selects"."event_duration_sum",
  *  	    "row_number_filtered"."sum_distinct-1"
  *  	  from "group_select"
  *  	    join "interval_complete"
  *  	      on "group_select"."pid" = "interval_complete"."pid"
+ *  	    join "interval_packing_selects"
+ *    	      on "group_select"."pid" = "interval_packing_selects"."pid"
  *  	    join "row_number_filtered"
  *  	      on "interval_complete"."pid" = "row_number_filtered"."pid"
  *  	)
@@ -57,9 +61,14 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPacker intervalPacker = tableContext.getConversionContext().getSqlDialect().getIntervalPacker();
-			QueryStep lastIntervalPackingStep = intervalPacker.createIntervalPackingSteps(tableContext.getIntervalPackingContext().get());
+			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(tableContext.getIntervalPackingContext().get());
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
+
+			QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forConnector(lastIntervalPackingStep, tableContext);
+			if (intervalPackingSelectsStep != lastIntervalPackingStep) {
+				queriesToJoin.add(intervalPackingSelectsStep);
+			}
 		}
 
 		tableContext.allSqlSelects().stream()
