@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector, useStore } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { StateT } from "../app/reducers";
 
@@ -11,7 +11,6 @@ import { TransparentButton } from "../button/TransparentButton";
 import FaIcon from "../icon/FaIcon";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { toggleDragHandles } from "../pane/actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
@@ -91,16 +90,6 @@ export default function Preview() {
   useHotkeys("esc", () => {
     if (!selectBoxOpen && !popOver) onClose();
   });
-
-  const store = useStore();
-  useEffect(() => {
-    if (!(store.getState() as StateT).panes.disableDragHandles) {
-      dispatch(toggleDragHandles());
-      return () => {
-        dispatch(toggleDragHandles());
-      };
-    }
-  }, [preview.statisticsData, dispatch, store]);
 
   return (
     <FullScreen>

@@ -11,9 +11,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
 
-import javax.validation.UnexpectedTypeException;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -32,6 +29,8 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

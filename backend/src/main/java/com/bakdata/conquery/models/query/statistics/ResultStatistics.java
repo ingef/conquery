@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -36,13 +37,22 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 	@NotNull
 	public static ResultStatistics collectResultStatistics(ManagedQuery managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, int dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
 
+
+
 		//TODO pull inner executor service from ManagerNode
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
 
 		// Yes, we are actually iterating the result for every job.
 
 		// Span date-column
-		final ListenableFuture<Range<LocalDate>> futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
+		final ListenableFuture<Range<LocalDate>> futureSpan;
+
+		if (managedQuery.isContainsDates()) {
+			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
+		}
+		else {
+			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
+		}
 
 		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
 		final ListenableFuture<Integer> futureLines =
@@ -54,7 +64,10 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
 				futureDescriptions =
-				IntStream.range(0, resultInfos.size()).mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
+				IntStream.range(0, resultInfos.size())
+						 // If the query doesn't contain dates, we can skip the dates-column.
+						.filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || managedQuery.isContainsDates())
+						 .mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
 							 final StopWatch started = StopWatch.createStarted();
 
 							 final ResultInfo info = resultInfos.get(col);

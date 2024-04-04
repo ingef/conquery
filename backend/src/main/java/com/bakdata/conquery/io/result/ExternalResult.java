@@ -3,8 +3,8 @@ package com.bakdata.conquery.io.result;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.models.execution.ManagedExecution;

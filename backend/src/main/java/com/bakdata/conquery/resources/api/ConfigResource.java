@@ -2,11 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 import java.time.Year;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.models.config.ColumnConfig;
@@ -14,6 +9,10 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.util.VersionInfo;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import lombok.RequiredArgsConstructor;
 
 @Path("config")
@@ -36,6 +35,7 @@ public class ConfigResource {
 		final FrontendConfig frontendConfig = config.getFrontend();
 		return new FrontendConfiguration(
 				VersionInfo.INSTANCE.getProjectVersion(),
+				VersionInfo.INSTANCE.getFormBackendVersions(),
 				frontendConfig.getCurrency(),
 				idColumns,
 				frontendConfig.getManualUrl(),

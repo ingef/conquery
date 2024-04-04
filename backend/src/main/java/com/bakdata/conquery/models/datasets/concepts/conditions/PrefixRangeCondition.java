@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -13,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Condition;

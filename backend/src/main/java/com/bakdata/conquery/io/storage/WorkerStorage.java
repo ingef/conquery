@@ -2,8 +2,6 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -15,6 +13,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import jakarta.validation.Validator;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 

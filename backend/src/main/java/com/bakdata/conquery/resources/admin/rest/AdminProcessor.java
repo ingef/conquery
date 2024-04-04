@@ -12,8 +12,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -38,6 +36,7 @@ import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

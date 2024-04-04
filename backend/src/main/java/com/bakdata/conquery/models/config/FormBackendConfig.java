@@ -6,11 +6,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.ws.rs.client.Client;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProvider;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigInformation;
+import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -66,6 +67,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	@NotEmpty
 	private String healthCheckPath = "health";
 
+	@NotEmpty
+	private String versionPath = "version";
+
 	@NotNull
 	private URL conqueryApiUrl;
 
@@ -102,13 +106,35 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		managerNode.getFormScanner().registerFrontendFormConfigProvider(new FormConfigProvider(getId(), this::registerFormConfigs));
 	}
 
+	/**
+	 * Retrieves the version information from the form backend and writes it to the {@link VersionInfo}
+	 */
+	private void updateVersion(ExternalFormBackendApi externalApi) {
+
+		try {
+			final String version = externalApi.getVersion();
+			final String oldVersion = VersionInfo.INSTANCE.setFormBackendVersion(getId(), version);
+			if (!version.equals(oldVersion)) {
+				log.info("Form Backend '{}' version update: {} -> {}", getId(), oldVersion, version);
+			}
+		}
+		catch (Exception e) {
+			log.warn("Unable to retrieve version from form backend '{}'. Enable trace logging for more info", getId(), (Exception) (log.isTraceEnabled()
+																																	? e
+																																	: null));
+			// Set place holder
+			VersionInfo.INSTANCE.setFormBackendVersion(getId(), "no-version-available");
+		}
+
+	}
+
 
 	public static ObjectMapper configureObjectMapper(ObjectMapper om) {
 		return om.addMixIn(ExternalForm.class, ExternalFormMixin.class);
 	}
 
 	public ExternalFormBackendApi createApi() {
-		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath,  healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
+		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath, healthCheckPath, versionPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
 	}
 
 	public boolean supportsFormType(String formType) {
@@ -125,7 +151,8 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	private void registerFormConfigs(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigs) {
 		final Set<String> supportedFormTypes = new HashSet<>();
 
-		for (ObjectNode formConfig : createApi().getFormConfigs()) {
+		final ExternalFormBackendApi api = createApi();
+		for (ObjectNode formConfig : api.getFormConfigs()) {
 			final String subType = formConfig.get("type").asText();
 			final String formType = createSubTypedId(subType);
 
@@ -138,6 +165,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		}
 
 		this.supportedFormTypes = supportedFormTypes;
+
+		// Update version
+		updateVersion(createApi());
 	}
 
 	/**

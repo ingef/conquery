@@ -1,10 +1,9 @@
 package com.bakdata.conquery.io.jetty;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-
 import com.bakdata.conquery.models.error.ConqueryError;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 
 public class ConqueryErrorExceptionMapper implements ExceptionMapper<ConqueryError> {
     @Override

@@ -4,14 +4,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import jakarta.ws.rs.core.UriBuilder;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")

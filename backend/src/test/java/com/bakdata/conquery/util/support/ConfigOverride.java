@@ -2,12 +2,13 @@ package com.bakdata.conquery.util.support;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.util.Collection;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.TestInstance;
@@ -15,16 +16,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  * This interface allows to override the configuration used in tests.
- *
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public interface ConfigOverride {
-
-	/**
-	 * Is called upon initialization of the test instance of Conquery.
-	 * @param config The configuration that is initialized with the defaults.
-	 */
-	void override(ConqueryConfig config);
 
 	@SneakyThrows
 	static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
@@ -46,11 +40,12 @@ public interface ConfigOverride {
 	static void configureRandomPorts(ConqueryConfig config) {
 
 		// set random open ports
-		for (ConnectorFactory con : CollectionUtils
-				.union(
-						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
-				)) {
+		final Collection<ConnectorFactory> connectorFactories = CollectionUtils.union(
+				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
+		);
+
+		for (ConnectorFactory con : connectorFactories) {
 			try (ServerSocket s = new ServerSocket(0)) {
 				((HttpConnectorFactory) con).setPort(s.getLocalPort());
 			}
@@ -59,5 +54,12 @@ public interface ConfigOverride {
 			config.getCluster().setPort(s.getLocalPort());
 		}
 	}
+
+	/**
+	 * Is called upon initialization of the test instance of Conquery.
+	 *
+	 * @param config The configuration that is initialized with the defaults.
+	 */
+	void override(ConqueryConfig config);
 
 }

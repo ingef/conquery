@@ -2,10 +2,10 @@ package com.bakdata.conquery.resources.hierarchies;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Table;

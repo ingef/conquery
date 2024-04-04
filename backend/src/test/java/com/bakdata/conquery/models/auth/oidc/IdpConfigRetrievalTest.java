@@ -6,12 +6,12 @@ import static org.mockserver.model.HttpResponse.response;
 
 import java.net.URI;
 
-import javax.ws.rs.client.Client;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.models.auth.OIDCMockServer;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

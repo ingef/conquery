@@ -19,9 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import javax.validation.Validator;
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -31,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotEmpty;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

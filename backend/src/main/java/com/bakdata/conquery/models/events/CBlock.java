@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -325,6 +324,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	public boolean isConceptIncluded(String entity, long requiredBits) {
 		if (requiredBits == 0L) {
 			return true;
+		}
+
+		if(!includedConceptElementsPerEntity.containsKey(entity)){
+			return false;
 		}
 
 
