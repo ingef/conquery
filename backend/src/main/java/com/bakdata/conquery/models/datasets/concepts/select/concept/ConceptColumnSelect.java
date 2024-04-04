@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptElementsAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -55,6 +56,9 @@ public class ConceptColumnSelect extends UniversalSelect {
 		return getHolder().findConcept() instanceof TreeConcept;
 	}
 
-
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.StringT.INSTANCE;
+	}
 
 }

@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.jersey.validation.Validators;
@@ -289,6 +290,11 @@ public class DefaultColumnNameTest {
 				setName("TestSelectName");
 				setLabel("TestSelectLabel");
 				setHolder(holder);
+			}
+
+			@Override
+			public ResultType<?> getResultType() {
+				return null;
 			}
 
 			@Override

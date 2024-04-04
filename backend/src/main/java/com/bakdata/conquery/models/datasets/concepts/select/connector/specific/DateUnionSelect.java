@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,5 +45,10 @@ public class DateUnionSelect extends Select implements DaterangeSelect {
 	public Aggregator<?> createAggregator() {
 		// TODO fix this for 2 columns
 		return new DateUnionAggregator(getColumn());
+	}
+
+	@Override
+	public ResultType<?> getResultType() {
+		return new ResultType.ListT<>(ResultType.DateRangeT.INSTANCE);
 	}
 }
