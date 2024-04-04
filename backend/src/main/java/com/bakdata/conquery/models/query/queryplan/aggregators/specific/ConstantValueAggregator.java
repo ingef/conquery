@@ -35,9 +35,5 @@ public class ConstantValueAggregator<T> extends Aggregator<T> {
 	@Override
 	public void consumeEvent(Bucket bucket, int event) {
 	}
-	
-	@Override
-	public ResultType getResultType() {
-		return type;
-	}
+
 }

@@ -120,11 +120,6 @@ public class ResultTestUtil {
 					throw new UnsupportedOperationException();
 				}
 
-				@Override
-				public ResultType getResultType() {
-					return resultType;
-				}
-
 			};
 		}
 
