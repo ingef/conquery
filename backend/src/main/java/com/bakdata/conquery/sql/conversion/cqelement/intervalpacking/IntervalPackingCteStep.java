@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,18 @@ public enum IntervalPackingCteStep implements CteStep {
 		Map<CteStep, CteStep> mappings = CteStep.getDefaultPredecessorMap(Set.of(values()));
 		mappings.put(PREVIOUS_END, root);
 		return mappings;
+	}
+
+	/**
+	 * Create predecessor mappings for these interval packing {@link CteStep}s based on the default mapping.
+	 */
+	public static Map<CteStep, CteStep> getMappings(SqlDialect dialect) {
+		if (dialect.supportsSingleColumnRanges()) {
+			Map<CteStep, CteStep> mappings = new HashMap<>();
+			mappings.put(INTERVAL_COMPLETE, null); // final step directly mapped onto root table
+			return mappings;
+		}
+		return CteStep.getDefaultPredecessorMap(Set.of(values()));
 	}
 
 }

@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.google.common.base.Preconditions;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -23,7 +23,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import com.google.common.base.Preconditions;
 import org.jooq.impl.SQLDataType;
 
 /**
@@ -120,6 +119,15 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange forArbitraryDateRange(DaterangeSelect dateRangeSelect) {
+		String tableName = dateRangeSelect.getTable().getName();
+		if (dateRangeSelect.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, dateRangeSelect.getStartColumn(), dateRangeSelect.getEndColumn());
+		}
+		return ofSingleColumn(tableName, dateRangeSelect.getColumn());
+	}
+
+	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(rangeAgg(columnDateRange)).as(columnDateRange.getAlias());
 	}
@@ -142,16 +150,10 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
+	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
 
-		Preconditions.checkArgument(
-				predecessor.getSelects().getValidityDate().isPresent(),
-				"Can't create a unnest-CTE without a validity date present."
-		);
-
-		Selects predecessorSelects = predecessor.getQualifiedSelects();
-		ColumnDateRange validityDate = predecessorSelects.getValidityDate().get();
-		ColumnDateRange unnested = ColumnDateRange.of(unnest(validityDate.getRange()).as(validityDate.getAlias()));
+		ColumnDateRange qualifiedRange = nested.qualify(predecessor.getCteName());
+		ColumnDateRange unnested = ColumnDateRange.of(unnest(qualifiedRange.getRange()).as(qualifiedRange.getAlias()));
 
 		Selects selects = Selects.builder()
 								 .ids(predecessor.getQualifiedSelects().getIds())
@@ -315,30 +317,33 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
-
 		String tableName = validityDate.getConnector().getTable().getName();
+		if (validityDate.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, validityDate.getStartColumn(), validityDate.getEndColumn());
+		}
+		return ofSingleColumn(tableName, validityDate.getColumn());
+	}
+
+	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
+		Field<?> start = DSL.coalesce(
+				DSL.field(DSL.name(tableName, startColumn.getName())),
+				toDateField(MINUS_INFINITY_DATE_VALUE)
+		);
+		Field<?> end = DSL.coalesce(
+				DSL.field(DSL.name(tableName, endColumn.getName())),
+				toDateField(INFINITY_DATE_VALUE)
+		);
+		return ColumnDateRange.of(daterange(start, end, "[]"));
+	}
+
+	private ColumnDateRange ofSingleColumn(String tableName, Column column) {
 
 		Field<?> dateRange;
 
-		if (validityDate.getEndColumn() != null) {
-
-			Field<?> startColumn = DSL.coalesce(
-					DSL.field(DSL.name(tableName, validityDate.getStartColumn().getName())),
-					toDateField(MINUS_INFINITY_DATE_VALUE)
-			);
-			Field<?> endColumn = DSL.coalesce(
-					DSL.field(DSL.name(tableName, validityDate.getEndColumn().getName())),
-					toDateField(INFINITY_DATE_VALUE)
-			);
-
-			return ColumnDateRange.of(daterange(startColumn, endColumn, "[]"));
-		}
-
-		Column validityDateColumn = validityDate.getColumn();
-		dateRange = switch (validityDateColumn.getType()) {
-			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
+		dateRange = switch (column.getType()) {
+			// if column is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
 			case DATE_RANGE -> {
-				Field<Object> daterange = DSL.field(DSL.name(validityDateColumn.getName()));
+				Field<Object> daterange = DSL.field(DSL.name(column.getName()));
 				Field<Date> startColumn = DSL.coalesce(
 						DSL.function("lower", Date.class, daterange),
 						toDateField(MINUS_INFINITY_DATE_VALUE)
@@ -351,13 +356,13 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
-				Field<Date> column = DSL.field(DSL.name(tableName, validityDate.getColumn().getName()), Date.class);
-				Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
-				Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
+				Field<Date> singleDate = DSL.field(DSL.name(tableName, column.getName()), Date.class);
+				Field<Date> startColumn = DSL.coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
+				Field<Date> endColumn = DSL.coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
 				yield daterange(startColumn, endColumn, "[]");
 			}
 			default -> throw new IllegalArgumentException(
-					"Given column type '%s' can't be converted to a proper date restriction.".formatted(validityDateColumn.getType())
+					"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
 			);
 		};
 

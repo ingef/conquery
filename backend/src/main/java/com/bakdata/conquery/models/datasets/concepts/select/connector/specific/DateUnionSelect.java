@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.DateUnionSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -44,7 +46,15 @@ public class DateUnionSelect extends Select implements DaterangeSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		// TODO fix this for 2 columns
-		return new DateUnionAggregator(getColumn());
+		if (getColumn() != null) {
+			return new DateUnionAggregator(getColumn());
+		}
+		// only relevant for ResultType in SQL mode
+		return new DateUnionAggregator(getStartColumn());
+	}
+
+	@Override
+	public SelectConverterHolder<?> createConverterHolder() {
+		return new SelectConverterHolder<>(this, new DateUnionSelectConverter());
 	}
 }
