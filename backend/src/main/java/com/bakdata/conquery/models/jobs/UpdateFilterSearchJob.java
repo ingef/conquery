@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Job that initializes the filter search for the frontend.
@@ -61,12 +62,7 @@ public class UpdateFilterSearchJob extends Job {
 
 		// collect all SelectFilters to create searches for them
 		final List<SelectFilter<?>> allSelectFilters =
-				storage.getAllConcepts().stream()
-					   .flatMap(c -> c.getConnectors().stream())
-					   .flatMap(co -> co.collectAllFilters().stream())
-					   .filter(SelectFilter.class::isInstance)
-					   .map(f -> ((SelectFilter<?>) f))
-					   .collect(Collectors.toList());
+				getAllSelectFilters(storage);
 
 
 		// Unfortunately the is no ClassToInstanceMultimap yet
@@ -143,6 +139,16 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.info("UpdateFilterSearchJob search finished");
 
+	}
+
+	@NotNull
+	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
+		return storage.getAllConcepts().stream()
+					  .flatMap(c -> c.getConnectors().stream())
+					  .flatMap(co -> co.collectAllFilters().stream())
+					  .filter(SelectFilter.class::isInstance)
+					  .map(f -> ((SelectFilter<?>) f))
+					  .collect(Collectors.toList());
 	}
 
 	@Override

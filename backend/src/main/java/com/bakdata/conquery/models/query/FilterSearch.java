@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Getter;
@@ -36,7 +35,7 @@ public class FilterSearch {
 	 */
 	@JsonIgnore
 	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<Searchable> totals = new Object2LongOpenHashMap<>();
+	private Object2LongMap<SelectFilter<?>> totals = new Object2LongOpenHashMap<>();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -70,8 +69,12 @@ public class FilterSearch {
 						 .collect(Collectors.toList());
 	}
 
-	public long getTotal(SelectFilter<?> searchable) {
-		return searchable.getSearchReferences().stream().mapToLong(totals::getLong).sum();
+	public long getTotal(SelectFilter<?> filter) {
+		return totals.computeIfAbsent(filter, (f) -> filter.getSearchReferences().stream()
+														   .map(searchCache::get)
+														   .flatMap(TrieSearch::stream)
+														   .distinct()
+														   .count());
 	}
 
 
@@ -81,9 +84,6 @@ public class FilterSearch {
 	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
-		log.debug("BEGIN counting Search totals.");
-		// Precompute totals as that can be slow when doing it on-demand.
-		updateTotals(searchCache);
 	}
 
 
@@ -99,26 +99,7 @@ public class FilterSearch {
 			values.stream()
 				  .map(value -> new FrontendValue(value, value))
 				  .forEach(value -> search.addItem(value, extractKeywords(value)));
-
-			// Update totals for search
-			totals.put(searchable, getTotalFor(searchable));
 		}
-	}
-
-	private void updateTotals(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
-		final Object2LongOpenHashMap<Searchable> partialTotals = new Object2LongOpenHashMap<>(searchCache.keySet().stream()
-																											.collect(Collectors.toMap(
-																													Functions.identity(),
-																													this::getTotalFor
-																											)));
-		totals.putAll(partialTotals);
-	}
-
-	private long getTotalFor(Searchable searchable) {
-		return searchCache.get(searchable).stream()
-						  .mapToInt(FrontendValue::hashCode) // TODO Use distinct directly?
-						  .distinct()
-						  .count();
 	}
 
 	/**
