@@ -286,11 +286,6 @@
   },
   {
     "method": "GET",
-    "path": "/logout",
-    "clazz": "AdminResource"
-  },
-  {
-    "method": "GET",
     "path": "/jobs/",
     "clazz": "AdminResource"
   },

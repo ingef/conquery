@@ -5,8 +5,6 @@ import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -15,17 +13,18 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector {
 
-	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
-	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
+	private final Object2IntMap<String> monthCounts = new Object2IntOpenHashMap<>();
 
-	private final AtomicInteger totalCount = new AtomicInteger();
-	private final AtomicLong nulls = new AtomicLong(0);
+	private int totalCount = 0;
+	private int nulls = 0;
 	private final Function<Object, CDateRange> dateExtractor;
 	private CDateRange span = null;
 
@@ -49,10 +48,10 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 	@Override
 	public void consume(Object value) {
-		totalCount.incrementAndGet();
+		totalCount++;
 
 		if (value == null) {
-			nulls.incrementAndGet();
+			nulls++;
 			return;
 		}
 
@@ -75,24 +74,19 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 		final int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
 		final int month = date.getMonthValue();
 
-		final String yearQuarter = year + "-" + quarter;
 		// This code is pretty hot, therefore I want to avoid String.format
 		final String yearMonth = year + "-" + (month < 10 ? "0" : "") + month;
 
-
-		quarterCounts.compute(yearQuarter, (ignored, current) -> current == null ? 1 : current + 1);
 		monthCounts.compute(yearMonth, (ignored, current) -> current == null ? 1 : current + 1);
-
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
 
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
-									 totalCount.get(),
-									 getNulls().intValue(),
-									 quarterCounts,
-									 monthCounts,
+									 totalCount,
+									 nulls,
+									 new TreeMap<>(monthCounts),
 									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
 		);
 	}
@@ -104,16 +98,14 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 		private final int count;
 		private final int nullValues;
-		private final SortedMap<String, Integer> quarterCounts;
 		private final SortedMap<String, Integer> monthCounts;
 
 		private final Range<LocalDate> span;
 
-		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> quarterCounts, SortedMap<String, Integer> monthCounts, Range<LocalDate> span) {
+		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> monthCounts, Range<LocalDate> span) {
 			super(name, label, description);
 			this.count = count;
 			this.nullValues = nullValues;
-			this.quarterCounts = quarterCounts;
 			this.monthCounts = monthCounts;
 			this.span = span;
 		}

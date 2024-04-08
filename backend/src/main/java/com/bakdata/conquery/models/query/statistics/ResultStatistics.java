@@ -14,13 +14,13 @@ import java.util.stream.IntStream;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -34,25 +34,41 @@ import org.jetbrains.annotations.NotNull;
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
-	public static ResultStatistics collectResultStatistics(ManagedQuery managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, int dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
+	public static ResultStatistics collectResultStatistics(SingleTableResult managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, Optional<Integer> dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
+
 
 		//TODO pull inner executor service from ManagerNode
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
+		final ListeningExecutorService
+				executorService =
+				MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
 
 		// Yes, we are actually iterating the result for every job.
 
 		// Span date-column
-		final ListenableFuture<Range<LocalDate>> futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
+		final ListenableFuture<Range<LocalDate>> futureSpan;
 
-		// Count result lines (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer>
-				futureLines =
-				executorService.submit(() -> managedQuery.streamResults(OptionalLong.empty()).mapToInt(result -> result.listResultLines().size()).sum());
+		final boolean containsDates = dateInfo.isPresent();
+
+		if (containsDates) {
+			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get()));
+		}
+		else {
+			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
+		}
+
+		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
+		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
+
+		final ListenableFuture<Integer> futureEntities =
+				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
 				futureDescriptions =
-				IntStream.range(0, resultInfos.size()).mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
+				IntStream.range(0, resultInfos.size())
+						 // If the query doesn't contain dates, we can skip the dates-column.
+						 .filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || containsDates)
+						 .mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
 							 final StopWatch started = StopWatch.createStarted();
 
 							 final ResultInfo info = resultInfos.get(col);
@@ -61,7 +77,10 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 log.trace("BEGIN stats collection for {}", info);
 
-							 managedQuery.streamResults(OptionalLong.empty()).map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
+							 managedQuery.streamResults(OptionalLong.empty())
+										 .map(EntityResult::listResultLines)
+										 .flatMap(List::stream)
+										 .forEach(line -> statsCollector.consume(line[col]));
 
 							 log.trace("DONE collecting values for {}, in {}", info, started);
 
@@ -77,7 +96,11 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final Range<LocalDate> span = futureSpan.get();
 		final List<ColumnStatsCollector.ResultColumnStatistics> descriptions = Futures.allAsList(futureDescriptions).get();
 		final int lines = futureLines.get();
-		return new ResultStatistics(managedQuery.getLastResultCount().intValue(), lines, descriptions, span);
+		final int entities = futureEntities.get();
+
+		executorService.shutdown();
+
+		return new ResultStatistics(entities, lines, descriptions, span);
 	}
 
 	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex) {

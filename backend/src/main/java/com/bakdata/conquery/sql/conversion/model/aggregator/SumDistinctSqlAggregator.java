@@ -10,13 +10,13 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
@@ -33,7 +33,7 @@ import org.jooq.impl.DSL;
 
 /**
  * Conversion of a {@link SumSelect} with {@link SumSelect#getDistinctByColumn()}. Sum's the values of a column for each row which is distinct by the
- * distinct-by columns by creating 2 additional CTEs. We can't use our usual {@link ConnectorCteStep#PREPROCESSING} CTE for achieving distinctness, because
+ * distinct-by columns by creating 2 additional CTEs. We can't use our usual {@link ConceptCteStep#PREPROCESSING} CTE for achieving distinctness, because
  * it's used for the conversion of other selects where distinctness by distinct-by columns is not required and would cause wrong results.
  * <p>
  *
@@ -93,7 +93,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			List<Column> distinctByColumns,
 			String alias,
 			IRange<? extends Number, ?> filterValue,
-			Field<Object> primaryColumn,
+			SqlIdColumns ids,
 			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
@@ -107,10 +107,10 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 																				   .toList();
 
 		// additional predecessors
-		QueryStep rowNumberCte = createRowNumberCte(primaryColumn, sumColumnRootSelect, distinctByRootSelects, alias, connectorTables, nameGenerator);
+		QueryStep rowNumberCte = createRowNumberCte(ids, sumColumnRootSelect, distinctByRootSelects, alias, connectorTables, nameGenerator);
 		Field<? extends Number> rootSelectQualified = sumColumnRootSelect.qualify(rowNumberCte.getCteName()).select();
 		FieldWrapper<BigDecimal> distinctSum = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
-		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, primaryColumn, distinctSum, alias, nameGenerator);
+		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, distinctSum, alias, nameGenerator);
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder()
 														 .preprocessingSelect(sumColumnRootSelect)
@@ -119,7 +119,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 		if (filterValue != null) {
 			this.sqlSelects = builder.build();
-			String groupFilterPredecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER);
+			String groupFilterPredecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 			Field<BigDecimal> qualifiedSumSelect = distinctSum.qualify(groupFilterPredecessor).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterValue);
 			this.whereClauses = WhereClauses.builder()
@@ -127,7 +127,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 											.build();
 		}
 		else {
-			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.qualify(connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_FILTER));
+			ExtractingSqlSelect<BigDecimal> finalSelect = distinctSum.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.whereClauses = WhereClauses.empty();
 		}
@@ -139,8 +139,8 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				sumSelect.getDistinctByColumn(),
 				selectContext.getNameGenerator().selectName(sumSelect),
 				null,
-				selectContext.getParentContext().getPrimaryColumn(),
-				selectContext.getConnectorTables(),
+				selectContext.getIds(),
+				selectContext.getTables(),
 				selectContext.getNameGenerator()
 		);
 	}
@@ -151,8 +151,8 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				sumFilter.getDistinctByColumn(),
 				filterContext.getNameGenerator().selectName(sumFilter),
 				filterContext.getValue(),
-				filterContext.getParentContext().getPrimaryColumn(),
-				filterContext.getConnectorTables(),
+				filterContext.getIds(),
+				filterContext.getTables(),
 				filterContext.getNameGenerator()
 		);
 	}
@@ -162,20 +162,19 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 	 * the row number will be incremented for each duplicated entry.
 	 */
 	private static QueryStep createRowNumberCte(
-			Field<Object> primaryColumn,
+			SqlIdColumns ids,
 			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
 			List<ExtractingSqlSelect<Object>> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
-		String predecessor = connectorTables.getPredecessor(ConnectorCteStep.AGGREGATION_SELECT);
-
-		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, predecessor);
+		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
 		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
 
 		List<Field<?>> partitioningFields = Stream.concat(
-														  Stream.of(qualifiedPrimaryColumn),
+														  qualifiedIds.toFields().stream(),
 														  distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.qualify(predecessor).select())
 												  )
 												  .collect(Collectors.toList());
@@ -185,7 +184,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 		);
 
 		Selects rowNumberAssignedSelects = Selects.builder()
-												  .primaryColumn(qualifiedPrimaryColumn)
+												  .ids(qualifiedIds)
 												  .sqlSelects(List.of(qualifiedSumRootSelect, rowNumber))
 												  .build();
 
@@ -201,13 +200,14 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 	 */
 	private static QueryStep createRowNumberFilteredCte(
 			QueryStep rowNumberCte,
-			Field<Object> primaryColumn,
 			FieldWrapper<BigDecimal> sumSelect,
 			String alias,
 			NameGenerator nameGenerator
 	) {
+		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
+
 		Selects rowNumberFilteredSelects = Selects.builder()
-												  .primaryColumn(primaryColumn)
+												  .ids(ids)
 												  .sqlSelects(List.of(sumSelect))
 												  .build();
 
@@ -220,7 +220,7 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 						.fromTable(QueryStep.toTableLike(rowNumberCte.getCteName()))
 						.conditions(List.of(firstOccurrence))
 						.predecessors(List.of(rowNumberCte))
-						.groupBy(List.of(primaryColumn))
+						.groupBy(ids.toFields())
 						.build();
 	}
 

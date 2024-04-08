@@ -29,7 +29,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +62,8 @@ public class QueryResource {
 	@Path("{" + QUERY + "}/statistics")
 	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
-		if (!(query instanceof ManagedQuery)) {
-			throw new BadRequestException("Statistics is only available for %s".formatted(ManagedQuery.class.getSimpleName()));
+		if (!(query instanceof SingleTableResult)) {
+			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
 		}
 
 		subject.authorize(query.getDataset(), Ability.READ);
@@ -73,7 +73,7 @@ public class QueryResource {
 			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 
-		return Response.ok((processor.getResultStatistics(((ManagedQuery) query)))).build();
+		return Response.ok((processor.getResultStatistics(((SingleTableResult) query)))).build();
 	}
 
 	@PATCH

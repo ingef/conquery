@@ -2,8 +2,13 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -14,7 +19,6 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
-import org.jooq.Field;
 
 @Value
 @With
@@ -22,15 +26,33 @@ import org.jooq.Field;
 public class ConversionContext implements Context {
 
 	SqlConnectorConfig config;
+
 	NodeConversions nodeConversions;
+
 	SqlDialect sqlDialect;
+
 	NameGenerator nameGenerator;
+
 	@Singular
 	List<QueryStep> querySteps;
+
+	@Nullable
 	SqlQuery finalQuery;
-	Field<Object> primaryColumn;
+
+	/**
+	 * An optional date restriction range. Is set when converting a {@link CQDateRestriction}.
+	 */
+	@Nullable
 	CDateRange dateRestrictionRange;
+
+	/**
+	 * An optional secondary id to group results by in addition to the primary id. Only set when converting {@link SecondaryIdQuery}s.
+	 */
+	@Nullable
+	SecondaryIdDescription secondaryIdDescription;
+
 	boolean negation;
+
 	boolean isGroupBy;
 
 	public boolean dateRestrictionActive() {
@@ -51,4 +73,8 @@ public class ConversionContext implements Context {
 		return this.toBuilder().clearQuerySteps().build();
 	}
 
+	@Override
+	public ConversionContext getConversionContext() {
+		return this;
+	}
 }

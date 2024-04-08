@@ -10,15 +10,15 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
-import org.jooq.Field;
 
 @Value
 @Builder
@@ -26,13 +26,13 @@ class CQTableContext implements Context {
 
 	String conceptLabel;
 	String conceptConnectorLabel;
-	Field<Object> primaryColumn;
+	SqlIdColumns ids;
 	Optional<ColumnDateRange> validityDate;
 	List<SqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
 	SqlTables connectorTables;
 	IntervalPackingContext intervalPackingContext;
-	ConversionContext parentContext;
+	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
 
@@ -43,19 +43,15 @@ class CQTableContext implements Context {
 		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 
-	public Field<Object> getPrimaryColumn() {
+	public SqlIdColumns getIds() {
 		if (previous == null) {
-			return this.primaryColumn;
+			return ids;
 		}
-		return previous.getSelects().getPrimaryColumn();
+		return previous.getQualifiedSelects().getIds();
 	}
 
 	public Optional<IntervalPackingContext> getIntervalPackingContext() {
 		return Optional.ofNullable(intervalPackingContext);
 	}
 
-	@Override
-	public NameGenerator getNameGenerator() {
-		return parentContext.getNameGenerator();
-	}
 }

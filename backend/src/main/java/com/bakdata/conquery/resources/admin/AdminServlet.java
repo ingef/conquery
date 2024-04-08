@@ -73,6 +73,7 @@ public class AdminServlet {
 		jerseyConfigUI.setUrlPattern("/admin-ui");
 
 		RESTServer.configure(manager.getConfig(), jerseyConfig);
+		RESTServer.configure(manager.getConfig(), jerseyConfigUI);
 
 		final AdminEnvironment admin = manager.getEnvironment().admin();
 		admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
@@ -122,8 +123,7 @@ public class AdminServlet {
 					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
-					.register(authCookieFilter)
-					.register(manager.getAuthController().getAuthenticationFilter());
+					.register(authCookieFilter);
 
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
@@ -138,8 +138,7 @@ public class AdminServlet {
 					  })
 					  .register(AdminPermissionFilter.class)
 					  .register(IdRefPathParamConverterProvider.class)
-					  .register(authCookieFilter)
-					  .register(manager.getAuthController().getRedirectingAuthFilter());
+					  .register(authCookieFilter);
 		;
 	}
 
