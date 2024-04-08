@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.BiMap;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.time.StopWatch;
 @Getter
 @RequiredArgsConstructor
 @Slf4j
+@EqualsAndHashCode
 public class LabelMap implements Searchable {
 
 	private final FilterId id;
