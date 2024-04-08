@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import java.util.List;
-
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
