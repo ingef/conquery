@@ -4,10 +4,12 @@ import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +31,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
@@ -831,6 +834,17 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 
+	}
+
+	@Test
+	public void formBackendVersion() throws JSONException, IOException {
+		final FormBackendVersion version = new FormBackendVersion();
+		version.setVersion("3.45.45-g85ut85u43t8");
+		version.setBuildTime(Date.from(Instant.ofEpochSecond(1712554025))); //new Date(2024, Calendar.APRIL, 8, 21, 17, 44));
+
+		SerializationTestUtil.forType(FormBackendVersion.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(version);
 	}
 
 }

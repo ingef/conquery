@@ -9,14 +9,11 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
+import com.bakdata.conquery.apiv1.frontend.VersionContainer;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -34,6 +31,8 @@ import com.bakdata.conquery.resources.api.ResultExternalResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -79,9 +78,9 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 				frontendConfiguration =
 				support.getClient().target(frontendConfigURI).request(MediaType.APPLICATION_JSON_TYPE).get().readEntity(FrontendConfiguration.class);
 
-		assertThat(frontendConfiguration.formBackendVersions())
+		assertThat(frontendConfiguration.versions())
 				.describedAs("Checking health of form backend")
-				.containsExactlyEntriesOf(Map.of(FORM_BACKEND_ID, "3.2.1-ge966c285")); // example value from OpenAPI Spec
+				.contains(new VersionContainer(FORM_BACKEND_ID, "3.2.1-ge966c285", null)); // example value from OpenAPI Spec
 
 		log.info("Send an external form");
 		final User testUser = support.getTestUser();
