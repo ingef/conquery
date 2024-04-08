@@ -5,7 +5,6 @@ import java.util.List;
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
@@ -20,7 +19,7 @@ public interface Searchable {
 	/**
 	 * All available {@link FrontendValue}s for searching in a {@link TrieSearch}.
 	 */
-	TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage);
+	TrieSearch<FrontendValue> createTrieSearch(IndexConfig config);
 
 	/**
 	 * Parameter used in the construction of {@link com.bakdata.conquery.util.search.TrieSearch}, defining the shortest suffix to create.

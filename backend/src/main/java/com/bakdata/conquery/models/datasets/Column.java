@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -75,7 +74,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * We create only an empty search here, because the content is provided through {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues} and filled by the caller.
 	 */
 	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
 
 		return config.createTrieSearch(isGenerateSuffixes());
 	}

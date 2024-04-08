@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -29,7 +28,7 @@ public class LabelMap implements Searchable {
 	private final boolean generateSearchSuffixes;
 
 	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
 
 		final TrieSearch<FrontendValue> search = config.createTrieSearch(true);
 
