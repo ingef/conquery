@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -93,15 +95,29 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
 			}
 		}
-		
+
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}
 
 	@Override
 	public void afterAllReaction() {
-		log.debug("{} shrinking searches", this);
-		final FilterSearch filterSearch = namespace.getFilterSearch();
-		columns.forEach(filterSearch::shrinkSearch);
+
+		// Run this in a job, so it is definitely processed after UpdateFilterSearchJob
+		namespace.getJobManager().addSlowJob(
+				new SimpleJob(
+						"Finalize Search update",
+						() -> {
+							log.debug("{} shrinking searches", this);
+							final FilterSearch filterSearch = namespace.getFilterSearch();
+							columns.forEach(filterSearch::shrinkSearch);
+
+
+							log.info("BEGIN counting Search totals.");
+							UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage()).forEach(namespace.getFilterSearch()::getTotal);
+							log.debug("FINISHED counting Search totals.");
+						}
+				)
+		);
 	}
 }

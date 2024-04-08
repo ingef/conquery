@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +27,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Job that initializes the filter search for the frontend.
@@ -60,18 +60,13 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.info("BEGIN loading SourceSearch");
 
-		// collect all SelectFilters to the create searches for them
+		// collect all SelectFilters to create searches for them
 		final List<SelectFilter<?>> allSelectFilters =
-				storage.getAllConcepts().stream()
-					   .flatMap(c -> c.getConnectors().stream())
-					   .flatMap(co -> co.collectAllFilters().stream())
-					   .filter(SelectFilter.class::isInstance)
-					   .map(f -> ((SelectFilter<?>) f))
-					   .collect(Collectors.toList());
+				getAllSelectFilters(storage);
 
 
 		// Unfortunately the is no ClassToInstanceMultimap yet
-		final Map<Class<?>, Set<Searchable<?>>> collectedSearchables =
+		final Map<Class<?>, Set<Searchable>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
@@ -85,13 +80,13 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
-		final HashMap<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+		final HashMap<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+		final Map<Searchable, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		for (Searchable<?> searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
-			if (searchable instanceof Column column) {
+		for (Searchable searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
+			if (searchable instanceof Column) {
 				throw new IllegalStateException("Columns should have been grouped out previously");
 			}
 
@@ -99,17 +94,17 @@ public class UpdateFilterSearchJob extends Job {
 
 				final StopWatch watch = StopWatch.createStarted();
 
-				log.info("BEGIN collecting entries for `{}`", searchable.getId());
+				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
+					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig);
 
 					synchronizedResult.put(searchable, search);
 
 					log.debug(
 							"DONE collecting {} entries for `{}`, within {}",
 							search.calculateSize(),
-							searchable.getId(),
+							searchable,
 							watch
 					);
 				}
@@ -120,7 +115,7 @@ public class UpdateFilterSearchJob extends Job {
 			});
 		}
 
-		// The following cast is save
+		// The following cast is safe
 		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(Column.class, Collections.emptySet());
 		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
 		registerColumnValuesInSearch.accept(searchableColumns);
@@ -144,6 +139,16 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.info("UpdateFilterSearchJob search finished");
 
+	}
+
+	@NotNull
+	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
+		return storage.getAllConcepts().stream()
+					  .flatMap(c -> c.getConnectors().stream())
+					  .flatMap(co -> co.collectAllFilters().stream())
+					  .filter(SelectFilter.class::isInstance)
+					  .map(f -> ((SelectFilter<?>) f))
+					  .collect(Collectors.toList());
 	}
 
 	@Override
