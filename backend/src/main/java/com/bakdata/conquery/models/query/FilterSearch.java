@@ -16,16 +16,17 @@ import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@Data
+@RequiredArgsConstructor
 public class FilterSearch {
 
+	@Getter
 	private final IndexConfig indexConfig;
 
 	/**
@@ -35,7 +36,7 @@ public class FilterSearch {
 	 */
 	@JsonIgnore
 	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<Searchable> totals = Object2LongMaps.emptyMap();
+	private Object2LongMap<Searchable> totals = new Object2LongOpenHashMap<>();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -124,7 +125,7 @@ public class FilterSearch {
 	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
 	 */
 	public void shrinkSearch(Searchable searchable) {
-		final TrieSearch<FrontendValue> search = getSearchCache().get(searchable);
+		final TrieSearch<FrontendValue> search = searchCache.get(searchable);
 
 		if (search == null) {
 			log.warn("Searchable has no search associated: {}", searchable);
@@ -135,6 +136,6 @@ public class FilterSearch {
 
 	public synchronized void clearSearch() {
 		totals = new Object2LongOpenHashMap<>();
-		searchCache.clear();
+		searchCache = new HashMap<>();
 	}
 }

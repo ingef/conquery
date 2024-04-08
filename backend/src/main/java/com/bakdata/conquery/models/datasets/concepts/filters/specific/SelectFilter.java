@@ -47,6 +47,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
 
+	@JsonIgnore
+	private transient LabelMap searchableLabels;
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -81,7 +84,11 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		}
 
 		if (!labels.isEmpty()) {
-			out.add(new LabelMap(getId(), labels, searchMinSuffixLength, generateSearchSuffixes));
+			if (searchableLabels == null) {
+				// No synchronization here should be fine LabelMap and its delegate BiMap implement hash code
+				searchableLabels = new LabelMap(getId(), labels, searchMinSuffixLength, generateSearchSuffixes);
+			}
+			out.add(searchableLabels);
 		}
 
 		out.add(getColumn());

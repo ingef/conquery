@@ -59,7 +59,7 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.info("BEGIN loading SourceSearch");
 
-		// collect all SelectFilters to the create searches for them
+		// collect all SelectFilters to create searches for them
 		final List<SelectFilter<?>> allSelectFilters =
 				storage.getAllConcepts().stream()
 					   .flatMap(c -> c.getConnectors().stream())
