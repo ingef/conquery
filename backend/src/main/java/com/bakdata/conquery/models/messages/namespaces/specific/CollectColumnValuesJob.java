@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -113,9 +114,16 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 							columns.forEach(filterSearch::shrinkSearch);
 
 
-							log.info("BEGIN counting Search totals.");
-							UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage()).forEach(namespace.getFilterSearch()::getTotal);
-							log.debug("FINISHED counting Search totals.");
+							log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
+							for (SelectFilter<?> filter : UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage())) {
+								try {
+									namespace.getFilterSearch().getTotal(filter);
+								}
+								catch (Exception e) {
+									log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
+								}
+							}
+							log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
 						}
 				)
 		);
