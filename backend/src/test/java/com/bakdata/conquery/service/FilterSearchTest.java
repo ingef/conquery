@@ -60,7 +60,8 @@ public class FilterSearchTest {
 		search.registerValues(column, List.of(
 				"a",
 				"bb",
-				"cc"
+				"cc",
+				"mm"
 		));
 		search.shrinkSearch(column);
 
