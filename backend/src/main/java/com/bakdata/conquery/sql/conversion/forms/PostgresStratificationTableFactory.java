@@ -6,8 +6,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
@@ -30,13 +30,13 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 	}
 
 	@Override
-	public QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, Resolution resolution) {
+	public QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
-		QueryStep seriesTableStep = createSeriesTableStep(resolution, formDateRestriction);
+		QueryStep seriesTableStep = createSeriesTableStep(resolutionAndAlignment, formDateRestriction);
 
 		Selects baseStepSelects = getBaseStep().getQualifiedSelects();
 		Field<Integer> index = indexField(baseStepSelects.getIds());
-		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(resolution, index);
+		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
 
 		ColumnDateRange seriesRange = seriesTableStep.getQualifiedSelects().getStratificationDate().orElseThrow(
 				() -> new IllegalStateException("Series table step should contain a stratification date")
@@ -56,7 +56,7 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 		);
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.stratificationCte(resolution).getSuffix())
+						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
 						.selects(selects)
 						.fromTables(tables)
 						.conditions(conditions)
@@ -73,9 +73,9 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 	 * Unlike HANA, Postgres does not create a start and end date when creating a date series. Instead, it just defines timestamps from start to end in a
 	 * single row set. That's why we have to define start and end ourselves via SQL's lead() function.
 	 */
-	private QueryStep createSeriesTableStep(Resolution resolution, Range<LocalDate> dateRange) {
+	private QueryStep createSeriesTableStep(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Range<LocalDate> dateRange) {
 
-		Table<Record> seriesTable = createSeries(dateRange, resolution);
+		Table<Record> seriesTable = createSeries(dateRange, resolutionAndAlignment);
 
 		// series are generated as timestamps, so we have to cast
 		Field<Date> seriesField = getFunctionProvider().cast(DSL.field(DSL.name(SharedAliases.DATE_SERIES.getAlias()), Timestamp.class), SQLDataType.DATE);
@@ -93,16 +93,16 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.seriesCte(resolution).getSuffix())
+						.cteName(FormCteStep.seriesCte(resolutionAndAlignment.getResolution()).getSuffix())
 						.selects(selects)
 						.fromTable(seriesTable)
 						.build();
 	}
 
-	private Table<Record> createSeries(Range<LocalDate> dateRange, Resolution resolution) {
+	private Table<Record> createSeries(Range<LocalDate> dateRange, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
 		PostgreSqlFunctionProvider functionProvider = getFunctionProvider();
-		Range<LocalDate> adjustedRange = toGenerateSeriesBounds(dateRange, resolution);
+		Range<LocalDate> adjustedRange = toGenerateSeriesBounds(dateRange, resolutionAndAlignment);
 		Field<Timestamp> start = functionProvider.cast(
 				DSL.field(DSL.val(adjustedRange.getMin().toString())),
 				SQLDataType.TIMESTAMP
@@ -117,7 +117,7 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 						  start,
 						  end,
 						  DSL.keyword("interval"),
-						  DSL.val(toResolutionExpression(resolution))
+						  DSL.val(toResolutionExpression(resolutionAndAlignment.getResolution()))
 				  )
 				  .as(SharedAliases.DATE_SERIES.getAlias());
 	}

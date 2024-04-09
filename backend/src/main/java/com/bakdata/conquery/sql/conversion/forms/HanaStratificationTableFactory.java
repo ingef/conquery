@@ -6,9 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -36,12 +36,12 @@ class HanaStratificationTableFactory extends StratificationTableFactory implemen
 	}
 
 	@Override
-	public QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, Resolution resolution) {
+	public QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
-		Table<Record> seriesTable = createGenerateSeriesTable(formDateRestriction, resolution);
+		Table<Record> seriesTable = createGenerateSeriesTable(formDateRestriction, resolutionAndAlignment);
 
 		Selects baseStepSelects = getBaseStep().getQualifiedSelects();
-		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(resolution, indexField(baseStepSelects.getIds()));
+		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), indexField(baseStepSelects.getIds()));
 
 		ColumnDateRange bounds = findBounds(formDateRestriction, baseStepSelects);
 		ColumnDateRange seriesRange = ColumnDateRange.of(SERIES_START_FIELD, SERIES_END_FIELD);
@@ -56,7 +56,7 @@ class HanaStratificationTableFactory extends StratificationTableFactory implemen
 		List<TableLike<Record>> tables = List.of(QueryStep.toTableLike(getBaseStep().getCteName()), seriesTable);
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.stratificationCte(resolution).getSuffix())
+						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
 						.selects(selects)
 						.fromTables(tables)
 						.conditions(conditions)
@@ -90,9 +90,10 @@ class HanaStratificationTableFactory extends StratificationTableFactory implemen
 		return List.of(getFunctionProvider().dateRestriction(bounds, seriesRange));
 	}
 
-	private Table<Record> createGenerateSeriesTable(Range<LocalDate> formDateRestriction, Resolution resolution) {
-		String resolutionExpression = toResolutionExpression(resolution).toUpperCase(); // uppercase not required, but HANA best-practice
-		Range<LocalDate> adjustedRange = toGenerateSeriesBounds(formDateRestriction, resolution);
+	private Table<Record> createGenerateSeriesTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		// upper-casing not required, but HANA best-practice
+		String resolutionExpression = toResolutionExpression(resolutionAndAlignment.getResolution());
+		Range<LocalDate> adjustedRange = toGenerateSeriesBounds(formDateRestriction, resolutionAndAlignment);
 		Field<Date> start = getFunctionProvider().toDateField(adjustedRange.getMin().toString());
 		Field<Date> end = getFunctionProvider().toDateField(adjustedRange.getMax().toString());
 		return DSL.table("SERIES_GENERATE_DATE({0}, {1}, {2})", DSL.val("INTERVAL %s".formatted(resolutionExpression)), start, end);

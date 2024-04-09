@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -52,8 +53,7 @@ public abstract class StratificationTableFactory {
 
 	public QueryStep createStratificationTable(AbsoluteFormQuery form) {
 		List<QueryStep> tables = form.getResolutionsAndAlignmentMap().stream()
-									 .map(ExportForm.ResolutionAndAlignment::getResolution)
-									 .map(resolution -> createResolutionTable(form.getDateRange(), resolution))
+									 .map(resolutionAndAlignment -> createResolutionTable(form.getDateRange(), resolutionAndAlignment))
 									 .toList();
 		return unionResolutionTables(tables, getBaseStep());
 	}
@@ -88,10 +88,10 @@ public abstract class StratificationTableFactory {
 		return QueryStep.createUnionStep(withQualifiedSelects, FormCteStep.FULL_STRATIFICATION.getSuffix(), List.of(baseStep, lastResolutionTable));
 	}
 
-	protected QueryStep createResolutionTable(Range<LocalDate> formDateRestriction, Resolution resolution) {
-		return switch (resolution) {
+	protected QueryStep createResolutionTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> createCompleteTable(formDateRestriction);
-			case YEARS, QUARTERS -> createIntervalTable(formDateRestriction, resolution);
+			case YEARS, QUARTERS -> createIntervalTable(formDateRestriction, resolutionAndAlignment);
 			case DAYS -> throw new UnsupportedOperationException("Resolution days not supported yet");
 		};
 	}
@@ -126,7 +126,7 @@ public abstract class StratificationTableFactory {
 						.build();
 	}
 
-	protected abstract QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, Resolution resolution);
+	protected abstract QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment);
 
 	protected Field<Integer> indexField(SqlIdColumns ids) {
 
@@ -174,24 +174,31 @@ public abstract class StratificationTableFactory {
 	 * </table>
 	 * </pre>
 	 */
-	protected Range<LocalDate> toGenerateSeriesBounds(Range<LocalDate> formDateRestriction, Resolution resolution) {
-		return switch (resolution) {
+	protected Range<LocalDate> toGenerateSeriesBounds(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> formDateRestriction; // no adjustment necessary
-			case YEARS -> Range.of(getYearStart(formDateRestriction.getMin()), getYearEnd(formDateRestriction.getMax()));
-			case QUARTERS -> Range.of(getQuarterStart(formDateRestriction.getMin()), getQuarterEnd(formDateRestriction.getMax()));
+			case YEARS -> determineYearRange(formDateRestriction, resolutionAndAlignment.getAlignment());
+			case QUARTERS -> Range.of(jumpToQuarterStart(formDateRestriction.getMin()), jumpToNextQuarterStart(formDateRestriction.getMax()));
 			case DAYS -> throw new UnsupportedOperationException("DAYS resolution not supported yet");
 		};
 	}
 
-	private static LocalDate getYearStart(LocalDate date) {
-		return LocalDate.of(date.getYear(), Month.JANUARY, 1);
+	private Range<LocalDate> determineYearRange(Range<LocalDate> bounds, Alignment alignment) {
+		return switch (alignment) {
+			case QUARTER -> {
+				LocalDate start = jumpToQuarterStart(bounds.getMin());
+				LocalDate end = LocalDate.of(bounds.getMax().getYear() + 1, start.getMonth(), 1);
+				yield Range.of(start, end);
+			}
+			case YEAR -> Range.of(
+					LocalDate.of(bounds.getMin().getYear(), Month.JANUARY, 1),
+					LocalDate.of(bounds.getMax().getYear() + 1, Month.JANUARY, 1)
+			);
+			default -> throw new UnsupportedOperationException("Alignment %s not supported for resolution YEARS".formatted(alignment));
+		};
 	}
 
-	private static LocalDate getYearEnd(LocalDate date) {
-		return LocalDate.of(date.getYear() + 1, Month.JANUARY, 1);
-	}
-
-	private static LocalDate getQuarterStart(LocalDate date) {
+	private static LocalDate jumpToQuarterStart(LocalDate date) {
 
 		Month startMonth = switch (date.getMonthValue()) {
 			case 1, 2, 3 -> Month.JANUARY;
@@ -203,7 +210,7 @@ public abstract class StratificationTableFactory {
 		return LocalDate.of(date.getYear(), startMonth, 1);
 	}
 
-	private static LocalDate getQuarterEnd(LocalDate date) {
+	private static LocalDate jumpToNextQuarterStart(LocalDate date) {
 
 		int year = date.getYear();
 		Month startMonth;
