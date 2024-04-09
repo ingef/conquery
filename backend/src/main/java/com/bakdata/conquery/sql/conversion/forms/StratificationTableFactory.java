@@ -210,6 +210,7 @@ public abstract class StratificationTableFactory {
 		return LocalDate.of(date.getYear(), startMonth, 1);
 	}
 
+
 	private static LocalDate jumpToNextQuarterStart(LocalDate date) {
 
 		int year = date.getYear();
