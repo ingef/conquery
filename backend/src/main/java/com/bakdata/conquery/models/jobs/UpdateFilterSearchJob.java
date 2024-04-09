@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -70,9 +69,6 @@ public class UpdateFilterSearchJob extends Job {
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
-								// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
-								// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
-								.filter(Predicate.not(Searchable::isSearchDisabled))
 								// Group Searchables into "Columns" and other "Searchables"
 								.collect(Collectors.groupingBy(s -> s instanceof Column ? Column.class : Searchable.class, Collectors.toSet()));
 

@@ -76,7 +76,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	public List<Searchable> getSearchReferences() {
 		final List<Searchable> out = new ArrayList<>();
 
-		if (getTemplate() != null) {
+		if (getTemplate() != null && !getTemplate().isSearchDisabled()) {
 			out.add(getTemplate());
 		}
 
@@ -84,7 +84,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 			out.add(new LabelMap(getId(), labels, searchMinSuffixLength, generateSearchSuffixes));
 		}
 
-		out.add(getColumn());
+		if (!getColumn().isSearchDisabled()) {
+			out.add(getColumn());
+		}
 
 		return out;
 	}
