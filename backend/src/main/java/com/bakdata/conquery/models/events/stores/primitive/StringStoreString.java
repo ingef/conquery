@@ -27,10 +27,6 @@ public class StringStoreString implements StringStore {
 
 	@JsonCreator
 	public static StringStoreString withInternedStrings(String[] values) {
-		for (int index = 0; index < values.length; index++) {
-			values[index] = values[index] != null ? values[index].intern() : null;
-		}
-
 		return new StringStoreString(values);
 	}
 
