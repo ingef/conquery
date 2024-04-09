@@ -85,7 +85,9 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		}
 		if (daterange.hasUpperBound()) {
 			// end is handled as exclusive
-			LocalDate exclusiveMaxDate = daterange.getMax() == LocalDate.MAX ? LocalDate.MAX : daterange.getMax().plusDays(1);
+			LocalDate exclusiveMaxDate = daterange.getMax() == LocalDate.MAX
+										 ? Date.valueOf(MAX_DATE_VALUE).toLocalDate()
+										 : daterange.getMax().plusDays(1);
 			endDateExpression = exclusiveMaxDate.toString();
 		}
 

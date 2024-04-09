@@ -150,7 +150,7 @@ class PostgresStratificationTableFactory extends StratificationTableFactory impl
 
 		PostgreSqlFunctionProvider functionProvider = getFunctionProvider();
 
-		// we need to filter the single entry with a null end date which is created because we use the SQL leap() function in createSeriesTableStep()
+		// we need to filter the single entry with a null end date which is created because we use the SQL lead() function in createSeriesTableStep()
 		Field<Object> stratificationDateEnd = DSL.field(DSL.name(SharedAliases.DATE_END.getAlias()));
 		Condition endNotNull = DSL.condition(stratificationDateEnd.isNotNull());
 

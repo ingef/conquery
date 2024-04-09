@@ -330,6 +330,7 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
+			// TODO proper implementation of EntityIdMap#resolve for SQL mode
 			String resolvedId = isInSqlMode
 								? String.valueOf(row[0])
 								: tryResolveId(row, readers, mapping);

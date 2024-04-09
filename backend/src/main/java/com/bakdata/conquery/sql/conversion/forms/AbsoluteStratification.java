@@ -17,7 +17,8 @@ interface AbsoluteStratification {
 	ColumnDateRange findBounds(Range<LocalDate> formDateRestriction, Selects baseStepSelects);
 
 	/**
-	 * Generates the correctly bound stratification date range. The generated series range will be bound by the given bounds range.
+	 * Generates the correctly bound stratification date range based on the provided series range and mandatory bounds. Also see
+	 * {@link #findBounds(Range, Selects)}.
 	 * <p>
 	 * A generated series will always span over full quarters and years, for example: generate_series(2012-01-01, 2013-01-01, interval '1 year') generates
 	 * <table>
@@ -28,8 +29,9 @@ interface AbsoluteStratification {
 	 *     <td>2013-01-01</td>
 	 *   </tr>
 	 * </table>
-	 * But if the entity date or the form's date restriction range is not "bigger", meaning bounds.startDdate > series.startDate and/or bounds.endDate <
-	 * series.endDate, then start and or end date have to be overwritten to set the stratification range correctly.
+	 * The function adjusts the start and/or end dates of the series to ensure they fall within the given bounds, effectively creating an intersection between
+	 * the series range and the bounds. If the bounds restrict the range (bounds.startDate > series.startDate and/or bounds.endDate < series.endDate),
+	 * the start and/or end date of the series will be adjusted to align with the bounds.
 	 */
 	ColumnDateRange createStratificationDateRange(ColumnDateRange seriesRange, ColumnDateRange bounds);
 
