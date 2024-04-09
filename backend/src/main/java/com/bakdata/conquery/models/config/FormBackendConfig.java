@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
 import com.bakdata.conquery.io.external.form.ExternalFormMixin;
+import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
@@ -112,10 +113,12 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	private void updateVersion(ExternalFormBackendApi externalApi) {
 
 		try {
-			final String version = externalApi.getVersion();
-			final VersionContainer oldVersion = VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), version, null));
-			if (!version.equals(oldVersion)) {
-				log.info("Form Backend '{}' version update: {} -> {}", getId(), oldVersion, version);
+			final FormBackendVersion versionInfo = externalApi.getVersion();
+			final VersionContainer
+					oldVersion =
+					VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
+			if (!versionInfo.equals(oldVersion)) {
+				log.info("Form Backend '{}' versionInfo update: {} -> {}", getId(), oldVersion, versionInfo);
 			}
 		}
 		catch (Exception e) {

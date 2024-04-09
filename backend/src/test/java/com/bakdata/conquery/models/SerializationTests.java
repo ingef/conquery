@@ -4,12 +4,11 @@ import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -838,9 +837,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void formBackendVersion() throws JSONException, IOException {
-		final FormBackendVersion version = new FormBackendVersion();
-		version.setVersion("3.45.45-g85ut85u43t8");
-		version.setBuildTime(Date.from(Instant.ofEpochSecond(1712554025))); //new Date(2024, Calendar.APRIL, 8, 21, 17, 44));
+		final FormBackendVersion version = new FormBackendVersion("3.45.45-g85ut85u43t8", ZonedDateTime.parse("2007-12-03T10:15:30+00:00"));
 
 		SerializationTestUtil.forType(FormBackendVersion.class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper())

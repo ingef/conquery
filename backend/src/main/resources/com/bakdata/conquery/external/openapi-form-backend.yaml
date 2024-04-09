@@ -321,6 +321,10 @@ components:
         version:
           type: string
           example: "3.2.1-ge966c285"
+        buildTime:
+          type: string
+          format: date-time
+          example: "2007-08-31T16:47:00+00:00"
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

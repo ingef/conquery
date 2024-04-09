@@ -128,8 +128,8 @@ public class ExternalFormBackendApi {
 		return new HttpHealthCheck(getHealthTarget.getUri().toString(), client);
 	}
 
-	public String getVersion() {
-		return getVersionTarget.request(MediaType.APPLICATION_JSON_TYPE).get(FormBackendVersion.class).getVersion();
+	public FormBackendVersion getVersion() {
+		return getVersionTarget.request(MediaType.APPLICATION_JSON_TYPE).get(FormBackendVersion.class);
 	}
 
 	public ExternalTaskState cancelTask(UUID taskId) {

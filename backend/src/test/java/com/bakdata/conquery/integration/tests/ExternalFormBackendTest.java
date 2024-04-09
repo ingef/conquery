@@ -7,6 +7,7 @@ import static org.mockserver.model.HttpRequest.request;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		assertThat(frontendConfiguration.versions())
 				.describedAs("Checking health of form backend")
-				.contains(new VersionContainer(FORM_BACKEND_ID, "3.2.1-ge966c285", null)); // example value from OpenAPI Spec
+				.contains(new VersionContainer(FORM_BACKEND_ID, "3.2.1-ge966c285", ZonedDateTime.parse("2007-08-31T16:47:00+00:00"))); // example value from OpenAPI Spec
 
 		log.info("Send an external form");
 		final User testUser = support.getTestUser();
