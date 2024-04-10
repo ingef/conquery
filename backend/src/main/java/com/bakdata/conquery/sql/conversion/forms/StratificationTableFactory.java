@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.Dialect;
@@ -178,7 +179,10 @@ public abstract class StratificationTableFactory {
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> formDateRestriction; // no adjustment necessary
 			case YEARS -> determineYearRange(formDateRestriction, resolutionAndAlignment.getAlignment());
-			case QUARTERS -> Range.of(jumpToQuarterStart(formDateRestriction.getMin()), jumpToNextQuarterStart(formDateRestriction.getMax()));
+			case QUARTERS -> Range.of(
+					QuarterUtils.jumpToQuarterStart(formDateRestriction.getMin()),
+					QuarterUtils.jumpToNextQuarterStart(formDateRestriction.getMax())
+			);
 			case DAYS -> throw new UnsupportedOperationException("DAYS resolution not supported yet");
 		};
 	}
@@ -186,7 +190,7 @@ public abstract class StratificationTableFactory {
 	private Range<LocalDate> determineYearRange(Range<LocalDate> bounds, Alignment alignment) {
 		return switch (alignment) {
 			case QUARTER -> {
-				LocalDate start = jumpToQuarterStart(bounds.getMin());
+				LocalDate start = QuarterUtils.jumpToQuarterStart(bounds.getMin());
 				LocalDate end = LocalDate.of(bounds.getMax().getYear() + 1, start.getMonth(), 1);
 				yield Range.of(start, end);
 			}
@@ -196,43 +200,6 @@ public abstract class StratificationTableFactory {
 			);
 			default -> throw new UnsupportedOperationException("Alignment %s not supported for resolution YEARS".formatted(alignment));
 		};
-	}
-
-	private static LocalDate jumpToQuarterStart(LocalDate date) {
-
-		Month startMonth = switch (date.getMonthValue()) {
-			case 1, 2, 3 -> Month.JANUARY;
-			case 4, 5, 6 -> Month.APRIL;
-			case 7, 8, 9 -> Month.JULY;
-			default -> Month.OCTOBER;
-		};
-
-		return LocalDate.of(date.getYear(), startMonth, 1);
-	}
-
-	private static LocalDate jumpToNextQuarterStart(LocalDate date) {
-
-		int year = date.getYear();
-		Month startMonth;
-
-		switch (date.getMonthValue()) {
-			case 1, 2, 3:
-				startMonth = Month.APRIL; // Start of Q2
-				break;
-			case 4, 5, 6:
-				startMonth = Month.JULY; // Start of Q3
-				break;
-			case 7, 8, 9:
-				startMonth = Month.OCTOBER; // Start of Q4
-				break;
-			default:
-				// For Q4, increment the year and set month to January
-				startMonth = Month.JANUARY;
-				year++;
-				break;
-		}
-
-		return LocalDate.of(year, startMonth, 1);
 	}
 
 }

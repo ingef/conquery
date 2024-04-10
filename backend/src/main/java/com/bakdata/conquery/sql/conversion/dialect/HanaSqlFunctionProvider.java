@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -84,10 +85,11 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			startDateExpression = daterange.getMin().toString();
 		}
 		if (daterange.hasUpperBound()) {
-			// end is handled as exclusive
-			LocalDate exclusiveMaxDate = daterange.getMax() == LocalDate.MAX
-										 ? Date.valueOf(MAX_DATE_VALUE).toLocalDate()
-										 : daterange.getMax().plusDays(1);
+			// end date is expected to be handled as exclusive, but if it's already the maximum date, we can't add +1 day
+			if (daterange.getMax() == LocalDate.MAX) {
+				throw new ConqueryError.SqlConversionError("Given daterange has an upper bound of LocalDate.MAX, which is not supported by HANA.");
+			}
+			LocalDate exclusiveMaxDate = daterange.getMax().plusDays(1);
 			endDateExpression = exclusiveMaxDate.toString();
 		}
 
