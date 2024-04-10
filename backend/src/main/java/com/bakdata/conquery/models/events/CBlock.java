@@ -227,13 +227,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
 	 */
 	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
-		if (pathIndex < 0) {
-			return 0;
+
+		for (int index = pathIndex; index > 0; index--) {
+			// TODO how could they be > Long.SIZE?
+			if (mostSpecificChild[index] < Long.SIZE) {
+				return 1L << mostSpecificChild[index];
+			}
 		}
-		if (mostSpecificChild[pathIndex] < Long.SIZE) {
-			return 1L << mostSpecificChild[pathIndex];
-		}
-		return calculateBitMask(pathIndex - 1, mostSpecificChild);
+
+		return 0;
 	}
 
 	/**
