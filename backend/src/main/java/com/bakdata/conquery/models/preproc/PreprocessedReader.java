@@ -73,11 +73,13 @@ public class PreprocessedReader implements AutoCloseable {
 
 
 	public PreprocessedData readData() throws IOException {
-		Preconditions.checkState(lastRead.equals(LastRead.HEADER));
+		if(parser.isClosed()){
+			//TODO better handling obviously.
+			return null;
+		}
 
 		final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
 
-		lastRead = lastRead.next();
 		return dictionaries;
 	}
 

@@ -2,6 +2,7 @@ package com.bakdata.conquery.mode.cluster;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -31,7 +32,7 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		ImportJob job = ImportJob.createOrUpdate(
+		List<ImportJob> jobs = ImportJob.createOrUpdate(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
@@ -39,9 +40,9 @@ class ClusterImportHandler implements ImportHandler {
 				true
 		);
 
-		namespace.getJobManager().addSlowJob(job);
+		jobs.forEach(job -> namespace.getJobManager().addSlowJob(job));
 
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), jobs.get(0).getTable());
 	}
 
 	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
@@ -59,16 +60,17 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
-		ImportJob job = ImportJob.createOrUpdate(
+		List<ImportJob> jobs = ImportJob.createOrUpdate(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
 				config,
 				false
 		);
-		namespace.getJobManager().addSlowJob(job);
 
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
+		jobs.forEach(job -> namespace.getJobManager().addSlowJob(job));
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), jobs.get(0).getTable());
 	}
 
 	@Override

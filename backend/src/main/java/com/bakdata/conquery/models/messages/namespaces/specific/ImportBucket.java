@@ -22,10 +22,6 @@ public class ImportBucket extends WorkerMessage {
 
 	private final Bucket bucket;
 
-	public static ImportBucket forBucket(Bucket bucket)  {
-		return new ImportBucket(bucket.getId().toString(),bucket);
-	}
-
 	@Override
 	public void react(Worker context) throws Exception {
 		log.trace("Received {}", bucket.getId());
