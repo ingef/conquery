@@ -4,17 +4,17 @@ import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -66,19 +66,23 @@ public class QueryExecutor implements Closeable {
 				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
 			}
 
+			final SoftReference<List<EntityResult>> results = new SoftReference<>(new ArrayList<>());
+
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
 					entities.stream()
 							.map(entity -> new QueryJob(executionContext, plan, entity))
 							.map(job -> CompletableFuture.supplyAsync(job, executor))
-							.collect(Collectors.toList());
+							.map(job -> job.whenComplete((part, exc) -> {
+								if(results.get() == null){
+									throw new Exception("Not enough memory to finish query.");
+								}
+								part.ifPresent(results.get()::add);
+							}))
+							.toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
-			allDone.thenApply((ignored) -> futures.stream()
-												  .map(CompletableFuture::join)
-												  .flatMap(Optional::stream)
-												  .collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
+			allDone.whenComplete((ignored, exc) -> result.finish(results.get(), Optional.ofNullable(exc), worker));
 
 
 			return true;
