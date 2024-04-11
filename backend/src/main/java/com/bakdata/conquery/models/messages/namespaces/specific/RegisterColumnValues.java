@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -34,15 +35,23 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	@NsIdRef
 	private final Column column;
+
+	@ToString.Exclude
 	private final Collection<String> values;
+
+	@JsonIgnore
+	@ToString.Include
+	public int size() {
+		return values.size();
+	}
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
 		if (log.isTraceEnabled()) {
-			log.trace("Registering values for column '{}': {}", column.getId(), Arrays.toString(values.toArray()));
+			log.trace("Registering {} values for column '{}': {}", size(), column.getId(), Arrays.toString(values.toArray()));
 		}
 		else {
-			log.debug("Registering {} values for column '{}'", values.size(), column.getId());
+			log.debug("Registering {} values for column '{}'", size(), column.getId());
 		}
 
 		context.getFilterSearch().registerValues(column, values);
