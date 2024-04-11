@@ -1,10 +1,13 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
@@ -42,10 +45,10 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 	public ConversionContext convert(AbsoluteFormQuery form, ConversionContext context) {
 
 		// base population query conversion
-		QueryStep prerequisite = convertPrerequisite(form.getQuery(), context);
+		QueryStep prerequisite = convertPrerequisite(form.getQuery(), form.getDateRange(), context);
 
 		// creating stratification tables
-		StratificationTableFactory tableFactory = context.getSqlDialect().getStratificationTableFactory(prerequisite, context);
+		StratificationTableFactory tableFactory = new StratificationTableFactory(prerequisite, context);
 		QueryStep stratificationTable = tableFactory.createStratificationTable(form);
 
 		// feature conversion
@@ -61,16 +64,21 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 		return createFinalSelect(form, stratificationTable, joinedFeatures, childContext);
 	}
 
-	private static QueryStep convertPrerequisite(Query query, ConversionContext context) {
+	private static QueryStep convertPrerequisite(Query query, Range<LocalDate> formDateRange, ConversionContext context) {
 
 		ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(query, context);
 		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
 		QueryStep convertedPrerequisite = withConvertedPrerequisite.getQuerySteps().get(0);
 
+		ColumnDateRange bounds = context.getSqlDialect()
+										.getFunctionProvider()
+										.forCDateRange(CDateRange.of(formDateRange)).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
+
 		Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
 		// we only keep the primary column for the upcoming form
 		Selects selects = Selects.builder()
 								 .ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
+								 .stratificationDate(Optional.of(bounds))
 								 .build();
 
 		return QueryStep.builder()

@@ -86,6 +86,8 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
+	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
+
 	/**
 	 * @param predecessor The predeceasing step containing an aggregated validity date.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column

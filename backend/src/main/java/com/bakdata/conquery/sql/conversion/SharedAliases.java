@@ -14,6 +14,16 @@ public enum SharedAliases {
 
 	NOP_TABLE("nop_table"),
 
+	// form related (new approach)
+	INDEX_START("index_start"),
+	QUARTER_START("quarter_start"),
+	YEAR_START("year_start"),
+	YEAR_ALIGNED_COUNT("year_aligned_count"),
+	QUARTER_ALIGNED_COUNT("quarter_aligned_count"),
+	DAY_ALIGNED_COUNT("day_aligned_count"),
+	SERIES_INDEX("index"),
+	STRATIFICATION_BOUNDS("stratification_bounds"),
+
 	// form related
 	RESOLUTION("resolution"),
 	INDEX("index"),

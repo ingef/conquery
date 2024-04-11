@@ -24,7 +24,7 @@ import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-class HanaSqlFunctionProvider implements SqlFunctionProvider {
+public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final char DELIMITER = ',';
 	private static final String MAX_DATE_VALUE = "9999-12-31";
@@ -141,6 +141,12 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
 	}
 
+	@Override
+	public ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right) {
+		Field<Date> greatest = DSL.greatest(left.getStart(), right.getStart());
+		Field<Date> least = DSL.least(left.getEnd(), right.getEnd());
+		return ColumnDateRange.of(greatest, least);
+	}
 
 	@Override
 	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {

@@ -1,72 +1,191 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
-import java.time.LocalDate;
-import java.time.Month;
+import java.sql.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.common.QuarterUtils;
-import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.google.common.base.Preconditions;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-@Getter(AccessLevel.PROTECTED)
+@Getter
 @RequiredArgsConstructor
-public abstract class StratificationTableFactory {
+public class StratificationTableFactory {
+
+	private final int INDEX_START = 1;
+	private final int INDEX_END = 10_000;
 
 	private final QueryStep baseStep;
+	private final StratificationFunctions stratificationFunctions;
 	private final SqlFunctionProvider functionProvider;
-	private final NameGenerator nameGenerator;
 
-	protected StratificationTableFactory(QueryStep baseStep, ConversionContext context) {
+	public StratificationTableFactory(QueryStep baseStep, ConversionContext context) {
 		this.baseStep = baseStep;
+		this.stratificationFunctions = StratificationFunctions.create(context);
 		this.functionProvider = context.getSqlDialect().getFunctionProvider();
-		this.nameGenerator = context.getNameGenerator();
-	}
-
-	public static StratificationTableFactory create(Dialect dialect, QueryStep baseStep, ConversionContext context) {
-		return switch (dialect) {
-			case POSTGRESQL -> new PostgresStratificationTableFactory(baseStep, context);
-			case HANA -> new HanaStratificationTableFactory(baseStep, context);
-		};
 	}
 
 	public QueryStep createStratificationTable(AbsoluteFormQuery form) {
+
+		QueryStep intSeriesStep = createIntSeriesStep();
+		QueryStep indexStartStep = createIndexStartStep();
+
 		List<QueryStep> tables = form.getResolutionsAndAlignmentMap().stream()
-									 .map(resolutionAndAlignment -> createResolutionTable(form.getDateRange(), resolutionAndAlignment))
+									 .map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
 									 .toList();
-		return unionResolutionTables(tables, getBaseStep());
+
+		List<QueryStep> predecessors = List.of(getBaseStep(), intSeriesStep, indexStartStep);
+		return unionResolutionTables(tables, predecessors);
 	}
 
-	/**
-	 * True if there is an entity date in the base step. Compared to absolute mode, stratification window is bound by the entity date of each subject.
-	 */
-	protected boolean isEntityDateStratification() {
-		return baseStep.getSelects().getValidityDate().isPresent();
+	private QueryStep createIntSeriesStep() {
+
+		// not actually required, but Selects expect at least 1 SqlIdColumn
+		Field<Object> rowNumber = DSL.rowNumber().over().coerce(Object.class);
+		SqlIdColumns ids = new SqlIdColumns(rowNumber);
+
+		FieldWrapper<Integer> seriesIndex = new FieldWrapper<>(stratificationFunctions.intSeriesField());
+
+		Selects selects = Selects.builder()
+								 .ids(ids)
+								 .sqlSelect(seriesIndex)
+								 .build();
+
+		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END)
+														   .as(SharedAliases.SERIES_INDEX.getAlias());
+
+		return QueryStep.builder()
+						.cteName(FormCteStep.INT_SERIES.getSuffix())
+						.selects(selects)
+						.fromTable(seriesTable)
+						.build();
 	}
 
-	protected QueryStep unionResolutionTables(List<QueryStep> unionSteps, QueryStep baseStep) {
+	private QueryStep createIndexStartStep() {
+
+		Selects baseStepSelects = getBaseStep().getQualifiedSelects();
+		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent()); // TODO comment on why present
+		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
+
+		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
+		Field<Date> yearStart = stratificationFunctions.yearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
+		Field<Date> quarterStart = stratificationFunctions.quarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
+		List<FieldWrapper<Date>> startDates = Stream.of(indexStart, yearStart, quarterStart).map(FieldWrapper::new).toList();
+
+		Selects selects = Selects.builder()
+								 .ids(baseStepSelects.getIds())
+								 .stratificationDate(Optional.ofNullable(bounds))
+								 .sqlSelects(startDates)
+								 .build();
+
+		return QueryStep.builder()
+						.cteName(FormCteStep.INDEX_START.getSuffix())
+						.selects(selects)
+						.fromTable(QueryStep.toTableLike(getBaseStep().getCteName()))
+						.build();
+	}
+
+	private QueryStep createResolutionTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		return switch (resolutionAndAlignment.getResolution()) {
+			case COMPLETE -> createCompleteTable();
+			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolutionAndAlignment);
+		};
+	}
+
+	private QueryStep createCompleteTable() {
+
+		Selects baseStepSelects = baseStep.getQualifiedSelects();
+
+		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
+		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
+		Field<Integer> index = DSL.field(DSL.val(1, Integer.class)).as(SharedAliases.INDEX.getAlias());
+		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
+
+		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();
+
+		Selects selects = Selects.builder()
+								 .ids(ids)
+								 .stratificationDate(Optional.of(completeRange))
+								 .build();
+
+		return QueryStep.builder()
+						.cteName(FormCteStep.COMPLETE.getSuffix())
+						.selects(selects)
+						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
+						.build();
+	}
+
+	private QueryStep createIntervalTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+
+		QueryStep countsCte = createCountsCte(indexStartStep, resolutionAndAlignment);
+		Preconditions.checkArgument(countsCte.getSelects().getStratificationDate().isPresent());
+		Selects countsCteSelects = countsCte.getQualifiedSelects();
+
+		ColumnDateRange stratificationRange = stratificationFunctions.createStratificationRange(
+				resolutionAndAlignment,
+				countsCteSelects.getStratificationDate().get()
+		);
+
+		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), Optional.empty());
+		SqlIdColumns ids = countsCteSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
+
+		Selects selects = Selects.builder()
+								 .ids(ids)
+								 .stratificationDate(Optional.ofNullable(stratificationRange))
+								 .build();
+
+		Condition stopOnMaxResolutionWindowCount = stratificationFunctions.stopOnMaxResolutionWindowCount(resolutionAndAlignment);
+
+		return QueryStep.builder()
+						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
+						.selects(selects)
+						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
+						.fromTable(QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
+						.conditions(List.of(stopOnMaxResolutionWindowCount))
+						.predecessor(countsCte)
+						.build();
+	}
+
+	private QueryStep createCountsCte(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+
+		Selects indexStartSelects = indexStartStep.getQualifiedSelects();
+		Preconditions.checkArgument(indexStartSelects.getStratificationDate().isPresent());
+
+		Field<Integer> resolutionWindowCount = stratificationFunctions.calculateResolutionWindowCount(
+				resolutionAndAlignment,
+				indexStartSelects.getStratificationDate().get()
+		);
+
+		Selects selects = indexStartSelects.toBuilder()
+										   .sqlSelect(new FieldWrapper<>(resolutionWindowCount))
+										   .build();
+
+		return QueryStep.builder()
+						.cteName(FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix())
+						.selects(selects)
+						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
+						.build();
+	}
+
+	private QueryStep unionResolutionTables(List<QueryStep> unionSteps, List<QueryStep> predecessors) {
 
 		Preconditions.checkArgument(!unionSteps.isEmpty(), "Expecting at least 1 resolution table");
 
@@ -86,120 +205,11 @@ public abstract class StratificationTableFactory {
 																					.build())
 														 .toList();
 
-		return QueryStep.createUnionStep(withQualifiedSelects, FormCteStep.FULL_STRATIFICATION.getSuffix(), List.of(baseStep, lastResolutionTable));
-	}
-
-	protected QueryStep createResolutionTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
-		return switch (resolutionAndAlignment.getResolution()) {
-			case COMPLETE -> createCompleteTable(formDateRestriction);
-			case YEARS, QUARTERS -> createIntervalTable(formDateRestriction, resolutionAndAlignment);
-			case DAYS -> throw new UnsupportedOperationException("Resolution days not supported yet");
-		};
-	}
-
-	protected QueryStep createCompleteTable(Range<LocalDate> formDateRestriction) {
-
-		Selects baseStepSelects = baseStep.getQualifiedSelects();
-
-		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
-		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
-		Field<Integer> index = DSL.field(DSL.val(1, Integer.class)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
-
-		ColumnDateRange completeRange;
-		if (isEntityDateStratification()) {
-			completeRange = baseStepSelects.getValidityDate().get();
-		}
-		// otherwise the complete range is the form's date range (absolute form)
-		else {
-			completeRange = functionProvider.forCDateRange(CDateRange.of(formDateRestriction)).as(SharedAliases.STRATIFICATION_RANGE.getAlias());
-		}
-
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .stratificationDate(Optional.of(completeRange))
-								 .build();
-
-		return QueryStep.builder()
-						.cteName(FormCteStep.COMPLETE.getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
-						.build();
-	}
-
-	protected abstract QueryStep createIntervalTable(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment);
-
-	protected Field<Integer> indexField(SqlIdColumns ids) {
-
-		List<Field<?>> partitioningFields =
-				Stream.concat(
-							  ids.toFields().stream(),
-							  getBaseStep().getSelects().getValidityDate().stream().flatMap(validityDate -> validityDate.toFields().stream())
-					  )
-					  .collect(Collectors.toList());
-
-		return DSL.rowNumber()
-				  .over(DSL.partitionBy(partitioningFields))
-				  .as(SharedAliases.INDEX.getAlias());
-	}
-
-	protected static String toResolutionExpression(Resolution resolution) {
-		return switch (resolution) {
-			case QUARTERS -> "3 month";
-			case YEARS -> "1 year";
-			case COMPLETE -> throw new UnsupportedOperationException("Generating series for a complete stratification range is not necessary");
-			default -> throw new UnsupportedOperationException("Resolution %s currently not supported".formatted(resolution));
-		};
-	}
-
-	/**
-	 * Converts the given date range according to the given resolution to a range that is suited for a dateset-generating SQL function.
-	 * <p>
-	 * Example: Given  the date range [2012-06-16,2013-01-17] and the resolution YEARS, we cant pipe this directly into SAP HANA's SERIES_GENERATE_DATE command.
-	 * Because it does not span the range of a whole year from start and end, the SERIES_GENERATE_DATE command would create an empty set. Instead, we have to
-	 * jump to the start of the year of the start date and to the year + 1 of the end date. This will generate the expected series of
-	 * <pre>
-	 * <table>
-	 *   <tr>
-	 *     <th>GENERATED_PERIOD_START</th>
-	 *     <th>GENERATED_PERIOD_END</th>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>2012-01-01</td>
-	 *     <td>2013-01-01</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>2013-01-01</td>
-	 *     <td>2014-01-01</td>
-	 *   </tr>
-	 * </table>
-	 * </pre>
-	 */
-	protected Range<LocalDate> toGenerateSeriesBounds(Range<LocalDate> formDateRestriction, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
-		return switch (resolutionAndAlignment.getResolution()) {
-			case COMPLETE -> formDateRestriction; // no adjustment necessary
-			case YEARS -> determineYearRange(formDateRestriction, resolutionAndAlignment.getAlignment());
-			case QUARTERS -> Range.of(
-					QuarterUtils.jumpToQuarterStart(formDateRestriction.getMin()),
-					QuarterUtils.jumpToNextQuarterStart(formDateRestriction.getMax())
-			);
-			case DAYS -> throw new UnsupportedOperationException("DAYS resolution not supported yet");
-		};
-	}
-
-	private Range<LocalDate> determineYearRange(Range<LocalDate> bounds, Alignment alignment) {
-		return switch (alignment) {
-			case QUARTER -> {
-				LocalDate start = QuarterUtils.jumpToQuarterStart(bounds.getMin());
-				LocalDate end = LocalDate.of(bounds.getMax().getYear() + 1, start.getMonth(), 1);
-				yield Range.of(start, end);
-			}
-			case YEAR -> Range.of(
-					LocalDate.of(bounds.getMin().getYear(), Month.JANUARY, 1),
-					LocalDate.of(bounds.getMax().getYear() + 1, Month.JANUARY, 1)
-			);
-			default -> throw new UnsupportedOperationException("Alignment %s not supported for resolution YEARS".formatted(alignment));
-		};
+		return QueryStep.createUnionStep(
+				withQualifiedSelects,
+				FormCteStep.FULL_STRATIFICATION.getSuffix(),
+				Stream.concat(predecessors.stream(), Stream.of(lastResolutionTable)).toList()
+		);
 	}
 
 }

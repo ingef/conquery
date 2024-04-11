@@ -13,10 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQExternalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
-import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
@@ -35,8 +32,6 @@ public interface SqlDialect {
 	IntervalPacker getIntervalPacker();
 
 	SqlDateAggregator getDateAggregator();
-
-	StratificationTableFactory getStratificationTableFactory(QueryStep base, ConversionContext context);
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters();
 

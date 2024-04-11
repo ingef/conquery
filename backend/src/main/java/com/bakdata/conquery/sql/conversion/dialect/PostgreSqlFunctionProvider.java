@@ -11,8 +11,8 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -118,14 +118,9 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 		ColumnDateRange validityDate = toColumnDateRange(cqTable);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
+		ColumnDateRange intersection = intersection(validityDate, restriction);
 
-		Field<Object> intersection = DSL.field(
-				"{0} * {1}", // intersection of both ranges
-				validityDate.getRange(),
-				restriction.getRange()
-		);
-
-		return ColumnDateRange.of(intersection).asValidityDateRange(alias);
+		return intersection.asValidityDateRange(alias);
 	}
 
 	@Override
@@ -139,6 +134,15 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		Field<Date> start = DSL.function("lower", Date.class, daterange);
 		Field<Date> end = DSL.function("upper", Date.class, daterange);
 		return ColumnDateRange.of(start, end);
+	}
+
+	@Override
+	public ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right) {
+		return ColumnDateRange.of(DSL.field(
+				"{0} * {1}",
+				ensureIsSingleColumnRange(left).getRange(),
+				ensureIsSingleColumnRange(right).getRange()
+		));
 	}
 
 	@Override
@@ -187,7 +191,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			return endDate.minus(startDate).coerce(Integer.class);
 		}
 
-		Field<Integer> age = DSL.function("AGE", Integer.class, endDate, startDate);
+		Field<Integer> age = DSL.function("age", Integer.class, endDate, startDate);
 		return switch (datePart) {
 			case MONTHS -> extract(DatePart.YEAR, age).multiply(12).plus(extract(DatePart.MONTH, age));
 			case YEARS -> extract(DatePart.YEAR, age);
@@ -269,6 +273,17 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
+	public Field<Integer> extract(DatePart datePart, Field<?> timeInterval) {
+		return DSL.field(
+				"{0}({1} {2} {3})",
+				Integer.class,
+				DSL.keyword("extract"),
+				DSL.keyword(datePart.toSQL()),
+				DSL.keyword("from"),
+				timeInterval
+		);
+	}
+
 	private Field<Object> rangeAgg(ColumnDateRange columnDateRange) {
 		return DSL.function("range_agg", Object.class, columnDateRange.getRange());
 	}
@@ -279,17 +294,6 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static Field<?> unnest(Field<?> multirange) {
 		return DSL.function("unnest", Object.class, multirange);
-	}
-
-	private Field<Integer> extract(DatePart datePart, Field<Integer> timeInterval) {
-		return DSL.field(
-				"{0}({1} {2} {3})",
-				Integer.class,
-				DSL.keyword("EXTRACT"),
-				DSL.keyword(datePart.toSQL()),
-				DSL.keyword("FROM"),
-				timeInterval
-		);
 	}
 
 	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {

@@ -2,14 +2,10 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
-import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
@@ -63,11 +59,6 @@ public class PostgreSqlDialect implements SqlDialect {
 	@Override
 	public SqlDateAggregator getDateAggregator() {
 		return this.postgresqlDateAggregator;
-	}
-
-	@Override
-	public StratificationTableFactory getStratificationTableFactory(QueryStep base, ConversionContext context) {
-		return StratificationTableFactory.create(Dialect.POSTGRESQL, base, context);
 	}
 
 }
