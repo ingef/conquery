@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.collect.Maps;
-import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -84,7 +83,7 @@ public class Preprocessed {
 	}
 
 
-	public void write(File file) throws IOException {
+	public void write(File file, int buckets) throws IOException {
 
 		final Object2IntMap<String> entityStart = new Object2IntAVLTreeMap<>();
 		final Object2IntMap<String> entityLength = new Object2IntAVLTreeMap<>();
@@ -107,7 +106,7 @@ public class Preprocessed {
 
 
 
-		writePreprocessed(file, header, entityStart, entityLength, columnStores);
+		writePreprocessed(file, header, entityStart, entityLength, columnStores, buckets);
 	}
 
 	/**
@@ -176,7 +175,7 @@ public class Preprocessed {
 		return columnStores;
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data) throws IOException {
+	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, int buckets) throws IOException {
 		final OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createGenerator(out)) {
 
@@ -188,7 +187,7 @@ public class Preprocessed {
 
 			final Map<Integer, List<String>>
 					entity2Bucket =
-					globalStarts.keySet().stream().collect(Collectors.groupingBy(id -> Hashing.consistentHash(HashCode.fromString(id), 1000)));
+					globalStarts.keySet().stream().collect(Collectors.groupingBy(id -> Hashing.consistentHash(id.hashCode(), buckets)));
 
 			for (Map.Entry<Integer, List<String>> bucketIds : entity2Bucket.entrySet()) {
 				final HashSet<String> entities = new HashSet<>(bucketIds.getValue());

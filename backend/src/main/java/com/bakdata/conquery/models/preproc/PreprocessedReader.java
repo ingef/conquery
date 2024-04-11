@@ -2,16 +2,11 @@ package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,25 +36,14 @@ public class PreprocessedReader implements AutoCloseable {
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
 	private final JsonParser parser;
-	private final Map<Id<?>, Identifiable<?>> replacements = new HashMap<>();
 
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
-		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(objectMapper)
-				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-				.getFactory()
-				.createParser(inputStream);
+		parser = objectMapper.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+							 .getFactory()
+							 .createParser(inputStream);
 	}
 
-	public void addReplacement(Id<?> id, Identifiable<?> replacement) {
-		this.replacements.put(id, replacement);
-	}
-
-	public <K extends Id<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
-		this.replacements.putAll(replacements);
-	}
 
 	public PreprocessedHeader readHeader() throws IOException {
 		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
@@ -78,9 +62,14 @@ public class PreprocessedReader implements AutoCloseable {
 			return null;
 		}
 
-		final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
-
-		return dictionaries;
+		try {
+			final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
+			return dictionaries;
+		}catch (MismatchedInputException exception){
+			// MismatchedInputException is thrown when EOF file is reached.
+			//TODO actually handle end of input without state parameter.
+			return null;
+		}
 	}
 
 }

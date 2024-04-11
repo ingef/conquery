@@ -2,7 +2,6 @@ package com.bakdata.conquery.mode.cluster;
 
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.List;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -32,7 +31,7 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		List<ImportJob> jobs = ImportJob.createOrUpdate(
+		final Table table = ImportJob.createOrUpdate(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
@@ -40,9 +39,7 @@ class ClusterImportHandler implements ImportHandler {
 				true
 		);
 
-		jobs.forEach(job -> namespace.getJobManager().addSlowJob(job));
-
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), jobs.get(0).getTable());
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 	}
 
 	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
@@ -60,7 +57,7 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
-		List<ImportJob> jobs = ImportJob.createOrUpdate(
+		final Table table = ImportJob.createOrUpdate(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
@@ -68,15 +65,13 @@ class ClusterImportHandler implements ImportHandler {
 				false
 		);
 
-		jobs.forEach(job -> namespace.getJobManager().addSlowJob(job));
-
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), jobs.get(0).getTable());
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 	}
 
 	@Override
 	public void deleteImport(Import imp) {
 
-		DatasetId id = imp.getTable().getDataset().getId();
+		final DatasetId id = imp.getTable().getDataset().getId();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
 		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());

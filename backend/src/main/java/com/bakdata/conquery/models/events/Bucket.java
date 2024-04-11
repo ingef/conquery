@@ -50,7 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
@@ -58,8 +58,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Min(0)
 	private final int bucket;
 
-	@Min(0)
-	private final int numberOfEvents;
+	@ToString.Include
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
@@ -77,6 +76,12 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@NsIdRef
 	private final Import imp;
 
+
+	@JsonIgnore
+	@ToString.Include
+	public int getNumberOfEvents(){
+		return ends.values().intStream().max().orElse(0);
+	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match the length of some stores.")
