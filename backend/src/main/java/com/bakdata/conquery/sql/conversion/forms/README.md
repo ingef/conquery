@@ -26,7 +26,7 @@ For an absolute form, we only care for the primary ID, so we extract the primary
 The `stratification_bounds` represent the absolute forms date range. They define the required complete stratification
 window. For an entity date form, the `stratification_bounds` would be the intersection of an entity's validity date
 and the forms date range.
-We group by primary ID to keep only 1 entry per subject (a `select distinct` would to the trick too).
+We group by primary ID to keep only 1 entry per subject (a `select distinct` would do the trick too).
 
 **CTE:** `extract_ids`
 
