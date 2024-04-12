@@ -78,7 +78,7 @@ from "extract_ids"
 ### Calculating resolution counts
 
 For each required resolution and alignment, we will create a `counts` CTE. The calculation slightly differs for each
-valid resolution and alignment combination, but it all comes down do calculating date diffs.
+valid resolution and alignment combination, but it all comes down to calculating date diffs.
 
 For example, take the `YEAR` resolution and `QUARTER` alignment as an example. We calculate the date diff in years from
 the upper stratification bound and the quarter start that we calculated in the previous step. We add +1 because we want
