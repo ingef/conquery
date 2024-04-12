@@ -14,7 +14,7 @@ public enum SharedAliases {
 
 	NOP_TABLE("nop_table"),
 
-	// form related (new approach)
+	// form related
 	INDEX_START("index_start"),
 	QUARTER_START("quarter_start"),
 	YEAR_START("year_start"),
@@ -22,18 +22,10 @@ public enum SharedAliases {
 	QUARTER_ALIGNED_COUNT("quarter_aligned_count"),
 	DAY_ALIGNED_COUNT("day_aligned_count"),
 	SERIES_INDEX("index"),
-	STRATIFICATION_BOUNDS("stratification_bounds"),
-
-	// form related
 	RESOLUTION("resolution"),
 	INDEX("index"),
-	STRATIFICATION_RANGE("stratification_range"),
-	DATE_START("date_start"),
-	DATE_END("date_end"),
-	DATE_SERIES("date_series"),
 	INDEX_DATE("index_date"),
-	INDEX_START_POSITIVE("index_start_positive"),
-	INDEX_START_NEGATIVE("index_start_negative");
+	STRATIFICATION_BOUNDS("stratification_bounds");
 
 	private final String alias;
 }

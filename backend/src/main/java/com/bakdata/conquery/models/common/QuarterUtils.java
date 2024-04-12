@@ -98,42 +98,4 @@ public final class QuarterUtils {
 	public static int getQuarter(LocalDate date) {
 		return date.get(IsoFields.QUARTER_OF_YEAR);
 	}
-
-	public static LocalDate jumpToQuarterStart(LocalDate date) {
-
-		Month startMonth = switch (date.getMonthValue()) {
-			case 1, 2, 3 -> Month.JANUARY;
-			case 4, 5, 6 -> Month.APRIL;
-			case 7, 8, 9 -> Month.JULY;
-			default -> Month.OCTOBER;
-		};
-
-		return LocalDate.of(date.getYear(), startMonth, 1);
-	}
-
-	public static LocalDate jumpToNextQuarterStart(LocalDate date) {
-
-		int year = date.getYear();
-		Month startMonth;
-
-		switch (date.getMonthValue()) {
-			case 1, 2, 3:
-				startMonth = Month.APRIL; // Start of Q2
-				break;
-			case 4, 5, 6:
-				startMonth = Month.JULY; // Start of Q3
-				break;
-			case 7, 8, 9:
-				startMonth = Month.OCTOBER; // Start of Q4
-				break;
-			default:
-				// For Q4, increment the year and set month to January
-				startMonth = Month.JANUARY;
-				year++;
-				break;
-		}
-
-		return LocalDate.of(year, startMonth, 1);
-	}
-
 }

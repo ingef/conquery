@@ -135,7 +135,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
 		Field<String> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
-															  .as(SharedAliases.STRATIFICATION_RANGE.getAlias());
+															  .as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
 		return Selects.builder()
 					  .ids(ids)

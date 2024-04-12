@@ -12,14 +12,12 @@ public enum FormCteStep implements CteStep {
 	// prerequisite
 	EXTRACT_IDS("extract_ids"),
 
-	// stratification new approach
+	// stratification
 	INDEX_START("index_start"),
 	INT_SERIES("int_series"),
 	YEAR_COUNTS("year_counts"),
 	QUARTER_COUNTS("quarter_counts"),
 	DAY_COUNTS("day_counts"),
-
-	// stratification
 	DAYS("days"),
 	QUARTERS("quarters"),
 	YEARS("years"),
