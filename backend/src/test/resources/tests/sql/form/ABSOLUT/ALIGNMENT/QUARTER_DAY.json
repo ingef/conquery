@@ -1,6 +1,6 @@
 {
   "type": "FORM_TEST",
-  "label": "DAY Alignment, QUARTER Resolution",
+  "label": "DAY Alignment, DAY Resolution",
   "expectedCsv": {
     "results": "tests/sql/form/ABSOLUT/ALIGNMENT/quarter_day.csv"
   },

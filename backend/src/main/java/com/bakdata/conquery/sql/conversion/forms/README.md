@@ -23,12 +23,16 @@ This example is covering the following
 testcase: `src/test/resources/tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/ABS_EXPORT_FORM.test.json`.
 
 For an absolute form, we only care for the primary ID, so we extract the primary IDs (and discard the validity date).
-We group by primary ID to keep only 1 entry per subject (a ≥`select distinct` would to the trick too).
+The `stratification_bounds` represent the absolute forms date range. They define the required complete stratification
+window. For an entity date form, the `stratification_bounds` would be the intersection of an entity's validity date
+and the forms date range.
+We group by primary ID to keep only 1 entry per subject (a `select distinct` would to the trick too).
 
 **CTE:** `extract_ids`
 
 ```sql
-select "primary_id"
+select "primary_id",
+       daterange('2012-06-01', '2012-09-30', '[]') as "stratification_bounds"
 from "external"
 group by "primary_id"
 ```
@@ -41,75 +45,117 @@ Now, we want to create a resolution table for each resolution (`COMPLETE`, `YEAR
 select "primary_id",
        'COMPLETE'                          "resolution",
        1 "index",
-       TO_DATE('2012-01-16', 'yyyy-mm-dd') "stratification_range_start",
-       TO_DATE('2012-12-18', 'yyyy-mm-dd') "stratification_range_end"
+       "stratification_bounds"
 from "extract_ids"
 ```
-
-For an absolute form, the is only 1 complete range which spans over the given forms date
-range `[2012-01-16,2012-12-18)`. Thus, the complete `stratification_range_start` and `stratification_range_end` are
-simply the static values given by
-the forms date range.
 
 A complete range shall have a `null` index, because it spans the complete range, but we set it to 1 to ensure we can
 join tables on index. We do this, because a condition involving `null` in a join (e.g., `null = some_value` or
 `null = null`) always evaluates to false, which would cause incorrect joining results.
 
-**CTE:** `years`
+### Calculating index start dates
+
+For finer resolutions (`YEAR`, `QUARTER`, `DAY`), the approach will be the following: at first, we will take a look at
+the `stratification_bounds` start date. This date will be the minimum starting date of the stratification, hereinafter
+referred to as "index date". We will also create a field for the year start of this date and the quarter start of this
+date.
 
 ```sql
 select "primary_id",
-       'YEARS'                                                                 "resolution",
-       row_number() over (partition by "primary_id")                           "index",
-       greatest("GENERATED_PERIOD_START", TO_DATE('2012-01-16', 'yyyy-mm-dd')) "stratification_range_start",
-       least("GENERATED_PERIOD_END", TO_DATE('2012-12-18', 'yyyy-mm-dd'))      "stratification_range_end"
-from "extract_ids", SERIES_GENERATE_DATE('INTERVAL 1 YEAR', TO_DATE('2012-01-01', 'yyyy-mm-dd'),
-                                         TO_DATE('2013-01-01', 'yyyy-mm-dd'))
+       "stratification_bounds",
+       lower("stratification_bounds")                     as "index_start",
+       date_trunc('year', lower("stratification_bounds")) as "year_start",
+       date_trunc('year', lower("stratification_bounds"))
+           + (extract(quarter from lower("stratification_bounds")) - 1)
+           * interval '3 months'                          as "quarter_start"
+from "extract_ids"
 ```
 
-For `YEAR` and `QUARTER`, we generate a series over the whole forms date range. Therefore, the forms actual range
-`[2012-01-16,2012-12-18)` has to be adjusted: the start and end range do not cover the interval of 1 year, thus the
-generated series would be an empty set. That's why we set the start date of the generated series to the first day of
-the year of the forms date range start: for `2012-01-16`, this is the `2012-01-01`. The end date is set to the first day
-of the year of the forms date range end + 1 year: for `2012-12-17`, it's the `2013-01-01`.
+| primary\_id | stratification\_bounds    | index\_start | year\_start | quarter\_start |
+|:------------|:--------------------------|:-------------|:------------|:---------------|
+| 1           | \[2012-06-01,2012-10-01\) | 2012-06-01   | 2012-01-01  | 2012-04-01     |
 
-`SERIES_GENERATE_DATE('INTERVAL 1 YEAR', TO_DATE('2012-01-01', 'yyyy-mm-dd'), TO_DATE('2013-01-01', 'yyyy-mm-dd'))`
-creates the following set:
+### Calculating resolution counts
 
-| GENERATED\_PERIOD\_START | GENERATED\_PERIOD\_END |
-|:-------------------------|:-----------------------|
-| 2012-01-01               | 2013-01-01             |
+For each required resolution and alignment, we will create a `counts` CTE. The calculation slightly differs for each
+valid resolution and alignment combination, but it all comes down do calculating date diffs.
 
-For HANA, the two columns names are pre-generated - that's why we can use them directly in the select statement.
-
-Because the generated series start might be before the forms absolute date range start and/or the generated series end
-after the forms absolute date range end, we cover these edge cases by using the `greatest()` and `least()` functions to
-compute the correctly bound stratification dates.
-
-**CTE:** `quarters`
+For example, take the `YEAR` resolution and `QUARTER` alignment as an example. We calculate the date diff in years from
+the upper stratification bound and the quarter start that we calculated in the previous step. We add +1 because we want
+to count each starting year as 1 year.
 
 ```sql
 select "primary_id",
-       'QUARTER'                                                               "resolution",
-       row_number() over (partition by "primary_id")                           "index",
-       greatest("GENERATED_PERIOD_START", TO_DATE('2012-01-16', 'yyyy-mm-dd')) "stratification_range_start",
-       least("GENERATED_PERIOD_END", TO_DATE('2012-12-17', 'yyyy-mm-dd') "stratification_range_end"
-             from "extract_ids",
-             SERIES_GENERATE_DATE('INTERVAL 3 MONTH', TO_DATE('2012-01-01', 'yyyy-mm-dd'),
-                                  TO_DATE('2013-01-01', 'yyyy-mm-dd'))
+       "stratification_bounds",
+       "index_start",
+       "year_start",
+       "quarter_start",
+       (extract(year from age(upper("stratification_bounds"), "quarter_start")) + 1) as "quarter_aligned_count"
+from "index_start";
 ```
 
-Similar to the `YEAR` resolution, we generate a series, but this time with a changed interval of 3 month (1 quarter).
-The generated series looks like this:
+For this example, the `"year_aligned_count"` is 3.
 
-| GENERATED\_PERIOD\_START | GENERATED\_PERIOD\_END |
-|:-------------------------|:-----------------------|
-| 2012-01-01               | 2012-04-01             |
-| 2012-04-01               | 2012-07-01             |
-| 2012-07-01               | 2012-10-01             |
-| 2012-10-01               | 2013-01-01             |
+### Calculating the actual stratification ranges
 
-Again, we make sure the stratification dates have the correct bounds via `greatest()` and `least()`.
+The key idea of the resolution count is to calculate a start and end date for all required resolution windows by adding
+a date interval times an index until the index reaches the count. For example, if we consider the `quarter_start`
+`2012-04-01` as out starting point, the resolution interval to be 1 year and the resolution count to be 3, we can
+calculate the resolution range with the following approach:
+
+```sql
+select "primary_id",
+       'YEARS'                                       as "resolution",
+       row_number() over (partition by "primary_id") as "index",
+       daterange(
+               ("quarter_start" + interval '1 year' * ("index" - 1))::date,
+               ("quarter_start" + interval '1 year' * ("index" - 0))::date,
+               '[)'
+       ) * "stratification_bounds"                   as "stratification_bounds"
+from "year_counts",
+     generate_series(1, 10000) as "index"
+where "index" <= "quarter_aligned_count"
+```
+
+By cross-joining the `year_counts` CTE with the integer series, we can create a set of ranges for each primary ID.
+Intervals are multiplied and added depending on the respective index to the starting date, which is the `quarter_start`
+in our case. The result looks like this:
+
+| primary\_id | resolution | index | stratification\_bounds    |
+|:------------|:-----------|:------|:--------------------------|
+| 1           | YEARS      | 1     | \[2012-06-16,2013-04-01\) |
+| 1           | YEARS      | 2     | \[2013-04-01,2014-04-01\) |
+| 1           | YEARS      | 3     | \[2014-04-01,2014-12-18\) |
+
+For quarters, the approach looks similar:
+
+```sql
+select "primary_id",
+       'QUARTERS'                                    as "resolution",
+       row_number() over (partition by "primary_id") as "index",
+       daterange(
+               ("quarter_start" + interval '3 months' * ("index" - 1))::date,
+               ("quarter_start" + interval '3 months' * ("index" - 0))::date,
+               '[)'
+       ) * "quarter_counts"."stratification_bounds"  as "stratification_bounds"
+from "quarter_counts",
+     "int_series"
+where "index" <= "quarter_aligned_count"
+```
+
+| primary\_id | resolution | index | stratification\_bounds    |
+|:------------|:-----------|:------|:--------------------------|
+| 1           | QUARTERS   | 1     | \[2012-06-16,2012-07-01\) |
+| 1           | QUARTERS   | 2     | \[2012-07-01,2012-10-01\) |
+| 1           | QUARTERS   | 3     | \[2012-10-01,2013-01-01\) |
+| 1           | QUARTERS   | 4     | \[2013-01-01,2013-04-01\) |
+| 1           | QUARTERS   | 5     | \[2013-04-01,2013-07-01\) |
+| 1           | QUARTERS   | 6     | \[2013-07-01,2013-10-01\) |
+| 1           | QUARTERS   | 7     | \[2013-10-01,2014-01-01\) |
+| 1           | QUARTERS   | 8     | \[2014-01-01,2014-04-01\) |
+| 1           | QUARTERS   | 9     | \[2014-04-01,2014-07-01\) |
+| 1           | QUARTERS   | 10    | \[2014-07-01,2014-10-01\) |
+| 1           | QUARTERS   | 11    | \[2014-10-01,2014-12-18\) |
 
 **CTE:** `full_stratification`
 
@@ -119,33 +165,39 @@ Now, we union all the resolution tables.
 select "complete"."primary_id",
        "complete"."resolution",
        "complete"."index",
-       "complete"."stratification_range_start",
-       "complete"."stratification_range_end"
+       "complete"."stratification_bounds"
 from "complete"
 union all
 select "years"."primary_id",
        "years"."resolution",
        "years"."index",
-       "years"."stratification_range_start",
-       "years"."stratification_range_end"
+       "years"."stratification_bounds"
 from "years"
 union all
 select "quarters"."primary_id",
        "quarters"."resolution",
        "quarters"."index",
-       "quarters"."stratification_range_start",
-       "quarters"."stratification_range_end"
+       "quarters"."stratification_bounds"
 from "quarters"
 ```
 
-| primary\_id | resolution | index | stratification\_range\_start | stratification\_range\_end |
-|:------------|:-----------|:------|:-----------------------------|:---------------------------|
-| 1           | COMPLETE   | 1     | 2012-01-16                   | 2012-12-18                 |
-| 1           | YEARS      | 1     | 2012-01-16                   | 2012-12-18                 |
-| 1           | QUARTERS   | 1     | 2012-01-16                   | 2012-04-01                 |
-| 1           | QUARTERS   | 2     | 2012-04-01                   | 2012-07-01                 |
-| 1           | QUARTERS   | 3     | 2012-07-01                   | 2012-10-01                 |
-| 1           | QUARTERS   | 4     | 2012-10-01                   | 2012-12-18                 |
+| primary\_id | resolution | index | stratification\_bounds    |
+|:------------|:-----------|:------|:--------------------------|
+| 1           | COMPLETE   | 1     | \[2012-06-16,2014-12-18\) |
+| 1           | YEARS      | 1     | \[2012-06-16,2013-04-01\) |
+| 1           | YEARS      | 2     | \[2013-04-01,2014-04-01\) |
+| 1           | YEARS      | 3     | \[2014-04-01,2014-12-18\) |
+| 1           | QUARTERS   | 1     | \[2012-06-16,2012-07-01\) |
+| 1           | QUARTERS   | 2     | \[2012-07-01,2012-10-01\) |
+| 1           | QUARTERS   | 3     | \[2012-10-01,2013-01-01\) |
+| 1           | QUARTERS   | 4     | \[2013-01-01,2013-04-01\) |
+| 1           | QUARTERS   | 5     | \[2013-04-01,2013-07-01\) |
+| 1           | QUARTERS   | 6     | \[2013-07-01,2013-10-01\) |
+| 1           | QUARTERS   | 7     | \[2013-10-01,2014-01-01\) |
+| 1           | QUARTERS   | 8     | \[2014-01-01,2014-04-01\) |
+| 1           | QUARTERS   | 9     | \[2014-04-01,2014-07-01\) |
+| 1           | QUARTERS   | 10    | \[2014-07-01,2014-10-01\) |
+| 1           | QUARTERS   | 11    | \[2014-10-01,2014-12-18\) |
 
 ## Feature conversion
 
