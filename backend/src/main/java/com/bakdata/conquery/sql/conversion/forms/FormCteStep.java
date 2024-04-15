@@ -28,7 +28,7 @@ public enum FormCteStep implements CteStep {
 
 	public static FormCteStep countsCte(Resolution resolution) {
 		return switch (resolution) {
-			case COMPLETE -> throw new UnsupportedOperationException("TODO can we use this?");
+			case COMPLETE -> throw new UnsupportedOperationException("COMPLETE resolution does not require a counts CTE");
 			case YEARS -> YEAR_COUNTS;
 			case QUARTERS -> QUARTER_COUNTS;
 			case DAYS -> DAY_COUNTS;
