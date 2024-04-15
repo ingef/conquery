@@ -105,46 +105,56 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	public void afterAllReaction() {
 
 		// Run this in a job, so it is definitely processed after UpdateFilterSearchJob
-		namespace.getJobManager().addSlowJob(
-				new Job() {
+		namespace.getJobManager().addSlowJob(new SearchShrinker());
+	}
 
-					@Override
-					public void execute() {
+	private class SearchShrinker extends Job {
 
-						log.debug("{} shrinking searches", this);
-						final FilterSearch filterSearch = namespace.getFilterSearch();
-						columns.forEach(filterSearch::shrinkSearch);
+		@Override
+		public void execute() {
 
+			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage());
+			final FilterSearch filterSearch = namespace.getFilterSearch();
 
-						log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
-						final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage());
+			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
 
-						getProgressReporter().setMax(allSelectFilters.size());
+			log.debug("{} shrinking searches", this);
 
-						for (SelectFilter<?> filter : allSelectFilters) {
-							log.trace("Calculate totals for filter: {}", filter.getId());
-							try {
-								final long total = namespace.getFilterSearch().getTotal(filter);
-								log.trace("Filter '{}' totals: {}", filter, total);
-							}
-							catch (Exception e) {
-								log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
-							}
-							finally {
-								getProgressReporter().report(1);
-							}
-						}
-
-						getProgressReporter().done();
-						log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
-					}
-
-					@Override
-					public String getLabel() {
-						return "Finalize Search update";
-					}
+			for (Column column : columns) {
+				try {
+					filterSearch.shrinkSearch(column);
 				}
+				catch (Exception e) {
+					log.warn("Unable to shrink search for {}", column, e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
 
-		);
+			log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
+
+			for (SelectFilter<?> filter : allSelectFilters) {
+				log.trace("Calculate totals for filter: {}", filter.getId());
+				try {
+					final long total = namespace.getFilterSearch().getTotal(filter);
+					log.trace("Filter '{}' totals: {}", filter, total);
+				}
+				catch (Exception e) {
+					log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
+
+			getProgressReporter().done();
+			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
+		}
+
+		@Override
+		public String getLabel() {
+			return "Finalize Search update";
+		}
 	}
 }
