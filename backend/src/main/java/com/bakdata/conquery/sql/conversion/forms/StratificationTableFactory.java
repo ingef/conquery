@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
 import java.sql.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -189,15 +188,6 @@ public class StratificationTableFactory {
 
 		Preconditions.checkArgument(!unionSteps.isEmpty(), "Expecting at least 1 resolution table");
 
-		Iterator<QueryStep> iterator = unionSteps.iterator();
-		QueryStep lastResolutionTable = iterator.next();
-		while (iterator.hasNext()) {
-			lastResolutionTable = iterator.next()
-										  .toBuilder()
-										  .predecessor(lastResolutionTable)
-										  .build();
-		}
-
 		List<QueryStep> withQualifiedSelects = unionSteps.stream()
 														 .map(queryStep -> QueryStep.builder()
 																					.selects(queryStep.getQualifiedSelects())
@@ -208,7 +198,7 @@ public class StratificationTableFactory {
 		return QueryStep.createUnionStep(
 				withQualifiedSelects,
 				FormCteStep.FULL_STRATIFICATION.getSuffix(),
-				Stream.concat(predecessors.stream(), Stream.of(lastResolutionTable)).toList()
+				Stream.concat(predecessors.stream(), unionSteps.stream()).toList()
 		);
 	}
 

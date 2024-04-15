@@ -12,10 +12,12 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+@SuperBuilder
 public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	@Getter
@@ -43,14 +45,24 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	public SqlIdColumns withAbsoluteStratification(Resolution resolution, Field<Integer> index) {
 		Field<String> resolutionField = DSL.field(DSL.val(resolution.toString())).as(SharedAliases.RESOLUTION.getAlias());
-		// absolute stratification carries no event date
-		Field<Date> eventDate = null;
-		return new StratificationSqlIdColumns(this.primaryColumn, this.secondaryId, resolutionField, index, eventDate);
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(this.primaryColumn)
+										 .secondaryId(this.secondaryId)
+										 .resolution(resolutionField)
+										 .index(index)
+										 .eventDate(null)
+										 .build();
 	}
 
 	public SqlIdColumns withRelativeStratification(Resolution resolution, Field<Integer> index, Field<Date> eventDate) {
 		Field<String> resolutionField = DSL.field(DSL.val(resolution.toString())).as(SharedAliases.RESOLUTION.getAlias());
-		return new StratificationSqlIdColumns(this.primaryColumn, this.secondaryId, resolutionField, index, eventDate);
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(this.primaryColumn)
+										 .secondaryId(this.secondaryId)
+										 .resolution(resolutionField)
+										 .index(index)
+										 .eventDate(eventDate)
+										 .build();
 	}
 
 	public SqlIdColumns forFinalSelect() {

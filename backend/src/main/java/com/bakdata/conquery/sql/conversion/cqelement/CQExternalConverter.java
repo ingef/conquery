@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -56,7 +55,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 		List<ColumnDateRange> validityDateEntries = functionProvider.forCDateSet(entry.getValue(), SharedAliases.DATES_COLUMN);
 		return validityDateEntries.stream()
 								  .map(validityDateEntry -> createRowSelect(ids, validityDateEntry, functionProvider))
-								  .collect(Collectors.toList());
+								  .toList();
 	}
 
 	/**

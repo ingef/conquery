@@ -23,9 +23,9 @@ import org.jooq.impl.DSL;
 
 abstract class StratificationFunctions {
 
-	protected static int DAYS_PER_YEAR = 365;
-	protected static int DAYS_PER_QUARTER = 90;
-	protected static int MONTHS_PER_QUARTER = 3;
+	protected static int DAYS_PER_YEAR = Interval.YEAR_AS_DAYS_INTERVAL.getAmount();
+	protected static int DAYS_PER_QUARTER = Interval.NINETY_DAYS_INTERVAL.getAmount();
+	protected static int MONTHS_PER_QUARTER = Interval.QUARTER_INTERVAL.getAmount();
 
 	// field names
 	public static Field<Date> INDEX_START = DSL.field(DSL.name(SharedAliases.INDEX_START.getAlias()), Date.class);
@@ -141,7 +141,7 @@ abstract class StratificationFunctions {
 				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
 			};
 			case QUARTERS -> switch (resolutionAndAlignment.getAlignment()) {
-				case QUARTER -> calcRange(QUARTER_START, Interval.THREE_MONTHS_INTERVAL);
+				case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
 				case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
 				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
 			};

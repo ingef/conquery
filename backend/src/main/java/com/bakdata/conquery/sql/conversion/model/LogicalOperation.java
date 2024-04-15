@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
 public enum LogicalOperation {
-	AND,
-	OR,
+	INNER_JOIN,
+	OUTER_JOIN,
 	LEFT_JOIN
 }

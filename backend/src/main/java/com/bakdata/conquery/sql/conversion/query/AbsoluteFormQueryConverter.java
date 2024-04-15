@@ -60,7 +60,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 			QueryStep convertedFeature = queriesToJoin.get(0);
 			return createFinalSelect(form, stratificationTable, convertedFeature, childContext);
 		}
-		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, LogicalOperation.OR, DateAggregationAction.BLOCK, context);
+		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, LogicalOperation.OUTER_JOIN, DateAggregationAction.BLOCK, context);
 		return createFinalSelect(form, stratificationTable, joinedFeatures, childContext);
 	}
 

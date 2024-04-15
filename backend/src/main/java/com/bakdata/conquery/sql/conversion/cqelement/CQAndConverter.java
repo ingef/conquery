@@ -21,7 +21,7 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 		QueryStep joined = QueryStepJoiner.joinChildren(
 				andNode.getChildren(),
 				context,
-				LogicalOperation.AND,
+				LogicalOperation.INNER_JOIN,
 				andNode.getDateAction()
 		);
 		return context.withQueryStep(joined);

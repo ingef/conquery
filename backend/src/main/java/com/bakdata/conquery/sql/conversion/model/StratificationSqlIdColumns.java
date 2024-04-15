@@ -13,11 +13,13 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @Getter
+@SuperBuilder
 class StratificationSqlIdColumns extends SqlIdColumns {
 
 	private final Field<String> resolution;
@@ -30,21 +32,9 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	@Nullable
 	private final Field<Date> eventDate;
 
-	public StratificationSqlIdColumns(
-			Field<Object> primaryColumn,
-			Field<Object> secondaryId,
-			Field<String> resolution,
-			Field<Integer> index,
-			@Nullable Field<Date> eventDate
-	) {
-		super(primaryColumn, secondaryId);
-		this.resolution = resolution;
-		this.index = index;
-		this.eventDate = eventDate;
-	}
-
 	@Override
 	public SqlIdColumns qualify(String qualifier) {
+
 		Field<Object> primaryColumn = QualifyingUtil.qualify(getPrimaryColumn(), qualifier);
 		Field<String> resolution = QualifyingUtil.qualify(this.resolution, qualifier);
 		Field<Integer> index = QualifyingUtil.qualify(this.index, qualifier);
@@ -52,7 +42,14 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 		if (this.eventDate != null) {
 			eventDate = QualifyingUtil.qualify(this.eventDate, qualifier);
 		}
-		return new StratificationSqlIdColumns(primaryColumn, null, resolution, index, eventDate);
+
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(primaryColumn)
+										 .secondaryId(null)
+										 .resolution(resolution)
+										 .index(index)
+										 .eventDate(eventDate)
+										 .build();
 	}
 
 	/**
@@ -60,13 +57,21 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	 */
 	@Override
 	public SqlIdColumns forFinalSelect() {
+
 		Field<Integer> withNulledCompleteIndex = DSL.when(
 															this.resolution.eq(DSL.val(Resolution.COMPLETE.toString().toUpperCase())),
 															DSL.field(DSL.val(null, Integer.class))
 													)
 													.otherwise(this.index)
 													.as(SharedAliases.INDEX.getAlias());
-		return new StratificationSqlIdColumns(getPrimaryColumn(), null, this.resolution, withNulledCompleteIndex, this.eventDate);
+
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(getPrimaryColumn())
+										 .secondaryId(null)
+										 .resolution(this.resolution)
+										 .index(withNulledCompleteIndex)
+										 .eventDate(this.eventDate)
+										 .build();
 	}
 
 	@Override
@@ -108,7 +113,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 							 super.join(rightIds).stream(),
 							 Stream.of(joinResolutionAndIndex, joinEventDateCondition)
 					 )
-					 .collect(Collectors.toList());
+					 .toList();
 	}
 
 	@Override
@@ -132,7 +137,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			eventDates.add(this.eventDate);
 		}
 
-		selectsIds.forEach(ids -> {
+		for (SqlIdColumns ids : selectsIds) {
 			StratificationSqlIdColumns stratificationIds = (StratificationSqlIdColumns) ids;
 			primaryColumns.add(stratificationIds.getPrimaryColumn());
 			resolutions.add(stratificationIds.getResolution());
@@ -140,7 +145,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			if (stratificationIds.getEventDate() != null) {
 				eventDates.add(stratificationIds.getEventDate());
 			}
-		});
+		}
 
 		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		Field<String> coalescedResolutions = coalesceFields(resolutions).coerce(String.class).as(SharedAliases.RESOLUTION.getAlias());
@@ -150,6 +155,12 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			eventDate = coalesceFields(eventDates).coerce(Date.class).as(SharedAliases.INDEX_DATE.getAlias());
 		}
 
-		return new StratificationSqlIdColumns(coalescedPrimaryColumn, null, coalescedResolutions, coalescedIndices, eventDate);
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(coalescedPrimaryColumn)
+										 .secondaryId(null)
+										 .resolution(coalescedResolutions)
+										 .index(coalescedIndices)
+										 .eventDate(eventDate)
+										 .build();
 	}
 }

@@ -80,7 +80,7 @@ class JoinBranchesCte extends ConnectorCte {
 					.forEach(queriesToJoin::add);
 
 		Selects selects = collectSelects(validityDate, queriesToJoin, tableContext);
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, tableContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.INNER_JOIN, tableContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)

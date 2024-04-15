@@ -78,8 +78,8 @@ public class QueryStepJoiner {
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		JoinType joinType = switch (logicalOperation) {
-			case AND -> functionProvider::innerJoin;
-			case OR -> functionProvider::fullOuterJoin;
+			case INNER_JOIN -> functionProvider::innerJoin;
+			case OUTER_JOIN -> functionProvider::fullOuterJoin;
 			case LEFT_JOIN -> functionProvider::leftJoin;
 		};
 

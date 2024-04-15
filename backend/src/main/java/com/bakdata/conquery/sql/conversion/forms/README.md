@@ -50,13 +50,12 @@ from "extract_ids"
 ```
 
 A complete range shall have a `null` index, because it spans the complete range, but we set it to 1 to ensure we can
-join tables on index. We do this, because a condition involving `null` in a join (e.g., `null = some_value` or
-`null = null`) always evaluates to false, which would cause incorrect joining results.
+join tables on index.
 
 ### Calculating index start dates
 
 For finer resolutions (`YEAR`, `QUARTER`, `DAY`), the approach will be the following: at first, we will take a look at
-the `stratification_bounds` start date. This date will be the minimum starting date of the stratification, hereinafter
+the `stratification_bounds` start date. This date will be the minimum starting date of the stratification, subsequently
 referred to as "index date". We will also create a field for the year start of this date and the quarter start of this
 date.
 
@@ -126,36 +125,6 @@ in our case. The result looks like this:
 | 1           | YEARS      | 1     | \[2012-06-16,2013-04-01\) |
 | 1           | YEARS      | 2     | \[2013-04-01,2014-04-01\) |
 | 1           | YEARS      | 3     | \[2014-04-01,2014-12-18\) |
-
-For quarters, the approach looks similar:
-
-```sql
-select "primary_id",
-       'QUARTERS'                                    as "resolution",
-       row_number() over (partition by "primary_id") as "index",
-       daterange(
-               ("quarter_start" + interval '3 months' * ("index" - 1))::date,
-               ("quarter_start" + interval '3 months' * ("index" - 0))::date,
-               '[)'
-       ) * "quarter_counts"."stratification_bounds"  as "stratification_bounds"
-from "quarter_counts",
-     "int_series"
-where "index" <= "quarter_aligned_count"
-```
-
-| primary\_id | resolution | index | stratification\_bounds    |
-|:------------|:-----------|:------|:--------------------------|
-| 1           | QUARTERS   | 1     | \[2012-06-16,2012-07-01\) |
-| 1           | QUARTERS   | 2     | \[2012-07-01,2012-10-01\) |
-| 1           | QUARTERS   | 3     | \[2012-10-01,2013-01-01\) |
-| 1           | QUARTERS   | 4     | \[2013-01-01,2013-04-01\) |
-| 1           | QUARTERS   | 5     | \[2013-04-01,2013-07-01\) |
-| 1           | QUARTERS   | 6     | \[2013-07-01,2013-10-01\) |
-| 1           | QUARTERS   | 7     | \[2013-10-01,2014-01-01\) |
-| 1           | QUARTERS   | 8     | \[2014-01-01,2014-04-01\) |
-| 1           | QUARTERS   | 9     | \[2014-04-01,2014-07-01\) |
-| 1           | QUARTERS   | 10    | \[2014-07-01,2014-10-01\) |
-| 1           | QUARTERS   | 11    | \[2014-10-01,2014-12-18\) |
 
 **CTE:** `full_stratification`
 

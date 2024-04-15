@@ -74,7 +74,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			lastConceptStep = finishConceptConversion(convertedConnectorTables.get(0), cqConcept, pathGenerator, context);
 		}
 		else {
-			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, LogicalOperation.OR, DateAggregationAction.MERGE, context);
+			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, LogicalOperation.OUTER_JOIN, DateAggregationAction.MERGE, context);
 			lastConceptStep = finishConceptConversion(joinedStep, cqConcept, pathGenerator, context);
 		}
 		return context.withQueryStep(lastConceptStep);
@@ -127,7 +127,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 									  .sqlSelects(allConceptSelects)
 									  .build();
 
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.INNER_JOIN, context);
 
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))

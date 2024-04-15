@@ -21,7 +21,7 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 		QueryStep joined = QueryStepJoiner.joinChildren(
 				orNode.getChildren(),
 				context,
-				LogicalOperation.OR,
+				LogicalOperation.OUTER_JOIN,
 				orNode.getDateAction()
 		);
 		return context.withQueryStep(joined);

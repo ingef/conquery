@@ -111,7 +111,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 		return switch (interval) {
 			case ONE_YEAR_INTERVAL -> DSL.function("ADD_YEARS", Date.class, start, seriesIndex.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
 			case YEAR_AS_DAYS_INTERVAL -> addDays(start, seriesIndex.times(Interval.YEAR_AS_DAYS_INTERVAL.getAmount()));
-			case THREE_MONTHS_INTERVAL -> addMonths(start, seriesIndex.times(Interval.THREE_MONTHS_INTERVAL.getAmount()));
+			case QUARTER_INTERVAL -> addMonths(start, seriesIndex.times(Interval.QUARTER_INTERVAL.getAmount()));
 			case NINETY_DAYS_INTERVAL -> addDays(start, seriesIndex.times(Interval.NINETY_DAYS_INTERVAL.getAmount()));
 			case ONE_DAY_INTERVAL -> addDays(start, seriesIndex.times(Interval.ONE_DAY_INTERVAL.getAmount()));
 		};

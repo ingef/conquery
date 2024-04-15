@@ -23,7 +23,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	private static final Map<Interval, Field<String>> INTERVAL_MAP = Map.of(
 			Interval.ONE_YEAR_INTERVAL, DSL.val("1 year"),
 			Interval.YEAR_AS_DAYS_INTERVAL, DSL.val("365 days"),
-			Interval.THREE_MONTHS_INTERVAL, DSL.val("3 months"),
+			Interval.QUARTER_INTERVAL, DSL.val("3 months"),
 			Interval.NINETY_DAYS_INTERVAL, DSL.val("90 days"),
 			Interval.ONE_DAY_INTERVAL, DSL.val("1 day")
 	);
@@ -51,7 +51,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 				yearStart(dateRange),
 				quarter,
 				INTERVAL_KEYWORD,
-				INTERVAL_MAP.get(Interval.THREE_MONTHS_INTERVAL)
+				INTERVAL_MAP.get(Interval.QUARTER_INTERVAL)
 		);
 	}
 
