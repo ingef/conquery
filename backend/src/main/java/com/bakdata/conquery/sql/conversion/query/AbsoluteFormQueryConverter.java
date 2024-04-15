@@ -29,7 +29,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.TableLike;
-import org.testcontainers.shaded.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 
 @RequiredArgsConstructor
 public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQuery> {
