@@ -12,8 +12,9 @@ interface TranslatableString {
 
 export type Forms = Form[];
 
-export type FormField = Field | Tabs | Group | Disclosure;
 export type NonFormField = Headline | Description;
+export type FormField = Field | Tabs | Group | Disclosure;
+export type FormFieldWithValue = Exclude<FormField, Group>;
 
 export type GeneralField = FormField | NonFormField;
 
@@ -37,7 +38,7 @@ export interface Group {
 }
 
 export interface Disclosure {
-  type: "DISCLOSURE";
+  type: "DISCLOSURE_LIST";
   creatable?: boolean;
   defaultOpen?: boolean;
   name: string;

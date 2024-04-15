@@ -62,7 +62,7 @@
       },
       {
         "name": "theDisclosure",
-        "type": "DISCLOSURE",
+        "type": "DISCLOSURE_LIST",
         "label": {
           "de": "Datenschutz"
         },

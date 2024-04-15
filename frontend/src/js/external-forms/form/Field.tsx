@@ -6,14 +6,14 @@ import { useDatasetId } from "../../dataset/selectors";
 import type { Language } from "../../localization/useActiveLang";
 import type { GeneralField } from "../config-types";
 import { Description } from "../form-components/Description";
-import { getInitialValue, isFormField } from "../helper";
+import { getInitialValue, isFormFieldWithValue } from "../helper";
 
 import type { DynamicFormValues } from "./Form";
 import { CheckboxField } from "./fields/CheckboxField";
 import { ConceptListField } from "./fields/ConceptListField";
 import { DatasetSelectField } from "./fields/DatasetSelectField";
 import { DateRangeField } from "./fields/DateRangeField";
-import { DisclosureField } from "./fields/DisclosureField";
+import { DisclosureListField } from "./fields/DisclosureListField";
 import { GroupField } from "./fields/GroupField";
 import { HeadlineField } from "./fields/HeadlineField";
 import { NumberField } from "./fields/NumberField";
@@ -39,14 +39,13 @@ const Field = ({
   const datasetId = useDatasetId();
   const { locale, availableDatasets } = commonProps;
 
-  const defaultValue =
-    isFormField(field) && field.type !== "GROUP"
-      ? getInitialValue(field, {
-          availableDatasets,
-          activeLang: locale,
-          datasetId,
-        })
-      : null;
+  const defaultValue = isFormFieldWithValue(field)
+    ? getInitialValue(field, {
+        availableDatasets,
+        activeLang: locale,
+        datasetId,
+      })
+    : null;
 
   switch (field.type) {
     case "HEADLINE":
@@ -121,12 +120,13 @@ const Field = ({
           datasetId={datasetId}
         />
       );
-    case "DISCLOSURE":
+    case "DISCLOSURE_LIST":
       return (
-        <DisclosureField
+        <DisclosureListField
           field={field}
+          defaultValue={defaultValue}
           commonProps={commonProps}
-          key={field.name}
+          datasetId={datasetId}
         />
       );
     case "GROUP":
