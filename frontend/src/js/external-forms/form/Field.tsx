@@ -388,6 +388,19 @@ const Field = ({
           }}
         </ConnectedField>
       );
+    case "DISCLOSURE":
+      return (
+        <details>
+          <summary>
+            <Headline>{field.label[locale]}</Headline>
+          </summary>
+          {field.fields.map((f, i) => {
+            const key = getFieldKey(formType, f, i);
+
+            return <Field key={key} field={f} {...commonProps} />;
+          })}
+        </details>
+      );
     case "GROUP":
       return (
         <>
