@@ -8,6 +8,8 @@ import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 
 import { Theme, useTheme } from "@emotion/react";
+import { Chart } from "chart.js";
+import { useTranslation } from "react-i18next";
 import {
   formatNumber,
   previewStatsIsBarStats,
@@ -101,6 +103,7 @@ export default function Diagram({
       return transformDateStatsToData(stat, theme);
     }
   }, [stat, theme]);
+  const { t } = useTranslation();
 
   const options = useMemo(() => {
     const baseOptions = {
@@ -116,6 +119,8 @@ export default function Diagram({
       plugins: {
         title: {
           display: true,
+          font: Chart.defaults.font,
+          position: "bottom",
           text: stat.label,
         },
         tooltip: {
@@ -136,12 +141,18 @@ export default function Diagram({
       },
     } as Partial<ChartOptions>;
 
+    const yScaleTitle = {
+      display: true,
+      text: t("preview.chartYLabel"),
+    };
+
     if (previewStatsIsBarStats(stat)) {
       return {
         ...baseOptions,
         type: "bar",
         scales: {
           y: {
+            title: yScaleTitle,
             beginAtZero: true,
           },
         },
@@ -159,6 +170,7 @@ export default function Diagram({
         },
         scales: {
           y: {
+            title: yScaleTitle,
             beginAtZero: true,
             ticks: {
               callback: (value: number) => {
@@ -189,7 +201,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat]);
+  }, [data?.labels, stat, t]);
 
   return (
     <div className={className}>
