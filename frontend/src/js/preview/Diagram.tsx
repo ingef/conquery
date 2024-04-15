@@ -14,6 +14,7 @@ import {
   formatNumber,
   previewStatsIsBarStats,
   previewStatsIsDateStats,
+  useDateTickHandler,
 } from "./util";
 
 type DiagramProps = {
@@ -104,6 +105,7 @@ export default function Diagram({
     }
   }, [stat, theme]);
   const { t } = useTranslation();
+  const { shouldTickRender } = useDateTickHandler(stat);
 
   const options = useMemo(() => {
     const baseOptions = {
@@ -185,10 +187,7 @@ export default function Diagram({
                 const label = data?.labels?.[valueIndex];
                 if (label) {
                   const date = parseDate(label as string, "dd.MM.yyyy");
-                  if (
-                    date?.getMonth() !== undefined &&
-                    date.getMonth() % 3 === 0
-                  ) {
+                  if (date && shouldTickRender(date)) {
                     return label as string;
                   }
                 }
@@ -201,7 +200,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat, t]);
+  }, [data?.labels, stat, t, shouldTickRender]);
 
   return (
     <div className={className}>
