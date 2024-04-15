@@ -99,7 +99,7 @@ export interface Headline {
 
 /* ------------------------------ */
 
-interface Description {
+export interface Description {
   type: "DESCRIPTION";
   label: TranslatableString;
 }
@@ -114,7 +114,7 @@ export type CheckboxField = CommonField & {
 /* ------------------------------ */
 
 type StringFieldValidation = NOT_EMPTY_VALIDATION;
-type StringField = CommonField & {
+export type StringField = CommonField & {
   type: "STRING";
   placeholder?: TranslatableString;
   defaultValue?: string; // Default: ""
@@ -128,7 +128,7 @@ type StringField = CommonField & {
 /* ------------------------------ */
 
 type TextareaFieldValidation = NOT_EMPTY_VALIDATION;
-type TextareaField = CommonField & {
+export type TextareaField = CommonField & {
   type: "TEXTAREA";
   placeholder?: TranslatableString;
   defaultValue?: string; // Default: ""
@@ -143,7 +143,7 @@ type TextareaField = CommonField & {
 type NumberFieldValidation =
   | NOT_EMPTY_VALIDATION
   | GREATER_THAN_ZERO_VALIDATION;
-type NumberField = CommonField & {
+export type NumberField = CommonField & {
   type: "NUMBER";
   defaultValue?: number; // Default: null
   placeholder?: TranslatableString;
@@ -162,13 +162,13 @@ type SelectOption = {
   value: SelectValue;
 };
 type SelectFieldValidation = NOT_EMPTY_VALIDATION;
-type SelectField = CommonField & {
+export type SelectField = CommonField & {
   type: "SELECT";
   options: SelectOption[];
   defaultValue?: SelectValue;
   validations?: SelectFieldValidation[];
 };
-type DatasetSelectField = CommonField & {
+export type DatasetSelectField = CommonField & {
   type: "DATASET_SELECT";
   validations?: SelectFieldValidation[];
 };
@@ -186,7 +186,7 @@ type DatasetSelectField = CommonField & {
 /* ------------------------------ */
 
 type DateRangeFieldValidation = NOT_EMPTY_VALIDATION;
-type DateRangeField = CommonField & {
+export type DateRangeField = CommonField & {
   type: "DATE_RANGE";
   validations?: DateRangeFieldValidation[];
 };
@@ -194,7 +194,7 @@ type DateRangeField = CommonField & {
 /* ------------------------------ */
 
 type ResultGroupFieldValidation = NOT_EMPTY_VALIDATION;
-type ResultGroupField = CommonField & {
+export type ResultGroupField = CommonField & {
   type: "RESULT_GROUP";
   dropzoneLabel: TranslatableString;
   validations?: ResultGroupFieldValidation[];

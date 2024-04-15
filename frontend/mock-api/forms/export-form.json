@@ -61,6 +61,38 @@
         "validations": ["NOT_EMPTY"]
       },
       {
+        "name": "theDisclosure",
+        "type": "DISCLOSURE",
+        "label": {
+          "de": "Datenschutz"
+        },
+        "creatable": true,
+        "fields": [
+          {
+            "type": "HEADLINE",
+            "label": {
+              "de": "Datenschutztext"
+            }
+          },
+          {
+            "type": "CHECKBOX",
+            "name": "disclosureCheckbox",
+            "label": {
+              "de": "Ich habe den Datenschutztext gelesen und bin einverstanden."
+            }
+          },
+          {
+            "type": "NUMBER",
+            "name": "timesIlike",
+            "label": {
+              "de": "Gefällt mir SO sehr"
+            },
+            "defaultValue": 1,
+            "min": 1
+          }
+        ]
+      },
+      {
         "name": "timeMode",
         "type": "TABS",
         "defaultValue": "ABSOLUTE",
