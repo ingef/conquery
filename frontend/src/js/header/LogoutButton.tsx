@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
 import { FC } from "react";
@@ -10,10 +9,6 @@ import IconButton from "../button/IconButton";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
 import WithTooltip from "../tooltip/WithTooltip";
-
-const SxIconButton = styled(IconButton)`
-  padding: 6px 6px;
-`;
 
 interface PropsT {
   className?: string;
@@ -46,7 +41,7 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
 
   return (
     <WithTooltip className={className} text={t("common.logout")}>
-      <SxIconButton frame icon={faSignOutAlt} onClick={onLogout} />
+      <IconButton small frame icon={faSignOutAlt} onClick={onLogout} />
     </WithTooltip>
   );
 };
