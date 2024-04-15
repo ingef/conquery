@@ -196,7 +196,6 @@ abstract class StratificationFunctions {
 		return switch (context.getConfig().getDialect()) {
 			case POSTGRESQL -> new PostgresStratificationFunctions((PostgreSqlFunctionProvider) functionProvider);
 			case HANA -> new HanaStratificationFunctions((HanaSqlFunctionProvider) functionProvider);
-			case CLICKHOUSE -> throw new UnsupportedOperationException("Not implemented");
 		};
 	}
 

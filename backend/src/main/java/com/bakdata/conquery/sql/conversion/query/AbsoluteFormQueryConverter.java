@@ -24,12 +24,12 @@ import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.TableLike;
+import org.testcontainers.shaded.com.google.common.base.Preconditions;
 
 @RequiredArgsConstructor
 public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQuery> {
