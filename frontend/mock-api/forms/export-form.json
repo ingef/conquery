@@ -67,6 +67,9 @@
           "de": "Datenschutz"
         },
         "creatable": true,
+        "tooltip": {
+          "de": "Der Datenschutz ist ein wichtiges Thema, deshalb musst du hier zustimmen."
+        },
         "fields": [
           {
             "type": "HEADLINE",

@@ -4,7 +4,9 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { ComponentProps, useState } from "react";
+import { exists } from "../../../common/helpers/exists";
 import FaIcon from "../../../icon/FaIcon";
+import InfoTooltip from "../../../tooltip/InfoTooltip";
 import { Disclosure } from "../../config-types";
 import { getFieldKey } from "../../helper";
 import Field from "../Field";
@@ -55,6 +57,7 @@ export const DisclosureField = ({
           <FaIcon icon={isOpen ? faChevronDown : faChevronRight} />
         </span>
         {field.label[locale]}
+        {exists(field.tooltip) && <InfoTooltip text={field.tooltip[locale]} />}
       </Summary>
       <DisclosureNestedFields>
         {field.fields.map((f, i) => {

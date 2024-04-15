@@ -38,10 +38,11 @@ export interface Group {
 
 export interface Disclosure {
   type: "DISCLOSURE";
-  name: string;
   creatable?: boolean;
   defaultOpen?: boolean;
+  name: string;
   label: TranslatableString;
+  tooltip?: TranslatableString;
   fields: GeneralField[];
 }
 
