@@ -77,7 +77,7 @@ export default memo(function Table({
           key: field.name,
           render: (value: string | Vector) => {
             const rendered = renderer(value);
-            return <span title={rendered as string}>{rendered}</span>;
+            return <span title={rendered}>{rendered}</span>;
           },
         };
       }),
