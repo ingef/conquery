@@ -106,11 +106,11 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		super.setStatusBase(subject, status);
 		status.setNumberOfResults(getLastResultCount());
 
-		Query query1 = getQuery();
-		status.setQueryType(query1.getClass().getAnnotation(CPSType.class).id());
+		Query query = getQuery();
+		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 
-		if (query1 instanceof SecondaryIdQuery) {
-			status.setSecondaryId(((SecondaryIdQuery) query1).getSecondaryId().getId());
+		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
+			status.setSecondaryId((secondaryIdQuery).getSecondaryId().getId());
 		}
 	}
 

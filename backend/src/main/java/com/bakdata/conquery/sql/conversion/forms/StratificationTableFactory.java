@@ -81,7 +81,7 @@ public class StratificationTableFactory {
 	private QueryStep createIndexStartStep() {
 
 		Selects baseStepSelects = getBaseStep().getQualifiedSelects();
-		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent()); // TODO comment on why present
+		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent());
 		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
 
 		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
