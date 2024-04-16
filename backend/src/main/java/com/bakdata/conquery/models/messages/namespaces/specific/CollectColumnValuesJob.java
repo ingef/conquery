@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
@@ -105,27 +105,56 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	public void afterAllReaction() {
 
 		// Run this in a job, so it is definitely processed after UpdateFilterSearchJob
-		namespace.getJobManager().addSlowJob(
-				new SimpleJob(
-						"Finalize Search update",
-						() -> {
-							log.debug("{} shrinking searches", this);
-							final FilterSearch filterSearch = namespace.getFilterSearch();
-							columns.forEach(filterSearch::shrinkSearch);
+		namespace.getJobManager().addSlowJob(new SearchShrinker());
+	}
 
+	private class SearchShrinker extends Job {
 
-							log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
-							for (SelectFilter<?> filter : UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage())) {
-								try {
-									namespace.getFilterSearch().getTotal(filter);
-								}
-								catch (Exception e) {
-									log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
-								}
-							}
-							log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
-						}
-				)
-		);
+		@Override
+		public void execute() {
+
+			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage());
+			final FilterSearch filterSearch = namespace.getFilterSearch();
+
+			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
+
+			log.debug("{} shrinking searches", this);
+
+			for (Column column : columns) {
+				try {
+					filterSearch.shrinkSearch(column);
+				}
+				catch (Exception e) {
+					log.warn("Unable to shrink search for {}", column, e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
+
+			log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
+
+			for (SelectFilter<?> filter : allSelectFilters) {
+				log.trace("Calculate totals for filter: {}", filter.getId());
+				try {
+					final long total = namespace.getFilterSearch().getTotal(filter);
+					log.trace("Filter '{}' totals: {}", filter, total);
+				}
+				catch (Exception e) {
+					log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
+
+			getProgressReporter().done();
+			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
+		}
+
+		@Override
+		public String getLabel() {
+			return "Finalize Search update";
+		}
 	}
 }
