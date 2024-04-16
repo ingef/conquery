@@ -45,8 +45,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean searchDisabled = false;
 
 	@JsonIgnore
-	@Getter(lazy = true)
-	private final int position = ArrayUtils.indexOf(getTable().getColumns(), this);
+	private int position = -1;
+
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
@@ -76,7 +76,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 */
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
-
 		return config.createTrieSearch(isGenerateSuffixes());
+	}
+
+	public void init() {
+		position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	}
 }
