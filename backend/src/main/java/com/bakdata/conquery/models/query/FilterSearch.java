@@ -9,29 +9,23 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@Data
+@RequiredArgsConstructor
 public class FilterSearch {
 
-	private final NamespaceStorage storage;
-	private final JobManager jobManager;
-	private final CSVConfig parserConfig;
+	@Getter
 	private final IndexConfig indexConfig;
 
 	/**
@@ -40,8 +34,8 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<Searchable<?>> totals = Object2LongMaps.emptyMap();
+	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Object2LongMap<SelectFilter<?>> totals = new Object2LongOpenHashMap<>();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -62,11 +56,11 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public final List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
-		final List<? extends Searchable<?>> references = searchable.getSearchReferences();
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
+			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
 		}
 
 		return references.stream()
@@ -75,20 +69,21 @@ public class FilterSearch {
 						 .collect(Collectors.toList());
 	}
 
-	public long getTotal(Searchable<?> searchable) {
-		return totals.getOrDefault(searchable, 0);
+	public long getTotal(SelectFilter<?> filter) {
+		return totals.computeIfAbsent(filter, (f) -> filter.getSearchReferences().stream()
+														   .map(searchCache::get)
+														   .flatMap(TrieSearch::stream)
+														   .distinct()
+														   .count());
 	}
 
 
 	/**
 	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void addSearches(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
-		log.debug("BEGIN counting Search totals.");
-		// Precompute totals as that can be slow when doing it on-demand.
-		updateTotals(searchCache);
 	}
 
 
@@ -97,44 +92,21 @@ public class FilterSearch {
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
-	public void registerValues(Searchable<?> searchable, Collection<String> values) {
-		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig, storage));
+	public void registerValues(Searchable searchable, Collection<String> values) {
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig));
 
 		synchronized (search) {
 			values.stream()
 				  .map(value -> new FrontendValue(value, value))
 				  .forEach(value -> search.addItem(value, extractKeywords(value)));
-
-			// Update totals for search
-			totals.put(searchable, getTotalFor(searchable));
 		}
-	}
-
-	private void updateTotals(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
-		final Object2LongOpenHashMap<Searchable<?>> partialTotals = new Object2LongOpenHashMap<>(searchCache.keySet().stream()
-																											.collect(Collectors.toMap(
-																													Functions.identity(),
-																													this::getTotalFor
-																											)));
-		totals.putAll(partialTotals);
-	}
-
-	private long getTotalFor(Searchable<?> searchable) {
-		return searchable.getSearchReferences()
-						 .stream()
-						 .map(searchCache::get)
-						 .filter(Objects::nonNull) // Failed or disabled searches are null
-						 .flatMap(TrieSearch::stream)
-						 .mapToInt(FrontendValue::hashCode)
-						 .distinct()
-						 .count();
 	}
 
 	/**
 	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
 	 */
-	public void shrinkSearch(Searchable<?> searchable) {
-		final TrieSearch<FrontendValue> search = getSearchCache().get(searchable);
+	public void shrinkSearch(Searchable searchable) {
+		final TrieSearch<FrontendValue> search = searchCache.get(searchable);
 
 		if (search == null) {
 			log.warn("Searchable has no search associated: {}", searchable);
@@ -145,6 +117,6 @@ public class FilterSearch {
 
 	public synchronized void clearSearch() {
 		totals = new Object2LongOpenHashMap<>();
-		searchCache.clear();
+		searchCache = new HashMap<>();
 	}
 }
