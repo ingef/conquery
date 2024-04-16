@@ -554,15 +554,14 @@ public class QueryProcessor {
 					 .filter(Predicate.not(Map::isEmpty));
 	}
 
-	public ResultStatistics getResultStatistics(ManagedQuery managedQuery) {
-		final Query query = managedQuery.getQuery();
-		final List<ResultInfo> resultInfos = query.getResultInfos();
+	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
 				dateInfo =
-				query.getResultInfos().stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
 
-		final int dateIndex = dateInfo.map(resultInfos::indexOf).orElse(0 /*Discarded if dateInfo is not present*/);
+		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
