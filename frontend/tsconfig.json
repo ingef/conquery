@@ -18,13 +18,7 @@
     "module": "ESNext",
     "target": "es6",
     "allowJs": true,
-    "lib": [
-      "es5",
-      "es6",
-      "dom",
-      "dom.iterable",
-      "es2019"
-    ],
+    "lib": ["es5", "es6", "dom", "dom.iterable", "es2019"],
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -32,15 +26,6 @@
     "noFallthroughCasesInSwitch": true,
     "strictBindCallApply": true
   },
-  "include": [
-    "src",
-    "node_modules/**/*/*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache",
-    ".idea",
-    "src/ignored/*"
-  ]
+  "include": ["src", "node_modules/**/*/*.d.ts"],
+  "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }
