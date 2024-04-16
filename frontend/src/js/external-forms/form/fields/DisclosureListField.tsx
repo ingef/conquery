@@ -86,8 +86,6 @@ const DisclosureField = ({
             ? { ...f, name: `${field.name}[${index}].${f.name}` }
             : f;
 
-          console.log(childField.name);
-
           return <Field key={key} field={childField} {...commonProps} />;
         })}
       </div>
@@ -108,6 +106,7 @@ export const DisclosureListField = ({
 }) => {
   const { fields, append, remove } = useFieldArray({
     control: commonProps.control,
+    // @ts-expect-error TODO: figure out how to deal with a dynamic name
     name: field.name,
   });
   console.log(field, defaultValue);
