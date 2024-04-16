@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;

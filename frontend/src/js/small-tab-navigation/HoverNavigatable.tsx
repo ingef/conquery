@@ -3,6 +3,7 @@ import { ReactNode, useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
 import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 interface PropsT {
@@ -54,7 +55,7 @@ export const HoverNavigatable = ({
     hover: (_, monitor) => {
       if (!isDroppable) return;
 
-      if (timeoutVar == null) {
+      if (!exists(timeoutVar)) {
         setTimeoutVar(
           setTimeout(() => {
             setTimeoutVar(null);

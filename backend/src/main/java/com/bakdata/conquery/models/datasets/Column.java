@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,8 +44,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean searchDisabled = false;
 
 	@JsonIgnore
-	@Getter(lazy = true)
-	private final int position = ArrayUtils.indexOf(getTable().getColumns(), this);
+	private int position = -1;
+
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
@@ -75,7 +75,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 */
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
-
 		return config.createTrieSearch(isGenerateSuffixes());
+	}
+
+	public void init() {
+		position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	}
 }

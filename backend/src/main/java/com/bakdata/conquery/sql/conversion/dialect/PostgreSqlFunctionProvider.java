@@ -3,19 +3,24 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.google.common.base.Preconditions;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 /**
@@ -91,33 +96,61 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
-		return ColumnDateRange.of(DSL.function("range_agg", Object.class, columnDateRange.getRange()));
+		return ColumnDateRange.of(rangeAgg(columnDateRange)).as(columnDateRange.getAlias());
 	}
 
 	@Override
-	public Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange) {
+	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
+		Field<?> daterange = columnDateRange.getRange();
+		Field<Date> start = DSL.function("lower", Date.class, daterange);
+		Field<Date> end = DSL.function("upper", Date.class, daterange);
+		return ColumnDateRange.of(start, end);
+	}
+
+	@Override
+	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
+
+		Preconditions.checkArgument(
+				predecessor.getSelects().getValidityDate().isPresent(),
+				"Can't create a unnest-CTE without a validity date present."
+		);
+
+		Selects predecessorSelects = predecessor.getQualifiedSelects();
+		ColumnDateRange validityDate = predecessorSelects.getValidityDate().get();
+		ColumnDateRange unnested = ColumnDateRange.of(unnest(validityDate.getRange()).as(validityDate.getAlias()));
+
+		Selects selects = Selects.builder()
+								 .ids(predecessor.getQualifiedSelects().getIds())
+								 .validityDate(Optional.of(unnested))
+								 .build();
+
+		return QueryStep.builder()
+						.cteName(sqlTables.cteName(ConceptCteStep.UNNEST_DATE))
+						.selects(selects)
+						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+						.build();
+	}
+
+	@Override
+	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		Field<String> aggregatedValidityDate = DSL.field("{0}::{1}", String.class, columnDateRange.getRange(), DSL.keyword("varchar"));
+		Field<Object> asMultirange = rangeAgg(columnDateRange);
+		Field<String> aggregatedValidityDate = DSL.field("{0}::{1}", String.class, asMultirange, DSL.keyword("varchar"));
 		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
 	@Override
-	public Field<Integer> dateDistance(ChronoUnit timeUnit, Name startDateColumnName, Date endDateExpression) {
+	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
-		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
-		Field<Date> endDate = toDateField(endDateExpression.toString());
-
-		if (timeUnit == ChronoUnit.DAYS) {
+		if (datePart == ChronoUnit.DAYS) {
 			return endDate.minus(startDate).coerce(Integer.class);
 		}
 
 		Field<Integer> age = DSL.function("AGE", Integer.class, endDate, startDate);
-
-		return switch (timeUnit) {
-			case MONTHS -> extract(DatePart.YEAR, age).multiply(12)
-													  .plus(extract(DatePart.MONTH, age));
+		return switch (datePart) {
+			case MONTHS -> extract(DatePart.YEAR, age).multiply(12).plus(extract(DatePart.MONTH, age));
 			case YEARS -> extract(DatePart.YEAR, age);
 			case DECADES -> extract(DatePart.DECADE, age);
 			case CENTURIES -> extract(DatePart.CENTURY, age);
@@ -182,7 +215,16 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.field(arrayExpression, Object[].class);
 	}
 
-	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
+	@Override
+	public Field<Date> toDateField(String dateValue) {
+		return DSL.field("{0}::{1}", Date.class, DSL.val(dateValue), DSL.keyword("date"));
+	}
+
+	private static Field<Object> rangeAgg(ColumnDateRange columnDateRange) {
+		return DSL.function("range_agg", Object.class, columnDateRange.getRange());
+	}
+
+	private static Field<Object> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
 				Object.class,
@@ -190,6 +232,10 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				endColumn,
 				DSL.val(bounds)
 		);
+	}
+
+	private static Field<?> unnest(Field<?> multirange) {
+		return DSL.function("unnest", Object.class, multirange);
 	}
 
 	private Field<Integer> extract(DatePart datePart, Field<Integer> timeInterval) {
@@ -201,11 +247,6 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.keyword("FROM"),
 				timeInterval
 		);
-	}
-
-	@Override
-	public Field<Date> toDateField(String dateValue) {
-		return DSL.field("{0}::{1}", Date.class, DSL.val(dateValue), DSL.keyword("date"));
 	}
 
 	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {

@@ -18,10 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
@@ -68,6 +64,10 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jetbrains.exodus.env.Environment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

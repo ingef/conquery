@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;

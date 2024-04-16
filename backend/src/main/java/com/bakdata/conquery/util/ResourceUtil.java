@@ -1,9 +1,8 @@
 package com.bakdata.conquery.util;
 
-import javax.ws.rs.NotFoundException;
-
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.base.Preconditions;
+import jakarta.ws.rs.NotFoundException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

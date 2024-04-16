@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -9,6 +7,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

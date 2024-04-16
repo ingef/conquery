@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -36,6 +35,7 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggreg
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
