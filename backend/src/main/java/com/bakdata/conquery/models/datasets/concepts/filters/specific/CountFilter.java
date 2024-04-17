@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -19,6 +17,10 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -68,4 +70,10 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 		return out;
 	}
+
+	@Override
+	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
+		return CountSqlAggregator.create(this, filterContext).getSqlFilters();
+	}
+
 }

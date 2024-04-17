@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 
@@ -20,12 +20,12 @@ public interface SqlDateAggregator {
 			List<SqlSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
 			DateAggregationAction dateAggregationAction,
-			NameGenerator nameGenerator
+			ConversionContext conversionContext
 	);
 
 	/**
 	 * Inverts the validity date of the given base step.
 	 */
-	QueryStep invertAggregatedIntervals(QueryStep baseStep, NameGenerator nameGenerator);
+	QueryStep invertAggregatedIntervals(QueryStep baseStep, ConversionContext conversionContext);
 
 }

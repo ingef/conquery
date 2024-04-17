@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.forms;
 
+import static com.bakdata.conquery.models.forms.util.Alignment.*;
+import static com.bakdata.conquery.models.forms.util.Resolution.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -8,14 +16,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.bakdata.conquery.models.forms.util.Alignment.*;
-import static com.bakdata.conquery.models.forms.util.Resolution.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class DateContextTest {
 
@@ -36,12 +36,12 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, ExportForm.getResolutionAlignmentMap(YEARS.getThisAndCoarserSubdivisions(),YEAR));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
-			mask,
-			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
-			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
-			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)),
-			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
-			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
+				mask,
+				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
+				CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
+				CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)),
+				CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
+				CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
@@ -52,11 +52,11 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, ExportForm.getResolutionAlignmentMap(List.of(YEARS),YEAR));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
-			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
-			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
-			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)),
-			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
-			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
+				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
+				CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
+				CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)),
+				CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
+				CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
@@ -67,22 +67,22 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, ExportForm.getResolutionAlignmentMap(QUARTERS.getThisAndCoarserSubdivisions(), QUARTER));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
-			// Complete
-			mask,
-			// Years
-			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2002, 3, 31)),
-			CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2003, 3, 31)),
-			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21)),
-			// Quarters
-			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
-			CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
-			CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),
-			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)),
-			CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2002, 6, 30)),
-			CDateRange.of(LocalDate.of(2002, 7, 1), LocalDate.of(2002, 9, 30)),
-			CDateRange.of(LocalDate.of(2002, 10, 1), LocalDate.of(2002, 12, 31)),
-			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
-			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
+				// Complete
+				mask,
+				// Years
+				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2002, 3, 31)),
+				CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2003, 3, 31)),
+				CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21)),
+				// Quarters
+				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
+				CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
+				CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),
+				CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)),
+				CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2002, 6, 30)),
+				CDateRange.of(LocalDate.of(2002, 7, 1), LocalDate.of(2002, 9, 30)),
+				CDateRange.of(LocalDate.of(2002, 10, 1), LocalDate.of(2002, 12, 31)),
+				CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
+				CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
@@ -93,15 +93,15 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(QUARTERS, QUARTER)));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
-			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
-			CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
-			CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),
-			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)),
-			CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2002, 6, 30)),
-			CDateRange.of(LocalDate.of(2002, 7, 1), LocalDate.of(2002, 9, 30)),
-			CDateRange.of(LocalDate.of(2002, 10, 1), LocalDate.of(2002, 12, 31)),
-			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
-			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
+				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
+				CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
+				CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),
+				CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)),
+				CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2002, 6, 30)),
+				CDateRange.of(LocalDate.of(2002, 7, 1), LocalDate.of(2002, 9, 30)),
+				CDateRange.of(LocalDate.of(2002, 10, 1), LocalDate.of(2002, 12, 31)),
+				CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
+				CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}

@@ -9,11 +9,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.validation.UnexpectedTypeException;
-import javax.ws.rs.core.Response;
+import java.util.OptionalLong;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -21,17 +20,17 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
-import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -58,7 +57,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		//check result info size
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
-		assertThat(executionResult.streamResults().flatMap(EntityResult::streamValues))
+		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
@@ -87,17 +86,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						  .containsExactlyInAnyOrderElementsOf(expected);
 
 		// check that getLastResultCount returns the correct size
-		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
+		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
-			// TODO find common abstraction for Sql/ManagedQuery
-			if (executionResult instanceof ManagedQuery managedQuery) {
-				lastResultCount = managedQuery.getLastResultCount();
-			}
-			else if (executionResult instanceof SqlManagedQuery sqlManagedQuery) {
-				lastResultCount = sqlManagedQuery.getLastResultCount();
+			if (executionResult instanceof EditorQuery editorQuery) {
+				lastResultCount = editorQuery.getLastResultCount();
 			}
 			else {
-				throw new UnexpectedTypeException("Did not expect a ManagedExecution of type %s.".formatted(execution.getClass()));
+				throw new UnexpectedTypeException("Did expect an EditorQuery, but got element of type %s.".formatted(execution.getClass()));
 			}
 			assertThat(lastResultCount).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}

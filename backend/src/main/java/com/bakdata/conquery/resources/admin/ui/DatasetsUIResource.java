@@ -4,21 +4,12 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -26,7 +17,13 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -85,17 +82,6 @@ public class DatasetsUIResource {
 								 ))
 								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
-						// total size of dictionaries
-						namespace
-								.getStorage()
-								.getAllImports()
-								.stream()
-								.flatMap(i -> i.getDictionaries().stream())
-								.filter(Objects::nonNull)
-								.map(namespace.getStorage()::getDictionary)
-								.distinct()
-								.mapToLong(Dictionary::estimateMemoryConsumption)
-								.sum(),
 						// Total size of CBlocks
 						namespace
 								.getStorage().getTables()
@@ -142,7 +128,6 @@ public class DatasetsUIResource {
 		private Collection<SearchIndex> searchIndices;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
-		private long dictionariesSize;
 		private long cBlocksSize;
 		private long size;
 	}

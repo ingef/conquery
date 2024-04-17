@@ -1,6 +1,9 @@
 {
   "label": "COUNT DISTINCT select",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/selects/count_distinct/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

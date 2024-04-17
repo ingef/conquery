@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -54,7 +53,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		Preconditions.checkNotNull(authUser, "User storage was not created");
 		Preconditions.checkNotNull(authRole, "Role storage was not created");
 		Preconditions.checkNotNull(authGroup, "Group storage was not created");
@@ -101,7 +100,11 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public User getUser(UserId userId) {
-		return authUser.get(userId);
+		final User user = authUser.get(userId);
+		if (user == null) {
+			log.warn("Requested unknown user '{}'", userId);
+		}
+		return user;
 	}
 
 	public Collection<User> getAllUsers() {
@@ -118,7 +121,11 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public Role getRole(RoleId roleId) {
-		return authRole.get(roleId);
+		final Role role = authRole.get(roleId);
+		if (role == null) {
+			log.warn("Requested unknown role '{}'", roleId);
+		}
+		return role;
 	}
 
 	public Collection<Role> getAllRoles() {
@@ -141,8 +148,12 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		authGroup.add(group);
 	}
 
-	public Group getGroup(GroupId id) {
-		return authGroup.get(id);
+	public Group getGroup(GroupId groupId) {
+		final Group group = authGroup.get(groupId);
+		if (group == null) {
+			log.warn("Requested unknown group '{}'", groupId);
+		}
+		return group;
 	}
 
 	public Collection<Group> getAllGroups() {

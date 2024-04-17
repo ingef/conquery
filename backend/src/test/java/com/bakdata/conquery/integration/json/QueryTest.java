@@ -1,11 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.*;
-
 import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -19,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +45,6 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Query query;
-
 	@Override
 	public Query getQuery() {
 		return query;
@@ -56,32 +52,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-
-		importSecondaryIds(support, content.getSecondaryIds());
-
-		importInternToExternMappers(support, internToExternMappings);
-
-		importSearchIndexes(support, searchIndexes);
-		support.waitUntilWorkDone();
-
-		importTables(support, content.getTables(), content.isAutoConcept());
-		support.waitUntilWorkDone();
-
-		importConcepts(support, rawConcepts);
-		support.waitUntilWorkDone();
-
-		importTableContents(support, content.getTables());
-		support.waitUntilWorkDone();
-
-		importIdMapping(support, content);
-		support.waitUntilWorkDone();
-
-		importPreviousQueries(support, content, support.getTestUser());
-		support.waitUntilWorkDone();
-
-		updateMatchingStats(support);
-		support.waitUntilWorkDone();
-
+		support.getTestImporter().importQueryTestData(support, this);
 		query = IntegrationUtils.parseQuery(support, rawQuery);
 	}
 

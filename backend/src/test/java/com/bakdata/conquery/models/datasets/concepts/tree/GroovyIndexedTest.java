@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -100,8 +100,6 @@ public class GroovyIndexedTest {
 
 		indexedConcept.setDataset(dataset);
 		indexedConcept.initElements();
-
-		TreeChildPrefixIndex.putIndexInto(indexedConcept);
 
 		oldConcept = conceptReader.readValue(node);
 

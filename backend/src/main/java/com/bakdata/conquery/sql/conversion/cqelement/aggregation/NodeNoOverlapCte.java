@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -28,7 +29,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		// we create a no-overlap node for each query step we need to aggregate
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		Iterator<ColumnDateRange> validityDates = dateAggregationDates.getValidityDates().iterator();
-		QueryStep intermediateTableStep = context.getStep(MergeCteStep.INTERMEDIATE_TABLE);
+		QueryStep intermediateTableStep = context.getStep(DateAggregationCteStep.INTERMEDIATE_TABLE);
 
 		// first no-overlap step has intermediate table as predecessor
 		QueryStep.QueryStepBuilder noOverlapStep = createNoOverlapStep(validityDates.next(), context, intermediateTableStep);
@@ -50,7 +51,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 			QueryStep predecessor
 	) {
 
-		DateAggregationTables<?> dateAggregationTables = context.getDateAggregationTables();
+		SqlTables dateAggregationTables = context.getDateAggregationTables();
 
 		Field<Date> start = validityDate.getStart();
 		Field<Date> end = validityDate.getEnd();
@@ -59,7 +60,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		Field<Date> asRangeStart = start.as(DateAggregationCte.RANGE_START);
 		String intermediateTableCteName = dateAggregationTables.getPredecessor(getCteStep());
 		Selects nodeNoOverlapSelects = Selects.builder()
-											  .primaryColumn(context.getPrimaryColumn())
+											  .ids(context.getIds())
 											  .validityDate(Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)))
 											  .sqlSelects(context.getCarryThroughSelects())
 											  .build();
@@ -67,7 +68,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		Condition startNotNull = start.isNotNull();
 
 		return QueryStep.builder()
-						.cteName("%s_%s".formatted(dateAggregationTables.cteName(MergeCteStep.NODE_NO_OVERLAP), counter))
+						.cteName("%s_%s".formatted(dateAggregationTables.cteName(DateAggregationCteStep.NODE_NO_OVERLAP), counter))
 						.selects(nodeNoOverlapSelects)
 						.fromTable(QueryStep.toTableLike(intermediateTableCteName))
 						.conditions(List.of(startNotNull))

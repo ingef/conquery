@@ -1,6 +1,9 @@
 {
   "label": "SUM filter",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/filter/sum/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

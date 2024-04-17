@@ -1,6 +1,9 @@
 {
   "label": "BIG_MULTI_SELECT filter",
-  "type": "SQL_QUERY_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "expectedCsv": "tests/sql/filter/big_multi_select/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

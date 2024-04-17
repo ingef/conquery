@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
@@ -31,14 +31,14 @@ public class ExternalNode<T> extends QPNode {
 
 	@NotEmpty
 	@NonNull
-	private final Map<Integer, CDateSet> includedEntities;
+	private final Map<String, CDateSet> includedEntities;
 
-	private final Map<Integer, Map<String, T>> extraData;
+	private final Map<String, Map<String, T>> extraData;
 	private final String[] extraColumns;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
 	private CDateSet contained;
 
-	public Set<Integer> getEntities() {
+	public Set<String> getEntities() {
 		return includedEntities.keySet();
 	}
 
@@ -77,8 +77,9 @@ public class ExternalNode<T> extends QPNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		// Nothing to do
+		return true;
 	}
 
 	@Override

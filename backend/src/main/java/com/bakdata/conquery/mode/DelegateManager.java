@@ -10,8 +10,8 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.setup.Environment;
 import lombok.Value;
 
 /**

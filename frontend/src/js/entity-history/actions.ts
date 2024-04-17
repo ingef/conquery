@@ -27,7 +27,6 @@ import {
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
-import { useLoadPreviewData } from "../preview/actions";
 import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 
@@ -113,21 +112,32 @@ function getPreferredIdColumns(columns: ColumnDescription[]) {
   }));
 }
 
+async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
+  try {
+    const result = await loadCSV(url);
+    return {
+      csv: result.data,
+      columns,
+      resultUrl: url,
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
 // - from a dropped file with a list of entities
 // - from a previous query
 export function useNewHistorySession() {
   const dispatch = useDispatch();
-  const loadPreviewData = useLoadPreviewData();
   const { updateHistorySession } = useUpdateHistorySession();
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, {
-      noLoading: true,
-    });
+    const result = await onLoadHistoryData(url, columns);
 
     if (!result) {
       dispatch(
@@ -143,7 +153,7 @@ export function useNewHistorySession() {
     }
 
     const entityIds = result.csv
-      .slice(1) // remove header
+      .slice(1)
       .map((row) => {
         for (const col of preferredIdColumns) {
           // some values might be empty, search for defined values
@@ -153,8 +163,8 @@ export function useNewHistorySession() {
               kind: col.idKind,
             };
           }
+          return null;
         }
-        return null;
       })
       .filter(exists);
 

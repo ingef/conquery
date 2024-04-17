@@ -5,14 +5,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -27,7 +22,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +37,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StandaloneSupport implements TestSupport {
 
+	public enum Mode {WORKER, SQL}
+
+	@Getter
+	private final Mode mode;
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;
@@ -52,6 +56,8 @@ public class StandaloneSupport implements TestSupport {
 	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
+	@Getter
+	private final TestDataImporter testImporter;
 
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();

@@ -133,6 +133,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "version": "Version",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
@@ -169,7 +170,9 @@
     "missingLabel": "Unknown",
     "import": "Import",
     "openFileDialog": "Select file",
-    "shortcut": "Key"
+    "shortcut": "Key",
+    "true": "True",
+    "false": "False"
   },
   "tooltip": {
     "headline": "Info",
@@ -393,6 +396,7 @@
   },
   "preview": {
     "preview": "Preview",
+    "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
     "previewSubline": "Preview of the first {{count}} lines",
@@ -401,7 +405,12 @@
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
-    "span": "Date span"
+    "span": "Date span",
+    "loadingError": "An error occurred while loading the preview.",
+    "dateError": "Date unknown",
+    "name": "Name",
+    "value": "Value",
+    "densityPlot": "Density Plot"
   },
   "login": {
     "headline": "Queries and Analyses",

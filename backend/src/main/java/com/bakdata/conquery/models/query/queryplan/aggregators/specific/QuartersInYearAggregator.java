@@ -35,7 +35,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}

@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -51,10 +50,10 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	@Getter
 	@Setter
 	private MetaStorage metaStorage;
+
 	private final NamespaceHandler<N> namespaceHandler;
 
 	private final IndexService indexService;
-
 
 	public N createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage

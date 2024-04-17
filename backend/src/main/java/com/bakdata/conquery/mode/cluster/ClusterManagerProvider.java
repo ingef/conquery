@@ -17,8 +17,8 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.setup.Environment;
 
 public class ClusterManagerProvider implements ManagerProvider {
 
@@ -27,7 +27,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDistributedDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
 		final ClusterConnectionManager connectionManager =

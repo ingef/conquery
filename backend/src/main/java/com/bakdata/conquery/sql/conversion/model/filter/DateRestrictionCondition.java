@@ -6,20 +6,20 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 
 @RequiredArgsConstructor
-public class DateRestrictionCondition implements FilterCondition {
+public class DateRestrictionCondition implements WhereCondition {
 
 	private final SqlFunctionProvider functionProvider;
 	private final ColumnDateRange dateRestriction;
 	private final ColumnDateRange validityDate;
 
 	@Override
-	public Condition filterCondition() {
+	public Condition condition() {
 		return this.functionProvider.dateRestriction(dateRestriction, validityDate);
 	}
 
 	@Override
-	public FilterType type() {
-		return FilterType.EVENT;
+	public ConditionType type() {
+		return ConditionType.EVENT;
 	}
 
 }

@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -24,9 +22,14 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -121,4 +124,13 @@ public class SumSelect extends Select {
 	public boolean isColumnsOfSameType() {
 		return getSubtractColumn() == null || getSubtractColumn().getType().equals(getColumn().getType());
 	}
+
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return SumDistinctSqlAggregator.create(this, selectContext).getSqlSelects();
+		}
+		return SumSqlAggregator.create(this, selectContext).getSqlSelects();
+	}
+
 }

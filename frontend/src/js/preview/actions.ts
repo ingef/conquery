@@ -1,74 +1,116 @@
+import { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
+import { t } from "i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
-
-import type { ColumnDescription } from "../api/types";
+import { useGetQuery, useGetResult, usePreviewStatistics } from "../api/api";
+import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
 import { StateT } from "../app/reducers";
-import { ErrorObject, errorPayload } from "../common/actions/genericActions";
-import { loadCSV } from "../file/csv";
-
+import { ErrorObject } from "../common/actions/genericActions";
+import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 import { PreviewStateT } from "./reducer";
 
 export type PreviewActions = ActionType<
-  typeof loadCSVForPreview | typeof closePreview | typeof openPreview
+  | typeof loadPreview
+  | typeof closePreview
+  | typeof openPreview
+  | typeof updateQueryId
 >;
 
-export const openPreview = createAction("preview/OPENk")();
-export const closePreview = createAction("preview/CLOSE")();
-
 interface PreviewData {
-  csv: string[][];
-  columns: ColumnDescription[];
-  resultUrl: string;
+  statisticsData: PreviewStatisticsResponse;
+  queryData: GetQueryResponseT;
+  arrowReader: AsyncRecordBatchStreamReader;
+  initialTableData: IteratorResult<RecordBatch>;
+  queryId: string;
 }
 
-export const loadCSVForPreview = createAsyncAction(
-  "preview/LOAD_CSV_START",
-  "preview/LOAD_CSV_SUCCESS",
-  "preview/LOAD_CSV_ERROR",
+export const loadPreview = createAsyncAction(
+  "preview/LOAD_START",
+  "preview/LOAD_SUCCESS",
+  "preview/LOAD_ERROR",
 )<void, PreviewData, ErrorObject>();
+
+export const openPreview = createAction("preview/OPEN")();
+export const closePreview = createAction("preview/CLOSE")();
+
+export const updateQueryId = createAction("preview/UPDATE_LAST_QUERY_ID")<{
+  queryId: string;
+}>();
 
 export function useLoadPreviewData() {
   const dispatch = useDispatch();
-  const { dataLoadedForResultUrl, data } = useSelector<StateT, PreviewStateT>(
-    (state) => state.preview,
-  );
+  const getQuery = useGetQuery();
+  const getResult = useGetResult();
+  const getStatistics = usePreviewStatistics();
+
+  const {
+    dataLoadedForQueryId,
+    arrowReader,
+    initialTableData,
+    queryData,
+    statisticsData,
+  } = useSelector<StateT, PreviewStateT>((state) => state.preview);
+
   const currentPreviewData: PreviewData | null =
-    data.csv && data.resultColumns && dataLoadedForResultUrl
+    dataLoadedForQueryId &&
+    arrowReader &&
+    initialTableData &&
+    queryData &&
+    statisticsData
       ? {
-          csv: data.csv,
-          columns: data.resultColumns,
-          resultUrl: dataLoadedForResultUrl,
+          queryId: dataLoadedForQueryId,
+          statisticsData,
+          queryData,
+          arrowReader,
+          initialTableData,
         }
       : null;
 
   return async (
-    url: string,
-    columns: ColumnDescription[],
+    queryId: string,
     { noLoading }: { noLoading: boolean } = { noLoading: false },
   ): Promise<PreviewData | null> => {
-    if (currentPreviewData && dataLoadedForResultUrl === url) {
+    if (currentPreviewData && dataLoadedForQueryId === queryId) {
       return currentPreviewData;
     }
 
     if (!noLoading) {
-      dispatch(loadCSVForPreview.request());
+      dispatch(loadPreview.request());
     }
 
     try {
-      const result = await loadCSV(url);
-      const payload = {
-        csv: result.data,
-        columns,
-        resultUrl: url,
+      const arrowReader = await AsyncRecordBatchStreamReader.from(
+        getResult(queryId, 100),
+      );
+      const loadInitialData = async () => {
+        await arrowReader.open();
+        return arrowReader.next();
       };
 
-      dispatch(loadCSVForPreview.success(payload));
-
+      const awaitedData = await Promise.all([
+        getStatistics(queryId),
+        getQuery(queryId),
+        loadInitialData(),
+      ]);
+      const payload = {
+        statisticsData: awaitedData[0],
+        queryData: awaitedData[1],
+        arrowReader: arrowReader,
+        initialTableData: awaitedData[2],
+        queryId,
+      };
+      dispatch(loadPreview.success(payload));
       return payload;
-    } catch (e) {
-      dispatch(loadCSVForPreview.failure(errorPayload(e as Error, {})));
-
-      return null;
+    } catch (err) {
+      dispatch(
+        setMessage({
+          message: t("preview.loadingError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
+      dispatch(loadPreview.failure({}));
     }
+    return null;
   };
 }

@@ -1,37 +1,24 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
 
-public interface SqlSelect {
+public interface SqlSelect extends Qualifiable<SqlSelect> {
+
+	List<Field<?>> toFields();
 
 	/**
-	 * @return The whole (aliased) SQL expression of this {@link SqlSelect}.
-	 * For example, {@code DSL.firstValue(DSL.field(DSL.name("foo", "bar"))).as("foobar")}.
+	 * All column names this {@link SqlSelect} requires.
 	 */
-	Field<?> select();
+	List<String> requiredColumns();
 
 	/**
-	 * @return Aliased column name that can be used to reference the created select.
-	 * For example, {@code DSL.field("foobar")}.
+	 * @return Determines if this SqlSelect is only part of the final concept conversion CTE and has no predeceasing selects.
 	 */
-	Field<?> aliased();
-
-	/**
-	 * @return Plain column name of this {@link SqlSelect}.
-	 * For example, {@code "bar"}.
-	 */
-	String columnName();
-
-	/**
-	 * @return A reference to this {@link SqlSelect} qualified on the given qualifier.
-	 */
-	default ExtractingSqlSelect<?> createReference(String qualifier) {
-		return new ExtractingSqlSelect<>(
-				qualifier,
-				columnName(),
-				aliased().getType()
-		);
+	default boolean isUniversal() {
+		return false;
 	}
 
 }

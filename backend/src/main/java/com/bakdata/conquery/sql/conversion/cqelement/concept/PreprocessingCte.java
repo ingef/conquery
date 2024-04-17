@@ -4,26 +4,34 @@ import java.util.List;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import org.jooq.Condition;
 
-class PreprocessingCte extends ConceptCte {
+class PreprocessingCte extends ConnectorCte {
 
-	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> forPreprocessing = conceptCteContext.allConceptSelects()
-															.flatMap(sqlSelects -> sqlSelects.getForPreprocessingStep().stream())
-															.distinct()
-															.toList();
+		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
+													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
+													   .toList();
 
 		Selects preprocessingSelects = Selects.builder()
-											  .primaryColumn(conceptCteContext.getPrimaryColumn())
-											  .validityDate(conceptCteContext.getValidityDate())
+											  .ids(tableContext.getIds())
+											  .validityDate(tableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
 
+		// all where clauses that don't require any preprocessing (connector/child conditions)
+		List<Condition> conditions = tableContext.getSqlFilters().stream()
+												 .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
+												 .map(WhereCondition::condition)
+												 .toList();
+
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
-						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
+						.conditions(conditions)
+						.fromTable(QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 	}
 
 	@Override

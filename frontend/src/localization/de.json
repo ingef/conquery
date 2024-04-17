@@ -133,6 +133,7 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "version": "Version",
     "manual": "Handbuch",
     "contact": "Kontakt",
     "confirm": "Bestätigen",
@@ -169,7 +170,9 @@
     "missingLabel": "Unbenannt",
     "import": "Importieren",
     "openFileDialog": "Datei auswählen",
-    "shortcut": "Kurzbefehl"
+    "shortcut": "Kurzbefehl",
+    "true": "Wahr",
+    "false": "Falsch"
   },
   "tooltip": {
     "headline": "Info",
@@ -393,6 +396,7 @@
   },
   "preview": {
     "preview": "Vorschau",
+    "page": "Seite",
     "headline": "Ergebnisvorschau",
     "previewHeadline": "Ergebnis-CSV",
     "previewSubline": "Auszug der ersten {{count}} Zeilen",
@@ -401,7 +405,12 @@
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
-    "span": "Datumsbereich"
+    "span": "Datumsbereich",
+    "loadingError": "Da ist etwas schiefgelaufen, bitte versuche es nochmal.",
+    "dateError": "Datum unbekannt",
+    "name": "Name",
+    "value": "Wert",
+    "densityPlot": "Dichtediagramm"
   },
   "login": {
     "headline": "Anfragen und Analyse",

@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
@@ -28,17 +29,17 @@ class RowNumberCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		Field<Object> primaryColumn = context.getPrimaryColumn();
+		SqlIdColumns ids = context.getIds();
 
 		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
-		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(primaryColumn).orderBy(aggregatedValidityDate.getStart()))
+		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))
 									  .as(ROW_NUMBER_FIELD_NAME);
 
 		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
-		selects.add(new FieldWrapper(rowNumber));
+		selects.add(new FieldWrapper<>(rowNumber));
 
 		Selects rowNumberSelects = Selects.builder()
-										  .primaryColumn(primaryColumn)
+										  .ids(ids)
 										  .validityDate(Optional.of(aggregatedValidityDate))
 										  .sqlSelects(selects)
 										  .build();

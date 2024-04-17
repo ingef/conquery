@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -27,8 +28,6 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
@@ -44,6 +43,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import jakarta.validation.Validator;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
@@ -276,7 +276,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	/**
-	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
+	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and then tries to dump it as a json).
 	 *
 	 * @param gzippedObj        The object to dump.
 	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
@@ -294,9 +294,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return;
 		}
 
-		if (!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()) {
-			//TODO this seems to occur sometimes, is it maybe just a race condition?
-			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
+		try {
+			// This will create all necessary parent directories.
+			Files.createDirectories(dumpfile.toPath().getParent());
+
+			// Should be a redundant check, due to the above reasoning
+			if (!dumpfile.getParentFile().exists()) {
+				throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
+			}
+		}
+		catch (IOException e) {
+			log.warn("Could not create `{}`", dumpfile.getParentFile(), e);
 		}
 
 		// Write json
@@ -351,7 +359,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	/**
 	 * Iterates a given consumer over the entries of this store.
-	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
+	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dumped to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
 	 *
 	 * @implNote This method is concurrent!
@@ -420,7 +428,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			result.incrTotalProcessed();
 
 			// Try to read the key first
-			key = getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
+			key =
+					getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
 			if (key == null) {
 				result.incrFailedKeys();
 				return keyRaw;
@@ -433,7 +442,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				result.incrFailedValues();
 				return keyRaw;
 			}
-		}catch(Exception e){
+		}
+		catch (Exception e) {
 			log.error("Failed processing key/value", e);
 			return keyRaw;
 		}
@@ -496,7 +506,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void fillCache() {
+	public void loadData() {
 	}
 
 	@Override
@@ -520,7 +530,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void deleteStore() {
+	public void removeStore() {
 		store.deleteStore();
 	}
 

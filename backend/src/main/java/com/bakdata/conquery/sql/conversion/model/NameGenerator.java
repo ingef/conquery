@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import lombok.Data;
@@ -46,6 +47,10 @@ public class NameGenerator {
 		return ensureValidLength(cteStep.cteName(nodeLabel));
 	}
 
+	public String cteStepName(String cteStep, String nodeLabel) {
+		return ensureValidLength("%s-%s".formatted(nodeLabel, cteStep));
+	}
+
 	public String selectName(Labeled<?> selectOrFilter) {
 		int selectCount = this.selectCountMap.merge(selectOrFilter.getName(), 1, Integer::sum);
 		String name = lowerAndReplaceWhitespace(selectOrFilter.getName());
@@ -55,6 +60,12 @@ public class NameGenerator {
 	public String conceptName(CQConcept concept) {
 		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(Locale.ENGLISH));
 		return ensureValidLength("concept_%s-%d".formatted(conceptLabel, ++conceptCount));
+	}
+
+	public String conceptConnectorName(CQConcept concept, Connector connector) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(Locale.ENGLISH));
+		String connectorLabel = lowerAndReplaceWhitespace(connector.getName());
+		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
 	}
 
 	public String joinedNodeName(LogicalOperation logicalOperation) {

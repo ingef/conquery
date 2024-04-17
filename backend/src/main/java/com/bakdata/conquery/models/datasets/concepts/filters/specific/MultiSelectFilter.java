@@ -5,6 +5,9 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectFilterUtil;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -29,4 +32,10 @@ public class MultiSelectFilter extends SelectFilter<String[]> {
 	public FilterNode<?> createFilterNode(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
+
+	@Override
+	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
+		return SelectFilterUtil.convert(this, filterContext, filterContext.getValue());
+	}
+
 }

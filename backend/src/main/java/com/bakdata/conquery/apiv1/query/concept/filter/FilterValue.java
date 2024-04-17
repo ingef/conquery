@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -19,7 +19,11 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryConte
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptConversionTables;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,7 +32,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,10 +49,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString(of = "value")
 public abstract class FilterValue<VALUE> {
-	/**
-	 * Very large SELECT FilterValues can cause issues, so we just limit it to large but not gigantic quantities.
-	 */
-	private static final int MAX_NUMBER_FILTER_VALUES = 20_000;
+
 	@NotNull
 	@Nonnull
 	@NsIdRef
@@ -66,6 +66,14 @@ public abstract class FilterValue<VALUE> {
 		return getFilter().createFilterNode(getValue());
 	}
 
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConceptConversionTables tables) {
+		FilterContext<VALUE> filterContext = new FilterContext<>(ids, value, context, tables);
+		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
+		if (context.isNegation()) {
+			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
+		}
+		return sqlFilters;
+	}
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
@@ -75,11 +83,6 @@ public abstract class FilterValue<VALUE> {
 			super(filter, value);
 		}
 
-		@ValidationMethod(message = "Too many values selected.")
-		@JsonIgnore
-		public boolean isSaneAmountOfFilterValues() {
-			return getValue().length < MAX_NUMBER_FILTER_VALUES;
-		}
 	}
 
 	@NoArgsConstructor
@@ -90,11 +93,6 @@ public abstract class FilterValue<VALUE> {
 			super(filter, value);
 		}
 
-		@ValidationMethod(message = "Too many values selected.")
-		@JsonIgnore
-		public boolean isSaneAmountOfFilterValues() {
-			return getValue().length < MAX_NUMBER_FILTER_VALUES;
-		}
 	}
 
 	@NoArgsConstructor

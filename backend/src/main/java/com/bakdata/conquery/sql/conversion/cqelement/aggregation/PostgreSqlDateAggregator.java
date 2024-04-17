@@ -5,40 +5,30 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
-	private enum PostgresDateAggregationCteStep implements DateAggregationCteStep {
+	@Getter
+	@RequiredArgsConstructor
+	private enum PostgresDateAggregationCteStep implements CteStep {
 
 		DATE_AGGREGATED("dates_aggregated"),
 		DATES_INVERTED("dates_inverted");
 
 		private final String suffix;
-
-		PostgresDateAggregationCteStep(String suffix) {
-			this.suffix = suffix;
-		}
-
-		@Override
-		public String suffix() {
-			return this.suffix;
-		}
-
-		@Override
-		public DateAggregationCteStep predecessor() {
-			// Postgres can do the aggregation in 1 step - so we don't have any predeceasing steps
-			return null;
-		}
 	}
 
 	private final SqlFunctionProvider functionProvider;
@@ -53,20 +43,20 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			List<SqlSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
 			DateAggregationAction dateAggregationAction,
-			NameGenerator nameGenerator
+			ConversionContext conversionContext
 	) {
 		String joinedStepCteName = joinedStep.getCteName();
 
 		ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(dateAggregationDates, dateAggregationAction, joinedStepCteName);
 
 		Selects dateAggregationSelects = Selects.builder()
-												.primaryColumn(joinedStep.getQualifiedSelects().getPrimaryColumn())
+												.ids(joinedStep.getQualifiedSelects().getIds())
 												.validityDate(Optional.ofNullable(aggregatedValidityDate))
 												.sqlSelects(QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName))
 												.build();
 
 		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(PostgresDateAggregationCteStep.DATE_AGGREGATED, joinedStepCteName))
+						.cteName(conversionContext.getNameGenerator().cteStepName(PostgresDateAggregationCteStep.DATE_AGGREGATED, joinedStepCteName))
 						.selects(dateAggregationSelects)
 						.fromTable(QueryStep.toTableLike(joinedStepCteName))
 						.predecessors(List.of(joinedStep))
@@ -74,7 +64,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	}
 
 	@Override
-	public QueryStep invertAggregatedIntervals(QueryStep baseStep, NameGenerator nameGenerator) {
+	public QueryStep invertAggregatedIntervals(QueryStep baseStep, ConversionContext conversionContext) {
 
 		Selects baseStepSelects = baseStep.getQualifiedSelects();
 		Optional<ColumnDateRange> validityDate = baseStepSelects.getValidityDate();
@@ -93,14 +83,15 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		// {[-infinity,infinity]} - {multirange} computes the inverse of a {multirange}
 		Field<Object> invertedValidityDate = DSL.field(
-				"{0}::datemultirange - {1}",
+				"{0}::{1} - {2}",
 				Object.class,
 				maxDateRange,
+				DSL.keyword("datemultirange"),
 				validityDate.get().getRange()
-		).as(PostgresDateAggregationCteStep.DATES_INVERTED.suffix());
+		).as(PostgresDateAggregationCteStep.DATES_INVERTED.getSuffix());
 
 		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(PostgresDateAggregationCteStep.DATES_INVERTED, baseStep.getCteName()))
+						.cteName(conversionContext.getNameGenerator().cteStepName(PostgresDateAggregationCteStep.DATES_INVERTED, baseStep.getCteName()))
 						.selects(baseStepSelects.withValidityDate(ColumnDateRange.of(invertedValidityDate)))
 						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
 						.predecessors(List.of(baseStep))
@@ -127,7 +118,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
-		return DSL.when(field.isNull(), DSL.field("'{}'::datemultirange"))
+		return DSL.when(field.isNull(), DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
 				  .otherwise(field)
 				  .toString();
 	}

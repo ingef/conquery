@@ -81,7 +81,7 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 
 		final User user = getUserOrThrowUnknownAccount(storage, userId);
 
-		return new ConqueryAuthenticationInfo(user, token, this, true);
+		return new ConqueryAuthenticationInfo(user, token, this, true, null);
 	}
 
 

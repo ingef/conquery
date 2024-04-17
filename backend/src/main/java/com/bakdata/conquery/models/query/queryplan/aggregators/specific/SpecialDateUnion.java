@@ -37,7 +37,7 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (validityDate == null) {
 			set.addAll(dateRestriction);
 			return;

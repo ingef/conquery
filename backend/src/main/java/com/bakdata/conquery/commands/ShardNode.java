@@ -8,8 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -38,8 +36,9 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +105,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				getConfig().getQueries().getExecutionPool(),
 				() -> createInternalObjectMapper(View.Persistence.Shard.class),
 				() -> createInternalObjectMapper(View.InternalCommunication.class),
-				getConfig().getCluster().getEntityBucketSize()
+				getConfig().getCluster().getEntityBucketSize(),
+				getConfig().getQueries().getSecondaryIdSubPlanRetention()
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();

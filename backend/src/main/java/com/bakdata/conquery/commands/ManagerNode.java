@@ -9,9 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
@@ -25,11 +22,11 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
-import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
@@ -37,10 +34,10 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.google.common.base.Throwables;
-import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -67,13 +64,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private AuthorizationController authController;
 	private ScheduledExecutorService maintenanceService;
 	private final List<ResourcesProvider> providers = new ArrayList<>();
-	private Client client;
 	@Delegate(excludes = Managed.class)
 	private Manager manager;
-
-	// Resources without authentication
-	private DropwizardResourceConfig unprotectedAuthApi;
-	private DropwizardResourceConfig unprotectedAuthAdmin;
 
 	// For registering form providers
 	private FormScanner formScanner;
@@ -91,9 +83,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		ConqueryConfig config = manager.getConfig();
 		validator = environment.getValidator();
 
-		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-													 .build(getName());
-
 		this.manager = manager;
 
 		final ObjectMapper objectMapper = environment.getObjectMapper();
@@ -110,8 +99,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		final DropwizardResourceConfig resourceConfig = environment.jersey().getResourceConfig();
-		configureApiServlet(config, resourceConfig);
+		configureApiServlet(config, environment.jersey().getResourceConfig());
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
@@ -123,17 +111,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadMetaStorage();
 
-		authController = new AuthorizationController(getStorage(), config.getAuthorizationRealms());
-		environment.lifecycle().manage(authController);
-
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), objectMapper);
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), objectMapper);
-
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController.externalInit(this, config.getAuthenticationRealms());
-
+		authController = new AuthorizationController(getStorage(), config, environment, admin);
+		environment.lifecycle().manage(authController);
 
 		// Register default components for the admin interface
 		admin.register();
@@ -158,12 +140,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			throw new RuntimeException(e);
 		}
 
+		registerTasks(manager, environment, config);
+	}
+
+	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(getStorage(), Duration.of(
 						config.getQueries().getOldQueriesTime().getQuantity(),
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
+
 		environment.admin().addTask(new PermissionCleanupTask(getStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
 		environment.admin().addTask(new ReloadMetaStorageTask(getStorage()));
@@ -244,19 +231,20 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				getDatasetRegistry().createNamespace(namespaceStorage);
+				registry.createNamespace(namespaceStorage);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = getDatasetRegistry().getDatasets().size();
+			final int coundLoaded = registry.getDatasets().size();
 			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
 																												  - coundLoaded);
 		}
@@ -286,8 +274,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		catch (Exception e) {
 			log.error("{} could not be closed", getStorage(), e);
 		}
-
-		client.close();
 
 	}
 }

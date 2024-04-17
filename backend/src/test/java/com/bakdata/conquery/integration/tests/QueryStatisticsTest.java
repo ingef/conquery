@@ -2,15 +2,13 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.ws.rs.core.UriBuilder;
-
+import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -20,15 +18,16 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.statistics.DateColumnStatsCollector;
-import com.bakdata.conquery.models.query.statistics.NumberColumnStatsCollector;
+import com.bakdata.conquery.models.query.statistics.HistogramColumnDescription;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
-import com.bakdata.conquery.models.query.statistics.StringColumnStatsCollector;
+import com.bakdata.conquery.models.query.statistics.StatisticsLabels;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -56,12 +55,12 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final UriBuilder uriBuilder = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getDescription");
 
-		final ResultStatistics results = conquery.getClient().target(
-														 uriBuilder.buildFromMap(Map.of(ResourceConstants.QUERY, executionId.toString())))
+		final ResultStatistics results = conquery.getClient().target(uriBuilder.buildFromMap(Map.of(ResourceConstants.QUERY, executionId.toString())))
 												 .request()
 												 .acceptLanguage(Locale.ENGLISH)
 												 .get(ResultStatistics.class);
 
+		final StatisticsLabels labels = C10N.get(StatisticsLabels.class, Locale.ENGLISH);
 
 		// We are using TreeMaps for Maps that have a defined order.
 		final ResultStatistics expected = new ResultStatistics(
@@ -75,23 +74,11 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								6,
 								0,
 								new TreeMap<>(Map.of(
-										"2021-1", 5,
-										"2021-4", 1
-								)),
-								new TreeMap<>(Map.of(
 										"2021-01", 5,
 										"2021-10", 1
 								)),
 								Range.of(
 										LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1)
-								),
-								List.of(
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 11),
-										LocalDate.of(2021, 1, 12),
-										LocalDate.of(2021, 10, 1)
 								)
 						),
 						new DateColumnStatsCollector.ColumnDescription(
@@ -102,125 +89,125 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								6,
 								0,
 								new TreeMap<>(Map.of(
-										"2021-1", 5,
-										"2021-4", 1
-								)),
-								new TreeMap<>(Map.of(
 										"2021-01", 5,
 										"2021-10", 1
 								)),
 								Range.of(
 										LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1)
+								)
+						),
+						new HistogramColumnDescription(
+								"concept string",
+								"concept string",
+								null,
+								List.of(
+										new HistogramColumnDescription.Entry("c", 2),
+										new HistogramColumnDescription.Entry("a", 1),
+										new HistogramColumnDescription.Entry("b", 1),
+										new HistogramColumnDescription.Entry("d", 1)
 								),
-								List.of(
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 1),
-										LocalDate.of(2021, 1, 11),
-										LocalDate.of(2021, 1, 12),
-										LocalDate.of(2021, 10, 1)
-								)
-						),
-						new StringColumnStatsCollector.ColumnDescription(
-								"concept string",
-								"concept string",
-								null,
 								Map.of(
-										"a", 1L,
-										"b", 1L,
-										"c", 2L,
-										"d", 1L
+										labels.missing(), "1"
 								)
 						),
-						new StringColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept mapped",
 								"concept mapped",
 								null,
+								List.of(
+										new HistogramColumnDescription.Entry("CEH", 2),
+										new HistogramColumnDescription.Entry("AH", 1),
+										new HistogramColumnDescription.Entry("BEH", 1),
+										new HistogramColumnDescription.Entry("d", 1)
+								),
 								Map.of(
-										"BEH", 1L,
-										"d", 1L,
-										"AH", 1L,
-										"CEH", 2L
+										labels.missing(), "0"
 								)
 						),
-						new NumberColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept int",
 								"concept int",
 								null,
-								"INTEGER",
-								6,
-								1,
-								2.6,
-								3.0,
-								1.140175425099138,
-								1,
-								4,
 								List.of(
-										1,
-										2,
-										3,
-										3,
-										4
-								)
+										new HistogramColumnDescription.Entry("1", 1),
+										new HistogramColumnDescription.Entry("2", 1),
+										new HistogramColumnDescription.Entry("3", 2),
+										new HistogramColumnDescription.Entry("4", 1),
+										new HistogramColumnDescription.Entry("5", 0),
+										new HistogramColumnDescription.Entry("6", 0),
+										new HistogramColumnDescription.Entry("7", 0),
+										new HistogramColumnDescription.Entry("8", 0),
+										new HistogramColumnDescription.Entry("9", 0),
+										new HistogramColumnDescription.Entry("10", 0)
+								),
+								Map.of(labels.p25(), "1.5", labels.p75(), "3.5", labels.max(), "4", labels.mean(), "2.6", labels.median(), "3", labels.min(), "1", labels.missing(), "1", labels.std(), "1.14", labels.sum(), "13", labels.count(), "5")
 						),
-						new NumberColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept real",
 								"concept real",
 								null,
-								"NUMERIC",
-								6,
-								1,
-								2.6,
-								3.0,
-								1.140175425099138,
-								1,
-								4,
 								List.of(
-										new BigDecimal("1.0"),
-										new BigDecimal("2.0"),
-										new BigDecimal("3.0"),
-										new BigDecimal("3.0"),
-										new BigDecimal("4.0")
-								)
+										new HistogramColumnDescription.Entry("0", 1),
+										new HistogramColumnDescription.Entry("(0 – 1)", 1),
+										new HistogramColumnDescription.Entry("[1 – 2)", 1),
+										new HistogramColumnDescription.Entry("[2 – 3)", 1),
+										new HistogramColumnDescription.Entry("[3 – 4)", 2),
+										new HistogramColumnDescription.Entry("[4 – 5)", 1),
+										new HistogramColumnDescription.Entry("[5 – 6)", 0),
+										new HistogramColumnDescription.Entry("[6 – 7)", 0),
+										new HistogramColumnDescription.Entry("[7 – 8)", 0),
+										new HistogramColumnDescription.Entry("[8 – 9)", 0),
+										new HistogramColumnDescription.Entry("[9 – 10)", 0)
+								),
+								Map.of(labels.p25(), "0.1", labels.p75(), "3", labels.max(), "4", labels.mean(), "1.87", labels.median(), "2", labels.min(), "0", labels.missing(), "0", labels.std(), "1.55", labels.sum(), "13.1", labels.count(), "7")
 						),
-						new NumberColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept decimal",
 								"concept decimal",
 								null,
-								"NUMERIC",
-								6,
-								1,
-								2.6,
-								3.0,
-								1.140175425099138,
-								1,
-								4,
 								List.of(
-										1,
-										2,
-										3,
-										3,
-										4
-								)
+										new HistogramColumnDescription.Entry("[1 – 2)", 1),
+										new HistogramColumnDescription.Entry("[2 – 3)", 1),
+										new HistogramColumnDescription.Entry("[3 – 4)", 2),
+										new HistogramColumnDescription.Entry("[4 – 5)", 1),
+										new HistogramColumnDescription.Entry("[5 – 6)", 0),
+										new HistogramColumnDescription.Entry("[6 – 7)", 0),
+										new HistogramColumnDescription.Entry("[7 – 8)", 0),
+										new HistogramColumnDescription.Entry("[8 – 9)", 0),
+										new HistogramColumnDescription.Entry("[9 – 10)", 0),
+										new HistogramColumnDescription.Entry("[10 – 11)", 0)
+								),
+								Map.of(labels.p25(), "1.5", labels.p75(), "3.5", labels.max(), "4", labels.mean(), "2.6", labels.median(), "3", labels.min(), "1", labels.missing(), "1", labels.std(), "1.14", labels.sum(), "13", labels.count(), "5")
 						),
-						new NumberColumnStatsCollector.ColumnDescription(
+						new HistogramColumnDescription(
 								"concept money",
 								"concept money",
 								null,
-								"MONEY",
-								6,
-								1,
-								26.0,
-								30,
-								11.40175425099138,
-								10,
-								40,
 								List.of(
-										new BigDecimal("10.00"),
-										new BigDecimal("20.00"),
-										new BigDecimal("30.00"),
-										new BigDecimal("30.00"),
-										new BigDecimal("40.00")
+										new HistogramColumnDescription.Entry("[€10.00 – €13.00)", 1),
+										new HistogramColumnDescription.Entry("[€13.00 – €16.00)", 0),
+										new HistogramColumnDescription.Entry("[€16.00 – €19.00)", 0),
+										new HistogramColumnDescription.Entry("[€19.00 – €22.00)", 1),
+										new HistogramColumnDescription.Entry("[€22.00 – €25.00)", 0),
+										new HistogramColumnDescription.Entry("[€25.00 – €28.00)", 0),
+										new HistogramColumnDescription.Entry("[€28.00 – €31.00)", 2),
+										new HistogramColumnDescription.Entry("[€31.00 – €34.00)", 0),
+										new HistogramColumnDescription.Entry("[€34.00 – €37.00)", 0),
+										new HistogramColumnDescription.Entry("[€37.00 – €40.00)", 0),
+										new HistogramColumnDescription.Entry("€40.00", 1)
+								),
+								Map.of(labels.p25(), "€15.00", labels.p75(), "€35.00", labels.max(), "€40.00", labels.mean(), "€26.00", labels.median(), "€30.00", labels.min(), "€10.00", labels.missing(), "1", labels.std(), "11.4", labels.sum(), "€130.00", labels.count(), "5")
+						),
+						new HistogramColumnDescription(
+								"concept boolean",
+								"concept boolean",
+								null,
+								List.of(
+										new HistogramColumnDescription.Entry("Yes", 4),
+										new HistogramColumnDescription.Entry("No", 1)
+								),
+								Map.of(
+										labels.missing(), "1"
 								)
 						)
 				),

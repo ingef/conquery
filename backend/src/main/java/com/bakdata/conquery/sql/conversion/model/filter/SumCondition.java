@@ -10,8 +10,8 @@ public class SumCondition extends RangeCondition {
 	}
 
 	@Override
-	public FilterType type() {
-		return FilterType.GROUP;
+	public ConditionType type() {
+		return ConditionType.GROUP;
 	}
 
 }

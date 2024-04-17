@@ -5,8 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -41,11 +39,12 @@ import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import com.bakdata.conquery.resources.admin.ui.model.ConnectorUIResource;
+import io.dropwizard.core.setup.AdminEnvironment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
-import io.dropwizard.setup.AdminEnvironment;
-import io.dropwizard.views.ViewMessageBodyWriter;
+import io.dropwizard.views.common.ViewMessageBodyWriter;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -73,6 +72,7 @@ public class AdminServlet {
 		jerseyConfigUI.setUrlPattern("/admin-ui");
 
 		RESTServer.configure(manager.getConfig(), jerseyConfig);
+		RESTServer.configure(manager.getConfig(), jerseyConfigUI);
 
 		final AdminEnvironment admin = manager.getEnvironment().admin();
 		admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
@@ -103,8 +103,6 @@ public class AdminServlet {
 				manager.getStorageListener()
 		);
 
-		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
-
 		jerseyConfig.register(new AbstractBinder() {
 						@Override
 						protected void configure() {
@@ -122,8 +120,7 @@ public class AdminServlet {
 					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
-					.register(authCookieFilter)
-					.register(manager.getAuthController().getAuthenticationFilter());
+					.register(AuthCookieFilter.class);
 
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
@@ -134,13 +131,13 @@ public class AdminServlet {
 							  bindAsContract(UIProcessor.class);
 							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 							  bind(manager.getStorage()).to(MetaStorage.class);
+							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
 					  .register(AdminPermissionFilter.class)
 					  .register(IdRefPathParamConverterProvider.class)
-					  .register(authCookieFilter)
-					  .register(manager.getAuthController().getRedirectingAuthFilter());
-		;
+					  .register(AuthCookieFilter.class);
+
 	}
 
 	public void register() {

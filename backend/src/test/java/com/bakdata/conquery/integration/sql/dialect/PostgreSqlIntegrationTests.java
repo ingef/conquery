@@ -2,25 +2,22 @@ package com.bakdata.conquery.integration.sql.dialect;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.json.SqlTestDataImporter;
+import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.DslContextFactory;
-import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +44,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	private static DSLContext dslContext;
 	private static SqlConnectorConfig sqlConfig;
 	private static TestSqlDialect testSqlDialect;
+	private static SqlTestDataImporter testDataImporter;
 
 	public PostgreSqlIntegrationTests() {
 		super(ConqueryIntegrationTests.DEFAULT_SQL_TEST_ROOT, "com.bakdata.conquery.integration");
@@ -73,6 +71,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 									  .build();
 		dslContext = DslContextFactory.create(sqlConfig);
 		testSqlDialect = new TestPostgreSqlDialect(dslContext);
+		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testSqlDialect, sqlConfig));
 	}
 
 	@Test
@@ -81,21 +80,23 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
 		SqlExecutionService executionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(testSqlDialect));
-		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery("SELECT 1"));
+		SqlQuery validQuery = toSqlQuery("SELECT 1");
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
-		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery(""));
+		SqlQuery emptyQuery = toSqlQuery("");
 		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
 				  .hasMessageContaining("$org.postgresql.util.PSQLException");
 	}
 
-
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public List<DynamicNode> sqlBackendTests() {
-		return super.sqlTests(testSqlDialect, sqlConfig);
+	public Stream<DynamicNode> sqlBackendTests() {
+		return Stream.concat(
+				super.sqlProgrammaticTests(sqlConfig, testDataImporter),
+				super.sqlQueryTests(sqlConfig, testDataImporter).stream()
+		);
 	}
 
 	public static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
@@ -108,17 +109,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		}
 
 		@Override
-		public List<SelectConverter<? extends Select>> getSelectConverters() {
-			return this.customizeSelectConverters(List.of(
-					new DateDistanceSelectConverter(DATE_NOW_SUPPLIER)
-			));
-		}
-
-		@Override
-		public List<FilterConverter<?, ?>> getFilterConverters() {
-			return this.customizeFilterConverters(List.of(
-					new DateDistanceFilterConverter(DATE_NOW_SUPPLIER)
-			));
+		public DateNowSupplier getDateNowSupplier() {
+			return DATE_NOW_SUPPLIER;
 		}
 
 		public TestFunctionProvider getTestFunctionProvider() {

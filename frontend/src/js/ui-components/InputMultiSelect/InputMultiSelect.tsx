@@ -95,14 +95,18 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
+  const { t } = useTranslation();
+
   useResolvableSelect({
     defaultValue,
     onResolve,
   });
 
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [inputValue, setInputValue] = useState("");
-  const { t } = useTranslation();
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     getSelectedItemProps,
@@ -126,10 +130,11 @@ const InputMultiSelect = ({
   useDebounce(
     () => {
       if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
+        const prefix = inputValue.length < 2 ? "" : inputValue;
+        onLoadMore(prefix, { shouldReset: true });
       }
     },
-    200,
+    350,
     [inputValue],
   );
 
@@ -192,6 +197,7 @@ const InputMultiSelect = ({
 
           if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
+            inputRef.current?.select();
           }
 
           return {
@@ -245,8 +251,6 @@ const InputMultiSelect = ({
     getDropdownProps({ autoFocus }),
   );
   const labelProps = getLabelProps({});
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
@@ -391,7 +395,9 @@ const InputMultiSelect = ({
                       <LoadMoreSentinel
                         onLoadMore={() => {
                           if (!loading) {
-                            onLoadMore(inputValue);
+                            const prefix =
+                              inputValue.length < 2 ? "" : inputValue;
+                            onLoadMore(prefix);
                           }
                         }}
                       />

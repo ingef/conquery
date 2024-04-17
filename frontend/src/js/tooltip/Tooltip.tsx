@@ -114,6 +114,13 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
+const SxTooltipEntries = styled(TooltipEntries)`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 12px;
+  align-items: center;
+`;
+
 const HighlightedText = ({
   text,
   words = [],
@@ -211,7 +218,7 @@ const Tooltip = () => {
     <Root>
       <TooltipHeader />
       <Content>
-        <TooltipEntries
+        <SxTooltipEntries
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}

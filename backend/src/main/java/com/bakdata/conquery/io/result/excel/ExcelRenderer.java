@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -40,6 +41,8 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 public class ExcelRenderer {
 
+	public static final int MAX_LINES = 1_048_576;
+
 	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
 			ResultType.DateT.class, ExcelRenderer::writeDateCell,
 			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
@@ -71,7 +74,7 @@ public class ExcelRenderer {
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
 			List<ResultInfo> idHeaders,
 			E exec,
-			OutputStream outputStream) throws IOException {
+			OutputStream outputStream, OptionalLong limit) throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec);
@@ -85,7 +88,7 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table);
 
-			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults());
+			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 

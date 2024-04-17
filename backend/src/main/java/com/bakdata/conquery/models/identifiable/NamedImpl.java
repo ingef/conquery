@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.identifiable;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.AllArgsConstructor;

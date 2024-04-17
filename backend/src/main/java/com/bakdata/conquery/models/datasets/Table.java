@@ -5,8 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
@@ -16,6 +15,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -78,4 +79,22 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 					 .findFirst()
 					 .orElseThrow(() -> new IllegalStateException(String.format("Column %s not found", columnName)));
 	}
+
+	/**
+	 * selects the right column for the given secondaryId from this table
+	 */
+	@CheckForNull
+	public Column findSecondaryIdColumn(SecondaryIdDescription secondaryId) {
+
+		for (Column col : columns) {
+			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
+				continue;
+			}
+
+			return col;
+		}
+
+		return null;
+	}
+
 }

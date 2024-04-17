@@ -19,7 +19,9 @@ import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
-import io.dropwizard.setup.Environment;
+import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import io.dropwizard.core.setup.Environment;
 import org.jooq.DSLContext;
 
 public class LocalManagerProvider implements ManagerProvider {
@@ -34,8 +36,14 @@ public class LocalManagerProvider implements ManagerProvider {
 		DSLContext dslContext = DslContextFactory.create(sqlConnectorConfig);
 		SqlDialect sqlDialect = createSqlDialect(sqlConnectorConfig, dslContext);
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
-		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
-		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+
+		SqlExecutionService sqlExecutionService = new SqlExecutionService(
+				sqlDialect.getDSLContext(),
+				ResultSetProcessorFactory.create(sqlDialect)
+		);
+
+		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext, sqlExecutionService);
+		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createLocalDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
 		return new DelegateManager<>(
