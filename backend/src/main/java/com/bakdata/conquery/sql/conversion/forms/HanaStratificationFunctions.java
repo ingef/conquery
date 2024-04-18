@@ -39,11 +39,6 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Integer> round(Field<? extends Number> number) {
-		return DSL.function("ROUND", Integer.class, number);
-	}
-
-	@Override
 	protected ColumnDateRange calcRange(Field<Date> start, Interval interval) {
 		return ColumnDateRange.of(
 				calcStartDate(start, interval),
@@ -58,25 +53,38 @@ class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> yearStart(ColumnDateRange dateRange) {
+		return jumpToYearStart(dateRange.getStart());
+	}
+
+	@Override
+	public Field<Date> nextYearStart(ColumnDateRange dateRange) {
 		return DSL.field(
 				"SERIES_ROUND({0}, {1}, {2})",
 				Date.class,
-				dateRange.getStart(),
+				dateRange.getEnd(),
 				DSL.val("INTERVAL 1 YEAR"),
-				DSL.keyword("ROUND_DOWN")
+				DSL.keyword("ROUND_UP")
 		);
 	}
 
 	@Override
+	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
+		Field<Date> nextYearStart = nextYearStart(dateRange);
+		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), 1);
+		return addMonths(nextYearStart, quartersInMonths);
+	}
+
+	@Override
 	public Field<Date> quarterStart(ColumnDateRange dateRange) {
-
 		Field<Date> yearStart = yearStart(dateRange);
+		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), 1);
+		return addMonths(yearStart, quartersInMonths);
+	}
 
-		Field<String> quarterExpression = functionProvider.yearQuarter(dateRange.getStart());
-		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.val(1));
-		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER).minus(1);
-		Field<Integer> quartersInMonths = amountOfQuarters.times(MONTHS_PER_QUARTER);
-
+	@Override
+	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
+		Field<Date> yearStart = jumpToYearStart(dateRange.getEnd());
+		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getEnd(), 0);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
@@ -115,6 +123,24 @@ class HanaStratificationFunctions extends StratificationFunctions {
 			case NINETY_DAYS_INTERVAL -> addDays(start, seriesIndex.times(Interval.NINETY_DAYS_INTERVAL.getAmount()));
 			case ONE_DAY_INTERVAL -> addDays(start, seriesIndex.times(Interval.ONE_DAY_INTERVAL.getAmount()));
 		};
+	}
+
+	private static Field<Date> jumpToYearStart(Field<Date> date) {
+		return DSL.field(
+				"SERIES_ROUND({0}, {1}, {2})",
+				Date.class,
+				date,
+				DSL.val("INTERVAL 1 YEAR"),
+				DSL.keyword("ROUND_DOWN")
+		);
+	}
+
+	private Field<Integer> getQuartersInMonths(Field<Date> date, int quarterOffset) {
+		Field<String> quarterExpression = functionProvider.yearQuarter(date);
+		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.val(1));
+		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
+														  .minus(quarterOffset);
+		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}
 
 }

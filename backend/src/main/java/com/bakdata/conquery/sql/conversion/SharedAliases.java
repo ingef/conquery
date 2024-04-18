@@ -17,7 +17,10 @@ public enum SharedAliases {
 	// form related
 	INDEX_START("index_start"),
 	QUARTER_START("quarter_start"),
+	QUARTER_END("quarter_end"),
 	YEAR_START("year_start"),
+	YEAR_END("year_end"),
+	YEAR_END_QUARTER_ALIGNED("year_end_quarter_aligned"),
 	YEAR_ALIGNED_COUNT("year_aligned_count"),
 	QUARTER_ALIGNED_COUNT("quarter_aligned_count"),
 	DAY_ALIGNED_COUNT("day_aligned_count"),

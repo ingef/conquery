@@ -86,12 +86,25 @@ public class StratificationTableFactory {
 
 		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
 		Field<Date> yearStart = stratificationFunctions.yearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
+		Field<Date> yearEnd = stratificationFunctions.nextYearStart(bounds).as(SharedAliases.YEAR_END.getAlias());
+		Field<Date> yearEndQuarterAligned = stratificationFunctions.yearEndQuarterAligned(bounds).as(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
 		Field<Date> quarterStart = stratificationFunctions.quarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
-		List<FieldWrapper<Date>> startDates = Stream.of(indexStart, yearStart, quarterStart).map(FieldWrapper::new).toList();
+		Field<Date> quarterEnd = stratificationFunctions.nextQuartersStart(bounds).as(SharedAliases.QUARTER_END.getAlias());
+
+		List<FieldWrapper<Date>> startDates = Stream.of(
+															indexStart,
+															yearStart,
+															yearEnd,
+															yearEndQuarterAligned,
+															quarterStart,
+															quarterEnd
+													)
+													.map(FieldWrapper::new)
+													.toList();
 
 		Selects selects = Selects.builder()
 								 .ids(baseStepSelects.getIds())
-								 .stratificationDate(Optional.ofNullable(bounds))
+								 .stratificationDate(Optional.of(bounds))
 								 .sqlSelects(startDates)
 								 .build();
 

@@ -39,16 +39,41 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> yearStart(ColumnDateRange dateRange) {
-		return dateTruncate(DSL.val("year"), dateRange);
+		return dateTruncate(DSL.val("year"), lower(dateRange));
+	}
+
+	@Override
+	public Field<Date> nextYearStart(ColumnDateRange dateRange) {
+		return DSL.field(
+				"{0} + {1} {2}",
+				Date.class,
+				dateTruncate(DSL.val("year"), upper(dateRange)),
+				INTERVAL_KEYWORD,
+				INTERVAL_MAP.get(Interval.ONE_YEAR_INTERVAL)
+		);
+	}
+
+	@Override
+	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
+		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
+		Field<Date> nextYearStart = nextYearStart(dateRange);
+		return addQuarters(nextYearStart, quarter);
 	}
 
 	@Override
 	public Field<Date> quarterStart(ColumnDateRange dateRange) {
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
+		// truncating the lower date to the start of its year and advancing by the calculated number of completed quarters from the start of that year
+		return addQuarters(yearStart(dateRange), quarter);
+	}
+
+	@Override
+	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
+		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, upper(dateRange));
 		return DSL.field(
-				"{0} + ({1} - 1) * {2} {3}",
+				"{0} + {1} * {2} {3}",
 				Date.class,
-				yearStart(dateRange),
+				dateTruncate(DSL.val("year"), upper(dateRange)),
 				quarter,
 				INTERVAL_KEYWORD,
 				INTERVAL_MAP.get(Interval.QUARTER_INTERVAL)
@@ -78,11 +103,6 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Integer> round(Field<? extends Number> number) {
-		return (Field<Integer>) DSL.round(number);
-	}
-
-	@Override
 	protected ColumnDateRange calcRange(Field<Date> start, Interval interval) {
 		Field<String> intervalExpression = INTERVAL_MAP.get(interval);
 		return ColumnDateRange.of(functionProvider.daterange(
@@ -107,8 +127,19 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 		return DSL.field("{0}::{1}", Date.class, shiftedDate, DSL.keyword("date"));
 	}
 
-	private Field<Date> dateTruncate(Field<String> field, ColumnDateRange dateRange) {
-		return DSL.function("date_trunc", Date.class, field, lower(dateRange));
+	private Field<Date> dateTruncate(Field<String> field, Field<Date> date) {
+		return DSL.function("date_trunc", Date.class, field, date);
+	}
+
+	private static Field<Date> addQuarters(Field<Date> start, Field<Integer> amountOfQuarters) {
+		return DSL.field(
+				"{0} + ({1} - 1) * {2} {3}",
+				Date.class,
+				start,
+				amountOfQuarters,
+				INTERVAL_KEYWORD,
+				INTERVAL_MAP.get(Interval.QUARTER_INTERVAL)
+		);
 	}
 
 	private static void checkIsSingleColumnRange(ColumnDateRange dateRange) {

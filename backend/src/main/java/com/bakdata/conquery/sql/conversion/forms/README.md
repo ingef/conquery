@@ -54,25 +54,49 @@ join tables on index.
 
 ### Calculating index start dates
 
-For finer resolutions (`YEAR`, `QUARTER`, `DAY`), the approach will be the following: at first, we will take a look at
-the `stratification_bounds` start date. This date will be the minimum starting date of the stratification, subsequently
-referred to as "index date". We will also create a field for the year start of this date and the quarter start of this
-date.
+For finer resolutions (`YEAR`, `QUARTER`, `DAY`), the approach will be the following: at first, we will calculate
+the required year and quarter start and end dates for all possible resolution and alignment combos. We will use these
+later to calculate date distances easily.
+
+We will create the following fields:
+
+- `year_start`: This field is calculated by truncating the lower boundary of `stratification_bounds` to the start of the
+  corresponding year, providing the earliest date of the year in which the stratification begins.
+- `quarter_start`: This field is derived by truncating the lower boundary of `stratification_bounds` to the start of its
+  year and then adjusting for the number of complete quarters passed since the beginning of that year, marking the start
+  of the quarter in which the stratification starts.
+- `year_end`: This field captures the last day of the year for the upper boundary of `stratification_bounds`. It is
+  calculated by truncating the upper boundary to the start of its year, advancing to the start of the following year,
+  and then subtracting one day, thus marking the end of the year in which the stratification ends.
+- `year_end_quarter_aligned`: This field aligns the end of a calendar year of the upper boundary
+  of `stratification_bounds`
+  with the quarter of the starting date. This edge case is required for the `YEAR` resolution, `QUARTER` alignment
+  combo.
+- `quarter_end`: This field indicates the last day of the quarter for the upper boundary of `stratification_bounds`. It
+  is calculated by truncating the upper boundary to the start of its year, advancing to the start of the next quarter
+  after the quarter in which the stratification ends, and subtracting one day to find the close of that quarter.
 
 ```sql
 select "primary_id",
        "stratification_bounds",
-       lower("stratification_bounds")                     as "index_start",
-       date_trunc('year', lower("stratification_bounds")) as "year_start",
+       lower("stratification_bounds")                                         as "index_start",
+       date_trunc('year', lower("stratification_bounds"))                     as "year_start",
+       date_trunc('year', upper("stratification_bounds")) + interval '1 year' as "year_end",
+       date_trunc('year', upper("stratification_bounds")) + interval '1 year'
+           + (extract(quarter from lower("stratification_bounds")) - 1)
+           * interval '3 months'                                              as "year_end_quarter_aligned",
        date_trunc('year', lower("stratification_bounds"))
            + (extract(quarter from lower("stratification_bounds")) - 1)
-           * interval '3 months'                          as "quarter_start"
+           * interval '3 months'                                              as "quarter_start",
+       date_trunc('year', upper("stratification_bounds"))
+           + (extract(quarter from upper("stratification_bounds")))
+           * interval '3 months'                                              as "quarter_end"
 from "extract_ids"
 ```
 
-| primary\_id | stratification\_bounds    | index\_start | year\_start | quarter\_start |
-|:------------|:--------------------------|:-------------|:------------|:---------------|
-| 1           | \[2012-06-01,2012-10-01\) | 2012-06-01   | 2012-01-01  | 2012-04-01     |
+| primary\_id | stratification\_bounds    | index\_start | year\_start | year\_end  | year\_end\_quarter\_aligned | quarter\_start | quarter\_end | 
+|:------------|:--------------------------|:-------------|:------------|:-----------|:----------------------------|:---------------|:-------------|
+| 1           | \[2012-01-16,2012-12-18\) | 2012-01-16   | 2012-01-01  | 2013-01-01 | 2013-01-01                  | 2012-01-01     | 2013-01-01   |
 
 ### Calculating resolution counts
 
@@ -80,8 +104,8 @@ For each required resolution and alignment, we will create a `counts` CTE. The c
 valid resolution and alignment combination, but it all comes down to calculating date diffs.
 
 For example, take the `YEAR` resolution and `QUARTER` alignment as an example. We calculate the date diff in years from
-the upper stratification bound and the quarter start that we calculated in the previous step. We add +1 because we want
-to count each starting year as 1 year.
+the quarter end (of the upper stratification bound) and the quarter start (of the lower stratification bound) that we
+calculated in the previous step.
 
 ```sql
 select "primary_id",
@@ -89,7 +113,7 @@ select "primary_id",
        "index_start",
        "year_start",
        "quarter_start",
-       (extract(year from age(upper("stratification_bounds"), "quarter_start")) + 1) as "quarter_aligned_count"
+       (extract(year from age("quarter_end", "quarter_start"))) as "quarter_aligned_count"
 from "index_start";
 ```
 
