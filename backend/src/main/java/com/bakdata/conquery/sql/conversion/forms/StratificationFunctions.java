@@ -140,12 +140,12 @@ abstract class StratificationFunctions {
 	/**
 	 * The index field for the corresponding resolution index {@link com.bakdata.conquery.ConqueryConstants#CONTEXT_INDEX_INFO}.
 	 */
-	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> validityDate) {
+	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> stratificationBounds) {
 
 		List<Field<?>> partitioningFields =
 				Stream.concat(
 							  ids.toFields().stream(),
-							  validityDate.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
+							  stratificationBounds.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
 					  )
 					  .collect(Collectors.toList());
 
