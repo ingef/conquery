@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -26,7 +25,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable<ColumnId> {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -45,8 +44,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean searchDisabled = false;
 
 	@JsonIgnore
-	@Getter(lazy = true)
-	private final int position = ArrayUtils.indexOf(getTable().getColumns(), this);
+	private int position = -1;
+
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
@@ -75,8 +74,11 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * We create only an empty search here, because the content is provided through {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues} and filled by the caller.
 	 */
 	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
-
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
 		return config.createTrieSearch(isGenerateSuffixes());
+	}
+
+	public void init() {
+		position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	}
 }

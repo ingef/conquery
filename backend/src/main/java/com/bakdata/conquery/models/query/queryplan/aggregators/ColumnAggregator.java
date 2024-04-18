@@ -33,7 +33,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (Column column : getRequiredColumns()) {
-			if (!bucket.getStores()[column.getPosition()].isEmpty()) {
+			if (!bucket.getStore(column).isEmpty()) {
 				return true;
 			}
 		}

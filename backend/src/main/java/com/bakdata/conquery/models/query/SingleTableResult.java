@@ -18,13 +18,13 @@ import com.google.common.base.Preconditions;
 
 public interface SingleTableResult {
 
-	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, Namespace namespace, ConqueryConfig config) {
+	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
 		Preconditions.checkArgument(isInitialized, "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, namespace, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
@@ -52,5 +52,9 @@ public interface SingleTableResult {
 
 	@JsonIgnore
 	long resultRowCount();
+
+	@JsonIgnore
+	Namespace getNamespace();
+
 
 }
