@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -93,7 +92,7 @@ public interface SqlFunctionProvider {
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables);
+	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.

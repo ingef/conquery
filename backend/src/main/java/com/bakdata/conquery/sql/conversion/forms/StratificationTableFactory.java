@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -16,6 +15,8 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -23,9 +24,8 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import com.google.common.base.Preconditions;
 
-@Getter
+@Getter(AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 public class StratificationTableFactory {
 
@@ -42,14 +42,14 @@ public class StratificationTableFactory {
 		this.functionProvider = context.getSqlDialect().getFunctionProvider();
 	}
 
-	public QueryStep createStratificationTable(AbsoluteFormQuery form) {
+	public QueryStep createStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments) {
 
 		QueryStep intSeriesStep = createIntSeriesStep();
 		QueryStep indexStartStep = createIndexStartStep();
 
-		List<QueryStep> tables = form.getResolutionsAndAlignmentMap().stream()
-									 .map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
-									 .toList();
+		List<QueryStep> tables = resolutionAndAlignments.stream()
+														.map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
+														.toList();
 
 		List<QueryStep> predecessors = List.of(getBaseStep(), intSeriesStep, indexStartStep);
 		return unionResolutionTables(tables, predecessors);
@@ -156,7 +156,7 @@ public class StratificationTableFactory {
 				countsCteSelects.getStratificationDate().get()
 		);
 
-		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), Optional.empty());
+		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
 		SqlIdColumns ids = countsCteSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
 
 		Selects selects = Selects.builder()
