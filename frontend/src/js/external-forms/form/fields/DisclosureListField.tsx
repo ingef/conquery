@@ -13,7 +13,7 @@ import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import FaIcon from "../../../icon/FaIcon";
 import InfoTooltip from "../../../tooltip/InfoTooltip";
-import { Disclosure } from "../../config-types";
+import { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,
   getInitialValue,
@@ -45,7 +45,7 @@ const DisclosureField = ({
   canRemove,
   commonProps,
 }: {
-  field: Disclosure;
+  field: DisclosureListFieldT;
   index: number;
   isOpen: boolean;
   toggleOpen: () => void;
@@ -65,8 +65,10 @@ const DisclosureField = ({
         if (
           (isOpen && e.currentTarget.open) ||
           (!isOpen && !e.currentTarget.open)
-        )
+        ) {
+          // Without this, we're getting open/close flickering
           return;
+        }
 
         toggleOpen();
       }}
@@ -103,13 +105,20 @@ const DisclosureField = ({
   );
 };
 
-const useOpenState = () => {
-  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+const useOpenState = ({
+  defaultOpen,
+  onlyOneOpenAtATime = false,
+}: {
+  defaultOpen?: string;
+  onlyOneOpenAtATime?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>(
+    defaultOpen ? { [defaultOpen]: true } : {},
+  );
 
   const toggleOpen = (id: string) => {
     setIsOpen((prev) => ({
-      // not spreading ...prev here – we're closing all other fields
-      // when opening a new one
+      ...(onlyOneOpenAtATime ? {} : prev),
       [id]: !prev[id],
     }));
   };
@@ -123,17 +132,20 @@ export const DisclosureListField = ({
   commonProps,
   datasetId,
 }: {
-  field: Disclosure;
+  field: DisclosureListFieldT;
   defaultValue: unknown;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
   datasetId: string | null;
 }) => {
   const { fields, append, remove, replace } = useFieldArray({
-    // gets control through context
+    // gets `control` through context
     name: field.name,
   });
 
-  const { isOpen, toggleOpen } = useOpenState();
+  const { isOpen, toggleOpen } = useOpenState({
+    onlyOneOpenAtATime: field.onlyOneOpenAtATime,
+    defaultOpen: field.defaultOpen ? fields[0]?.id : undefined,
+  });
 
   useEffect(
     function applyDefaultValue() {

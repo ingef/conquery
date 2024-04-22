@@ -13,7 +13,7 @@ interface TranslatableString {
 export type Forms = Form[];
 
 export type NonFormField = Headline | Description;
-export type FormField = Field | Tabs | Group | Disclosure;
+export type FormField = Field | Tabs | Group;
 export type FormFieldWithValue = Exclude<FormField, Group>;
 
 export type GeneralField = FormField | NonFormField;
@@ -34,18 +34,6 @@ export interface Group {
     display: "flex" | "grid";
     gridColumns?: number;
   };
-  fields: GeneralField[];
-}
-
-export interface Disclosure {
-  type: "DISCLOSURE_LIST";
-  creatable?: boolean;
-  defaultOpen?: boolean;
-  onlyOneOpenAtATime?: boolean;
-  name: string;
-  label: TranslatableString;
-  createNewLabel?: TranslatableString;
-  tooltip?: TranslatableString;
   fields: GeneralField[];
 }
 
@@ -73,6 +61,7 @@ type GREATER_THAN_ZERO_VALIDATION = "GREATER_THAN_ZERO";
 /* FIELDS AND THEIR VALIDATIONS */
 /* ------------------------------ */
 export type Field =
+  | DisclosureListField
   | CheckboxField
   | StringField
   | TextareaField
@@ -106,6 +95,17 @@ export interface Headline {
 export interface Description {
   type: "DESCRIPTION";
   label: TranslatableString;
+}
+
+/* ------------------------------ */
+
+export interface DisclosureListField extends CommonField {
+  type: "DISCLOSURE_LIST";
+  creatable?: boolean;
+  defaultOpen?: boolean;
+  createNewLabel?: TranslatableString;
+  fields: GeneralField[];
+  onlyOneOpenAtATime?: boolean;
 }
 
 /* ------------------------------ */
