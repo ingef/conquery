@@ -46,6 +46,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
             h1Index={h1Index}
             register={methods.register}
             control={methods.control}
+            trigger={methods.trigger}
             field={field}
             setValue={methods.setValue}
             availableDatasets={datasetOptions}
