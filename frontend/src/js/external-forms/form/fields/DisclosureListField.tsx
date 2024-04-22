@@ -10,6 +10,7 @@ import { useFieldArray } from "react-hook-form";
 import tw from "tailwind-styled-components";
 import IconButton from "../../../button/IconButton";
 import { TransparentButton } from "../../../button/TransparentButton";
+import { IndexPrefix } from "../../../common/components/IndexPrefix";
 import { exists } from "../../../common/helpers/exists";
 import FaIcon from "../../../icon/FaIcon";
 import InfoTooltip from "../../../tooltip/InfoTooltip";
@@ -31,9 +32,10 @@ const Summary = tw("summary")`
   py-3
   pl-3
   pr-10
-  bg-white
   text-sm
   font-normal
+  rounded
+  hover:bg-bg-50
 `;
 
 const DisclosureField = ({
@@ -59,7 +61,6 @@ const DisclosureField = ({
 
   return (
     <details
-      className="overflow-hidden rounded border border-gray-400"
       open={isOpen}
       onToggle={(e) => {
         if (
@@ -78,7 +79,10 @@ const DisclosureField = ({
           <span className="w-5">
             <FaIcon icon={isOpen ? faChevronDown : faChevronRight} />
           </span>
-          {field.label[locale]}
+          <div className="flex items-center gap-1">
+            {field.creatable && <IndexPrefix>#{index + 1}</IndexPrefix>}
+            {field.label[locale]}
+          </div>
           {exists(field.tooltip) && (
             <InfoTooltip text={field.tooltip[locale]} />
           )}
@@ -91,7 +95,7 @@ const DisclosureField = ({
           />
         )}
       </Summary>
-      <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">
+      <div className="flex flex-col gap-2 bg-bg-50 p-3 shadow-inner border-t">
         {field.fields.map((f, i) => {
           const key = getFieldKey(formType, f, i);
           const childField = isFormFieldWithValue(f)
@@ -170,7 +174,7 @@ export const DisclosureListField = ({
   const { locale } = commonProps;
 
   return (
-    <div className="space-y-2">
+    <div className="bg-white border border-gray-100 rounded">
       {fields.map((fd, index) => (
         <DisclosureField
           key={fd.id}
@@ -184,27 +188,29 @@ export const DisclosureListField = ({
         />
       ))}
       {field.creatable && (
-        <TransparentButton
-          className="w-full flex items-center justify-center gap-2"
-          small
-          onClick={() =>
-            append(
-              Object.fromEntries(
-                field.fields.filter(isFormFieldWithValue).map((f) => [
-                  f.name,
-                  getInitialValue(f, {
-                    activeLang: locale,
-                    availableDatasets: commonProps.availableDatasets,
-                    datasetId,
-                  }),
-                ]),
-              ),
-            )
-          }
-        >
-          <FontAwesomeIcon icon={faAdd} />
-          {field.createNewLabel ? field.createNewLabel[locale] : undefined}
-        </TransparentButton>
+        <div className="p-4 border-t">
+          <TransparentButton
+            className="w-full flex items-center justify-center gap-2"
+            small
+            onClick={() =>
+              append(
+                Object.fromEntries(
+                  field.fields.filter(isFormFieldWithValue).map((f) => [
+                    f.name,
+                    getInitialValue(f, {
+                      activeLang: locale,
+                      availableDatasets: commonProps.availableDatasets,
+                      datasetId,
+                    }),
+                  ]),
+                ),
+              )
+            }
+          >
+            <FontAwesomeIcon icon={faAdd} />
+            {field.createNewLabel ? field.createNewLabel[locale] : undefined}
+          </TransparentButton>
+        </div>
       )}
     </div>
   );
