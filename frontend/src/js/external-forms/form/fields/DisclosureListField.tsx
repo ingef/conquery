@@ -5,7 +5,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComponentProps, useState } from "react";
+import { ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import tw from "tailwind-styled-components";
 import IconButton from "../../../button/IconButton";
@@ -104,13 +104,27 @@ export const DisclosureListField = ({
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
   datasetId: string | null;
 }) => {
-  const { fields, append, remove } = useFieldArray({
-    control: commonProps.control,
-    // @ts-expect-error TODO: figure out how to deal with a dynamic name
+  const { fields, append, remove, replace } = useFieldArray({
+    // gets control through context
     name: field.name,
   });
-  console.log(field, defaultValue);
-  console.log(fields);
+
+  useEffect(
+    function applyDefaultValue() {
+      if (
+        fields.length === 0 &&
+        exists(defaultValue) &&
+        (defaultValue as unknown[]).length > 0
+      ) {
+        // TODO: Actually, the defaultValue SHOULD get picked up by
+        // the useFieldArray hook's name and the defaultValues passed
+        // to useForm above. But somehow, it doesn't. So we have to
+        // manually apply the default value here.
+        replace(defaultValue);
+      }
+    },
+    [fields.length, replace, defaultValue],
+  );
 
   if (field.fields.length === 0) return null;
 
