@@ -39,18 +39,20 @@ const Summary = tw("summary")`
 const DisclosureField = ({
   field,
   index,
+  isOpen,
+  toggleOpen,
   remove,
   canRemove,
   commonProps,
 }: {
   field: Disclosure;
   index: number;
+  isOpen: boolean;
+  toggleOpen: () => void;
   remove: (index: number) => void;
   canRemove?: boolean;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
-  const [isOpen, setOpen] = useState(false);
-
   if (field.fields.length === 0) return null;
 
   const { formType, locale } = commonProps;
@@ -59,7 +61,15 @@ const DisclosureField = ({
     <details
       className="overflow-hidden rounded border border-gray-400"
       open={isOpen}
-      onToggle={() => setOpen(!isOpen)}
+      onToggle={(e) => {
+        if (
+          (isOpen && e.currentTarget.open) ||
+          (!isOpen && !e.currentTarget.open)
+        )
+          return;
+
+        toggleOpen();
+      }}
     >
       <Summary>
         <div className="flex items-center gap-3">
@@ -93,6 +103,20 @@ const DisclosureField = ({
   );
 };
 
+const useOpenState = () => {
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+
+  const toggleOpen = (id: string) => {
+    setIsOpen((prev) => ({
+      // not spreading ...prev here – we're closing all other fields
+      // when opening a new one
+      [id]: !prev[id],
+    }));
+  };
+
+  return { isOpen, toggleOpen };
+};
+
 export const DisclosureListField = ({
   field,
   defaultValue,
@@ -108,6 +132,8 @@ export const DisclosureListField = ({
     // gets control through context
     name: field.name,
   });
+
+  const { isOpen, toggleOpen } = useOpenState();
 
   useEffect(
     function applyDefaultValue() {
@@ -138,6 +164,8 @@ export const DisclosureListField = ({
           field={field}
           index={index}
           remove={remove}
+          isOpen={isOpen[fd.id]}
+          toggleOpen={() => toggleOpen(fd.id)}
           canRemove={fields.length > 1}
           commonProps={commonProps}
         />

@@ -41,6 +41,7 @@ export interface Disclosure {
   type: "DISCLOSURE_LIST";
   creatable?: boolean;
   defaultOpen?: boolean;
+  onlyOneOpenAtATime?: boolean;
   name: string;
   label: TranslatableString;
   createNewLabel?: TranslatableString;
