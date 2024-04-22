@@ -68,7 +68,7 @@ public class NameGenerator {
 		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
 	}
 
-	public String joinedNodeName(ConqueryJoinType logicalOperation) {
+	public String joinedNodeName(JoinType logicalOperation) {
 		return switch (logicalOperation) {
 			case INNER_JOIN -> "AND-%d".formatted(++andCount);
 			case OUTER_JOIN -> "OR-%d".formatted(++orCount);

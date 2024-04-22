@@ -15,8 +15,7 @@ import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -24,20 +23,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 abstract class StratificationFunctions {
-
-	/**
-	 * When calculating ranges by adding intervals, Offset is used so jump to the start or end of an interval by subtracting the offset.
-	 * <p>
-	 * Example for index = 1:
-	 * '2012-01-01'::date + (index - offset.getOffset()) * interval 3 month => 2012-01-01 for Offset.INTERVAL_START, 2012-04-01 for Offset.INTERVAL_END
-	 */
-	@Getter
-	@RequiredArgsConstructor
-	protected enum Offset {
-		INTERVAL_START(1),
-		INTERVAL_END(0);
-		private final int offset;
-	}
 
 	protected static int DAYS_PER_YEAR = Interval.YEAR_AS_DAYS_INTERVAL.getAmount();
 	protected static int DAYS_PER_QUARTER = Interval.NINETY_DAYS_INTERVAL.getAmount();
@@ -55,6 +40,14 @@ abstract class StratificationFunctions {
 	public static Field<Integer> QUARTER_ALIGNED_COUNT = DSL.field(DSL.name(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias()), Integer.class);
 	public static Field<Integer> DAY_ALIGNED_COUNT = DSL.field(DSL.name(SharedAliases.DAY_ALIGNED_COUNT.getAlias()), Integer.class);
 	public static Field<Integer> SERIES_INDEX = DSL.field(DSL.name(SharedAliases.SERIES_INDEX.getAlias()), Integer.class);
+
+	static StratificationFunctions create(ConversionContext context) {
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		return switch (context.getConfig().getDialect()) {
+			case POSTGRESQL -> new PostgresStratificationFunctions((PostgreSqlFunctionProvider) functionProvider);
+			case HANA -> new HanaStratificationFunctions((HanaSqlFunctionProvider) functionProvider);
+		};
+	}
 
 	protected abstract SqlFunctionProvider getFunctionProvider();
 
@@ -124,27 +117,8 @@ abstract class StratificationFunctions {
 		SqlFunctionProvider functionProvider = getFunctionProvider();
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> DSL.field(DSL.val(1));
-			case YEARS -> switch (resolutionAndAlignment.getAlignment()) {
-				case YEAR -> functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
-											 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
-				case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
-												.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-				case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
-											.plus(364)
-											.divide(DAYS_PER_YEAR)
-											.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
-			case QUARTERS -> switch (resolutionAndAlignment.getAlignment()) {
-				case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
-												.divide(MONTHS_PER_QUARTER)
-												.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-				case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
-											.plus(89)
-											.divide(DAYS_PER_QUARTER)
-											.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
+			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
+			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
 			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
 										 .as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 		};
@@ -159,17 +133,8 @@ abstract class StratificationFunctions {
 
 		ColumnDateRange stratificationRange = switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> bounds;
-			case YEARS -> switch (resolutionAndAlignment.getAlignment()) {
-				case YEAR -> calcRange(YEAR_START, Interval.ONE_YEAR_INTERVAL);
-				case QUARTER -> calcRange(QUARTER_START, Interval.ONE_YEAR_INTERVAL);
-				case DAY -> calcRange(INDEX_START, Interval.YEAR_AS_DAYS_INTERVAL);
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
-			case QUARTERS -> switch (resolutionAndAlignment.getAlignment()) {
-				case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
-				case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
+			case YEARS -> createStratificationRangeForYearResolution(resolutionAndAlignment);
+			case QUARTERS -> createStratificationRangeForQuarterResolution(resolutionAndAlignment);
 			case DAYS -> calcRange(INDEX_START, Interval.ONE_DAY_INTERVAL);
 		};
 
@@ -179,12 +144,12 @@ abstract class StratificationFunctions {
 	/**
 	 * The index field for the corresponding resolution index {@link com.bakdata.conquery.ConqueryConstants#CONTEXT_INDEX_INFO}.
 	 */
-	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> stratificationBounds) {
+	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> validityDate) {
 
 		List<Field<?>> partitioningFields =
 				Stream.concat(
 							  ids.toFields().stream(),
-							  stratificationBounds.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
+							  validityDate.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
 					  )
 					  .collect(Collectors.toList());
 
@@ -201,26 +166,78 @@ abstract class StratificationFunctions {
 		Field<Integer> seriesIndex = intSeriesField();
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> DSL.noCondition();
-			case YEARS -> switch (resolutionAndAlignment.getAlignment()) {
-				case YEAR -> seriesIndex.lessOrEqual(YEAR_ALIGNED_COUNT);
-				case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
-				case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
-			case QUARTERS -> switch (resolutionAndAlignment.getAlignment()) {
-				case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
-				case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
-				default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
-			};
+			case YEARS -> windowCountForYearResolution(resolutionAndAlignment, seriesIndex);
+			case QUARTERS -> windowCountForQuarterResolution(resolutionAndAlignment, seriesIndex);
 			case DAYS -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
 		};
 	}
 
-	static StratificationFunctions create(ConversionContext context) {
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		return switch (context.getConfig().getDialect()) {
-			case POSTGRESQL -> new PostgresStratificationFunctions((PostgreSqlFunctionProvider) functionProvider);
-			case HANA -> new HanaStratificationFunctions((HanaSqlFunctionProvider) functionProvider);
+	private Field<Integer> calculateResolutionWindowForQuarterResolution(
+			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+			ColumnDateRange bounds,
+			SqlFunctionProvider functionProvider
+	) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
+											.divide(MONTHS_PER_QUARTER)
+											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
+										.plus(89)
+										.divide(DAYS_PER_QUARTER)
+										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
+		};
+	}
+
+	private Field<Integer> calculateResolutionWindowForYearResolution(
+			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+			ColumnDateRange bounds,
+			SqlFunctionProvider functionProvider
+	) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case YEAR -> functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
+										 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
+			case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
+											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
+										.plus(364)
+										.divide(DAYS_PER_YEAR)
+										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
+		};
+	}
+
+	private ColumnDateRange createStratificationRangeForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
+			case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
+		};
+	}
+
+	private ColumnDateRange createStratificationRangeForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case YEAR -> calcRange(YEAR_START, Interval.ONE_YEAR_INTERVAL);
+			case QUARTER -> calcRange(QUARTER_START, Interval.ONE_YEAR_INTERVAL);
+			case DAY -> calcRange(INDEX_START, Interval.YEAR_AS_DAYS_INTERVAL);
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
+		};
+	}
+
+	private static Condition windowCountForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
+			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
+		};
+	}
+
+	private static Condition windowCountForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+		return switch (resolutionAndAlignment.getAlignment()) {
+			case YEAR -> seriesIndex.lessOrEqual(YEAR_ALIGNED_COUNT);
+			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
+			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
+			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
 		};
 	}
 
