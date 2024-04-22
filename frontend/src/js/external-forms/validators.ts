@@ -126,6 +126,7 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   // MULTI_SELECT: null,
   // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   DATE_RANGE: validateDateRange,
+  DISCLOSURE_LIST: null,
 };
 
 function getNotEmptyValidation(fieldType: string) {
