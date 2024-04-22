@@ -7,6 +7,7 @@ import { isValidSelect } from "../model/select";
 import {
   CheckboxField,
   ConceptListField,
+  DisclosureListField,
   Field,
   FormField,
 } from "./config-types";
@@ -147,9 +148,12 @@ function getConfigurableValidations(fieldType: string) {
 
 const isFieldWithValidations = (
   field: FormField,
-): field is Exclude<Field, CheckboxField> => {
+): field is Exclude<Field, CheckboxField | DisclosureListField> => {
   return (
-    field.type !== "TABS" && field.type !== "GROUP" && field.type !== "CHECKBOX"
+    field.type !== "TABS" &&
+    field.type !== "GROUP" &&
+    field.type !== "CHECKBOX" &&
+    field.type !== "DISCLOSURE_LIST"
   );
 };
 
