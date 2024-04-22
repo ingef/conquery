@@ -14,7 +14,6 @@ import java.util.stream.IntStream;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -35,28 +34,30 @@ import org.jetbrains.annotations.NotNull;
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
-	public static ResultStatistics collectResultStatistics(ManagedQuery managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, int dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
-
+	public static ResultStatistics collectResultStatistics(SingleTableResult managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, Optional<Integer> dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
 
 
 		//TODO pull inner executor service from ManagerNode
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
+		final ListeningExecutorService
+				executorService =
+				MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
 
 		// Yes, we are actually iterating the result for every job.
 
 		// Span date-column
 		final ListenableFuture<Range<LocalDate>> futureSpan;
 
-		if (managedQuery.isContainsDates()) {
-			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex));
+		final boolean containsDates = dateInfo.isPresent();
+
+		if (containsDates) {
+			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get()));
 		}
 		else {
 			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
 		}
 
 		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer> futureLines =
-				executorService.submit(() -> (int) managedQuery.getQuery().countResults(managedQuery.streamResults(OptionalLong.empty())));
+		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
 
 		final ListenableFuture<Integer> futureEntities =
 				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
@@ -66,7 +67,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 				futureDescriptions =
 				IntStream.range(0, resultInfos.size())
 						 // If the query doesn't contain dates, we can skip the dates-column.
-						.filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || managedQuery.isContainsDates())
+						 .filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || containsDates)
 						 .mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
 							 final StopWatch started = StopWatch.createStarted();
 
@@ -76,7 +77,10 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 log.trace("BEGIN stats collection for {}", info);
 
-							 managedQuery.streamResults(OptionalLong.empty()).map(EntityResult::listResultLines).flatMap(List::stream).forEach(line -> statsCollector.consume(line[col]));
+							 managedQuery.streamResults(OptionalLong.empty())
+										 .map(EntityResult::listResultLines)
+										 .flatMap(List::stream)
+										 .forEach(line -> statsCollector.consume(line[col]));
 
 							 log.trace("DONE collecting values for {}, in {}", info, started);
 

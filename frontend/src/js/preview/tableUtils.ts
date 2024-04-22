@@ -27,7 +27,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
         currency: currencyFromSymbol(currencyConfig.unit),
       });
 
-      if (cellType.indexOf("LIST") == 0) {
+      if (cellType.indexOf("LIST") === 0) {
         const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
           "listtype"
         ];
@@ -44,7 +44,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
       } else if (NUMBER_TYPES.includes(cellType)) {
         const numnberFormatter = new Intl.NumberFormat(navigator.language, {
           maximumFractionDigits: 2,
-          minimumFractionDigits: cellType == "INTEGER" ? 0 : 2,
+          minimumFractionDigits: cellType === "INTEGER" ? 0 : 2,
         });
 
         return (value) => {
@@ -53,29 +53,29 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
           }
           return "";
         };
-      } else if (cellType == "DATE") {
+      } else if (cellType === "DATE") {
         return (value) => dateFormatter.format(value as unknown as Date);
-      } else if (cellType == "DATE_RANGE") {
+      } else if (cellType === "DATE_RANGE") {
         return (value) => {
           const vector = value as unknown as { min: Date; max: Date };
 
           const min = dateFormatter.format(vector.min);
           const max = dateFormatter.format(vector.max);
 
-          if (min == max) {
+          if (min === max) {
             return min;
           }
 
           return `${min} - ${max}`;
         };
-      } else if (cellType == "MONEY") {
+      } else if (cellType === "MONEY") {
         return (value) => {
           if (value && !isNaN(value as unknown as number)) {
             return currencyFormatter.format(value as unknown as number);
           }
           return "";
         };
-      } else if (cellType == "BOOLEAN") {
+      } else if (cellType === "BOOLEAN") {
         return (value) => (value ? t("common.true") : t("common.false"));
       }
 
@@ -88,7 +88,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
     (fieldName: string): ((value: CellValue) => string) => {
       const cellType = (
         queryData as GetQueryResponseDoneT
-      ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
+      ).columnDescriptions?.find((x) => x.label === fieldName)?.type;
 
       if (cellType) {
         return getRenderFunction(cellType);
