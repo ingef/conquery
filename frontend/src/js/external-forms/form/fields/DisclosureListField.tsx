@@ -159,9 +159,10 @@ export const DisclosureListField = ({
         // to useForm above. But somehow, it doesn't. So we have to
         // manually apply the default value here.
         replace(defaultValue);
+        setTimeout(() => commonProps.trigger(), 100);
       }
     },
-    [fields.length, replace, defaultValue],
+    [fields.length, replace, defaultValue, commonProps],
   );
 
   if (field.fields.length === 0) return null;

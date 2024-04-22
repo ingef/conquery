@@ -1,5 +1,10 @@
 import { memo } from "react";
-import { Control, UseFormRegister, UseFormSetValue } from "react-hook-form";
+import {
+  Control,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormTrigger,
+} from "react-hook-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useDatasetId } from "../../dataset/selectors";
@@ -35,6 +40,7 @@ const Field = ({
   register: UseFormRegister<DynamicFormValues>;
   setValue: UseFormSetValue<DynamicFormValues>;
   control: Control<DynamicFormValues>;
+  trigger: UseFormTrigger<DynamicFormValues>;
 }) => {
   const datasetId = useDatasetId();
   const { locale, availableDatasets } = commonProps;
