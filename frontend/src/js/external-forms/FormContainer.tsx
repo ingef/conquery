@@ -13,11 +13,12 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
 `;
 
-type Props = Omit<ComponentProps<typeof Form>, "config"> & {
+const FormContainer = ({
+  config,
+  ...props
+}: Omit<ComponentProps<typeof Form>, "config"> & {
   config: FormType | null;
-};
-
-const FormContainer = ({ config, ...props }: Props) => {
+}) => {
   return (
     <Root>
       {exists(config) && (

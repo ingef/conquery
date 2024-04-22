@@ -22,7 +22,7 @@ const Button = styled("button")<BasicButtonProps>`
       : tiny
       ? "4px 6px"
       : small
-      ? "6px 10px"
+      ? "6px 8px"
       : large
       ? "12px 18px"
       : "8px 15px"};
