@@ -50,9 +50,6 @@ public interface IntegrationTest {
 			try {
 				execute(conquery);
 			}
-			catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
 			finally {
 				testConquery.removeSupport(conquery);
 			}

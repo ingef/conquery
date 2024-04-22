@@ -59,8 +59,4 @@ public interface ErrorMessages {
 	@En("Something went wrong while querying the database: ${0}.")
 	@De("Etwas ist beim Anfragen des Servers fehlgeschlagen: ${0}.")
 	String sqlError(Exception error);
-
-	@En("Could not convert the query to SQL: ${0}.")
-	@De("Die Anfrage konnte nicht in SQL umgewandelt werden: ${0}.")
-	String sqlConversionError(String message);
 }

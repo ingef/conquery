@@ -20,6 +20,9 @@ import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
+/**
+ * TODO this is just a minimal implementation to make form conversion testcases work
+ */
 public class CQExternalConverter implements NodeConverter<CQExternal> {
 
 	private static final String CQ_EXTERNAL_CTE_NAME = "external";

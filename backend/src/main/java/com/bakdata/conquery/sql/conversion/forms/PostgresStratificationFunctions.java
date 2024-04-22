@@ -144,7 +144,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private static void checkIsSingleColumnRange(ColumnDateRange dateRange) {
 		if (!dateRange.isSingleColumnRange()) {
-			throw new ConqueryError.SqlConversionError("Expecting a single column range for Postgres SQL dialect.");
+			throw new IllegalStateException("Expecting a single column range for Postgres SQL dialect.");
 		}
 	}
 

@@ -264,18 +264,6 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			return errorMessages.sqlError(error);
 		}
 
+
 	}
-
-	@CPSType(base = ConqueryError.class, id = "CQ_SQL_CONVERSION_ERROR")
-	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	public static class SqlConversionError extends ConqueryError {
-
-		private final String message;
-
-		@Override
-		public String getMessageTemplate(ErrorMessages errorMessages) {
-			return errorMessages.sqlConversionError(message);
-		}
-	}
-
 }

@@ -20,7 +20,7 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.JoinType;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
@@ -74,7 +74,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			lastConceptStep = finishConceptConversion(convertedConnectorTables.get(0), cqConcept, pathGenerator, context);
 		}
 		else {
-			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, LogicalOperation.OUTER_JOIN, DateAggregationAction.MERGE, context);
+			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, JoinType.OUTER_JOIN, DateAggregationAction.MERGE, context);
 			lastConceptStep = finishConceptConversion(joinedStep, cqConcept, pathGenerator, context);
 		}
 		return context.withQueryStep(lastConceptStep);
@@ -127,7 +127,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 									  .sqlSelects(allConceptSelects)
 									  .build();
 
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.INNER_JOIN, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, JoinType.INNER_JOIN, context);
 
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))

@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.JoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 
@@ -21,7 +21,7 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 		QueryStep joined = QueryStepJoiner.joinChildren(
 				andNode.getChildren(),
 				context,
-				LogicalOperation.INNER_JOIN,
+				JoinType.INNER_JOIN,
 				andNode.getDateAction()
 		);
 		return context.withQueryStep(joined);
