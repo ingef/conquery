@@ -43,6 +43,7 @@ export interface Disclosure {
   defaultOpen?: boolean;
   name: string;
   label: TranslatableString;
+  createNewLabel?: TranslatableString;
   tooltip?: TranslatableString;
   fields: GeneralField[];
 }

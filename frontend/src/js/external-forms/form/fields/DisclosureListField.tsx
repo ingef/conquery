@@ -144,7 +144,7 @@ export const DisclosureListField = ({
       ))}
       {field.creatable && (
         <TransparentButton
-          className="w-full"
+          className="w-full flex items-center justify-center gap-2"
           small
           onClick={() =>
             append(
@@ -162,6 +162,7 @@ export const DisclosureListField = ({
           }
         >
           <FontAwesomeIcon icon={faAdd} />
+          {field.createNewLabel ? field.createNewLabel[locale] : undefined}
         </TransparentButton>
       )}
     </div>
