@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -82,7 +84,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Integer> intSeriesField() {
-		return StratificationFunctions.SERIES_INDEX;
+		return SERIES_INDEX;
 	}
 
 	@Override

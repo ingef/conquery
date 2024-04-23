@@ -26,7 +26,7 @@ public class QueryStepJoiner {
 	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
 			ConversionContext context,
-			com.bakdata.conquery.sql.conversion.model.JoinType logicalOperation,
+			ConqueryJoinType logicalOperation,
 			DateAggregationAction dateAggregationAction
 	) {
 		ConversionContext childrenContext = context.createChildContext();
@@ -41,10 +41,15 @@ public class QueryStepJoiner {
 
 	public static QueryStep joinSteps(
 			List<QueryStep> queriesToJoin,
-			com.bakdata.conquery.sql.conversion.model.JoinType logicalOperation,
+			ConqueryJoinType logicalOperation,
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
+		// no join required
+		if (queriesToJoin.size() == 1) {
+			return queriesToJoin.get(0);
+		}
+
 		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		SqlIdColumns ids = coalesceIds(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
@@ -73,7 +78,7 @@ public class QueryStepJoiner {
 		return joinedStep;
 	}
 
-	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, com.bakdata.conquery.sql.conversion.model.JoinType logicalOperation, ConversionContext context) {
+	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
 		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();

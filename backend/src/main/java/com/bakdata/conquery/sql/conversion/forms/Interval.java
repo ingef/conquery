@@ -13,6 +13,10 @@ enum Interval {
 	NINETY_DAYS_INTERVAL(90),
 	ONE_DAY_INTERVAL(1);
 
+	public static final int DAYS_PER_YEAR = Interval.YEAR_AS_DAYS_INTERVAL.getAmount();
+	public static final int DAYS_PER_QUARTER = Interval.NINETY_DAYS_INTERVAL.getAmount();
+	public static final int MONTHS_PER_QUARTER = Interval.QUARTER_INTERVAL.getAmount();
+
 	private final int amount;
 
 }
