@@ -4,7 +4,7 @@ This document outlines the procedure to apply stratification within SQL in the c
 
 ## Prerequisite conversion
 
-The prerequisite query conversion produces a CTE, which will contain the IDs of those subjects relevant for the form.
+The prerequisite query conversion produces a CTE, which will contain the IDs of those entities relevant for the form.
 Because this could be any kind of Query, the CTE might also contain a validity date and converted Selects.
 Take this CTE representing a converted CQExternal as an example:
 
