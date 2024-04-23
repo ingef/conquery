@@ -67,4 +67,40 @@ public class FilterSearchTest {
 
 		assertThat(search.getTotal(filter)).isEqualTo(5);
 	}
+
+	@Test
+	public void totalsEmptyFiler() {
+		final IndexConfig indexConfig = new IndexConfig();
+		FilterSearch search = new FilterSearch(indexConfig);
+
+		// Column Searchable
+		SelectFilter<String> filter = new SingleSelectFilter();
+		ConceptTreeConnector connector = new ConceptTreeConnector();
+		TreeConcept concept = new TreeConcept();
+		Column column = new Column();
+		Table table = new Table();
+		Dataset dataset = new Dataset("test_dataset");
+
+		table.setName("test_table");
+		table.setDataset(dataset);
+		concept.setDataset(dataset);
+		concept.setName("test_concept");
+		concept.setConnectors(List.of(connector));
+		connector.setName("test_connector");
+		connector.setFilters(List.of(filter));
+		connector.setConcept(concept);
+		column.setTable(table);
+		column.setName("test_column");
+		column.setSearchDisabled(true);
+		filter.setColumn(column);
+		filter.setConnector(connector);
+
+		// Register
+		filter.getSearchReferences().forEach(searchable -> {
+			search.addSearches(Map.of(searchable, searchable.createTrieSearch(indexConfig)));
+		});
+		search.shrinkSearch(column);
+
+		assertThat(search.getTotal(filter)).isEqualTo(0);
+	}
 }
