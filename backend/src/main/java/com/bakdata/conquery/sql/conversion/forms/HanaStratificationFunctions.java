@@ -78,7 +78,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> quarterStart(ColumnDateRange dateRange) {
-		Field<Date> yearStart = yearStart(dateRange);
+		Field<Date> yearStart = jumpToYearStart(dateRange.getStart());
 		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), Offset.MINUS_ONE);
 		return addMonths(yearStart, quartersInMonths);
 	}
@@ -86,7 +86,8 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
 		Field<Date> yearStart = jumpToYearStart(dateRange.getEnd());
-		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getEnd(), Offset.NONE);
+		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), DSL.val(-1));
+		Field<Integer> quartersInMonths = getMonthsInQuarters(inclusiveEnd, Offset.NONE);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
