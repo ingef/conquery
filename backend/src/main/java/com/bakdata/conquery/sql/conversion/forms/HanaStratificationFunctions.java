@@ -72,21 +72,21 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Date> nextYearStart = nextYearStart(dateRange);
-		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), 1);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), Offset.MINUS_ONE);
 		return addMonths(nextYearStart, quartersInMonths);
 	}
 
 	@Override
 	public Field<Date> quarterStart(ColumnDateRange dateRange) {
 		Field<Date> yearStart = yearStart(dateRange);
-		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), 1);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), Offset.MINUS_ONE);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
 	@Override
 	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
 		Field<Date> yearStart = jumpToYearStart(dateRange.getEnd());
-		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getEnd(), 0);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getEnd(), Offset.NONE);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
@@ -112,15 +112,15 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Date> calcStartDate(Field<Date> start, Interval interval) {
-		return calcDate(start, interval, 1);
+		return calcDate(start, interval, Offset.MINUS_ONE);
 	}
 
 	private Field<Date> calcEndDate(Field<Date> start, Interval interval) {
-		return calcDate(start, interval, 0);
+		return calcDate(start, interval, Offset.NONE);
 	}
 
-	private Field<Date> calcDate(Field<Date> start, Interval interval, int offset) {
-		Field<Integer> seriesIndex = intSeriesField().minus(offset);
+	private Field<Date> calcDate(Field<Date> start, Interval interval, Offset offset) {
+		Field<Integer> seriesIndex = intSeriesField().plus(offset.getOffset());
 		return switch (interval) {
 			case ONE_YEAR_INTERVAL -> DSL.function("ADD_YEARS", Date.class, start, seriesIndex.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
 			case YEAR_AS_DAYS_INTERVAL -> addDays(start, seriesIndex.times(Interval.YEAR_AS_DAYS_INTERVAL.getAmount()));
@@ -140,11 +140,11 @@ class HanaStratificationFunctions extends StratificationFunctions {
 		);
 	}
 
-	private Field<Integer> getMonthsInQuarters(Field<Date> date, int quarterOffset) {
+	private Field<Integer> getMonthsInQuarters(Field<Date> date, Offset offset) {
 		Field<String> quarterExpression = functionProvider.yearQuarter(date);
 		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.val(1));
 		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
-														  .minus(quarterOffset);
+														  .plus(offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}
 
