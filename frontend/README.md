@@ -123,7 +123,10 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### Styles
 
-- Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
+- Currently, we're mostly using Emotion for theming and styles.
+- The plan is to slowly migrate to [Tailwind CSS](https://tailwindcss.com/) and [tailwind-styled-components](https://github.com/MathiasGilson/Tailwind-Styled-Component).
+- New styles should be written using tailwind.
+- Reasoning: Theming with Emotion is verbose, Emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone). But the main reason for migrating to tailwind, of course, is that tailwind means a lot less boilerplate code. It also allows for more consistent styling and offers a great dev UX.
 
 ### State
 

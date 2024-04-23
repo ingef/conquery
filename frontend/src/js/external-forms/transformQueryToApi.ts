@@ -109,6 +109,15 @@ function transformFieldToApiEntries(
           },
         ],
       ];
+    case "DISCLOSURE_LIST":
+      return [
+        [
+          rawFieldname,
+          (formValue as DynamicFormValues[]).map((v) =>
+            transformFieldsToApi(fieldConfig.fields, v),
+          ),
+        ],
+      ];
   }
 }
 

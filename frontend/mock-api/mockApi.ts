@@ -21,9 +21,9 @@ const chance = new Chance();
 // Taken from:
 // http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 function shuffleArray<T>(array: T[]) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
     array[i] = array[j];
     array[j] = temp;
   }
@@ -244,7 +244,7 @@ export default function mockApi(app: Application) {
 
       setTimeout(() => {
         const ids: unknown[] = [];
-        const possibleTagsWithProbabilities = [
+        const possibleTagsWithProbabilities: [string, number][] = [
           ["research", 0.3],
           ["fun", 0.02],
           ["test", 0.02],
@@ -257,7 +257,7 @@ export default function mockApi(app: Application) {
           ["Another very long long tagname, 2020", 0.001],
         ];
 
-        for (var i = 24700; i < 25700; i++) {
+        for (let i = 24700; i < 25700; i++) {
           const notExecuted = Math.random() < 0.1;
 
           ids.push({
@@ -548,7 +548,7 @@ export default function mockApi(app: Application) {
           "interesting",
         ];
 
-        for (var i = 84600; i < 85600; i++) {
+        for (let i = 84600; i < 85600; i++) {
           configs.push({
             id: i,
             label: "Saved Config",
