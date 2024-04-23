@@ -10,13 +10,6 @@ import { getFieldKey, getH1Index } from "../helper";
 
 import Field from "./Field";
 
-const FormContent = styled("div")`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-`;
-
 const SxFormHeader = styled(FormHeader)`
   margin: 5px 0 15px;
 `;
@@ -35,7 +28,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
   const activeLang = useActiveLang();
 
   return (
-    <FormContent>
+    <div className="w-full flex flex-col gap-2">
       {config.description && config.description[activeLang] && (
         <SxFormHeader
           description={config.description[activeLang]!}
@@ -53,6 +46,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
             h1Index={h1Index}
             register={methods.register}
             control={methods.control}
+            trigger={methods.trigger}
             field={field}
             setValue={methods.setValue}
             availableDatasets={datasetOptions}
@@ -60,7 +54,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
           />
         );
       })}
-    </FormContent>
+    </div>
   );
 });
 
