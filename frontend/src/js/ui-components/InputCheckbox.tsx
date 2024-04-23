@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
 
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { exists } from "../common/helpers/exists";
+import FaIcon from "../icon/FaIcon";
 import InfoTooltip from "../tooltip/InfoTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -27,27 +29,6 @@ const Container = styled("div")<{ $disabled?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
   box-sizing: content-box;
   opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
-`;
-
-const Checkmark = styled("div")`
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 20px;
-  width: 20px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-
-  &:after {
-    content: "";
-    position: absolute;
-    left: 6px;
-    top: 2px;
-    width: 5px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 3px 3px 0;
-    transform: rotate(45deg);
-  }
 `;
 
 const InputCheckbox = ({
@@ -77,7 +58,13 @@ const InputCheckbox = ({
     $disabled={disabled}
   >
     <WithTooltip text={tooltip} lazy={tooltipLazy}>
-      <Container $disabled={disabled}>{!!value && <Checkmark />}</Container>
+      <Container $disabled={disabled}>
+        {!!value && (
+          <div className="absolute top-0 left-0 w-5 h-5 bg-primary-500 flex items-center justify-center text-white">
+            <FaIcon icon={faCheck} className="!text-white scale-125" />
+          </div>
+        )}
+      </Container>
     </WithTooltip>
     <Label>{label}</Label>
     {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
