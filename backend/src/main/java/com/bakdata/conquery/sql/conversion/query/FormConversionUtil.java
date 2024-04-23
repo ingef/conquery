@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
@@ -57,7 +57,7 @@ public class FormConversionUtil {
 			QueryStep convertedFeature = queriesToJoin.get(0);
 			return createFinalSelect(stratificationTable, convertedFeature, resultInfos, context);
 		}
-		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, LogicalOperation.OUTER_JOIN, DateAggregationAction.BLOCK, context);
+		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.BLOCK, context);
 		return createFinalSelect(stratificationTable, joinedFeatures, resultInfos, context);
 	}
 
@@ -80,7 +80,7 @@ public class FormConversionUtil {
 		);
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.LEFT_JOIN, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
 
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
