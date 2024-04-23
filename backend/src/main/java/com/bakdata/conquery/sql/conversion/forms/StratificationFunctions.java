@@ -1,5 +1,18 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.DAY_ALIGNED_COUNT;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.QUARTER_ALIGNED_COUNT;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.QUARTER_END;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.QUARTER_START;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.YEAR_ALIGNED_COUNT;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.YEAR_END;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.YEAR_END_QUARTER_ALIGNED;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.YEAR_START;
+import static com.bakdata.conquery.sql.conversion.forms.Interval.DAYS_PER_QUARTER;
+import static com.bakdata.conquery.sql.conversion.forms.Interval.DAYS_PER_YEAR;
+import static com.bakdata.conquery.sql.conversion.forms.Interval.MONTHS_PER_QUARTER;
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -23,23 +36,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 abstract class StratificationFunctions {
-
-	protected static int DAYS_PER_YEAR = Interval.YEAR_AS_DAYS_INTERVAL.getAmount();
-	protected static int DAYS_PER_QUARTER = Interval.NINETY_DAYS_INTERVAL.getAmount();
-	protected static int MONTHS_PER_QUARTER = Interval.QUARTER_INTERVAL.getAmount();
-
-	// field names
-	public static Field<Date> INDEX_START = DSL.field(DSL.name(SharedAliases.INDEX_START.getAlias()), Date.class);
-	public static Field<Date> QUARTER_START = DSL.field(DSL.name(SharedAliases.QUARTER_START.getAlias()), Date.class);
-	public static Field<Date> QUARTER_END = DSL.field(DSL.name(SharedAliases.QUARTER_END.getAlias()), Date.class);
-	public static Field<Date> YEAR_START = DSL.field(DSL.name(SharedAliases.YEAR_START.getAlias()), Date.class);
-	public static Field<Date> YEAR_END = DSL.field(DSL.name(SharedAliases.YEAR_END.getAlias()), Date.class);
-	public static Field<Date> YEAR_END_QUARTER_ALIGNED = DSL.field(DSL.name(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias()), Date.class);
-
-	public static Field<Integer> YEAR_ALIGNED_COUNT = DSL.field(DSL.name(SharedAliases.YEAR_ALIGNED_COUNT.getAlias()), Integer.class);
-	public static Field<Integer> QUARTER_ALIGNED_COUNT = DSL.field(DSL.name(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias()), Integer.class);
-	public static Field<Integer> DAY_ALIGNED_COUNT = DSL.field(DSL.name(SharedAliases.DAY_ALIGNED_COUNT.getAlias()), Integer.class);
-	public static Field<Integer> SERIES_INDEX = DSL.field(DSL.name(SharedAliases.SERIES_INDEX.getAlias()), Integer.class);
 
 	static StratificationFunctions create(ConversionContext context) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
+import static com.bakdata.conquery.sql.conversion.forms.Interval.MONTHS_PER_QUARTER;
+
 import java.sql.Date;
 
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
@@ -22,7 +24,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	 * Hana pre-generates the column names of a generated series
 	 * (see <a href="https://help.sap.com/docs/hana-cloud-database/sap-hana-cloud-sap-hana-database-sql-reference-guide/series-generate-function-series-data">HANA docs</a>)
 	 */
-	private static final String GENERATED_PERIOD_START = "GENERATED_PERIOD_START";
+	private static final String GENERATED_PERIOD_END = "GENERATED_PERIOD_END";
 
 	private final HanaSqlFunctionProvider functionProvider;
 
@@ -70,33 +72,35 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Date> nextYearStart = nextYearStart(dateRange);
-		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), Offset.INTERVAL_START);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), 1);
 		return addMonths(nextYearStart, quartersInMonths);
 	}
 
 	@Override
 	public Field<Date> quarterStart(ColumnDateRange dateRange) {
 		Field<Date> yearStart = yearStart(dateRange);
-		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), Offset.INTERVAL_START);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), 1);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
 	@Override
 	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
 		Field<Date> yearStart = jumpToYearStart(dateRange.getEnd());
-		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), -1);
-		Field<Integer> quartersInMonths = getQuartersInMonths(inclusiveEnd, Offset.INTERVAL_END);
+		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getEnd(), 0);
 		return addMonths(yearStart, quartersInMonths);
 	}
 
 	@Override
 	public Field<Integer> intSeriesField() {
-		return DSL.field(DSL.name(GENERATED_PERIOD_START), Integer.class);
+		return DSL.field(DSL.name(GENERATED_PERIOD_END), Integer.class);
 	}
 
 	@Override
 	public Table<Record> generateIntSeries(int start, int end) {
-		return DSL.table("SERIES_GENERATE_INTEGER({0}, {1}, {2})", INCREMENT, start, end);
+		// HANA's SERIES_GENERATE_INTEGER generates an empty set if start and end are the same, but we expect it to return a set with exactly 1 value,
+		// so we shift the start by -1 and use the GENERATED_PERIOD_END as intSeriesField column to achieve this
+		int adjustedStart = start - 1;
+		return DSL.table("SERIES_GENERATE_INTEGER({0}, {1}, {2})", INCREMENT, adjustedStart, end);
 	}
 
 	private static Field<Date> addMonths(Field<Date> yearStart, Field<Integer> amount) {
@@ -136,11 +140,11 @@ class HanaStratificationFunctions extends StratificationFunctions {
 		);
 	}
 
-	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {
+	private Field<Integer> getMonthsInQuarters(Field<Date> date, int quarterOffset) {
 		Field<String> quarterExpression = functionProvider.yearQuarter(date);
 		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.val(1));
 		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
-														  .minus(offset.getOffset());
+														  .minus(quarterOffset);
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}
 
