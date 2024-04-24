@@ -114,7 +114,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			ColumnDateRange stratificationDate = conversionContext.getStratificationTable().getQualifiedSelects().getStratificationDate().get();
 			ColumnDateRange dualColumn = functionProvider.toDualColumn(stratificationDate);
 			// end date is allways treated exclusive, so we get the actual end date when subtracting 1 day
-			return functionProvider.addDays(dualColumn.getEnd(), -1);
+			return functionProvider.addDays(dualColumn.getEnd(), DSL.val(-1));
 		}
 
 		LocalDate endDate;

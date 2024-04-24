@@ -152,7 +152,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 		Field<Integer> coalescedIndices = coalesceFields(indices).coerce(Integer.class).as(SharedAliases.INDEX.getAlias());
 		Field<Date> eventDate = null;
 		if (!eventDates.isEmpty()) {
-			eventDate = coalesceFields(eventDates).coerce(Date.class).as(SharedAliases.INDEX_DATE.getAlias());
+			eventDate = coalesceFields(eventDates).coerce(Date.class).as(SharedAliases.INDEX_SELECTOR.getAlias());
 		}
 
 		return StratificationSqlIdColumns.builder()

@@ -121,7 +121,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 									.otherwise(validityDate.getStart());
 
 		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
-		Field<Date> restrictionUpperBound = DSL.when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), 1));
+		Field<Date> restrictionUpperBound = DSL.when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), DSL.val(1)));
 		Field<Date> upperBound = DSL.when(validityDate.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
 									.otherwise(validityDate.getEnd());
 
@@ -290,7 +290,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
+	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",
 				Date.class,
@@ -350,7 +350,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), 1),
+				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
 				toDateField(MAX_DATE_VALUE)
 		);
 

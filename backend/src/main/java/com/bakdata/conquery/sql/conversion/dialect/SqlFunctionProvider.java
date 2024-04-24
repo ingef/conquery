@@ -117,7 +117,7 @@ public interface SqlFunctionProvider {
 
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
-	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
+	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
 	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
 

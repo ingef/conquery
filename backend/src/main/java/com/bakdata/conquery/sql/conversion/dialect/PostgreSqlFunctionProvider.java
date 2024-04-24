@@ -26,6 +26,7 @@ import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import com.google.common.base.Preconditions;
+import org.jooq.impl.SQLDataType;
 
 /**
  * Provider of SQL functions for PostgresSQL.
@@ -188,7 +189,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
 		if (datePart == ChronoUnit.DAYS) {
-			return endDate.minus(startDate).coerce(Integer.class);
+			return cast(endDate.minus(startDate), SQLDataType.INTEGER);
 		}
 
 		Field<Integer> age = DSL.function("age", Integer.class, endDate, startDate);
@@ -202,7 +203,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
+	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return dateColumn.plus(amountOfDays);
 	}
 

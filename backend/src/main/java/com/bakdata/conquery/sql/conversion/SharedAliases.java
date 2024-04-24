@@ -27,8 +27,11 @@ public enum SharedAliases {
 	SERIES_INDEX("index"),
 	RESOLUTION("resolution"),
 	INDEX("index"),
-	INDEX_DATE("index_date"),
-	STRATIFICATION_BOUNDS("stratification_bounds");
+	INDEX_SELECTOR("index_selector"),
+	INDEX_START_POSITIVE("index_start_positive"),
+	INDEX_START_NEGATIVE("index_start_negative"),
+	STRATIFICATION_BOUNDS("stratification_bounds"),
+	OBSERVATION_SCOPE("scope");
 
 	private final String alias;
 }
