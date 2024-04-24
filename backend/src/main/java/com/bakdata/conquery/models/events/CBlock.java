@@ -139,27 +139,28 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 
 			try {
-				// Events without values are assigned to the root
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				if (column != null && !bucket.has(event, column)) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
-					continue;
-				}
-
 				String stringValue = "";
 
-				if (column != null) {
+				final boolean has = bucket.has(event, column);
+
+				if (column != null && has) {
 					stringValue = bucket.getString(event, column);
 				}
 
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				// Lazy evaluation of map to avoid allocations if possible.
 				// Copy event for closure.
 				final int _event = event;
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
 
-
 				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
 					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+					continue;
+				}
+
+				// Events without values are assigned to the root
+				if (column != null && !has) {
+					mostSpecificChildren[event] = treeConcept.getPrefix();
 					continue;
 				}
 
