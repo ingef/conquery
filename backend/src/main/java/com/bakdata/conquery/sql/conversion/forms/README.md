@@ -32,20 +32,18 @@ from "DUMMY"; -- "DUMMY" is SAP HANAs built-in no-op table
 
 ### Absolute forms
 
-For an absolute form, we only care for the primary ID, so we extract the primary IDs. For absolute forms, the validity
-date is discarded, for entity date queries, it's kept. The `stratification_bounds` represent the absolute forms date
-range. They define the required complete stratification window. We group by primary ID (and validity date, if present)
-to keep only distinct entries for each entity and discard any duplicated entries which, for example, might occur due
-to a preceding secondary id query.
+For an absolute form, we only care for the primary ID, so we extract the primary IDs and discard all other fields from 
+the prerequisite query. The `stratification_bounds` represent the absolute forms date range. They define the required 
+complete stratification window. We group by primary ID to keep only distinct entries for each entity and discard any 
+duplicated entries which, for example, might occur due to a preceding secondary id query.
 
 **CTE:** `extract_ids`
 
 ```sql
 select "primary_id",
-       "validity_date", -- the validity date is only kept in case we convert an entity date query
        daterange('2012-06-01', '2012-09-30', '[]') as "stratification_bounds"
 from "external"
-group by "primary_id", "validity_date"
+group by "primary_id"
 ```
 
 ### Entity date
