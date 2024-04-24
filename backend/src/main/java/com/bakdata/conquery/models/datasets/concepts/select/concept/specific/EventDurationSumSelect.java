@@ -36,7 +36,7 @@ public class EventDurationSumSelect extends UniversalSelect {
 	}
 
 	@Override
-	public boolean requiresIntervalPacking() {
+	public boolean isEventDateSelect() {
 		return true;
 	}
 }
