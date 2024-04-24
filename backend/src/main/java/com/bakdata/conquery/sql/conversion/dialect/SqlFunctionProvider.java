@@ -5,7 +5,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -42,11 +44,26 @@ public interface SqlFunctionProvider {
 	String getAnyCharRegex();
 
 	/**
-	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
+	 * @return A dummy table that enables selection of static values.
 	 */
-	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
+	Table<? extends Record> getNoOpTable();
 
-	ColumnDateRange forDateRestriction(CDateRange dateRestriction);
+	/**
+	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
+	 * exclusive.
+	 */
+	Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange);
+
+	/**
+	 * Creates a {@link ColumnDateRange} as a SQL representation of the {@link CDateRange}.
+	 */
+	ColumnDateRange forCDateRange(CDateRange daterange);
+
+	/**
+	 * Creates a list of {@link ColumnDateRange}s for each {@link CDateRange} of the given {@link CDateSet}. Each {@link ColumnDateRange} will be aliased with
+	 * the same given {@link SharedAliases}.
+	 */
+	List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias);
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date.
@@ -69,6 +86,8 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
+	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
+
 	/**
 	 * @param predecessor The predeceasing step containing an aggregated validity date.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
@@ -89,9 +108,16 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange);
 
+	/**
+	 * Combines the start and end column of a validity date entry into one compound string expression.
+	 * <p>
+	 * Example: [2013-11-10,2013-11-11)
+	 */
+	Field<String> daterangeStringExpression(ColumnDateRange columnDateRange);
+
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
-	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
+	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
 	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
 
@@ -147,6 +173,16 @@ public interface SqlFunctionProvider {
 	) {
 		return leftPartQueryBase
 				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
+				.on(joinConditions.toArray(Condition[]::new));
+	}
+
+	default TableOnConditionStep<Record> leftJoin(
+			Table<Record> leftPartQueryBase,
+			QueryStep rightPartQS,
+			List<Condition> joinConditions
+	) {
+		return leftPartQueryBase
+				.leftJoin(DSL.name(rightPartQS.getCteName()))
 				.on(joinConditions.toArray(Condition[]::new));
 	}
 

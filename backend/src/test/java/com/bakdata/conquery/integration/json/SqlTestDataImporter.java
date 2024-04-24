@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredSecondaryId;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -34,8 +35,14 @@ public class SqlTestDataImporter implements TestDataImporter {
 	}
 
 	@Override
-	public void importFormTestData(StandaloneSupport support, FormTest formTest) throws Exception {
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public void importFormTestData(StandaloneSupport support, FormTest test) throws Exception {
+		RequiredData content = test.getContent();
+		importSecondaryIds(support, content.getSecondaryIds());
+		importTables(support, content.getTables(), true);
+		importConcepts(support, test.getRawConcepts());
+		importTableContents(support, content.getTables());
+		waitUntilDone(support, () -> LoadingUtil.importIdMapping(support, content));
+		waitUntilDone(support, () -> LoadingUtil.importPreviousQueries(support, content, support.getTestUser()));
 	}
 
 	@Override
