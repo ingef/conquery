@@ -1,7 +1,6 @@
 package com.bakdata.conquery.util.support;
 
 import java.io.File;
-import java.net.ServerSocket;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -36,19 +35,19 @@ public interface ConfigOverride {
 	@SneakyThrows
 	static void configureRandomPorts(ConqueryConfig config) {
 
-		// set random open ports
-		final Collection<ConnectorFactory> connectorFactories = CollectionUtils.union(
-				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
-		);
+		try (ClosableSocketSupplier socketSupplier = new ClosableSocketSupplier()) {
 
-		for (ConnectorFactory con : connectorFactories) {
-			try (ServerSocket s = new ServerSocket(0)) {
-				((HttpConnectorFactory) con).setPort(s.getLocalPort());
+
+			// set random open ports
+			final Collection<ConnectorFactory> connectorFactories = CollectionUtils.union(
+					((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+					((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
+			);
+
+			for (ConnectorFactory con : connectorFactories) {
+				((HttpConnectorFactory) con).setPort(socketSupplier.get().getLocalPort());
 			}
-		}
-		try (ServerSocket s = new ServerSocket(0)) {
-			config.getCluster().setPort(s.getLocalPort());
+			config.getCluster().setPort(socketSupplier.get().getLocalPort());
 		}
 	}
 
