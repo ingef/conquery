@@ -1,9 +1,6 @@
 package com.bakdata.conquery.commands;
 
-import static java.time.Duration.ofMillis;
-
 import java.net.InetSocketAddress;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -41,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.util.Duration;
 import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
@@ -96,10 +94,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		environment.lifecycle().manage(this);
 		validator = environment.getValidator();
 
-		scheduler = environment
-				.lifecycle()
-				.scheduledExecutorService("Scheduled Messages")
-				.build();
+		scheduler = environment.lifecycle().scheduledExecutorService("Scheduled Messages").build();
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
@@ -139,7 +134,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 																													 - workersDone.size());
 		}
 
-		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+		log.info("All Worker loaded: {}", workers.getWorkers().size());
 	}
 
 	private void reportJobManagerStatus() {
@@ -211,9 +206,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
-		MessageToShardNode toShardNode = (MessageToShardNode) message;
-		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
+		log.trace("{} received {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
 
 		if (message instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
@@ -224,8 +218,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 	}
 
-	private void setLocation(IoSession session) {
-		String loc = session.getLocalAddress().toString();
+	private static void setLocation(IoSession session) {
+		final String loc = session.getLocalAddress().toString();
 		ConqueryMDC.setLocation(loc);
 	}
 
@@ -253,16 +247,21 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			networkSession.send(new RegisterWorker(info));
 		}
 
-		scheduler.scheduleAtFixedRate(getIdleLogger(session), 5, 2, TimeUnit.MINUTES);
+		scheduleIdleLogger(scheduler, session, config.getCluster().getIdleTimeOut());
 	}
 
-	private static Runnable getIdleLogger(IoSession session) {
-		return () -> {
-			final Duration elapsed = ofMillis(System.currentTimeMillis() - session.getLastIoTime());
-			if (elapsed.toMinutes() > 5) {
-				log.warn("No message sent or received since {}", elapsed);
-			}
-		};
+	private static void scheduleIdleLogger(ScheduledExecutorService scheduler, IoSession session, Duration timeout) {
+		scheduler.scheduleAtFixedRate(
+				() -> {
+					setLocation(session);
+
+					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
+					if (elapsed.compareTo(timeout) > 0) {
+						log.warn("No message sent or received since {}", elapsed);
+					}
+				},
+				timeout.toSeconds(), timeout.toSeconds() / 2, TimeUnit.SECONDS
+		);
 	}
 
 	@Override

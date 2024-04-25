@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -301,7 +302,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
 		setLocation(session);
-		log.warn("Session idle {}.", status);
+		log.warn("Session idle {}. Last read: {}. Last write: {}.", status, Instant.ofEpochMilli(session.getLastReadTime()), Instant.ofEpochMilli(session.getLastWriteTime()));
 	}
 
 	@Override
