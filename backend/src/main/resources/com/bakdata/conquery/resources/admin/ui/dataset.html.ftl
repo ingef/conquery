@@ -49,7 +49,7 @@
             <select
               class="custom-select"
               data-test-id="upload-select"
-              onchange="updateDatasetUploadForm(this)"
+              onchange="updateDatasetUploadForm(this, '${c.ds.id}')"
               required
             >
               <option value="mapping" selected>Mapping JSON</option>

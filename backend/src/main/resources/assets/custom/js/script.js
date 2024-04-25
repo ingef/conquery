@@ -163,10 +163,9 @@ function postFile(event, url) {
 		let reader = new FileReader();
 		reader.onload = function () {
 			let json = reader.result;
-			fetch(url, {
-				method: 'post', credentials: 'same-origin', body: json, headers: {
-					"Content-Type": "application/json"
-				}
+			rest(url, {
+				method: 'post',
+				body: json
 			})
 				.then(function (response) {
 					if (response.ok) {
@@ -230,7 +229,11 @@ const uploadFormMapping = {
 		uri: "internToExtern",
 		accept: "*.mapping.json",
 	},
-	table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
+	table: {
+		name: "table_schema",
+		uri: "tables",
+		accept: "*.table.json"
+	},
 	concept: {
 		name: "concept_schema",
 		uri: "concepts",
@@ -243,7 +246,7 @@ const uploadFormMapping = {
 	},
 };
 
-function updateDatasetUploadForm(select) {
+function updateDatasetUploadForm(select, datasetId) {
 	const data = uploadFormMapping[select.value];
 	const fileInput = $(select).next();
 	fileInput.value = "";
@@ -253,7 +256,7 @@ function updateDatasetUploadForm(select) {
 		.parent()
 		.attr(
 			"onsubmit",
-			"postFile(event, '/admin/datasets/${c.ds.id}/" + data.uri + "')"
+			`postFile(event, '/admin/datasets/${datasetId}/${data.uri}')`
 		);
 }
 

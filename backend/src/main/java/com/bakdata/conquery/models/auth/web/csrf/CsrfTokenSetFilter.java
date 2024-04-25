@@ -27,7 +27,7 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	public static final String CSRF_TOKEN_PROPERTY = "csrf_token";
 	public static final int TOKEN_LENGTH = 30;
 
-	Random random = new SecureRandom();
+	private final Random random = new SecureRandom();
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
