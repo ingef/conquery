@@ -29,12 +29,14 @@ async function rest(url, options) {
 		{
 			method: 'get',
 			credentials: 'same-origin',
+			...options,
+			// Overwrite options[headers] here, BUT merge them with our headers
 			headers: {
 				'Content-Type': 'application/json',
 				// Csrf token is provided via global variable
-				'X-Csrf-Token': csrf_token
-			},
-			...options
+				'X-Csrf-Token': csrf_token,
+				...options?.headers,
+			}
 		}
 	);
 	return res;
@@ -194,10 +196,9 @@ function postFile(event, url) {
 function postScriptHandler(event, jsonOut, responseTargetTextfield) {
 	event.preventDefault();
 	responseTargetTextfield.innerHTML = 'waiting for response';
-	fetch('/admin/script',
+	rest('/admin/script',
 		{
 			method: 'post',
-			credentials: 'same-origin',
 			body: document.getElementById('script').value,
 			headers: {
 				'Content-Type': 'text/plain',
@@ -292,4 +293,14 @@ function deleteDataset(event, datasetId) {
 			else
 				showMessageForResponse(res);
 		});
+}
+
+function shutdown(event) {
+	event.preventDefault();
+	rest(
+		'/tasks/shutdown',
+		{
+			method: 'post'
+		}
+	);
 }

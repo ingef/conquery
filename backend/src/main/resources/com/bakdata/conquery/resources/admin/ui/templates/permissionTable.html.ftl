@@ -52,12 +52,10 @@
     <script type="application/javascript">
     function handleDeletePermission(permission){
         event.preventDefault();
-        fetch(
+        rest(
             '/admin/permissions/${ownerId}',
             {
                 method: 'delete',
-                credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'},
                 body: permission
             })
             .then(function(){location.reload()});
