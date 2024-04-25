@@ -141,7 +141,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			try {
 				String stringValue = "";
 
-				final boolean has = bucket.has(event, column);
+				final boolean has = column != null && bucket.has(event, column);
 
 				if (column != null && has) {
 					stringValue = bucket.getString(event, column);
