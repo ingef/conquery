@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.util.Duration;
 import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,7 +55,7 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 /**
  * This node holds a shard of data (in so called {@link Worker}s for the different datasets in conquery.
  * It delegates incomming queries to the corresponding worker and is responsible for the network communication
- * to the {@link ManagerNode}. 
+ * to the {@link ManagerNode}.
  */
 @Slf4j
 @Getter
@@ -78,7 +79,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	public ShardNode(String name) {
-		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
+		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");
 	}
 
 
@@ -93,13 +94,9 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		environment.lifecycle().manage(this);
 		validator = environment.getValidator();
 
-		scheduler = environment
-				.lifecycle()
-				.scheduledExecutorService("Scheduled Messages")
-				.build();
+		scheduler = environment.lifecycle().scheduledExecutorService("Scheduled Messages").build();
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
-
 
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
@@ -133,14 +130,41 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 
-
 			log.debug("Waiting for Worker workers to load. {} are already finished. {} pending", workersDone.size(), workerStorages.size()
 																													 - workersDone.size());
 		}
 
-		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+		log.info("All Worker loaded: {}", workers.getWorkers().size());
 	}
 
+	private void reportJobManagerStatus() {
+		if (context == null || !context.isConnected()) {
+			return;
+		}
+
+
+		// Collect the ShardNode and all its workers jobs into a single queue
+
+		for (Worker worker : workers.getWorkers().values()) {
+			final JobManagerStatus jobManagerStatus = new JobManagerStatus(
+					null, worker.getInfo().getDataset(),
+					worker.getJobManager().getJobStatus()
+			);
+
+			try {
+				context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
+			}
+			catch (Exception e) {
+				log.warn("Failed to report job manager status", e);
+
+				if (config.isFailOnError()) {
+					System.exit(1);
+				}
+			}
+		}
+
+
+	}
 
 	/**
 	 * Pendant to {@link ManagerNode#createInternalObjectMapper(Class)}.
@@ -170,7 +194,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		deserializationConfig = deserializationConfig.withView(viewClass);
 
 		objectMapper.setConfig(deserializationConfig);
-		
+
 		return objectMapper;
 	}
 
@@ -182,9 +206,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
-		MessageToShardNode toShardNode = (MessageToShardNode) message;
-		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
+		log.trace("{} received {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
 
 		if (message instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
@@ -193,6 +216,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		else {
 			jobManager.addFastJob(job);
 		}
+	}
+
+	private static void setLocation(IoSession session) {
+		final String loc = session.getLocalAddress().toString();
+		ConqueryMDC.setLocation(loc);
 	}
 
 	@Override
@@ -218,37 +246,58 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
 		}
+
+		scheduleIdleLogger(scheduler, session, config.getCluster().getIdleTimeOut());
+	}
+
+	private static void scheduleIdleLogger(ScheduledExecutorService scheduler, IoSession session, Duration timeout) {
+		scheduler.scheduleAtFixedRate(
+				() -> {
+					setLocation(session);
+
+					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
+					if (elapsed.compareTo(timeout) > 0) {
+						log.warn("No message sent or received since {}", elapsed);
+					}
+				},
+				timeout.toSeconds(), timeout.toSeconds() / 2, TimeUnit.SECONDS
+		);
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) {
 		setLocation(session);
-		log.info("Disconnected from ManagerNode");
+		log.info("Disconnected from ManagerNode.");
 	}
 
 	@Override
 	public void sessionCreated(IoSession session) {
+		setLocation(session);
+		log.debug("Session created.");
 	}
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
+		setLocation(session);
+		log.warn("Session idle {}.", status);
 	}
 
 	@Override
 	public void messageSent(IoSession session, Object message) {
+		setLocation(session);
+		log.trace("Message sent: {}", message);
 	}
 
 	@Override
 	public void inputClosed(IoSession session) {
+		setLocation(session);
+		log.info("Session closed.");
 	}
 
 	@Override
 	public void event(IoSession session, FilterEvent event) throws Exception {
-	}
-
-	private void setLocation(IoSession session) {
-		String loc = session.getLocalAddress().toString();
-		ConqueryMDC.setLocation(loc);
+		setLocation(session);
+		log.trace("Event handled: {}", event);
 	}
 
 	@Override
@@ -288,53 +337,25 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 			}
 			catch (RuntimeIoException e) {
-				log.warn("Failed to connect to " + address, e);
+				log.warn("Failed to connect to {}", address, e);
 			}
 		}
+
+
 	}
 
 	@Override
 	public void stop() throws Exception {
 		getJobManager().close();
-		
+
 		workers.stop();
-		
+
 		//after the close command was send
 		if (context != null) {
 			context.awaitClose();
 		}
 		log.info("Connection was closed by ManagerNode");
 		connector.dispose();
-	}
-
-	private void reportJobManagerStatus() {
-		if (context == null || !context.isConnected()) {
-			return;
-		}
-
-
-		// Collect the ShardNode and all its workers jobs into a single queue
-
-		for (Worker worker : workers.getWorkers().values()) {
-			final JobManagerStatus jobManagerStatus = new JobManagerStatus(
-					null, worker.getInfo().getDataset(),
-					worker.getJobManager().getJobStatus()
-			);
-
-			try {
-				context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
-			}
-			catch (Exception e) {
-				log.warn("Failed to report job manager status", e);
-
-				if (config.isFailOnError()) {
-					System.exit(1);
-				}
-			}
-		}
-
-
-
 	}
 
 	public boolean isBusy() {

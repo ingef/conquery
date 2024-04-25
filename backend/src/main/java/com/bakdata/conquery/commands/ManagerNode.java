@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +31,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -44,6 +46,9 @@ import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -275,5 +280,46 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			log.error("{} could not be closed", getStorage(), e);
 		}
 
+	}
+
+	private void setLocation(IoSession session) {
+		final String loc = session.getLocalAddress().toString();
+		ConqueryMDC.setLocation(loc);
+	}
+
+	@Override
+	public void sessionClosed(IoSession session) {
+		setLocation(session);
+		log.info("Disconnected.");
+	}
+
+	@Override
+	public void sessionCreated(IoSession session) {
+		setLocation(session);
+		log.debug("Session created.");
+	}
+
+	@Override
+	public void sessionIdle(IoSession session, IdleStatus status) {
+		setLocation(session);
+		log.warn("Session idle {}. Last read: {}. Last write: {}.", status, Instant.ofEpochMilli(session.getLastReadTime()), Instant.ofEpochMilli(session.getLastWriteTime()));
+	}
+
+	@Override
+	public void messageSent(IoSession session, Object message) {
+		setLocation(session);
+		log.trace("Message sent: {}", message);
+	}
+
+	@Override
+	public void inputClosed(IoSession session) {
+		setLocation(session);
+		log.info("Session closed.");
+	}
+
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {
+		setLocation(session);
+		log.trace("Event handled: {}", event);
 	}
 }
