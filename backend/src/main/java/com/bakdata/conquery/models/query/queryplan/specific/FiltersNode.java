@@ -174,6 +174,10 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
+		if(!bucket.containsEntity(entity.getId())){
+			return false;
+		}
+
 		for (FilterNode<?> filter : filters) {
 			if (filter.isOfInterest(bucket)) {
 				return true;
