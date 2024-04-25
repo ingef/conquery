@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import org.jooq.CommonTableExpression;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
@@ -25,15 +26,18 @@ public class QueryStepTransformer {
 	 * Converts a given {@link QueryStep} into an executable SELECT statement.
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep) {
+
 		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep))
 															   .select(queryStep.getSelects().all())
-															   .from(queryStep.getFromTable())
+															   .from(queryStep.getFromTables())
 															   .where(queryStep.getConditions());
+
+		List<Field<?>> orderByFields = queryStep.getSelects().getIds().toFields();
 		if (queryStep.isGroupBy()) {
-			return queryBase.groupBy(queryStep.getGroupBy());
+			return queryBase.groupBy(queryStep.getGroupBy()).orderBy(orderByFields);
 		}
 		else {
-			return queryBase;
+			return queryBase.orderBy(orderByFields);
 		}
 	}
 
@@ -59,7 +63,7 @@ public class QueryStepTransformer {
 
 		Select<Record> selectStep = this.dslContext
 				.select(queryStep.getSelects().all())
-				.from(queryStep.getFromTable())
+				.from(queryStep.getFromTables())
 				.where(queryStep.getConditions());
 
 		if (queryStep.isGroupBy()) {
@@ -71,7 +75,9 @@ public class QueryStepTransformer {
 				// we only use the union as part of the date aggregation process - the entries of the UNION tables are all unique
 				// thus we can use a UNION ALL because it's way faster than UNION
 				selectStep = selectStep.unionAll(
-						this.dslContext.select(unionStep.getSelects().all()).from(unionStep.getFromTable())
+						this.dslContext.select(unionStep.getSelects().all())
+									   .from(unionStep.getFromTables())
+									   .where(unionStep.getConditions())
 				);
 			}
 		}

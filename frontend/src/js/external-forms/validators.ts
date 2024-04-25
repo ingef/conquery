@@ -7,6 +7,7 @@ import { isValidSelect } from "../model/select";
 import {
   CheckboxField,
   ConceptListField,
+  DisclosureListField,
   Field,
   FormField,
 } from "./config-types";
@@ -125,6 +126,7 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   // MULTI_SELECT: null,
   // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   DATE_RANGE: validateDateRange,
+  DISCLOSURE_LIST: null,
 };
 
 function getNotEmptyValidation(fieldType: string) {
@@ -147,9 +149,12 @@ function getConfigurableValidations(fieldType: string) {
 
 const isFieldWithValidations = (
   field: FormField,
-): field is Exclude<Field, CheckboxField> => {
+): field is Exclude<Field, CheckboxField | DisclosureListField> => {
   return (
-    field.type !== "TABS" && field.type !== "GROUP" && field.type !== "CHECKBOX"
+    field.type !== "TABS" &&
+    field.type !== "GROUP" &&
+    field.type !== "CHECKBOX" &&
+    field.type !== "DISCLOSURE_LIST"
   );
 };
 

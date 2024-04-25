@@ -12,18 +12,17 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.impl.DSL;
 
+@RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 	private final QueryStepTransformer queryStepTransformer;
-
-	public ConceptQueryConverter(QueryStepTransformer queryStepTransformer) {
-		this.queryStepTransformer = queryStepTransformer;
-	}
 
 	@Override
 	public Class<ConceptQuery> getConversionClass() {
@@ -33,8 +32,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	@Override
 	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
 
-		ConversionContext contextAfterConversion = context.getNodeConversions()
-														  .convert(conceptQuery.getRoot(), context);
+		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
 
 		QueryStep preFinalStep = contextAfterConversion.getQuerySteps().iterator().next();
 		Selects preFinalSelects = preFinalStep.getQualifiedSelects();
@@ -48,7 +46,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 									   .build();
 
 		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
-		return context.withFinalQuery(new ConceptSqlQuery(finalQuery, conceptQuery.getResultInfos()));
+		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
 	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
