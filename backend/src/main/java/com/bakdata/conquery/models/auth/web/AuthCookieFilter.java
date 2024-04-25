@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.web;
 
+import static com.bakdata.conquery.models.auth.web.AuthCookieFilter.PRIORITY;
+
 import java.io.IOException;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -31,9 +33,11 @@ import org.eclipse.jetty.http.HttpHeader;
 @Slf4j
 @PreMatching
 // Chain this filter before the Authentication filter
-@Priority(Priorities.AUTHENTICATION-100)
+@Priority(PRIORITY)
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
+	public static final int PRIORITY = Priorities.AUTHENTICATION - 100;
 
 	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";

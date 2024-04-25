@@ -30,12 +30,27 @@ async function rest(url, options) {
 			method: 'get',
 			credentials: 'same-origin',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				// Csrf token is provided via global variable
+				'X-Csrf-Token': csrf_token
 			},
 			...options
 		}
 	);
 	return res;
+}
+
+async function restOptionalForce(url, options) {
+	return rest(url, options).then((res) => {
+		// force button in case of 409 status
+		const customButton = createCustomButton('Force delete');
+		customButton.onclick = () => rest(toForceURL(url), options).then((res) => {
+			res.ok && location.reload();
+		});
+
+		showMessageForResponse(res, customButton);
+		return res;
+	});
 }
 
 function getToast(type, title, text, smalltext = "", customButton) {
@@ -208,3 +223,70 @@ $("ul.nav-tabs > li > a").on("shown.bs.tab", function (e) {
 // on load of the page: switch to the currently selected tab
 var hash = window.location.hash;
 $('#myTab a[href="' + hash + '"]').tab('show');
+
+const uploadFormMapping = {
+	mapping: {
+		name: "mapping",
+		uri: "internToExtern",
+		accept: "*.mapping.json",
+	},
+	table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
+	concept: {
+		name: "concept_schema",
+		uri: "concepts",
+		accept: "*.concept.json",
+	},
+	structure: {
+		name: "structure_schema",
+		uri: "structure",
+		accept: "structure.json",
+	},
+};
+
+function updateDatasetUploadForm(select) {
+	const data = uploadFormMapping[select.value];
+	const fileInput = $(select).next();
+	fileInput.value = "";
+	fileInput.attr("accept", data.accept);
+	fileInput.attr("name", data.name);
+	$(select)
+		.parent()
+		.attr(
+			"onsubmit",
+			"postFile(event, '/admin/datasets/${c.ds.id}/" + data.uri + "')"
+		);
+}
+
+function createDataset(event) {
+	event.preventDefault();
+	rest(
+		'/admin/datasets',
+		{
+			method: 'post',
+			body: JSON.stringify({
+				name: document.getElementById('entity_id').value,
+				label: document.getElementById('entity_name').value
+			})
+		}).then(function (res) {
+			if (res.ok)
+				location.reload();
+			else
+				showMessageForResponse(res);
+		});
+}
+
+
+
+function deleteDataset(event, datasetId) {
+	event.preventDefault();
+	rest(
+		`/admin/datasets/${datasetId}`,
+		{
+			method: 'delete',
+		}).then(function (res) {
+			if (res.ok)
+				location.reload();
+			else
+				showMessageForResponse(res);
+		});
+}

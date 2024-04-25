@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
@@ -15,6 +16,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +38,14 @@ public class ConceptsUIResource {
 	protected Concept<?> concept;
 	@PathParam(DATASET)
 	protected Dataset dataset;
+	@Context
+	ContainerRequestContext request;
 
 	@GET
 	public View getConceptView() {
 		return new UIView<>(
 				"concept.html.ftl",
-				uiProcessor.getUIContext(),
+				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(request)),
 				concept
 		);
 	}

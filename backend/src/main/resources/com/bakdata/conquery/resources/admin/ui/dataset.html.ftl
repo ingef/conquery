@@ -27,8 +27,6 @@
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
-  <!-- Javascript -->
-  <script><#include "scripts/dataset.js" /></script>
 
   <!-- Dataset page -->
   <@breadcrumbs.breadcrumbs
