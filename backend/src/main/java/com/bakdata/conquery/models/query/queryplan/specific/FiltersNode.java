@@ -39,7 +39,7 @@ public class FiltersNode extends QPNode {
 	private List<EventFilterNode<?>> eventFilters;
 
 	@Setter(AccessLevel.PRIVATE)
-	private List<AggregationResultFilterNode> aggregationFilters;
+	private List<AggregationResultFilterNode<?,?>> aggregationFilters;
 
 
 	@Setter(AccessLevel.PRIVATE)
@@ -51,10 +51,21 @@ public class FiltersNode extends QPNode {
 
 		hit = false;
 
-		filters.forEach(child -> child.init(entity, context));
-		aggregators.forEach(child -> child.init(entity, context));
-		eventFilters.forEach(child -> child.init(entity, context));
-		eventDateAggregators.forEach(child -> child.init(entity, context));
+		for (FilterNode<?> filter : filters) {
+			filter.init(entity, context);
+		}
+
+		for (Aggregator<?> aggregator : aggregators) {
+			aggregator.init(entity, context);
+		}
+
+		for (EventFilterNode<?> eventFilter : eventFilters) {
+			eventFilter.init(entity, context);
+		}
+
+		for (Aggregator<CDateSet> child : eventDateAggregators) {
+			child.init(entity, context);
+		}
 	}
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
@@ -63,14 +74,14 @@ public class FiltersNode extends QPNode {
 		}
 
 		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-		final List<AggregationResultFilterNode> aggregationFilters = new ArrayList<>(filters.size());
+		final List<AggregationResultFilterNode<?,?>> aggregationFilters = new ArrayList<>(filters.size());
 
 		// Event and AggregationResultFilterNodes are used differently
 		for (FilterNode<?> filter : filters) {
-			if (filter instanceof EventFilterNode ef) {
+			if (filter instanceof EventFilterNode<?> ef) {
 				eventFilters.add(ef);
 			}
-			else if (filter instanceof AggregationResultFilterNode af){
+			else if (filter instanceof AggregationResultFilterNode<?,?> af){
 				aggregationFilters.add(af);
 			}
 		}
@@ -89,15 +100,27 @@ public class FiltersNode extends QPNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
-		filters.forEach(f -> f.nextTable(ctx, currentTable));
-		aggregators.forEach(a -> a.nextTable(ctx, currentTable));
+
+		for (FilterNode<?> f : filters) {
+			f.nextTable(ctx, currentTable);
+		}
+
+		for (Aggregator<?> a : aggregators) {
+			a.nextTable(ctx, currentTable);
+		}
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
 		super.nextBlock(bucket);
-		filters.forEach(f -> f.nextBlock(bucket));
-		aggregators.forEach(a -> a.nextBlock(bucket));
+
+		for (FilterNode<?> f : filters) {
+			f.nextBlock(bucket);
+		}
+
+		for (Aggregator<?> a : aggregators) {
+			a.nextBlock(bucket);
+		}
 	}
 
 	@Override
@@ -108,8 +131,12 @@ public class FiltersNode extends QPNode {
 			}
 		}
 
-		aggregationFilters.forEach(f -> f.acceptEvent(bucket, event));
-		aggregators.forEach(a -> a.consumeEvent(bucket, event));
+		for (AggregationResultFilterNode<?,?> f : aggregationFilters) {
+			f.acceptEvent(bucket, event);
+		}
+		for (Aggregator<?> a : aggregators) {
+			a.consumeEvent(bucket, event);
+		}
 
 		hit = true;
 
@@ -118,7 +145,7 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		for (AggregationResultFilterNode f : aggregationFilters) {
+		for (AggregationResultFilterNode<?,?> f : aggregationFilters) {
 			if (!f.isContained()) {
 				return false;
 			}
@@ -136,8 +163,13 @@ public class FiltersNode extends QPNode {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 
-		filters.forEach(f -> f.collectRequiredTables(requiredTables));
-		aggregators.forEach(a -> a.collectRequiredTables(requiredTables));
+		for (FilterNode<?> f : filters) {
+			f.collectRequiredTables(requiredTables);
+		}
+
+		for (Aggregator<?> a : aggregators) {
+			a.collectRequiredTables(requiredTables);
+		}
 	}
 
 	@Override
