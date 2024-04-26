@@ -55,20 +55,20 @@ export function useDateTickHandler(stats: PreviewStatistics) {
 
     // default -> months
     shouldTickRender = () => true;
-    // 2 years -> quarters
-    if (quarterCount >= 8) {
+    // > 12 months -> quarters
+    if (quarterCount > 4) {
       shouldTickRender = (date: Date) => date.getMonth() % 3 === 0;
     }
-    // 4 years -> halfyears
-    if (quarterCount >= 16) {
+    // > 12 quarters -> halfyears
+    if (quarterCount > 12) {
       shouldTickRender = (date: Date) => date.getMonth() % 6 === 0;
     }
-    // 8 years -> years
-    if (quarterCount >= 32) {
+    // > 12 halfyears -> years
+    if (quarterCount > 24) {
       shouldTickRender = (date: Date) => date.getMonth() === 0;
     }
-    // 10 years -> decades
-    if (quarterCount >= 160) {
+    // > 12 years -> decades
+    if (quarterCount > 48) {
       shouldTickRender = (date: Date) =>
         date.getFullYear() % 10 === 0 && date.getMonth() === 0;
     }
