@@ -42,7 +42,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -397,12 +396,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getNamespace(), getConfig()));
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, Namespace namespace, ConqueryConfig config) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, namespace, config);
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, config);
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			// Add grouping semantics to secondaryIds to group by
@@ -432,7 +431,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getNamespace(), getConfig()));
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@Override

@@ -28,7 +28,6 @@ import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -137,11 +136,11 @@ public class QueryProcessor {
 	 */
 	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
-		if (!(q instanceof EditorQuery)) {
+		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
 
-		final Query query = ((EditorQuery) q).getQuery();
+		final Query query = ((ManagedQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
@@ -291,14 +290,15 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic
-				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
-						.getStorage()
-						.getIdMapping(), config.getIdColumns(), config.getLocale()
-																	  .getDateReader(), upload.isOneRowPerEntity()
-
-				);
+		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+				upload.getValues(),
+				upload.getFormat(),
+				namespace.getStorage().getIdMapping(),
+				config.getIdColumns(),
+				config.getLocale().getDateReader(),
+				upload.isOneRowPerEntity(),
+				true
+		);
 
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
@@ -554,15 +554,14 @@ public class QueryProcessor {
 					 .filter(Predicate.not(Map::isEmpty));
 	}
 
-	public ResultStatistics getResultStatistics(ManagedQuery managedQuery) {
-		final Query query = managedQuery.getQuery();
-		final List<ResultInfo> resultInfos = query.getResultInfos();
+	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
 				dateInfo =
-				query.getResultInfos().stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
 
-		final int dateIndex = dateInfo.map(resultInfos::indexOf).orElse(0 /*Discarded if dateInfo is not present*/);
+		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);

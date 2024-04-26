@@ -20,7 +20,7 @@ class AggregationFilterCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		Selects aggregationFilterSelects = getAggregationFilterSelects(tableContext);
+		Selects aggregationFilterSelects = collectSelects(tableContext);
 
 		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
 																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
@@ -32,7 +32,7 @@ class AggregationFilterCte extends ConnectorCte {
 						.conditions(aggregationFilterConditions);
 	}
 
-	private Selects getAggregationFilterSelects(CQTableContext tableContext) {
+	private Selects collectSelects(CQTableContext tableContext) {
 
 		QueryStep previous = tableContext.getPrevious();
 		Selects previousSelects = previous.getQualifiedSelects();
@@ -45,6 +45,7 @@ class AggregationFilterCte extends ConnectorCte {
 
 		return Selects.builder()
 					  .ids(previousSelects.getIds())
+					  .stratificationDate(previousSelects.getStratificationDate())
 					  .validityDate(previousSelects.getValidityDate())
 					  .sqlSelects(forAggregationFilterStep)
 					  .build();

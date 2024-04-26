@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.google.common.base.Preconditions;
 
 public class SecondaryIdQueryConverter implements NodeConverter<SecondaryIdQuery> {
@@ -21,7 +22,7 @@ public class SecondaryIdQueryConverter implements NodeConverter<SecondaryIdQuery
 		);
 
 		Preconditions.checkArgument(withConvertedQuery.getFinalQuery() != null, "The SecondaryIdQuery's query should be converted by now.");
-		SecondaryIdSqlQuery secondaryIdSqlQuery = SecondaryIdSqlQuery.overwriteResultInfos(withConvertedQuery.getFinalQuery(), query.getResultInfos());
+		SqlQuery secondaryIdSqlQuery = withConvertedQuery.getFinalQuery().overwriteResultInfos(query.getResultInfos());
 
 		return withConvertedQuery.withFinalQuery(secondaryIdSqlQuery);
 	}

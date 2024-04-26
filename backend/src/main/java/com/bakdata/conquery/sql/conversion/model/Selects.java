@@ -19,6 +19,8 @@ public class Selects {
 	SqlIdColumns ids;
 	@Builder.Default
 	Optional<ColumnDateRange> validityDate = Optional.empty();
+	@Builder.Default
+	Optional<ColumnDateRange> stratificationDate = Optional.empty();
 	@Singular
 	List<SqlSelect> sqlSelects;
 
@@ -46,14 +48,19 @@ public class Selects {
 			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
 		}
 
+		if (this.stratificationDate.isPresent()) {
+			builder = builder.stratificationDate(this.stratificationDate.map(_validityDate -> _validityDate.qualify(qualifier)));
+		}
+
 		return builder.build();
 	}
 
 	public List<Field<?>> all() {
 		return Stream.of(
 							 this.ids.toFields().stream(),
+							 this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.sqlSelects.stream().map(SqlSelect::select)
+							 this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
 					 )
 					 .flatMap(Function.identity())
 					 .map(select -> (Field<?>) select)
@@ -63,7 +70,7 @@ public class Selects {
 
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
-							  .map(SqlSelect::select)
+							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
 							  .distinct()
 							  .collect(Collectors.toList());
 	}

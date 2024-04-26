@@ -27,8 +27,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
-import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -78,14 +76,14 @@ public class ConceptsProcessor {
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<Searchable<?>, String>, List<FrontendValue>>
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
 			searchResults =
 			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
 				@Override
-				public List<FrontendValue> load(Pair<Searchable<?>, String> filterAndSearch) {
+				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
 					final String searchTerm = filterAndSearch.getValue();
-					final Searchable<?> searchable = filterAndSearch.getKey();
+					final SelectFilter<?> searchable = filterAndSearch.getKey();
 
 					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
 
@@ -97,9 +95,9 @@ public class ConceptsProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<Searchable<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 		@Override
-		public CursorAndLength load(Searchable<?> searchable) {
+		public CursorAndLength load(SelectFilter<?> searchable) {
 			log.trace("Creating cursor for `{}`", searchable.getId());
 			return new CursorAndLength(listAllValues(searchable), countAllValues(searchable));
 		}
@@ -159,7 +157,7 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedFilterValues resolveFilterValues(Searchable<?> searchable, List<String> searchTerms) {
+	public ResolvedFilterValues resolveFilterValues(SelectFilter<?> searchable, List<String> searchTerms) {
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
@@ -183,13 +181,17 @@ public class ConceptsProcessor {
 			}
 		}
 
-		// Not all Searchables are children of Connectors.
-		final ConnectorId connectorId = searchable instanceof Filter asFilter ? asFilter.getConnector().getId() : null;
+		final ConnectorId connectorId = searchable.getConnector().getId();
 
 		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
 	}
 
-	public AutoCompleteResult autocompleteTextFilter(Searchable<?> searchable, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+	public AutoCompleteResult autocompleteTextFilter(
+			SelectFilter<?> searchable,
+			Optional<String> maybeText,
+			OptionalInt pageNumberOpt,
+			OptionalInt itemsPerPageOpt
+	) {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
@@ -225,7 +227,7 @@ public class ConceptsProcessor {
 		}
 	}
 
-	private Cursor<FrontendValue> listAllValues(Searchable<?> searchable) {
+	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 		/*
 		Don't worry, I am as confused as you are!
@@ -250,7 +252,7 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private long countAllValues(Searchable<?> searchable) {
+	private long countAllValues(SelectFilter<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		return namespace.getFilterSearch().getTotal(searchable);
@@ -260,7 +262,7 @@ public class ConceptsProcessor {
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private List<FrontendValue> autocompleteTextFilter(Searchable<?> searchable, String text) {
+	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		// Note that FEValues is equals/hashcode only on value:

@@ -30,6 +30,7 @@ const Input = styled("input")<{ large?: boolean; disabled?: boolean }>`
     large ? "10px 30px 10px 14px" : "6px 30px 6px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
   border-radius: ${({ theme }) => theme.borderRadius};
+  font-weight: 400;
 `;
 
 const SignalIcon = styled(FaIcon)`

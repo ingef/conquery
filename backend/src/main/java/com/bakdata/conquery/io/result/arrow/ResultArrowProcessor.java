@@ -47,7 +47,7 @@ public class ResultArrowProcessor {
 	public static final MediaType FILE_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.file");
 	public static final MediaType STREAM_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
 	private final ArrowConfig arrowConfig;
@@ -72,7 +72,7 @@ public class ResultArrowProcessor {
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			Subject subject,
 			E exec,
-			DatasetRegistry datasetRegistry,
+			DatasetRegistry<?> datasetRegistry,
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,

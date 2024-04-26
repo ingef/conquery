@@ -5,9 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -26,6 +23,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -101,14 +100,16 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
 		store.onAdd(table -> {
-			for (Column c : table.getColumns()) {
-				getCentralRegistry().register(c);
-			}
-		}).onRemove(table -> {
-			for (Column c : table.getColumns()) {
-				getCentralRegistry().remove(c);
-			}
-		});
+				 for (Column column : table.getColumns()) {
+					 column.init();
+					 getCentralRegistry().register(column);
+				 }
+			 })
+			 .onRemove(table -> {
+				 for (Column c : table.getColumns()) {
+					 getCentralRegistry().remove(c);
+				 }
+			 });
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
