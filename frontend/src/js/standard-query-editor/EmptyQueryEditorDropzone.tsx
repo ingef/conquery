@@ -30,9 +30,6 @@ const ArrowRight = styled(FaIcon)`
   grid-area: arrow;
 `;
 const Headline = styled("h2")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.huge};
-  line-height: 1.3;
   grid-area: headline;
 `;
 const Grid = styled("div")`
@@ -66,7 +63,9 @@ export const EmptyQueryEditorDropzone = memo(() => {
 
   return (
     <TextInitial>
-      <Headline>{t("dropzone.explanation")}</Headline>
+      <Headline className="text-2xl leading-tight font-bold">
+        {t("dropzone.explanation")}
+      </Headline>
       <ArrowRight icon={faArrowRight} />
       <Description>
         <p>{t("dropzone.dropIntoThisArea")}</p>

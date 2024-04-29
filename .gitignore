@@ -61,6 +61,7 @@ hs_err_pid*
 /storage/
 *.iml
 
+# Jupyter notebook tutorial development
 /workspace.code-workspace
 **/Lib/
 **/Include/
@@ -69,6 +70,9 @@ hs_err_pid*
 **/*-checkpoint.ipynb
 **/pyvenv.cfg
 tutorial/mimic_iii_demo/data/**
+
+# Include frontend container assets
+!/frontend/container/etc
 
 /node_modules
 cypress/screenshots/

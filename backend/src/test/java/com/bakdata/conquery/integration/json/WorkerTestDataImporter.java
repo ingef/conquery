@@ -96,11 +96,6 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
 	}
 
-	private void waitUntilDone(StandaloneSupport support, CheckedRunnable<?> runnable) {
-		runnable.run();
-		support.waitUntilWorkDone();
-	}
-
 	private static void sendUpdateMatchingStatsMessage(StandaloneSupport support) {
 		DistributedNamespace namespace = (DistributedNamespace) support.getNamespace();
 		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(support.getNamespace().getStorage().getAllConcepts()));

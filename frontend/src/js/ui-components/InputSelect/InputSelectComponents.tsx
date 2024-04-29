@@ -71,6 +71,8 @@ export const Input = styled("input")`
   outline: none;
   flex-grow: 1;
   width: 0; /* to fix default width */
+  font-weight: 400;
+  font-size: ${({ theme }) => theme.font.sm};
   ${({ disabled }) =>
     disabled &&
     css`

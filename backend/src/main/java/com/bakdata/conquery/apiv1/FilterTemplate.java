@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -40,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
-public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable<SearchIndexId>, SearchIndex {
+public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
 
 	private static final long serialVersionUID = 1L;
 
@@ -90,7 +89,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return false;
 	}
 
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
 		log.trace("Resolved filter template reference url for search '{}': {}", this.getId(), resolvedURI);
