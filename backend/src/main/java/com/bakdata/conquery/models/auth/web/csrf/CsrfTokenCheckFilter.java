@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Implementation of the Double-Submit-Cookie Pattern.
  * Checks if tokens in cookie and header match if a cookie is present.
- * Otherwise the request is refused.
+ * Otherwise, the request is refused.
  */
 @Priority(AuthCookieFilter.PRIORITY - 100)
 @Slf4j
@@ -24,10 +24,12 @@ public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		final String cookieToken = Optional.ofNullable(requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
+		final String
+				cookieTokenHash =
+				Optional.ofNullable(requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
 		final String headerToken = requestContext.getHeaders().getFirst(CSRF_TOKEN_HEADER);
 
-		if (cookieToken == null) {
+		if (cookieTokenHash == null) {
 			log.trace("Request had no csrf token set. Accepting request");
 			return;
 		}
@@ -37,12 +39,12 @@ public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 			throw new ForbiddenException("CSRF Attempt");
 		}
 
-		if (!cookieToken.equals(headerToken)) {
+		if (!CsrfTokenSetFilter.checkHash(headerToken, cookieTokenHash)) {
 			log.warn("Request csrf cookie and header did not match");
+			log.trace("header-token={} cookie-token-hash={}", headerToken, cookieTokenHash);
 			throw new ForbiddenException("CSRF Attempt");
 		}
 
 		log.trace("Csrf check successful");
-
 	}
 }
