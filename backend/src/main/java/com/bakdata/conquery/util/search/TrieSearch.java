@@ -27,6 +27,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Trie based keyword search for autocompletion and resolving.
@@ -84,6 +85,24 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public List<T> findItems(Collection<String> queries, int limit) {
+		final Object2LongMap<T> itemWeights = collectWeights(queries);
+
+		return topItems(limit, itemWeights);
+	}
+
+	@NotNull
+	public static <T extends Comparable<T>> List<T> topItems(int limit, Object2LongMap<T> itemWeights) {
+		// Sort items according to their weight, then limit.
+		// Note that sorting is in descending order, meaning higher-scores are better.
+		return itemWeights.object2LongEntrySet()
+						  .stream()
+						  .sorted(Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
+						  .limit(limit)
+						  .map(Map.Entry::getKey)
+						  .collect(Collectors.toList());
+	}
+
+	public Object2LongMap<T> collectWeights(Collection<String> queries) {
 		final Object2LongMap<T> itemWeights = new Object2LongAVLTreeMap<>();
 
 		// We are not guaranteed to have split queries incoming, so we normalize them for searching
@@ -118,14 +137,7 @@ public class TrieSearch<T extends Comparable<T>> {
 			updateWeights(query, ngramHits, itemWeights, false);
 		}
 
-		// Sort items according to their weight, then limit.
-		// Note that sorting is in descending order, meaning higher-scores are better.
-		return itemWeights.object2LongEntrySet()
-						  .stream()
-						  .sorted(Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
-						  .limit(limit)
-						  .map(Map.Entry::getKey)
-						  .collect(Collectors.toList());
+		return itemWeights;
 	}
 
 	/**
