@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Implementation of the Double-Submit-Cookie Pattern.
@@ -33,7 +34,11 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	public static final String CSRF_COOKIE_NAME = "csrf_token";
 	public static final String CSRF_TOKEN_PROPERTY = "csrf_token";
 	public static final int TOKEN_LENGTH = 30;
-	private final static PBKDF2Function HASH_FUNCTION = PBKDF2Function.getInstance(Hmac.SHA256, 1000, CsrfTokenSetFilter.TOKEN_LENGTH + 10);
+
+	/**
+	 * This needs to be fast, because the hash is computed on every api request and it is only short-lived.
+	 */
+	private final static PBKDF2Function HASH_FUNCTION = PBKDF2Function.getInstance(Hmac.SHA256, 1000, 256);
 
 	private final Random random = new SecureRandom();
 
@@ -54,13 +59,29 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 		log.trace("Hashed token for cookie. token='{}' hash='{}'", csrfToken, csrfTokenHash);
 
 		responseContext.getHeaders()
-					   .add(HttpHeaders.SET_COOKIE, new NewCookie(CSRF_COOKIE_NAME, csrfTokenHash, "/", null, 0, null, 3600, null, requestContext.getSecurityContext()
-																																			 .isSecure(), false));
+					   .add(HttpHeaders.SET_COOKIE, new NewCookie(
+							   CSRF_COOKIE_NAME,
+							   csrfTokenHash,
+							   "/",
+							   null,
+							   0,
+							   null,
+							   3600,
+							   null,
+							   requestContext.getSecurityContext().isSecure(),
+							   false
+					   ));
 	}
 
 	private static String getTokenHash(String csrfToken) {
+		final StopWatch stopwatch = new StopWatch("Generate csrf token");
+
+		stopwatch.start();
 		final Hash hash = Password.hash(csrfToken).addRandomSalt(32).with(HASH_FUNCTION);
+		stopwatch.stop();
 		final String encodedSalt = Base64.getEncoder().encodeToString(hash.getSaltBytes());
+
+		log.trace("Generated token in {}", stopwatch);
 		// Use '_' as join char, because it is not part of the standard base64 encoding (in base64url though)
 		return String.join("_", encodedSalt, hash.getResult());
 	}
@@ -74,7 +95,13 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 		final String saltedHash = hash.substring(delimIdx + 1);
 
 		final byte[] salt = Base64.getDecoder().decode(encodedSalt);
-		return Password.check(token, saltedHash).addSalt(salt).with(HASH_FUNCTION);
+		final StopWatch stopwatch = new StopWatch("Check csrf token");
+		stopwatch.start();
+		final boolean decision = Password.check(token, saltedHash).addSalt(salt).with(HASH_FUNCTION);
+		stopwatch.stop();
+
+		log.trace("Checked token in {}", stopwatch);
+		return decision;
 	}
 
 	public static String getCsrfTokenProperty(ContainerRequestContext requestContext) {

@@ -22,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 	public static final String CSRF_TOKEN_HEADER = "X-Csrf-Token";
 
+	public static final String CSRF_CHECK_SUCCESS_PROPERTY = "csrf-check";
+
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		final String
@@ -44,6 +46,8 @@ public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 			log.trace("header-token={} cookie-token-hash={}", headerToken, cookieTokenHash);
 			throw new ForbiddenException("CSRF Attempt");
 		}
+
+		requestContext.setProperty(CSRF_CHECK_SUCCESS_PROPERTY, true);
 
 		log.trace("Csrf check successful");
 	}
