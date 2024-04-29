@@ -7,12 +7,12 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -48,7 +48,7 @@ public class CQReusedQuery extends CQElement {
 	private ManagedExecutionId queryId;
 
 	@JsonIgnore
-	private EditorQuery query;
+	private ManagedQuery query;
 
 	@JsonView(View.InternalCommunication.class)
 	private Query resolvedQuery;
@@ -74,7 +74,7 @@ public class CQReusedQuery extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query = (EditorQuery) context.getStorage().getExecution(queryId);
+		query = (ManagedQuery) context.getStorage().getExecution(queryId);
 		if (query == null) {
 			throw new ConqueryError.ExecutionCreationResolveError(queryId);
 		}

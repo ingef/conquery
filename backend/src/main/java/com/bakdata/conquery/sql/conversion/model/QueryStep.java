@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -20,7 +21,8 @@ public class QueryStep {
 
 	String cteName;
 	Selects selects;
-	TableLike<Record> fromTable;
+	@Singular
+	List<TableLike<? extends Record>> fromTables;
 	@Builder.Default
 	List<Condition> conditions = Collections.emptyList();
 	/**
@@ -36,8 +38,17 @@ public class QueryStep {
 	/**
 	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
 	 */
-	@Builder.Default
-	List<QueryStep> predecessors = Collections.emptyList();
+	@Singular
+	List<QueryStep> predecessors;
+
+	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
+		return unionSteps.get(0)
+						 .toBuilder()
+						 .cteName(cteName)
+						 .union(unionSteps.subList(1, unionSteps.size()))
+						 .predecessors(predecessors)
+						 .build();
+	}
 
 	public static TableLike<Record> toTableLike(String fromTableName) {
 		return DSL.table(DSL.name(fromTableName));

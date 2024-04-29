@@ -410,7 +410,8 @@
     "dateError": "Datum unbekannt",
     "name": "Name",
     "value": "Wert",
-    "densityPlot": "Dichtediagramm"
+    "densityPlot": "Dichtediagramm",
+    "chartYLabel": "Anzahl"
   },
   "login": {
     "headline": "Anfragen und Analyse",

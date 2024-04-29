@@ -39,6 +39,9 @@ public class ConversionContext implements Context {
 	@Nullable
 	SqlQuery finalQuery;
 
+	@Nullable
+	QueryStep stratificationTable;
+
 	/**
 	 * An optional date restriction range. Is set when converting a {@link CQDateRestriction}.
 	 */
@@ -57,6 +60,10 @@ public class ConversionContext implements Context {
 
 	public boolean dateRestrictionActive() {
 		return this.dateRestrictionRange != null;
+	}
+
+	public boolean isWithStratification() {
+		return this.stratificationTable != null;
 	}
 
 	/**
