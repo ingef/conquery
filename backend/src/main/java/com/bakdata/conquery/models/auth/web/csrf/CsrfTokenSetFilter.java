@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
+import com.google.common.base.Stopwatch;
 import com.password4j.Hash;
 import com.password4j.PBKDF2Function;
 import com.password4j.Password;
@@ -17,7 +18,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Implementation of the Double-Submit-Cookie Pattern.
@@ -39,6 +39,8 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	 * This needs to be fast, because the hash is computed on every api request and it is only short-lived.
 	 */
 	private final static PBKDF2Function HASH_FUNCTION = PBKDF2Function.getInstance(Hmac.SHA256, 1000, 256);
+	public static final int COOKIE_MAX_AGE = 3600 /* seconds */;
+	public static final int SALT_LENGTH = 32;
 
 	private final Random random = new SecureRandom();
 
@@ -66,7 +68,7 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 							   null,
 							   0,
 							   null,
-							   3600,
+							   COOKIE_MAX_AGE,
 							   null,
 							   requestContext.getSecurityContext().isSecure(),
 							   false
@@ -74,9 +76,9 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	}
 
 	private static String getTokenHash(String csrfToken) {
-		final StopWatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
+		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 
-		final Hash hash = Password.hash(csrfToken).addRandomSalt(32).with(HASH_FUNCTION);
+		final Hash hash = Password.hash(csrfToken).addRandomSalt(SALT_LENGTH).with(HASH_FUNCTION);
 		
 		log.trace("Generated token in {}", stopwatch);
 		
@@ -95,10 +97,8 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 		final String saltedHash = hash.substring(delimIdx + 1);
 
 		final byte[] salt = Base64.getDecoder().decode(encodedSalt);
-		final StopWatch stopwatch = new StopWatch("Check csrf token");
-		stopwatch.start();
+		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		final boolean decision = Password.check(token, saltedHash).addSalt(salt).with(HASH_FUNCTION);
-		stopwatch.stop();
 
 		log.trace("Checked token in {}", stopwatch);
 		return decision;
