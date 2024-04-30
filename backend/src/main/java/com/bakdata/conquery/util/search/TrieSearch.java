@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import jakarta.validation.constraints.Min;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -103,7 +103,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public Object2LongMap<T> collectWeights(Collection<String> queries) {
-		final Object2LongMap<T> itemWeights = new Object2LongAVLTreeMap<>();
+		final Object2LongMap<T> itemWeights = new Object2LongOpenHashMap<>();
 
 		// We are not guaranteed to have split queries incoming, so we normalize them for searching
 		queries = queries.stream().flatMap(this::split).collect(Collectors.toSet());

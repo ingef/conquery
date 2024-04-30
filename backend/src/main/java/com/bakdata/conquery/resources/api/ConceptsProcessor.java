@@ -45,8 +45,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 import lombok.Getter;
@@ -273,7 +273,7 @@ public class ConceptsProcessor {
 
 		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
 
-		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongAVLTreeMap<>();
+		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
 
 		for (TrieSearch<FrontendValue> search : searches) {
 
