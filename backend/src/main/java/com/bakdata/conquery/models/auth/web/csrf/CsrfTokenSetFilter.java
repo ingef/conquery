@@ -74,14 +74,14 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	}
 
 	private static String getTokenHash(String csrfToken) {
-		final StopWatch stopwatch = new StopWatch("Generate csrf token");
+		final StopWatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 
-		stopwatch.start();
 		final Hash hash = Password.hash(csrfToken).addRandomSalt(32).with(HASH_FUNCTION);
-		stopwatch.stop();
+		
+		log.trace("Generated token in {}", stopwatch);
+		
 		final String encodedSalt = Base64.getEncoder().encodeToString(hash.getSaltBytes());
 
-		log.trace("Generated token in {}", stopwatch);
 		// Use '_' as join char, because it is not part of the standard base64 encoding (in base64url though)
 		return String.join("_", encodedSalt, hash.getResult());
 	}
