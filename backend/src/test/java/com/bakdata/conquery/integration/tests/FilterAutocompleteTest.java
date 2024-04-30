@@ -91,7 +91,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				// The empty string results from `No V*a*lue` and `..Def*au*lt..`
 
 				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-						.containsExactly("a", "aab", "aaa", "" /* `No V*a*lue` :^) */, "female", "male", "baaa");
+						.containsExactly("a", "aab", "aaa", "male", "" /* `No V*a*lue` :^) */, "female", "baaa");
 
 			}
 		}
