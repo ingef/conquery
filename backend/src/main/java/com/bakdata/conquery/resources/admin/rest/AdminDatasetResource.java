@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -141,6 +143,14 @@ public class AdminDatasetResource {
 	@Path("cqpp")
 	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
 		processor.updateImport(namespace, new GZIPInputStream(importStream));
+		try {
+		}
+		catch (WebApplicationException wex) {
+			throw wex;
+		}
+		catch (Exception ex) {
+			throw new InternalServerErrorException(ex);
+		}
 	}
 
 	@PUT
@@ -152,6 +162,12 @@ public class AdminDatasetResource {
 		catch (IOException err) {
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
+		catch (WebApplicationException wex) {
+			throw wex;
+		}
+		catch (Exception ex) {
+			throw new InternalServerErrorException(ex);
+		}
 	}
 
 	@POST
@@ -160,6 +176,16 @@ public class AdminDatasetResource {
 	public void uploadImport(@NotNull InputStream importStream) throws IOException {
 		log.info("Importing from file upload");
 		processor.addImport(namespace, new GZIPInputStream(importStream));
+	public void uploadImport(@NotNull InputStream importStream) {
+		log.debug("Importing from file upload");
+		try {
+		}
+		catch (WebApplicationException wex) {
+			throw wex;
+		}
+		catch (Exception ex) {
+			throw new InternalServerErrorException(ex);
+		}
 	}
 
 	@POST
@@ -172,14 +198,18 @@ public class AdminDatasetResource {
 			log.warn("Unable to process import", err);
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
+		catch (WebApplicationException wex) {
+			throw wex;
+		}
+		catch (Exception ex) {
+			throw new InternalServerErrorException(ex);
+		}
 	}
 
 
 	@POST
 	@Path("concepts")
-	public void addConcept(
-			@QueryParam("force") @DefaultValue("false") boolean force,
-			Concept concept) {
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
 		processor.addConcept(namespace.getDataset(), concept, force);
 	}
 
