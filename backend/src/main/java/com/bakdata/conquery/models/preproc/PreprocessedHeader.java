@@ -1,14 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.ws.rs.BadRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -51,36 +43,5 @@ public class PreprocessedHeader {
 	 * A hash to check if any of the underlying files for generating this CQPP has changed.
 	 */
 	private int validityHash;
-
-
-	/**
-	 * Verify that the supplied table matches the preprocessed data in shape.
-	 */
-	public void assertMatch(Table table) {
-		final StringJoiner errors = new StringJoiner("\n - ");
-
-		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Import column count=%d does not match table column count=%d", getColumns().length, table.getColumns().length));
-		}
-
-		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
-
-		for (PPColumn column : getColumns()) {
-			if (!typesByName.containsKey(column.getName())) {
-				errors.add("Column[%s] is missing."
-								   .formatted(column.getName()));
-			}
-			else if (!typesByName.get(column.getName()).equals(column.getType())) {
-				errors.add("Column[%s] Types do not match %s != %s"
-								   .formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
-			}
-		}
-
-		if (errors.length() != 0) {
-			log.error("Problems concerning Import `{}`:\n - {}", name, errors);
-			throw new BadRequestException(String.format("Import[%s.%s] does not match Table[%s]: %s", getTable(), getName(), table.getId(), errors));
-		}
-	}
-
 
 }

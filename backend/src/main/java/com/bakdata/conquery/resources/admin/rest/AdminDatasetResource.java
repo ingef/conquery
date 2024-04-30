@@ -34,7 +34,6 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -47,6 +46,7 @@ import jakarta.ws.rs.core.Response.Status;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -142,15 +142,7 @@ public class AdminDatasetResource {
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
 	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
-		try {
-			processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
-		}
-		catch (WebApplicationException wex) {
-			throw wex;
-		}
-		catch (Exception ex) {
-			throw new InternalServerErrorException(ex);
-		}
+		processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@PUT
@@ -162,28 +154,15 @@ public class AdminDatasetResource {
 		catch (IOException err) {
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
-		catch (WebApplicationException wex) {
-			throw wex;
-		}
-		catch (Exception ex) {
-			throw new InternalServerErrorException(ex);
-		}
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
+	@SneakyThrows
 	public void uploadImport(@NotNull InputStream importStream) {
 		log.debug("Importing from file upload");
-		try {
-			processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
-		}
-		catch (WebApplicationException wex) {
-			throw wex;
-		}
-		catch (Exception ex) {
-			throw new InternalServerErrorException(ex);
-		}
+		processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@POST
@@ -195,12 +174,6 @@ public class AdminDatasetResource {
 		catch (IOException err) {
 			log.warn("Unable to process import", err);
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
-		}
-		catch (WebApplicationException wex) {
-			throw wex;
-		}
-		catch (Exception ex) {
-			throw new InternalServerErrorException(ex);
 		}
 	}
 
