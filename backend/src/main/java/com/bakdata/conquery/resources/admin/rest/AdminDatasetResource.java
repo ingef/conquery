@@ -142,8 +142,8 @@ public class AdminDatasetResource {
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
 	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
-		processor.updateImport(namespace, new GZIPInputStream(importStream));
 		try {
+			processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 		}
 		catch (WebApplicationException wex) {
 			throw wex;
@@ -173,12 +173,10 @@ public class AdminDatasetResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream) throws IOException {
-		log.info("Importing from file upload");
-		processor.addImport(namespace, new GZIPInputStream(importStream));
 	public void uploadImport(@NotNull InputStream importStream) {
 		log.debug("Importing from file upload");
 		try {
+			processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 		}
 		catch (WebApplicationException wex) {
 			throw wex;
