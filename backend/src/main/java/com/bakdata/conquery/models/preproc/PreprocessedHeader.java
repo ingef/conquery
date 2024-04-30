@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.ws.rs.BadRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -54,34 +54,31 @@ public class PreprocessedHeader {
 
 
 	/**
-	 * Verify that the supplied table matches the preprocessed' data in shape.
+	 * Verify that the supplied table matches the preprocessed data in shape.
 	 */
 	public void assertMatch(Table table) {
-		StringJoiner errors = new StringJoiner("\n");
+		final StringJoiner errors = new StringJoiner("\n - ");
 
 		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Import column count=`%d` does not match table column count=`%d`", getColumns().length, table.getColumns().length));
+			errors.add(String.format("Import column count=%d does not match table column count=%d", getColumns().length, table.getColumns().length));
 		}
 
-		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
-													   .collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
 
-		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
-			final Column column = table.getColumns()[i];
-
-			if(!typesByName.containsKey(column.getName())){
-				errors.add(String.format("Column[%s] is missing.", column.getName()));
+		for (PPColumn column : getColumns()) {
+			if (!typesByName.containsKey(column.getName())) {
+				errors.add("Column[%s] is missing."
+								   .formatted(column.getName()));
 			}
 			else if (!typesByName.get(column.getName()).equals(column.getType())) {
-				errors.add(String.format("Column[%s] Types do not match %s != %s"
-						, column.getName(),  typesByName.get(column.getName()), column.getType())
-				);
+				errors.add("Column[%s] Types do not match %s != %s"
+								   .formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
 			}
 		}
 
 		if (errors.length() != 0) {
-			log.error("Problems concerning Import `{}`:\n{}", name, errors);
-			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More info in logs.", getTable(), getName(), table.getId()));
+			log.error("Problems concerning Import `{}`:\n - {}", name, errors);
+			throw new BadRequestException(String.format("Import[%s.%s] does not match Table[%s]: %s", getTable(), getName(), table.getId(), errors));
 		}
 	}
 
