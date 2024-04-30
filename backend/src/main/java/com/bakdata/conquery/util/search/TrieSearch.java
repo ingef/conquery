@@ -175,7 +175,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 			// We combine hits additively to favor items with multiple hits
 			for (T item : hits) {
-				itemWeights.put(item, itemWeights.getOrDefault(item, 1) + weight);
+				itemWeights.put(item, itemWeights.getOrDefault(item, 0) + weight);
 			}
 		}
 	}
