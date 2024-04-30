@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +46,7 @@ import jakarta.ws.rs.core.Response.Status;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -140,7 +142,7 @@ public class AdminDatasetResource {
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
 	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
-		processor.updateImport(namespace, new GZIPInputStream(importStream));
+		processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@PUT
@@ -157,9 +159,10 @@ public class AdminDatasetResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream) throws IOException {
-		log.info("Importing from file upload");
-		processor.addImport(namespace, new GZIPInputStream(importStream));
+	@SneakyThrows
+	public void uploadImport(@NotNull InputStream importStream) {
+		log.debug("Importing from file upload");
+		processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@POST
@@ -177,9 +180,7 @@ public class AdminDatasetResource {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(
-			@QueryParam("force") @DefaultValue("false") boolean force,
-			Concept concept) {
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
 		processor.addConcept(namespace.getDataset(), concept, force);
 	}
 
