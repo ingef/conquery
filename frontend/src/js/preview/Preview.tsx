@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { StateT } from "../app/reducers";
 
-import { PreviewStatistics } from "../api/types";
+import { PreviewStatistics, SecondaryId } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
 import FaIcon from "../icon/FaIcon";
 
@@ -79,6 +79,9 @@ const SxSelectBox = styled(SelectBox)`
 
 export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
+    (state) => state.conceptTrees.secondaryIds,
+  );
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
@@ -86,6 +89,17 @@ export default function Preview() {
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
   const statistics = preview.statisticsData;
+  const idLabel = useMemo(() => {
+    const primaryIdLabel = t("tooltip.entitiesFound", { count: 2 });
+    if (preview.queryData?.secondaryId) {
+      const secondaryIdLabel = loadedSecondaryIds.find(
+        (x) => x.id === preview.queryData?.secondaryId,
+      )?.label;
+      return `${primaryIdLabel} und ${secondaryIdLabel}`;
+    } else {
+      return `${t("queryEditor.secondaryIdStandard")} (${primaryIdLabel})`;
+    }
+  }, [preview.queryData, loadedSecondaryIds, t]);
 
   useHotkeys("esc", () => {
     if (!selectBoxOpen && !popOver) onClose();
@@ -110,7 +124,7 @@ export default function Preview() {
             isOpen={selectBoxOpen}
             setIsOpen={setSelectBoxOpen}
           />
-          <HeadlineStats statistics={statistics} />
+          <HeadlineStats statistics={statistics} idLabel={idLabel} />
         </Headline>
         {statistics ? (
           <SxCharts
