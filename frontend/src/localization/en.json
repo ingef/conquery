@@ -411,7 +411,8 @@
     "name": "Name",
     "value": "Value",
     "densityPlot": "Density Plot",
-    "chartYLabel": "Count"
+    "chartYLabel": "Count",
+    "idLabel": "{{primaryIdLabel}} and {{secondaryIdLabel}}"
   },
   "login": {
     "headline": "Queries and Analyses",

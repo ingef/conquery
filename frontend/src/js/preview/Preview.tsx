@@ -95,7 +95,7 @@ export default function Preview() {
       const secondaryIdLabel = loadedSecondaryIds.find(
         (x) => x.id === preview.queryData?.secondaryId,
       )?.label;
-      return `${primaryIdLabel} und ${secondaryIdLabel}`;
+      return t("preview.idLabel", { primaryIdLabel, secondaryIdLabel });
     } else {
       return `${t("queryEditor.secondaryIdStandard")} (${primaryIdLabel})`;
     }
