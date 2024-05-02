@@ -8,7 +8,6 @@ import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 
 import { Theme, useTheme } from "@emotion/react";
-import { Chart } from "chart.js";
 import { useTranslation } from "react-i18next";
 import {
   formatNumber,
@@ -121,7 +120,10 @@ export default function Diagram({
       plugins: {
         title: {
           display: true,
-          font: Chart.defaults.font,
+          font: {
+            weight: "normal",
+            size: 14,
+          },
           position: "bottom",
           text: stat.label,
         },
@@ -146,6 +148,10 @@ export default function Diagram({
     const yScaleTitle = {
       display: true,
       text: t("preview.chartYLabel"),
+      font: {
+        weight: "normal",
+        size: 14,
+      },
     };
 
     if (previewStatsIsBarStats(stat)) {
