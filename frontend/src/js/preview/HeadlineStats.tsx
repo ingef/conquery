@@ -17,15 +17,20 @@ const SxTooltipEntries = styled(TooltipEntries)`
 
 export type HeadlineStatsProps = {
   statistics: PreviewStatisticsResponse | null;
+  idLabel: string;
 };
 
-export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
+export default function HeadlineStats({
+  statistics,
+  idLabel,
+}: HeadlineStatsProps) {
   return (
     <Root>
       <SxTooltipEntries
         matchingEntities={statistics?.entities}
         matchingEntries={statistics?.total}
         dateRange={statistics?.dateRange}
+        idLabel={idLabel}
       />
     </Root>
   );
