@@ -59,7 +59,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> nextYearStart(ColumnDateRange dateRange) {
+	public Field<Date> yearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
 				"SERIES_ROUND({0}, {1}, {2})",
 				Date.class,
@@ -71,7 +71,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
-		Field<Date> nextYearStart = nextYearStart(dateRange);
+		Field<Date> nextYearStart = yearEnd(dateRange);
 		Field<Integer> quartersInMonths = getMonthsInQuarters(dateRange.getStart(), Offset.MINUS_ONE);
 		return addMonths(nextYearStart, quartersInMonths);
 	}
@@ -84,7 +84,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
+	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
 		Field<Date> yearStart = jumpToYearStart(dateRange.getEnd());
 		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), DSL.val(-1));
 		Field<Integer> quartersInMonths = getMonthsInQuarters(inclusiveEnd, Offset.NONE);

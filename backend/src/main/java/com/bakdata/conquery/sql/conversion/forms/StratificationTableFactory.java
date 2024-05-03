@@ -51,7 +51,7 @@ public class StratificationTableFactory {
 														.map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
 														.toList();
 
-		List<QueryStep> predecessors = List.of(getBaseStep(), intSeriesStep, indexStartStep);
+		List<QueryStep> predecessors = List.of(baseStep, intSeriesStep, indexStartStep);
 		return unionResolutionTables(tables, predecessors);
 	}
 
@@ -80,16 +80,16 @@ public class StratificationTableFactory {
 
 	private QueryStep createIndexStartStep() {
 
-		Selects baseStepSelects = getBaseStep().getQualifiedSelects();
-		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent());
+		Selects baseStepSelects = baseStep.getQualifiedSelects();
+		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent(), "The base step must have a stratification date set");
 		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
 
 		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
 		Field<Date> yearStart = stratificationFunctions.yearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
-		Field<Date> yearEnd = stratificationFunctions.nextYearStart(bounds).as(SharedAliases.YEAR_END.getAlias());
+		Field<Date> yearEnd = stratificationFunctions.yearEnd(bounds).as(SharedAliases.YEAR_END.getAlias());
 		Field<Date> yearEndQuarterAligned = stratificationFunctions.yearEndQuarterAligned(bounds).as(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
 		Field<Date> quarterStart = stratificationFunctions.quarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
-		Field<Date> quarterEnd = stratificationFunctions.nextQuartersStart(bounds).as(SharedAliases.QUARTER_END.getAlias());
+		Field<Date> quarterEnd = stratificationFunctions.quarterEnd(bounds).as(SharedAliases.QUARTER_END.getAlias());
 
 		List<FieldWrapper<Date>> startDates = Stream.of(
 															indexStart,
@@ -111,7 +111,7 @@ public class StratificationTableFactory {
 		return QueryStep.builder()
 						.cteName(FormCteStep.INDEX_START.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(getBaseStep().getCteName()))
+						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
 						.build();
 	}
 
@@ -148,7 +148,7 @@ public class StratificationTableFactory {
 	private QueryStep createIntervalTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
 		QueryStep countsCte = createCountsCte(indexStartStep, resolutionAndAlignment);
-		Preconditions.checkArgument(countsCte.getSelects().getStratificationDate().isPresent());
+		Preconditions.checkArgument(countsCte.getSelects().getStratificationDate().isPresent(), "The countsCte must have a stratification date set");
 		Selects countsCteSelects = countsCte.getQualifiedSelects();
 
 		ColumnDateRange stratificationRange = stratificationFunctions.createStratificationRange(
@@ -179,7 +179,7 @@ public class StratificationTableFactory {
 	private QueryStep createCountsCte(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
 		Selects indexStartSelects = indexStartStep.getQualifiedSelects();
-		Preconditions.checkArgument(indexStartSelects.getStratificationDate().isPresent());
+		Preconditions.checkArgument(indexStartSelects.getStratificationDate().isPresent(), "The indexStartStep must have a stratification date set");
 
 		Field<Integer> resolutionWindowCount = stratificationFunctions.calculateResolutionWindowCount(
 				resolutionAndAlignment,

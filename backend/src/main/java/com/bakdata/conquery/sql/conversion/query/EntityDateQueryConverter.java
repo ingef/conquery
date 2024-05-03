@@ -24,7 +24,7 @@ import org.jooq.Field;
 @RequiredArgsConstructor
 public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> {
 
-	private final FormConversionUtil formUtil;
+	private final FormConversionHelper formHelper;
 
 	@Override
 	public Class<? extends EntityDateQuery> getConversionClass() {
@@ -37,7 +37,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 		QueryStep prerequisite = convertPrerequisite(entityDateQuery.getQuery(), context);
 		QueryStep withOverwrittenValidityDateBounds = overwriteBounds(prerequisite, entityDateQuery, context);
 
-		return formUtil.convertForm(
+		return formHelper.convertForm(
 				withOverwrittenValidityDateBounds,
 				entityDateQuery.getResolutionsAndAlignments(),
 				entityDateQuery.getFeatures(),

@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQuery> {
 
-	private final FormConversionUtil formUtil;
+	private final FormConversionHelper formHelper;
 
 	@Override
 	public Class<? extends AbsoluteFormQuery> getConversionClass() {
@@ -32,7 +32,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 	@Override
 	public ConversionContext convert(AbsoluteFormQuery form, ConversionContext context) {
 		QueryStep prerequisite = convertPrerequisite(form.getQuery(), form.getDateRange(), context);
-		return formUtil.convertForm(
+		return formHelper.convertForm(
 				prerequisite,
 				form.getResolutionsAndAlignmentMap(),
 				form.getFeatures(),

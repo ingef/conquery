@@ -18,7 +18,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
-import com.bakdata.conquery.sql.conversion.query.FormConversionUtil;
+import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
@@ -52,7 +52,7 @@ public interface SqlDialect {
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
 
 		QueryStepTransformer queryStepTransformer = new QueryStepTransformer(getDSLContext());
-		FormConversionUtil formConversionUtil = new FormConversionUtil(queryStepTransformer);
+		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepTransformer);
 
 		return List.of(
 				new CQDateRestrictionConverter(),

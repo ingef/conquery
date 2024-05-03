@@ -28,7 +28,7 @@ import org.jooq.Select;
 import org.jooq.TableLike;
 
 @RequiredArgsConstructor
-public class FormConversionUtil {
+public class FormConversionHelper {
 
 	private final QueryStepTransformer queryStepTransformer;
 
