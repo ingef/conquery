@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
@@ -34,7 +35,12 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@Valid
 	@JsonManagedReference
 	private Column[] columns = new Column[0];
-
+	/**
+	 * Defines the primary key/column of this table. Only required for SQL mode.
+	 */
+	@Nullable
+	@JsonManagedReference
+	private Column primaryColum;
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore

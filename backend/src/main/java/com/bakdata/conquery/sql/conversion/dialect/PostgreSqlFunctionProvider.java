@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -109,18 +108,15 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias) {
-		return toColumnDateRange(cqTable).asValidityDateRange(alias);
+	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
+		return toColumnDateRange(validityDate);
 	}
 
 	@Override
-	public ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias) {
-
-		ColumnDateRange validityDate = toColumnDateRange(cqTable);
+	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
+		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
-		ColumnDateRange intersection = intersection(validityDate, restriction);
-
-		return intersection.asValidityDateRange(alias);
+		return intersection(validityDateRange, restriction);
 	}
 
 	@Override
@@ -180,7 +176,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		Field<String> aggregatedValidityDate = DSL.field("{0}::{1}", String.class, columnDateRange.getRange(), DSL.keyword("varchar"));
+		Field<String> aggregatedValidityDate = DSL.field("({0})::{1}", String.class, columnDateRange.getRange(), DSL.keyword("varchar"));
 		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
@@ -318,9 +314,9 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(dateRestrictionRange);
 	}
 
-	private ColumnDateRange toColumnDateRange(CQTable cqTable) {
-		ValidityDate validityDate = cqTable.findValidityDate();
-		String tableName = cqTable.getConnector().getTable().getName();
+	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
+
+		String tableName = validityDate.getConnector().getTable().getName();
 
 		Field<?> dateRange;
 
