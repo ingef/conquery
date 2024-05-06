@@ -5,11 +5,13 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
+import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.google.common.base.Stopwatch;
 import com.password4j.Hash;
 import com.password4j.PBKDF2Function;
 import com.password4j.Password;
 import com.password4j.types.Hmac;
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
@@ -18,6 +20,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Implementation of the Double-Submit-Cookie Pattern.
@@ -27,8 +30,12 @@ import org.apache.commons.lang3.RandomStringUtils;
  *     <li>In the response payload. This filter sets a request property, which is eventually provided to freemarker.
  *     Freemarker then writes the token into payload (see base.html.ftl)</li>
  * </ul>
+ *
+ * This filter is only installed on the ui side of the admin servlet and should to be evaluated before any authentication.
+ * Hence, its priority is lower.
  */
 @Slf4j
+@Priority(AuthCookieFilter.PRIORITY - 100)
 public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
 	public static final String CSRF_COOKIE_NAME = "csrf_token";
@@ -55,6 +62,11 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 		final String csrfToken = getCsrfTokenProperty(requestContext);
+
+		if (StringUtils.isBlank(csrfToken)) {
+			log.warn("No csrf-token was registered for this request. Skipping csrf-cookie creation.");
+			return;
+		}
 
 		final String csrfTokenHash = getTokenHash(csrfToken);
 

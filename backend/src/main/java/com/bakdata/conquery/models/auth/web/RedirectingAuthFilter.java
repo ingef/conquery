@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.auth.AuthFilter;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -40,10 +39,12 @@ import org.glassfish.jersey.spi.Contract;
  * the login schema can be chosen.
  */
 @Slf4j
-@Priority(Priorities.AUTHENTICATION - 1)
+@Priority(RedirectingAuthFilter.PRIORITY)
 @PreMatching
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
+public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToken, User> {
+
+	public static final int PRIORITY = Priorities.AUTHENTICATION;
 
 	public static final String REDIRECT_URI = "redirect_uri";
 	/**
@@ -61,7 +62,7 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 	/**
 	 * The Filter that checks if a request was authenticated
 	 */
-	private final DefaultAuthFilter delegate;
+	private final AuthFilter delegate;
 
 	public static void registerLoginInitiator(ResourceConfig resourceConfig, LoginInitiator initiator, final String name) {
 		resourceConfig.register(new AbstractBinder() {

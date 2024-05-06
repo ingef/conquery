@@ -4,12 +4,10 @@ import static com.bakdata.conquery.models.auth.web.AuthCookieFilter.PRIORITY;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenCheckFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.base.Strings;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -48,7 +46,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
-	 * authorization header of the request. This simplifies the token retrival
+	 * authorization header of the request. This simplifies the token retrieval
 	 * process for the realms.
 	 */
 	@Override
@@ -59,11 +57,6 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 		}
 
 		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
-
-		final Object csrfCheckSuccess = requestContext.getProperty(CsrfTokenCheckFilter.CSRF_CHECK_SUCCESS_PROPERTY);
-		if (csrfCheckSuccess == null || !(boolean) csrfCheckSuccess) {
-			throw new ForbiddenException("Found an authentication cookie, but csrf check was not successful");
-		}
 
 		if(!cookie.getValue().isEmpty() && queryToken != null) {
 			log.trace("Ignoring cookie");
