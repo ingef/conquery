@@ -49,7 +49,7 @@ export function useDateTickHandler(stats: PreviewStatistics) {
       shouldTickRender = (date: Date) => date.getMonth() % 3 === 0;
     }
     // > 12 quarters -> halfyears
-    if (monthCount > 4 * 12) {
+    if (monthCount > 3 * 12) {
       shouldTickRender = (date: Date) => date.getMonth() % 6 === 0;
     }
     // > 12 halfyears -> years

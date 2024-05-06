@@ -45,6 +45,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 import lombok.Getter;
@@ -266,37 +268,23 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		// Note that FEValues is equals/hashcode only on value:
-		// The different sources might contain duplicate FEValue#values which we want to avoid as
-		// they are already sorted in terms of information weight by getSearchesFor
+		// The different sources might contain duplicate FEValue#values which we exploit:
+		// If a value is already present, it's from a search with higher priority.
 
-		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
-		return namespace.getFilterSearch()
-						.getSearchesFor(searchable)
-						.stream()
-						.map(search -> createSourceSearchResult(search, Collections.singletonList(text), OptionalInt.empty()))
-						.flatMap(Collection::stream)
-						.distinct()
-						.collect(Collectors.toList());
+		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
 
+		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
 
-	}
+		for (TrieSearch<FrontendValue> search : searches) {
 
-	/**
-	 * Do a search with the supplied values.
-	 */
-	private static List<FrontendValue> createSourceSearchResult(TrieSearch<FrontendValue> search, Collection<String> values, OptionalInt numberOfTopItems) {
-		if (search == null) {
-			return Collections.emptyList();
+			final Object2LongMap<FrontendValue> itemWeights = search.collectWeights(List.of(text));
+
+			itemWeights.forEach(overlayedWeights::putIfAbsent);
 		}
 
-		final List<FrontendValue> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
+		return TrieSearch.topItems(Integer.MAX_VALUE, overlayedWeights);
 
-		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
-			//TODO This looks odd, do we really expect QuickSearch to allocate that huge of a list for us?
-			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
-		}
 
-		return result;
 	}
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
