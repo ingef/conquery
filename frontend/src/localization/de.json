@@ -411,7 +411,8 @@
     "name": "Name",
     "value": "Wert",
     "densityPlot": "Dichtediagramm",
-    "chartYLabel": "Anzahl"
+    "chartYLabel": "Anzahl",
+    "idLabel": "{{primaryIdLabel}} und {{secondaryIdLabel}}"
   },
   "login": {
     "headline": "Anfragen und Analyse",
