@@ -1,8 +1,10 @@
-package com.bakdata.conquery.sql.conversion.model;
+package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.Map;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
+import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 
 @Getter

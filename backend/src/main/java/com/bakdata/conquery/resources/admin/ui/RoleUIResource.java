@@ -1,20 +1,19 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMENT;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
+
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMENT;
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 @Produces(MediaType.TEXT_HTML)
 @Path(ROLES_PATH_ELEMENT)

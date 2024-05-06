@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -19,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

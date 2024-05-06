@@ -1,7 +1,5 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
@@ -13,13 +11,13 @@ import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.jooq.DSLContext;
@@ -80,11 +78,11 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
 		SqlExecutionService executionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(testSqlDialect));
-		SqlQuery validQuery = toSqlQuery("SELECT 1");
+		SqlQuery validQuery = new TestSqlQuery("SELECT 1");
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
-		SqlQuery emptyQuery = toSqlQuery("");
+		SqlQuery emptyQuery = new TestSqlQuery("");
 		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
 				  .hasMessageContaining("$org.postgresql.util.PSQLException");
@@ -122,19 +120,11 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	}
 
-	private static SqlQuery toSqlQuery(String query) {
-		return new SqlQuery() {
-
-			@Override
-			public String getSql() {
-				return query;
-			}
-
-			@Override
-			public List<ResultInfo> getResultInfos() {
-				return Collections.emptyList();
-			}
-		};
+	@Getter
+	private static class TestSqlQuery extends SqlQuery {
+		protected TestSqlQuery(String sql) {
+			super(sql);
+		}
 	}
 
 }

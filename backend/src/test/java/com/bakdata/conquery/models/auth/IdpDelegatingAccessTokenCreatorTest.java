@@ -11,7 +11,7 @@ import static org.mockserver.model.ParameterBody.params;
 
 import java.util.Map;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

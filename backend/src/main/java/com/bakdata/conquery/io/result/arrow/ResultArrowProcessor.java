@@ -12,11 +12,6 @@ import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
@@ -32,6 +27,10 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -48,7 +47,7 @@ public class ResultArrowProcessor {
 	public static final MediaType FILE_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.file");
 	public static final MediaType STREAM_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
 	private final ArrowConfig arrowConfig;
@@ -73,7 +72,7 @@ public class ResultArrowProcessor {
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			Subject subject,
 			E exec,
-			DatasetRegistry datasetRegistry,
+			DatasetRegistry<?> datasetRegistry,
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,

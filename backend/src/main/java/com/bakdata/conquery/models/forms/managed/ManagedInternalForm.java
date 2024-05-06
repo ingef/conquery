@@ -136,7 +136,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void cancel() {
 		log.debug("Sending cancel message to all workers.");
-		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
+		((DistributedNamespace) getNamespace()).getWorkerHandler().sendToAll(new CancelQuery(getId()));
 	}
 
 	@Override
@@ -179,7 +179,4 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		}
 	}
 
-	public DistributedNamespace getNamespace() {
-		return (DistributedNamespace) super.getNamespace();
-	}
 }

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,17 +13,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -32,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
@@ -44,6 +42,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +64,7 @@ public class ImportJob extends Job {
 	private final PreprocessedHeader header;
 	private final PreprocessedData container;
 
-	public static ImportJob createOrUpdate(DistributedNamespace namespace, InputStream inputStream, int entityBucketSize, ConqueryConfig config, boolean update)
+	public static ImportJob createOrUpdate(DistributedNamespace namespace, InputStream inputStream, int entityBucketSize, boolean update)
 			throws IOException {
 
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
@@ -86,7 +87,14 @@ public class ImportJob extends Job {
 			}
 
 			// Ensure that Import and Table have the same schema
-			header.assertMatch(table);
+			final List<String> validationErrors = ensureHeadersMatch(table, header);
+
+			if(!validationErrors.isEmpty()){
+				final String errorMessage = String.join("\n -", validationErrors);
+
+				log.error("Problems concerning Import `{}`:{}", header.getName(), errorMessage);
+				throw new BadRequestException(String.format("Import[%s.%s] does not match Table[%s]:%s", header.getTable(), header.getName(), table.getId(), errorMessage));
+			}
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 			final Import processedImport = namespace.getStorage().getImport(importId);
@@ -120,6 +128,34 @@ public class ImportJob extends Job {
 					container
 			);
 		}
+	}
+
+	/**
+	 * Verify that the supplied table matches the preprocessed data in shape.
+	 */
+	public static List<String> ensureHeadersMatch(Table table, PreprocessedHeader importHeaders) {
+//		final StringJoiner errors = new StringJoiner("\n - ", "\n - ", "");
+
+		final List<String> errors = new ArrayList<>();
+
+		if (table.getColumns().length != importHeaders.getColumns().length) {
+			errors.add(String.format("Import column count=%d does not match table column count=%d", importHeaders.getColumns().length, table.getColumns().length));
+		}
+
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(importHeaders.getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+
+		for (PPColumn column : importHeaders.getColumns()) {
+			if (!typesByName.containsKey(column.getName())) {
+				errors.add("Column[%s] is missing."
+								   .formatted(column.getName()));
+			}
+			else if (!typesByName.get(column.getName()).equals(column.getType())) {
+				errors.add("Column[%s] Types do not match %s != %s"
+								   .formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
+			}
+		}
+
+		return errors;
 	}
 
 

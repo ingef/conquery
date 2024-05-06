@@ -22,19 +22,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -89,6 +82,11 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -138,11 +136,11 @@ public class QueryProcessor {
 	 */
 	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
-		if (!(q instanceof EditorQuery)) {
+		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
 
-		final Query query = ((EditorQuery) q).getQuery();
+		final Query query = ((ManagedQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
@@ -292,14 +290,15 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic
-				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
-						.getStorage()
-						.getIdMapping(), config.getIdColumns(), config.getLocale()
-																	  .getDateReader(), upload.isOneRowPerEntity()
-
-				);
+		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+				upload.getValues(),
+				upload.getFormat(),
+				namespace.getStorage().getIdMapping(),
+				config.getIdColumns(),
+				config.getLocale().getDateReader(),
+				upload.isOneRowPerEntity(),
+				true
+		);
 
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {

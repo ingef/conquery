@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import javax.validation.constraints.Min;
+import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Min;
 
 /**
  * @implNote This class is tightly coupled with {@link FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.

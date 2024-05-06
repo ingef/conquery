@@ -37,11 +37,6 @@ public class PostgreSqlDialect implements SqlDialect {
 	}
 
 	@Override
-	public boolean requiresAggregationInFinalStep() {
-		return false;
-	}
-
-	@Override
 	public boolean supportsSingleColumnRanges() {
 		return true;
 	}

@@ -13,15 +13,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
@@ -55,6 +52,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -175,10 +174,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			this.namespace = namespace;
 			this.config = config;
 
+			doInitExecutable();
+
 			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
 			containsDates = containsDates(getSubmitted());
 
-			doInitExecutable();
 			initialized = true;
 		}
 	}
@@ -377,16 +377,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
 						.anyMatch(visitable -> {
+
 							if (visitable instanceof CQConcept cqConcept) {
 								return !cqConcept.isExcludeFromTimeAggregation();
 							}
 
 							if (visitable instanceof CQExternal external) {
 								return external.containsDates();
-							}
-
-							if (visitable instanceof CQReusedQuery reusedQuery && reusedQuery.getResolvedQuery() != null){
-								return containsDates(reusedQuery.getResolvedQuery());
 							}
 
 							return false;

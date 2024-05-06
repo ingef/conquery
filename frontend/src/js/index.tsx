@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Store } from "redux";
 
 import "../fonts.css";
+import "../index.css";
 
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";

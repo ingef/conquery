@@ -12,9 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -36,9 +33,11 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
-import io.dropwizard.cli.Command;
 import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -1,43 +1,58 @@
 package com.bakdata.conquery.models.config;
 
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSessionConfig;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.primitives.Ints;
-
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSessionConfig;
 
-@Getter @Setter
+@Getter
+@Setter
 public class MinaConfig implements IoSessionConfig {
 
-	/** The minimum size of the buffer used to read incoming data */
+	/**
+	 * The minimum size of the buffer used to read incoming data
+	 */
 	private int minReadBufferSize = 64;
-	
-	/** The default size of the buffer used to read incoming data */
-	private int readBufferSize = 8192;
-
-	/** The maximum size of the buffer used to read incoming data */
-	private int maxReadBufferSize = Ints.checkedCast(Size.megabytes(500).toBytes());
-
-	/** The delay before we notify a session that it has been idle on read. Default to infinite */
-	private int readerIdleTime;
-
-	/** The delay before we notify a session that it has been idle on write. Default to infinite */
-	private int writerIdleTime;
 
 	/**
-	 * The delay before we notify a session that it has been idle on read and write.
+	 * The default size of the buffer used to read incoming data
+	 */
+	private int readBufferSize = 8192;
+
+	/**
+	 * The maximum size of the buffer used to read incoming data
+	 */
+	private int maxReadBufferSize = Ints.checkedCast(DataSize.megabytes(500).toBytes());
+
+	/**
+	 * The delay in seconds before we notify a session that it has been idle on read. Default to infinite
+	 */
+	private int readerIdleTime = (int) TimeUnit.MINUTES.toSeconds(5);
+
+	/**
+	 * The delay in seconds before we notify a session that it has been idle on write. Default to infinite
+	 */
+	private int writerIdleTime = (int) TimeUnit.MINUTES.toSeconds(5);;
+
+	/**
+	 * The delay in seconds before we notify a session that it has been idle on read and write.
 	 * Default to infinite
 	 **/
-	private int bothIdleTime;
+	private int bothIdleTime = (int) TimeUnit.MINUTES.toSeconds(5);;
 
-	/** The delay to wait for a write operation to complete before bailing out */
+	/**
+	 * The delay to wait for a write operation to complete before bailing out
+	 */
 	private int writeTimeout = 0;
 
-	/** A flag set to true when weallow the application to do a session.read(). Default to false */
+	/**
+	 * A flag set to true when we allow the application to do a session.read(). Default to false
+	 */
 	private boolean useReadOperation;
 
 	private int throughputCalculationInterval = 3;
@@ -66,6 +81,46 @@ public class MinaConfig implements IoSessionConfig {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public void setIdleTime(IdleStatus status, int idleTime) {
+		if (idleTime < 0) {
+			throw new IllegalArgumentException("Illegal idle time: " + idleTime);
+		}
+
+		if (status == IdleStatus.BOTH_IDLE) {
+			bothIdleTime = idleTime;
+		}
+		else if (status == IdleStatus.READER_IDLE) {
+			readerIdleTime = idleTime;
+		}
+		else if (status == IdleStatus.WRITER_IDLE) {
+			writerIdleTime = idleTime;
+		}
+		else {
+			throw new IllegalArgumentException("Unknown idle status: " + status);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	@JsonIgnore
+	public final long getBothIdleTimeInMillis() {
+		return getIdleTimeInMillis(IdleStatus.BOTH_IDLE);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long getIdleTimeInMillis(IdleStatus status) {
+		return getIdleTime(status) * 1000L;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public int getIdleTime(IdleStatus status) {
 		if (status == IdleStatus.BOTH_IDLE) {
 			return bothIdleTime;
@@ -86,42 +141,7 @@ public class MinaConfig implements IoSessionConfig {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public long getIdleTimeInMillis(IdleStatus status) {
-		return getIdleTime(status) * 1000L;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setIdleTime(IdleStatus status, int idleTime) {
-		if (idleTime < 0) {
-			throw new IllegalArgumentException("Illegal idle time: " + idleTime);
-		}
-
-		if (status == IdleStatus.BOTH_IDLE) {
-			bothIdleTime = idleTime;
-		} else if (status == IdleStatus.READER_IDLE) {
-			readerIdleTime = idleTime;
-		} else if (status == IdleStatus.WRITER_IDLE) {
-			writerIdleTime = idleTime;
-		} else {
-			throw new IllegalArgumentException("Unknown idle status: " + status);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override @JsonIgnore
-	public final long getBothIdleTimeInMillis() {
-		return getIdleTimeInMillis(IdleStatus.BOTH_IDLE);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override @JsonIgnore
+	@JsonIgnore
 	public final long getReaderIdleTimeInMillis() {
 		return getIdleTimeInMillis(IdleStatus.READER_IDLE);
 	}
@@ -129,7 +149,8 @@ public class MinaConfig implements IoSessionConfig {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public final long getWriterIdleTimeInMillis() {
 		return getIdleTimeInMillis(IdleStatus.WRITER_IDLE);
 	}
@@ -137,7 +158,8 @@ public class MinaConfig implements IoSessionConfig {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public long getWriteTimeoutInMillis() {
 		return writeTimeout * 1000L;
 	}
@@ -145,7 +167,8 @@ public class MinaConfig implements IoSessionConfig {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public long getThroughputCalculationIntervalInMillis() {
 		return throughputCalculationInterval * 1000L;
 	}

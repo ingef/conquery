@@ -1,0 +1,82 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "EVENT_DATE_AGGREGATOR_RESTRICTION Test",
+  "expectedCsv": "tests/sql/selects/validity_date/event_date_union/expected_restriction.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "DATE_RESTRICTION",
+      "dateRange": {
+        "min": "2010-02-01",
+        "max": "2010-02-28"
+      },
+      "child": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "selects": "concept.connector.event-date"
+          }
+        ],
+        "selects": "concept.event-date"
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "indexdatum",
+            "startColumn": "table.indexdatum_start",
+            "endColumn": "table.indexdatum_end"
+          },
+          "selects": {
+            "type": "EVENT_DATE_UNION",
+            "name": "event-date"
+          }
+        }
+      ],
+      "selects": {
+        "type": "EVENT_DATE_UNION",
+        "name": "event-date"
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/validity_date/event_date_union/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "indexdatum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "indexdatum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "geburtsdatum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

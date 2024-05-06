@@ -51,21 +51,19 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		}
 
 		Selects predecessorSelects = finalDateAggregationStep.getSelects();
-		String joinedCteLabel = joinedStep.getCteName();
 		SqlTables intervalPackingTables = IntervalPackingCteStep.createTables(finalDateAggregationStep, context);
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()
-									  .nodeLabel(joinedCteLabel)
 									  .ids(predecessorSelects.getIds())
-									  .validityDate(predecessorSelects.getValidityDate().get())
+									  .daterange(predecessorSelects.getValidityDate().get())
 									  .predecessor(finalDateAggregationStep)
 									  .carryThroughSelects(carryThroughSelects)
 									  .tables(intervalPackingTables)
 									  .conversionContext(conversionContext)
 									  .build();
 
-		return this.intervalPacker.createIntervalPackingSteps(intervalPackingContext);
+		return this.intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 	}
 
 	@Override
