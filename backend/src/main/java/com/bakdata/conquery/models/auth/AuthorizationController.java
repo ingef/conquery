@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
@@ -85,18 +85,18 @@ public final class AuthorizationController implements Managed {
 		this.adminServlet = adminServlet;
 
 		if (adminServlet != null) {
-			adminServlet.getJerseyConfig().register(DefaultAuthFilter.class);
-			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
+			adminServlet.getJerseyConfig().register(AuthFilter.class);
+			AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfig());
 
 			// The binding is necessary here because the RedirectingAuthFitler delegates to the DefaultAuthfilter at the moment
 			adminServlet.getJerseyConfigUI().register(new AbstractBinder() {
 				@Override
 				protected void configure() {
-					bindAsContract(DefaultAuthFilter.class);
+					bindAsContract(AuthFilter.class);
 				}
 			});
 			adminServlet.getJerseyConfigUI().register(RedirectingAuthFilter.class);
-			DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfigUI());
+			AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfigUI());
 		}
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
