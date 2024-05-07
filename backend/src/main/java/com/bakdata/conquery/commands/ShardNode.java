@@ -181,7 +181,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, getEnvironment().getValidator());
+		injectableValues.add(Validator.class, getValidator());
 
 
 		// Set serialization config
