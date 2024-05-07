@@ -128,7 +128,7 @@ public class StratificationTableFactory {
 
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
-		Field<Integer> index = DSL.field(DSL.val(1, Integer.class)).as(SharedAliases.INDEX.getAlias());
+		Field<Integer> index = DSL.val(1, Integer.class).as(SharedAliases.INDEX.getAlias());
 		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();

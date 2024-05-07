@@ -112,7 +112,7 @@ abstract class StratificationFunctions {
 	public Field<Integer> calculateResolutionWindowCount(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
 		SqlFunctionProvider functionProvider = getFunctionProvider();
 		return switch (resolutionAndAlignment.getResolution()) {
-			case COMPLETE -> DSL.field(DSL.val(1));
+			case COMPLETE -> DSL.val(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
 			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
 			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
