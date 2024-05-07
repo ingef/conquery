@@ -126,7 +126,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset) {
 		Field<String> intervalExpression = INTERVAL_MAP.get(interval);
-		return addMultipledInterval(startDate, intervalExpression, amount, offset);
+		return addMultipliedInterval(startDate, intervalExpression, amount, offset);
 	}
 
 	@Override
@@ -152,15 +152,15 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private Field<Date> calcStartDate(Field<Date> start, Field<String> intervalExpression) {
 		Field<Integer> intSeriesField = intSeriesField();
-		return multiplyByInterval(start, intervalExpression, intSeriesField, Offset.MINUS_ONE);
+		return addMultipliedInterval(start, intervalExpression, intSeriesField, Offset.MINUS_ONE);
 	}
 
 	private Field<Date> calcEndDate(Field<Date> start, Field<String> intervalExpression) {
 		Field<Integer> intSeriesField = intSeriesField();
-		return multiplyByInterval(start, intervalExpression, intSeriesField, Offset.NONE);
+		return addMultipliedInterval(start, intervalExpression, intSeriesField, Offset.NONE);
 	}
 
-	private Field<Date> multiplyByInterval(Field<? extends java.util.Date> start, Field<String> intervalExpression, Field<Integer> amount, Offset offset) {
+	private Field<Date> addMultipliedInterval(Field<? extends java.util.Date> start, Field<String> intervalExpression, Field<Integer> amount, Offset offset) {
 		Field<Integer> multiplier = amount.plus(offset.getOffset());
 		Field<Timestamp> shiftedDate = DSL.field(
 				"{0} + {1} {2} * {3}",
@@ -179,7 +179,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Date> addQuarters(Field<? extends java.util.Date> start, Field<Integer> amountOfQuarters, Offset offset) {
-		return multiplyByInterval(start, INTERVAL_MAP.get(Interval.QUARTER_INTERVAL), amountOfQuarters, offset);
+		return addMultipliedInterval(start, INTERVAL_MAP.get(Interval.QUARTER_INTERVAL), amountOfQuarters, offset);
 	}
 
 	private Field<Timestamp> jumpToYearStart(Field<Date> date) {

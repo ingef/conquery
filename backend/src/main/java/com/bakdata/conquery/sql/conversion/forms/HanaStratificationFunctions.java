@@ -123,7 +123,6 @@ class HanaStratificationFunctions extends StratificationFunctions {
 			// end date of validity dates is exclusive, but we need the inclusive one
 			case LATEST -> functionProvider.addDays(DSL.max(validityDate.getEnd()), DSL.val(-1));
 			case RANDOM -> {
-				// TODO seed required?
 				// we calculate a random int which is in range of the date distance between upper and lower bound
 				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
 				Field<Double> randomAmountOfDays = DSL.function("RAND", Double.class).times(dateDistanceInDays);
