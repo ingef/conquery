@@ -119,7 +119,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 			case LATEST -> DSL.max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
-				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), inclusiveUpper(validityDate));
+				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), exclusiveUpper(validityDate));
 				Field<BigDecimal> randomAmountOfDays = DSL.rand().times(dateDistanceInDays);
 				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date

@@ -198,7 +198,6 @@ abstract class StratificationFunctions {
 			case COMPLETE -> DSL.val(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
 			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
-			// for days, we can calculate the date distance directly, but we need the exclusive upper bound
 			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
 										 .as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 		};
@@ -261,7 +260,7 @@ abstract class StratificationFunctions {
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
 											.divide(MONTHS_PER_QUARTER)
 											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), inclusiveUpper(bounds))
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
 										.plus(89)
 										.divide(DAYS_PER_QUARTER)
 										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
@@ -279,7 +278,7 @@ abstract class StratificationFunctions {
 										 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
 											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), inclusiveUpper(bounds))
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
 										.plus(364)
 										.divide(DAYS_PER_YEAR)
 										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
