@@ -9,10 +9,9 @@ import javax.annotation.Nullable;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.util.Duration;
-import jakarta.inject.Named;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.experimental.UtilityClass;
@@ -21,7 +20,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
-import org.jvnet.hk2.annotations.Service;
 
 @UtilityClass
 @Slf4j
@@ -100,7 +98,7 @@ public class JWTokenHandler {
 	 * @param request
 	 * @return
 	 */
-	public static class JWTokenExtractor implements DefaultAuthFilter.TokenExtractor {
+	public static class JWTokenExtractor implements AuthFilter.TokenExtractor {
 
 		@Override
 		public AuthenticationToken apply(ContainerRequestContext request) {

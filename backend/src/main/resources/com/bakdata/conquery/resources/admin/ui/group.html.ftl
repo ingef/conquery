@@ -84,23 +84,20 @@
 	<script type="application/javascript">
 	function addMember() {
 		event.preventDefault(); 
-		fetch(
+		rest(
 			'/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/'+document.getElementById('member_id').value,
 			{
 				method: 'post',
-				credentials: 'same-origin',
-				headers: {'Content-Type': 'application/json'}
 			})
 			.then(function(){location.reload()});
 	}
 
 	function removeMember(path){
 		event.preventDefault();
-		fetch(
+		rest(
 			path,
 			{
 				method: 'delete',
-				credentials: 'same-origin',
 			})
 			.then(function(){location.reload();});
 	}

@@ -68,8 +68,8 @@ public class UIProcessor {
 		return adminProcessor.getStorage();
 	}
 
-	public UIContext getUIContext() {
-		return new UIContext(adminProcessor.getNodeProvider());
+	public UIContext getUIContext(String csrfToken) {
+		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
 	}
 
 	public Set<IndexKey<?>> getLoadedIndexes() {
