@@ -92,14 +92,14 @@ class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
-		return jumpToNextQuarterStart(dateRange.getEnd());
+		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), DSL.val(-1));
+		return jumpToNextQuarterStart(inclusiveEnd);
 	}
 
 	@Override
 	protected Field<Date> jumpToNextQuarterStart(Field<Date> date) {
 		Field<Date> yearStart = jumpToYearStart(date);
-		Field<Date> inclusiveEnd = functionProvider.addDays(date, DSL.val(-1));
-		Field<Integer> quartersInMonths = getQuartersInMonths(inclusiveEnd, Offset.NONE);
+		Field<Integer> quartersInMonths = getQuartersInMonths(date, Offset.NONE);
 		return addMonths(yearStart, quartersInMonths);
 	}
 

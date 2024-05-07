@@ -83,14 +83,14 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
-		return jumpToNextQuarterStart(upper(dateRange));
+		Field<Date> inclusiveEnd = upper(dateRange).minus(1);
+		return jumpToNextQuarterStart(inclusiveEnd);
 	}
 
 	@Override
 	protected Field<Date> jumpToNextQuarterStart(Field<Date> date) {
 		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), date);
-		Field<Date> quarterEndInclusive = date.minus(1);
-		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, quarterEndInclusive);
+		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(yearStart, quarter, Offset.NONE);
 	}
 
