@@ -126,7 +126,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset) {
 		Field<String> intervalExpression = INTERVAL_MAP.get(interval);
-		return multiplyByInterval(startDate, intervalExpression, amount, offset);
+		return addMultipledInterval(startDate, intervalExpression, amount, offset);
 	}
 
 	@Override
