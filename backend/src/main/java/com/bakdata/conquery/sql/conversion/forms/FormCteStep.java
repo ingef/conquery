@@ -12,6 +12,10 @@ public enum FormCteStep implements CteStep {
 	// prerequisite
 	EXTRACT_IDS("extract_ids"),
 
+	// entity date
+	UNNEST_ENTITY_DATE_CTE("unnest_entity_date"),
+	OVERWRITE_BOUNDS("overwrite_bounds"),
+
 	// stratification
 	INDEX_START("index_start"),
 	INT_SERIES("int_series"),

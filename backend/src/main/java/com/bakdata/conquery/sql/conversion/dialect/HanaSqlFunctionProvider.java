@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -151,7 +150,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
+	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
 		// HANA does not support single column datemultiranges
 		return predecessor;
 	}
@@ -169,7 +168,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
-		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
+		return DSL.when(stringAggregation.isNull(), DSL.val("{}"))
 				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
 	}
 

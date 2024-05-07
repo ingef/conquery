@@ -12,11 +12,10 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.google.common.base.Preconditions;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -147,7 +146,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
+	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
 
 		Preconditions.checkArgument(
 				predecessor.getSelects().getValidityDate().isPresent(),
@@ -164,7 +163,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(sqlTables.cteName(ConceptCteStep.UNNEST_DATE))
+						.cteName(cteName)
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
 						.build();
