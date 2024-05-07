@@ -7,17 +7,16 @@
 
     function cancelJob(jobId) {
       event.preventDefault(); 
-      fetch(
+      rest(
         "/admin/jobs/" + jobId + "/cancel",
         {
           method: "post",
-          credentials: "same-origin"
         }
       );
     }
 
     function getJobs() {
-      return fetch("/admin/jobs")
+      return rest("/admin/jobs")
         .then((res) => res.json())
         .then((entries) => {
           const origins = {};

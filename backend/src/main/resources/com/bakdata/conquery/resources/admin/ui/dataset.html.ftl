@@ -27,8 +27,6 @@
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
-  <!-- Javascript -->
-  <script><#include "scripts/dataset.js" /></script>
 
   <!-- Dataset page -->
   <@breadcrumbs.breadcrumbs
@@ -51,7 +49,7 @@
             <select
               class="custom-select"
               data-test-id="upload-select"
-              onchange="updateDatasetUploadForm(this)"
+              onchange="updateDatasetUploadForm(this, '${c.ds.id}')"
               required
             >
               <option value="mapping" selected>Mapping JSON</option>

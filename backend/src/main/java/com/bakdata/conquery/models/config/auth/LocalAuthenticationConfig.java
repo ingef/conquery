@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
@@ -79,7 +79,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
+		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);

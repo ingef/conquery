@@ -8,10 +8,12 @@ import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 
 import { Theme, useTheme } from "@emotion/react";
+import { useTranslation } from "react-i18next";
 import {
   formatNumber,
   previewStatsIsBarStats,
   previewStatsIsDateStats,
+  useDateTickHandler,
 } from "./util";
 
 type DiagramProps = {
@@ -101,6 +103,8 @@ export default function Diagram({
       return transformDateStatsToData(stat, theme);
     }
   }, [stat, theme]);
+  const { t } = useTranslation();
+  const { shouldTickRender } = useDateTickHandler(stat);
 
   const options = useMemo(() => {
     const baseOptions = {
@@ -116,6 +120,11 @@ export default function Diagram({
       plugins: {
         title: {
           display: true,
+          font: {
+            weight: "normal",
+            size: 14,
+          },
+          position: "bottom",
           text: stat.label,
         },
         tooltip: {
@@ -136,12 +145,22 @@ export default function Diagram({
       },
     } as Partial<ChartOptions>;
 
+    const yScaleTitle = {
+      display: true,
+      text: t("preview.chartYLabel"),
+      font: {
+        weight: "normal",
+        size: 14,
+      },
+    };
+
     if (previewStatsIsBarStats(stat)) {
       return {
         ...baseOptions,
         type: "bar",
         scales: {
           y: {
+            title: yScaleTitle,
             beginAtZero: true,
           },
         },
@@ -159,6 +178,7 @@ export default function Diagram({
         },
         scales: {
           y: {
+            title: yScaleTitle,
             beginAtZero: true,
             ticks: {
               callback: (value: number) => {
@@ -173,10 +193,7 @@ export default function Diagram({
                 const label = data?.labels?.[valueIndex];
                 if (label) {
                   const date = parseDate(label as string, "dd.MM.yyyy");
-                  if (
-                    date?.getMonth() !== undefined &&
-                    date.getMonth() % 3 === 0
-                  ) {
+                  if (date && shouldTickRender(date)) {
                     return label as string;
                   }
                 }
@@ -189,7 +206,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat]);
+  }, [data?.labels, stat, t, shouldTickRender]);
 
   return (
     <div className={className}>

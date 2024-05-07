@@ -40,22 +40,19 @@
 	<script type="application/javascript">
 		function addGroup() {
 			event.preventDefault();
-			fetch(
+			rest(
 				'${adminPathBase}/' + document.getElementById('group_id').value + '/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.owner.id}',
 				{
 					method: 'post',
-					credentials: 'same-origin',
-					headers: { 'Content-Type': 'application/json' }
 				}).then(function () { location.reload() });
 		}
 
 		function removeGroup(path) {
 			event.preventDefault();
-			fetch(
+			rest(
 				path,
 				{
 					method: 'delete',
-					credentials: 'same-origin'
 				})
 				.then(function () { location.reload(); });
 		}
