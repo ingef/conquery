@@ -14,6 +14,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.QOM;
 import org.jooq.impl.SQLDataType;
 
 @Getter
@@ -56,12 +57,12 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> yearStart(ColumnDateRange dateRange) {
+	public Field<Date> lowerBoundYearStart(ColumnDateRange dateRange) {
 		return jumpToYearStart(dateRange.getStart());
 	}
 
 	@Override
-	public Field<Date> yearEnd(ColumnDateRange dateRange) {
+	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
 				"SERIES_ROUND({0}, {1}, {2})",
 				Date.class,
@@ -72,14 +73,20 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
-		Field<Date> nextYearStart = yearEnd(dateRange);
+	public Field<Date> upperBoundYearEndQuarterAligned(ColumnDateRange dateRange) {
+		Field<Date> yearStartOfUpperBound = jumpToYearStart(dateRange.getEnd());
 		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), Offset.MINUS_ONE);
-		return addMonths(nextYearStart, quartersInMonths);
+		Field<Date> yearEndQuarterAligned = addMonths(yearStartOfUpperBound, quartersInMonths);
+		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
+		return DSL.when(
+						  yearEndQuarterAligned.lessThan(dateRange.getEnd()),
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.val(1), Offset.NONE)
+				  )
+				  .otherwise(yearEndQuarterAligned);
 	}
 
 	@Override
-	public Field<Date> quarterStart(ColumnDateRange dateRange) {
+	public Field<Date> lowerBoundQuarterStart(ColumnDateRange dateRange) {
 		return jumpToQuarterStart(dateRange.getStart());
 	}
 
@@ -91,7 +98,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
+	public Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange) {
 		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), DSL.val(-1));
 		return jumpToNextQuarterStart(inclusiveEnd);
 	}

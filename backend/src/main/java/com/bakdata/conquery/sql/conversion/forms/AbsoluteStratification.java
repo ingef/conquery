@@ -73,11 +73,11 @@ class AbsoluteStratification {
 		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
 
 		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
-		Field<Date> yearStart = stratificationFunctions.yearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
-		Field<Date> yearEnd = stratificationFunctions.yearEnd(bounds).as(SharedAliases.YEAR_END.getAlias());
-		Field<Date> yearEndQuarterAligned = stratificationFunctions.yearEndQuarterAligned(bounds).as(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
-		Field<Date> quarterStart = stratificationFunctions.quarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
-		Field<Date> quarterEnd = stratificationFunctions.quarterEnd(bounds).as(SharedAliases.QUARTER_END.getAlias());
+		Field<Date> yearStart = stratificationFunctions.lowerBoundYearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
+		Field<Date> yearEnd = stratificationFunctions.upperBoundYearEnd(bounds).as(SharedAliases.YEAR_END.getAlias());
+		Field<Date> yearEndQuarterAligned = stratificationFunctions.upperBoundYearEndQuarterAligned(bounds).as(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
+		Field<Date> quarterStart = stratificationFunctions.lowerBoundQuarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
+		Field<Date> quarterEnd = stratificationFunctions.upperBoundQuarterEnd(bounds).as(SharedAliases.QUARTER_END.getAlias());
 
 		List<FieldWrapper<Date>> startDates = Stream.of(
 															indexStart,

@@ -48,12 +48,12 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> yearStart(ColumnDateRange dateRange) {
+	public Field<Date> lowerBoundYearStart(ColumnDateRange dateRange) {
 		return castExpressionToDate(jumpToYearStart(lower(dateRange)));
 	}
 
 	@Override
-	public Field<Date> yearEnd(ColumnDateRange dateRange) {
+	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
 				"{0} + {1} {2}",
 				Date.class,
@@ -64,14 +64,21 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
-		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
-		Field<Date> nextYearStart = yearEnd(dateRange);
-		return addQuarters(nextYearStart, quarter, Offset.MINUS_ONE);
+	public Field<Date> upperBoundYearEndQuarterAligned(ColumnDateRange dateRange) {
+		Field<Integer> lowerBoundQuarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
+		Field<Date> upperBound = upper(dateRange);
+		Field<Date> yearStartOfUpperBound = castExpressionToDate(jumpToYearStart(upperBound));
+		Field<Date> yearEndQuarterAligned = addQuarters(yearStartOfUpperBound, lowerBoundQuarter, Offset.MINUS_ONE);
+		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
+		return DSL.when(
+						  yearEndQuarterAligned.lessThan(upperBound),
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.val(1), Offset.NONE)
+				  )
+				  .otherwise(yearEndQuarterAligned);
 	}
 
 	@Override
-	public Field<Date> quarterStart(ColumnDateRange dateRange) {
+	public Field<Date> lowerBoundQuarterStart(ColumnDateRange dateRange) {
 		return jumpToQuarterStart(lower(dateRange));
 	}
 
@@ -82,7 +89,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
+	public Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange) {
 		Field<Date> inclusiveEnd = upper(dateRange).minus(1);
 		return jumpToNextQuarterStart(inclusiveEnd);
 	}

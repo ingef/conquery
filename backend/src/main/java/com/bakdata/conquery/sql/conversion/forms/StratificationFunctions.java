@@ -78,23 +78,23 @@ abstract class StratificationFunctions {
 	/**
 	 * Determines the start of the year based on the lower bound of the provided date range.
 	 */
-	public abstract Field<Date> yearStart(ColumnDateRange dateRange);
+	public abstract Field<Date> lowerBoundYearStart(ColumnDateRange dateRange);
 
 	/**
 	 * Determines the exclusive end (first day of the next year) of the upper bound of the provided date range.
 	 */
-	public abstract Field<Date> yearEnd(ColumnDateRange dateRange);
+	public abstract Field<Date> upperBoundYearEnd(ColumnDateRange dateRange);
 
 	/**
-	 * Determines the start of the next year based on the upper bound of the provided date range, but aligned on the quarter of the lower bound of the
+	 * Determines the end of the upper bound of the provided date range, but aligned on the quarter of the lower bound of the
 	 * provided daterange.
 	 */
-	public abstract Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange);
+	public abstract Field<Date> upperBoundYearEndQuarterAligned(ColumnDateRange dateRange);
 
 	/**
 	 * Calculates the start of the quarter using the lower bound of the provided date range.
 	 */
-	public abstract Field<Date> quarterStart(ColumnDateRange dateRange);
+	public abstract Field<Date> lowerBoundQuarterStart(ColumnDateRange dateRange);
 
 	/**
 	 * Calculates the start of the quarter of the given date.
@@ -104,7 +104,7 @@ abstract class StratificationFunctions {
 	/**
 	 * Calculates the exclusive end (first day of the next quarter) of the upper bound of the provided date range.
 	 */
-	public abstract Field<Date> quarterEnd(ColumnDateRange dateRange);
+	public abstract Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange);
 
 	/**
 	 * Calculates the start of the next quarter of the given date.
