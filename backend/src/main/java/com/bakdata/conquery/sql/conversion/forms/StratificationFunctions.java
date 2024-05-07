@@ -61,9 +61,14 @@ abstract class StratificationFunctions {
 	protected abstract Field<Date> lower(ColumnDateRange dateRange);
 
 	/**
-	 * Extract the upper bound from a given daterange.
+	 * Extract the inclusive upper bound from a given daterange.
 	 */
-	protected abstract Field<Date> upper(ColumnDateRange dateRange);
+	protected abstract Field<Date> inclusiveUpper(ColumnDateRange dateRange);
+
+	/**
+	 * Extract the exclusive upper bound from a given daterange.
+	 */
+	protected abstract Field<Date> exclusiveUpper(ColumnDateRange dateRange);
 
 	/**
 	 * Calculates the start and end date based on the given start date and an interval expression.
@@ -193,7 +198,8 @@ abstract class StratificationFunctions {
 			case COMPLETE -> DSL.val(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
 			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
-			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
+			// for days, we can calculate the date distance directly, but we need the exclusive upper bound
+			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
 										 .as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 		};
 	}
@@ -255,7 +261,7 @@ abstract class StratificationFunctions {
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
 											.divide(MONTHS_PER_QUARTER)
 											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), inclusiveUpper(bounds))
 										.plus(89)
 										.divide(DAYS_PER_QUARTER)
 										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
@@ -273,7 +279,7 @@ abstract class StratificationFunctions {
 										 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
 											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), upper(bounds))
+			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), inclusiveUpper(bounds))
 										.plus(364)
 										.divide(DAYS_PER_YEAR)
 										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());

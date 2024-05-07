@@ -57,7 +57,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 		return DSL.field(
 				"{0} + {1} {2}",
 				Date.class,
-				dateTruncate(DSL.val("year"), upper(dateRange)),
+				dateTruncate(DSL.val("year"), inclusiveUpper(dateRange)),
 				INTERVAL_KEYWORD,
 				INTERVAL_MAP.get(Interval.ONE_YEAR_INTERVAL)
 		);
@@ -66,7 +66,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> upperBoundYearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Integer> lowerBoundQuarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
-		Field<Date> upperBound = upper(dateRange);
+		Field<Date> upperBound = inclusiveUpper(dateRange);
 		Field<Date> yearStartOfUpperBound = castExpressionToDate(jumpToYearStart(upperBound));
 		Field<Date> yearEndQuarterAligned = addQuarters(yearStartOfUpperBound, lowerBoundQuarter, Offset.MINUS_ONE);
 		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
@@ -90,7 +90,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange) {
-		Field<Date> inclusiveEnd = upper(dateRange).minus(1);
+		Field<Date> inclusiveEnd = inclusiveUpper(dateRange);
 		return jumpToNextQuarterStart(inclusiveEnd);
 	}
 
@@ -116,10 +116,10 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 		return switch (indexSelector) {
 			case EARLIEST -> DSL.min(lower(validityDate));
 			// upper returns the exclusive end date, we want to inclusive one, so we add -1 day
-			case LATEST -> functionProvider.addDays(DSL.max(upper(validityDate)), DSL.val(-1));
+			case LATEST -> DSL.max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
-				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), upper(validityDate));
+				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), inclusiveUpper(validityDate));
 				Field<BigDecimal> randomAmountOfDays = DSL.rand().times(dateDistanceInDays);
 				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
@@ -143,7 +143,13 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> upper(ColumnDateRange dateRange) {
+	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
+		checkIsSingleColumnRange(dateRange);
+		return exclusiveUpper(dateRange).minus(1);
+	}
+
+	@Override
+	protected Field<Date> exclusiveUpper(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
 		return DSL.function("upper", Date.class, dateRange.getRange());
 	}

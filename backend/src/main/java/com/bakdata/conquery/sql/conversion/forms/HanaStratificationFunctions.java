@@ -38,7 +38,12 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> upper(ColumnDateRange dateRange) {
+	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
+		return functionProvider.addDays(exclusiveUpper(dateRange), DSL.val(-1));
+	}
+
+	@Override
+	protected Field<Date> exclusiveUpper(ColumnDateRange dateRange) {
 		// HANA does not support single-column ranges, so we can return start and end directly
 		return dateRange.getEnd();
 	}
@@ -99,8 +104,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange) {
-		Field<Date> inclusiveEnd = functionProvider.addDays(dateRange.getEnd(), DSL.val(-1));
-		return jumpToNextQuarterStart(inclusiveEnd);
+		return jumpToNextQuarterStart(inclusiveUpper(dateRange));
 	}
 
 	@Override
@@ -127,8 +131,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	public Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate) {
 		return switch (indexSelector) {
 			case EARLIEST -> DSL.min(validityDate.getStart());
-			// end date of validity dates is exclusive, but we need the inclusive one
-			case LATEST -> functionProvider.addDays(DSL.max(validityDate.getEnd()), DSL.val(-1));
+			case LATEST -> DSL.max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
 				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
