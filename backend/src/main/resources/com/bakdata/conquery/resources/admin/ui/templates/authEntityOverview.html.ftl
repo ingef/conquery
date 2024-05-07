@@ -46,11 +46,9 @@
 	<script type="application/javascript">
         function createEntity() {
             event.preventDefault(); 
-            fetch('${adminPathBase}',
+            rest('${adminPathBase}',
             {
                 method: 'post',
-                credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                         name: document.getElementById('entity_id').value,
                         label: document.getElementById('entity_name').value
@@ -60,11 +58,9 @@
 
         function downloadEntities() {
             event.preventDefault(); 
-            fetch('${adminPathBase}',
+            rest('${adminPathBase}',
             {
                 method: 'get',
-                credentials: 'same-origin',
-                headers: {'Accept': 'application/json'}
             })
             .then(response => {return response.json()})
             .then(json => {
@@ -75,11 +71,10 @@
 
         function deleteEntity(entityId){
             event.preventDefault();
-            fetch(
+            rest(
                 '${adminPathBase}/'+entityId,
                 {
-                    method: 'delete',
-                    credentials: 'same-origin'
+                    method: 'delete'
                 })
                 .then(function(){location.reload();});
         }

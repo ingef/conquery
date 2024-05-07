@@ -44,7 +44,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public SqlIdColumns withAbsoluteStratification(Resolution resolution, Field<Integer> index) {
-		Field<String> resolutionField = DSL.field(DSL.val(resolution.toString())).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)
@@ -55,7 +55,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public SqlIdColumns withRelativeStratification(Resolution resolution, Field<Integer> index, Field<Date> eventDate) {
-		Field<String> resolutionField = DSL.field(DSL.val(resolution.toString())).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)

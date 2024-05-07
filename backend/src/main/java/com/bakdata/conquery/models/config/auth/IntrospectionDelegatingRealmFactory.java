@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
@@ -49,7 +49,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
+		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);

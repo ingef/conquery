@@ -168,7 +168,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
-		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
+		return DSL.when(stringAggregation.isNull(), DSL.val("{}"))
 				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
 	}
 

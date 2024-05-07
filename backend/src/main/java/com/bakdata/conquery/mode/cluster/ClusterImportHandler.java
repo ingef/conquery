@@ -35,7 +35,6 @@ class ClusterImportHandler implements ImportHandler {
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
-				config,
 				true
 		);
 
@@ -63,7 +62,6 @@ class ClusterImportHandler implements ImportHandler {
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
 				config.getCluster().getEntityBucketSize(),
-				config,
 				false
 		);
 		namespace.getJobManager().addSlowJob(job);
