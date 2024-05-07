@@ -44,7 +44,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> nextYearStart(ColumnDateRange dateRange) {
+	public Field<Date> yearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
 				"{0} + {1} {2}",
 				Date.class,
@@ -57,7 +57,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
-		Field<Date> nextYearStart = nextYearStart(dateRange);
+		Field<Date> nextYearStart = yearEnd(dateRange);
 		return addQuarters(nextYearStart, quarter, Offset.MINUS_ONE);
 	}
 
@@ -68,7 +68,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> nextQuartersStart(ColumnDateRange dateRange) {
+	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
 		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), upper(dateRange));
 		Field<Date> quarterEndInclusive = upper(dateRange).minus(1);
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, quarterEndInclusive);

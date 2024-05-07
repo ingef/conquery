@@ -1,32 +1,41 @@
 # Form conversion - how to apply stratification in SQL?
 
 This document outlines the procedure to apply stratification within SQL in the context of the form conversion process.
+The process or to be more precise, specific functions used while creating stratification tables differ from dialect
+to dialect, but the overall process is the same. This document is using Postgres dialect for the SQL examples.
+
+# Table of Contents
+
+1. [Prerequisite conversion](#prerequisite-conversion)
+2. [Absolute stratification](#absolute-stratification-for-absolute-forms-and-entity-date-forms)
+    1. [For absolute forms](#absolute-forms)
+    2. [For entity date queries](#entity-date)
+    3. [Stratification tables](#stratification-tables)
+3. [Feature conversion](#feature-conversion)
+4. [Left-join converted features](#left-join-converted-features-with-the-full-stratification-table-for-the-final-select)
 
 ## Prerequisite conversion
 
-The prerequisite query conversion produces a CTE, which will contain the IDs of those entities relevant for the form.
+The prerequisite query conversion produces a CTE, which will contain the IDs of those subjects relevant for the form.
 Because this could be any kind of Query, the CTE might also contain a validity date and converted Selects.
 Take this CTE representing a converted CQExternal as an example:
 
 **CTE:** `external`
 
 ```sql
-select '1'                                 "primary_id",
-       TO_DATE('2001-12-01', 'yyyy-mm-dd') "dates_start",
-       TO_DATE('2016-12-02', 'yyyy-mm-dd') "dates_end"
+select '1'                                            "primary_id",
+       daterange('2001-12-01', '2016-12-02', '[)') as "validity_date"
 from "DUMMY"; -- "DUMMY" is SAP HANAs built-in no-op table
 ```
 
-## Absolute stratification
+## Absolute stratification (for absolute forms and entity date forms)
 
-This example is covering the following
-testcase: `src/test/resources/tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/ABS_EXPORT_FORM.test.json`.
+### Absolute forms
 
-For an absolute form, we only care for the primary ID, so we extract the primary IDs (and discard the validity date).
-The `stratification_bounds` represent the absolute forms date range. They define the required complete stratification
-window. For an entity date form, the `stratification_bounds` would be the intersection of an entity's validity date
-and the forms date range.
-We group by primary ID to keep only 1 entry per subject (a `select distinct` would do the trick too).
+For an absolute form, we only care for the primary ID, so we extract the primary IDs and discard all other fields from 
+the prerequisite query. The `stratification_bounds` represent the absolute forms date range. They define the required 
+complete stratification window. We group by primary ID to keep only distinct entries for each entity and discard any 
+duplicated entries which, for example, might occur due to a preceding secondary id query.
 
 **CTE:** `extract_ids`
 
@@ -37,6 +46,36 @@ from "external"
 group by "primary_id"
 ```
 
+### Entity date
+
+For an entity date form, we only care for the primary ID and the validity date. We group by primary ID and validity
+date to keep only distinct entries for each entity and discard any duplicated entries which, for example, might occur
+due to a preceding secondary id query.
+
+**CTE:** `extract_ids`
+
+```sql
+select "primary_id",
+       "validity_date"
+from "external"
+group by "primary_id", "validity_date"
+```
+
+**CTE:** `overwrite_bounds`
+
+We create an additional CTE which intersects the entities validity dates with the given forms date range (if there is
+one). The intersection defines the required complete stratification window. Besides this, there is no difference in the
+following conversion process between absolute forms and entity date queries.
+
+```sql
+select "primary_id",
+       -- the validity date is a multirange, so we unnest first 
+       daterange('2012-06-01', '2012-09-30', '[]') * unnest("validity_date") as "stratification_bounds"
+from "extract_ids"
+```
+
+### Stratification tables
+
 Now, we want to create a resolution table for each resolution (`COMPLETE`, `YEAR`, `QUARTER`).
 
 **CTE:** `complete`
@@ -46,7 +85,7 @@ select "primary_id",
        'COMPLETE'                          "resolution",
        1 "index",
        "stratification_bounds"
-from "extract_ids"
+from "extract_ids" -- or `overwrite_bounds` if it is an entity date query
 ```
 
 A complete range shall have a `null` index, because it spans the complete range, but we set it to 1 to ensure we can

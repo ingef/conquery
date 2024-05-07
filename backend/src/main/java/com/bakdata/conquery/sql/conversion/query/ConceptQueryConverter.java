@@ -54,7 +54,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.blockValidityDate();
 		}
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
-			Field<String> emptyRange = DSL.field(DSL.val("{}"));
+			Field<String> emptyRange = DSL.val("{}");
 			return preFinalSelects.withValidityDate(ColumnDateRange.of(emptyRange));
 		}
 		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
