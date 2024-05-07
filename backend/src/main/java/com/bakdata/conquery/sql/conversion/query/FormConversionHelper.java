@@ -51,12 +51,6 @@ public class FormConversionHelper {
 
 		// child context contains the converted feature's QuerySteps
 		List<QueryStep> queriesToJoin = childContext.getQuerySteps();
-
-		// only 1 converted feature means we don't have to join the feature queries
-		if (queriesToJoin.size() == 1) {
-			QueryStep convertedFeature = queriesToJoin.get(0);
-			return createFinalSelect(stratificationTable, convertedFeature, resultInfos, context);
-		}
 		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.BLOCK, context);
 		return createFinalSelect(stratificationTable, joinedFeatures, resultInfos, context);
 	}
