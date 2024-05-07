@@ -278,7 +278,7 @@ class RelativeStratification {
 		}
 
 		return Range.of(
-				-1 * timeCountBefore,
+				- timeCountBefore,
 				timeCountAfter
 		);
 	}
