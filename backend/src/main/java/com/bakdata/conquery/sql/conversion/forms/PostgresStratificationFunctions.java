@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
@@ -67,7 +68,8 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
 		Field<Date> nextYearStart = yearEnd(dateRange);
-		return addQuarters(nextYearStart, quarter, Offset.MINUS_ONE);
+		return DSL.when(quarter.eq(DSL.val(4)), nextYearStart)
+				  .otherwise(addQuarters(nextYearStart, quarter, Offset.MINUS_ONE));
 	}
 
 	@Override

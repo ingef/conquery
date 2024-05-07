@@ -75,7 +75,8 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
 		Field<Date> nextYearStart = yearEnd(dateRange);
 		Field<Integer> quartersInMonths = getQuartersInMonths(dateRange.getStart(), Offset.MINUS_ONE);
-		return addMonths(nextYearStart, quartersInMonths);
+		return DSL.when(quartersInMonths.eq(DSL.val(4)), nextYearStart)
+				  .otherwise(addMonths(nextYearStart, quartersInMonths));
 	}
 
 	@Override
