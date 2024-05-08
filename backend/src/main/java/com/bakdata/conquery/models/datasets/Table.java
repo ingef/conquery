@@ -37,6 +37,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
+	 * If unset {@link ...SqlConnectorConfig#primaryColumn} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
