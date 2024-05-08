@@ -146,8 +146,7 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withClaim(IDToken.GIVEN_NAME, "New")
-						  .withClaim(IDToken.FAMILY_NAME, "User")
+						  .withClaim(IDToken.NAME, "New User")
 						  .withIssuer(HTTP_REALM_URL)
 						  .withAudience(AUDIENCE)
 						  .withSubject(expected.getName())
