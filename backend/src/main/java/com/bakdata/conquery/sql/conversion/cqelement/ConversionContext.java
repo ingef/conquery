@@ -92,12 +92,4 @@ public class ConversionContext implements Context {
 		return this.querySteps.get(this.querySteps.size() - 1);
 	}
 
-	/**
-	 * Remove the last {@link QueryStep} from this context's query steps.
-	 */
-	public ConversionContext removeLastConvertedStep() {
-		return this.toBuilder()
-				   .querySteps(this.querySteps.subList(0, this.querySteps.size()))
-				   .build();
-	}
 }
