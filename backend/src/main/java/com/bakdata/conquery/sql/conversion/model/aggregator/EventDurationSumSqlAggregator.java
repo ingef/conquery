@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
@@ -14,6 +15,8 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Value;
+import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @Value
@@ -28,29 +31,44 @@ public class EventDurationSumSqlAggregator implements SqlAggregator {
 			ConceptConversionTables tables,
 			SqlFunctionProvider functionProvider
 	) {
-		ColumnDateRange qualified = validityDate.qualify(tables.getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
-		ColumnDateRange asDualColumn = functionProvider.toDualColumn(qualified);
-		FieldWrapper<BigDecimal> durationSum = new FieldWrapper<>(
-				DSL.sum(functionProvider.dateDistance(ChronoUnit.DAYS, asDualColumn.getStart(), asDualColumn.getEnd()))
-				   .as(alias)
-		);
+		Field<BigDecimal> durationSum = DSL.sum(
+												   DSL.when(isNegativeInfinity(validityDate.getStart(), functionProvider), DSL.val(null, Integer.class))
+													  .otherwise(functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd()))
+										   )
+										   .as(alias);
 
-		ExtractingSqlSelect<?> finalSelect = durationSum.qualify(tables.getLastPredecessor());
+		FieldWrapper<BigDecimal> durationSumWrapper = new FieldWrapper<>(durationSum);
+		ExtractingSqlSelect<?> finalSelect = durationSumWrapper.qualify(tables.getLastPredecessor());
 
 		this.sqlSelects = SqlSelects.builder()
-									.intervalPackingSelect(durationSum)
+									.intervalPackingSelect(durationSumWrapper)
 									.finalSelect(finalSelect)
 									.build();
 		this.whereClauses = WhereClauses.builder().build();
 	}
 
 	public static EventDurationSumSqlAggregator create(EventDurationSumSelect eventDurationSumSelect, SelectContext selectContext) {
+
+		ColumnDateRange validityDate = selectContext.getValidityDate().orElseThrow(
+				() -> new IllegalStateException("Can't convert a EventDurationSum select without a validity date")
+		);
+
 		return new EventDurationSumSqlAggregator(
 				selectContext.getNameGenerator().selectName(eventDurationSumSelect),
-				selectContext.getValidityDate().orElseThrow(() -> new IllegalStateException("Can't convert a EventDurationSum select without a validity date")),
+				prepareValidityDate(validityDate, selectContext),
 				selectContext.getTables(),
 				selectContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
+	}
+
+	private static ColumnDateRange prepareValidityDate(ColumnDateRange validityDate, SelectContext selectContext) {
+		ColumnDateRange qualified = validityDate.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
+		return selectContext.getSqlDialect().getFunctionProvider().toDualColumn(qualified);
+	}
+
+	private static Condition isNegativeInfinity(Field<Date> date, SqlFunctionProvider functionProvider) {
+		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
+		return date.eq(negativeInfinity);
 	}
 
 }
