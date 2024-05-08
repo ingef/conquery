@@ -294,7 +294,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				"ADD_DAYS",
 				Date.class,
 				dateColumn,
-				DSL.val(amountOfDays)
+				amountOfDays
 		);
 	}
 
