@@ -32,7 +32,7 @@ public class EventDurationSumSqlAggregator implements SqlAggregator {
 			SqlFunctionProvider functionProvider
 	) {
 		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(isNegativeInfinity(validityDate.getStart(), functionProvider), DSL.val(null, Integer.class))
+												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.val(null, Integer.class))
 													  .otherwise(functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd()))
 										   )
 										   .as(alias);
@@ -66,9 +66,10 @@ public class EventDurationSumSqlAggregator implements SqlAggregator {
 		return selectContext.getSqlDialect().getFunctionProvider().toDualColumn(qualified);
 	}
 
-	private static Condition isNegativeInfinity(Field<Date> date, SqlFunctionProvider functionProvider) {
+	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
 		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
-		return date.eq(negativeInfinity);
+		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 
 }
