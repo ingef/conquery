@@ -26,8 +26,8 @@
 			"value": "RELATIVE",
 			"indexSelector": "EARLIEST",
 			"timeUnit": "QUARTERS",
-			"timeCountAfter": 4,
-			"timeCountBefore": 4,
+            "timeCountAfter": 2,
+            "timeCountBefore": 6,
 			"indexPlacement": "BEFORE"
 		}
 	},

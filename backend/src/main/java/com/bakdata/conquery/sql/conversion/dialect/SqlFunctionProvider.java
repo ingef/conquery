@@ -114,6 +114,9 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> daterangeStringExpression(ColumnDateRange columnDateRange);
 
+	/**
+	 * Calculates the date distance in the given {@link ChronoUnit} between an exclusive end date and an inclusive start date.
+	 */
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
