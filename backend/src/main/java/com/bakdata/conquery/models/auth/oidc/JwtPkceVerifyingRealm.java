@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -21,11 +23,11 @@ import com.google.common.cache.CacheBuilder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
@@ -152,13 +154,41 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			user = storage.getUser(userId);
 
 			if (user != null) {
-				log.trace("Successfully mapped subject {} using user id {}", subject, userId);
+				log.trace("Successfully mapped subject {} using user id {}", accessToken.getSubject(), userId);
 				handleRoleClaims(accessToken, user);
 				return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 			}
 		}
 
-		throw new UnknownAccountException("The user id was unknown: " + subject);
+		// Create a new user if none could be found
+		final User newUser = createUser(accessToken);
+
+		return new ConqueryAuthenticationInfo(newUser, token, this, true, idpConfiguration.logoutEndpoint());
+	}
+
+	/**
+	 * Creates a new user from values in the access token
+	 *
+	 * @param accessToken
+	 * @return
+	 */
+	private User createUser(AccessToken accessToken) {
+		String
+				userLabel =
+				Stream.of(accessToken.getGivenName(), accessToken.getMiddleName(), accessToken.getFamilyName())
+					  .filter(Strings::isNotBlank)
+					  .collect(Collectors.joining(" "));
+		if (Strings.isBlank(userLabel)) {
+			userLabel = accessToken.getPreferredUsername();
+		}
+
+		final User user = new User(accessToken.getSubject(), userLabel, storage);
+		user.updateStorage();
+		handleRoleClaims(accessToken, user);
+
+		log.info("Created a new user from a valid JWT: {}", user);
+
+		return user;
 	}
 
 	private void handleRoleClaims(AccessToken accessToken, User user) {

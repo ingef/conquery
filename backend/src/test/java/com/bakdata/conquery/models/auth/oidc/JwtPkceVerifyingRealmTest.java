@@ -27,9 +27,11 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.keycloak.common.VerificationException;
+import org.keycloak.representations.IDToken;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JwtPkceVerifyingRealmTest {
@@ -64,6 +66,11 @@ class JwtPkceVerifyingRealmTest {
 				STORAGE,
 				TOKEN_LEEWAY
 		);
+	}
+
+	@BeforeEach
+	void cleanUpBefore() {
+		STORAGE.clear();
 	}
 
 
@@ -123,6 +130,40 @@ class JwtPkceVerifyingRealmTest {
 
 		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
 		assertThat(expected.getRoles()).contains(role.getId());
+	}
+
+	@Test
+	void verifyTokenAndAddRoleNewUser() {
+
+		// Setup the expected user id
+		User expected = new User("new_user", "New User", STORAGE);
+		Role role = new Role("admin", "admin", STORAGE);
+
+		STORAGE.updateRole(role);
+
+		Date issueDate = new Date();
+		Date expDate = DateUtils.addMinutes(issueDate, 1);
+		String token = JWT.create()
+						  .withClaim(IDToken.GIVEN_NAME, "New")
+						  .withClaim(IDToken.FAMILY_NAME, "User")
+						  .withIssuer(HTTP_REALM_URL)
+						  .withAudience(AUDIENCE)
+						  .withSubject(expected.getName())
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withClaim("groups", "conquery")
+						  .withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
+						  .withIssuedAt(issueDate)
+						  .withExpiresAt(expDate)
+						  .withKeyId(KEY_ID)
+						  .withJWTId(UUID.randomUUID().toString())
+						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+
+		BearerToken accessToken = new BearerToken(token);
+
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal().getId()).isEqualTo(expected.getId());
+		assertThat(STORAGE.getUser(expected.getId()).getRoles()).contains(role.getId());
+		assertThat(STORAGE.getUser(expected.getId()).getLabel()).isEqualTo(expected.getLabel());
 	}
 
 	@Test
