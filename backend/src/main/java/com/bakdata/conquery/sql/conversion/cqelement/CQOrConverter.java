@@ -20,7 +20,8 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 		QueryStep joined;
 		if (orNode.getChildren().size() == 1) {
 			ConversionContext withConvertedChild = context.getNodeConversions().convert(orNode.getChildren().get(0), context);
-			joined = withConvertedChild.popLastConvertedStep();
+			joined = withConvertedChild.getLastConvertedStep();
+			context.removeLastConvertedStep(); // we will add the step back after checking if we need an exists select
 		}
 		else {
 			joined = QueryStepJoiner.joinChildren(

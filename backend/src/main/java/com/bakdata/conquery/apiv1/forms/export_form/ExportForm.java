@@ -8,9 +8,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.NotEmpty;
@@ -204,23 +201,12 @@ public class ExportForm extends Form implements InternalForm {
 	/**
 	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
 	 */
-	public interface DefaultSelectSettable {
-
-		static void enable(List<CQElement> features) {
+	public static interface DefaultSelectSettable {
+		public static void enable(List<CQElement> features) {
 			for (CQElement feature : features) {
-				setDefaultExistsIfPossible(feature);
-				if (feature instanceof CQAnd cqAnd) {
-					cqAnd.getChildren().forEach(DefaultSelectSettable::setDefaultExistsIfPossible);
+				if(feature instanceof DefaultSelectSettable){
+					((DefaultSelectSettable) feature).setDefaultExists();
 				}
-				else if (feature instanceof CQOr cqOr) {
-					cqOr.getChildren().forEach(DefaultSelectSettable::setDefaultExistsIfPossible);
-				}
-			}
-		}
-
-		private static void setDefaultExistsIfPossible(CQElement feature) {
-			if (feature instanceof DefaultSelectSettable defaultSelectSettable){
-				defaultSelectSettable.setDefaultExists();
 			}
 		}
 

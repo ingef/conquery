@@ -20,7 +20,8 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 		QueryStep joined;
 		if (andNode.getChildren().size() == 1) {
 			ConversionContext withConvertedChild = context.getNodeConversions().convert(andNode.getChildren().get(0), context);
-			joined = withConvertedChild.popLastConvertedStep();
+			joined = withConvertedChild.getLastConvertedStep();
+			context.removeLastConvertedStep(); // we will add the step back after checking if we need an exists select
 		}
 		else {
 			joined = QueryStepJoiner.joinChildren(

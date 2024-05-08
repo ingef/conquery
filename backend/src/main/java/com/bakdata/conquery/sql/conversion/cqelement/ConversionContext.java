@@ -86,11 +86,18 @@ public class ConversionContext implements Context {
 	}
 
 	/**
-	 * Pops the last query {@link QueryStep} that has been added to this context query steps.
+	 * Get the last query {@link QueryStep} that has been added to this context query steps.
 	 */
-	public QueryStep popLastConvertedStep() {
-		QueryStep lastQueryStep = this.querySteps.get(this.querySteps.size() - 1);
-		this.querySteps.remove(lastQueryStep);
-		return lastQueryStep;
+	public QueryStep getLastConvertedStep() {
+		return this.querySteps.get(this.querySteps.size() - 1);
+	}
+
+	/**
+	 * Remove the last {@link QueryStep} from this context's query steps.
+	 */
+	public ConversionContext removeLastConvertedStep() {
+		return this.toBuilder()
+				   .querySteps(this.querySteps.subList(0, this.querySteps.size()))
+				   .build();
 	}
 }
