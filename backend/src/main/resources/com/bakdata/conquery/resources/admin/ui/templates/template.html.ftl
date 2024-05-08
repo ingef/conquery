@@ -47,7 +47,7 @@
 							  <a class="dropdown-item" href="/threads">Threads</a>
 							  <a class="dropdown-item" href="/healthcheck?pretty=true">Health</a>
 							  <a class="dropdown-item" href=""
-								  onclick="event.preventDefault(); fetch('/tasks/shutdown', {method: 'post'});"><i
+								  onclick="shutdown(event)"><i
 									  class="fas fa-power-off text-danger"></i> Shutdown</a>
 						  </div>
 					  </li>

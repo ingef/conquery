@@ -23,6 +23,9 @@ public class UIContext {
 	@Getter
 	public final TemplateModel staticUriElem = STATIC_URI_ELEMENTS;
 
+	@Getter
+	public final String csrfToken;
+
 	public Map<SocketAddress, ShardNodeInformation> getShardNodes() {
 		return shardNodeSupplier.get().stream().collect(Collectors.toMap(
 				ShardNodeInformation::getRemoteAddress,

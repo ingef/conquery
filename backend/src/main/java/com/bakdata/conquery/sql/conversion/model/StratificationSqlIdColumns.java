@@ -60,7 +60,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 
 		Field<Integer> withNulledCompleteIndex = DSL.when(
 															this.resolution.eq(DSL.val(Resolution.COMPLETE.toString().toUpperCase())),
-															DSL.field(DSL.val(null, Integer.class))
+															DSL.val(null, Integer.class)
 													)
 													.otherwise(this.index)
 													.as(SharedAliases.INDEX.getAlias());

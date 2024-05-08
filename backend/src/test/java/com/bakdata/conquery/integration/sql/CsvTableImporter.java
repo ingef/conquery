@@ -1,9 +1,6 @@
 package com.bakdata.conquery.integration.sql;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -23,8 +20,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
@@ -77,15 +72,6 @@ public class CsvTableImporter {
 				insertValuesIntoTable(table, columns, content, statement);
 			}
 		});
-	}
-
-	public List<EntityResult> readExpectedEntities(Path csv) throws IOException {
-		List<String[]> rawEntities = this.csvReader.parseAll(Files.newInputStream(csv));
-		List<EntityResult> results = new ArrayList<>(rawEntities.size());
-		for (String[] row : rawEntities) {
-			results.add(new SqlEntityResult(row[0], Arrays.copyOfRange(row, 1, row.length)));
-		}
-		return results;
 	}
 
 	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {

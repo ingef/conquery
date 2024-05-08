@@ -29,13 +29,30 @@ async function rest(url, options) {
 		{
 			method: 'get',
 			credentials: 'same-origin',
+			...options,
+			// Overwrite options[headers] here, BUT merge them with our headers
 			headers: {
-				'Content-Type': 'application/json'
-			},
-			...options
+				'Content-Type': 'application/json',
+				// Csrf token is provided via global variable
+				'X-Csrf-Token': csrf_token,
+				...options?.headers,
+			}
 		}
 	);
 	return res;
+}
+
+async function restOptionalForce(url, options) {
+	return rest(url, options).then((res) => {
+		// force button in case of 409 status
+		const customButton = createCustomButton('Force delete');
+		customButton.onclick = () => rest(toForceURL(url), options).then((res) => {
+			res.ok && location.reload();
+		});
+
+		showMessageForResponse(res, customButton);
+		return res;
+	});
 }
 
 function getToast(type, title, text, smalltext = "", customButton) {
@@ -148,10 +165,9 @@ function postFile(event, url) {
 		let reader = new FileReader();
 		reader.onload = function () {
 			let json = reader.result;
-			fetch(url, {
-				method: 'post', credentials: 'same-origin', body: json, headers: {
-					"Content-Type": "application/json"
-				}
+			rest(url, {
+				method: 'post',
+				body: json
 			})
 				.then(function (response) {
 					if (response.ok) {
@@ -180,10 +196,9 @@ function postFile(event, url) {
 function postScriptHandler(event, jsonOut, responseTargetTextfield) {
 	event.preventDefault();
 	responseTargetTextfield.innerHTML = 'waiting for response';
-	fetch('/admin/script',
+	rest('/admin/script',
 		{
 			method: 'post',
-			credentials: 'same-origin',
 			body: document.getElementById('script').value,
 			headers: {
 				'Content-Type': 'text/plain',
@@ -208,3 +223,84 @@ $("ul.nav-tabs > li > a").on("shown.bs.tab", function (e) {
 // on load of the page: switch to the currently selected tab
 var hash = window.location.hash;
 $('#myTab a[href="' + hash + '"]').tab('show');
+
+const uploadFormMapping = {
+	mapping: {
+		name: "mapping",
+		uri: "internToExtern",
+		accept: "*.mapping.json",
+	},
+	table: {
+		name: "table_schema",
+		uri: "tables",
+		accept: "*.table.json"
+	},
+	concept: {
+		name: "concept_schema",
+		uri: "concepts",
+		accept: "*.concept.json",
+	},
+	structure: {
+		name: "structure_schema",
+		uri: "structure",
+		accept: "structure.json",
+	},
+};
+
+function updateDatasetUploadForm(select, datasetId) {
+	const data = uploadFormMapping[select.value];
+	const fileInput = $(select).next();
+	fileInput.value = "";
+	fileInput.attr("accept", data.accept);
+	fileInput.attr("name", data.name);
+	$(select)
+		.parent()
+		.attr(
+			"onsubmit",
+			`postFile(event, '/admin/datasets/${datasetId}/${data.uri}')`
+		);
+}
+
+function createDataset(event) {
+	event.preventDefault();
+	rest(
+		'/admin/datasets',
+		{
+			method: 'post',
+			body: JSON.stringify({
+				name: document.getElementById('entity_id').value,
+				label: document.getElementById('entity_name').value
+			})
+		}).then(function (res) {
+			if (res.ok)
+				location.reload();
+			else
+				showMessageForResponse(res);
+		});
+}
+
+
+
+function deleteDataset(event, datasetId) {
+	event.preventDefault();
+	rest(
+		`/admin/datasets/${datasetId}`,
+		{
+			method: 'delete',
+		}).then(function (res) {
+			if (res.ok)
+				location.reload();
+			else
+				showMessageForResponse(res);
+		});
+}
+
+function shutdown(event) {
+	event.preventDefault();
+	rest(
+		'/tasks/shutdown',
+		{
+			method: 'post'
+		}
+	);
+}

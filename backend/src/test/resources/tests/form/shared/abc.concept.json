@@ -16,6 +16,11 @@
       "validityDates": {
         "name": "datum",
         "column": "table.datum"
+      },
+      "filters": {
+        "name": "value",
+        "column": "table.column",
+        "type": "SELECT"
       }
     }
   ],

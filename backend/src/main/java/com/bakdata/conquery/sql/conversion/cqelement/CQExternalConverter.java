@@ -52,7 +52,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 	 */
 	private static List<QueryStep> createRowSelects(Map.Entry<String, CDateSet> entry, SqlFunctionProvider functionProvider) {
 
-		Field<Object> primaryColumn = DSL.field(DSL.val(entry.getKey())).coerce(Object.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<Object> primaryColumn = DSL.val(entry.getKey()).coerce(Object.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 
 		List<ColumnDateRange> validityDateEntries = functionProvider.forCDateSet(entry.getValue(), SharedAliases.DATES_COLUMN);

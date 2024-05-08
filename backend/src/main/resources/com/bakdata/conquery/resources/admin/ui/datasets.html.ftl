@@ -3,7 +3,7 @@
 <#assign columns=["id", "label", "actions"]>
 
 <#macro deleteDatasetButton id>
-	<a data-test-id="delete-btn-${id}" href="" onclick="deleteDataset('${id}')"><i class="fas fa-trash-alt text-danger"></i></a>
+	<a data-test-id="delete-btn-${id}" href="" onclick="deleteDataset(event, '${id}')"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <@layout.layout>
@@ -21,7 +21,7 @@
 						<label for="entity_id">ID:</label>
 						<input id="entity_id" name="entity_id" data-test-id="entity-id" class="form-control text-monospace" style="font-family:monospace;">
 					</div>
-					<input class="btn btn-primary mt-3" data-test-id="create-dataset-btn" type="submit" onclick="createDataset()"/>
+					<input class="btn btn-primary mt-3" data-test-id="create-dataset-btn" type="submit" onclick="createDataset(event)"/>
 				</form>
 			</div>
 
@@ -32,43 +32,4 @@
 
 		</div>
 	</div>
-	<script>
-
-		function createDataset() {
-			event.preventDefault();
-			fetch(
-				'/admin/datasets',
-				{
-					method: 'post',
-					headers: {
-                        'Content-Type': 'application/json'
-                    },
-					credentials: 'same-origin',
-					body: JSON.stringify({
-							name: document.getElementById('entity_id').value,
-							label: document.getElementById('entity_name').value
-						})
-			}).then(function(res){
-				if(res.ok) 
-					location.reload();
-				else
-					showMessageForResponse(res);
-			});
-		}
-
-		function deleteDataset(datasetId) {
-			event.preventDefault();
-			fetch(
-				${r"`/admin/datasets/${datasetId}`"},
-				{
-					method: 'delete',
-					credentials: "same-origin"
-			}).then(function(res){
-				if(res.ok) 
-					location.reload();
-				else
-					showMessageForResponse(res);
-			});
-		}
-	</script>
 </@layout.layout>

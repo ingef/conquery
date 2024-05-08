@@ -35,6 +35,7 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -169,7 +170,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
-		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn()));
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -196,12 +197,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (Objects.isNull(cqTable.findValidityDate())) {
 			return Optional.empty();
 		}
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		ColumnDateRange validityDate;
 		if (context.getDateRestrictionRange() != null) {
-			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, context.getDateRestrictionRange(), connectorLabel);
+			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate(), context.getDateRestrictionRange()).asValidityDateRange(connectorLabel);
 		}
 		else {
-			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, connectorLabel);
+			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate()).asValidityDateRange(connectorLabel);
 		}
 		return Optional.of(validityDate);
 	}
