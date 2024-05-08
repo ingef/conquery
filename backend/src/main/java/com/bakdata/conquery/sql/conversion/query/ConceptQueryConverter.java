@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
@@ -54,8 +53,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.blockValidityDate();
 		}
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
-			Field<String> emptyRange = DSL.val("{}");
-			return preFinalSelects.withValidityDate(ColumnDateRange.of(emptyRange));
+			return preFinalSelects.withValidityDate(ColumnDateRange.empty());
 		}
 		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation));
