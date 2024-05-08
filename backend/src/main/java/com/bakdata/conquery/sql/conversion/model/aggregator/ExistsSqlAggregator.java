@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
@@ -16,9 +17,9 @@ public class ExistsSqlAggregator implements SqlAggregator {
 	WhereClauses whereClauses;
 
 	private ExistsSqlAggregator(String alias) {
-		FieldWrapper<Integer> existsSelect = new UniversalSqlSelect<>(DSL.field("1", Integer.class).as(alias));
+		ExistsSqlSelect existsSqlSelect = new ExistsSqlSelect(alias);
 		this.sqlSelects = SqlSelects.builder()
-									.finalSelect(existsSelect)
+									.finalSelect(existsSqlSelect)
 									.build();
 		this.whereClauses = WhereClauses.empty();
 	}
