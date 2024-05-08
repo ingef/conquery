@@ -27,6 +27,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.keycloak.common.VerificationException;
@@ -65,6 +66,11 @@ class JwtPkceVerifyingRealmTest {
 				STORAGE,
 				TOKEN_LEEWAY
 		);
+	}
+
+	@BeforeEach
+	void cleanUpBefore() {
+		STORAGE.clear();
 	}
 
 
@@ -130,7 +136,7 @@ class JwtPkceVerifyingRealmTest {
 	void verifyTokenAndAddRoleNewUser() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "New Tester", STORAGE);
+		User expected = new User("new_user", "New User", STORAGE);
 		Role role = new Role("admin", "admin", STORAGE);
 
 		STORAGE.updateRole(role);
@@ -139,7 +145,7 @@ class JwtPkceVerifyingRealmTest {
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
 						  .withClaim(IDToken.GIVEN_NAME, "New")
-						  .withClaim(IDToken.FAMILY_NAME, "Tester")
+						  .withClaim(IDToken.FAMILY_NAME, "User")
 						  .withIssuer(HTTP_REALM_URL)
 						  .withAudience(AUDIENCE)
 						  .withSubject(expected.getName())
