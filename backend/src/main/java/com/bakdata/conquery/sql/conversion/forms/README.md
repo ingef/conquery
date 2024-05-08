@@ -15,6 +15,7 @@ to dialect, but the overall process is the same. This document is using Postgres
 4. [Full stratification table](#full-stratification-table)
 5. [Feature conversion](#feature-conversion)
 6. [Left-join converted features](#left-join-converted-features-with-the-full-stratification-table-for-the-final-select)
+7. [Full export form](#full-export-form)
 
 ## Prerequisite conversion
 
@@ -403,3 +404,43 @@ For an absolute form, we expect the final result to contain all stratification r
 chosen resolutions. Because we filter all entries where stratification range and validity date do not overlap in each
 concept conversion's event filter step, the converted feature(s) table might not contain all stratification ranges.
 Thus, we left-join the table with the converted feature(s) back with the full stratification table. 
+
+## Full export form
+
+When converting full export forms, we must ensure the columns in the final select query have the right order. Because
+the `TableExportQuery` of an `FullExportForm` contains already the mapping from each required column to the position 
+in the final select, we just export each required table by selecting all the required columns. For each column, we 
+check if the current table contains the respective column. If so, we select the column, otherwise we just select null.
+This way, we can easily union all export tables without the need to apply additional logic to obtain the correct column 
+order.
+
+```sql
+with "external" as (select 1 as "primary_id"),
+     "extract_ids" as (select "primary_id"
+                       from "external"
+                       group by "primary_id")
+(select "table"."pid",
+        "validity_date"::varchar as "validity_date",
+        'table'                  as "source", -- name of the table we select from
+        "table"."second_id"      as "second_id-2",
+        "table"."column"         as "column-3",
+        null                     as "date_end-4",
+        null                     as "geburtsdatum-5",
+        null                     as "geschlecht-6"
+ from "table"
+          join "extract_ids"
+               on "table"."pid" = "extract_ids"."primary_id"
+ where "table"."column" in ('A'))
+ union all
+(select "vers_stamm"."pid",
+        "vers_stamm"."validity_date"::varchar as "validity_date",
+        'vers_stamm'                          as "source",
+        null                                  as "second_id-2",
+        null                                  as "column-3",
+        "vers_stamm"."date_end"               as "date_end-4",
+        "vers_stamm"."geburtsdatum"           as "geburtsdatum-5",
+        "vers_stamm"."geschlecht"             as "geschlecht-6"
+ from "vers_stamm"
+          join "extract_ids"
+               on "vers_stamm"."pid" = "extract_ids"."primary_id")
+```
