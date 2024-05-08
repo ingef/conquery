@@ -31,7 +31,10 @@ public enum SharedAliases {
 	INDEX_START_POSITIVE("index_start_positive"),
 	INDEX_START_NEGATIVE("index_start_negative"),
 	STRATIFICATION_BOUNDS("stratification_bounds"),
-	OBSERVATION_SCOPE("scope");
+	OBSERVATION_SCOPE("scope"),
+
+	// full export form
+	SOURCE("source");
 
 	private final String alias;
 }

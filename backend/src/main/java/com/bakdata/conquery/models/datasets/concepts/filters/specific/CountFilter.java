@@ -19,10 +19,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAgg
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jooq.Condition;
 
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
@@ -76,4 +78,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 		return CountSqlAggregator.create(this, filterContext).getSqlFilters();
 	}
 
+	@Override
+	public Condition convertForTableExport(FilterContext<Range.LongRange> filterContext) {
+		return CountCondition.onColumn(column, filterContext.getValue()).condition();
+	}
 }
