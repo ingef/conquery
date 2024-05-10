@@ -14,18 +14,20 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import jakarta.validation.Validator;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
@@ -49,6 +51,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	private final List<String> alternativeIdClaims;
 	private final ActiveWithLeewayVerifier activeVerifier;
 	private final MetaStorage storage;
+	private final Validator validator;
 
 	/**
 	 * Used in handleRoleClaims as size-limited set, with LRU characteristics.
@@ -61,12 +64,21 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier;
 
 
-	public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims, MetaStorage storage, int tokenLeeway) {
+	public JwtPkceVerifyingRealm(
+			@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
+			@NonNull String allowedAudience,
+			List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
+			List<String> alternativeIdClaims,
+			MetaStorage storage,
+			int tokenLeeway,
+			Validator validator
+	) {
 		this.storage = storage;
 		this.idpConfigurationSupplier = idpConfigurationSupplier;
 		this.allowedAudience = new String[]{allowedAudience};
 		this.alternativeIdClaims = alternativeIdClaims;
 		this.tokenChecks = additionalTokenChecks.toArray(TokenVerifier.Predicate[]::new);
+		this.validator = validator;
 		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
@@ -152,13 +164,34 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			user = storage.getUser(userId);
 
 			if (user != null) {
-				log.trace("Successfully mapped subject {} using user id {}", subject, userId);
+				log.trace("Successfully mapped subject {} using user id {}", accessToken.getSubject(), userId);
 				handleRoleClaims(accessToken, user);
 				return new ConqueryAuthenticationInfo(user, token, this, true, idpConfiguration.logoutEndpoint());
 			}
 		}
 
-		throw new UnknownAccountException("The user id was unknown: " + subject);
+		// Create a new user if none could be found
+		final User newUser = createUser(accessToken);
+
+		return new ConqueryAuthenticationInfo(newUser, token, this, true, idpConfiguration.logoutEndpoint());
+	}
+
+	/**
+	 * Creates a new user from values in the access token
+	 */
+	private User createUser(AccessToken accessToken) {
+		String userLabel = ObjectUtils.firstNonNull(accessToken.getName(), accessToken.getPreferredUsername(), accessToken.getSubject());
+
+		final User user = new User(accessToken.getSubject(), userLabel, storage);
+
+		ValidatorHelper.failOnError(log, getValidator().validate(user));
+
+		user.updateStorage();
+		handleRoleClaims(accessToken, user);
+
+		log.info("Created a new user from a valid JWT: {}", user);
+
+		return user;
 	}
 
 	private void handleRoleClaims(AccessToken accessToken, User user) {
