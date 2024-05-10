@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import io.dropwizard.validation.BaseValidator;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
@@ -64,7 +65,8 @@ class JwtPkceVerifyingRealmTest {
 				List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
 				List.of(ALTERNATIVE_ID_CLAIM),
 				STORAGE,
-				TOKEN_LEEWAY
+				TOKEN_LEEWAY,
+				BaseValidator.newValidator()
 		);
 	}
 
@@ -144,8 +146,7 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withClaim(IDToken.GIVEN_NAME, "New")
-						  .withClaim(IDToken.FAMILY_NAME, "User")
+						  .withClaim(IDToken.NAME, "New User")
 						  .withIssuer(HTTP_REALM_URL)
 						  .withAudience(AUDIENCE)
 						  .withSubject(expected.getName())

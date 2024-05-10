@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -16,14 +14,16 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import jakarta.validation.Validator;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
@@ -51,6 +51,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	private final List<String> alternativeIdClaims;
 	private final ActiveWithLeewayVerifier activeVerifier;
 	private final MetaStorage storage;
+	private final Validator validator;
 
 	/**
 	 * Used in handleRoleClaims as size-limited set, with LRU characteristics.
@@ -63,12 +64,21 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier;
 
 
-	public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims, MetaStorage storage, int tokenLeeway) {
+	public JwtPkceVerifyingRealm(
+			@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
+			@NonNull String allowedAudience,
+			List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
+			List<String> alternativeIdClaims,
+			MetaStorage storage,
+			int tokenLeeway,
+			Validator validator
+	) {
 		this.storage = storage;
 		this.idpConfigurationSupplier = idpConfigurationSupplier;
 		this.allowedAudience = new String[]{allowedAudience};
 		this.alternativeIdClaims = alternativeIdClaims;
 		this.tokenChecks = additionalTokenChecks.toArray(TokenVerifier.Predicate[]::new);
+		this.validator = validator;
 		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
@@ -168,21 +178,14 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 	/**
 	 * Creates a new user from values in the access token
-	 *
-	 * @param accessToken
-	 * @return
 	 */
 	private User createUser(AccessToken accessToken) {
-		String
-				userLabel =
-				Stream.of(accessToken.getGivenName(), accessToken.getMiddleName(), accessToken.getFamilyName())
-					  .filter(Strings::isNotBlank)
-					  .collect(Collectors.joining(" "));
-		if (Strings.isBlank(userLabel)) {
-			userLabel = accessToken.getPreferredUsername();
-		}
+		String userLabel = ObjectUtils.firstNonNull(accessToken.getName(), accessToken.getPreferredUsername(), accessToken.getSubject());
 
 		final User user = new User(accessToken.getSubject(), userLabel, storage);
+
+		ValidatorHelper.failOnError(log, getValidator().validate(user));
+
 		user.updateStorage();
 		handleRoleClaims(accessToken, user);
 
