@@ -9,6 +9,8 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
+import org.jooq.SelectHavingStep;
+import org.jooq.SelectSeekStepN;
 import org.jooq.impl.DSL;
 
 /**
@@ -32,13 +34,21 @@ public class QueryStepTransformer {
 															   .from(queryStep.getFromTables())
 															   .where(queryStep.getConditions());
 
-		List<Field<?>> orderByFields = queryStep.getSelects().getIds().toFields();
+		// grouping
+		SelectHavingStep<Record> grouped = queryBase;
 		if (queryStep.isGroupBy()) {
-			return queryBase.groupBy(queryStep.getGroupBy()).orderBy(orderByFields);
+			grouped = queryBase.groupBy(queryStep.getGroupBy());
 		}
-		else {
-			return queryBase.orderBy(orderByFields);
+
+		// ordering
+		List<Field<?>> orderByFields = queryStep.getSelects().getIds().toFields();
+		SelectSeekStepN<Record> ordered = grouped.orderBy(orderByFields);
+
+		// union
+		if (!queryStep.isUnion()) {
+			return ordered;
 		}
+		return unionAll(queryStep, ordered);
 	}
 
 	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep) {
@@ -60,6 +70,11 @@ public class QueryStepTransformer {
 	}
 
 	private CommonTableExpression<Record> toCte(QueryStep queryStep) {
+		Select<Record> selectStep = toSelectStep(queryStep);
+		return DSL.name(queryStep.getCteName()).as(selectStep);
+	}
+
+	private Select<Record> toSelectStep(QueryStep queryStep) {
 
 		Select<Record> selectStep = this.dslContext
 				.select(queryStep.getSelects().all())
@@ -71,18 +86,17 @@ public class QueryStepTransformer {
 		}
 
 		if (queryStep.isUnion()) {
-			for (QueryStep unionStep : queryStep.getUnion()) {
-				// we only use the union as part of the date aggregation process - the entries of the UNION tables are all unique
-				// thus we can use a UNION ALL because it's way faster than UNION
-				selectStep = selectStep.unionAll(
-						this.dslContext.select(unionStep.getSelects().all())
-									   .from(unionStep.getFromTables())
-									   .where(unionStep.getConditions())
-				);
-			}
+			selectStep = unionAll(queryStep, selectStep);
 		}
 
-		return DSL.name(queryStep.getCteName()).as(selectStep);
+		return selectStep;
+	}
+
+	private Select<Record> unionAll(QueryStep queryStep, Select<Record> base) {
+		for (QueryStep unionStep : queryStep.getUnion()) {
+			base = base.unionAll(toSelectStep(unionStep));
+		}
+		return base;
 	}
 
 }

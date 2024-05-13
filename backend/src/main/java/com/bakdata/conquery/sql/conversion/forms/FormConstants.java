@@ -20,6 +20,21 @@ class FormConstants {
 	public static Field<Date> INDEX_START = DSL.field(DSL.name(SharedAliases.INDEX_START.getAlias()), Date.class);
 
 	/**
+	 * The index date corresponding to the {@link TemporalSamplerFactory} of a relative stratification.
+	 */
+	public static Field<Date> INDEX_SELECTOR = DSL.field(DSL.name(SharedAliases.INDEX_SELECTOR.getAlias()), Date.class);
+
+	/**
+	 * The index date from which we start when calculating a feature range.
+	 */
+	public static Field<Date> INDEX_START_NEGATIVE = DSL.field(DSL.name(SharedAliases.INDEX_START_NEGATIVE.getAlias()), Date.class);
+
+	/**
+	 * The index date from which we start when calculating an outcome range.
+	 */
+	public static Field<Date> INDEX_START_POSITIVE = DSL.field(DSL.name(SharedAliases.INDEX_START_POSITIVE.getAlias()), Date.class);
+
+	/**
 	 * The quarter start of the lower bound of an absolute stratification range. The stratification range this date is referring to can be an
 	 * {@link AbsoluteFormQuery#getDateRange()} or for an {@link EntityDateQuery} the respective entities date range bound by the
 	 * {@link EntityDateQuery#getDateRange()}.

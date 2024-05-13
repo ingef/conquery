@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -96,11 +95,10 @@ public class FlagSqlAggregator implements SqlAggregator {
 		SqlTables connectorTables = filterContext.getTables();
 		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
 
-		List<ExtractingSqlSelect<Boolean>> rootSelects =
-				getRequiredColumnNames(flagFilter.getFlags(), filterContext.getValue())
-						.stream()
-						.map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
-						.collect(Collectors.toList());
+		List<ExtractingSqlSelect<Boolean>> rootSelects = FlagCondition.getRequiredColumns(flagFilter.getFlags(), filterContext.getValue()).stream()
+																	  .map(Column::getName)
+																	  .map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
+																	  .collect(Collectors.toList());
 		SqlSelects selects = SqlSelects.builder()
 									   .preprocessingSelects(rootSelects)
 									   .build();
@@ -163,16 +161,6 @@ public class FlagSqlAggregator implements SqlAggregator {
 										Map.Entry::getKey,
 										entry -> entry.getValue().qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select()
 								));
-	}
-
-	/**
-	 * @return Columns names of a given flags map that match the selected flags of the filter value.
-	 */
-	private static List<String> getRequiredColumnNames(Map<String, Column> flags, String[] selectedFlags) {
-		return Arrays.stream(selectedFlags)
-					 .map(flags::get)
-					 .map(Column::getName)
-					 .toList();
 	}
 
 }

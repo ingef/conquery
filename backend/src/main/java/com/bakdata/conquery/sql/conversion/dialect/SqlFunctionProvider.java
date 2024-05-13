@@ -7,10 +7,10 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -66,15 +66,15 @@ public interface SqlFunctionProvider {
 	List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias);
 
 	/**
-	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date.
+	 * Creates a {@link ColumnDateRange} for a tables {@link ValidityDate}.
 	 */
-	ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias);
+	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
 	 */
-	ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias);
+	ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
@@ -93,7 +93,7 @@ public interface SqlFunctionProvider {
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables);
+	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
@@ -115,6 +115,9 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> daterangeStringExpression(ColumnDateRange columnDateRange);
 
+	/**
+	 * Calculates the date distance in the given {@link ChronoUnit} between an exclusive end date and an inclusive start date.
+	 */
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
@@ -192,6 +195,10 @@ public interface SqlFunctionProvider {
 
 	default Field<String> replace(Field<String> target, String old, String _new) {
 		return DSL.function("replace", String.class, target, DSL.val(old), DSL.val(_new));
+	}
+
+	default Field<String> encloseInCurlyBraces(Field<String> stringExpression) {
+		return DSL.field("'{' || {0} || '}'", String.class, stringExpression);
 	}
 
 	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {

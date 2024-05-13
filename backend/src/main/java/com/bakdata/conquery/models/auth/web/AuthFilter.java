@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.google.common.base.Function;
-import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
@@ -17,9 +16,6 @@ import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.ext.Provider;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -32,17 +28,19 @@ import org.glassfish.jersey.spi.Contract;
  * security relevant information for protected resources. The request is first
  * submitted to the registered {@link ConqueryAuthenticationRealm}s for the
  * token extraction, then the extracted tokens are submitted these realms
- * through Dropwizards {@link AuthFilter} and Shiro.
+ * through Dropwizards {@link io.dropwizard.auth.AuthFilter} and Shiro.
  */
 @Slf4j
 @PreMatching
-@Priority(Priorities.AUTHENTICATION)
-public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
+@Priority(AuthFilter.PRIORITY)
+public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToken, Subject> {
+
+	public static final int PRIORITY = Priorities.AUTHENTICATION;
 
 	private final IterableProvider<TokenExtractor> tokenExtractors;
 
 	@Inject
-	public DefaultAuthFilter(IterableProvider<TokenExtractor> tokenExtractors) {
+	public AuthFilter(IterableProvider<TokenExtractor> tokenExtractors) {
 		this.tokenExtractors = tokenExtractors;
 		this.authenticator = new ConqueryAuthenticator();
 		this.unauthorizedHandler = new DefaultUnauthorizedHandler();
@@ -102,7 +100,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	 * Authenticating realms need to be able to extract a token from a request. How
 	 * it performs the extraction is implementation dependent. Anyway the realm
 	 * should NOT alter the request. This function is called prior to the
-	 * authentication process in the {@link DefaultAuthFilter}. After the token
+	 * authentication process in the {@link AuthFilter}. After the token
 	 * extraction process the Token is resubmitted to the realm from the AuthFilter
 	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
 	 *

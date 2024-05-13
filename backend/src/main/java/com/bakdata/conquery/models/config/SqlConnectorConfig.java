@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SqlConnectorConfig {
 
+	public static final String DEFAULT_PRIMARY_COLUMN = "pid";
+
 	boolean enabled;
 
 	private Dialect dialect;
@@ -26,5 +28,5 @@ public class SqlConnectorConfig {
 
 	private String jdbcConnectionUrl;
 
-	private String primaryColumn = "pid";
+	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
 }

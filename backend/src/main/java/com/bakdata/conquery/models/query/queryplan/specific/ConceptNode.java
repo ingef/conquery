@@ -119,9 +119,11 @@ public class ConceptNode extends QPChainNode {
 		boolean consumed = false;
 
 		for (ConceptElement<?> ce : concepts) {
-			if ((mostSpecificChildren != null && ce.matchesPrefix(mostSpecificChildren)) || ce.getConcept() == ce) {
-				consumed |= getChild().acceptEvent(bucket, event);
+			if (!ce.matchesPrefix(mostSpecificChildren)) {
+				continue;
 			}
+
+			consumed |= getChild().acceptEvent(bucket, event);
 		}
 
 		return consumed;

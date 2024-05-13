@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.index;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +63,7 @@ public class IndexService implements Injectable {
 
 				// Iterate records
 				for (Record row : records) {
+					// There can be multiple templates and multiple external values, hence the right side is a map
 					final Pair<String, Map<String, String>> pair = computeInternalExternal(key, csvParser, row);
 					if (pair == null) {
 						continue;

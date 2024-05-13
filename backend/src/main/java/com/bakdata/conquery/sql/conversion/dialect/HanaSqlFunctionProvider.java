@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,7 +15,6 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -107,25 +104,25 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias) {
-		return toColumnDateRange(cqTable).asValidityDateRange(alias);
+	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
+		return toColumnDateRange(validityDate);
 	}
 
 	@Override
-	public ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias) {
+	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 
-		ColumnDateRange validityDate = toColumnDateRange(cqTable);
+		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 
-		Field<Date> lowerBound = DSL.when(validityDate.getStart().lessThan(restriction.getStart()), restriction.getStart())
-									.otherwise(validityDate.getStart());
+		Field<Date> lowerBound = DSL.when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
+									.otherwise(validityDateRange.getStart());
 
 		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
 		Field<Date> restrictionUpperBound = DSL.when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), DSL.val(1)));
-		Field<Date> upperBound = DSL.when(validityDate.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
-									.otherwise(validityDate.getEnd());
+		Field<Date> upperBound = DSL.when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
+									.otherwise(validityDateRange.getEnd());
 
-		return ColumnDateRange.of(lowerBound, upperBound).as(alias);
+		return ColumnDateRange.of(lowerBound, upperBound);
 	}
 
 	@Override
@@ -151,7 +148,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables) {
+	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
 		// HANA does not support single column datemultiranges
 		return predecessor;
 	}
@@ -169,7 +166,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
-		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
+		return DSL.when(stringAggregation.isNull(), DSL.val("{}"))
 				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
 	}
 
@@ -295,7 +292,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				"ADD_DAYS",
 				Date.class,
 				dateColumn,
-				DSL.val(amountOfDays)
+				amountOfDays
 		);
 	}
 
@@ -325,10 +322,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
 	}
 
-	private ColumnDateRange toColumnDateRange(CQTable cqTable) {
+	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
-		ValidityDate validityDate = cqTable.findValidityDate();
-		String tableName = cqTable.getConnector().getTable().getName();
+		String tableName = validityDate.getConnector().getTable().getName();
 
 		Column startColumn;
 		Column endColumn;

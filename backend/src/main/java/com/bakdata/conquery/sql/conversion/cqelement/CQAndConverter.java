@@ -5,6 +5,7 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
+import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
 
 public class CQAndConverter implements NodeConverter<CQAnd> {
 
@@ -15,16 +16,28 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 
 	@Override
 	public ConversionContext convert(CQAnd andNode, ConversionContext context) {
+
+		QueryStep joined;
 		if (andNode.getChildren().size() == 1) {
-			return context.getNodeConversions().convert(andNode.getChildren().get(0), context);
+			ConversionContext withConvertedChild = context.getNodeConversions().convert(andNode.getChildren().get(0), context);
+			joined = withConvertedChild.getLastConvertedStep();
 		}
-		QueryStep joined = QueryStepJoiner.joinChildren(
-				andNode.getChildren(),
-				context,
-				ConqueryJoinType.INNER_JOIN,
-				andNode.getDateAction()
-		);
-		return context.withQueryStep(joined);
+		else {
+			joined = QueryStepJoiner.joinChildren(
+					andNode.getChildren(),
+					context,
+					ConqueryJoinType.INNER_JOIN,
+					andNode.getDateAction()
+			);
+		}
+
+		if (andNode.getCreateExists().isEmpty()) {
+			return context.withQueryStep(joined);
+		}
+
+		String joinedNodeName = joined.getCteName();
+		ExistsSqlSelect existsSqlSelect = new ExistsSqlSelect(joinedNodeName);
+		return context.withQueryStep(joined.addSqlSelect(existsSqlSelect));
 	}
 
 }
