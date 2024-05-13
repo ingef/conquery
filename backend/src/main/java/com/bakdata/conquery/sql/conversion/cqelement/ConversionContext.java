@@ -84,4 +84,12 @@ public class ConversionContext implements Context {
 	public ConversionContext getConversionContext() {
 		return this;
 	}
+
+	/**
+	 * Get the last query {@link QueryStep} that has been added to this context query steps.
+	 */
+	public QueryStep getLastConvertedStep() {
+		return this.querySteps.get(this.querySteps.size() - 1);
+	}
+
 }

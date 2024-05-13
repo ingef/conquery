@@ -46,7 +46,7 @@ public class FormConversionHelper {
 
 		ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(query, context);
 		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
-		QueryStep convertedPrerequisite = withConvertedPrerequisite.getQuerySteps().get(0);
+		QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
 
 		Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
 		// we keep the primary column and the validity date
