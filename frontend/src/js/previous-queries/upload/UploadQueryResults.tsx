@@ -24,12 +24,13 @@ const SxIconButton = styled(IconButton)`
   padding: 9px 6px;
 `;
 
-interface PropsT {
+const UploadQueryResults = ({
+  className,
+  datasetId,
+}: {
   className?: string;
   datasetId: DatasetT["id"] | null;
-}
-
-const UploadQueryResults = ({ className, datasetId }: PropsT) => {
+}) => {
   const { t } = useTranslation();
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
