@@ -7,12 +7,11 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -94,11 +93,12 @@ public interface SqlFunctionProvider {
 
 	/**
 	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
-	 * @param nested The {@link ColumnDateRange} you want to unnest.
+	 * @param nested      The {@link ColumnDateRange} you want to unnest.
+	 * @param cteName     The CTE name of the returned {@link QueryStep}.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String t);
+	QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
@@ -127,7 +127,7 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
-	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
+	<T> Field<T> first(Field<T> field, List<Field<?>> orderByColumn);
 
 	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
