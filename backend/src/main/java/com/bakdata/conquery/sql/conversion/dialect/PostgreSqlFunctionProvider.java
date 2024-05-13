@@ -9,12 +9,16 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.google.common.base.Preconditions;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -23,6 +27,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import com.google.common.base.Preconditions;
 import org.jooq.impl.SQLDataType;
 
 /**
@@ -324,24 +329,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return ofSingleColumn(tableName, validityDate.getColumn());
 	}
 
-	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
-		Field<?> start = DSL.coalesce(
-				DSL.field(DSL.name(tableName, startColumn.getName())),
-				toDateField(MINUS_INFINITY_DATE_VALUE)
-		);
-		Field<?> end = DSL.coalesce(
-				DSL.field(DSL.name(tableName, endColumn.getName())),
-				toDateField(INFINITY_DATE_VALUE)
-		);
-		return ColumnDateRange.of(daterange(start, end, "[]"));
-	}
-
 	private ColumnDateRange ofSingleColumn(String tableName, Column column) {
 
 		Field<?> dateRange;
 
 		dateRange = switch (column.getType()) {
-			// if column is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
+			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
 			case DATE_RANGE -> {
 				Field<Object> daterange = DSL.field(DSL.name(column.getName()));
 				Field<Date> startColumn = DSL.coalesce(
@@ -367,6 +360,20 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		};
 
 		return ColumnDateRange.of(dateRange);
+	}
+
+	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
+
+		Field<?> start = DSL.coalesce(
+				DSL.field(DSL.name(tableName, startColumn.getName())),
+				toDateField(MINUS_INFINITY_DATE_VALUE)
+		);
+		Field<?> end = DSL.coalesce(
+				DSL.field(DSL.name(tableName, endColumn.getName())),
+				toDateField(INFINITY_DATE_VALUE)
+		);
+
+		return ColumnDateRange.of(daterange(start, end, "[]"));
 	}
 
 	private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {
