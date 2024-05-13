@@ -147,11 +147,7 @@ const FormConceptCopyModal = ({
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      closeIcon
-      headline={t("externalForms.copyModal.headline")}
-    >
+    <Modal onClose={onClose} headline={t("externalForms.copyModal.headline")}>
       <InputSelect
         label={t("externalForms.copyModal.selectLabel")}
         options={conceptListFieldOptions}

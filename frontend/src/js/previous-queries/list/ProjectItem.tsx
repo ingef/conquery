@@ -134,12 +134,6 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-`;
-
 const SxFaIcon = styled(FaIcon)`
   opacity: 0.7;
 `;
@@ -237,8 +231,8 @@ const ProjectItem = forwardRef<
                 disabled={!mayEdit}
               />
             </WithTooltip>
-            {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-              <Row>
+            <div className="flex items-center gap-2">
+              {!isFormConfig(item) && item.resultUrls.length > 0 ? (
                 <WithTooltip text={t("previousQuery.downloadResults")}>
                   <SxDownloadButton
                     tight
@@ -250,15 +244,15 @@ const ProjectItem = forwardRef<
                     {topLeftLabel}
                   </SxDownloadButton>
                 </WithTooltip>
-                {!item.containsDates && (
-                  <WithTooltip text={t("previousQuery.hasNoDates")}>
-                    <SxFaIcon red icon={faCalendar} />
-                  </WithTooltip>
-                )}
-              </Row>
-            ) : (
-              <NonBreakingText>{topLeftLabel}</NonBreakingText>
-            )}
+              ) : (
+                <NonBreakingText>{topLeftLabel}</NonBreakingText>
+              )}
+              {!isFormConfig(item) && !item.containsDates && (
+                <WithTooltip text={t("previousQuery.hasNoDates")}>
+                  <SxFaIcon red icon={faCalendar} />
+                </WithTooltip>
+              )}
+            </div>
           </TopLeft>
           <TopRight>
             {executedAt}
