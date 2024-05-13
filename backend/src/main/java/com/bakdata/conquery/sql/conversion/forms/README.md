@@ -11,8 +11,11 @@ to dialect, but the overall process is the same. This document is using Postgres
     1. [For absolute forms](#absolute-forms)
     2. [For entity date queries](#entity-date)
     3. [Stratification tables](#stratification-tables)
-3. [Feature conversion](#feature-conversion)
-4. [Left-join converted features](#left-join-converted-features-with-the-full-stratification-table-for-the-final-select)
+3. [Relative stratification](#relative-stratification)
+4. [Full stratification table](#full-stratification-table)
+5. [Feature conversion](#feature-conversion)
+6. [Left-join converted features](#left-join-converted-features-with-the-full-stratification-table-for-the-final-select)
+7. [Full export form](#full-export-form)
 
 ## Prerequisite conversion
 
@@ -32,18 +35,19 @@ from "DUMMY"; -- "DUMMY" is SAP HANAs built-in no-op table
 
 ### Absolute forms
 
-For an absolute form, we only care for the primary ID, so we extract the primary IDs and discard all other fields from 
-the prerequisite query. The `stratification_bounds` represent the absolute forms date range. They define the required 
-complete stratification window. We group by primary ID to keep only distinct entries for each entity and discard any 
-duplicated entries which, for example, might occur due to a preceding secondary id query.
+For an absolute form, we only care for the primary ID, so we extract the primary IDs and discard the validitiy date. For entity date queries, it's kept. The `stratification_bounds` represent the absolute forms date
+range. They define the required complete stratification window. We group by primary ID (and validity date, if present)
+to keep only distinct entries for each entity and discard any duplicated entries which, for example, might occur due
+to a preceding secondary id query.
 
 **CTE:** `extract_ids`
 
 ```sql
 select "primary_id",
+       "validity_date", -- the validity date is only kept in case we convert an entity date query
        daterange('2012-06-01', '2012-09-30', '[]') as "stratification_bounds"
 from "external"
-group by "primary_id"
+group by "primary_id", "validity_date"
 ```
 
 ### Entity date
@@ -189,9 +193,124 @@ in our case. The result looks like this:
 | 1           | YEARS      | 2     | \[2013-04-01,2014-04-01\) |
 | 1           | YEARS      | 3     | \[2014-04-01,2014-12-18\) |
 
-**CTE:** `full_stratification`
+## Relative stratification
 
-Now, we union all the resolution tables.
+Like for entity date queries, we need to extract the primary ID and the corresponding validity date for each distinct
+entity.
+
+**CTE:** `extract_ids`
+
+```sql
+select "primary_id",
+       unnest("validity_date") as "validity_date" -- unnesting is only required for dialects with multiranges
+from "external"
+group by "primary_id", "validity_date"
+```
+
+Next, we need to find the index selector date: For each validity date of an entity, we calculate either:
+
+- the `EARLIEST` date of the given range
+- the `LATEST` date of the given range
+- or a `RANDOM` date within the given range
+  depending on the relative forms
+  [index selector](../../../apiv1/query/concept/specific/temporal/TemporalSamplerFactory.java).
+
+**CTE:** `index_selector`
+
+```sql
+select "primary_id",
+       min(lower("dates")) as "index_selector" -- example for EARLIEST
+from "extract_ids"
+group by "primary_id"
+```
+
+Using the index selector date, we can now define the index start dates from where the feature and/or outcome ranges of
+the relative form start. Their exact calculation depends on the
+[index placement](../../../apiv1/forms/IndexPlacement.java) of the relative form.
+
+For the `BEFORE` and `AFTER` placement, the positive start (outcome range) and negative start (feature range) is the
+same. Only for the `NEUTRAL` placement, the start dates differ.
+
+We take the `BEFORE` placement with the time unit `QUARTERS` as an example: We jump to the next quarters start of the
+index selector date. From these index start dates, we will start in the next step when calculating the stratification
+windows of the feature and outcome range.
+
+**CTE:** `index_start`
+
+```sql
+select "primary_id",
+       "index_selector",
+       (date_trunc('year', "index_selector") +
+        interval '3 months' * (extract(quarter from ("index_selector" + -1)) + 0))::date as "index_start_positive",
+       (date_trunc('year', "index_selector") +
+        interval '3 months' * (extract(quarter from ("index_selector" + -1)) + 0))::date as "index_start_negative"
+from "index_selector"
+```
+
+The last step before calculating the actual stratification windows is to calculate the min and max date of the
+stratification for each entity, which is basically the lower bound of the feature range and the upper bound of the
+outcome range. Assuming a time count before of 6 quarters and a time count after of 2 quarters, the calculation looks
+like the following:
+
+**CTE:** `total_bounds`
+
+```sql
+select "primary_id",
+       daterange(
+               ("index_start_negative" + interval '3 months' * (-6 + 0))::date,
+               ("index_start_positive" + interval '3 months' * (2 + 0))::date,
+               '[)'
+       ) as "stratification_bounds",
+       "index_selector",
+       "index_start_positive",
+       "index_start_negative"
+from "index_start"
+```
+
+We will intersect this range with the calculated ranges in the next step, because calculated ranges always span over
+whole intervals (`YEARS`, `QUARTERS`), but must be ultimately bound by the complete min and max dates. In the following
+example, we take a look at how the `YEARS` resolution is calculated. We still assume a time count before of 6 quarters
+and a time count after of 2 quarters. This means we need to jump 2 years back for the feature range and 1 year forward
+for the outcome range. Similar to absolute stratification, we create a set of date ranges by manipulating the start
+dates by adding positive or negative time intervals times an index. The index is again taken from a generated integer
+series.
+
+**CTE:** `years`
+
+```sql
+-- feature range
+select "primary_id",
+       'YEARS'                     as "resolution",
+       "index",
+       "index_selector",
+       daterange(
+               ("index_start_negative" + interval '1 year' * ("index" + 0))::date,
+               ("index_start_negative" + interval '1 year' * ("index" + 1))::date,
+               '[)'
+       ) * "stratification_bounds" as "stratification_bounds"
+from "total_bounds",
+     generate_series(-2, -1) as "index" -- -2 -> we jump 2 years back
+union all
+-- outcome range
+select "primary_id",
+       'YEARS'                     as "resolution",
+       "index",
+       "index_selector",
+       daterange(
+               ("index_start_positive" + interval '1 year' * ("index" + -1))::date,
+               ("index_start_positive" + interval '1 year' * ("index" + 0))::date,
+               '[)'
+       ) * "stratification_bounds" as "stratification_bounds"
+from "total_bounds",
+     generate_series(1, 1) as "index" -- 1 -> we jump 1 year forward 
+```
+
+Using the `stratification_bounds`, representing the min and max stratification date calculated in the previous step,
+we intersect this range with our calculated time frame to generate stratification windows which are correctly bound.
+
+## Full stratification table
+
+Now, we union all the resolution tables to obtain the full stratification table.
 
 ```sql
 select "complete"."primary_id",
@@ -285,3 +404,43 @@ For an absolute form, we expect the final result to contain all stratification r
 chosen resolutions. Because we filter all entries where stratification range and validity date do not overlap in each
 concept conversion's event filter step, the converted feature(s) table might not contain all stratification ranges.
 Thus, we left-join the table with the converted feature(s) back with the full stratification table. 
+
+## Full export form
+
+When converting full export forms, we must ensure the columns in the final select query have the right order. Because
+the `TableExportQuery` of an `FullExportForm` contains already the mapping from each required column to the position 
+in the final select, we just export each required table by selecting all the required columns. For each column, we 
+check if the current table contains the respective column. If so, we select the column, otherwise we just select null.
+This way, we can easily union all export tables without the need to apply additional logic to obtain the correct column 
+order.
+
+```sql
+with "external" as (select 1 as "primary_id"),
+     "extract_ids" as (select "primary_id"
+                       from "external"
+                       group by "primary_id")
+(select "table"."pid",
+        "validity_date"::varchar as "validity_date",
+        'table'                  as "source", -- name of the table we select from
+        "table"."second_id"      as "second_id-2",
+        "table"."column"         as "column-3",
+        null                     as "date_end-4",
+        null                     as "geburtsdatum-5",
+        null                     as "geschlecht-6"
+ from "table"
+          join "extract_ids"
+               on "table"."pid" = "extract_ids"."primary_id"
+ where "table"."column" in ('A'))
+ union all
+(select "vers_stamm"."pid",
+        "vers_stamm"."validity_date"::varchar as "validity_date",
+        'vers_stamm'                          as "source",
+        null                                  as "second_id-2",
+        null                                  as "column-3",
+        "vers_stamm"."date_end"               as "date_end-4",
+        "vers_stamm"."geburtsdatum"           as "geburtsdatum-5",
+        "vers_stamm"."geschlecht"             as "geschlecht-6"
+ from "vers_stamm"
+          join "extract_ids"
+               on "vers_stamm"."pid" = "extract_ids"."primary_id")
+```

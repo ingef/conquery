@@ -3,6 +3,8 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.Collections;
 import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -52,6 +54,11 @@ public class QueryStep {
 
 	public static TableLike<Record> toTableLike(String fromTableName) {
 		return DSL.table(DSL.name(fromTableName));
+	}
+
+	public QueryStep addSqlSelect(SqlSelect sqlSelect) {
+		Selects withAdditionalSelect = this.selects.toBuilder().sqlSelect(sqlSelect).build();
+		return this.toBuilder().selects(withAdditionalSelect).build();
 	}
 
 	/**

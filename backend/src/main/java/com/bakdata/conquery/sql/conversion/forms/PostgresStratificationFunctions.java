@@ -2,10 +2,13 @@ package com.bakdata.conquery.sql.conversion.forms;
 
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
@@ -16,6 +19,7 @@ import org.jooq.Keyword;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
 @Getter
 @RequiredArgsConstructor
@@ -34,44 +38,66 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	private final PostgreSqlFunctionProvider functionProvider;
 
 	@Override
+	public ColumnDateRange ofStartAndEnd(Field<Date> start, Field<Date> end) {
+		return ColumnDateRange.of(functionProvider.daterange(start, end, "[)"));
+	}
+
+	@Override
 	public Field<Date> absoluteIndexStartDate(ColumnDateRange dateRange) {
 		return lower(dateRange);
 	}
 
 	@Override
-	public Field<Date> yearStart(ColumnDateRange dateRange) {
+	public Field<Date> lowerBoundYearStart(ColumnDateRange dateRange) {
 		return castExpressionToDate(jumpToYearStart(lower(dateRange)));
 	}
 
 	@Override
-	public Field<Date> yearEnd(ColumnDateRange dateRange) {
+	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
 				"{0} + {1} {2}",
 				Date.class,
-				dateTruncate(DSL.val("year"), upper(dateRange)),
+				dateTruncate(DSL.val("year"), inclusiveUpper(dateRange)),
 				INTERVAL_KEYWORD,
 				INTERVAL_MAP.get(Interval.ONE_YEAR_INTERVAL)
 		);
 	}
 
 	@Override
-	public Field<Date> yearEndQuarterAligned(ColumnDateRange dateRange) {
-		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
-		Field<Date> nextYearStart = yearEnd(dateRange);
-		return addQuarters(nextYearStart, quarter, Offset.MINUS_ONE);
+	public Field<Date> upperBoundYearEndQuarterAligned(ColumnDateRange dateRange) {
+		Field<Integer> lowerBoundQuarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
+		Field<Date> upperBound = inclusiveUpper(dateRange);
+		Field<Date> yearStartOfUpperBound = castExpressionToDate(jumpToYearStart(upperBound));
+		Field<Date> yearEndQuarterAligned = addQuarters(yearStartOfUpperBound, lowerBoundQuarter, Offset.MINUS_ONE);
+		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
+		return DSL.when(
+						  yearEndQuarterAligned.lessThan(upperBound),
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.val(1), Offset.NONE)
+				  )
+				  .otherwise(yearEndQuarterAligned);
 	}
 
 	@Override
-	public Field<Date> quarterStart(ColumnDateRange dateRange) {
-		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, lower(dateRange));
-		return addQuarters(jumpToYearStart(lower(dateRange)), quarter, Offset.MINUS_ONE);
+	public Field<Date> lowerBoundQuarterStart(ColumnDateRange dateRange) {
+		return jumpToQuarterStart(lower(dateRange));
 	}
 
 	@Override
-	public Field<Date> quarterEnd(ColumnDateRange dateRange) {
-		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), upper(dateRange));
-		Field<Date> quarterEndInclusive = upper(dateRange).minus(1);
-		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, quarterEndInclusive);
+	protected Field<Date> jumpToQuarterStart(Field<Date> date) {
+		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
+		return addQuarters(jumpToYearStart(date), quarter, Offset.MINUS_ONE);
+	}
+
+	@Override
+	public Field<Date> upperBoundQuarterEnd(ColumnDateRange dateRange) {
+		Field<Date> inclusiveEnd = inclusiveUpper(dateRange);
+		return jumpToNextQuarterStart(inclusiveEnd);
+	}
+
+	@Override
+	protected Field<Date> jumpToNextQuarterStart(Field<Date> date) {
+		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), date);
+		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(yearStart, quarter, Offset.NONE);
 	}
 
@@ -86,13 +112,44 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
+	public Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate) {
+		return switch (indexSelector) {
+			case EARLIEST -> DSL.min(lower(validityDate));
+			// upper returns the exclusive end date, we want to inclusive one, so we add -1 day
+			case LATEST -> DSL.max(inclusiveUpper(validityDate));
+			case RANDOM -> {
+				// we calculate a random int which is in range of the date distance between upper and lower bound
+				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), exclusiveUpper(validityDate));
+				Field<BigDecimal> randomAmountOfDays = DSL.rand().times(dateDistanceInDays);
+				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
+				// then we add this random amount (of days) to the start date
+				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
+				// finally, we handle multiple ranges by randomizing which range we use to select a random date from
+				yield functionProvider.random(randomDateInRange);
+			}
+		};
+	}
+
+	@Override
+	public Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset) {
+		Field<String> intervalExpression = INTERVAL_MAP.get(interval);
+		return addMultipliedInterval(startDate, intervalExpression, amount, offset);
+	}
+
+	@Override
 	protected Field<Date> lower(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
 		return DSL.function("lower", Date.class, dateRange.getRange());
 	}
 
 	@Override
-	protected Field<Date> upper(ColumnDateRange dateRange) {
+	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
+		checkIsSingleColumnRange(dateRange);
+		return exclusiveUpper(dateRange).minus(1);
+	}
+
+	@Override
+	protected Field<Date> exclusiveUpper(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
 		return DSL.function("upper", Date.class, dateRange.getRange());
 	}
@@ -100,24 +157,23 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	protected ColumnDateRange calcRange(Field<Date> start, Interval interval) {
 		Field<String> intervalExpression = INTERVAL_MAP.get(interval);
-		return ColumnDateRange.of(functionProvider.daterange(
+		return ofStartAndEnd(
 				calcStartDate(start, intervalExpression),
-				calcEndDate(start, intervalExpression),
-				"[)"
-		));
+				calcEndDate(start, intervalExpression)
+		);
 	}
 
 	private Field<Date> calcStartDate(Field<Date> start, Field<String> intervalExpression) {
 		Field<Integer> intSeriesField = intSeriesField();
-		return multiplyByInterval(start, intervalExpression, intSeriesField, Offset.MINUS_ONE);
+		return addMultipliedInterval(start, intervalExpression, intSeriesField, Offset.MINUS_ONE);
 	}
 
 	private Field<Date> calcEndDate(Field<Date> start, Field<String> intervalExpression) {
 		Field<Integer> intSeriesField = intSeriesField();
-		return multiplyByInterval(start, intervalExpression, intSeriesField, Offset.NONE);
+		return addMultipliedInterval(start, intervalExpression, intSeriesField, Offset.NONE);
 	}
 
-	private Field<Date> multiplyByInterval(Field<? extends java.util.Date> start, Field<String> intervalExpression, Field<Integer> amount, Offset offset) {
+	private Field<Date> addMultipliedInterval(Field<? extends java.util.Date> start, Field<String> intervalExpression, Field<Integer> amount, Offset offset) {
 		Field<Integer> multiplier = amount.plus(offset.getOffset());
 		Field<Timestamp> shiftedDate = DSL.field(
 				"{0} + {1} {2} * {3}",
@@ -136,7 +192,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Date> addQuarters(Field<? extends java.util.Date> start, Field<Integer> amountOfQuarters, Offset offset) {
-		return multiplyByInterval(start, INTERVAL_MAP.get(Interval.QUARTER_INTERVAL), amountOfQuarters, offset);
+		return addMultipliedInterval(start, INTERVAL_MAP.get(Interval.QUARTER_INTERVAL), amountOfQuarters, offset);
 	}
 
 	private Field<Timestamp> jumpToYearStart(Field<Date> date) {
