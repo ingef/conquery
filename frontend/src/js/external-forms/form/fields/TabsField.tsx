@@ -45,9 +45,10 @@ export const TabsField = ({
           <>
             <FormTabNavigation
               selectedTab={fieldProps.value as string}
-              onSelectTab={(tab) =>
-                commonProps.setValue(field.name, tab, setValueConfig)
-              }
+              onSelectTab={(tab) => {
+                commonProps.setValue(field.name, tab, setValueConfig);
+                commonProps.trigger();
+              }}
               options={field.tabs.map((tab) => ({
                 label: () => tab.title[commonProps.locale] || "",
                 value: tab.name,
