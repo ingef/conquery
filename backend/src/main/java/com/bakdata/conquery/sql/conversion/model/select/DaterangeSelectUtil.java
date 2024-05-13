@@ -5,6 +5,9 @@ import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteSt
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,9 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 class DaterangeSelectUtil {
 
@@ -71,6 +77,22 @@ class DaterangeSelectUtil {
 						 .additionalPredecessor(Optional.of(intervalPackingSelectsStep))
 						 .finalSelect(finalSelect)
 						 .build();
+	}
+
+	public static FieldWrapper<BigDecimal> createDurationSumSqlSelect(String alias, ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
+		Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
+		Field<BigDecimal> durationSum = DSL.sum(
+												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.val(null, Integer.class))
+													  .otherwise(dateDistanceInDays)
+										   )
+										   .as(alias);
+		return new FieldWrapper<>(durationSum);
+	}
+
+	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
+		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
+		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 
 	private static SqlTables createTables(SelectContext context, ConceptConversionTables tables, String alias) {
