@@ -28,7 +28,6 @@ import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util";
@@ -302,7 +301,7 @@ export function useUpdateHistorySession() {
         dispatch(
           setMessage({
             message: t("history.error"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
