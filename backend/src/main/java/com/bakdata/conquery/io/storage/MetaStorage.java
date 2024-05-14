@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -195,5 +197,25 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(MetaStorage.class, this);
+	}
+
+	public <VALUE extends Identifiable<?>> VALUE get(Id<VALUE> id) {
+		if (id instanceof ManagedExecutionId executionId) {
+			return (VALUE) getExecution(executionId);
+		}
+		if (id instanceof FormConfigId formConfigId) {
+			return (VALUE) getFormConfig(formConfigId);
+		}
+		if (id instanceof GroupId groupId) {
+			return (VALUE) getGroup(groupId);
+		}
+		if (id instanceof RoleId roleId) {
+			return (VALUE) getRole(roleId);
+		}
+		if (id instanceof UserId userId) {
+			return (VALUE) getUser(userId);
+		}
+
+		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
 	}
 }
