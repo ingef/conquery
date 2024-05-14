@@ -21,7 +21,6 @@ import {
 } from "../../api/types";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
-import { SnackMessageType } from "../../snack-message/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -59,7 +58,7 @@ export const useLoadQueries = () => {
         dispatch(
           setMessage({
             message: t("previousQueries.error"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
@@ -97,7 +96,7 @@ export const useLoadQuery = () => {
         dispatch(
           setMessage({
             message: t("previousQuery.loadError"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
@@ -142,7 +141,7 @@ export const useUpdateQuery = () => {
       dispatch(
         setMessage({
           message: errorMessage,
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }
@@ -172,7 +171,7 @@ export const useRemoveQuery = () => {
       dispatch(
         setMessage({
           message: t("previousQuery.deleteError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }
@@ -218,7 +217,7 @@ export const useLoadFormConfigs = () => {
         dispatch(
           setMessage({
             message: t("formConfigs.error"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
@@ -257,7 +256,7 @@ export const useLoadFormConfig = () => {
         dispatch(
           setMessage({
             message: t("formConfig.loadError"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
@@ -297,7 +296,7 @@ export const useUpdateFormConfig = () => {
       dispatch(
         setMessage({
           message: errorMessage,
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }
@@ -328,7 +327,7 @@ export const useRemoveFormConfig = () => {
       dispatch(
         setMessage({
           message: t("formConfig.deleteError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }
