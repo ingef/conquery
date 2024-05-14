@@ -22,7 +22,7 @@ public class SingleSelectFilter extends SelectFilter<String> {
 
 	@Override
 	public FilterNode<?> createFilterNode(String value) {
-		return new SelectFilterNode(getColumn(), value);
+		return new SelectFilterNode(getColumn().resolve(), value);
 	}
 
 	@Override

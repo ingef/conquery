@@ -41,7 +41,7 @@ public class ResultCsvProcessor {
 
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset, OptionalLong limit) {
 
-		final Dataset dataset = exec.getDataset();
+		final Dataset dataset = exec.getDataset().resolve();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 

@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -37,15 +38,16 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
-			return new RangeFilterNode(value, new CountQuartersOfDateRangeAggregator(getColumn()));
+		final Column column = getColumn().resolve();
+		if (column.getType() == MajorTypeId.DATE_RANGE) {
+			return new RangeFilterNode(value, new CountQuartersOfDateRangeAggregator(column));
 		}
-		return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(getColumn()));
+		return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(column));
 	}
 
 	@Override
 	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
-		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
+		if (getColumn().resolve().getType() == MajorTypeId.DATE_RANGE) {
 			throw new UnsupportedOperationException("COUNT_QUARTERS conversion on columns of type DATE_RANGE not implemented yet.");
 		}
 		return CountQuartersSqlAggregator.create(this, filterContext).getSqlFilters();

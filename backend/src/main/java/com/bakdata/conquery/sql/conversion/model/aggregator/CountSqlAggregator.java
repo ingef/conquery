@@ -63,7 +63,7 @@ public class CountSqlAggregator implements SqlAggregator {
 
 	public static CountSqlAggregator create(CountSelect countSelect, SelectContext selectContext) {
 		return new CountSqlAggregator(
-				countSelect.getColumn(),
+				countSelect.getColumn().resolve(),
 				CountType.fromBoolean(countSelect.isDistinct()),
 				selectContext.getNameGenerator().selectName(countSelect),
 				selectContext.getTables(),
@@ -73,7 +73,7 @@ public class CountSqlAggregator implements SqlAggregator {
 
 	public static CountSqlAggregator create(CountFilter countFilter, FilterContext<Range.LongRange> filterContext) {
 		return new CountSqlAggregator(
-				countFilter.getColumn(),
+				countFilter.getColumn().resolve(),
 				CountType.fromBoolean(countFilter.isDistinct()),
 				filterContext.getNameGenerator().selectName(countFilter),
 				filterContext.getTables(),

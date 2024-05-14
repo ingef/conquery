@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -56,7 +57,8 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 			return;
 		}
 
-		column = connector.getColumn();
+		final ColumnId columnId = connector.getColumn();
+		column = columnId != null ? columnId.resolve() : null;
 		cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, connector);
 	}
 

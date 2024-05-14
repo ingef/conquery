@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
@@ -16,12 +21,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
-
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -44,7 +43,7 @@ public class FilterResource extends HAuthorized {
 	@POST
 	@Path("resolve")
 	public ConceptsProcessor.ResolvedFilterValues resolveFilterValues(FilterValues filterValues) {
-		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getDataset().resolve(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
 		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.values());
@@ -54,7 +53,7 @@ public class FilterResource extends HAuthorized {
 	@POST
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
-		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getDataset().resolve(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
 		if (!(filter instanceof SelectFilter)) {

@@ -54,7 +54,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
-			description.setDataset(conquery.getDataset());
+			description.setDataset(conquery.getDataset().getId());
 			assertThat(secondaryIds)
 					.extracting(FrontendSecondaryId::getId)
 					.containsExactly(description.getId().toString());

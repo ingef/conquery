@@ -62,14 +62,14 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final int nImports = namespace.getStorage().getAllImports().size();
+		final long nImports = namespace.getStorage().getAllImports().count();
 
 		log.info("Checking state before deletion");
 
 		// Assert state before deletion.
 		{
 			// Must contain the import.
-			assertThat(namespace.getStorage().get(dataset.getId()))
+			assertThat(namespace.getStorage().getDataset())
 					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
@@ -122,7 +122,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after deletion");
 
 			// We have deleted an import now there should be two less!
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(0);
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(0);
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
@@ -140,13 +140,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
-							.filteredOn(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getTable().getDataset().equals(dataset.getId()))
 							.isEmpty();
 
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getTable().getDataset().getId().equals(dataset.getId()))
+							.filteredOn(cBlock -> cBlock.getBucket().resolve().getTable().getDataset().equals(dataset.getId()))
 							.isEmpty();
 				}
 			}
@@ -182,7 +182,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.describedAs("Dataset after re-import.")
 					.isNotNull();
 
-			assertThat(conqueryReimport.getNamespace().getStorage().getAllImports().size()).isEqualTo(nImports);
+			assertThat(conqueryReimport.getNamespace().getStorage().getAllImports().count()).isEqualTo(nImports);
 
 			for (ShardNode node : conqueryReimport.getShardNodes()) {
 				assertThat(node.getWorkers().getWorkers().values())
@@ -209,7 +209,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Checking state after re-start");
 
-			assertThat(conqueryRestart.getNamespace().getStorage().getAllImports().size()).isEqualTo(2);
+			assertThat(conqueryRestart.getNamespace().getStorage().getAllImports().count()).isEqualTo(2);
 
 			for (ShardNode node : conqueryRestart.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -219,7 +219,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId())))
+					assertThat(workerStorage.getAllBuckets().filter(bucket -> bucket.getTable().getDataset().equals(dataset.getId())))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}

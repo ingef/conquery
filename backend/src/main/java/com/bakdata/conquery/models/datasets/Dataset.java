@@ -42,7 +42,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	public Table getAllIdsTable() {
 		//TODO store this somehow? / Add this at dataset creation
 		final Table table = new Table();
-		table.setDataset(this);
+		table.setDataset(this.getId());
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);
 		return table;
 	}
@@ -64,7 +64,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
-		return this;
+	public DatasetId getDataset() {
+		return this.getId();
 	}
 }

@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -160,7 +161,7 @@ public class ConceptsProcessor {
 	@NotNull
 	private static Function<ConnectorId, FrontendPreviewConfig.Labelled> connectorToLabelled(Namespace namespace) {
 		// TODO might use a cache here to dereference id
-		return id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getStorage().get(id).getTable().getLabel());
+		return id -> new FrontendPreviewConfig.Labelled(id.toString(), id.<Connector>resolve().getTable().getLabel());
 	}
 
 	/**
@@ -172,7 +173,7 @@ public class ConceptsProcessor {
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
@@ -238,7 +239,7 @@ public class ConceptsProcessor {
 	}
 
 	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -263,7 +264,7 @@ public class ConceptsProcessor {
 	}
 
 	private long countAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}
@@ -273,7 +274,7 @@ public class ConceptsProcessor {
 	 * Is used by the serach cache to load missing items
 	 */
 	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we exploit:

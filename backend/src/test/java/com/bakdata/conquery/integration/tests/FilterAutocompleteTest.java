@@ -166,7 +166,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
+		final FilterTemplate
+				filterTemplate =
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+		filter.setTemplate(filterTemplate.getId());
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")

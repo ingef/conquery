@@ -6,17 +6,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -55,8 +54,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Valid
 	private List<CONNECTOR> connectors = Collections.emptyList();
 
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	public List<Select> getDefaultSelects() {
 		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
@@ -86,7 +84,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(dataset.getId(), getName());
+		return new ConceptId(dataset, getName());
 	}
 
 	public int countElements() {

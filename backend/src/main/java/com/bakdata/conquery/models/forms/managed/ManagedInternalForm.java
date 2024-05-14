@@ -92,7 +92,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset().resolve(), getStorage())
 
 				));
 	}

@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -28,7 +32,9 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
-	private boolean checkForInjectedPrefix;
+	private boolean isNamespacedId;
+	private NsIdResolver nsIdResolver;
+	private MetaStorage metaStorage;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,11 +45,26 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		String text = parser.getText();
 
 		try {
-			return deserializeId(text, idParser, checkForInjectedPrefix, ctxt);
+			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
+			final Class<?> activeView = ctxt.getActiveView();
+			if (!isTestMode(ctxt, activeView)) {
+				if (id instanceof NamespacedId namespacedId) {
+
+					id.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) namespacedId));
+				}
+				else {
+					id.setIdResolver(() -> metaStorage.get(id));
+				}
+			}
+			return id;
 		}
 		catch (Exception e) {
 			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
 		}
+	}
+
+	private static boolean isTestMode(DeserializationContext ctxt, Class<?> activeView) {
+		return activeView != null && View.TestNoResolve.class.isAssignableFrom(ctxt.getActiveView());
 	}
 
 	public static <ID extends Id<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
@@ -93,11 +114,30 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		Class<Id<?>> idClass = (Class<Id<?>>) type.getRawClass();
 		IdUtil.Parser<Id<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
 
+		NsIdResolver nsIdResolver = null;
+		MetaStorage metaStorage = null;
+		final Class<?> activeView = ctxt.getActiveView();
+		if (!isTestMode(ctxt, activeView)) {
+
+			if (NamespacedId.class.isAssignableFrom(idClass)) {
+				nsIdResolver = NsIdResolver.getResolver(ctxt);
+			}
+			else if (WorkerId.class.isAssignableFrom(idClass)) {
+				// TODO WorkerIds are not resolved yet
+			}
+			else {
+				metaStorage = MetaStorage.get(ctxt);
+			}
+		}
+
+
 		return new IdDeserializer(
 				idClass,
 				parser,
 				//we only need to check for the dataset prefix if the id requires it
-				NamespacedId.class.isAssignableFrom(idClass)
+				NamespacedId.class.isAssignableFrom(idClass),
+				nsIdResolver,
+				metaStorage
 		);
 	}
 }

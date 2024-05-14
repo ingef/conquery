@@ -51,7 +51,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
 
 		QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
-		Map<Column, Integer> positions = tableExportQuery.getPositions();
+		Map<Column, Integer>
+				positions =
+				tableExportQuery.getPositions().entrySet().stream().collect(Collectors.toMap(e -> e.getKey().resolve(), Map.Entry::getValue));
 		CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
 
 		List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
@@ -110,9 +112,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			Map<Column, Integer> positions,
 			ConversionContext context
 	) {
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
+		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, dateRestriction, context);
 
 		List<Field<?>> exportColumns = new ArrayList<>();
@@ -152,7 +154,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		String tableName = cqTable.getConnector().getTable().getName();
+		String tableName = cqTable.getConnector().resolve().getTable().getName();
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
@@ -184,11 +186,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static boolean matchesTableColumnOn(CQTable table, Predicate<Column> condition) {
-		return Arrays.stream(table.getConnector().getTable().getColumns()).anyMatch(condition);
+		return Arrays.stream(table.getConnector().resolve().getTable().getColumns()).anyMatch(condition);
 	}
 
 	private static boolean columnIsConnectorColumn(Column column, CQTable table) {
-		return table.getConnector().getColumn() != null && table.getConnector().getColumn() == column;
+		return table.getConnector().resolve().getColumn() != null && table.getConnector().resolve().getColumn().resolve().equals(column);
 	}
 
 	private static Table<Record> joinConnectorTableWithPrerequisite(
@@ -198,7 +200,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			ConversionContext context
 	) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().getTable().getName()));
+		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getTable().getName()));
 		List<Condition> joinOnIds = ids.join(convertedPrerequisite.getQualifiedSelects().getIds());
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisite, joinOnIds);
 	}

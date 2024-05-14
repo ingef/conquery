@@ -12,6 +12,7 @@ import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredSecondaryId;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -66,7 +67,12 @@ public class WorkerTestDataImporter implements TestDataImporter {
 								  support,
 								  test.getRawConnector(),
 								  ConceptTreeConnector.class,
-								  conn -> conn.setConcept(test.getConcept())
+								  conn -> {
+									  conn.setTable(conn.getValidityDates().get(0).getColumn().getTable());
+									  conn.setConcept(test.getConcept());
+									  conn.getValidityDates().forEach(validityDate -> validityDate.setConnector(conn));
+									  conn.getFilters().forEach(filter -> filter.setConnector(conn));
+								  }
 						  )
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
@@ -98,7 +104,8 @@ public class WorkerTestDataImporter implements TestDataImporter {
 
 	private static void sendUpdateMatchingStatsMessage(StandaloneSupport support) {
 		DistributedNamespace namespace = (DistributedNamespace) support.getNamespace();
-		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(support.getNamespace().getStorage().getAllConcepts()));
+		namespace.getWorkerHandler()
+				 .sendToAll(new UpdateMatchingStatsMessage(support.getNamespace().getStorage().getAllConcepts().map(Concept::getId).toList()));
 		support.waitUntilWorkDone();
 	}
 

@@ -225,7 +225,7 @@ public final class AuthorizationController implements Managed {
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
-				storage.getAllExecutions().stream()
+				storage.getAllExecutions()
 					   .filter(originUser::isOwner)
 					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
 					   .collect(Collectors.toSet())
@@ -233,14 +233,14 @@ public final class AuthorizationController implements Managed {
 
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
-				storage.getAllFormConfigs().stream()
+				storage.getAllFormConfigs()
 					   .filter(originUser::isOwner)
 					   .map(conf -> conf.createPermission(Ability.READ.asSet()))
 					   .collect(Collectors.toSet())
 		);
 
 		// Create copied user
-		final User copy = new User(name, originUser.getLabel(), storage);
+		final User copy = new User(name, originUser.getLabel());
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 

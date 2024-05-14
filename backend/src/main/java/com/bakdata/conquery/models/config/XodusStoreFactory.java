@@ -27,7 +27,6 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
@@ -61,7 +60,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -159,10 +157,6 @@ public class XodusStoreFactory implements StoreFactory {
 
 		return readerExecutorService;
 	}
-
-	private boolean useWeakDictionaryCaching;
-	@NotNull
-	private Duration weakCacheDuration = Duration.hours(48);
 
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
@@ -341,7 +335,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-			return new SingletonStore<>(new CachedStore<>(bigStore));
+			return new SingletonStore<>(bigStore);
 		}
 	}
 

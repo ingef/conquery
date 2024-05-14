@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,7 @@ public class IdRefrenceTest {
 		dataset.setName("dataset");
 
 		Table table = new Table();
-		table.setDataset(dataset);
+		table.setDataset(dataset.getDataset());
 		table.setName("table");
 
 		storage.updateDataset(dataset);
@@ -45,12 +46,12 @@ public class IdRefrenceTest {
 
 		metaStorage.openStores(mapper);
 
-		User user = new User("usermail", "userlabel", metaStorage);
+		User user = new User("usermail", "userlabel");
 		metaStorage.addUser(user);
 
 		String json = mapper.writeValueAsString(
 				new ListHolder(
-						Collections.singletonList(table),
+						Collections.singletonList(table.getId()),
 						Collections.singletonList(user)
 				)
 		);
@@ -69,8 +70,7 @@ public class IdRefrenceTest {
 	@Getter
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ListHolder {
-		@NsIdRefCollection
-		private final List<Table> tables;
+		private final List<TableId> tables;
 		@MetaIdRefCollection
 		private final List<User> users;
 	}

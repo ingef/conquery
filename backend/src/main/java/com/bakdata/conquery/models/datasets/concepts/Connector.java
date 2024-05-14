@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -18,7 +16,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -87,7 +87,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	private boolean isDefault = true;
 
 	@CheckForNull
-	public abstract Column getColumn();
+	public abstract ColumnId getColumn();
 
 	@CheckForNull
 	public abstract CTCondition getCondition();
@@ -137,7 +137,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getConcept().getDataset();
 	}
 

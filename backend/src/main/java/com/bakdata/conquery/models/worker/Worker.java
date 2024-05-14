@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -19,6 +18,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -169,8 +169,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		bucketManager.addBucket(bucket);
 	}
 
-	public void removeConcept(Concept<?> conceptId) {
-		bucketManager.removeConcept(conceptId);
+	public void removeConcept(Concept<?> concept) {
+		bucketManager.removeConcept(concept);
 	}
 
 	public void updateConcept(Concept<?> concept) {
@@ -209,8 +209,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(@NsIdRef Table table) {
-		bucketManager.removeTable(table);
+	public void removeTable(TableId table) {
+		bucketManager.removeTable(table.resolve());
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {

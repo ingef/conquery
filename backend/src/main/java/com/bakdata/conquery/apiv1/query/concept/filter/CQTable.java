@@ -8,13 +8,13 @@ import java.util.Objects;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,23 +37,21 @@ public class CQTable {
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
 	@NotNull
-	@NsIdRefCollection
-	private List<Select> selects = Collections.emptyList();
+	private List<SelectId> selects = Collections.emptyList();
 
 	@JsonBackReference
 	@EqualsAndHashCode.Exclude
 	private CQConcept concept;
 
-	@NsIdRef
 	@JsonProperty("id")
-	private Connector connector;
+	private ConnectorId connector;
 
 	private ValidityDateContainer dateColumn;
 
 	@JsonIgnore
 	@ValidationMethod(message = "Connector does not belong to Concept.")
 	public boolean isConnectorForConcept() {
-		return connector.getConcept().equals(concept.getConcept());
+		return connector.<Connector>resolve().getConcept().equals(concept.getConcept());
 	}
 
 	@JsonIgnore
@@ -65,7 +63,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to Connector.")
 	public boolean isAllSelectsForConnector() {
-		return selects.stream().allMatch(select -> select.getHolder().equals(connector));
+		return selects.stream().map(SelectId::<Select>resolve).allMatch(select -> select.getHolder().equals(connector.<Connector>resolve()));
 	}
 
 	@JsonIgnore
@@ -82,21 +80,23 @@ public class CQTable {
 	public ValidityDate findValidityDate() {
 
 		if (dateColumn != null) {
-			return dateColumn.getValue();
+			return dateColumn.getValue().resolve();
 		}
 
-		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0);
+		final Connector resolvedConnector = connector.resolve();
+		if (!resolvedConnector.getValidityDates().isEmpty()) {
+			return resolvedConnector.getValidityDates().get(0);
 		}
 
 		return null;
 	}
 
 	public boolean hasSelectedSecondaryId(SecondaryIdDescription secondaryId) {
-		return Arrays.stream(connector.getTable().getColumns())
+		final Connector resolvedConnector = connector.resolve();
+		return Arrays.stream(resolvedConnector.getTable().getColumns())
 					 .map(Column::getSecondaryId)
 					 .filter(Objects::nonNull)
-					 .anyMatch(o -> Objects.equals(secondaryId, o));
+					 .anyMatch(o -> Objects.equals(secondaryId.getId(), o));
 	}
 
 }

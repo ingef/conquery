@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -182,32 +183,34 @@ public class PreviewConfig {
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(id -> datasetRegistry.get(id))
+								   .map(SelectId::<Select>resolve)
 								   .filter(Objects::nonNull)
 								   .collect(Collectors.toList());
 	}
 
-	public List<? extends Filter<?>> resolveSearchFilters() {
+	public List<FilterId> resolveSearchFilters() {
 		if (searchFilters == null) {
 			return Collections.emptyList();
 		}
 
 		return searchFilters.stream()
-							.map(filterId -> (Filter<?>) datasetRegistry.get(filterId))
+							.map(FilterId::resolve)
 							.filter(Objects::nonNull)
+							.map(Filter::getId)
 							.toList();
 	}
 
-	public Concept<?> resolveSearchConcept() {
+	public ConceptId resolveSearchConcept() {
 		if (searchFilters == null) {
 			return null;
 		}
 
 
 		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.get(filterId))
+							.map(FilterId::<Filter<?>>resolve)
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()
+							.map(Concept::getId)
 							.collect(MoreCollectors.onlyElement());
 	}
 

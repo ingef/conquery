@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,7 +63,10 @@ public class DatasetQueryResource {
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
-		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
+		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources()
+																												 .stream()
+																												 .map(ConnectorId::resolve)
+																												 .toList(), dataset, query.getTime());
 	}
 
 

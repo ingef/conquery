@@ -128,7 +128,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void role() throws IOException, JSONException {
-		Role mandator = new Role("company", "company", getMetaStorage());
+		Role mandator = new Role("company", "company");
 
 		SerializationTestUtil
 				.forType(Role.class)
@@ -141,10 +141,10 @@ public class SerializationTests extends AbstractSerializationTest {
 	 */
 	@Test
 	public void user() throws IOException, JSONException {
-		User user = new User("user", "user", getMetaStorage());
+		User user = new User("user", "user");
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		Role role = new Role("company", "company", getMetaStorage());
+		Role role = new Role("company", "company");
 		user.addRole(role);
 
 		getMetaStorage().addRole(role);
@@ -158,14 +158,14 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void group() throws IOException, JSONException {
-		Group group = new Group("group", "group", getMetaStorage());
+		Group group = new Group("group", "group");
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		group.addRole(new Role("company", "company", getMetaStorage()));
+		group.addRole(new Role("company", "company"));
 
-		Role role = new Role("company", "company", getMetaStorage());
+		Role role = new Role("company", "company");
 		group.addRole(role);
-		User user = new User("userName", "userLabel", getMetaStorage());
+		User user = new User("userName", "userLabel");
 		group.addMember(user);
 
 		final MetaStorage metaStorage = getMetaStorage();
@@ -205,11 +205,11 @@ public class SerializationTests extends AbstractSerializationTest {
 		compoundCol.setTable(table);
 
 		table.setColumns(new Column[]{startCol, endCol, compoundCol});
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setName("tableName");
 
 
-		Import imp = new Import(table);
+		Import imp = new Import(table.getId());
 		imp.setName("importTest");
 
 
@@ -220,7 +220,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		Bucket
+				bucket =
+				new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
 
 		compoundStore.setParent(bucket);
 
@@ -265,7 +267,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 		table.setColumns(new Column[]{column});
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 
@@ -317,7 +319,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
@@ -333,7 +335,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user", "test-user", metaStorage);
+		final User user = new User("test-user", "test-user");
 
 		namespaceStorage.updateDataset(dataset);
 
@@ -416,7 +418,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final TreeConcept concept = new TreeConcept();
 		concept.setName("concept");
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
@@ -424,11 +426,11 @@ public class SerializationTests extends AbstractSerializationTest {
 		concept.setConnectors(List.of(connector));
 
 		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(concept));
+		cqConcept.setElements(List.of(concept.getId()));
 		cqConcept.setLabel("Label");
 
 		final CQTable cqTable = new CQTable();
-		cqTable.setConnector(connector);
+		cqTable.setConnector(connector.getId());
 		cqTable.setFilters(List.of());
 		cqTable.setConcept(cqConcept);
 
@@ -480,7 +482,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", getMetaStorage());
+		User user = new User("name", "labe");
 
 		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
 																				  .userName(user.getLabel())
@@ -501,7 +503,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final TreeConcept testConcept = new TreeConcept();
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
-		testConcept.setDataset(dataset);
+		testConcept.setDataset(dataset.getId());
 		testConcept.setName("concept");
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(testConcept);
@@ -509,10 +511,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		testConcept.setConnectors(List.of(connector));
 
-		concept.setElements(Collections.singletonList(testConcept));
+		concept.setElements(Collections.singletonList(testConcept.getId()));
 		CQTable[] tables = {new CQTable()};
-		connector.setTable(new Table());
-		tables[0].setConnector(connector);
+		connector.setTable(new Table().getId());
+		tables[0].setConnector(connector.getId());
 		tables[0].setConcept(concept);
 		concept.setTables(Arrays.asList(tables));
 		ConceptQuery subQuery = new ConceptQuery(concept);
@@ -554,7 +556,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		dataset.setName("dataset");
 
 		final TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		concept.setName("concept");
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
@@ -565,12 +567,12 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final Table table = new Table();
 		table.setName("table");
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 
-		final Import imp = new Import(table);
+		final Import imp = new Import(table.getId());
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
@@ -59,13 +59,13 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     }
 
     @Override
-    public Collection<VALUE> getAll() {
-        return map.values();
+	public Stream<VALUE> getAll() {
+		return map.values().stream();
     }
 
     @Override
-    public Collection<KEY> getAllKeys() {
-        return map.keySet();
+	public Stream<KEY> getAllKeys() {
+		return map.keySet().stream();
     }
 
     @Override

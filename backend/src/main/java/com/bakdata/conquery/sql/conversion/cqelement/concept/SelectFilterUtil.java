@@ -13,7 +13,7 @@ public class SelectFilterUtil {
 	public static <T> SqlFilters convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
 		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
 				context.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
-				selectFilter.getColumn().getName(),
+				selectFilter.getColumn().resolve().getName(),
 				String.class
 		);
 

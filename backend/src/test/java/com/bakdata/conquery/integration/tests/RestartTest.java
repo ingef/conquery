@@ -60,7 +60,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
-		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+		final long numberOfExecutions = conquery.getMetaStorage().getAllExecutions().count();
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
@@ -80,12 +80,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role role = new Role("role", "ROLE", storage);
-		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage);
-		User user = new User("user@test.email", "USER", storage);
-		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage);
-		Group group = new Group("group", "GROUP", storage);
-		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage);
+		Role role = new Role("role", "ROLE");
+		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE");
+		User user = new User("user@test.email", "USER");
+		User userToDelete = new User("userDelete@test.email", "USER_DELETE");
+		Group group = new Group("group", "GROUP");
+		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
@@ -144,7 +144,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		
 		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
 
-		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		assertThat(support.getMetaStorage().getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
 		test.executeTest(support);
 

@@ -21,7 +21,6 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -33,7 +32,11 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -102,9 +105,8 @@ public class TableExportQuery extends Query {
 	 * - SecondaryIds are collected into a Column per SecondaryId
 	 * - The remaining columns are arbitrarily ordered, but usually grouped by their source table.
 	 */
-	@NsIdRefKeys
 	@JsonView(View.InternalCommunication.class)
-	private Map<Column, Integer> positions;
+	private Map<ColumnId, Integer> positions;
 
 
 	@JsonIgnore
@@ -146,7 +148,7 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		final AtomicInteger currentPosition = new AtomicInteger(2);
 
-		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
+		final Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
 		final Set<ValidityDate> validityDates = tables.stream()
 													  .map(CQConcept::getTables)
@@ -160,8 +162,10 @@ public class TableExportQuery extends Query {
 												 .map(CQConcept::getTables)
 												 .flatMap(Collection::stream)
 												 .map(CQTable::getConnector)
+												 .map(ConnectorId::resolve)
 												 .map(Connector::getColumn)
 												 .filter(Objects::nonNull)
+												 .map(ColumnId::resolve)
 												 .collect(Collectors.toSet());
 
 		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
@@ -169,49 +173,57 @@ public class TableExportQuery extends Query {
 		resultInfos = createResultInfos(secondaryIdPositions, conceptColumns);
 	}
 
-	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
-		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+	private Map<SecondaryIdDescriptionId, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+		final Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions = new HashMap<>();
 
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
 			  .flatMap(con -> con.getTables().stream())
-			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
+			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getTable().getColumns()))
 			  .map(Column::getSecondaryId)
+			  .map(SecondaryIdDescriptionId::resolve)
 			  .filter(Objects::nonNull)
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
 			  // Using for each and not a collector allows us to guarantee sorted insertion.
-			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId.getId(), currentPosition.getAndIncrement()));
 
 		return secondaryIdPositions;
 	}
 
-	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns, Set<ValidityDate> validityDates) {
-		final Map<Column, Integer> positions = new HashMap<>();
+	private static Map<ColumnId, Integer> calculateColumnPositions(
+			AtomicInteger currentPosition,
+			List<CQConcept> tables,
+			Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions,
+			Set<Column> conceptColumns,
+			Set<ValidityDate> validityDates
+	) {
+		final Map<ColumnId, Integer> positions = new HashMap<>();
 
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
-				for (Column column : table.getConnector().getTable().getColumns()) {
+				for (Column column : table.getConnector().resolve().getTable().getColumns()) {
 
 					// ValidityDates are handled separately in column=0
 					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column))) {
 						continue;
 					}
 
-					if (positions.containsKey(column)) {
+					final ColumnId columnId = column.getId();
+					if (positions.containsKey(columnId)) {
 						continue;
 					}
 
 					// We want to have ConceptColumns separate here.
 					if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
-						positions.putIfAbsent(column, secondaryIdPositions.get(column.getSecondaryId()));
+						positions.putIfAbsent(columnId, secondaryIdPositions.get(column.getSecondaryId()));
 						continue;
 					}
 
-					positions.put(column, currentPosition.getAndIncrement());
+					positions.put(columnId, currentPosition.getAndIncrement());
 				}
 			}
 		}
@@ -219,7 +231,7 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
+	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
@@ -229,18 +241,20 @@ public class TableExportQuery extends Query {
 		infos[1] = ConqueryConstants.SOURCE_INFO;
 
 
-		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
-			final SecondaryIdDescription desc = e.getKey();
+		for (Map.Entry<SecondaryIdDescriptionId, Integer> e : secondaryIdPositions.entrySet()) {
+			final SecondaryIdDescriptionId desc = e.getKey();
 			final Integer pos = e.getValue();
 
 			// If mapping is available, values are mapped
+			final SecondaryIdDescription secondaryIdDescription = desc.resolve();
+			final InternToExternMapperId mapping = secondaryIdDescription.getMapping();
 			final ResultType.StringT resultType =
-					desc.getMapping() != null
+					mapping != null
 					? new ResultType.StringT((internal, printSettings) -> {
 						if (internal == null) {
 							return null;
 						}
-						return desc.getMapping().external((String) internal);
+						return mapping.resolve().external((String) internal);
 					})
 					: ResultType.StringT.INSTANCE;
 
@@ -248,31 +262,31 @@ public class TableExportQuery extends Query {
 
 			semantics.add(new SemanticType.SecondaryIdT(desc));
 
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
+			infos[pos] = new SimpleResultInfo(secondaryIdDescription.getLabel(), resultType, secondaryIdDescription.getDescription(), semantics);
 		}
 
 
-		final Map<Column, Concept<?>> connectorColumns =
+		final Map<Column, Concept> connectorColumns =
 				tables.stream()
 					  .flatMap(con -> con.getTables().stream())
-					  .filter(tbl -> tbl.getConnector().getColumn() != null)
-					  .collect(Collectors.toMap(tbl -> tbl.getConnector().getColumn(), tbl -> tbl.getConnector().getConcept()));
+					  .filter(tbl -> tbl.getConnector().resolve().getColumn() != null)
+					  .collect(Collectors.toMap(tbl -> tbl.getConnector().resolve().getColumn().resolve(), tbl -> tbl.getConnector().getConcept().resolve()));
 
 
-		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
+		for (Map.Entry<ColumnId, Integer> entry : positions.entrySet()) {
 
 			final int position = entry.getValue();
 
-			final Column column = entry.getKey();
+			final Column column = entry.getKey().resolve();
 
-			if(position == 0) {
+			if (position == 0) {
 				continue;
 			}
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
 				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
-																		.add(new SemanticType.ColumnT(column));
+																		.add(new SemanticType.ColumnT(column.getId()));
 				continue;
 			}
 
@@ -286,7 +300,7 @@ public class TableExportQuery extends Query {
 				final Concept<?> concept = connectorColumns.get(column).getConcept();
 
 				// Columns that are used to build concepts are marked as ConceptColumn.
-				semantics.add(new SemanticType.ConceptColumnT(concept));
+				semantics.add(new SemanticType.ConceptColumnT(concept.getId()));
 
 				if (!isRawConceptValues()) {
 					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
@@ -294,7 +308,7 @@ public class TableExportQuery extends Query {
 			}
 			else {
 				// If it's not a connector column, we just link to the source column.
-				semantics.add(new SemanticType.ColumnT(column));
+				semantics.add(new SemanticType.ColumnT(column.getId()));
 			}
 
 			infos[position] = new ColumnResultInfo(column, resultType, semantics);

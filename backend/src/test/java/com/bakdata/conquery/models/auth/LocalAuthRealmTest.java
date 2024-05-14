@@ -68,7 +68,7 @@ public class LocalAuthRealmTest {
 	@BeforeEach
 	public void setupEach() {
 		// Create User in Realm
-		user1 = new User("TestUser", "Test User", storage);
+		user1 = new User("TestUser", "Test User");
 		PasswordCredential user1Password = new PasswordCredential("testPassword");
 		storage.addUser(user1);
 		realm.addUser(user1, user1Password);

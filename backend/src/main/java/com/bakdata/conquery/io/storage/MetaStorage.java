@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -17,6 +18,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -85,7 +88,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return executions.get(id);
 	}
 
-	public Collection<ManagedExecution> getAllExecutions() {
+	public Stream<ManagedExecution> getAllExecutions() {
 		return executions.getAll();
 	}
 
@@ -111,7 +114,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return group;
 	}
 
-	public synchronized Collection<Group> getAllGroups() {
+	public Stream<Group> getAllGroups() {
 		return authGroup.getAll();
 	}
 
@@ -139,7 +142,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return user;
 	}
 
-	public Collection<User> getAllUsers() {
+	public Stream<User> getAllUsers() {
 		return authUser.getAll();
 	}
 
@@ -166,7 +169,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return role;
 	}
 
-	public Collection<Role> getAllRoles() {
+	public Stream<Role> getAllRoles() {
 		return authRole.getAll();
 	}
 
@@ -186,7 +189,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return formConfigs.get(id);
 	}
 
-	public Collection<FormConfig> getAllFormConfigs() {
+	public Stream<FormConfig> getAllFormConfigs() {
 		return formConfigs.getAll();
 	}
 
@@ -213,7 +216,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return values.add(MetaStorage.class, this);
 	}
 
-	public <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	public <ID extends Id<?>, VALUE> VALUE get(ID id) {
 		return (VALUE) cache.get(id);
 	}
 
@@ -235,5 +238,14 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		}
 
 		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
+	}
+
+	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
+		MetaStorage storage = (MetaStorage) ctxt
+				.findInjectableValue(MetaStorage.class.getName(), null, null);
+		if (storage == null) {
+			throw new NoSuchElementException("Could not find injected meta storage");
+		}
+		return storage;
 	}
 }

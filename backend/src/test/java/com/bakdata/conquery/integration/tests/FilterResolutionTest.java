@@ -10,10 +10,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -32,6 +28,9 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -79,7 +78,10 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "HEADER", "", "",  2, true, indexService));
+		final FilterTemplate
+				filterTemplate =
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+		filter.setTemplate(filterTemplate.getId());
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")

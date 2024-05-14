@@ -49,7 +49,7 @@ public class QueryResource {
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		query.awaitDone(1, TimeUnit.SECONDS);
@@ -65,7 +65,7 @@ public class QueryResource {
 			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
 		}
 
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		if(query.awaitDone(1, TimeUnit.SECONDS) != ExecutionState.DONE){
@@ -78,7 +78,7 @@ public class QueryResource {
 	@PATCH
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders, MetaDataPatch patch) {
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		processor.patchQuery(subject, query, patch);
@@ -89,7 +89,7 @@ public class QueryResource {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.DELETE);
 
 		processor.deleteQuery(subject, query);
@@ -98,7 +98,7 @@ public class QueryResource {
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
 	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		processor.reexecute(subject, query);
@@ -109,10 +109,10 @@ public class QueryResource {
 	@Path("{" + QUERY + "}/cancel")
 	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
-		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.CANCEL);
 
-		processor.cancel(subject, query.getDataset(), query);
+		processor.cancel(subject, query.getDataset().resolve(), query);
 	}
 
 

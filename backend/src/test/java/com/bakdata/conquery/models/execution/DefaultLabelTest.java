@@ -38,11 +38,11 @@ public class DefaultLabelTest {
 
 	private static final Namespace NAMESPACE = Mockito.mock(LocalNamespace.class);
 	private static final Dataset DATASET = new Dataset("dataset");
-	private static final User user = new User("user","user", STORAGE);
+	private static final User user = new User("user", "user");
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{
-			setDataset(DATASET);
+			setDataset(DATASET.getId());
 			setName("defaultconcept");
 			setLabel("Default Concept");
 		}
@@ -83,7 +83,7 @@ public class DefaultLabelTest {
 	private static CQConcept makeCQConcept(String label) {
 		CQConcept concept = new CQConcept();
 		concept.setLabel(label);
-		concept.setElements(List.of(CONCEPT));
+		concept.setElements(List.of(CONCEPT.getId()));
 		return concept;
 
 	}
@@ -98,7 +98,7 @@ public class DefaultLabelTest {
 
 		CQConcept concept = new CQConcept();
 		concept.setLabel(null);
-		concept.setElements(List.of(CONCEPT));
+		concept.setElements(List.of(CONCEPT.getId()));
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
 		UUID uuid = UUID.randomUUID();
@@ -198,7 +198,7 @@ public class DefaultLabelTest {
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = new CQConcept();
 		concept1.setLabel(null);
-		concept1.setElements(List.of(CONCEPT));
+		concept1.setElements(List.of(CONCEPT.getId()));
 		CQConcept concept2 = makeCQConcept("Concept2");
 		CQConcept concept3 = makeCQConcept("Concept3");
 		and.setChildren(List.of(

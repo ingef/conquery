@@ -80,7 +80,7 @@ class JwtPkceVerifyingRealmTest {
 	void verifyToken() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "Test", STORAGE);
+		User expected = new User("Test", "Test");
 		STORAGE.updateUser(expected);
 
 		Date issueDate = new Date();
@@ -106,8 +106,8 @@ class JwtPkceVerifyingRealmTest {
 	void verifyTokenAndAddRole() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "Test", STORAGE);
-		Role role = new Role("admin", "admin", STORAGE);
+		User expected = new User("Test", "Test");
+		Role role = new Role("admin", "admin");
 
 		STORAGE.updateRole(role);
 		STORAGE.updateUser(expected);
@@ -138,8 +138,8 @@ class JwtPkceVerifyingRealmTest {
 	void verifyTokenAndAddRoleNewUser() {
 
 		// Setup the expected user id
-		User expected = new User("new_user", "New User", STORAGE);
-		Role role = new Role("admin", "admin", STORAGE);
+		User expected = new User("new_user", "New User");
+		Role role = new Role("admin", "admin");
 
 		STORAGE.updateRole(role);
 
@@ -171,7 +171,7 @@ class JwtPkceVerifyingRealmTest {
 	void verifyTokenInLeeway() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "Test", STORAGE);
+		User expected = new User("Test", "Test");
 		STORAGE.updateUser(expected);
 
 		Date issueDate = new Date();
@@ -201,7 +201,7 @@ class JwtPkceVerifyingRealmTest {
 	void verifyTokenAlternativeId() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "Test", STORAGE);
+		User expected = new User("Test", "Test");
 		STORAGE.updateUser(expected);
 
 		Date issueDate = new Date();
@@ -319,7 +319,7 @@ class JwtPkceVerifyingRealmTest {
 	void falsifyTokenUnknownKid() {
 
 		// Setup the expected user id
-		User expected = new User("Test", "Test", STORAGE);
+		User expected = new User("Test", "Test");
 		STORAGE.updateUser(expected);
 
 		Date issueDate = new Date();

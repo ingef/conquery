@@ -110,7 +110,7 @@ public class IndexServiceTest {
 		configField.setAccessible(true);
 		configField.set(mapInternToExternMapper, config);
 
-		mapInternToExternMapper.setDataset(DATASET);
+		mapInternToExternMapper.setDataset(DATASET.getId());
 	}
 
 	@Test

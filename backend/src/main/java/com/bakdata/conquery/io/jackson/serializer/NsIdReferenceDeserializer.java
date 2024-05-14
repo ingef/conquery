@@ -32,7 +32,7 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Class<ID> idClass;
-	private NsIdResolver nsIdResolver;
+	private NsIdResolver idResolver;
 
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
@@ -49,7 +49,7 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 		ID id = ctxt.readValue(parser, idClass);
 
 		try {
-			final T result = nsIdResolver.get(id);
+			final T result = idResolver.get(id);
 
 			if (result == null) {
 				throw new IdReferenceResolvingException(parser, "Could not find entry `" + id + "` of type " + type.getName(), id.toString(), type);
@@ -80,13 +80,13 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 		Class<T> cl = (Class<T>) type.getRawClass();
 		Class<ID> idClass = IdUtil.findIdClass(cl);
 
-		final NsIdResolver nsIdResolver = (NsIdResolver) ctxt.findInjectableValue(NsIdResolver.class.getName(), null, null);
+		final NsIdResolver idResolver = NsIdResolver.getResolver(ctxt);
 
 		return new NsIdReferenceDeserializer<>(
 				cl,
 				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
 				idClass,
-				nsIdResolver
+				idResolver
 		);
 	}
 

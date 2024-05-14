@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
@@ -34,6 +32,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.Pair;
+import jakarta.ws.rs.core.Response;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -107,9 +106,9 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 			super.start();
 
 			// Create service user
-			serviceUser = formBackendConfig.createServiceUser(getOwner(), getDataset());
+			serviceUser = formBackendConfig.createServiceUser(getOwner(), getDataset().resolve());
 
-			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), getOwner(), serviceUser, getDataset());
+			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), getOwner(), serviceUser, getDataset().resolve());
 
 			externalTaskId = externalTaskState.getId();
 		}

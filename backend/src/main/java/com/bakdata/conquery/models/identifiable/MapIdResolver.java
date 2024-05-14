@@ -13,9 +13,9 @@ import lombok.NonNull;
  *
  * @param injections This map is intentionally NOT an IdMap as it allows wiring up mismatched ids.
  */
-public record MapNsIdResolver(@NonNull Map<Id<?>, Identifiable<?>> injections) implements NsIdResolver {
+public record MapIdResolver(@NonNull Map<Id<?>, Identifiable<?>> injections) implements NsIdResolver {
 	@Override
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		return (VALUE) injections.get(id);
 	}
 

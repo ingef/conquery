@@ -29,7 +29,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final MetaStorage storage = conquery.getMetaStorage();
 
-		final User user = new User("testU", "testU", storage);
+		final User user = new User("testU", "testU");
 
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(conquery.getDataset(), testJson);

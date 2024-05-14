@@ -38,13 +38,13 @@ public class RequiredTable {
     @JsonIgnore
     private String importName;
 
-	public Table toTable(Dataset dataset, NsIdResolver nsIdResolver) {
+	public Table toTable(Dataset dataset, NsIdResolver idResolver) {
         Table table = new Table();
-		table.setPrimaryColum(primaryColumn.toColumn(table, nsIdResolver));
-        table.setDataset(dataset);
+		table.setPrimaryColum(primaryColumn.toColumn(table, idResolver));
+		table.setDataset(dataset.getId());
         table.setName(name);
         table.setColumns(Arrays.stream(columns)
-							   .map(col -> col.toColumn(table, nsIdResolver)).toArray(Column[]::new));
+							   .map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
 
         return table;
     }

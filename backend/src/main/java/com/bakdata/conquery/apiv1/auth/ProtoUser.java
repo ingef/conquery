@@ -54,7 +54,8 @@ public class ProtoUser {
 			label = name;
 		}
 
-		final User user = new User(name, label, storage);
+		final User user = new User(name, label);
+		user.setMetaStorage(storage);
 		storage.updateUser(user);
 
 		if (roles != null){

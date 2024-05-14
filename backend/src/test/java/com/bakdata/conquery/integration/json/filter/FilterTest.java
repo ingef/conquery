@@ -7,8 +7,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -35,6 +33,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +90,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept = new TreeConcept();
 		concept.setLabel("concept");
 
-		concept.setDataset(support.getDataset());
+		concept.setDataset(support.getDataset().getId());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put("table", "table");
@@ -118,13 +117,13 @@ public class FilterTest extends AbstractQueryEngineTest {
 		CQTable cqTable = new CQTable();
 
 		cqTable.setFilters(Collections.singletonList(result));
-		cqTable.setConnector(connector);
+		cqTable.setConnector(connector.getId());
 
 		CQConcept cqConcept = new CQConcept();
 
 		cqTable.setConcept(cqConcept);
 
-		cqConcept.setElements(Collections.singletonList(concept));
+		cqConcept.setElements(Collections.singletonList(concept.getId()));
 		cqConcept.setTables(Collections.singletonList(cqTable));
 
 		if (dateRange != null) {

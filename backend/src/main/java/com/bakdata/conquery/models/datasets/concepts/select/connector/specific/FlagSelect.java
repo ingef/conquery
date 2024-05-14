@@ -3,17 +3,18 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.FlagsAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,18 +35,18 @@ import lombok.ToString;
 @ToString
 public class FlagSelect extends Select {
 
-	@NsIdRefCollection
-	private final Map<String, Column> flags;
+	private final Map<String, ColumnId> flags;
 
 
 	@Override
 	public List<Column> getRequiredColumns() {
-		return new ArrayList<>(flags.values());
+		return new ArrayList<>(flags.values().stream().map(ColumnId::resolve).toList());
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new FlagsAggregator(flags);
+		final Map<String, Column> collect = flags.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().resolve()));
+		return new FlagsAggregator(collect);
 	}
 
 
@@ -58,7 +59,7 @@ public class FlagSelect extends Select {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
-		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
 
 	@Override

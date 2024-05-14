@@ -22,7 +22,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -31,12 +30,13 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -78,8 +78,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 	private UUID queryId;
 	private String label;
 
@@ -146,7 +145,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 
-	public ManagedExecution(User owner, Dataset dataset, MetaStorage storage) {
+	public ManagedExecution(User owner, DatasetId dataset, MetaStorage storage) {
 		this(storage);
 		this.owner = owner;
 		this.dataset = dataset;
@@ -157,7 +156,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
 		if (!namespace.getDataset().equals(dataset)) {
-			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset.getId(), namespace.getDataset()
+			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset, namespace.getDataset()
 																																										   .getId()));
 		}
 
@@ -191,7 +190,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		return new ManagedExecutionId(dataset.getId(), queryId);
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	/**
@@ -338,8 +337,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		final QueryUtils.AvailableSecondaryIdCollector secondaryIdCollector = new QueryUtils.AvailableSecondaryIdCollector();
 
 		visit(secondaryIdCollector);
-
-		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
+		// TODO may work with ids directly here instead of resolving
+		status.setAvailableSecondaryIds(secondaryIdCollector.getIds().stream().map(SecondaryIdDescription::getId).collect(Collectors.toSet()));
 	}
 
 	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
@@ -347,7 +346,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());

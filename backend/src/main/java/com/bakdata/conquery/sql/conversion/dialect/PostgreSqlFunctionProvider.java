@@ -23,7 +23,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import com.google.common.base.Preconditions;
 import org.jooq.impl.SQLDataType;
 
 /**
@@ -323,18 +322,18 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		if (validityDate.getEndColumn() != null) {
 
 			Field<?> startColumn = DSL.coalesce(
-					DSL.field(DSL.name(tableName, validityDate.getStartColumn().getName())),
+					DSL.field(DSL.name(tableName, validityDate.getStartColumn().resolve().getName())),
 					toDateField(MINUS_INFINITY_DATE_VALUE)
 			);
 			Field<?> endColumn = DSL.coalesce(
-					DSL.field(DSL.name(tableName, validityDate.getEndColumn().getName())),
+					DSL.field(DSL.name(tableName, validityDate.getEndColumn().resolve().getName())),
 					toDateField(INFINITY_DATE_VALUE)
 			);
 
 			return ColumnDateRange.of(daterange(startColumn, endColumn, "[]"));
 		}
 
-		Column validityDateColumn = validityDate.getColumn();
+		Column validityDateColumn = validityDate.getColumn().resolve();
 		dateRange = switch (validityDateColumn.getType()) {
 			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
 			case DATE_RANGE -> {
@@ -351,7 +350,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
-				Field<Date> column = DSL.field(DSL.name(tableName, validityDate.getColumn().getName()), Date.class);
+				Field<Date> column = DSL.field(DSL.name(tableName, validityDate.getColumn().resolve().getName()), Date.class);
 				Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
 				Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
 				yield daterange(startColumn, endColumn, "[]");

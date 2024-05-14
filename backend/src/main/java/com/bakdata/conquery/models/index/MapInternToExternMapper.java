@@ -3,20 +3,18 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URI;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -43,10 +41,9 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private ConqueryConfig config;
 
-	@NsIdRef
 	@Setter
 	@NotNull
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	@ToString.Include
 	@NotEmpty
@@ -94,6 +91,6 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public InternToExternMapperId createId() {
-		return new InternToExternMapperId(getDataset().getId(), getName());
+		return new InternToExternMapperId(getDataset(), getName());
 	}
 }

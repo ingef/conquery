@@ -124,7 +124,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries, true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries.stream(), true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
@@ -139,7 +139,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
-		final User user = new User("user" + id, null, STORAGE);
+		final User user = new User("user" + id, null);
 
 		STORAGE.addUser(user);
 
@@ -176,10 +176,11 @@ public class StoredQueriesProcessorTest {
 	}
 	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root, Dataset dataset){
 		final SecondaryIdQuery sid = new SecondaryIdQuery();
-		sid.setSecondaryId(new SecondaryIdDescription() {{
-			setDataset(dataset);
+		final SecondaryIdDescription secondaryIdDescription = new SecondaryIdDescription() {{
+			setDataset(dataset.getId());
 			setName("sid");
-		}});
+		}};
+		sid.setSecondaryId(secondaryIdDescription.getId());
 		sid.setRoot(root);
 
 		return mockManagedQuery(sid, user, id, execState, dataset, 100L);

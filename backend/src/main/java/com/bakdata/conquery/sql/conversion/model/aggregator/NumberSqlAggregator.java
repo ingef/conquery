@@ -48,9 +48,9 @@ public class NumberSqlAggregator implements SqlAggregator {
 			FilterContext<? extends IRange<? extends Number, ?>> filterContext
 	) {
 		return new NumberSqlAggregator(
-				numberFilter.getColumn(),
+				numberFilter.getColumn().resolve(),
 				filterContext.getTables(),
-				prepareFilterValue(numberFilter.getColumn(), filterContext.getValue())
+				prepareFilterValue(numberFilter.getColumn().resolve(), filterContext.getValue())
 		);
 	}
 

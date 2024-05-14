@@ -21,10 +21,10 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Group group1 = new Group("company", "company", storage);
-		User user1 = new User("user", "user", storage);
-		User user1copy = new User("user", "user", storage);
-		User user2 = new User("user2", "user2", storage);
+		Group group1 = new Group("company", "company");
+		User user1 = new User("user", "user");
+		User user1copy = new User("user", "user");
+		User user2 = new User("user2", "user2");
 
 		try {
 			storage.addGroup(group1);

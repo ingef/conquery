@@ -70,7 +70,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
 		List<Concept<?>> concepts =
-				ConqueryTestSpec.parseSubTreeList(support, rawConcepts, Concept.class, concept -> concept.setDataset(support.getDataset()));
+				ConqueryTestSpec.parseSubTreeList(support, rawConcepts, Concept.class, concept -> concept.setDataset(support.getDataset().getId()));
 		for (Concept<?> concept : concepts) {
 			support.getNamespaceStorage().updateConcept(concept);
 		}

@@ -7,12 +7,10 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
@@ -31,12 +29,10 @@ import org.jooq.Condition;
 @Data
 public class CountFilter extends Filter<Range.LongRange> {
 
-	@NsIdRef
-	private Column column;
+	private ColumnId column;
 
-	@NsIdRefCollection
 	@NotNull
-	private List<Column> distinctByColumn = Collections.emptyList();
+	private List<ColumnId> distinctByColumn = Collections.emptyList();
 
 	private boolean distinct;
 
@@ -51,11 +47,11 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
 		if (!isDistinct()) {
-			return new RangeFilterNode(value, new CountAggregator(getColumn()));
+			return new RangeFilterNode(value, new CountAggregator(getColumn().resolve()));
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn().resolve()), getDistinctByColumn()));
 		}
 
 		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn())));
@@ -63,8 +59,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	}
 
 	@Override
-	public List<Column> getRequiredColumns() {
-		final List<Column> out = new ArrayList<>();
+	public List<ColumnId> getRequiredColumns() {
+		final List<ColumnId> out = new ArrayList<>();
 		out.add(getColumn());
 		if (distinctByColumn != null) {
 			out.addAll(getDistinctByColumn());
@@ -80,6 +76,6 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@Override
 	public Condition convertForTableExport(FilterContext<Range.LongRange> filterContext) {
-		return CountCondition.onColumn(column, filterContext.getValue()).condition();
+		return CountCondition.onColumn(column.resolve(), filterContext.getValue()).condition();
 	}
 }

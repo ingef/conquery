@@ -180,7 +180,7 @@ public class QueryUtils {
 							continue;
 						}
 
-						ids.add(column.getSecondaryId());
+						ids.add(column.getSecondaryId().resolve());
 					}
 				}
 			}

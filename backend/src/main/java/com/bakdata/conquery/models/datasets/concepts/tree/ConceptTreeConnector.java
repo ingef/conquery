@@ -5,13 +5,13 @@ import java.util.List;
 
 import javax.annotation.CheckForNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
@@ -26,11 +26,11 @@ public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 
-	@NsIdRef @CheckForNull
-	private Table table;
+	@CheckForNull
+	private TableId table;
 
-	@NsIdRef @CheckForNull
-	private Column column = null;
+	@CheckForNull
+	private ColumnId column = null;
 
 	private CTCondition condition = null;
 
@@ -50,16 +50,19 @@ public class ConceptTreeConnector extends Connector {
 	@JsonIgnore
 	@ValidationMethod(message = "Column is not STRING.")
 	public boolean isColumnForTree(){
-		return column == null || column.getType().equals(MajorTypeId.STRING);
+		return column == null || column.resolve().getType().equals(MajorTypeId.STRING);
 	}
 
 	@Override @JsonIgnore
 	public Table getTable() {
 		if(column != null){
-			return column.getTable();
+			return column.getTable().resolve();
 		}
 
-		return table;
+		if (table != null) {
+			return table.resolve();
+		}
+		return null;
 	}
 
 	@Override

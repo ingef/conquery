@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -50,7 +51,8 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 			return;
 		}
 
-		column = connector.getColumn();
+		final ColumnId columnId = connector.getColumn();
+		column = columnId != null ? columnId.resolve() : null;
 	}
 
 	@Override

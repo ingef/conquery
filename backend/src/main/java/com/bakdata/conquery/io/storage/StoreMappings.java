@@ -48,7 +48,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @Getter
-@ToString(of = {"name", "keyType", "valueType"})
+@ToString(of = {"keyType", "valueType"})
 public enum StoreMappings {
 
 	AUTH_GROUP(Group.class, GroupId.class),
@@ -77,7 +77,7 @@ public enum StoreMappings {
 	private final Class<?> keyType;
 
 	/**
-	 * Store for identifiable values, with injectors. Store is also cached.
+	 * Store for identifiable values, with injectors.
 	 */
 	public static <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
 		return new IdentifiableStore<>(baseStore);

@@ -31,7 +31,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = JsonIntegrationTest.readJson(dataset.getId(), testJson);
-		final User user  = new User("testUser", "testUserLabel", storage);
+		final User user = new User("testUser", "testUserLabel");
 
 		// Manually import data, so we can do our own work.
 		{

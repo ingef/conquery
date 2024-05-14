@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -141,13 +140,13 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final ConceptId conceptId = new ConceptId(conquery.getDataset().getId(), "concept");
 			final NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 			final Concept<?> concept = namespaceStorage.getConcept(conceptId);
-			cqConcept.setElements(List.of(concept));
+			cqConcept.setElements(List.of(concept.getId()));
 			final CQTable cqTable = new CQTable();
 			cqTable.setConcept(cqConcept);
 
 			final Connector connector = namespaceStorage.get(new ConnectorId(conceptId, "connector1"));
-			cqTable.setConnector(connector);
-			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) namespaceStorage.get(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+			cqTable.setConnector(connector.getId());
+			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(new FilterId(connector.getId(), "filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
 			cqConcept.setTables(List.of(cqTable));
 			cqConcept.setExcludeFromSecondaryId(false);
@@ -195,9 +194,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				reusedDiffId.setRoot(new CQReusedQuery(execution1.getId()));
 
 				// ignored is a single global value and therefore the same as by-PID
-				reusedDiffId.setSecondaryId(conquery.getNamespace()
-													.getStorage()
-													.getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
+				reusedDiffId.setSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored"));
 
 				final ManagedExecutionId
 						executionId =
@@ -216,7 +213,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				reused.setSecondaryId(query.getSecondaryId());
 
-				User shareHolder = new User("shareholder", "ShareHolder", conquery.getMetaStorage());
+				User shareHolder = new User("shareholder", "ShareHolder");
 				conquery.getMetaProcessor().addUser(shareHolder);
 
 				shareHolder.addPermissions(Set.of(

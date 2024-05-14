@@ -55,7 +55,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 
 	public static FirstValueSqlAggregator create(FirstValueSelect firstValueSelect, SelectContext selectContext) {
 		return new FirstValueSqlAggregator(
-				firstValueSelect.getColumn(),
+				firstValueSelect.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(firstValueSelect),
 				selectContext.getValidityDate(),
 				selectContext.getTables(),

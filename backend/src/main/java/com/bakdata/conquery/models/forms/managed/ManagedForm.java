@@ -49,7 +49,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	}
 
 	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+		super(owner, submittedDataset.getId(), storage);
 		this.submittedForm = submittedForm;
 	}
 

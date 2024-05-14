@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
@@ -27,35 +26,35 @@ public class CountSelect extends Select {
 
 	private boolean distinct = false;
 
-	@NsIdRefCollection
 	@NotNull
-	private List<Column> distinctByColumn = Collections.emptyList();
+	private List<ColumnId> distinctByColumn = Collections.emptyList();
 
-	@NsIdRef
+
 	@NotNull
-	private Column column;
+	private ColumnId column;
 
 	@Override
 	public Aggregator<?> createAggregator() {
+		final Column resolved = getColumn().resolve();
 		if (!isDistinct()) {
-			return new CountAggregator(getColumn());
+			return new CountAggregator(resolved);
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
+			return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), getDistinctByColumn());
 		}
 
-		return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), List.of(getColumn()));
+		return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), List.of(getColumn()));
 	}
 
 	@Nullable
 	@Override
 	public List<Column> getRequiredColumns() {
 		final List<Column> out = new ArrayList<>();
-		out.add(getColumn());
+		out.add(getColumn().resolve());
 
 		if(distinctByColumn != null) {
-			out.addAll(getDistinctByColumn());
+			out.addAll(getDistinctByColumn().stream().map(ColumnId::resolve).toList());
 		}
 
 		return out;

@@ -41,7 +41,8 @@ public class ProtoRole {
 		label = Objects.requireNonNullElse(label, name);
 
 
-		Role role = new Role(name, label, storage);
+		Role role = new Role(name, label);
+		role.setMetaStorage(storage);
 
 		storage.updateRole(role);
 

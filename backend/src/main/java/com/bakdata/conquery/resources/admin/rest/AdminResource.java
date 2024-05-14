@@ -104,7 +104,7 @@ public class AdminResource {
 		final MetaStorage storage = processor.getStorage();
 
 
-		return storage.getAllExecutions().stream()
+		return storage.getAllExecutions()
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {

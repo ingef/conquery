@@ -4,11 +4,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDistanceAggregator;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
@@ -28,7 +27,7 @@ public class DateDistanceSelect extends SingleColumnSelect {
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
 
 	@JsonCreator
-	public DateDistanceSelect(@NsIdRef Column column) {
+	public DateDistanceSelect(ColumnId column) {
 		super(column);
 	}
 
@@ -39,7 +38,7 @@ public class DateDistanceSelect extends SingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new DateDistanceAggregator(getColumn(), getTimeUnit());
+		return new DateDistanceAggregator(getColumn().resolve(), getTimeUnit());
 	}
 
 	@Override

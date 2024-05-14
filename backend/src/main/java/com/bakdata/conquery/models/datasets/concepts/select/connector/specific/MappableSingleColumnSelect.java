@@ -5,19 +5,18 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
-import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
 import lombok.Getter;
 
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
@@ -29,14 +28,15 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@Valid
 	@Nullable
 	@View.ApiManagerPersistence
-	@NsIdRef
-	private final InternToExternMapper mapping;
+	private final InternToExternMapperId mapping;
 
 	@JsonIgnore
 	protected final BiFunction<Object, PrintSettings, String> mapper;
 
-	public MappableSingleColumnSelect(Column column,
-									  @Nullable InternToExternMapper mapping) {
+	public MappableSingleColumnSelect(
+			ColumnId column,
+			@Nullable InternToExternMapperId mapping
+	) {
 		super(column);
 		this.mapping = mapping;
 
@@ -71,11 +71,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	public void loadMapping() {
 		if (mapping != null) {
-			mapping.init();
+			mapping.resolve().init();
 		}
 	}
 
 	private String applyMapping(Object intern) {
-		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
+		return intern == null || getMapping() == null ? "" : getMapping().resolve().external(intern.toString());
 	}
 }

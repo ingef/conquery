@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -49,17 +50,19 @@ public interface QueryDescription extends Visitable {
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();
-	
+
 	/**
 	 * Initializes a submitted description using the provided context.
 	 * All parameters that are set in this phase must be annotated with {@link com.bakdata.conquery.io.jackson.View.InternalCommunication}.
+	 *
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
 	void resolve(QueryResolveContext context);
-	
+
 	/**
 	 * Allows the implementation to add visitors that traverse the QueryTree.
-	 * All visitors are concatenated so only a single traverse needs to be done.  
+	 * All visitors are concatenated so only a single traverse needs to be done.
+	 *
 	 * @param visitors The structure to which new visitors need to be added.
 	 */
 	default void addVisitors(@NonNull ClassToInstanceMap<QueryVisitor> visitors) {
@@ -75,7 +78,13 @@ public interface QueryDescription extends Visitable {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	public static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, @NotNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+	public static void authorizeQuery(
+			QueryDescription queryDescription,
+			Subject subject,
+			Dataset submittedDataset,
+			@NotNull ClassToInstanceMap<QueryVisitor> visitors,
+			MetaStorage storage
+	) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 		if (nsIdCollector == null) {
@@ -84,6 +93,7 @@ public interface QueryDescription extends Visitable {
 		// Generate DatasetPermissions
 		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
+												   .map(DatasetId::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);
@@ -111,7 +121,7 @@ public interface QueryDescription extends Visitable {
 		}
 	}
 
-	default RequiredEntities collectRequiredEntities(QueryExecutionContext context){
+	default RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		return new RequiredEntities(context.getBucketManager().getEntities());
 	}
 }

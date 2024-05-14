@@ -44,6 +44,9 @@ public interface View {
 	 */
 	interface InternalCommunication extends View {}
 
+	interface TestNoResolve extends View {
+	}
+
 	/**
 	 * Meta annotation for fields that are internally created, used, persisted and shared between manager node and shard nodes,
 	 * but which never leave through the REST api.

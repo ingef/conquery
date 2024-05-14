@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -96,7 +96,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
 
 		List<ExtractingSqlSelect<Boolean>> rootSelects = FlagCondition.getRequiredColumns(flagFilter.getFlags(), filterContext.getValue()).stream()
-																	  .map(Column::getName)
+																	  .map(ColumnId::getColumn)
 																	  .map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
 																	  .collect(Collectors.toList());
 		SqlSelects selects = SqlSelects.builder()
@@ -122,7 +122,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 						 .entrySet().stream()
 						 .collect(Collectors.toMap(
 								 Map.Entry::getKey,
-								 entry -> new ExtractingSqlSelect<>(rootTable, entry.getValue().getName(), Boolean.class)
+								 entry -> new ExtractingSqlSelect<>(rootTable, entry.getValue().resolve().getName(), Boolean.class)
 						 ));
 	}
 

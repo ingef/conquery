@@ -24,10 +24,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
@@ -125,10 +125,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef so we have to use the real objects here.
-		final List<Connector> allConnectors = conquery.getNamespaceStorage().getAllConcepts().stream()
-													  .map(Concept::getConnectors)
-													  .flatMap(List::stream)
-													  .collect(Collectors.toList());
+		final List<ConnectorId> allConnectors = conquery.getNamespaceStorage().getAllConcepts()
+														.map(Concept::getConnectors)
+														.flatMap(List::stream)
+														.map(Connector::getId)
+														.collect(Collectors.toList());
 
 		final EntityPreviewStatus result;
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
@@ -183,8 +184,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						9,
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						null,
-						Set.of(new SemanticType.SelectResultT((Select) conquery.getDatasetRegistry()
-																			   .get(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+						Set.of(new SemanticType.SelectResultT(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
@@ -192,12 +192,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
 						null,
 						Set.of(
-								new SemanticType.SelectResultT((Select) conquery.getDatasetRegistry().get(valuesSelectId))
+								new SemanticType.SelectResultT(valuesSelectId)
 						)
 				)
 		);
-
-
 
 
 		assertThat(result.getColumnDescriptions())
@@ -212,8 +210,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
 		assertThat(t2values.get().getSemantics())
 				.contains(
-						new SemanticType.ConceptColumnT((Concept<?>) conquery.getDatasetRegistry()
-																			 .get(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
+						new SemanticType.ConceptColumnT(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2"))
 				);
 
 

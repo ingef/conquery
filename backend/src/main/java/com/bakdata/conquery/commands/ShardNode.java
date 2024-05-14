@@ -91,7 +91,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.environment = environment;
 		this.config = config;
 
-
 		jobManager = new JobManager(getName(), config.isFailOnError());
 		environment.lifecycle().manage(this);
 		validator = environment.getValidator();
@@ -357,12 +356,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(NsIdResolver nsIdResolver) {
+	private NioSocketConnector getClusterConnector(NsIdResolver idResolver) {
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		NioSocketConnector connector = new NioSocketConnector();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(nsIdResolver, validator, om);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(idResolver, validator, om);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());

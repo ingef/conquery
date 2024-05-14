@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -135,8 +136,8 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 	public static SumDistinctSqlAggregator create(SumSelect sumSelect, SelectContext selectContext) {
 		return new SumDistinctSqlAggregator(
-				sumSelect.getColumn(),
-				sumSelect.getDistinctByColumn(),
+				sumSelect.getColumn().resolve(),
+				sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList(),
 				selectContext.getNameGenerator().selectName(sumSelect),
 				null,
 				selectContext.getIds(),
@@ -147,8 +148,8 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 
 	public static <RANGE extends IRange<? extends Number, ?>> SumDistinctSqlAggregator create(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
 		return new SumDistinctSqlAggregator(
-				sumFilter.getColumn(),
-				sumFilter.getDistinctByColumn(),
+				sumFilter.getColumn().resolve(),
+				sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList(),
 				filterContext.getNameGenerator().selectName(sumFilter),
 				filterContext.getValue(),
 				filterContext.getIds(),

@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.datasets;
 
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,8 +27,7 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 
 	@Valid
 	@NotNull
-	@NsIdRef
-	private final Table table;
+	private final TableId table;
 
 	private long numberOfEntities;
 
@@ -41,7 +40,7 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 
 	@Override
 	public ImportId createId() {
-		return new ImportId(table.getId(), getName());
+		return new ImportId(table, getName());
 	}
 
 	public long estimateMemoryConsumption() {
@@ -54,7 +53,7 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getTable().getDataset();
 	}
 }

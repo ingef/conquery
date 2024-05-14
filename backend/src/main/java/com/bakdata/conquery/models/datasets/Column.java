@@ -3,13 +3,14 @@ package com.bakdata.conquery.models.datasets;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,7 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
@@ -50,8 +50,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
 	 */
-	@NsIdRef
-	private SecondaryIdDescription secondaryId;
+	private SecondaryIdDescriptionId secondaryId;
 
 	@Override
 	public ColumnId createId() {
@@ -65,7 +64,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return table.getDataset();
 	}
 

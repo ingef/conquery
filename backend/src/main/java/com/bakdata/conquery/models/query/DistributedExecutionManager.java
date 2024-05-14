@@ -62,7 +62,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 	private WorkerHandler getWorkerHandler(ManagedExecution execution) {
 		return clusterState.getWorkerHandlers()
-						   .get(execution.getDataset().getId());
+						   .get(execution.getDataset());
 	}
 
 	/**

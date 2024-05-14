@@ -43,7 +43,7 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 
 	public static RandomValueSqlAggregator create(RandomValueSelect randomValueSelect, SelectContext selectContext) {
 		return new RandomValueSqlAggregator(
-				randomValueSelect.getColumn(),
+				randomValueSelect.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(randomValueSelect),
 				selectContext.getTables(),
 				selectContext.getConversionContext().getSqlDialect().getFunctionProvider()

@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -28,26 +27,22 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
 	@JsonCreator
-	private Group(String name, String label) {
-		this(name, label, null);
-	}
-
-	public Group(String name, String label, MetaStorage storage) {
-		super(name, label, storage);
+	public Group(String name, String label) {
+		super(name, label);
 	}
 
 	@Override
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, storage.getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
 	}
 
 	@Override
 	public void updateStorage() {
-		storage.updateGroup(this);
+		getMetaStorage().updateGroup(this);
 	}
 
 	@Override

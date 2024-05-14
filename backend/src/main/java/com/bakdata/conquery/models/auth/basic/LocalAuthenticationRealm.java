@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
 import io.dropwizard.util.Duration;
@@ -214,7 +213,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	@Override
 	public List<UserId> getAllUsers() {
-		return ImmutableList.copyOf(passwordStore.getAllKeys());
+		return passwordStore.getAllKeys().toList();
 	}
 
 

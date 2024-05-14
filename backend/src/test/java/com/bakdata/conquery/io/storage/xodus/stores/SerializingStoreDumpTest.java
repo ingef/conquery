@@ -45,7 +45,7 @@ public class SerializingStoreDumpTest {
 	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"), STORAGE);
 	private final ConceptQuery cQuery = new ConceptQuery(
 			new CQReusedQuery(managedQuery.getId()));
-	private final User user = new User("username", "userlabel", STORAGE);
+	private final User user = new User("username", "userlabel");
 
 	@BeforeEach
 	public void init() {

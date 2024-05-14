@@ -47,8 +47,7 @@ public class ResultExcelResource {
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset()
-																										 .getId(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResult(subject, (E) execution, pretty, limit);
 	}
 

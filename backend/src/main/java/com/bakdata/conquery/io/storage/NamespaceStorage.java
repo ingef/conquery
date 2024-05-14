@@ -1,8 +1,8 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -151,7 +151,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		internToExternMappers.remove(id);
 	}
 
-	public Collection<InternToExternMapper> getInternToExternMappers() {
+	public Stream<InternToExternMapper> getInternToExternMappers() {
 		return internToExternMappers.getAll();
 	}
 
@@ -167,7 +167,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		searchIndexes.add(searchIndex);
 	}
 
-	public Collection<SearchIndex> getSearchIndices() {
+	public Stream<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
 	}
 
@@ -184,7 +184,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	@Override
-	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
+	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof InternToExternMapperId castId) {
 			return (VALUE) getInternToExternMapper(castId);
 		}

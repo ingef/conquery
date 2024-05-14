@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.time.Duration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,7 @@ import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.SqlStandaloneCommand;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -38,6 +40,7 @@ import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -95,8 +98,13 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			Dataset dataset = new Dataset(name);
-			standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
-			return createSupport(dataset.getId(), name);
+			final DatasetId datasetId = new DatasetId(name);
+			datasetId.setIdResolver(() -> dataset);
+			waitUntilWorkDone();
+			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
+			waitUntilWorkDone();
+
+			return createSupport(datasetId, name);
 		}
 		catch (Exception e) {
 			return fail("Failed to create a support for " + name, e);
@@ -263,7 +271,6 @@ public class TestConquery {
 		busy |= standaloneCommand.getManagerNode()
 								 .getStorage()
 								 .getAllExecutions()
-								 .stream()
 								 .map(ManagedExecution::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
@@ -275,5 +282,37 @@ public class TestConquery {
 			busy |= shard.isBusy();
 		}
 		return busy;
+	}
+
+
+	public Validator getValidator() {
+		return getStandaloneCommand().getManagerNode().getValidator();
+	}
+
+	public MetaStorage getMetaStorage() {
+		return getStandaloneCommand().getManagerNode().getStorage();
+	}
+
+	public DatasetRegistry getDatasetRegistry() {
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry();
+	}
+
+	public List<ShardNode> getShardNodes() {
+		return getStandaloneCommand().getShardNodes();
+	}
+
+
+	public UriBuilder defaultApiURIBuilder() {
+		return UriBuilder.fromPath("api")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(dropwizard.getLocalPort());
+	}
+
+	public UriBuilder defaultAdminURIBuilder() {
+		return UriBuilder.fromPath("admin")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(dropwizard.getAdminPort());
 	}
 }

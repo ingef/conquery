@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import jakarta.validation.Validator;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -30,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import io.dropwizard.validation.BaseValidator;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -51,7 +50,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	// User 1
 	private static final String USER_1_NAME = "test_name1";
-	private static final User USER_1 = new User(USER_1_NAME, USER_1_NAME, STORAGE);
+	private static final User USER_1 = new User(USER_1_NAME, USER_1_NAME);
 	private static final String USER_1_PASSWORD = "test_password1";
 	public static final String BACKEND_AUD = "backend";
 	public static final String SOME_SECRET = "secret";
@@ -64,7 +63,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	// User 2
 	private static final String USER_2_NAME = "test_name2";
-	private static final User USER_2 = new User(USER_2_NAME, USER_2_NAME, STORAGE);
+	private static final User USER_2 = new User(USER_2_NAME, USER_2_NAME);
 	private static final String USER_2_LABEL = "test_label2";
 	private static final String USER_2_TOKEN = JWT.create()
 												  .withSubject(USER_2_NAME)
@@ -75,7 +74,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	// User 3 existing
 	private static final String USER_3_NAME = "test_name3";
-	private static final User USER_3 = new User(USER_3_NAME, USER_3_NAME, STORAGE);
+	private static final User USER_3 = new User(USER_3_NAME, USER_3_NAME);
 	private static final String USER_3_LABEL = "test_label3";
 	private static final String USER_3_TOKEN = JWT.create()
 												  .withSubject(USER_3_NAME)
@@ -86,7 +85,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	// Groups
 	private static final String GROUPNAME_1 = "group1";
-	private static final Group GROUP_1_EXISTING = new Group(GROUPNAME_1, GROUPNAME_1, STORAGE);
+	private static final Group GROUP_1_EXISTING = new Group(GROUPNAME_1, GROUPNAME_1);
 	public static final KeycloakGroup
 			KEYCLOAK_GROUP_1 =
 			new KeycloakGroup(UUID.randomUUID().toString(), "Group1", "g1", Map.of(GROUP_ID_ATTRIBUTE, GROUP_1_EXISTING.getId().toString()), Set.of());
@@ -209,7 +208,7 @@ public class IntrospectionDelegatingRealmTest {
 				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 				.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
 				.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
-		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE));
+		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME));
 	}
 	
 	@Test

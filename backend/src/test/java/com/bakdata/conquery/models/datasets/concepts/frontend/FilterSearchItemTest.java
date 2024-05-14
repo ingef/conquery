@@ -26,7 +26,7 @@ public class FilterSearchItemTest {
 		dataset.setName("testDataset");
 
 		Table table = new Table();
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setName("testTable");
 
 		Column column = new Column();
@@ -49,7 +49,7 @@ public class FilterSearchItemTest {
 		connector.setName("testConnector");
 
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		concept.setName("testConcept");
 
 		ValidityDate val0 = ValidityDate.create(dateColumn1);
@@ -65,7 +65,7 @@ public class FilterSearchItemTest {
 		val2.setConnector(connector);
 
 		List<ValidityDate> validityDates = List.of(val0, val1, val2);
-		connector.setColumn(column);
+		connector.setColumn(column.getId());
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
 		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);

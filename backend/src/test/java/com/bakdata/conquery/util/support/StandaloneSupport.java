@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.json.TestDataImporter;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -17,20 +15,18 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,6 +37,7 @@ public class StandaloneSupport implements TestSupport {
 
 	@Getter
 	private final Mode mode;
+	@Delegate
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;
@@ -89,33 +86,9 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 
-	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getManagerNode().getValidator();
-	}
-
-	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManagerNode().getStorage();
-	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
-	}
-
-	public DatasetRegistry getDatasetRegistry() {
-		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry();
-	}
-
-	public List<ShardNode> getShardNodes() {
-		return testConquery.getStandaloneCommand().getShardNodes();
-	}
-
-	/**
-	 * Retrieves the port of the admin API.
-	 *
-	 * @return The port.
-	 */
-	public int getAdminPort() {
-		return testConquery.getDropwizard().getAdminPort();
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
 	public Client getClient() {
@@ -142,26 +115,4 @@ public class StandaloneSupport implements TestSupport {
 		}
 	}
 
-	/**
-	 * Retrieves the port of the main API.
-	 *
-	 * @return The port.
-	 */
-	public int getLocalPort() {
-		return testConquery.getDropwizard().getLocalPort();
-	}
-
-	public UriBuilder defaultApiURIBuilder() {
-		return UriBuilder.fromPath("api")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(getLocalPort());
-	}
-
-	public UriBuilder defaultAdminURIBuilder() {
-		return UriBuilder.fromPath("admin")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(getAdminPort());
-	}
 }

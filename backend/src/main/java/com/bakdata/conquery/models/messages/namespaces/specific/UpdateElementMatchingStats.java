@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
@@ -26,14 +26,13 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final WorkerId source;
 
 	@ToString.Exclude
-	@NsIdRefKeys
-	private final Map<ConceptElement<?>, MatchingStats.Entry> values;
+	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		for (Entry<ConceptElement<?>, MatchingStats.Entry> entry : values.entrySet()) {
+		for (Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
-				final ConceptElement<?> target = entry.getKey();
+				final ConceptElement<?> target = entry.getKey().resolve();
 				final MatchingStats.Entry value = entry.getValue();
 
 				MatchingStats matchingStats = target.getMatchingStats();

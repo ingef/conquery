@@ -8,15 +8,15 @@ import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import jakarta.validation.Valid;
@@ -34,8 +34,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	// TODO: 10.01.2020 fk: register imports here?
 
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 	@NotNull
 	@Valid
 	@JsonManagedReference
@@ -55,9 +54,9 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
 	public boolean isDistinctSecondaryIds() {
-		final Set<SecondaryIdDescription> secondaryIds = new HashSet<>();
+		final Set<SecondaryIdDescriptionId> secondaryIds = new HashSet<>();
 		for (Column column : columns) {
-			final SecondaryIdDescription secondaryId = column.getSecondaryId();
+			final SecondaryIdDescriptionId secondaryId = column.getSecondaryId();
 			if (secondaryId != null && !secondaryIds.add(secondaryId)) {
 				log.error("{} is duplicated", secondaryId);
 				return false;
@@ -82,11 +81,11 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	@Override
 	public TableId createId() {
-		return new TableId(dataset.getId(), getName());
+		return new TableId(dataset, getName());
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		return storage.getAllImports().stream().filter(imp -> imp.getTable().equals(this));
+		return storage.getAllImports().filter(imp -> imp.getTable().equals(this));
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
@@ -100,7 +99,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	 * selects the right column for the given secondaryId from this table
 	 */
 	@CheckForNull
-	public Column findSecondaryIdColumn(SecondaryIdDescription secondaryId) {
+	public Column findSecondaryIdColumn(SecondaryIdDescriptionId secondaryId) {
 
 		for (Column col : columns) {
 			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {

@@ -10,10 +10,11 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -96,7 +97,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Selects predecessorSelects = predecessor.getQualifiedSelects();
 		SelectContext selectContext = new SelectContext(predecessorSelects.getIds(), predecessorSelects.getValidityDate(), universalTables, context);
 		List<SqlSelects> converted = cqConcept.getSelects().stream()
-											  .map(select -> select.convertToSqlSelects(selectContext))
+											  .map(select -> select.resolve().convertToSqlSelects(selectContext))
 											  .toList();
 
 		List<QueryStep> queriesToJoin;
@@ -137,7 +138,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		NameGenerator nameGenerator = conversionContext.getNameGenerator();
 		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
 
-		Connector connector = cqTable.getConnector();
+		Connector connector = cqTable.getConnector().resolve();
 		String conceptConnectorLabel = nameGenerator.conceptConnectorName(cqConcept, connector);
 
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
@@ -155,7 +156,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// convert selects
 		SelectContext selectContext = new SelectContext(ids, tablesValidityDate, connectorTables, conversionContext);
 		List<SqlSelects> allSelectsForTable = cqTable.getSelects().stream()
-													 .map(select -> select.convertToSqlSelects(selectContext))
+													 .map(select -> select.resolve().convertToSqlSelects(selectContext))
 													 .toList();
 
 		return CQTableContext.builder()
@@ -170,7 +171,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), conversionContext.getConfig());
+		final Table table = cqTable.getConnector().resolve().getTable();
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -179,12 +181,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			return new SqlIdColumns(primaryColumn);
 		}
 
-		Column secondaryIdColumn = cqTable.getConnector().getTable().findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
+		Column secondaryIdColumn = table.findSecondaryIdColumn(conversionContext.getSecondaryIdDescription().getId());
 
 		Preconditions.checkArgument(
 				secondaryIdColumn != null,
 				"Expecting Table %s to have a matching secondary id for %s".formatted(
-						cqTable.getConnector().getTable(),
+						table,
 						conversionContext.getSecondaryIdDescription()
 				)
 		);
@@ -212,7 +214,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return dateRestrictionRequired && validityDateSelect.isPresent();
 	}
 
-	private static Optional<SqlFilters> collectConditionFilters(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
+	private static Optional<SqlFilters> collectConditionFilters(
+			List<ConceptElementId<?>> conceptElements,
+			CQTable cqTable,
+			SqlFunctionProvider functionProvider
+	) {
 		return collectConditions(conceptElements, cqTable, functionProvider)
 				.stream()
 				.reduce(WhereCondition::or)
@@ -222,13 +228,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				));
 	}
 
-	private static List<WhereCondition> collectConditions(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
+	private static List<WhereCondition> collectConditions(List<ConceptElementId<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
 
 		List<WhereCondition> conditions = new ArrayList<>();
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
-		for (ConceptElement<?> conceptElement : conceptElements) {
-			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement, functionProvider)
+		for (ConceptElementId<?> conceptElement : conceptElements) {
+			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement.resolve(), functionProvider)
 					.reduce(WhereCondition::and)
 					.ifPresent(conditions::add);
 		}
@@ -243,7 +249,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (!(conceptElement instanceof ConceptTreeChild child)) {
 			return Stream.empty();
 		}
-		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.create(cqTable.getConnector(), functionProvider));
+		WhereCondition
+				childCondition =
+				child.getCondition().convertToSqlCondition(CTConditionContext.create(cqTable.getConnector().resolve(), functionProvider));
 		return Stream.concat(
 				collectConditions(cqTable, child.getParent(), functionProvider),
 				Stream.of(childCondition)
@@ -251,8 +259,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static Optional<WhereCondition> convertConnectorCondition(CQTable cqTable, SqlFunctionProvider functionProvider) {
-		return Optional.ofNullable(cqTable.getConnector().getCondition())
-					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(cqTable.getConnector(), functionProvider)));
+		final Connector connector = cqTable.getConnector().resolve();
+		return Optional.ofNullable(connector.getCondition())
+					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
 	}
 
 	private static Optional<SqlFilters> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {

@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -25,12 +22,15 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -86,7 +86,7 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+		final Stream<FormConfig> stream = storage.getAllFormConfigs()
 												 .filter(c -> dataset.equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
@@ -113,11 +113,12 @@ public class FormConfigProcessor {
 	public FormConfig addConfig(Subject subject, Dataset targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
-		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
+		final DatasetId datasetId = targetDataset.getId();
+		final Namespace namespace = datasetRegistry.get(datasetId);
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
+		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), datasetId);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

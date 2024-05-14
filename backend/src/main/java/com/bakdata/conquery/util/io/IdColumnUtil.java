@@ -52,7 +52,7 @@ public class IdColumnUtil {
 								 .findFirst()
 								 .orElseThrow();
 
-		if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
+		if (owner.isPermitted(execution.getDataset().resolve(), Ability.PRESERVE_ID)) {
 			// todo(tm): The integration of ids in the sql connector needs to be properly managed
 			return new FullIdPrinter(namespace.getStorage().getIdMapping(), size, pos);
 		}

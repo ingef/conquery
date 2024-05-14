@@ -290,7 +290,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 		private synchronized Group createGroup(String name, String label) {
 			// TODO mark group as managed by keycloak
-			final Group group = new Group(name, label, storage);
+			final Group group = new Group(name, label);
 
 			// Recheck group existence in synchronized part
 			final Group existing = storage.getGroup(group.getId());
@@ -309,7 +309,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 		private void syncGroupMappings(User user, Set<Group> mappedGroupsToDo) {
 			// TODO mark mappings as managed by keycloak
-			for (Group group : storage.getAllGroups()) {
+			for (Group group : storage.getAllGroups().toList()) {
 				if (group.containsMember(user)) {
 					if (mappedGroupsToDo.contains(group)) {
 						// Mapping is still valid, remove from todo-list
@@ -347,7 +347,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			}
 
 			// Construct a new User if none could be found in the storage
-			user = new User(userId.getName(), displayName, storage);
+			user = new User(userId.getName(), displayName);
 			storage.addUser(user);
 			log.info("Created new user: {}", user);
 

@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
@@ -17,13 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RemoveImportJob extends WorkerMessage {
 
-	@NsIdRef
-	private final Import imp;
+	private final ImportId imp;
 
 	@Override
 	public void react(Worker context) throws Exception {
 		log.info("Deleting Import[{}]", imp);
 
-		context.removeImport(imp);
+		context.removeImport(imp.resolve());
 	}
 }

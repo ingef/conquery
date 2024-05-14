@@ -82,7 +82,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			SelectContext selectContext
 	) {
 		return new DateDistanceSqlAggregator(
-				dateDistanceSelect.getColumn(),
+				dateDistanceSelect.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(dateDistanceSelect),
 				dateDistanceSelect.getTimeUnit(),
 				selectContext.getTables(),
@@ -96,7 +96,7 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			FilterContext<Range.LongRange> filterContext
 	) {
 		return new DateDistanceSqlAggregator(
-				dateDistanceFilter.getColumn(),
+				dateDistanceFilter.getColumn().resolve(),
 				filterContext.getNameGenerator().selectName(dateDistanceFilter),
 				dateDistanceFilter.getTimeUnit(),
 				filterContext.getTables(),

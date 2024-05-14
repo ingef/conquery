@@ -11,12 +11,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -24,16 +20,18 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -56,8 +54,7 @@ import org.apache.shiro.authz.Permission;
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
-	@NsIdRef
-	protected Dataset dataset;
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -86,7 +83,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(dataset.getId(), formType, formId);
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
@@ -120,11 +117,10 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		 */
 
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for(Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}

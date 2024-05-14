@@ -11,20 +11,20 @@
       "${idHeader}": x.id,
       "name": x.name,
       "${labelHeader}": x.label,
-      "${requiredColumnsHeader}": x.requiredColumns?sort_by("name")?join(', ')
+      "${requiredColumnsHeader}": x.requiredColumns?sort?join(', ')
     })
   />
 </#function>
 
 <@layout.layout>
   <@breadcrumbs.breadcrumbs
-    labels=["Datasets", c.concept.dataset.label, "Concept", c.concept.label, "Connector", c.label]
+    labels=["Datasets", c.concept.dataset.resolve().label, "Concept", c.concept.label, "Connector", c.label]
     links=[
       "/admin-ui/datasets",
-      "/admin-ui/datasets/${c.dataset.id}",
-      "/admin-ui/datasets/${c.dataset.id}#Concepts",
-      "/admin-ui/datasets/${c.dataset.id}/concepts/${c.concept.id}"
-      "/admin-ui/datasets/${c.dataset.id}/concepts/${c.concept.id}#Connectors"
+      "/admin-ui/datasets/${c.dataset}",
+      "/admin-ui/datasets/${c.dataset}#Concepts",
+      "/admin-ui/datasets/${c.dataset}/concepts/${c.concept.id}"
+      "/admin-ui/datasets/${c.dataset}/concepts/${c.concept.id}#Connectors"
     ]
   />
 
@@ -32,7 +32,7 @@
     class="d-inline-flex mt-2"
     labels=["ID", "Label", "Validity Dates", "Table"]
     values=[c.id, c.label, c.validityDates?join(', '), c.table.name]
-    links={"Table": "/admin-ui/datasets/${c.dataset.id}/tables/${c.table.id}"}
+    links={"Table": "/admin-ui/datasets/${c.dataset}/tables/${c.table.id}"}
   />
   <@accordion.accordionGroup>
     <#assign idHeader = "id">

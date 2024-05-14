@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -47,14 +48,14 @@ public class DefaultColumnNameTest {
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
 			(concept, cq) -> {
 				final UniversalSelect select = concept.getSelects().get(0);
-				cq.setSelects(List.of(select));
+				cq.setSelects(List.of(select.getId()));
 				return select;
 			};
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR =
 			(concept, cq) -> {
 				final Select select = concept.getConnectors().get(0).getSelects().get(0);
-				cq.getTables().get(0).setSelects(List.of(select));
+				cq.getTables().get(0).setSelects(List.of(select.getId()));
 				return select;
 			};
 
@@ -176,14 +177,15 @@ public class DefaultColumnNameTest {
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
+			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
 			cqConcept.setElements(
-					elements
+					list
 			);
 
 			List<CQTable> tables = concept.getConnectors().stream()
 										  .map(con -> {
 											  CQTable table = new CQTable();
-											  table.setConnector(con);
+											  table.setConnector(con.getId());
 											  table.setConcept(cqConcept);
 											  return table;
 										  })
@@ -210,7 +212,7 @@ public class DefaultColumnNameTest {
 			this.selectExtractor = selectExtractor;
 			setName("TestConceptName");
 			setLabel("TestConceptLabel");
-			setDataset(DATASET);
+			setDataset(DATASET.getId());
 			setSelects(List.of(new TestUniversalSelect(this)));
 		}
 

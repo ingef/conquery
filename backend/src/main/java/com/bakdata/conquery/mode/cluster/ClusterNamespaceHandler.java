@@ -50,7 +50,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 
 	@Override
 	public void removeNamespace(DatasetId id, DistributedNamespace namespace) {
-		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset())));
+		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset().getId())));
 		clusterState.getWorkerHandlers().keySet().removeIf(worker -> worker.getDataset().getDataset().equals(id));
 	}
 

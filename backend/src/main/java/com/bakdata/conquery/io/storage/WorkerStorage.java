@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -86,7 +86,7 @@ public class WorkerStorage extends NamespacedStorage {
 		cBlocks.remove(id);
 	}
 
-	public Collection<CBlock> getAllCBlocks() {
+	public Stream<CBlock> getAllCBlocks() {
 		return cBlocks.getAll();
 	}
 
@@ -104,7 +104,12 @@ public class WorkerStorage extends NamespacedStorage {
 		buckets.remove(id);
 	}
 
-	public Collection<Bucket> getAllBuckets() {
+
+	public Stream<BucketId> getAllBucketIds() {
+		return buckets.getAllKeys().map(BucketId.class::cast);
+	}
+
+	public Stream<Bucket> getAllBuckets() {
 		return buckets.getAll();
 	}
 
@@ -121,7 +126,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	@Override
-	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
+	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof BucketId castId) {
 			return (VALUE) getBucket(castId);
 		}

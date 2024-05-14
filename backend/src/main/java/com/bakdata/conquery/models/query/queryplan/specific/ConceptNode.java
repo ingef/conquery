@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -23,7 +24,7 @@ import lombok.ToString;
 @ToString(of = {"table", "selectedSecondaryId"}, callSuper = true)
 public class ConceptNode extends QPChainNode {
 
-	private final List<ConceptElement<?>> concepts;
+	private final List<ConceptElement> concepts;
 	private final long requiredBits;
 	private final CQTable table;
 	private final SecondaryIdDescription selectedSecondaryId;
@@ -31,12 +32,12 @@ public class ConceptNode extends QPChainNode {
 	private Map<Bucket, CBlock> preCurrentRow;
 	private CBlock currentRow;
 
-	public ConceptNode(QPNode child, List<ConceptElement<?>> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+	public ConceptNode(QPNode child, List<ConceptElement> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
 		this(child, concepts, calculateBitMask(concepts), table, selectedSecondaryId);
 	}
 
 	// For cloning
-	private ConceptNode(QPNode child, List<ConceptElement<?>> concepts, long requiredBits, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+	private ConceptNode(QPNode child, List<ConceptElement> concepts, long requiredBits, CQTable table, SecondaryIdDescription selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits =	requiredBits;
@@ -49,7 +50,7 @@ public class ConceptNode extends QPChainNode {
 	 * Calculate the bitmask for the supplied {@link ConceptElement}s which is eventually compared with the
 	 * the bitmasks of each entity. (See {@link CBlock#getIncludedConceptElementsPerEntity()})
 	 */
-	public static long calculateBitMask(Collection<ConceptElement<?>> concepts) {
+	public static long calculateBitMask(Collection<ConceptElement> concepts) {
 		long mask = 0;
 		for (ConceptElement<?> concept : concepts) {
 			final int[] prefix = concept.getPrefix();
@@ -61,15 +62,16 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getConnector());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(), table.getConnector().resolve());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		tableActive = table.getConnector().getTable().equals(currentTable)
+		final Connector connector = table.getConnector().resolve();
+		tableActive = connector.getTable().equals(currentTable)
 					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 		if(tableActive) {
-			super.nextTable(ctx.withConnector(table.getConnector()), currentTable);
+			super.nextTable(ctx.withConnector(connector), currentTable);
 		}
 	}
 
@@ -84,7 +86,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getConnector())
+		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getConnector().resolve())
 			   && getChild().isOfInterest(entity);
 	}
 
@@ -137,7 +139,7 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getConnector().getTable());
+		requiredTables.add(table.getConnector().resolve().getTable());
 	}
 
 }

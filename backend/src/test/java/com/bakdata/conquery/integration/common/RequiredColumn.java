@@ -43,7 +43,7 @@ public class RequiredColumn {
 		return out;
 	}
 
-	public Column toColumn(Table table, NsIdResolver nsIdResolver) {
+	public Column toColumn(Table table, NsIdResolver idResolver) {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
@@ -51,9 +51,9 @@ public class RequiredColumn {
 		col.setDescription(description);
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
-			final SecondaryIdDescription description = nsIdResolver.get(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));
+			final SecondaryIdDescription description = idResolver.get(new SecondaryIdDescriptionId(table.getDataset(), secondaryId));
 
-			col.setSecondaryId(description);
+			col.setSecondaryId(description.getId());
 		}
 
 		return col;

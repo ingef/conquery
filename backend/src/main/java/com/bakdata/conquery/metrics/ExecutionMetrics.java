@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -15,10 +18,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
@@ -115,9 +114,9 @@ public class ExecutionMetrics {
 			}
 
 			if (element instanceof CQConcept) {
-				for (Select select : ((CQConcept) element).getSelects()) {
-					doReport(CLASSES, select.getClass().getSimpleName());
-					doReport(SELECTS, select.getId().toString());
+				for (SelectId select : ((CQConcept) element).getSelects()) {
+					doReport(CLASSES, select.resolve().getClass().getSimpleName());
+					doReport(SELECTS, select.toString());
 				}
 
 				// Report classes and ids used of filters and selects
@@ -125,13 +124,13 @@ public class ExecutionMetrics {
 
 					for (FilterValue<?> filter : table.getFilters()) {
 						doReport(CLASSES, filter.getFilter().getClass().getSimpleName());
-						doReport(FILTERS, filter.getFilter().getId().toString());
+						doReport(FILTERS, filter.getFilter().toString());
 					}
 
-					for (Select select : table.getSelects()) {
-						doReport(CLASSES, select.getClass().getSimpleName());
+					for (SelectId select : table.getSelects()) {
+						doReport(CLASSES, select.resolve().getClass().getSimpleName());
 
-						doReport(SELECTS, select.getId().toString());
+						doReport(SELECTS, select.toString());
 					}
 				}
 			}

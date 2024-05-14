@@ -6,12 +6,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
@@ -26,6 +23,8 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -74,8 +73,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	 */
 	private final Object2IntMap<String> ends;
 
-	@NsIdRef
-	private final Import imp;
+	private final ImportId imp;
 
 
 	@JsonIgnore
@@ -87,12 +85,12 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@JsonIgnore
 	public Table getTable() {
-		return imp.getTable();
+		return imp.resolve().getTable().resolve();
 	}
 
 	@Override
 	public BucketId createId() {
-		return new BucketId(imp.getId(), bucket);
+		return new BucketId(imp, bucket);
 	}
 
 	/**
@@ -124,7 +122,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public ColumnStore getStore(@NotNull Column column) {
-		int columnPosition = getImp().getTable().getColumnPosition(column);
+		int columnPosition = getImp().getTable().resolve().getColumnPosition(column);
 		return stores[columnPosition];
 	}
 
@@ -194,7 +192,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getTable().getDataset();
 	}
 

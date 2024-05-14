@@ -9,9 +9,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -62,16 +60,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NotNull
 	private Set<ConqueryPermission> permissions = new HashSet<>();
 
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@EqualsAndHashCode.Exclude
-	protected MetaStorage storage;
 
-
-	public PermissionOwner(String name, String label, MetaStorage storage) {
+	public PermissionOwner(String name, String label) {
 		this.name = name;
 		this.label = label;
-		this.storage = storage;
 	}
 
 

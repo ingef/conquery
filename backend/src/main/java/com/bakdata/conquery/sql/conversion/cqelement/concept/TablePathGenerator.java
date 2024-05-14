@@ -1,11 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.JOIN_BRANCHES;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
@@ -15,6 +10,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -63,11 +59,11 @@ class TablePathGenerator {
 	private TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
-		tableInfo.setRootTable(cqTable.getConnector().getTable().getName());
+		tableInfo.setRootTable(cqTable.getConnector().resolve().getTable().getName());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 		tableInfo.setLastPredecessor(JOIN_BRANCHES);
 
-		boolean eventDateSelectsPresent = cqTable.getSelects().stream().anyMatch(Select::isEventDateSelect);
+		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
 		// no validity date aggregation possible nor necessary
 		if (cqTable.findValidityDate() == null || (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent)) {
 			return tableInfo;
@@ -104,7 +100,7 @@ class TablePathGenerator {
 		tableInfo.addRootTableMapping(UNIVERSAL_SELECTS);
 
 		// no event date selects present
-		if (cqConcept.getSelects().stream().noneMatch(Select::isEventDateSelect)) {
+		if (cqConcept.getSelects().stream().map(SelectId::resolve).noneMatch(Select::isEventDateSelect)) {
 			return tableInfo;
 		}
 

@@ -182,7 +182,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	private User createUser(AccessToken accessToken) {
 		String userLabel = ObjectUtils.firstNonNull(accessToken.getName(), accessToken.getPreferredUsername(), accessToken.getSubject());
 
-		final User user = new User(accessToken.getSubject(), userLabel, storage);
+		final User user = new User(accessToken.getSubject(), userLabel);
 
 		ValidatorHelper.failOnError(log, getValidator().validate(user));
 

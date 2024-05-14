@@ -12,10 +12,6 @@ import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -45,6 +41,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -224,7 +223,7 @@ public class FormTest extends ConqueryTestSpec {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> c.setDataset(support.getDataset().getId())
 		);
 
 		for (Concept<?> concept : concepts) {

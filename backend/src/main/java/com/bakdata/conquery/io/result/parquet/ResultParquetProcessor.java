@@ -39,7 +39,7 @@ public class ResultParquetProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final Dataset dataset = exec.getDataset();
+		final Dataset dataset = exec.getDataset().resolve();
 
 		log.info("Downloading results for {}", exec.getId());
 

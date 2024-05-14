@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -15,10 +15,10 @@ public class FlagCondition implements WhereCondition {
 
 	private final List<Field<Boolean>> flagFields;
 
-	public static FlagCondition onColumn(Map<String, Column> flags, String[] selectedFlags) {
+	public static FlagCondition onColumn(Map<String, ColumnId> flags, String[] selectedFlags) {
 		List<Field<Boolean>> flagFields = getRequiredColumns(flags, selectedFlags)
 				.stream()
-				.map(column -> DSL.field(DSL.name(column.getTable().getName(), column.getName()), Boolean.class))
+				.map(column -> DSL.field(DSL.name(column.getTable().getTable(), column.getColumn()), Boolean.class))
 				.toList();
 		return new FlagCondition(flagFields);
 	}
@@ -26,7 +26,7 @@ public class FlagCondition implements WhereCondition {
 	/**
 	 * @return Columns names of a given flags map that match the selected flags of the filter value.
 	 */
-	public static List<Column> getRequiredColumns(Map<String, Column> flags, String[] selectedFlags) {
+	public static List<ColumnId> getRequiredColumns(Map<String, ColumnId> flags, String[] selectedFlags) {
 		return Arrays.stream(selectedFlags)
 					 .map(flags::get)
 					 .toList();

@@ -61,7 +61,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 
 	public static CountQuartersSqlAggregator create(CountQuartersSelect countQuartersSelect, SelectContext selectContext) {
 		return new CountQuartersSqlAggregator(
-				countQuartersSelect.getColumn(),
+				countQuartersSelect.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(countQuartersSelect),
 				selectContext.getTables(),
 				selectContext.getConversionContext().getSqlDialect().getFunctionProvider(),
@@ -71,7 +71,7 @@ public class CountQuartersSqlAggregator implements SqlAggregator {
 
 	public static CountQuartersSqlAggregator create(CountQuartersFilter countQuartersFilter, FilterContext<Range.LongRange> filterContext) {
 		return new CountQuartersSqlAggregator(
-				countQuartersFilter.getColumn(),
+				countQuartersFilter.getColumn().resolve(),
 				filterContext.getNameGenerator().selectName(countQuartersFilter),
 				filterContext.getTables(),
 				filterContext.getConversionContext().getSqlDialect().getFunctionProvider(),

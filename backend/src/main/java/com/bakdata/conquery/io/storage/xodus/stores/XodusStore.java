@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -77,6 +79,18 @@ public class XodusStore {
 		}
 	}
 
+	public List<ByteIterable> getAllKeys() {
+		return environment.computeInReadonlyTransaction(txn -> {
+			ArrayList<ByteIterable> keys = new ArrayList<>();
+			try (Cursor c = store.openCursor(txn)) {
+				while (c.getNext()) {
+					keys.add(c.getKey());
+				}
+				return keys;
+			}
+		});
+	}
+
 	public boolean update(ByteIterable key, ByteIterable value) {
 		return environment.computeInTransaction(t -> store.put(t, key, value));
 	}
@@ -92,16 +106,18 @@ public class XodusStore {
 
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
-			Cursor cursor = store.openCursor(t);
-			while(cursor.getNext()){
-				cursor.deleteCurrent();
+			try (Cursor cursor = store.openCursor(t)) {
+
+				while (cursor.getNext()) {
+					cursor.deleteCurrent();
+				}
 			}
 		});
 	}
 
 	public void deleteStore() {
 		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
-		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+		environment.executeInTransaction(t -> environment.removeStore(store.getName(), t));
 		storeRemoveHook.accept(this);
 	}
 
@@ -115,6 +131,6 @@ public class XodusStore {
 
 	@Override
 	public String toString() {
-		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
+		return "XodusStore[" + environment.getLocation() + ":" + store.getName() + "}";
 	}
 }

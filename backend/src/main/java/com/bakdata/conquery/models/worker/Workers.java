@@ -15,7 +15,6 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -153,7 +152,7 @@ public class Workers implements NsIdResolver {
 	}
 
 	@Override
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		final DatasetId dataset = id.getDataset();
 		if (!dataset2Worker.containsKey(dataset)) {
 			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));

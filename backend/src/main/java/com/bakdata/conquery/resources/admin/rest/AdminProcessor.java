@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -88,19 +89,15 @@ public class AdminProcessor {
 	public void deleteRole(Role role) {
 		log.info("Deleting {}", role);
 
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(role);
-		}
+		storage.getAllUsers().forEach(user -> user.removeRole(role));
 
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(role);
-		}
+		storage.getAllGroups().forEach(group -> group.removeRole(role));
 
 		storage.removeRole(role.getId());
 	}
 
 	public SortedSet<Role> getAllRoles() {
-		return new TreeSet<>(storage.getAllRoles());
+		return storage.getAllRoles().collect(Collectors.toCollection(TreeSet::new));
 	}
 
 
@@ -127,13 +124,11 @@ public class AdminProcessor {
 
 
 	public TreeSet<User> getAllUsers() {
-		return new TreeSet<>(storage.getAllUsers());
+		return storage.getAllUsers().collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	public synchronized void deleteUser(User user) {
-		for (Group group : storage.getAllGroups()) {
-			group.removeMember(user);
-		}
+		storage.getAllGroups().forEach(group -> group.removeMember(user));
 		storage.removeUser(user.getId());
 		log.trace("Removed user {} from the storage.", user.getId());
 	}
@@ -156,7 +151,7 @@ public class AdminProcessor {
 	}
 
 	public TreeSet<Group> getAllGroups() {
-		return new TreeSet<>(storage.getAllGroups());
+		return storage.getAllGroups().collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	public void addGroups(List<Group> groups) {
@@ -213,7 +208,7 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for certain {@link User} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(Collection<User> users) {
+	public String getPermissionOverviewAsCSV(Stream<User> users) {
 		final StringWriter sWriter = new StringWriter();
 		final CsvWriter writer = config.getCsv().createWriter(sWriter);
 		final List<String> scope = config
@@ -222,9 +217,9 @@ public class AdminProcessor {
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
-		for (User user : users) {
-			writeAuthOverviewUser(writer, scope, user, storage, config);
-		}
+		users.forEach(user ->
+							  writeAuthOverviewUser(writer, scope, user, storage, config)
+		);
 		return sWriter.toString();
 	}
 
@@ -259,7 +254,7 @@ public class AdminProcessor {
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
 	public String getPermissionOverviewAsCSV(Group group) {
-		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
+		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser));
 	}
 
 	public boolean isBusy() {

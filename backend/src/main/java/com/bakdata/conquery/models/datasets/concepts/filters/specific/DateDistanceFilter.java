@@ -41,8 +41,9 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		if (getColumn().getType() != MajorTypeId.DATE) {
-			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
+		final MajorTypeId typeId = getColumn().resolve().getType();
+		if (typeId != MajorTypeId.DATE) {
+			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + typeId);
 		}
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
@@ -50,7 +51,7 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
+		return new DateDistanceFilterNode(getColumn().resolve(), timeUnit, value);
 	}
 
 	@Override
@@ -60,6 +61,6 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public Condition convertForTableExport(FilterContext<Range.LongRange> filterContext) {
-		return DateDistanceCondition.onColumn(getColumn(), getTimeUnit(), filterContext).condition();
+		return DateDistanceCondition.onColumn(getColumn().resolve(), getTimeUnit(), filterContext).condition();
 	}
 }

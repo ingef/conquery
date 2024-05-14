@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.MapNsIdResolver;
+import com.bakdata.conquery.models.identifiable.MapIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -43,7 +43,7 @@ public class PreprocessedReader implements AutoCloseable {
 	private final Map<Id<?>, Identifiable<?>> replacements = new HashMap<>();
 
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
-		final MapNsIdResolver mapNsIdResolver = new MapNsIdResolver(replacements);
+		final MapIdResolver mapNsIdResolver = new MapIdResolver(replacements);
 
 		parser = mapNsIdResolver.injectIntoNew(objectMapper)
 								.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)

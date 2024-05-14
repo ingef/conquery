@@ -21,7 +21,6 @@ import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -135,7 +134,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
     }
 
     @Override
-    public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
         final DatasetId dataset = id.getDataset();
         if (!datasets.containsKey(dataset)) {
             throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));

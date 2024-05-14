@@ -62,7 +62,7 @@ public class ResultExternalResource {
 			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset
 	) {
-		log.info("Result download for {} on dataset {} by user {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
+		log.info("Result download for {} on dataset {} by user {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.getResult(subject, execution, fileName);
 	}
 }

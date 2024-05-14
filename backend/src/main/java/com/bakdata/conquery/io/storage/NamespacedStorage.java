@@ -1,9 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -101,7 +99,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 							@Nullable
 							@Override
 							public Identifiable<?> load(Id<?> key) throws Exception {
-								return getFromStorage((Id & NamespacedId) key);
+								return getFromStorage((Id<?> & NamespacedId) key);
 							}
 						});
 	}
@@ -125,13 +123,11 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
 		store.onAdd(concept -> {
 
-			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
+			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
 				throw new IllegalStateException("Concept is not for this dataset.");
 			}
 
-			concept.setDataset(dataset.get());
-
-			concept.initElements();
+			concept.setDataset(dataset.get().getId());
 
 			if (log.isTraceEnabled()) {
 				// Validating concepts is quite slow, so we only validate when requested.
@@ -156,7 +152,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		return imports.get(id);
 	}
 
-	public Collection<Import> getAllImports() {
+	public Stream<Import> getAllImports() {
 		return imports.getAll();
 	}
 
@@ -176,8 +172,8 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		this.dataset.update(dataset);
 	}
 
-	public List<Table> getTables() {
-		return new ArrayList<>(tables.getAll());
+	public Stream<Table> getTables() {
+		return tables.getAll();
 	}
 
 	public Table getTable(TableId tableId) {
@@ -192,8 +188,8 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		tables.remove(table);
 	}
 
-	public List<SecondaryIdDescription> getSecondaryIds() {
-		return new ArrayList<>(secondaryIds.getAll());
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAll();
 	}
 
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
@@ -227,16 +223,16 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		concepts.remove(id);
 	}
 
-	public Collection<Concept<?>> getAllConcepts() {
+	public Stream<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
 
 
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		return (VALUE) cache.get(id);
 	}
 
-	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
+	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof DatasetId castId) {
 			final Dataset dataset = getDataset();
 			if (dataset.getId().equals(castId)) {

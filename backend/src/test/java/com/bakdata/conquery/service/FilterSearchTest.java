@@ -33,8 +33,8 @@ public class FilterSearchTest {
 		Dataset dataset = new Dataset("test_dataset");
 
 		table.setName("test_table");
-		table.setDataset(dataset);
-		concept.setDataset(dataset);
+		table.setDataset(dataset.getId());
+		concept.setDataset(dataset.getId());
 		concept.setName("test_concept");
 		concept.setConnectors(List.of(connector));
 		connector.setName("test_connector");
@@ -42,7 +42,7 @@ public class FilterSearchTest {
 		connector.setConcept(concept);
 		column.setTable(table);
 		column.setName("test_column");
-		filter.setColumn(column);
+		filter.setColumn(column.getId());
 		filter.setConnector(connector);
 
 
@@ -82,8 +82,8 @@ public class FilterSearchTest {
 		Dataset dataset = new Dataset("test_dataset");
 
 		table.setName("test_table");
-		table.setDataset(dataset);
-		concept.setDataset(dataset);
+		table.setDataset(dataset.getId());
+		concept.setDataset(dataset.getId());
 		concept.setName("test_concept");
 		concept.setConnectors(List.of(connector));
 		connector.setName("test_connector");
@@ -92,7 +92,7 @@ public class FilterSearchTest {
 		column.setTable(table);
 		column.setName("test_column");
 		column.setSearchDisabled(true);
-		filter.setColumn(column);
+		filter.setColumn(column.getId());
 		filter.setConnector(connector);
 
 		// Register

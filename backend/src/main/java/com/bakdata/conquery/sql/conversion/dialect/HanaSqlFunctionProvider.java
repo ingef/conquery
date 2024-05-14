@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -331,12 +330,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		// if no end column is present, the only existing column is both start and end of the date range
 		if (validityDate.getEndColumn() == null) {
-			startColumn = validityDate.getColumn();
-			endColumn = validityDate.getColumn();
+			startColumn = validityDate.getColumn().resolve();
+			endColumn = validityDate.getColumn().resolve();
 		}
 		else {
-			startColumn = validityDate.getStartColumn();
-			endColumn = validityDate.getEndColumn();
+			startColumn = validityDate.getStartColumn().resolve();
+			endColumn = validityDate.getEndColumn().resolve();
 		}
 
 		Field<Date> rangeStart = DSL.coalesce(

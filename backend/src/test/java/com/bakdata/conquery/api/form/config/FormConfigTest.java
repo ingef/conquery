@@ -72,7 +72,7 @@ public class FormConfigTest {
 	private ConqueryConfig config = new ConqueryConfig();
 
 	private MetaStorage storage;
-	private DatasetRegistry namespacesMock;
+	private DatasetRegistry<?> namespacesMock;
 
 	private FormConfigProcessor processor;
 	private AuthorizationController controller;
@@ -94,10 +94,6 @@ public class FormConfigTest {
 
 		// Mock DatasetRegistry for translation
 		namespacesMock = Mockito.mock(DatasetRegistry.class);
-		// TODO
-		//		doAnswer(invocation -> {
-		//			throw new UnsupportedOperationException("Not yet implemented");
-		//		}).when(namespacesMock).getOptional(any());
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
@@ -139,7 +135,7 @@ public class FormConfigTest {
 		mode.setForm(form);
 
 
-		user = new User("test", "test", storage);
+		user = new User("test", "test");
 		storage.addUser(user);
 	}
 
@@ -160,7 +156,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset, formConfig);
 
-		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset));
+		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset.getId()));
 	}
 
 	@Test
@@ -170,7 +166,7 @@ public class FormConfigTest {
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
@@ -192,7 +188,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 		formConfig.setOwner(user);
 		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
@@ -306,9 +302,9 @@ public class FormConfigTest {
 	public void patchConfig() {
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
-		Group group1 = new Group("test1", "test1", storage);
+		Group group1 = new Group("test1", "test1");
 		storage.addGroup(group1);
-		Group group2 = new Group("test2", "test2", storage);
+		Group group2 = new Group("test2", "test2");
 		storage.addGroup(group2);
 
 		group1.addMember(user);
@@ -336,7 +332,7 @@ public class FormConfigTest {
 
 		// CHECK PART 1
 		FormConfig patchedFormExpected = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		patchedFormExpected.setDataset(dataset);
+		patchedFormExpected.setDataset(dataset.getId());
 		patchedFormExpected.setFormId(config.getFormId());
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);

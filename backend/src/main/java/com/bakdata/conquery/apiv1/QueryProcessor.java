@@ -106,17 +106,22 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
+		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, storage.getAllExecutions(), allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(
+			Dataset dataset,
+			UriBuilder uriBuilder,
+			Subject subject,
+			Stream<ManagedExecution> allQueries,
+			boolean allProviders
+	) {
 
-		return allQueries.stream()
-						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
+		return allQueries
+				// The following only checks the dataset, under which the query was submitted, but a query can target more then
 						 // one dataset.
-						 .filter(q -> q.getDataset().equals(datasetId))
+				.filter(q -> q.getDataset().equals(dataset.getId()))
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(Predicate.not(ManagedExecution::isSystem))
@@ -202,7 +207,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		final ExecutionManager<?> executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(dataset, query);
 	}
 
@@ -227,7 +232,7 @@ public class QueryProcessor {
 				final Set<GroupId> groupsToShareWith = new HashSet<>(patch.getGroups());
 
 				// Find all groups the query is already shared with, so we do not remove them, as patch is absolute
-				for (Group group : storage.getAllGroups()) {
+				for (Group group : storage.getAllGroups().toList()) {
 					if (groupsToShareWith.contains(group.getId())) {
 						continue;
 					}
@@ -264,7 +269,7 @@ public class QueryProcessor {
 	public void deleteQuery(Subject subject, ManagedExecution execution) {
 		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
 
-		datasetRegistry.get(execution.getDataset().getId())
+		datasetRegistry.get(execution.getDataset())
 					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
 					   .clearQueryResults(execution);
 
@@ -272,13 +277,13 @@ public class QueryProcessor {
 	}
 
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
-		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(query.getDataset());
 
 		query.initExecutable(namespace, config);
 
 		final FullExecutionStatus status = query.buildStatusFull(subject);
 
-		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
+		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset().resolve(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
@@ -401,7 +406,7 @@ public class QueryProcessor {
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final ExecutionManager executionManager = namespace.getExecutionManager();
+		final ExecutionManager<?> executionManager = namespace.getExecutionManager();
 
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
@@ -424,7 +429,14 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager executionManager, User user) {
+	private ManagedExecution tryReuse(
+			QueryDescription query,
+			ManagedExecutionId executionId,
+			Namespace namespace,
+			ConqueryConfig config,
+			ExecutionManager<?> executionManager,
+			User user
+	) {
 
 		ManagedExecution execution = storage.getExecution(executionId);
 
@@ -440,8 +452,8 @@ public class QueryProcessor {
 
 		// If SecondaryIds differ from selected and prior, we cannot reuse them.
 		if (query instanceof SecondaryIdQuery) {
-			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
-			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
+			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId().resolve();
+			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId().resolve();
 
 			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
@@ -452,7 +464,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(execution.getSubmitted(), user, execution.getDataset(), false);
+					executionManager.createExecution(execution.getSubmitted(), user, execution.getDataset().resolve(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);

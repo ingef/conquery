@@ -49,7 +49,7 @@ public class SerialisationObjectsUtil {
 	@NotNull
 	public static TreeConcept createConcept(Dataset dataset, NamespacedStorage ... storages) {
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
 
@@ -69,7 +69,7 @@ public class SerialisationObjectsUtil {
 
 
 		table.setColumns(new Column[]{column, dateColumn});
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 
@@ -79,7 +79,7 @@ public class SerialisationObjectsUtil {
 		connector.setConcept(concept);
 		connector.setLabel("connLabel");
 		connector.setName("connName");
-		connector.setColumn(column);
+		connector.setColumn(column.getId());
 
 		concept.setConnectors(List.of(connector));
 
@@ -107,11 +107,11 @@ public class SerialisationObjectsUtil {
 
 		final CQTable table = new CQTable();
 		table.setConcept(cqConcept);
-		table.setConnector(concept.getConnectors().get(0));
+		table.setConnector(concept.getConnectors().get(0).getId());
 
-		// Use ArrayList instead of ImmutalbeList here because they use different hash code implementations
+		// Use ArrayList instead of ImmutableList here because they use different hash code implementations
 		cqConcept.setTables(new ArrayList<>(List.of(table)));
-		cqConcept.setElements(new ArrayList<>(List.of(concept)));
+		cqConcept.setElements(new ArrayList<>(List.of(concept.getId())));
 
 		exportForm.setTimeMode(mode);
 		exportForm.setFeatures(new ArrayList<>(List.of(cqConcept)));
@@ -127,9 +127,9 @@ public class SerialisationObjectsUtil {
 	}
 
 	@NotNull
-	public static User createUser(MetaStorage storage) {
-		final User user = new User("test-user", "test-user", storage);
-
+	public static User createUser(MetaStorage metaStorage) {
+		final User user = new User("test-user", "test-user");
+		user.setMetaStorage(metaStorage);
 		user.updateStorage();
 		return user;
 	}

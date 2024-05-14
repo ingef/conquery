@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
@@ -20,6 +21,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -32,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
+@JsonDeserialize(converter = TreeConcept.TreeConceptInitializer.class)
 public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
 
 	@JsonIgnore
@@ -49,7 +53,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
 
-	@JsonIgnore
+	@View.Internal
 	@Getter
 	@Setter
 	private int localId;
@@ -129,7 +133,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
+	private ConceptTreeChild findMostSpecificChild(
+			String stringValue,
+			CalculatedValue<Map<String, Object>> rowMap,
+			ConceptTreeChild best,
+			List<ConceptTreeChild> currentList
+	)
 			throws ConceptConfigurationException {
 
 		while (currentList != null && !currentList.isEmpty()) {
@@ -223,5 +232,20 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 
 		return null;
+	}
+
+	public static class TreeConceptInitializer extends StdConverter<TreeConcept, TreeConcept> {
+		@Override
+		public TreeConcept convert(TreeConcept value) {
+			log.trace("Initializing {}", value);
+			try {
+				value.initElements();
+				return value;
+
+			}
+			catch (ConfigurationException | JSONException e) {
+				throw new RuntimeException("Failed to initialize: " + value, e);
+			}
+		}
 	}
 }

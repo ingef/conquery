@@ -42,16 +42,19 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
+import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +64,20 @@ import org.assertj.core.description.LazyTextDescription;
 @Slf4j
 @UtilityClass
 public class LoadingUtil {
+
+	public static void importDataset(Client client, UriBuilder adminUriBuilder, Dataset dataset) {
+
+		final URI uri = HierarchyHelper.hierarchicalPath(adminUriBuilder, AdminDatasetsResource.class, "addDataset")
+									   .build();
+
+		final Invocation.Builder request = client.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+		try (final Response response = request.post(Entity.json(dataset))) {
+
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
+	}
 
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException, JSONException {
 		// Load previous query results if available
@@ -113,7 +130,7 @@ public class LoadingUtil {
 			if (autoConcept) {
 				final TreeConcept concept = AutoConceptUtil.createConcept(table);
 
-				uploadConcept(support, table.getDataset(), concept);
+				uploadConcept(support, table.getDataset().resolve(), concept);
 			}
 		}
 	}
@@ -237,7 +254,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> c.setDataset(support.getDataset().getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {
@@ -264,7 +281,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> c.setDataset(support.getDataset().getDataset())
 		);
 	}
 

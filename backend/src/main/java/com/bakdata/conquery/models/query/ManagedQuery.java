@@ -60,7 +60,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+		super(owner, submittedDataset.getId(), storage);
 		this.query = query;
 	}
 
@@ -110,7 +110,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 
 		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
-			status.setSecondaryId((secondaryIdQuery).getSecondaryId().getId());
+			status.setSecondaryId((secondaryIdQuery).getSecondaryId());
 		}
 	}
 

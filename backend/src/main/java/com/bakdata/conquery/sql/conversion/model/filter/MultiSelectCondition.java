@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +17,9 @@ public class MultiSelectCondition implements WhereCondition {
 	private final String[] values;
 	private final SqlFunctionProvider functionProvider;
 
-	public static MultiSelectCondition onColumn(Column column, String[] values, SqlFunctionProvider functionProvider) {
-		String tableName = column.getTable().getName();
-		String columnName = column.getName();
+	public static MultiSelectCondition onColumn(ColumnId column, String[] values, SqlFunctionProvider functionProvider) {
+		String tableName = column.getTable().getTable();
+		String columnName = column.getColumn();
 		Field<String> field = DSL.field(DSL.name(tableName, columnName), String.class);
 		return new MultiSelectCondition(field, values, functionProvider);
 	}

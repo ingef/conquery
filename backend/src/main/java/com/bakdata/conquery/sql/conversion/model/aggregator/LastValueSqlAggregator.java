@@ -54,7 +54,7 @@ public class LastValueSqlAggregator implements SqlAggregator {
 
 	public static LastValueSqlAggregator create(LastValueSelect lastValueSelect, SelectContext selectContext) {
 		return new LastValueSqlAggregator(
-				lastValueSelect.getColumn(),
+				lastValueSelect.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(lastValueSelect),
 				selectContext.getValidityDate(),
 				selectContext.getTables(),

@@ -28,7 +28,7 @@ public class NsIdReferenceKeyDeserializer<ID extends Id<VALUE> & NamespacedId, V
 	public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
 		final ID id = parser.parse(key);
 
-		return NsIdResolver.get(ctxt).get(id);
+		return NsIdResolver.getResolver(ctxt).get(id);
 	}
 
 	@Override

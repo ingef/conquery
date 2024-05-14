@@ -80,8 +80,8 @@ public class SumSqlAggregator implements SqlAggregator {
 
 	public static SumSqlAggregator create(SumSelect sumSelect, SelectContext selectContext) {
 		return new SumSqlAggregator(
-				sumSelect.getColumn(),
-				sumSelect.getSubtractColumn(),
+				sumSelect.getColumn().resolve(),
+				sumSelect.getSubtractColumn().resolve(),
 				selectContext.getNameGenerator().selectName(sumSelect),
 				selectContext.getTables(),
 				null
@@ -90,8 +90,8 @@ public class SumSqlAggregator implements SqlAggregator {
 
 	public static <RANGE extends IRange<? extends Number, ?>> SqlAggregator create(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
 		return new SumSqlAggregator(
-				sumFilter.getColumn(),
-				sumFilter.getSubtractColumn(),
+				sumFilter.getColumn().resolve(),
+				sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null,
 				filterContext.getNameGenerator().selectName(sumFilter),
 				filterContext.getTables(),
 				filterContext.getValue()

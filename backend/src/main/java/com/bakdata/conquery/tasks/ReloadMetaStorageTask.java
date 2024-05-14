@@ -26,11 +26,11 @@ public class ReloadMetaStorageTask extends Task {
 		output.println("BEGIN reloading MetaStorage.");
 
 		{
-			final int allUsers = storage.getAllUsers().size();
-			final int allExecutions = storage.getAllExecutions().size();
-			final int allFormConfigs = storage.getAllFormConfigs().size();
-			final int allGroups = storage.getAllGroups().size();
-			final int allRoles = storage.getAllRoles().size();
+			final long allUsers = storage.getAllUsers().count();
+			final long allExecutions = storage.getAllExecutions().count();
+			final long allFormConfigs = storage.getAllFormConfigs().count();
+			final long allGroups = storage.getAllGroups().count();
+			final long allRoles = storage.getAllRoles().count();
 
 			log.debug("BEFORE: Have {} Users, {} Groups, {} Roles, {} Executions, {} FormConfigs.",
 					  allUsers, allGroups, allRoles, allExecutions, allFormConfigs);
@@ -39,11 +39,11 @@ public class ReloadMetaStorageTask extends Task {
 		output.println("DONE reloading MetaStorage within %s.".formatted(timer.elapsed()));
 
 		{
-			final int allUsers = storage.getAllUsers().size();
-			final int allExecutions = storage.getAllExecutions().size();
-			final int allFormConfigs = storage.getAllFormConfigs().size();
-			final int allGroups = storage.getAllGroups().size();
-			final int allRoles = storage.getAllRoles().size();
+			final long allUsers = storage.getAllUsers().count();
+			final long allExecutions = storage.getAllExecutions().count();
+			final long allFormConfigs = storage.getAllFormConfigs().count();
+			final long allGroups = storage.getAllGroups().count();
+			final long allRoles = storage.getAllRoles().count();
 
 			log.debug("AFTER: Have {} Users, {} Groups, {} Roles, {} Executions, {} FormConfigs.",
 					  allUsers, allGroups, allRoles, allExecutions, allFormConfigs);

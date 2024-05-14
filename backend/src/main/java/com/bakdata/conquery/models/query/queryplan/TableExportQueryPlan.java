@@ -9,9 +9,11 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -39,7 +41,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final Map<CQTable, QPNode> tables;
 
 	@ToString.Exclude
-	private final Map<Column, Integer> positions;
+	private final Map<ColumnId, Integer> positions;
 
 	/**
 	 * If true, Connector {@link Column}s will be output raw.
@@ -84,9 +86,9 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final CQTable cqTable = entry.getKey();
 			final ValidityDate validityDate = cqTable.findValidityDate();
 			final QPNode query = entry.getValue();
-			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
+			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector().resolve());
 
-			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
+			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().resolve().getTable())) {
 
 				if (!shouldEvaluateBucket(query, bucket, entity, ctx)) {
 					continue;
@@ -158,9 +160,10 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			entry[0] = List.of(date);
 		}
 
-		entry[1] = exportDescription.getConnector().getTable().getLabel();
+		final Connector connector = exportDescription.getConnector().resolve();
+		entry[1] = connector.getTable().getLabel();
 
-		for (Column column : exportDescription.getConnector().getTable().getColumns()) {
+		for (Column column : connector.getTable().getColumns()) {
 
 			// ValidityDates are handled separately.
 			if (validityDate != null && validityDate.containsColumn(column)){
@@ -177,7 +180,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 			final int position = positions.get(column);
 
-			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
+			if (!rawConceptValues && column.equals(connector.getColumn())) {
 				entry[position] = cblock.getMostSpecificChildLocalId(event);
 				continue;
 			}

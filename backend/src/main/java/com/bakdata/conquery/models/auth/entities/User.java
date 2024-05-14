@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
@@ -43,12 +42,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	@JsonCreator
-	protected User(String name, String label) {
-		this(name, label, null);
-	}
-
-	public User(String name, String label, MetaStorage storage) {
-		super(name, label, storage);
+	public User(String name, String label) {
+		super(name, label);
 		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
 
@@ -56,14 +51,15 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = storage.getRole(roleId);
+			Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Group group : getMetaStorage().getAllGroups().toList()) {
 			if (!group.containsMember(this)) {
 				continue;
 			}
@@ -98,7 +94,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public void updateStorage() {
-		storage.updateUser(this);
+		getMetaStorage().updateUser(this);
 	}
 
 	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
