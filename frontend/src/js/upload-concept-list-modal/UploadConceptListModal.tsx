@@ -509,11 +509,7 @@ const UploadConceptListModal = ({
   );
 
   return (
-    <Modal
-      closeIcon
-      onClose={onClose}
-      headline={t("uploadConceptListModal.headline")}
-    >
+    <Modal onClose={onClose} headline={t("uploadConceptListModal.headline")}>
       <Root>
         <SxInputSelect
           label={t("uploadConceptListModal.selectConceptRootNode")}

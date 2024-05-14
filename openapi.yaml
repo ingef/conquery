@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 0.0.0
+  version: "0.0.1"
   title: Conquery API
   description: Conquery API
   license:
@@ -381,13 +381,31 @@ components:
           pattern: "[.,]"
         decimalScale:
           type: string
-
+    VersionContainer:
+      type: object
+      properties:
+        name:
+          type: string
+          example: backend
+          description: Name of the versioned component
+        version:
+          type: string
+          example: "1.2.3-g983u4r84u"
+          description: Version id of the component
+        buildTime:
+          type: string
+          format: date-time
+          example: "2007-08-31T16:47:00+00:00"
+      required:
+        - name
     FrontendConfig:
       type: object
       properties:
-        version:
-          description: Revision of the backend.
-          type: string
+        versions:
+          description: Revisions of backend components such as the backend and form-backends
+          type: array
+          items:
+            $ref: "#/components/schemas/VersionContainer"
         manualUrl:
           description: URL to this instances manual if available.
           type: string

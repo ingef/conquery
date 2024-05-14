@@ -38,7 +38,7 @@ export default function DiagramModal({
   useHotkeys("esc", () => onClose());
 
   return (
-    <Modal closeIcon onClose={() => onClose()}>
+    <Modal onClose={onClose}>
       <Horizontal>
         <SxDiagram stat={statistic} />
         {previewStatsIsBarStats(statistic) &&
