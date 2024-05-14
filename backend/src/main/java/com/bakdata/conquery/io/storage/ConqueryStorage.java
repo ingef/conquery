@@ -23,6 +23,7 @@ public abstract class ConqueryStorage implements Closeable {
 	
 	public final void loadData(){
 		for (ManagedStore store : getStores()) {
+			log.debug("Loading storage {}", store);
 			store.loadData();
 		}
 	}

@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -28,8 +30,8 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
+import com.bakdata.conquery.io.storage.xodus.stores.InMemoryStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
@@ -63,7 +65,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import io.dropwizard.util.Duration;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Min;
@@ -159,9 +160,17 @@ public class XodusStoreFactory implements StoreFactory {
 		return readerExecutorService;
 	}
 
-	private boolean useWeakDictionaryCaching;
+	/**
+	 * Global default cache wrapper for stores.
+	 */
 	@NotNull
-	private Duration weakCacheDuration = Duration.hours(48);
+	private CachingStoreWrapper globalStoreCacheSetting = new InMemoryStoreWrapper();
+
+	@NotNull
+	/**
+	 * Individual cache wrapper for stores that overrides the globalStoreCacheSetting.
+	 */
+	private Map<StoreMappings, CachingStoreWrapper> storeCacheSettings = Collections.emptyMap();
 
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
@@ -277,8 +286,8 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
+	public Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper);
 	}
 
 	@Override
@@ -321,7 +330,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-			return new SingletonStore<>(new CachedStore<>(bigStore));
+			return new SingletonStore<>(new InMemoryStore<>(bigStore));
 		}
 	}
 
@@ -452,8 +461,9 @@ public class XodusStoreFactory implements StoreFactory {
 			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
 
 			openStoresInEnv.put(environment, store);
+			final CachingStoreWrapper cacheWrapper = storeCacheSettings.getOrDefault(storeId, globalStoreCacheSetting);
 
-			return new CachedStore<>(
+			return cacheWrapper.wrap(
 					new SerializingStore<>(
 							store,
 							validator,
@@ -464,7 +474,8 @@ public class XodusStoreFactory implements StoreFactory {
 							isRemoveUnreadableFromStore(),
 							getUnreadableDataDumpDirectory(),
 							getReaderExecutorService()
-					));
+					)
+			);
 		}
 	}
 

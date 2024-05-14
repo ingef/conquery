@@ -65,7 +65,7 @@ public class QueryCleanupTask extends Task {
 			throw new IllegalArgumentException("Query Expiration may not be null");
 		}
 
-		log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().size());
+		log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().count());
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
@@ -73,7 +73,7 @@ public class QueryCleanupTask extends Task {
 
 			final Set<ManagedExecution> toDelete = new HashSet<>();
 
-			for (ManagedExecution execution : storage.getAllExecutions()) {
+			for (ManagedExecution execution : storage.getAllExecutions().toList()) {
 
 				// Gather all referenced queries via reused checker.
 				requiredQueries.addAll(execution.getSubmitted().collectRequiredQueries());

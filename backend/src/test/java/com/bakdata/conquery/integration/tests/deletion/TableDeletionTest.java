@@ -74,7 +74,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final int nImports = namespace.getStorage().getAllImports().size();
+		final long nImports = namespace.getStorage().getAllImports().count();
 
 
 		// State before deletion.
@@ -147,7 +147,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be two less!
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 1);
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(nImports - 1);
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
@@ -221,7 +221,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Test state after reimport.
 		{
 			log.info("Checking state after re-import");
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(nImports);
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -231,7 +231,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
+					assertThat(workerStorage.getAllBuckets().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}
@@ -255,7 +255,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-start");
 
 			{
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
+				assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(2);
 
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -265,7 +265,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
+						assertThat(workerStorage.getAllBuckets().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

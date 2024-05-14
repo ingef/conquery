@@ -79,16 +79,16 @@ public class BucketManager {
 		final IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
-		for (Bucket bucket : storage.getAllBuckets()) {
+		storage.getAllBuckets().forEach(bucket -> {
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			registerBucket(bucket, entity2Bucket, tableBuckets);
-		}
+		});
 
-		for (CBlock cBlock : storage.getAllCBlocks()) {
-			registerCBlock(cBlock, connectorCBlocks);
-		}
+		storage.getAllCBlocks().forEach(cBlock ->
+												registerCBlock(cBlock, connectorCBlocks)
+		);
 
 		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
@@ -99,7 +99,7 @@ public class BucketManager {
 	private static void registerBucket(Bucket bucket, Object2IntMap<String> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (String entity : bucket.entities()) {
 
-			if(entity2Bucket.containsKey(entity)){
+			if (entity2Bucket.containsKey(entity)) {
 				// This is an unrecoverable state, but should not happen in practice. Just a precaution.
 				assert entity2Bucket.getInt(entity) == bucket.getBucket();
 				continue;
@@ -131,29 +131,28 @@ public class BucketManager {
 	public void fullUpdate() {
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
-		for (Concept<?> c : storage.getAllConcepts()) {
-			if (!(c instanceof TreeConcept)) {
-				continue;
-			}
-			for (ConceptTreeConnector con : ((TreeConcept) c).getConnectors()) {
-				for (Bucket bucket : storage.getAllBuckets()) {
+		storage.getAllConcepts()
+			   .filter(TreeConcept.class::isInstance)
+			   .flatMap(concept -> concept.getConnectors().stream().map(ConceptTreeConnector.class::cast))
 
-					final CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+			   .forEach(connector -> {
+				   storage.getAllBuckets().forEach(bucket -> {
 
-					if (!con.getTable().equals(bucket.getTable())) {
-						continue;
-					}
+					   final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
 
-					if (hasCBlock(cBlockId)) {
-						log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
-						continue;
-					}
+					   if (!connector.getTable().equals(bucket.getTable())) {
+						   return;
+					   }
 
-					log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-					job.addCBlock(bucket, con);
-				}
-			}
-		}
+					   if (hasCBlock(cBlockId)) {
+						   log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
+						   return;
+					   }
+
+					   log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+					   job.addCBlock(bucket, connector);
+				   });
+			   });
 
 		if (!job.isEmpty()) {
 			jobManager.addSlowJob(job);
@@ -174,26 +173,12 @@ public class BucketManager {
 
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
-		for (Concept<?> concept : storage.getAllConcepts()) {
-			if (!(concept instanceof TreeConcept)) {
-				continue;
-			}
-			for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
-				if (!connector.getTable().equals(bucket.getTable())) {
-					continue;
-				}
-
-				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
-
-
-				if (hasCBlock(cBlockId)) {
-					continue;
-				}
-
-				job.addCBlock(bucket, connector);
-
-			}
-		}
+		storage.getAllConcepts()
+			   .filter(TreeConcept.class::isInstance)
+			   .flatMap(concept -> concept.getConnectors().stream())
+			   .filter(connector -> connector.getTable().equals(bucket.getTable()))
+			   .filter(connector -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
+			   .forEach(connector -> job.addCBlock(bucket, (ConceptTreeConnector) connector));
 
 		jobManager.addSlowJob(job);
 	}
@@ -214,7 +199,6 @@ public class BucketManager {
 
 	public void removeBucket(Bucket bucket) {
 		storage.getAllCBlocks()
-			   .stream()
 			   .filter(cblock -> cblock.getBucket().equals(bucket))
 			   .forEach(this::removeCBlock);
 
@@ -248,18 +232,14 @@ public class BucketManager {
 	 */
 	public void removeImport(Import imp) {
 		storage.getAllBuckets()
-			   .stream()
 			   .filter(bucket -> bucket.getImp().equals(imp))
 			   .forEach(this::removeBucket);
 
 
-		for (Concept<?> concept : storage.getAllConcepts()) {
-			if (!(concept instanceof TreeConcept)) {
-				continue;
-			}
+		storage.getAllConcepts()
+			   .filter(TreeConcept.class::isInstance)
+			   .forEach(concept -> ((TreeConcept) concept).removeImportCache(imp));
 
-			((TreeConcept) concept).removeImportCache(imp);
-		}
 		storage.removeImport(imp.getId());
 	}
 
@@ -358,19 +338,10 @@ public class BucketManager {
 
 		for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
 
-			for (Bucket bucket : storage.getAllBuckets()) {
-				if (!bucket.getTable().equals(connector.getTable())) {
-					continue;
-				}
-
-				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
-
-				if (hasCBlock(cBlockId)) {
-					continue;
-				}
-
-				job.addCBlock(bucket, connector);
-			}
+			storage.getAllBuckets()
+				   .filter(bucket -> bucket.getTable().equals(connector.getTable()))
+				   .filter(bucket -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
+				   .forEach(bucket -> job.addCBlock(bucket, connector));
 		}
 		jobManager.addSlowJob(job);
 	}

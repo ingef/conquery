@@ -62,7 +62,6 @@ public class DistributedNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
-													.stream()
 													.filter(concept -> concept.getMatchingStats() == null)
 													.collect(Collectors.toSet());
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));

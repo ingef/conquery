@@ -2,9 +2,7 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collection;
-
-import com.bakdata.conquery.io.storage.Store;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.ManagedStore;
 import com.bakdata.conquery.io.storage.Store;
@@ -44,16 +42,15 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, Manag
 	
 	public void loadData() {
 		store.loadData();
-		for(VALUE value : getAll()) {
-			added(value);
-		}
+		getAll().forEach(this::added);
 	}
 	
-	public Collection<VALUE> getAll() {
-		return store.getAll();
+	public Stream<VALUE> getAll() {
+		return store.getAllKeys()
+					.map(store::get);
 	}
-	
-	public Collection<KEY> getAllKeys() {
+
+	public Stream<KEY> getAllKeys() {
 		return store.getAllKeys();
 	}
 	

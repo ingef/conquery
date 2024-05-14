@@ -59,7 +59,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		@Override
 		public void execute() throws Exception {
-			if (worker.getStorage().getAllCBlocks().isEmpty()) {
+			if (worker.getStorage().getAllCBlocks().findAny().isEmpty()) {
 				log.debug("Worker {} is empty, skipping.", worker);
 				return;
 			}
@@ -125,7 +125,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
-			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
+			for (CBlock cBlock : worker.getStorage().getAllCBlocks().toList()) {
 
 				if (!cBlock.getConnector().getConcept().equals(concept)) {
 					continue;

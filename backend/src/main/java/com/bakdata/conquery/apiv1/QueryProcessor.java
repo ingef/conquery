@@ -106,15 +106,20 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
+		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, storage.getAllExecutions(), allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(
+			Dataset datasetId,
+			UriBuilder uriBuilder,
+			Subject subject,
+			Stream<ManagedExecution> allQueries,
+			boolean allProviders
+	) {
 
-		return allQueries.stream()
-						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
+		return allQueries
+				// The following only checks the dataset, under which the query was submitted, but a query can target more then
 						 // one dataset.
 						 .filter(q -> q.getDataset().equals(datasetId))
 						 // to exclude subtypes from somewhere else
@@ -227,7 +232,7 @@ public class QueryProcessor {
 				final Set<GroupId> groupsToShareWith = new HashSet<>(patch.getGroups());
 
 				// Find all groups the query is already shared with, so we do not remove them, as patch is absolute
-				for (Group group : storage.getAllGroups()) {
+				for (Group group : storage.getAllGroups().toList()) {
 					if (groupsToShareWith.contains(group.getId())) {
 						continue;
 					}

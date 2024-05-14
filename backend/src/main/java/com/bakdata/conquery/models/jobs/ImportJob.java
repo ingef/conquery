@@ -78,6 +78,7 @@ public class ImportJob extends Job {
 
 
 			final PreprocessedHeader header = parser.readHeader();
+			log.info("Received import {} for table {}", header.getName(), header.getTable());
 
 			final TableId tableId = new TableId(ds.getId(), header.getTable());
 			final Table table = namespace.getStorage().getTable(tableId);

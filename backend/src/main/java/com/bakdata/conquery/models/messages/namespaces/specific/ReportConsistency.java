@@ -41,7 +41,7 @@ public class ReportConsistency extends NamespaceMessage {
 
     @Override
     public void react(DistributedNamespace context) throws Exception {
-        Set<ImportId> managerImports = context.getStorage().getAllImports().stream().map(Import::getId).collect(Collectors.toSet());
+		Set<ImportId> managerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
 
         Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 

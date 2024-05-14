@@ -83,12 +83,12 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		if (!namespace.getStorage().getTables().isEmpty()) {
+		if (namespace.getStorage().getTables().findAny().isPresent()) {
 			throw new WebApplicationException(
 					String.format(
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							dataset.getId(),
-							namespace.getStorage().getTables().stream()
+							namespace.getStorage().getTables()
 									 .map(Table::getId)
 									 .map(Objects::toString)
 									 .collect(Collectors.joining(","))
@@ -125,7 +125,7 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
-		final List<Column> dependents = namespace.getStorage().getTables().stream()
+		final List<Column> dependents = namespace.getStorage().getTables()
 												 .map(Table::getColumns).flatMap(Arrays::stream)
 												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
 												 .toList();
@@ -280,7 +280,7 @@ public class AdminDatasetProcessor {
 	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
 		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().flatMap(c -> c.getConnectors().stream())
 															.filter(con -> con.getTable().equals(table))
 															.map(Connector::getConcept)
 															.collect(Collectors.toList());
@@ -290,7 +290,7 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept);
 			}
 
-			namespace.getStorage().getAllImports().stream()
+			namespace.getStorage().getAllImports()
 					 .filter(imp -> imp.getTable().equals(table))
 					 .forEach(this::deleteImport);
 
@@ -342,7 +342,7 @@ public class AdminDatasetProcessor {
 	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
 
-		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
 														   .filter(
 																   c -> c.getSelects().stream()
 																		 .filter(MappableSingleColumnSelect.class::isInstance)
@@ -384,7 +384,7 @@ public class AdminDatasetProcessor {
 	public List<ConceptId> deleteSearchIndex(SearchIndex searchIndex, boolean force) {
 		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset().getId());
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
 															.filter(
 																	c -> c.getConnectors().stream()
 																		  .map(Connector::getFilters)

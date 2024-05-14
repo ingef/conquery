@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -83,7 +83,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return executions.get(id);
 	}
 
-	public Collection<ManagedExecution> getAllExecutions() {
+	public Stream<ManagedExecution> getAllExecutions() {
 		return executions.getAll();
 	}
 
@@ -106,7 +106,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return group;
 	}
 
-	public Collection<Group> getAllGroups() {
+	public Stream<Group> getAllGroups() {
 		return authGroup.getAll();
 	}
 
@@ -131,7 +131,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return user;
 	}
 
-	public Collection<User> getAllUsers() {
+	public Stream<User> getAllUsers() {
 		return authUser.getAll();
 	}
 
@@ -155,7 +155,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return role;
 	}
 
-	public Collection<Role> getAllRoles() {
+	public Stream<Role> getAllRoles() {
 		return authRole.getAll();
 	}
 
@@ -173,7 +173,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return formConfigs.get(id);
 	}
 
-	public Collection<FormConfig> getAllFormConfigs() {
+	public Stream<FormConfig> getAllFormConfigs() {
 		return formConfigs.getAll();
 	}
 

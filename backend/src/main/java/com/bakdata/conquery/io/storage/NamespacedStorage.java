@@ -1,9 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -171,7 +169,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		return imports.get(id);
 	}
 
-	public Collection<Import> getAllImports() {
+	public Stream<Import> getAllImports() {
 		return imports.getAll();
 	}
 
@@ -191,8 +189,8 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		this.dataset.update(dataset);
 	}
 
-	public List<Table> getTables() {
-		return new ArrayList<>(tables.getAll());
+	public Stream<Table> getTables() {
+		return tables.getAll();
 	}
 
 	public Table getTable(TableId tableId) {
@@ -207,8 +205,8 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		tables.remove(table);
 	}
 
-	public List<SecondaryIdDescription> getSecondaryIds() {
-		return new ArrayList<>(secondaryIds.getAll());
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAll();
 	}
 
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
@@ -240,7 +238,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		concepts.remove(id);
 	}
 
-	public Collection<Concept<?>> getAllConcepts() {
+	public Stream<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
 

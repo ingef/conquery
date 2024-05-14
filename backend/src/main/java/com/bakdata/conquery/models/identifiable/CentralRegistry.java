@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -7,8 +9,12 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.ConqueryStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -26,6 +32,26 @@ public class CentralRegistry implements Injectable {
 
 	private final IdMap map = new IdMap<>();
 	private final ConcurrentMap<Id<?>, Function<Id, Identifiable>> cacheables = new ConcurrentHashMap<>();
+
+	private MetaStorage metaStorage;
+	private final Map<DatasetId, NamespacedStorage> namespaceStorages = new HashMap<>();
+
+	public void registerStorage(ConqueryStorage storage) {
+		synchronized (this) {
+			if (storage instanceof MetaStorage metaStorage) {
+				if (this.metaStorage != null) {
+					throw new IllegalStateException("There was already a metastorage registered");
+				}
+				this.metaStorage = metaStorage;
+				return;
+			}
+
+			if (storage instanceof NamespacedStorage namespacedStorage) {
+				final DatasetId datasetId = namespacedStorage.getDataset().getId();
+
+			}
+		}
+	}
 
 	public synchronized CentralRegistry register(Identifiable<?> ident) {
 		map.add(ident);

@@ -77,7 +77,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		return storage.getAllImports().stream().filter(imp -> imp.getTable().equals(this));
+		return storage.getAllImports().filter(imp -> imp.getTable().equals(this));
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {

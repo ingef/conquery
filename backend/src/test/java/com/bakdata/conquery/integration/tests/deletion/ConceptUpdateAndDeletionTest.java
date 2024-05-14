@@ -238,7 +238,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .stream()
 															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
 
 
@@ -280,7 +279,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 						// CBlocks of Concept are deleted on Workers
 						.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-																 .stream()
 																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
 
 

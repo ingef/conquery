@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -34,7 +34,7 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getImport(id);
 	}
 
-	public Collection<Import> getAllImports() {
+	public Stream<Import> getAllImports() {
 		return delegate.getAllImports();
 	}
 
@@ -45,7 +45,7 @@ public class ModificationShieldedWorkerStorage {
 	}
 
 
-	public Collection<? extends Concept<?>> getAllConcepts() {
+	public Stream<? extends Concept<?>> getAllConcepts() {
 		return delegate.getAllConcepts();
 	}
 
@@ -55,12 +55,12 @@ public class ModificationShieldedWorkerStorage {
 	}
 
 
-	public Collection<Bucket> getAllBuckets() {
+	public Stream<Bucket> getAllBuckets() {
 		return delegate.getAllBuckets();
 	}
 
 
-	public Collection<CBlock> getAllCBlocks() {
+	public Stream<CBlock> getAllCBlocks() {
 		return delegate.getAllCBlocks();
 	}
 

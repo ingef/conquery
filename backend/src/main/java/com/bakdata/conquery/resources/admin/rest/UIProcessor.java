@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -82,7 +82,7 @@ public class UIProcessor {
 
 	public FrontendAuthOverview getAuthOverview() {
 		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
-		for (User user : getStorage().getAllUsers()) {
+		for (User user : getStorage().getAllUsers().toList()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
 			Set<Role> effectiveRoles = user.getRoles().stream()
 										   .map(getStorage()::getRole)
@@ -132,13 +132,11 @@ public class UIProcessor {
 	}
 
 	public List<User> getUsers(Role role) {
-		Collection<User> user = getStorage().getAllUsers();
-		return user.stream().filter(u -> u.getRoles().contains(role.getId())).sorted().collect(Collectors.toList());
+		return getStorage().getAllUsers().filter(u -> u.getRoles().contains(role.getId())).sorted().collect(Collectors.toList());
 	}
 
 	private List<Group> getGroups(Role role) {
-		Collection<Group> groups = getStorage().getAllGroups();
-		return groups.stream()
+		return getStorage().getAllGroups()
 					 .filter(g -> g.getRoles().contains(role.getId()))
 					 .sorted()
 					 .collect(Collectors.toList());
@@ -154,16 +152,17 @@ public class UIProcessor {
 	}
 
 	public FrontendUserContent getUserContent(User user) {
-		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups());
-		availableGroups.removeIf(g -> g.containsMember(user));
+		final Collection<Group> availableGroups = getStorage().getAllGroups()
+															  .filter(group -> !group.containsMember(user))
+															  .toList();
 
 		return FrontendUserContent
 				.builder()
 				.owner(user)
 				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
 				.availableGroups(availableGroups)
-				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles())
+				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toCollection(TreeSet::new)))
+				.availableRoles(getStorage().getAllRoles().collect(Collectors.toCollection(TreeSet::new)))
 				.permissions(wrapInFEPermission(user.getPermissions()))
 				.permissionTemplateMap(preparePermissionTemplate())
 				.build();
@@ -173,15 +172,17 @@ public class UIProcessor {
 	public FrontendGroupContent getGroupContent(Group group) {
 
 		Set<UserId> membersIds = group.getMembers();
-		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers());
-		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
+		Collection<User>
+				availableMembers =
+				getStorage().getAllUsers().filter(user -> !membersIds.contains(user.getId())).collect(Collectors.toCollection(TreeSet::new));
+
 		return FrontendGroupContent
 				.builder()
 				.owner(group)
 				.members(membersIds.stream().map(getStorage()::getUser).collect(Collectors.toList()))
 				.availableMembers(availableMembers)
 				.roles(group.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles())
+				.availableRoles(getStorage().getAllRoles().collect(Collectors.toCollection(TreeSet::new)))
 				.permissions(wrapInFEPermission(group.getPermissions()))
 				.permissionTemplateMap(preparePermissionTemplate())
 				.build();
@@ -205,11 +206,11 @@ public class UIProcessor {
 					   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, storage.getAllConcepts()))
 					   .sum(),
 				imports,
-				storage.getAllConcepts().stream()
+				storage.getAllConcepts()
 					   .map(Concept::getConnectors)
 					   .flatMap(Collection::stream)
 					   .filter(conn -> conn.getTable().equals(table))
-					   .map(Connector::getConcept).collect(Collectors.toSet())
+					   .map(Connector::getConcept).collect(Collectors.toCollection(TreeSet::new))
 
 		);
 	}
@@ -222,12 +223,11 @@ public class UIProcessor {
 		return new ImportStatistics(imp, cBlockSize);
 	}
 
-	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
+	public static long calculateCBlocksSizeBytes(Import imp, Stream<? extends Concept<?>> concepts) {
 
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
-		return concepts.stream()
-					   .filter(TreeConcept.class::isInstance)
+		return concepts.filter(TreeConcept.class::isInstance)
 					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
 					   .filter(con -> con.getTable().equals(imp.getTable()))
 					   .mapToLong(con -> {

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.InMemoryStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -50,7 +50,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @Getter
-@ToString(of = {"name", "keyType", "valueType"})
+@ToString(of = {"keyType", "valueType"})
 public enum StoreMappings {
 
 	AUTH_GROUP(Group.class, GroupId.class),
@@ -79,17 +79,17 @@ public enum StoreMappings {
 	private final Class<?> keyType;
 
 	/**
-	 * Store for identifiable values, with injectors. Store is also cached.
+	 * Store for identifiable values, with injectors.
 	 */
 	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore, CentralRegistry centralRegistry) {
 		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
 	}
 
 	/**
-	 * General Key-Value store with caching.
+	 * General Key-Value store which holds all values in memory and writes through changes to the underlying store.
 	 */
-	public static <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
-		return new CachedStore<>(baseStore);
+	public static <KEY, VALUE> InMemoryStore<KEY, VALUE> inMemory(Store<KEY, VALUE> baseStore) {
+		return new InMemoryStore<>(baseStore);
 	}
 
 	/**

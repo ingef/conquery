@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -31,6 +28,8 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -86,7 +85,7 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+		final Stream<FormConfig> stream = storage.getAllFormConfigs()
 												 .filter(c -> dataset.equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
