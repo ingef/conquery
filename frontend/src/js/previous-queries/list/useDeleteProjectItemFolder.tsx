@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "../../app/reducers";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
-import { SnackMessageType } from "../../snack-message/reducer";
 
 import {
   removeFolder,
@@ -74,7 +73,7 @@ export const useDeleteProjectItemFolder = () => {
       dispatch(
         setMessage({
           message: t("previousQuery.retagError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
       return Promise.reject();
