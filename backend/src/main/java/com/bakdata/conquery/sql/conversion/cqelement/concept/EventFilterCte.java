@@ -9,12 +9,12 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 
@@ -22,7 +22,7 @@ class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
-		Selects eventFilterSelects = colltectSelects(tableContext);
+		Selects eventFilterSelects = collectSelects(tableContext);
 		List<Condition> eventFilterConditions = collectEventFilterConditions(tableContext);
 		return QueryStep.builder()
 						.selects(eventFilterSelects)
@@ -34,7 +34,7 @@ class EventFilterCte extends ConnectorCte {
 		return ConceptCteStep.EVENT_FILTER;
 	}
 
-	private Selects colltectSelects(CQTableContext tableContext) {
+	private Selects collectSelects(CQTableContext tableContext) {
 
 		String predecessorTableName = tableContext.getPrevious().getCteName();
 		Selects predecessorSelects = tableContext.getPrevious().getQualifiedSelects();
@@ -59,11 +59,11 @@ class EventFilterCte extends ConnectorCte {
 
 	/**
 	 * Collects the columns required in {@link ConceptCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
-	 * {@link SumDistinctSqlAggregator}). An additional predecessor can contain an N-ary tree of predecessors itself (like all {@link QueryStep}s), so we want to
-	 * look for the deepest preceding QueryStep leafs and collect their {@link SqlSelects}, because they expect this CTE to contain all their
-	 * {@link SqlSelect#requiredColumns()}.
+	 * {@link SumSqlAggregator}) when distinct-by columns are present. An additional predecessor can contain an N-ary tree of predecessors itself
+	 * (like all {@link QueryStep}s), so we want to look for the deepest preceding QueryStep leafs and collect their {@link ConnectorSqlSelects},
+	 * because they expect this CTE to contain all their {@link SqlSelect#requiredColumns()}.
 	 */
-	private static List<SqlSelect> collectSelects(SqlSelects sqlSelects) {
+	private static List<SqlSelect> collectSelects(ConnectorSqlSelects sqlSelects) {
 		return Stream.concat(
 							 sqlSelects.getAggregationSelects().stream(),
 							 sqlSelects.getAdditionalPredecessor().map(EventFilterCte::collectDeepestPredecessorsColumns).orElse(Stream.empty())

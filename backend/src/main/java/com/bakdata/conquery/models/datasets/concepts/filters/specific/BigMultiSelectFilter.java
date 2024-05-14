@@ -5,14 +5,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectFilterUtil;
-import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.BigMultiSelectFilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import org.jooq.Condition;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -37,12 +34,7 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
-		return SelectFilterUtil.convert(this, filterContext, filterContext.getValue());
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<String[]> filterContext) {
-		return MultiSelectCondition.onColumn(getColumn(), filterContext.getValue(), filterContext.getSqlDialect().getFunctionProvider()).condition();
+	public FilterConverterHolder<?, String[]> createConverterHolder() {
+		return new FilterConverterHolder<>(this, new BigMultiSelectFilterConverter());
 	}
 }

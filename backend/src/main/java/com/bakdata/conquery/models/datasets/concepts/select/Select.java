@@ -17,8 +17,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -121,8 +120,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	@JsonIgnore
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
+	public SelectConverterHolder<?> createConverterHolder() {
+		throw new UnsupportedOperationException("No converter holder implemented for Select %s".formatted(getClass()));
 	}
 
 	@JsonIgnore

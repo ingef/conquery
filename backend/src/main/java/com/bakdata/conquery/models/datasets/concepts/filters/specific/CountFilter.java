@@ -17,14 +17,11 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jooq.Condition;
 
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
@@ -74,12 +71,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
-		return CountSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<Range.LongRange> filterContext) {
-		return CountCondition.onColumn(column, filterContext.getValue()).condition();
+	public FilterConverterHolder<?, Range.LongRange> createConverterHolder() {
+		return new FilterConverterHolder<>(this, new CountSqlAggregator());
 	}
 }

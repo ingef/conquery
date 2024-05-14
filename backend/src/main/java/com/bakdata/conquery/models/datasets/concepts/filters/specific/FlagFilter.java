@@ -19,17 +19,14 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.jooq.Condition;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
@@ -96,12 +93,7 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
-		return FlagSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<String[]> filterContext) {
-		return FlagCondition.onColumn(getFlags(), filterContext.getValue()).condition();
+	public FilterConverterHolder<?, String[]> createConverterHolder() {
+		return new FilterConverterHolder<>(this, new FlagSqlAggregator());
 	}
 }

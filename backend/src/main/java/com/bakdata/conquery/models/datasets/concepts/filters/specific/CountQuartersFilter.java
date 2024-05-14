@@ -14,9 +14,8 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.CountQuartersSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,11 +43,7 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<Range.LongRange> filterContext) {
-		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
-			throw new UnsupportedOperationException("COUNT_QUARTERS conversion on columns of type DATE_RANGE not implemented yet.");
-		}
-		return CountQuartersSqlAggregator.create(this, filterContext).getSqlFilters();
+	public FilterConverterHolder<?, Range.LongRange> createConverterHolder() {
+		return new FilterConverterHolder<>(this, new CountQuartersSqlAggregator());
 	}
-
 }

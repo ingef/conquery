@@ -30,17 +30,13 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.Condition;
 
 /**
  * This filter represents a filter on the sum of one integer column.
@@ -109,16 +105,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<RANGE> filterContext) {
-		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return SumDistinctSqlAggregator.create(this, filterContext).getSqlFilters();
-		}
-		return SumSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<RANGE> filterContext) {
-		return SumCondition.onColumn(getColumn(), getSubtractColumn(), filterContext.getValue()).condition();
+	public FilterConverterHolder<?, RANGE> createConverterHolder() {
+		return new FilterConverterHolder<>(this, new SumSqlAggregator<>());
 	}
 
 	@JsonIgnore

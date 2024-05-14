@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptConversionTables;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -67,9 +67,9 @@ public abstract class FilterValue<VALUE> {
 		return getFilter().createFilterNode(getValue());
 	}
 
-	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConceptConversionTables tables) {
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
-		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
+		SqlFilters sqlFilters = filter.createConverterHolder().convertToSqlFilter(filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
@@ -78,7 +78,7 @@ public abstract class FilterValue<VALUE> {
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
 		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
-		return filter.convertForTableExport(filterContext);
+		return filter.createConverterHolder().convertForTableExport(filterContext);
 	}
 
 	@NoArgsConstructor
