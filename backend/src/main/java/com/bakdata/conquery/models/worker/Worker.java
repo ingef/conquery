@@ -126,7 +126,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage.getCentralRegistry())
+		return new SingletonNamespaceCollection(storage)
 				.injectIntoNew(binaryMapper);
 	}
 

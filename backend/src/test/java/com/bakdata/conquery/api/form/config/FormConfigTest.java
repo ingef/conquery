@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
@@ -24,6 +22,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -44,7 +43,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -52,8 +50,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,10 +94,10 @@ public class FormConfigTest {
 
 		// Mock DatasetRegistry for translation
 		namespacesMock = Mockito.mock(DatasetRegistry.class);
-
-		doAnswer(invocation -> {
-			throw new UnsupportedOperationException("Not yet implemented");
-		}).when(namespacesMock).getOptional(any());
+		// TODO
+		//		doAnswer(invocation -> {
+		//			throw new UnsupportedOperationException("Not yet implemented");
+		//		}).when(namespacesMock).getOptional(any());
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
@@ -121,7 +120,7 @@ public class FormConfigTest {
 		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues())
-				.add(IdResolveContext.class, namespacesMock);
+				.add(NsIdResolver.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);
 		controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
 		controller.start();

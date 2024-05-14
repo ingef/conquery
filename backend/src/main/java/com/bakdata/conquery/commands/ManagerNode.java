@@ -249,9 +249,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = registry.getDatasets().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
-																												  - coundLoaded);
+			final int countLoaded = registry.getDatasets().size();
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																												  - countLoaded);
 		}
 	}
 

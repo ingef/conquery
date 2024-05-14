@@ -8,12 +8,16 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -115,16 +119,11 @@ public abstract class Namespace extends IdResolveContext {
 	}
 
 	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
+	public NsIdResolver findIdResolver(DatasetId dataset) throws NoSuchElementException {
 		if (!this.getDataset().getId().equals(dataset)) {
 			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
 		}
-		return storage.getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException();
+		return storage;
 	}
 
 
@@ -166,5 +165,10 @@ public abstract class Namespace extends IdResolveContext {
 				}
 		));
 
+	}
+
+
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<ID>> VALUE resolve(ID id) {
+		return (VALUE) findIdResolver(id.getDataset()).get(id);
 	}
 }

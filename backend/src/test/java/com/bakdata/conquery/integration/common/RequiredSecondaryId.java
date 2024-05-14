@@ -5,9 +5,9 @@ import java.util.Objects;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -25,14 +25,14 @@ public class RequiredSecondaryId {
 
 	public final String mapping;
 
-	public SecondaryIdDescription toSecondaryId(Dataset dataset, CentralRegistry centralRegistry) {
+	public SecondaryIdDescription toSecondaryId(Dataset dataset, NsIdResolver idResolver) {
 		final SecondaryIdDescription desc = new SecondaryIdDescription();
 
 		desc.setName(getName());
 		desc.setDescription(getDescription());
 		desc.setLabel(getLabel());
 		if (mapping != null) {
-			desc.setMapping(centralRegistry.resolve(InternToExternMapperId.Parser.INSTANCE.parsePrefixed(dataset.getName(), mapping)));
+			desc.setMapping(idResolver.get(InternToExternMapperId.Parser.INSTANCE.parsePrefixed(dataset.getName(), mapping)));
 		}
 
 		return desc;

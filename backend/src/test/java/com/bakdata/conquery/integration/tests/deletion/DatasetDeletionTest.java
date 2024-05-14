@@ -114,7 +114,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.waitUntilWorkDone();
 
-			assertThat(storage.getCentralRegistry().getOptional(dataset.getId())).isEmpty();
+			assertThat(conquery.getDatasetRegistry().get(dataset.getId())).isNull();
 		}
 
 		// State after deletion.

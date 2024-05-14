@@ -2,7 +2,10 @@ package com.bakdata.conquery.models.identifiable;
 
 import java.util.Map;
 
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Data
-public class InjectingCentralRegistry extends CentralRegistry{
+public class InjectingCentralRegistry implements NsIdResolver {
 	/**
 	 * This map is intentionally NOT an IdMap as it allows wiring up mismatched ids.
 	 */
@@ -20,7 +23,12 @@ public class InjectingCentralRegistry extends CentralRegistry{
 	private final Map<Id<?>, Identifiable<?>> injections;
 
 	@Override
-	protected <T extends Identifiable<?>> T get(Id<T> name) {
-		return (T) injections.get(name);
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		return (VALUE) injections.get(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NsIdResolver.class, this);
 	}
 }

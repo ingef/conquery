@@ -20,8 +20,6 @@ import lombok.experimental.Accessors;
 @Getter
 public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
 
-	protected final CentralRegistry centralRegistry;
-
 	// TODO: 09.01.2020 fk: Consider making these part of a class that is passed on creation instead so they are less loosely bound.
 	@NonNull
 	protected ThrowingConsumer<VALUE> onAdd = (v) -> {
@@ -31,9 +29,8 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 	protected ThrowingConsumer<VALUE> onRemove = (v) -> {
 	};
 
-	public IdentifiableStore(Store<Id<VALUE>, VALUE> store, CentralRegistry centralRegistry) {
+	public IdentifiableStore(Store<Id<VALUE>, VALUE> store) {
 		super(store);
-		this.centralRegistry = centralRegistry;
 	}
 
 	@Override

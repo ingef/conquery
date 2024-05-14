@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
@@ -32,8 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MetaStorage extends ConqueryStorage implements Injectable {
 
-	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final StoreFactory storageFactory;
 
 	@Getter
@@ -45,12 +42,13 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	public void openStores(ObjectMapper mapper) {
-		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);
+		ObjectMapper storageMapper = this.injectInto(mapper);
+		authUser = storageFactory.createUserStore("meta", storageMapper);
+		authRole = storageFactory.createRoleStore("meta", storageMapper);
+		authGroup = storageFactory.createGroupStore("meta", storageMapper);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta", mapper);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta", mapper);
+		executions = storageFactory.createExecutionsStore("meta", storageMapper);
+		formConfigs = storageFactory.createFormConfigStore("meta", storageMapper);
 
 	}
 
@@ -74,7 +72,6 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	public void clear() {
 		super.clear();
-		centralRegistry.clear();
 	}
 
 	public void addExecution(ManagedExecution query) {
@@ -199,7 +196,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return values.add(MetaStorage.class, this);
 	}
 
-	public <VALUE extends Identifiable<?>> VALUE get(Id<VALUE> id) {
+	public <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE get(ID id) {
 		if (id instanceof ManagedExecutionId executionId) {
 			return (VALUE) getExecution(executionId);
 		}

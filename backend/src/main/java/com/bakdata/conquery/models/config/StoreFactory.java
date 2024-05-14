@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
@@ -27,7 +26,6 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -67,15 +65,15 @@ public interface StoreFactory {
 	SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 
 	// MetaStorage
-	IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<ManagedExecution> createExecutionsStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<FormConfig> createFormConfigStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+	IdentifiableStore<User> createUserStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+	IdentifiableStore<Role> createRoleStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+	IdentifiableStore<Group> createGroupStore(String pathName, ObjectMapper objectMapper);
 
 	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 

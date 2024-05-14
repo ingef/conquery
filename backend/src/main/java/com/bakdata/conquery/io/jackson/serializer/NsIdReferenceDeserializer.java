@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -32,6 +32,7 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Class<ID> idClass;
+	private NsIdResolver nsIdResolver;
 
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
@@ -48,19 +49,17 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 		ID id = ctxt.readValue(parser, idClass);
 
 		try {
+			final T result = nsIdResolver.get(id);
 
-			final IdResolveContext idResolveContext = IdResolveContext.get(ctxt);
-			Optional<T> result = idResolveContext.getOptional(id);
-
-			if (result.isEmpty()) {
+			if (result == null) {
 				throw new IdReferenceResolvingException(parser, "Could not find entry `" + id + "` of type " + type.getName(), id.toString(), type);
 			}
 
-			if (!type.isAssignableFrom(result.get().getClass())) {
-				throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
+			if (!type.isAssignableFrom(result.getClass())) {
+				throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.getClass(), type));
 			}
 
-			return result.get();
+			return result;
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Error while resolving entry " + id + " of type " + type, e);
@@ -81,10 +80,13 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 		Class<T> cl = (Class<T>) type.getRawClass();
 		Class<ID> idClass = IdUtil.findIdClass(cl);
 
+		final NsIdResolver nsIdResolver = (NsIdResolver) ctxt.findInjectableValue(NsIdResolver.class.getName(), null, null);
+
 		return new NsIdReferenceDeserializer<>(
 				cl,
 				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
-				idClass
+				idClass,
+				nsIdResolver
 		);
 	}
 

@@ -5,12 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.worker.IdResolveContext;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
@@ -22,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings({"rawtypes", "unchecked"})
 @NoArgsConstructor
 @ToString(of = "map")
-public class CentralRegistry implements Injectable {
+public class CentralRegistry {
 
 	private final IdMap map = new IdMap<>();
 	private final ConcurrentMap<Id<?>, Function<Id, Identifiable>> cacheables = new ConcurrentHashMap<>();
@@ -70,12 +66,12 @@ public class CentralRegistry implements Injectable {
 		map.remove(id);
 	}
 
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(CentralRegistry.class, this)
-					 // Possibly overriding mapping for DatasetRegistry
-					 .add(IdResolveContext.class, new SingletonNamespaceCollection(this));
-	}
+	//	@Override
+	//	public MutableInjectableValues inject(MutableInjectableValues values) {
+	//		return values.add(CentralRegistry.class, this)
+	//					 // Possibly overriding mapping for DatasetRegistry
+	//					 .add(IdResolveContext.class, new SingletonNamespaceCollection(this));
+	//	}
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
 		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
@@ -83,11 +79,7 @@ public class CentralRegistry implements Injectable {
 			return result;
 		}
 
-		IdResolveContext alternative = (IdResolveContext) ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
-		if (alternative == null) {
-			return null;
-		}
-		return alternative.getMetaRegistry();
+		throw new IllegalStateException("No registry found");
 	}
 
 	public void clear() {

@@ -8,6 +8,8 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -28,7 +30,9 @@ public abstract class AbstractSerializationTest {
 	private final Validator validator = Validators.newValidator();
 	private final ConqueryConfig config = new ConqueryConfig();
 	private DatasetRegistry<DistributedNamespace> datasetRegistry;
+	private NamespaceStorage namespaceStorage;
 	private MetaStorage metaStorage;
+	private WorkerStorage workerStorage;
 
 	private ObjectMapper managerInternalMapper;
 	private ObjectMapper shardInternalMapper;
@@ -42,6 +46,8 @@ public abstract class AbstractSerializationTest {
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
+		namespaceStorage = new NamespaceStorage(new NonPersistentStoreFactory(), "serializationTestNamespace", null);
+		workerStorage = new WorkerStorage(new NonPersistentStoreFactory(), null, "serializationTestWorker");
 		datasetRegistry.setMetaStorage(metaStorage);
 		creator.init(datasetRegistry);
 

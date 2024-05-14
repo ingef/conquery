@@ -1,18 +1,15 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Optional;
-
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 
 /**
- * Registered items are directly referenced. Compare to {@link IdentifiableCachedStore}
+ * Registered items are directly referenced
  */
 public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public DirectIdentifiableStore(CentralRegistry centralRegistry, Store<Id<VALUE>, VALUE> store) {
-		super(store, centralRegistry);
+	public DirectIdentifiableStore(Store<Id<VALUE>, VALUE> store) {
+		super(store);
 	}
 
 	@Override
@@ -28,7 +25,6 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 			}
 
 			onRemove.accept(value);
-			centralRegistry.remove(value);
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Failed to remove " + value, e);
@@ -42,7 +38,6 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 				return;
 			}
 
-			centralRegistry.register(value);
 			onAdd.accept(value);
 		}
 		catch (Exception e) {
@@ -56,13 +51,12 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 			if (value == null) {
 				return;
 			}
-			final Optional<? extends Identifiable<?>> old = centralRegistry.getOptional(value.getId());
+			final VALUE old = store.get((Id<VALUE>) value.getId());
 
-			if (old.isPresent()) {
-				onRemove.accept((VALUE) old.get());
+			if (old != null) {
+				onRemove.accept(old);
 			}
 
-			centralRegistry.update(value);
 			onAdd.accept(value);
 		}
 		catch (Exception e) {

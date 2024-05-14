@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,10 +19,21 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import jakarta.validation.ConstraintViolation;
@@ -38,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorage extends ConqueryStorage {
+public abstract class NamespacedStorage extends ConqueryStorage implements NsIdResolver, Injectable {
 
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
@@ -64,7 +77,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
-
+		injectInto(objectMapper);
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
@@ -233,10 +246,12 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 
 	@SneakyThrows
 	public void updateConcept(Concept<?> concept) {
+		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);
 	}
 
 	public void removeConcept(ConceptId id) {
+		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
 	}
 
@@ -244,4 +259,57 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		return concepts.getAll();
 	}
 
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		if (id instanceof DatasetId castId) {
+			final Dataset dataset = getDataset();
+			if (dataset.getId().equals(castId)) {
+				return (VALUE) dataset;
+			}
+			return null;
+		}
+		if (id instanceof ImportId castId) {
+			return (VALUE) getImport(castId);
+		}
+		if (id instanceof SecondaryIdDescriptionId castId) {
+			return (VALUE) getSecondaryId(castId);
+		}
+		if (id instanceof TableId castId) {
+			return (VALUE) getTable(castId);
+		}
+		if (id instanceof ConceptId castId) {
+			return (VALUE) getConcept(castId);
+		}
+		if (id instanceof ColumnId castId) {
+			return (VALUE) getTable(castId.getTable()).getColumnByName(castId.getColumn());
+		}
+		if (id instanceof ConnectorId castId) {
+			return (VALUE) getConcept(castId.getConcept()).getConnectorByName(castId.getConnector());
+		}
+		if (id instanceof ConceptSelectId castId) {
+			final ConceptId concept = castId.findConcept();
+			return (VALUE) getConcept(concept).getSelectByName(castId.getSelect());
+		}
+		if (id instanceof ConnectorSelectId castId) {
+			final ConceptId concept = castId.findConcept();
+			return (VALUE) getConcept(concept).getConnectorByName(castId.getConnector().getConnector()).getSelectByName(castId.getSelect());
+		}
+		if (id instanceof FilterId castId) {
+			final ConnectorId connector = castId.getConnector();
+			return (VALUE) getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(castId.getFilter());
+		}
+		if (id instanceof ConceptTreeChildId castId) {
+			return (VALUE) ((TreeConcept) getConcept(castId.findConcept())).findById(castId);
+		}
+		if (id instanceof ValidityDateId castId) {
+			return (VALUE) getConcept(castId.getConnector().getConcept()).getConnectorByName(castId.getConnector().getConnector())
+																		 .getValidityDateByName(castId.getValidityDate());
+		}
+
+		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NsIdResolver.class, this);
+	}
 }

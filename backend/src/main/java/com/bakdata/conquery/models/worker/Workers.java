@@ -9,11 +9,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
-public class Workers extends IdResolveContext {
+public class Workers implements NsIdResolver {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -109,21 +113,6 @@ public class Workers extends IdResolveContext {
 		return Objects.requireNonNull(workers.get(worker));
 	}
 
-
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) {
-		if (!dataset2Worker.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
-		}
-
-		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return null; // Workers simply have no MetaRegistry.
-	}
-
 	public void removeWorkerFor(DatasetId dataset) {
 		final Worker worker = dataset2Worker.get(dataset);
 
@@ -161,5 +150,20 @@ public class Workers extends IdResolveContext {
 		for (Worker w : workers.values()) {
 			w.close();
 		}
+	}
+
+	@Override
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		final DatasetId dataset = id.getDataset();
+		if (!dataset2Worker.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
+		}
+
+		return dataset2Worker.get(dataset).getStorage().get(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NsIdResolver.class, this);
 	}
 }

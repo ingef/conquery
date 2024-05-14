@@ -9,10 +9,10 @@ import java.util.List;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -30,14 +30,15 @@ public class IdRefrenceTest {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 		mapper.setInjectableValues(new MutableInjectableValues());
 
-		CentralRegistry registry = new CentralRegistry();
+		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "IdRefrenceTest", null);
+
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
 		Table table = new Table();
 		table.setDataset(dataset);
 		table.setName("table");
-		registry.register(dataset);
-		registry.register(table);
+		storage.updateDataset(dataset);
+		storage.addTable(table);
 
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, null, null, null, null);
 
@@ -61,7 +62,7 @@ public class IdRefrenceTest {
 				.contains("\"user.usermail\"")
 				.contains("\"dataset.table\"");
 
-		ListHolder holder = new SingletonNamespaceCollection(registry, metaStorage.getCentralRegistry())
+		ListHolder holder = new SingletonNamespaceCollection(storage)
 				.injectIntoNew(mapper.readerFor(ListHolder.class))
 				.readValue(json);
 

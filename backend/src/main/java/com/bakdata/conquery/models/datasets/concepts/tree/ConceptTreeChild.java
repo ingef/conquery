@@ -95,4 +95,23 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		}
 		throw new IllegalStateException("The node " + this + " seems to have no root");
 	}
+
+	/**
+	 * Parts only contains references to child elements.
+	 * If parts is empty return self.
+	 * If the first part does not match the name of a child return null
+	 */
+	ConceptTreeChild findByParts(List<Object> parts) {
+		if (parts.isEmpty()) {
+			return this;
+		}
+
+		for (ConceptTreeChild child : children) {
+			if (parts.get(0).equals(child.getName())) {
+				final List<Object> subList = parts.size() > 2 ? parts.subList(1, parts.size()) : Collections.emptyList();
+				return child.findByParts(subList);
+			}
+		}
+		return null;
+	}
 }

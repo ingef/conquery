@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -27,8 +28,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import jakarta.validation.constraints.NotNull;
@@ -197,11 +202,12 @@ public abstract class FilterValue<VALUE> {
 	 * <p>
 	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig(com.bakdata.conquery.models.config.ConqueryConfig)} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
 	 */
-	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> {
-		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);
+	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> implements ContextualDeserializer {
+		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer;
 
-		protected GroupFilterDeserializer() {
+		protected GroupFilterDeserializer(NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer) {
 			super(GroupFilterValue.class);
+			this.nsIdDeserializer = nsIdDeserializer;
 		}
 
 
@@ -231,5 +237,13 @@ public abstract class FilterValue<VALUE> {
 			return new GroupFilterValue((Filter<Object>) filter, value);
 		}
 
+		@Override
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+			final NsIdResolver nsIdResolver = NsIdResolver.get(ctxt);
+			final NsIdReferenceDeserializer<FilterId, Filter<?>>
+					filterDeserializer =
+					new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class, nsIdResolver);
+			return new GroupFilterDeserializer(filterDeserializer);
+		}
 	}
 }

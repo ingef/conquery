@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -29,7 +30,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardN
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
@@ -357,12 +357,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
+	private NioSocketConnector getClusterConnector(NsIdResolver nsIdResolver) {
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		NioSocketConnector connector = new NioSocketConnector();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(nsIdResolver, validator, om);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());

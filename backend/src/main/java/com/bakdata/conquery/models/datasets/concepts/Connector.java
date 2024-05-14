@@ -144,4 +144,35 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	public void init() {
 		getSelects().forEach(Select::init);
 	}
+
+	public Filter<?> getFilterByName(String name) {
+		for (Filter<?> filter : collectAllFilters()) {
+			if (filter.getName().equals(name)) {
+				return filter;
+			}
+		}
+		return null;
+	}
+
+
+	public Select getSelectByName(String name) {
+		for (Select select : getSelects()) {
+
+			if (select.getName().equals(name)) {
+				return select;
+			}
+		}
+
+		return null;
+	}
+
+	public ValidityDate getValidityDateByName(String name) {
+		for (ValidityDate validityDate : validityDates) {
+			if (validityDate.getName().equals(name)) {
+				return validityDate;
+			}
+		}
+		return null;
+	}
+
 }

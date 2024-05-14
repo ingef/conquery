@@ -124,7 +124,7 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<ID>> VALUE resolve(ID id) {
-		return getDatasetRegistry().resolve(id);
+		return (VALUE) getDatasetRegistry().get(id);
 	}
 
 	@Data

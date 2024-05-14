@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -34,14 +35,14 @@ public class SerialisationObjectsUtil {
 
 
 	@NotNull
-	public static Dataset createDataset(CentralRegistry registry) {
+	public static Dataset createDataset(NamespacedStorage storage) {
 		final Dataset dataset = new Dataset("test-dataset");
-		registry.register(dataset);
+		storage.updateDataset(dataset);
 		return dataset;
 	}
 
 	@NotNull
-	public static TreeConcept createConcept(CentralRegistry registry, Dataset dataset) {
+	public static TreeConcept createConcept(NamespacedStorage storage, Dataset dataset) {
 		TreeConcept concept = new TreeConcept();
 		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
@@ -83,18 +84,14 @@ public class SerialisationObjectsUtil {
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
 
-		registry.register(concept);
-		registry.register(column);
-		registry.register(dateColumn);
-		registry.register(table);
-		registry.register(connector);
-		registry.register(valDate);
+		storage.updateConcept(concept);
+		storage.addTable(table);
 		return concept;
 	}
 
 	@NotNull
-	public static ExportForm createExportForm(CentralRegistry registry, Dataset dataset) {
-		final TreeConcept concept = createConcept(registry, dataset);
+	public static ExportForm createExportForm(NamespacedStorage storage, Dataset dataset) {
+		final TreeConcept concept = createConcept(storage, dataset);
 		final ExportForm exportForm = new ExportForm();
 		final AbsoluteMode mode = new AbsoluteMode();
 		mode.setDateRange(new Range<>(LocalDate.of(2200, 6, 1), LocalDate.of(2200, 6, 2)));

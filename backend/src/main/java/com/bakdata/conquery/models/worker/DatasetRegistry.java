@@ -10,16 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -36,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @JsonIgnoreType
-public class DatasetRegistry<N extends Namespace> extends IdResolveContext implements Closeable {
+public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdResolver, Injectable {
 
 	private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
 	@Getter
@@ -88,26 +92,10 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		N removed = datasets.remove(id);
 
 		if (removed != null) {
-			metaStorage.getCentralRegistry().remove(removed.getDataset());
 			namespaceHandler.removeNamespace(id, removed);
 			removed.remove();
 		}
 	}
-
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
-		if (!datasets.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
-		}
-
-		return datasets.get(dataset).getStorage().getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return metaStorage.getCentralRegistry();
-	}
-
 
 	public List<Dataset> getAllDatasets() {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
@@ -140,10 +128,20 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		// Make this class also available under DatasetRegistry
-		return super.inject(values).add(DatasetRegistry.class, this);
+		return values.add(NsIdResolver.class, this);
 	}
 
 	public void resetIndexService() {
 		indexService.evictCache();
+	}
+
+	@Override
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		final DatasetId dataset = id.getDataset();
+		if (!datasets.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
+		}
+
+		return datasets.get(dataset).getStorage().get(id);
 	}
 }

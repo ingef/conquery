@@ -105,7 +105,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																  ArrayConceptQuery.createFromFeatures(
 																		  selects.selects().stream()
 																				 .map(PreviewConfig.InfoCardSelect::select)
-																				 .map(datasetRegistry::resolve)
+																				 .map(selectId -> (Select) datasetRegistry.get(selectId))
 																				 .map(CQConcept::forSelect)
 																				 .collect(Collectors.toList())),
 																  List.of(

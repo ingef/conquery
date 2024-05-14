@@ -23,7 +23,7 @@ public class FrontendPreviewConfig {
 	private final Collection<Labelled> defaultConnectors;
 
 	@NsIdRefCollection
-	private final List<Filter<?>> searchFilters;
+	private final List<? extends Filter<?>> searchFilters;
 
 	/**
 	 * Search concept needs to be parent of searchFilters, so frontend can resolve the filters.

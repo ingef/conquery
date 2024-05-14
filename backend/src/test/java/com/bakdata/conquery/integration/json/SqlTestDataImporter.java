@@ -54,7 +54,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	public void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
+					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry());
 			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), description);
 		}
 	}

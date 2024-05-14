@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -182,7 +183,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						9,
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						null,
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+						Set.of(new SemanticType.SelectResultT((Select) conquery.getDatasetRegistry()
+																			   .get(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
@@ -190,7 +192,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
 						null,
 						Set.of(
-								new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(valuesSelectId))
+								new SemanticType.SelectResultT((Select) conquery.getDatasetRegistry().get(valuesSelectId))
 						)
 				)
 		);
@@ -210,8 +212,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
 		assertThat(t2values.get().getSemantics())
 				.contains(
-						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry()
-																.resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
+						new SemanticType.ConceptColumnT((Concept<?>) conquery.getDatasetRegistry()
+																			 .get(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
 				);
 
 

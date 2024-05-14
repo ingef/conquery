@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -205,5 +206,22 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public ConceptTreeNode<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
+	}
+
+	public ConceptTreeChild findById(ConceptTreeChildId id) {
+		List<Object> parts = new ArrayList<>();
+		id.collectComponents(parts);
+		final ConceptId conceptId = getId();
+		if (!parts.subList(0, 2).equals(conceptId.getComponents())) {
+			return null;
+		}
+		for (ConceptTreeChild child : children) {
+			if (parts.get(2).equals(child.getName())) {
+				final List<Object> subParts = parts.size() > 3 ? parts.subList(3, parts.size()) : Collections.emptyList();
+				return child.findByParts(subParts);
+			}
+		}
+
+		return null;
 	}
 }

@@ -3,15 +3,12 @@ package com.bakdata.conquery.io.storage;
 import java.io.Closeable;
 import java.io.IOException;
 
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class ConqueryStorage implements Closeable {
-
-	public abstract CentralRegistry getCentralRegistry();
 
 	/**
 	 * @implSpec The order defines the order of loading. Dependencies should be modeled here.

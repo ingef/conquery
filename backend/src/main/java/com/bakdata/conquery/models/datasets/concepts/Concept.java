@@ -64,6 +64,15 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	public abstract List<? extends Select> getSelects();
 
+	public Select getSelectByName(String name) {
+		for (Select select : getSelects()) {
+			if (select.getName().equals(name)) {
+				return select;
+			}
+		}
+		return null;
+	}
+
 	public void initElements() throws ConfigurationException, JSONException {
 		getSelects().forEach(Select::init);
 		getConnectors().forEach(CONNECTOR::init);
@@ -98,5 +107,14 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ConceptPermission.onInstance(abilities, getId());
+	}
+
+	public CONNECTOR getConnectorByName(String name) {
+		for (CONNECTOR connector : connectors) {
+			if (connector.getName().equals(name)) {
+				return connector;
+			}
+		}
+		return null;
 	}
 }
