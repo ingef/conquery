@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.fasterxml.jackson.databind.node.TextNode;
 import lombok.experimental.UtilityClass;
@@ -116,9 +115,8 @@ public class SerialisationObjectsUtil {
 	}
 
 	@NotNull
-	public static User createUser(CentralRegistry registry, MetaStorage storage) {
+	public static User createUser(MetaStorage storage) {
 		final User user = new User("test-user", "test-user", storage);
-		registry.register(user);
 
 		user.updateStorage();
 		return user;
