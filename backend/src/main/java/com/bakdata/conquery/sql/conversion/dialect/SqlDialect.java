@@ -16,6 +16,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
@@ -63,6 +64,7 @@ public interface SqlDialect {
 				new CQNegationConverter(),
 				new CQConceptConverter(),
 				new CQExternalConverter(),
+				new CQReusedQueryConverter(),
 				new ConceptQueryConverter(queryStepTransformer),
 				new SecondaryIdQueryConverter(),
 				new AbsoluteFormQueryConverter(formConversionUtil),
