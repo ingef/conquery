@@ -34,14 +34,20 @@ public class SerialisationObjectsUtil {
 
 
 	@NotNull
-	public static Dataset createDataset(NamespacedStorage storage) {
-		final Dataset dataset = new Dataset("test-dataset");
-		storage.updateDataset(dataset);
+	public static Dataset createDataset(NamespacedStorage ... storages) {
+		Dataset dataset = new Dataset("test-dataset");
+		for (NamespacedStorage storage : storages) {
+			storage.updateDataset(dataset);
+		}
 		return dataset;
 	}
 
+	/**
+	 * Does not add the produced concept to a store, only dependencies.
+	 * Otherwise, it might clash during serdes because init was not executed
+	 */
 	@NotNull
-	public static TreeConcept createConcept(NamespacedStorage storage, Dataset dataset) {
+	public static TreeConcept createConcept(Dataset dataset, NamespacedStorage ... storages) {
 		TreeConcept concept = new TreeConcept();
 		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
@@ -83,14 +89,15 @@ public class SerialisationObjectsUtil {
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
 
-		storage.updateConcept(concept);
-		storage.addTable(table);
+		for (NamespacedStorage storage : storages) {
+			storage.addTable(table);
+		}
 		return concept;
 	}
 
 	@NotNull
-	public static ExportForm createExportForm(NamespacedStorage storage, Dataset dataset) {
-		final TreeConcept concept = createConcept(storage, dataset);
+	public static ExportForm createExportForm(Dataset dataset, NamespacedStorage ... storages) {
+		final TreeConcept concept = createConcept(dataset, storages);
 		final ExportForm exportForm = new ExportForm();
 		final AbsoluteMode mode = new AbsoluteMode();
 		mode.setDateRange(new Range<>(LocalDate.of(2200, 6, 1), LocalDate.of(2200, 6, 2)));
@@ -111,6 +118,11 @@ public class SerialisationObjectsUtil {
 		exportForm.setValues(new TextNode("Some Node"));
 		exportForm.setQueryGroupId(new ManagedExecutionId(dataset.getId(), UUID.randomUUID()));
 		exportForm.setResolution(new ArrayList<>(List.of(ResolutionShortNames.COMPLETE)));
+
+		for (NamespacedStorage storage : storages) {
+			storage.updateConcept(concept);
+		}
+
 		return exportForm;
 	}
 
