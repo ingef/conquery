@@ -46,8 +46,6 @@ public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extend
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 		}
 
-		final String wierdValueFallback = parser.getText();
-
 		ID id = ctxt.readValue(parser, idClass);
 
 		try {

@@ -10,9 +10,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -95,9 +93,10 @@ public abstract class ConqueryTestSpec {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
 
-		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
-		injectableValues.add(ConqueryConfig.class, support.getConfig());
-		injectableValues.add(MetaStorage.class, support.getMetaStorage());
+		support.getNamespace().getDataset().injectInto(mapper);
+
+		support.getConfig().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
 		support.getNamespaceStorage().injectInto(mapper);
 
 		T result = mapper.readerFor(expectedType).readValue(node);
@@ -114,6 +113,8 @@ public abstract class ConqueryTestSpec {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
 
+		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
+		support.getNamespace().getDataset().injectInto(mapper);
 		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));

@@ -203,7 +203,14 @@ public abstract class FilterValue<VALUE> {
 	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig(com.bakdata.conquery.models.config.ConqueryConfig)} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
 	 */
 	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> implements ContextualDeserializer {
-		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer;
+		private NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer;
+
+		/**
+		 * Only used by contextual instantiation
+		 */
+		protected GroupFilterDeserializer() {
+			super(GroupFilterValue.class);
+		}
 
 		protected GroupFilterDeserializer(NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer) {
 			super(GroupFilterValue.class);
