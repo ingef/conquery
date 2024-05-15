@@ -77,8 +77,4 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
 		return config.createTrieSearch(isGenerateSuffixes());
 	}
-
-	public void init() {
-		position = ArrayUtils.indexOf(getTable().getColumns(), this);
-	}
 }
