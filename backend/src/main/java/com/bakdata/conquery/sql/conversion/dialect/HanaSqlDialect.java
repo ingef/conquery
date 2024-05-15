@@ -16,19 +16,12 @@ public class HanaSqlDialect implements SqlDialect {
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
-	private final DSLContext dslContext;
 
-	public HanaSqlDialect(DSLContext dslContext) {
-		this.dslContext = dslContext;
+	public HanaSqlDialect() {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
 		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
 		this.defaultNotationParser = new DefaultSqlCDateSetParser();
-	}
-
-	@Override
-	public DSLContext getDSLContext() {
-		return this.dslContext;
 	}
 
 	@Override
@@ -37,8 +30,8 @@ public class HanaSqlDialect implements SqlDialect {
 	}
 
 	@Override
-	public List<NodeConverter<? extends Visitable>> getNodeConverters() {
-		return getDefaultNodeConverters();
+	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
+		return getDefaultNodeConverters(dslContext);
 	}
 
 	@Override

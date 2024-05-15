@@ -28,6 +28,7 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
@@ -132,18 +133,18 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public Stream<DynamicNode> sqlProgrammaticTests(SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
 	}
 
 
 	@SneakyThrows
-	public List<DynamicNode> sqlQueryTests(SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public List<DynamicNode> sqlQueryTests(DatabaseConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
 		ResourceTree tree = scanForResources(testRoot, SQL_TEST_PATTERN);
-		return collectTestTree(tree, testRoot, testDataImporter, sqlConfig.getDialect());
+		return collectTestTree(tree, testRoot, testDataImporter, databaseConfig.getDialect());
 	}
 
 	private List<DynamicNode> collectTestTree(ResourceTree tree, String testRoot, TestDataImporter testImporter, Dialect sqlDialect) {

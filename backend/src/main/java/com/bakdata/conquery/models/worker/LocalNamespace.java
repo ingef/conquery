@@ -13,31 +13,32 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import com.bakdata.conquery.sql.DSLContextWrapper;
+import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 
 @Getter
 public class LocalNamespace extends Namespace {
 
-	private final SqlExecutionService sqlExecutionService;
-
+	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
 
 	public LocalNamespace(
 			ObjectMapper preprocessMapper,
 			ObjectMapper communicationMapper,
 			NamespaceStorage storage,
-			ExecutionManager executionManager,
-			SqlExecutionService sqlExecutionService,
+			ExecutionManager<SqlExecutionResult> executionManager,
+			DSLContextWrapper dslContextWrapper,
+			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			FilterSearch filterSearch,
 			IndexService indexService,
 			List<Injectable> injectables
 	) {
 		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
-		this.sqlExecutionService = sqlExecutionService;
-		this.storageHandler = new SqlStorageHandler(sqlExecutionService);
+		this.dslContextWrapper = dslContextWrapper;
+		this.storageHandler = storageHandler;
 	}
 
 	@Override
