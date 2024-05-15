@@ -80,6 +80,8 @@ public abstract class AbstractSerializationTest {
 		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		managerNode.customizeApiObjectMapper(apiMapper);
+		// This overrides the injected datasetRegistry
+		namespaceStorage.injectInto(apiMapper);
 	}
 
 
