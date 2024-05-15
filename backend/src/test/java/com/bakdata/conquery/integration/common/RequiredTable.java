@@ -6,10 +6,10 @@ import java.util.Objects;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,13 +38,13 @@ public class RequiredTable {
     @JsonIgnore
     private String importName;
 
-    public Table toTable(Dataset dataset, CentralRegistry centralRegistry) {
+	public Table toTable(Dataset dataset, NsIdResolver nsIdResolver) {
         Table table = new Table();
-		table.setPrimaryColum(primaryColumn.toColumn(table, centralRegistry));
+		table.setPrimaryColum(primaryColumn.toColumn(table, nsIdResolver));
         table.setDataset(dataset);
         table.setName(name);
         table.setColumns(Arrays.stream(columns)
-                .map(col -> col.toColumn(table, centralRegistry)).toArray(Column[]::new));
+							   .map(col -> col.toColumn(table, nsIdResolver)).toArray(Column[]::new));
 
         return table;
     }

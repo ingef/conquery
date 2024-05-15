@@ -107,7 +107,7 @@ public class LoadingUtil {
 	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
-			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
+			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage());
 			uploadTable(support, table);
 
 			if (autoConcept) {

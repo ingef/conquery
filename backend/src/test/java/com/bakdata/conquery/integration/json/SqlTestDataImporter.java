@@ -62,7 +62,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		for (RequiredTable requiredTable : tables) {
-			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage().getCentralRegistry());
+			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage());
 			support.getNamespaceStorage().addTable(table);
 		}
 	}

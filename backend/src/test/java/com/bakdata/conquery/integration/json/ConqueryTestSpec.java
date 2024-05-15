@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestSupport;
@@ -94,12 +93,8 @@ public abstract class ConqueryTestSpec {
 
 	public static  <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage())
-						.injectIntoNew(
-								om.addHandler(new DatasetPlaceHolderFiller(support))
-						)
-		);
+		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
+
 		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
 		injectableValues.add(ConqueryConfig.class, support.getConfig());
 		injectableValues.add(MetaStorage.class, support.getMetaStorage());
@@ -117,11 +112,8 @@ public abstract class ConqueryTestSpec {
 
 	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectInto(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage()).injectIntoNew(
-						om.addHandler(new DatasetPlaceHolderFiller(support))
-				)
-		);
+		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
+
 		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
