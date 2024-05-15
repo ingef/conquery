@@ -108,7 +108,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 		for (ConceptTreeChild child : children) {
 			if (parts.get(0).equals(child.getName())) {
-				final List<Object> subList = parts.size() > 2 ? parts.subList(1, parts.size()) : Collections.emptyList();
+				final List<Object> subList = parts.size() > 1 ? parts.subList(1, parts.size()) : Collections.emptyList();
 				return child.findByParts(subList);
 			}
 		}

@@ -42,106 +42,106 @@ import lombok.extern.slf4j.Slf4j;
 @JsonIgnoreType
 public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdResolver, Injectable {
 
-	private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
-	@Getter
-	private final int entityBucketSize;
+    private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
+    @Getter
+    private final int entityBucketSize;
 
-	@Getter
-	private final ConqueryConfig config;
+    @Getter
+    private final ConqueryConfig config;
 
-	private final InternalObjectMapperCreator internalObjectMapperCreator;
+    private final InternalObjectMapperCreator internalObjectMapperCreator;
 
-	@Getter
-	@Setter
-	private MetaStorage metaStorage;
+    @Getter
+    @Setter
+    private MetaStorage metaStorage;
 
-	private final NamespaceHandler<N> namespaceHandler;
+    private final NamespaceHandler<N> namespaceHandler;
 
-	private final IndexService indexService;
+    private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, Validator validator) throws IOException {
-		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
+    public N createNamespace(Dataset dataset, Validator validator) throws IOException {
+        // Prepare empty storage
+        NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+        final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
-		datasetStorage.openStores(persistenceMapper);
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.setPreviewConfig(new PreviewConfig());
-		datasetStorage.close();
+        datasetStorage.openStores(persistenceMapper);
+        datasetStorage.loadData();
+        datasetStorage.updateDataset(dataset);
+        datasetStorage.updateIdMapping(new EntityIdMap());
+        datasetStorage.setPreviewConfig(new PreviewConfig());
+        datasetStorage.close();
 
-		return createNamespace(datasetStorage);
-	}
+        return createNamespace(datasetStorage);
+    }
 
-	public N createNamespace(NamespaceStorage datasetStorage) {
-		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
-		add(namespace);
-		return namespace;
-	}
+    public N createNamespace(NamespaceStorage datasetStorage) {
+        final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
+        add(namespace);
+        return namespace;
+    }
 
-	public void add(N ns) {
-		datasets.put(ns.getStorage().getDataset().getId(), ns);
-	}
+    public void add(N ns) {
+        datasets.put(ns.getStorage().getDataset().getId(), ns);
+    }
 
-	public N get(DatasetId dataset) {
-		return datasets.get(dataset);
-	}
+    public N get(DatasetId dataset) {
+        return datasets.get(dataset);
+    }
 
-	public void removeNamespace(DatasetId id) {
-		N removed = datasets.remove(id);
+    public void removeNamespace(DatasetId id) {
+        N removed = datasets.remove(id);
 
-		if (removed != null) {
-			namespaceHandler.removeNamespace(id, removed);
-			removed.remove();
-		}
-	}
+        if (removed != null) {
+            namespaceHandler.removeNamespace(id, removed);
+            removed.remove();
+        }
+    }
 
-	public List<Dataset> getAllDatasets() {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
-	}
+    public List<Dataset> getAllDatasets() {
+        return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+    }
 
-	public Collection<N> getDatasets() {
-		return datasets.values();
-	}
+    public Collection<N> getDatasets() {
+        return datasets.values();
+    }
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
-		return indexService.getLoadedIndexes();
-	}
+    public Set<IndexKey<?>> getLoadedIndexes() {
+        return indexService.getLoadedIndexes();
+    }
 
-	public CacheStats getIndexServiceStatistics() {
-		return indexService.getStatistics();
-	}
+    public CacheStats getIndexServiceStatistics() {
+        return indexService.getStatistics();
+    }
 
-	@Override
-	public void close() {
-		for (Namespace namespace : datasets.values()) {
-			try {
-				namespace.close();
-			}
-			catch (Exception e) {
-				log.error("Unable to close namespace {}", namespace, e);
-			}
-		}
-	}
+    @Override
+    public void close() {
+        for (Namespace namespace : datasets.values()) {
+            try {
+                namespace.close();
+            } catch (Exception e) {
+                log.error("Unable to close namespace {}", namespace, e);
+            }
+        }
+    }
 
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		// Make this class also available under DatasetRegistry
-		return values.add(NsIdResolver.class, this);
-	}
+    @Override
+    public MutableInjectableValues inject(MutableInjectableValues values) {
+        // Make this class also available under DatasetRegistry
+        return values.add(NsIdResolver.class, this)
+                .add(this.getClass(), this);
+    }
 
-	public void resetIndexService() {
-		indexService.evictCache();
-	}
+    public void resetIndexService() {
+        indexService.evictCache();
+    }
 
-	@Override
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
-		final DatasetId dataset = id.getDataset();
-		if (!datasets.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
-		}
+    @Override
+    public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+        final DatasetId dataset = id.getDataset();
+        if (!datasets.containsKey(dataset)) {
+            throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
+        }
 
-		return datasets.get(dataset).getStorage().get(id);
-	}
+        return datasets.get(dataset).getStorage().get(id);
+    }
 }
