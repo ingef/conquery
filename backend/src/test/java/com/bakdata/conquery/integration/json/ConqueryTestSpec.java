@@ -103,6 +103,7 @@ public abstract class ConqueryTestSpec {
 		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
 		injectableValues.add(ConqueryConfig.class, support.getConfig());
 		injectableValues.add(MetaStorage.class, support.getMetaStorage());
+		support.getNamespaceStorage().injectInto(mapper);
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 
