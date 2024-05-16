@@ -27,13 +27,13 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
-	private final Map<ManagedExecutionId, CompletableFuture<Void>> executionResults;
+	private final Map<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
 	public SqlExecutionManager(final SqlContext context, SqlExecutionService sqlExecutionService, MetaStorage storage) {
 		super(storage);
 		this.executionService = sqlExecutionService;
 		this.converter = new SqlConverter(context.getSqlDialect(), context.getConfig());
-		this.executionResults = new HashMap<>();
+		this.runningExecutions = new HashMap<>();
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
-			executionResults.put(managedQuery.getId(), sqlQueryExecution);
+			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
@@ -56,10 +56,18 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		CompletableFuture<Void> sqlQueryExecution = executionResults.get(query.getId());
+
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(query.getId());
+
+		// already finished/canceled
+		if (sqlQueryExecution == null) {
+			return;
+		}
+
 		if (!sqlQueryExecution.isCancelled()) {
 			sqlQueryExecution.cancel(true);
 		}
+
 		query.cancel();
 	}
 
@@ -70,6 +78,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									addResult(managedQuery, result);
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE);
+									runningExecutions.remove(managedQuery.getId());
 								});
 	}
 

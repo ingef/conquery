@@ -135,6 +135,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public void cancel() {
+		// TODO This will cause an error when SqlExecutionManager calls cancelQuery() for a form. I wonder if we can just cancel all subqueries and remove this
+		// 	hard cast? Also, the DistributedExecutionManager#cancelQuery() will send the CancelQuery message anyway.
 		log.debug("Sending cancel message to all workers.");
 		((DistributedNamespace) getNamespace()).getWorkerHandler().sendToAll(new CancelQuery(getId()));
 	}
