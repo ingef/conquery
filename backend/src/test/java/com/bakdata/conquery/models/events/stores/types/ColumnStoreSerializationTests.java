@@ -60,6 +60,7 @@ public class ColumnStoreSerializationTests {
 
 	@BeforeAll
 	public static void setupRegistry() {
+		STORAGE.openStores(null);
 		STORAGE.updateDataset(Dataset.PLACEHOLDER);
 
 

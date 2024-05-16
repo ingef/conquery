@@ -88,7 +88,7 @@ public class IdTests {
 			"4"
 		);
 		
-		ObjectMapper mapper = Jackson.MAPPER;
+		ObjectMapper mapper = Jackson.MAPPER.copy();
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 		
 		assertThat(copy).isEqualTo(id);

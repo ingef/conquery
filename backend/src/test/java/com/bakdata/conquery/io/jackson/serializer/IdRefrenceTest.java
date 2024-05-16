@@ -30,23 +30,26 @@ public class IdRefrenceTest {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 		mapper.setInjectableValues(new MutableInjectableValues());
 
-		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "IdRefrenceTest", null);
+		NonPersistentStoreFactory storageFactory = new NonPersistentStoreFactory();
+		final NamespaceStorage storage = new NamespaceStorage(storageFactory, "IdRefrenceTest", null);
+		storage.openStores(mapper);
 
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
+
 		Table table = new Table();
 		table.setDataset(dataset);
 		table.setName("table");
+
 		storage.updateDataset(dataset);
 		storage.addTable(table);
 
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, null, null, null, null);
 
-		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(storageFactory,datasetRegistry);
 
-		metaStorage.openStores(null);
+		metaStorage.openStores(mapper);
 		datasetRegistry.setMetaStorage(metaStorage);
-
 
 		User user = new User("usermail", "userlabel", metaStorage);
 		metaStorage.addUser(user);
@@ -62,8 +65,7 @@ public class IdRefrenceTest {
 				.contains("\"user.usermail\"")
 				.contains("\"dataset.table\"");
 
-		ListHolder holder = new SingletonNamespaceCollection(storage)
-				.injectIntoNew(mapper.readerFor(ListHolder.class))
+		ListHolder holder = mapper.readerFor(ListHolder.class)
 				.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);

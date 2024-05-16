@@ -27,10 +27,10 @@ public interface Injectable {
 	 */
 	default ObjectMapper injectIntoNew(ObjectMapper mapper) {
 		// If is already MutableInjectable, add my values to other, else begin from scratch.
-
 		if (mapper.getInjectableValues() instanceof MutableInjectableValues) {
+			MutableInjectableValues injectableValuesCopy = ((MutableInjectableValues) mapper.getInjectableValues()).copy();
 			return mapper.copy()
-						 .setInjectableValues(inject(((MutableInjectableValues) mapper.getInjectableValues()).copy()));
+						 .setInjectableValues(inject(injectableValuesCopy));
 		}
 		// TODO unsure if overriding is expected here from the user
 		return mapper.copy()

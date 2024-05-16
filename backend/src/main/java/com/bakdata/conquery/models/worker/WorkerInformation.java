@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;

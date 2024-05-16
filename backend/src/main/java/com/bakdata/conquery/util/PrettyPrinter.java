@@ -30,7 +30,7 @@ public class PrettyPrinter {
 
 	public static String print(String json) throws JsonProcessingException, IOException {
 		try {
-			return Jackson.MAPPER
+			return Jackson.MAPPER.copy()
 				.setDefaultPrettyPrinter(PRETTY_PRINTER)
 				.writerWithDefaultPrettyPrinter()
 				.writeValueAsString(Jackson.MAPPER.readTree(json));

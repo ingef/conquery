@@ -64,7 +64,7 @@ public class GroovyIndexedTest {
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest", null);
-
+		storage.openStores(null);
 		Table table = new Table();
 
 		table.setName("the_table");

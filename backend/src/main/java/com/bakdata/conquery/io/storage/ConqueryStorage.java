@@ -16,6 +16,11 @@ public abstract class ConqueryStorage implements Closeable {
 	 */
 	public abstract ImmutableList<ManagedStore> getStores();
 
+	/**
+	 * Initializes the internal stores.
+	 * Injects this storage into the provided object mapper.
+	 * @param objectMapper (optional) needed when the {@link com.bakdata.conquery.models.config.StoreFactory} deserializes objects
+	 */
 	public abstract void openStores(ObjectMapper objectMapper);
 	
 	public final void loadData(){

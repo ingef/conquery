@@ -128,13 +128,6 @@ public class WorkerStorage extends NamespacedStorage {
 		if (id instanceof CBlockId castId) {
 			return (VALUE) getCBlock(castId);
 		}
-		if (id instanceof WorkerId castId) {
-			final WorkerInformation worker = getWorker();
-			if (worker.getId().equals(castId)) {
-				return (VALUE) worker;
-			}
-			return null;
-		}
 		return super.get(id);
 	}
 }

@@ -52,7 +52,7 @@ public class SerializingStoreDumpTest {
 		tmpDir = Files.createTempDir();
 		config = new XodusStoreFactory();
 		env = Environments.newInstance(tmpDir, config.getXodus().createConfig());
-		objectMapper = Jackson.BINARY_MAPPER.copy();
+		objectMapper = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 	}
 
 	@AfterEach

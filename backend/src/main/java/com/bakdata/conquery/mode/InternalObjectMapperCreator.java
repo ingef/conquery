@@ -37,7 +37,7 @@ public class InternalObjectMapperCreator {
 			throw new IllegalStateException("%s must be initialized by calling its init method".formatted(this.getClass().getSimpleName()));
 		}
 
-		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER.copy()));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);

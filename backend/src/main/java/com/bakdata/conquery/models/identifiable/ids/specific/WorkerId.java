@@ -14,7 +14,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class WorkerId extends Id<WorkerInformation> implements NamespacedId {
+public class WorkerId extends Id<WorkerInformation> {
 
 	private final DatasetId dataset;
 	private final String worker;

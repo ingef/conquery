@@ -59,7 +59,7 @@ public class IntegrationTests {
 
 	static {
 
-		final ObjectMapper mapper = Jackson.MAPPER.copy();
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
 					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class));

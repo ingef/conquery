@@ -90,7 +90,7 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static  <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
+		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
 
 		support.getNamespace().getDataset().injectInto(mapper);
@@ -110,7 +110,7 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
+		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = support.getNamespaceStorage().injectInto(om.addHandler(new DatasetPlaceHolderFiller(support)));
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
