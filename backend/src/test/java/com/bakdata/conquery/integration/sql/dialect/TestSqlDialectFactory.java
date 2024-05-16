@@ -11,7 +11,6 @@ public class TestSqlDialectFactory extends SqlDialectFactory {
 		return switch (dialect) {
 			case POSTGRESQL -> new PostgreSqlIntegrationTests.TestPostgreSqlDialect();
 			case HANA -> new HanaSqlIntegrationTests.TestHanaDialect();
-			case CLICKHOUSE -> new ClickHouseIntegrationTests.TestClickHouseDialect();
 		};
 	}
 }

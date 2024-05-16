@@ -8,7 +8,6 @@ public class SqlDialectFactory {
 		return switch (dialect) {
 			case POSTGRESQL -> new PostgreSqlDialect();
 			case HANA -> new HanaSqlDialect();
-			case CLICKHOUSE -> new ClickHouseDialect();
 		};
 	}
 
