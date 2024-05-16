@@ -77,7 +77,9 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
-		injectInto(objectMapper);
+		if (objectMapper != null) {
+			injectInto(objectMapper);
+		}
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
