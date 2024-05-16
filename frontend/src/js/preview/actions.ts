@@ -7,7 +7,6 @@ import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
 import { StateT } from "../app/reducers";
 import { ErrorObject } from "../common/actions/genericActions";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 import { PreviewStateT } from "./reducer";
 
 export type PreviewActions = ActionType<
@@ -106,7 +105,7 @@ export function useLoadPreviewData() {
       dispatch(
         setMessage({
           message: t("preview.loadingError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
       dispatch(loadPreview.failure({}));

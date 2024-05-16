@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.Condition;
 
 /**
  * This class is the abstract superclass for all filters.
@@ -102,6 +103,11 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	@JsonIgnore
 	public SqlFilters convertToSqlFilter(FilterContext<FILTER_VALUE> filterContext) {
 		throw new UnsupportedOperationException("SQL conversion of filter %s not implemented yet.".formatted(getClass()));
+	}
+
+	@JsonIgnore
+	public Condition convertForTableExport(FilterContext<FILTER_VALUE> filterContext) {
+		throw new UnsupportedOperationException("SQL conversion of filter %s not implemented yet".formatted(getClass()));
 	}
 
 }

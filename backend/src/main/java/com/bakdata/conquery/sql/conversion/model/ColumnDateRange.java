@@ -9,6 +9,7 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @Getter
 public class ColumnDateRange implements SqlSelect {
@@ -50,6 +51,11 @@ public class ColumnDateRange implements SqlSelect {
 
 	public static ColumnDateRange of(Field<Date> startColumn, Field<Date> endColumn, String alias) {
 		return new ColumnDateRange(startColumn, endColumn, alias);
+	}
+
+	public static ColumnDateRange empty() {
+		Field<String> emptyRange = DSL.field(DSL.val("{}"));
+		return ColumnDateRange.of(emptyRange);
 	}
 
 	public ColumnDateRange asValidityDateRange(String alias) {

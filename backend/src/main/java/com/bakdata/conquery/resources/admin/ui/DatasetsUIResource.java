@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBl
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.common.View;
 import jakarta.inject.Inject;
@@ -23,6 +25,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,13 +49,16 @@ public class DatasetsUIResource {
 
 	private final UIProcessor uiProcessor;
 
+	@Context
+	private ContainerRequestContext requestContext;
+
 
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public View listDatasetsUI() {
 		return new UIView<>(
 				"datasets.html.ftl",
-				uiProcessor.getUIContext(),
+				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				uiProcessor.getDatasetRegistry().getAllDatasets()
 		);
 	}
@@ -63,7 +70,7 @@ public class DatasetsUIResource {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
 		return new UIView<>(
 				"dataset.html.ftl",
-				uiProcessor.getUIContext(),
+				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				new DatasetInfos(
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
@@ -102,11 +109,13 @@ public class DatasetsUIResource {
 	@Path("{" + DATASET + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
-		EntityIdMap mapping = namespace.getStorage().getIdMapping();
+		final EntityIdMap mapping = namespace.getStorage().getIdMapping();
+		final UIContext uiContext = uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext));
+
 		if (mapping != null && mapping.getInternalToPrint() != null) {
-			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getInternalToPrint());
+			return new UIView<>("idmapping.html.ftl", uiContext, mapping.getInternalToPrint());
 		}
-		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
+		return new UIView<>("add_idmapping.html.ftl", uiContext, namespace.getDataset().getId());
 	}
 
 	@Data
