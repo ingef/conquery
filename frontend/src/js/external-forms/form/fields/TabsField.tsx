@@ -47,7 +47,9 @@ export const TabsField = ({
               selectedTab={fieldProps.value as string}
               onSelectTab={(tab) => {
                 commonProps.setValue(field.name, tab, setValueConfig);
-                commonProps.trigger();
+                setTimeout(() => {
+                  commonProps.trigger();
+                }, 100);
               }}
               options={field.tabs.map((tab) => ({
                 label: () => tab.title[commonProps.locale] || "",

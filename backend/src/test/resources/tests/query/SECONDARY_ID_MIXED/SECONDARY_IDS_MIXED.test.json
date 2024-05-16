@@ -51,7 +51,8 @@
           "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table.datum"
+            "startColumn": "table.datum_start",
+            "endColumn": "table.datum_end"
           },
           "filters": {
             "label": "filter",
@@ -65,7 +66,8 @@
           "table": "table2",
           "validityDates": {
             "label": "datum",
-            "column": "table2.datum"
+            "startColumn": "table2.datum_start",
+            "endColumn": "table2.datum_end"
           },
           "filters": {
             "label": "filter",
@@ -105,8 +107,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
           },
           {
             "name": "ignored",
@@ -132,8 +138,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
           }
         ]
       }
