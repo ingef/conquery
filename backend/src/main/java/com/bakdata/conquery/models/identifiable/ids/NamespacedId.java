@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Marker interface for {@link Id}s that are loaded via Namespaced CentralRegistry (see {@link com.bakdata.conquery.models.worker.IdResolveContext#findIdResolver(DatasetId)}
+ * Interface for {@link Id}s that reference objects related to a namespace and reference directly the corresponding {@link com.bakdata.conquery.models.datasets.Dataset}.
  */
 public interface NamespacedId {
 

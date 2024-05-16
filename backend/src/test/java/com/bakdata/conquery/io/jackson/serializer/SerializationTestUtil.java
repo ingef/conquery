@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +52,10 @@ public class SerializationTestUtil<T> {
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
+
+
 	@Setter
+	// TODO Can probably be removed, because a namespace storage is usually alreay injected in the corresponding mapper
 	private NsIdResolver idResolver;
 	private ObjectMapper[] objectMappers;
 	@NonNull
@@ -123,7 +125,7 @@ public class SerializationTestUtil<T> {
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 
 		if (idResolver != null) {
-			mapper = new SingletonNamespaceCollection(idResolver).injectInto(mapper);
+			mapper = idResolver.injectInto(mapper);
 		}
 		for (Injectable injectable : injectables) {
 			mapper = injectable.injectInto(mapper);

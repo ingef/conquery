@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -28,10 +27,6 @@ import lombok.ToString;
 public class ModificationShieldedWorkerStorage implements NsIdResolver {
 
 	private final WorkerStorage delegate;
-
-	public CentralRegistry getCentralRegistry() {
-		return delegate.getCentralRegistry();
-	}
 
 
 	public Import getImport(ImportId id) {

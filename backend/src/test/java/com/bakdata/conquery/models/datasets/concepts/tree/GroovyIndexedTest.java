@@ -20,9 +20,9 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
@@ -60,17 +60,19 @@ public class GroovyIndexedTest {
 
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
-		ObjectNode node = Jackson.MAPPER.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest", null);
-		storage.openStores(null);
+		storage.openStores(mapper);
 		Table table = new Table();
 
 		table.setName("the_table");
 		Dataset dataset = new Dataset();
 
 		dataset.setName("the_dataset");
+		dataset.injectInto(mapper);
 
 		storage.updateDataset(dataset);
 
@@ -92,7 +94,7 @@ public class GroovyIndexedTest {
 			public MutableInjectableValues inject(MutableInjectableValues values) {
 				return values.add(Validator.class, validator);
 			}
-		}.injectInto(new SingletonNamespaceCollection(storage).injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
+		}.injectInto(mapper).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);

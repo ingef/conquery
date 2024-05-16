@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -36,8 +35,8 @@ public class WorkerStorage extends NamespacedStorage {
 		super.openStores(objectMapper);
 
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
-		buckets = getStorageFactory().createBucketStore(centralRegistry, getPathName(), objectMapper);
-		cBlocks = getStorageFactory().createCBlockStore(centralRegistry, getPathName(), objectMapper);
+		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);
+		cBlocks = getStorageFactory().createCBlockStore(getPathName(), objectMapper);
 
 		decorateWorkerStore(worker);
 		decorateBucketStore(buckets);

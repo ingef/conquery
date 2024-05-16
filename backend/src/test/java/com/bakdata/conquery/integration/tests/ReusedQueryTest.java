@@ -21,6 +21,7 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
@@ -31,7 +32,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -128,15 +128,15 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			// We select only a single event of the query by the exact filtering.
 			final CQConcept cqConcept = new CQConcept();
 			final ConceptId conceptId = new ConceptId(conquery.getDataset().getId(), "concept");
-			final Concept<?> concept = conquery.getNamespaceStorage().getConcept(conceptId);
+			final NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
+			final Concept<?> concept = namespaceStorage.getConcept(conceptId);
 			cqConcept.setElements(List.of(concept));
 			final CQTable cqTable = new CQTable();
 			cqTable.setConcept(cqConcept);
 
-			final CentralRegistry centralRegistry = conquery.getNamespaceStorage().getCentralRegistry();
-			final Connector connector = centralRegistry.resolve(new ConnectorId(conceptId, "connector1"));
+			final Connector connector = namespaceStorage.get(new ConnectorId(conceptId, "connector1"));
 			cqTable.setConnector(connector);
-			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) namespaceStorage.get(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
 			cqConcept.setTables(List.of(cqTable));
 			cqConcept.setExcludeFromSecondaryId(false);

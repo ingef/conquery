@@ -10,6 +10,13 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface NsIdResolver extends Injectable {
+
+	/**
+	 * @param id
+	 * @param <ID>
+	 * @param <VALUE>
+	 * @return
+	 */
 	<ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id);
 
 	static NsIdResolver get(DeserializationContext ctxt) throws JsonMappingException {

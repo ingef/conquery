@@ -54,12 +54,12 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
 
-		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
-		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);

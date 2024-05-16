@@ -47,7 +47,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -255,22 +254,22 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, objectMapper));
 	}
 
 	@Override
-	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, objectMapper));
 	}
 
@@ -280,27 +279,27 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<Import> createImportStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<CBlock> createCBlockStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<Bucket> createBucketStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, objectMapper));
 	}
 
@@ -329,7 +328,7 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+	public SingletonStore<StructureNode[]> createStructureStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, objectMapper));
 	}
 

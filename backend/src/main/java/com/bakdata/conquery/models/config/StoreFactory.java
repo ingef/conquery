@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -42,18 +41,18 @@ public interface StoreFactory {
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<Import> createImportStore(String pathName, ObjectMapper objectMapper);
 
 	// WorkerStorage
-	IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<CBlock> createCBlockStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<Bucket> createBucketStore(String pathName, ObjectMapper objectMapper);
 
 	SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper);
 
@@ -62,7 +61,7 @@ public interface StoreFactory {
 
 	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper);
 
-	SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+	SingletonStore<StructureNode[]> createStructureStore(String pathName, ObjectMapper objectMapper);
 
 	// MetaStorage
 	IdentifiableStore<ManagedExecution> createExecutionsStore(String pathName, ObjectMapper objectMapper);
@@ -75,11 +74,11 @@ public interface StoreFactory {
 
 	IdentifiableStore<Group> createGroupStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+	IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, ObjectMapper objectMapper);
 
-	SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+	SingletonStore<PreviewConfig> createPreviewStore(String pathName, ObjectMapper objectMapper);
 
 	CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
 }

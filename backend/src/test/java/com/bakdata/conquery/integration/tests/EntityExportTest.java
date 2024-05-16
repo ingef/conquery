@@ -154,7 +154,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				new ColumnDescriptor(
 						"Values", "Description", "Values", "LIST[STRING]",
 						Set.of(new SemanticType.SelectResultT(
-								conquery.getNamespace().getCentralRegistry().resolve(valuesSelectId)
+								conquery.getNamespace().getStorage().get(valuesSelectId)
 						))
 				)
 		);

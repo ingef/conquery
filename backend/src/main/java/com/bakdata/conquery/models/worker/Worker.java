@@ -125,11 +125,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 
-	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage)
-				.injectIntoNew(binaryMapper);
-	}
-
 	@Override
 	public void close() {
 		// We do not close the executorService here because it does not belong to this class

@@ -9,16 +9,13 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -54,8 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class NamespacedStorage extends ConqueryStorage implements NsIdResolver, Injectable {
 
 	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
-	@Getter
 	@ToString.Include
 	private final String pathName;
 	@Getter
@@ -82,10 +77,10 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		}
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
-		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
-		tables = storageFactory.createTableStore(centralRegistry, pathName, objectMapper);
-		imports = storageFactory.createImportStore(centralRegistry, pathName, objectMapper);
-		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
+		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(pathName, objectMapper);
+		tables = storageFactory.createTableStore(pathName, objectMapper);
+		imports = storageFactory.createImportStore(pathName, objectMapper);
+		concepts = storageFactory.createConceptStore(pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
 		decorateSecondaryIdDescriptionStore(secondaryIds);
@@ -99,14 +94,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
 	}
 
-	@Override
-	public void clear() {
-		super.clear();
-		centralRegistry.clear();
-	}
-
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-		store.onAdd(centralRegistry::register).onRemove(centralRegistry::remove);
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
@@ -114,16 +102,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
-		store.onAdd(table -> {
-				 for (Column column : table.getColumns()) {
-					 getCentralRegistry().register(column);
-				 }
-			 })
-			 .onRemove(table -> {
-				 for (Column c : table.getColumns()) {
-					 getCentralRegistry().remove(c);
-				 }
-			 });
+
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
@@ -144,31 +123,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 				ValidatorHelper.failOnError(log, violations);
 			}
 
-			concept.getSelects().forEach(centralRegistry::register);
-			for (Connector connector : concept.getConnectors()) {
-				centralRegistry.register(connector);
-				connector.collectAllFilters().forEach(centralRegistry::register);
-				connector.getSelects().forEach(centralRegistry::register);
-				connector.getValidityDates().forEach(centralRegistry::register);
-			}
-
-
-			if (concept instanceof TreeConcept) {
-				((TreeConcept) concept).getAllChildren().forEach(centralRegistry::register);
-			}
-		}).onRemove(concept -> {
-			concept.getSelects().forEach(centralRegistry::remove);
-			//see #146  remove from Dataset.concepts
-			for (Connector connector : concept.getConnectors()) {
-				connector.getSelects().forEach(centralRegistry::remove);
-				connector.collectAllFilters().forEach(centralRegistry::remove);
-				connector.getValidityDates().forEach(centralRegistry::remove);
-				centralRegistry.remove(connector);
-			}
-
-			if (concept instanceof TreeConcept) {
-				((TreeConcept) concept).getAllChildren().forEach(centralRegistry::remove);
-			}
 		});
 	}
 

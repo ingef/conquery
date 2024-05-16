@@ -69,8 +69,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		// Assert state before deletion.
 		{
 			// Must contain the import.
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(dataset.getId()))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().get(dataset.getId()))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
