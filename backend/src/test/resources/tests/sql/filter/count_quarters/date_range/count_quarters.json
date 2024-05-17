@@ -1,10 +1,10 @@
 {
-  "label": "COUNT_QUARTERS on single date column",
+  "label": "COUNT_QUARTERS on date range",
   "type": "QUERY_TEST",
   "sqlSpec": {
     "isEnabled": true
   },
-  "expectedCsv": "tests/sql/filter/count_quarters/expected.csv",
+  "expectedCsv": "tests/sql/filter/count_quarters/date_range/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -44,7 +44,8 @@
           "filters": {
             "name": "count_quarters_filter",
             "type": "COUNT_QUARTERS",
-            "column": "table1.behandlungsdatum"
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
           }
         }
       ]
@@ -53,7 +54,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/filter/count_quarters/content.csv",
+        "csv": "tests/sql/filter/count_quarters/date_range/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -61,7 +62,11 @@
         },
         "columns": [
           {
-            "name": "behandlungsdatum",
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
             "type": "DATE"
           }
         ]

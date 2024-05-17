@@ -1,12 +1,13 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
-import static com.bakdata.conquery.sql.conversion.forms.Interval.MONTHS_PER_QUARTER;
+import static com.bakdata.conquery.sql.conversion.dialect.Interval.MONTHS_PER_QUARTER;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.QOM;
 import org.jooq.impl.SQLDataType;
 
 @Getter
@@ -96,7 +96,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> jumpToQuarterStart(Field<Date> date) {
+	public Field<Date> jumpToQuarterStart(Field<Date> date) {
 		Field<Date> yearStart = jumpToYearStart(date);
 		Field<Integer> quartersInMonths = getQuartersInMonths(date, Offset.MINUS_ONE);
 		return addMonths(yearStart, quartersInMonths);
@@ -108,7 +108,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> jumpToNextQuarterStart(Field<Date> date) {
+	public Field<Date> jumpToNextQuarterStart(Field<Date> date) {
 		Field<Date> yearStart = jumpToYearStart(date);
 		Field<Integer> quartersInMonths = getQuartersInMonths(date, Offset.NONE);
 		return addMonths(yearStart, quartersInMonths);

@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
@@ -83,7 +84,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> jumpToQuarterStart(Field<Date> date) {
+	public Field<Date> jumpToQuarterStart(Field<Date> date) {
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(jumpToYearStart(date), quarter, Offset.MINUS_ONE);
 	}
@@ -95,7 +96,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> jumpToNextQuarterStart(Field<Date> date) {
+	public Field<Date> jumpToNextQuarterStart(Field<Date> date) {
 		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), date);
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(yearStart, quarter, Offset.NONE);
