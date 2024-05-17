@@ -14,6 +14,7 @@ public interface DaterangeSelectOrFilter {
 
 	Column getEndColumn();
 
+	@JsonIgnore
 	default boolean isSingleColumnDaterange() {
 		return getColumn() != null;
 	}
