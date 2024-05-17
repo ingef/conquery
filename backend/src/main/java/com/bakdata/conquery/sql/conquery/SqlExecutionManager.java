@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
@@ -29,10 +28,10 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	private final SqlConverter converter;
 	private final Map<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(final SqlContext context, SqlExecutionService sqlExecutionService, MetaStorage storage) {
+	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage) {
 		super(storage);
+		this.converter = sqlConverter;
 		this.executionService = sqlExecutionService;
-		this.converter = new SqlConverter(context.getSqlDialect(), context.getConfig());
 		this.runningExecutions = new HashMap<>();
 	}
 

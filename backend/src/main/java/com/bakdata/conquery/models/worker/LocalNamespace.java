@@ -59,12 +59,23 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	public void close() {
+		closeDslContextWrapper();
+		super.close();
+	}
+
+	@Override
+	public void remove() {
+		closeDslContextWrapper();
+		super.remove();
+	}
+
+	private void closeDslContextWrapper() {
 		try {
 			dslContextWrapper.close();
 		}
 		catch (IOException e) {
 			log.warn("Could not  close namespace's {} DSLContext/Datasource directly", getDataset().getId(), e);
 		}
-		super.close();
 	}
+
 }

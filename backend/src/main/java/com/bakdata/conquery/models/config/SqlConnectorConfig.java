@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.List;
+import java.util.Map;
 
+import com.bakdata.conquery.models.datasets.Dataset;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -20,6 +23,14 @@ public class SqlConnectorConfig {
 	 */
 	private boolean withPrettyPrinting;
 
-	private List<DatabaseConfig> databaseConfigs;
+	/**
+	 * Keys must match the name of existing {@link Dataset}s.
+	 */
+	@Getter(AccessLevel.PRIVATE)
+	private Map<String, DatabaseConfig> databaseConfigs;
+
+	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
+		return databaseConfigs.get(dataset.getName());
+	}
 
 }

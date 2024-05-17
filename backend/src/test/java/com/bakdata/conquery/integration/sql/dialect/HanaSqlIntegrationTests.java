@@ -23,7 +23,6 @@ import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
@@ -77,7 +76,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		dslContextWrapper = provider.getDslContextWrapper();
 		DatabaseConfig databaseConfig = provider.getDatabaseConfig();
-		SqlConnectorConfig config = provider.getSqlConnectorConfig();
+		TestSqlConnectorConfig config = provider.getSqlConnectorConfig();
 		TestHanaDialect testHanaDialect = new TestHanaDialect();
 		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testHanaDialect, databaseConfig));
 
@@ -161,7 +160,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		private final DSLContextWrapper dslContextWrapper;
 		private final DatabaseConfig databaseConfig;
-		private final SqlConnectorConfig sqlConnectorConfig;
+		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		@Container
 		private final HanaContainer<?> hanaContainer;
@@ -175,13 +174,8 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 												.databaseUsername(hanaContainer.getUsername())
 												.databasePassword(hanaContainer.getPassword())
-												.primaryColumn("pid")
 												.build();
-			this.sqlConnectorConfig = SqlConnectorConfig.builder()
-														.enabled(true)
-														.withPrettyPrinting(true)
-														.databaseConfigs(List.of(databaseConfig))
-														.build();
+			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig);
 		}
 
@@ -197,7 +191,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
 		private final DSLContextWrapper dslContextWrapper;
 		private final DatabaseConfig databaseConfig;
-		private final SqlConnectorConfig sqlConnectorConfig;
+		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		public RemoteHanaContextProvider() {
 			this.databaseConfig = DatabaseConfig.builder()
@@ -205,13 +199,8 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.jdbcConnectionUrl(CONNECTION_URL)
 												.databaseUsername(USERNAME)
 												.databasePassword(PASSWORD)
-												.primaryColumn("pid")
 												.build();
-			this.sqlConnectorConfig = SqlConnectorConfig.builder()
-														.enabled(true)
-														.withPrettyPrinting(true)
-														.databaseConfigs(List.of(databaseConfig))
-														.build();
+			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
 		}
 

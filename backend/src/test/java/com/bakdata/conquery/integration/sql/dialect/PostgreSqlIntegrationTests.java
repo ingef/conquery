@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
@@ -11,7 +10,6 @@ import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.sql.DSLContextWrapper;
@@ -46,7 +44,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	private static DSLContextWrapper dslContextWrapper;
 	private static DatabaseConfig databaseConfig;
-	private static SqlConnectorConfig sqlConfig;
+	private static TestSqlConnectorConfig sqlConfig;
 	private static TestSqlDialect testSqlDialect;
 	private static SqlTestDataImporter testDataImporter;
 
@@ -69,13 +67,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 									   .jdbcConnectionUrl(POSTGRESQL_CONTAINER.getJdbcUrl())
 									   .databaseUsername(USERNAME)
 									   .databasePassword(PASSWORD)
-									   .primaryColumn("pid")
 									   .build();
-		sqlConfig = SqlConnectorConfig.builder()
-									  .enabled(true)
-									  .withPrettyPrinting(true)
-									  .databaseConfigs(List.of(databaseConfig))
-									  .build();
+		sqlConfig = new TestSqlConnectorConfig(databaseConfig);
 		dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConfig);
 		testSqlDialect = new TestPostgreSqlDialect();
 		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testSqlDialect, databaseConfig));

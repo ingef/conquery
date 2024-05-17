@@ -37,11 +37,11 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService) {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService);
-		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
-		// TODO mapping between a namespace/dataset and a database config - how do we create this mapping?
-		DatabaseConfig databaseConfig = sqlConnectorConfig.getDatabaseConfigs().get(0);
-		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
 
+		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
+		DatabaseConfig databaseConfig = sqlConnectorConfig.getDatabaseConfig(namespaceStorage.getDataset());
+
+		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 

@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class DatabaseConfig {
 
-	public static final String DEFAULT_PRIMARY_COLUMN = "pid";
+	private static final String DEFAULT_PRIMARY_COLUMN = "pid";
 
 	private Dialect dialect;
 
@@ -17,6 +17,7 @@ public class DatabaseConfig {
 
 	private String jdbcConnectionUrl;
 
+	@Builder.Default
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
 
 }
