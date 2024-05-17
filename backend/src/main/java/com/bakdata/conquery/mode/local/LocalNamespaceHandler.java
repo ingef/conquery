@@ -1,7 +1,5 @@
 package com.bakdata.conquery.mode.local;
 
-import java.io.IOException;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
@@ -68,12 +66,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	@Override
 	public void removeNamespace(DatasetId id, LocalNamespace namespace) {
-		try {
-			namespace.getDslContextWrapper().close();
-		}
-		catch (IOException e) {
-			log.warn("Could not close namespace's {} DSLContext/Datasource directly", id, e);
-		}
+		// nothing to do
 	}
 
 }

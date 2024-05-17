@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,8 +18,10 @@ import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
+@Slf4j
 public class LocalNamespace extends Namespace {
 
 	private final DSLContextWrapper dslContextWrapper;
@@ -52,5 +55,16 @@ public class LocalNamespace extends Namespace {
 			final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
 			getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
 		}
+	}
+
+	@Override
+	public void close() {
+		try {
+			dslContextWrapper.close();
+		}
+		catch (IOException e) {
+			log.warn("Could not  close namespace's {} DSLContext/Datasource directly", getDataset().getId(), e);
+		}
+		super.close();
 	}
 }
