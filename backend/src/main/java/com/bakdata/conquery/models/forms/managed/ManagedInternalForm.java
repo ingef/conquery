@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -135,10 +133,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public void cancel() {
-		// TODO This will cause an error when SqlExecutionManager calls cancelQuery() for a form. I wonder if we can just cancel all subqueries and remove this
-		// 	hard cast? Also, the DistributedExecutionManager#cancelQuery() will send the CancelQuery message anyway.
-		log.debug("Sending cancel message to all workers.");
-		((DistributedNamespace) getNamespace()).getWorkerHandler().sendToAll(new CancelQuery(getId()));
+		subQueries.values().forEach(ManagedQuery::cancel);
 	}
 
 	@Override
