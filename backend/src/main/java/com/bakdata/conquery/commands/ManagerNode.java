@@ -242,7 +242,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage);
+				registry.createNamespace(namespaceStorage, getStorage());
 			});
 		}
 

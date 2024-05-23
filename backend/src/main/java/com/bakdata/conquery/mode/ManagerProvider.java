@@ -1,9 +1,8 @@
 package com.bakdata.conquery.mode;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -11,6 +10,7 @@ import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.core.setup.Environment;
+import jakarta.validation.Validator;
 
 /**
  * Provider for {@link Manager}.
@@ -58,9 +58,12 @@ public interface ManagerProvider {
 				namespaceHandler,
 				indexService
 		);
-		MetaStorage storage = new MetaStorage(config.getStorage(), datasetRegistry);
-		datasetRegistry.setMetaStorage(storage);
 		return datasetRegistry;
+	}
+
+	static MetaStorage createMetaStorage(StoreFactory storeFactory) {
+		return new MetaStorage(storeFactory);
+
 	}
 
 }

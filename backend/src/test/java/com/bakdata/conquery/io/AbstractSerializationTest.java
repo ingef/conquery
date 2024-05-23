@@ -45,11 +45,10 @@ public abstract class AbstractSerializationTest {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
 		namespaceStorage = new NamespaceStorage(new NonPersistentStoreFactory(), "serializationTestNamespace", null);
 		workerStorage = new WorkerStorage(new NonPersistentStoreFactory(), null, "serializationTestWorker");
-		datasetRegistry.setMetaStorage(metaStorage);
-		creator.init(datasetRegistry);
+		creator.init(datasetRegistry, metaStorage);
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);

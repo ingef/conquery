@@ -59,7 +59,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
     private final IndexService indexService;
 
-    public N createNamespace(Dataset dataset, Validator validator) throws IOException {
+	public N createNamespace(Dataset dataset, Validator validator, MetaStorage metaStorage) throws IOException {
         // Prepare empty storage
         NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
@@ -71,10 +71,10 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
         datasetStorage.setPreviewConfig(new PreviewConfig());
         datasetStorage.close();
 
-        return createNamespace(datasetStorage);
+		return createNamespace(datasetStorage, metaStorage);
     }
 
-    public N createNamespace(NamespaceStorage datasetStorage) {
+	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage) {
         final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
         add(namespace);
         return namespace;

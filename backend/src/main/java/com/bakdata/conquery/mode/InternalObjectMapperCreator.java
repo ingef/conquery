@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -13,6 +12,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -27,9 +27,9 @@ public class InternalObjectMapperCreator {
 	private DatasetRegistry<? extends Namespace> datasetRegistry = null;
 	private MetaStorage storage = null;
 
-	public void init(DatasetRegistry<? extends Namespace> datasetRegistry) {
+	public void init(DatasetRegistry<? extends Namespace> datasetRegistry, MetaStorage storage) {
 		this.datasetRegistry = datasetRegistry;
-		this.storage = datasetRegistry.getMetaStorage();
+		this.storage = storage;
 	}
 
 	public ObjectMapper createInternalObjectMapper(@Nullable Class<? extends View> viewClass) {

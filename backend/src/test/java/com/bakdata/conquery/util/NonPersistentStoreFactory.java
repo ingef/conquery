@@ -179,7 +179,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 * @implNote intended for Unit-tests
 	 */
 	public MetaStorage createMetaStorage() {
-		final MetaStorage metaStorage = new MetaStorage(this, null);
+		final MetaStorage metaStorage = new MetaStorage(this);
 		metaStorage.openStores(null);
 		return metaStorage;
 	}

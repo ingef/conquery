@@ -13,8 +13,6 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,12 +41,9 @@ public class IdRefrenceTest {
 		storage.updateDataset(dataset);
 		storage.addTable(table);
 
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, null, null, null, null);
-
-		final MetaStorage metaStorage = new MetaStorage(storageFactory,datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(storageFactory);
 
 		metaStorage.openStores(mapper);
-		datasetRegistry.setMetaStorage(metaStorage);
 
 		User user = new User("usermail", "userlabel", metaStorage);
 		metaStorage.addUser(user);

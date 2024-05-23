@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -62,6 +63,8 @@ public class AdminDatasetProcessor {
 	private final JobManager jobManager;
 	private final ImportHandler importHandler;
 	private final StorageListener storageListener;
+	private final MetaStorage metaStorage;
+
 
 
 	/**
@@ -74,7 +77,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
+		return datasetRegistry.createNamespace(dataset, getValidator(), metaStorage).getDataset();
 	}
 
 	/**
