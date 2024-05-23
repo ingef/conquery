@@ -34,7 +34,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 
 		//ensure the metadata is collected
 		DistributedNamespace namespace = (DistributedNamespace) conquery.getNamespace();
-		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
+		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts().toList()));
 
 		conquery.waitUntilWorkDone();
 

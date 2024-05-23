@@ -1,12 +1,9 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.stream.Stream;
 
-import jakarta.validation.Validator;
-
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -19,6 +16,7 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,7 +29,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Integer> entity2Bucket;
+	protected Store<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName, validator);
@@ -150,7 +148,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		internToExternMappers.remove(id);
 	}
 
-	public Collection<InternToExternMapper> getInternToExternMappers() {
+	public Stream<InternToExternMapper> getInternToExternMappers() {
 		return internToExternMappers.getAll();
 	}
 
@@ -166,7 +164,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		searchIndexes.add(searchIndex);
 	}
 
-	public Collection<SearchIndex> getSearchIndices() {
+	public Stream<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
 	}
 

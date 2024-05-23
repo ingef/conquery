@@ -1,7 +1,8 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -43,16 +44,13 @@ class ClusterImportHandler implements ImportHandler {
 		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
 	}
 
-	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
-		for (Concept<?> c : allConcepts) {
-			for (Connector con : c.getConnectors()) {
-				if (!con.getTable().equals(table)) {
-					continue;
-				}
-
-				con.getConcept().clearMatchingStats();
-			}
-		}
+	private void clearDependentConcepts(Stream<Concept<?>> allConcepts, Table table) {
+		allConcepts
+				.map(Concept::getConnectors)
+				.flatMap(List::stream)
+				.filter(connector -> connector.getTable().equals(table))
+				.map(Connector::getConcept)
+				.forEach(Concept::clearMatchingStats);
 	}
 
 	@SneakyThrows

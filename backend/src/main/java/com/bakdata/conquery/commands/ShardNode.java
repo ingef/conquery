@@ -91,7 +91,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.environment = environment;
 		this.config = config;
 
-
 		jobManager = new JobManager(getName(), config.isFailOnError());
 		environment.lifecycle().manage(this);
 		validator = environment.getValidator();

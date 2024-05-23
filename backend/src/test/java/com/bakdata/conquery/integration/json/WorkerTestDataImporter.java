@@ -98,7 +98,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 
 	private static void sendUpdateMatchingStatsMessage(StandaloneSupport support) {
 		DistributedNamespace namespace = (DistributedNamespace) support.getNamespace();
-		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(support.getNamespace().getStorage().getAllConcepts()));
+		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(support.getNamespace().getStorage().getAllConcepts().toList()));
 		support.waitUntilWorkDone();
 	}
 

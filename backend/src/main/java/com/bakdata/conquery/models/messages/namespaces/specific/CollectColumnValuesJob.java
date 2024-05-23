@@ -56,7 +56,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<Table, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets().stream()
+		final Map<Table, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
 															  .collect(Collectors.groupingBy(Bucket::getTable));
 
 

@@ -63,7 +63,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Group group : storage.getAllGroups().toList()) {
 			if (!group.containsMember(this)) {
 				continue;
 			}

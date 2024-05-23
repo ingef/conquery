@@ -9,11 +9,9 @@ import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -153,15 +151,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public Collection<VALUE> getAll() {
+	public Stream<VALUE> getAll() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Collection<KEY> getAllKeys() {
-		Collection<KEY> out = new ConcurrentLinkedQueue<>(); // has to be concurrent because forEach is concurrent.
-		metaStore.forEach((key, value, size) -> out.add(key));
-		return out;
+	public Stream<KEY> getAllKeys() {
+		return metaStore.getAllKeys();
 	}
 
 	private BigStoreMetaKeys writeValue(VALUE value) {

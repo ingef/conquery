@@ -347,7 +347,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());

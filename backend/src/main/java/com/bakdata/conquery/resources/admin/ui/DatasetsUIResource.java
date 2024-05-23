@@ -73,10 +73,10 @@ public class DatasetsUIResource {
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				new DatasetInfos(
 						namespace.getDataset(),
-						namespace.getStorage().getSecondaryIds(),
-						namespace.getStorage().getInternToExternMappers(),
-						namespace.getStorage().getSearchIndices(),
-						namespace.getStorage().getTables().stream()
+						namespace.getStorage().getSecondaryIds().toList(),
+						namespace.getStorage().getInternToExternMappers().toList(),
+						namespace.getStorage().getSearchIndices().toList(),
+						namespace.getStorage().getTables()
 								 .map(table -> new TableInfos(
 										 table.getId(),
 										 table.getName(),
@@ -88,18 +88,17 @@ public class DatasetsUIResource {
 										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),
-						namespace.getStorage().getAllConcepts(),
+						namespace.getStorage().getAllConcepts().toList(),
 						// Total size of CBlocks
 						namespace
 								.getStorage().getTables()
-								.stream()
 								.flatMap(table -> table.findImports(namespace.getStorage()))
 								.mapToLong(imp -> calculateCBlocksSizeBytes(
 										imp, namespace.getStorage().getAllConcepts()
 								))
 								.sum(),
 						// total size of entries
-						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
+						namespace.getStorage().getAllImports().mapToLong(Import::estimateMemoryConsumption).sum()
 				)
 		);
 	}

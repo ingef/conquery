@@ -10,7 +10,6 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -515,13 +515,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public Collection<VALUE> getAll() {
+	public Stream<VALUE> getAll() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Collection<KEY> getAllKeys() {
-		throw new UnsupportedOperationException();
+	public Stream<KEY> getAllKeys() {
+		return store.getAllKeys().stream().map(this::readKey);
 	}
 
 	@Override

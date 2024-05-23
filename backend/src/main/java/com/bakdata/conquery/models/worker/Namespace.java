@@ -94,14 +94,14 @@ public abstract class Namespace extends IdResolveContext {
 	}
 
 	public void updateInternToExternMappings() {
-		storage.getAllConcepts().stream()
+		storage.getAllConcepts()
 			   .flatMap(c -> c.getConnectors().stream())
 			   .flatMap(con -> con.getSelects().stream())
 			   .filter(MappableSingleColumnSelect.class::isInstance)
 			   .map(MappableSingleColumnSelect.class::cast)
 			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
-		storage.getSecondaryIds().stream()
+		storage.getSecondaryIds()
 			   .filter(desc -> desc.getMapping() != null)
 			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
 	}

@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthorizationHelper {
 
 	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage){
-		return storage.getAllGroups().stream()
+		return storage.getAllGroups()
 					  .filter(g -> g.getMembers().contains(subject.getId()))
 					  .sorted()
 					  .collect(Collectors.toList());
@@ -78,11 +78,11 @@ public class AuthorizationHelper {
 	}
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
-		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());
+		return storage.getAllUsers().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());
 	}
 
 	public static List<Group> getGroupsByRole(MetaStorage storage, Role role) {
-		return storage.getAllGroups().stream().filter(g -> g.getRoles().contains(role.getId())).collect(Collectors.toList());
+		return storage.getAllGroups().filter(g -> g.getRoles().contains(role.getId())).collect(Collectors.toList());
 	}
 
 	/**

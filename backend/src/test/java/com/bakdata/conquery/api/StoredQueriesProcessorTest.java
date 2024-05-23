@@ -124,7 +124,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries, true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries.stream(), true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)

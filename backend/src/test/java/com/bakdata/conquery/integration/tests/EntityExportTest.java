@@ -124,7 +124,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef so we have to use the real objects here.
-		final List<Connector> allConnectors = conquery.getNamespaceStorage().getAllConcepts().stream()
+		final List<Connector> allConnectors = conquery.getNamespaceStorage().getAllConcepts()
 													  .map(Concept::getConnectors)
 													  .flatMap(List::stream)
 													  .collect(Collectors.toList());

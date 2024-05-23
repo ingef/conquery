@@ -263,7 +263,6 @@ public class TestConquery {
 		busy |= standaloneCommand.getManagerNode()
 								 .getStorage()
 								 .getAllExecutions()
-								 .stream()
 								 .map(ManagedExecution::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
