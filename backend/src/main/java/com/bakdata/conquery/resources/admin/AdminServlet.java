@@ -102,7 +102,8 @@ public class AdminServlet {
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getImportHandler(),
-				manager.getStorageListener()
+				manager.getStorageListener(),
+				manager.getStorage()
 		);
 
 		jerseyConfig.register(new AbstractBinder() {

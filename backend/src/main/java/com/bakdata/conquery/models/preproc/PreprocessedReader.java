@@ -6,9 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
+import com.bakdata.conquery.models.identifiable.MapNsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,21 +43,12 @@ public class PreprocessedReader implements AutoCloseable {
 	private final Map<Id<?>, Identifiable<?>> replacements = new HashMap<>();
 
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
-		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
+		final MapNsIdResolver mapNsIdResolver = new MapNsIdResolver(replacements);
 
-		parser = namespaceCollection.injectIntoNew(objectMapper)
-				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-				.getFactory()
-				.createParser(inputStream);
-	}
-
-	public void addReplacement(Id<?> id, Identifiable<?> replacement) {
-		this.replacements.put(id, replacement);
-	}
-
-	public <K extends Id<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
-		this.replacements.putAll(replacements);
+		parser = mapNsIdResolver.injectIntoNew(objectMapper)
+								.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+								.getFactory()
+								.createParser(inputStream);
 	}
 
 	public PreprocessedHeader readHeader() throws IOException {

@@ -91,8 +91,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().get(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -183,8 +183,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().get(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {

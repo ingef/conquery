@@ -4,12 +4,13 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -34,8 +35,8 @@ public class WorkerStorage extends NamespacedStorage {
 		super.openStores(objectMapper);
 
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
-		buckets = getStorageFactory().createBucketStore(centralRegistry, getPathName(), objectMapper);
-		cBlocks = getStorageFactory().createCBlockStore(centralRegistry, getPathName(), objectMapper);
+		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);
+		cBlocks = getStorageFactory().createCBlockStore(getPathName(), objectMapper);
 
 		decorateWorkerStore(worker);
 		decorateBucketStore(buckets);
@@ -119,14 +120,14 @@ public class WorkerStorage extends NamespacedStorage {
 		this.worker.update(worker);
 	}
 
-	//block manager overrides
-	public void updateConcept(Concept<?> concept) {
-		log.debug("Updating Concept[{}]", concept.getId());
-		concepts.update(concept);
-	}
-
-	public void removeConcept(ConceptId id) {
-		log.debug("Removing Concept[{}]", id);
-		concepts.remove(id);
+	@Override
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		if (id instanceof BucketId castId) {
+			return (VALUE) getBucket(castId);
+		}
+		if (id instanceof CBlockId castId) {
+			return (VALUE) getCBlock(castId);
+		}
+		return super.get(id);
 	}
 }

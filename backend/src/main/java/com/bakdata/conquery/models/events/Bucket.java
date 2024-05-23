@@ -124,7 +124,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public ColumnStore getStore(@NotNull Column column) {
-		return stores[column.getPosition()];
+		int columnPosition = getImp().getTable().getColumnPosition(column);
+		return stores[columnPosition];
 	}
 
 	public long getInteger(int event, @NotNull Column column) {

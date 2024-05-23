@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.datasets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -114,19 +114,21 @@ public class PreviewConfig {
 	/**
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
 	 */
-	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects) {
 	}
 
 	@ValidationMethod(message = "Selects may be referenced only once.")
 	@JsonIgnore
 	public boolean isSelectsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
 	@JsonIgnore
 	public boolean isLabelsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@JsonIgnore
@@ -180,19 +182,19 @@ public class PreviewConfig {
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
-								   .flatMap(Optional::stream)
+								   .map(id -> datasetRegistry.get(id))
+								   .filter(Objects::nonNull)
 								   .collect(Collectors.toList());
 	}
 
-	public List<Filter<?>> resolveSearchFilters() {
+	public List<? extends Filter<?>> resolveSearchFilters() {
 		if (searchFilters == null) {
 			return Collections.emptyList();
 		}
 
 		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+							.map(filterId -> (Filter<?>) datasetRegistry.get(filterId))
+							.filter(Objects::nonNull)
 							.toList();
 	}
 
@@ -203,13 +205,11 @@ public class PreviewConfig {
 
 
 		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+							.map(filterId -> datasetRegistry.get(filterId))
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()
 							.collect(MoreCollectors.onlyElement());
 	}
-
 
 
 }

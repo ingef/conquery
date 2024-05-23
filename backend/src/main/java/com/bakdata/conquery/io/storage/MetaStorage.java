@@ -10,18 +10,16 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MetaStorage extends ConqueryStorage implements Injectable {
 
-	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final StoreFactory storageFactory;
-
-	@Getter
-	protected final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
@@ -43,12 +36,15 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	public void openStores(ObjectMapper mapper) {
-		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);
+		if (mapper != null) {
+			this.injectInto(mapper);
+		}
+		authUser = storageFactory.createUserStore("meta", mapper);
+		authRole = storageFactory.createRoleStore("meta", mapper);
+		authGroup = storageFactory.createGroupStore("meta", mapper);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta", mapper);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta", mapper);
+		executions = storageFactory.createExecutionsStore("meta", mapper);
+		formConfigs = storageFactory.createFormConfigStore("meta", mapper);
 
 	}
 
@@ -72,7 +68,6 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	public void clear() {
 		super.clear();
-		centralRegistry.clear();
 	}
 
 	public void addExecution(ManagedExecution query) {
@@ -195,5 +190,25 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(MetaStorage.class, this);
+	}
+
+	public <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		if (id instanceof ManagedExecutionId executionId) {
+			return (VALUE) getExecution(executionId);
+		}
+		if (id instanceof FormConfigId formConfigId) {
+			return (VALUE) getFormConfig(formConfigId);
+		}
+		if (id instanceof GroupId groupId) {
+			return (VALUE) getGroup(groupId);
+		}
+		if (id instanceof RoleId roleId) {
+			return (VALUE) getRole(roleId);
+		}
+		if (id instanceof UserId userId) {
+			return (VALUE) getUser(userId);
+		}
+
+		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
 	}
 }

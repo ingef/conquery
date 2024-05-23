@@ -12,6 +12,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -53,6 +54,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Slf4j
@@ -143,16 +145,22 @@ public class ConceptsProcessor {
 		return new FrontendPreviewConfig(
 				previewConfig.getAllConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(connectorToLabelled(namespace))
 							 .collect(Collectors.toSet()),
 
 				previewConfig.getDefaultConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(connectorToLabelled(namespace))
 							 .collect(Collectors.toSet()),
 				previewConfig.resolveSearchFilters(),
 				previewConfig.resolveSearchConcept()
 		);
+	}
+
+	@NotNull
+	private static Function<ConnectorId, FrontendPreviewConfig.Labelled> connectorToLabelled(Namespace namespace) {
+		// TODO might use a cache here to dereference id
+		return id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getStorage().get(id).getTable().getLabel());
 	}
 
 	/**

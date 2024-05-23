@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -13,8 +12,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -31,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
-public abstract class Namespace extends IdResolveContext {
+public abstract class Namespace {
 
 	private final ObjectMapper preprocessMapper;
 
@@ -85,10 +82,6 @@ public abstract class Namespace extends IdResolveContext {
 		storage.removeStorage();
 	}
 
-	public CentralRegistry getCentralRegistry() {
-		return getStorage().getCentralRegistry();
-	}
-
 	public int getNumberOfEntities() {
 		return getStorage().getNumberOfEntities();
 	}
@@ -113,20 +106,6 @@ public abstract class Namespace extends IdResolveContext {
 	public PreviewConfig getPreviewConfig() {
 		return getStorage().getPreviewConfig();
 	}
-
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
-		if (!this.getDataset().getId().equals(dataset)) {
-			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
-		}
-		return storage.getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException();
-	}
-
 
 	/**
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.

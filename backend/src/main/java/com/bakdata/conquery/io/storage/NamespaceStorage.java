@@ -4,13 +4,14 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,12 +54,12 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
 
-		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
-		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
@@ -180,5 +182,17 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public void removePreviewConfig() {
 		preview.remove();
+	}
+
+	@Override
+	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		if (id instanceof InternToExternMapperId castId) {
+			return (VALUE) getInternToExternMapper(castId);
+		}
+		if (id instanceof SearchIndexId castId) {
+			return (VALUE) getSearchIndex(castId);
+		}
+
+		return super.get(id);
 	}
 }

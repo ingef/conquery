@@ -8,6 +8,8 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -28,7 +30,9 @@ public abstract class AbstractSerializationTest {
 	private final Validator validator = Validators.newValidator();
 	private final ConqueryConfig config = new ConqueryConfig();
 	private DatasetRegistry<DistributedNamespace> datasetRegistry;
+	private NamespaceStorage namespaceStorage;
 	private MetaStorage metaStorage;
+	private WorkerStorage workerStorage;
 
 	private ObjectMapper managerInternalMapper;
 	private ObjectMapper shardInternalMapper;
@@ -41,9 +45,10 @@ public abstract class AbstractSerializationTest {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
-		datasetRegistry.setMetaStorage(metaStorage);
-		creator.init(datasetRegistry);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		namespaceStorage = new NamespaceStorage(new NonPersistentStoreFactory(), "serializationTestNamespace", null);
+		workerStorage = new WorkerStorage(new NonPersistentStoreFactory(), null, "serializationTestWorker");
+		creator.init(datasetRegistry, metaStorage);
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);
@@ -59,6 +64,8 @@ public abstract class AbstractSerializationTest {
 		metaStorage.openStores(managerInternalMapper);
 		metaStorage.loadData();
 
+		namespaceStorage.openStores(managerInternalMapper);
+
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
 		when(shardNode.getConfig()).thenReturn(config);
@@ -66,11 +73,14 @@ public abstract class AbstractSerializationTest {
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		workerStorage.openStores(shardInternalMapper);
 
 		// Prepare api response mapper
 		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		managerNode.customizeApiObjectMapper(apiMapper);
+		// This overrides the injected datasetRegistry
+		namespaceStorage.injectInto(apiMapper);
 	}
 
 

@@ -81,8 +81,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state before deletion");
 			// Must contain the import.
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(tableId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().get(tableId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -211,7 +211,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					assertThat(value.getStorage().getCentralRegistry().resolve(tableId))
+					assertThat(value.getStorage().get(tableId))
 							.describedAs("Table in worker storage.")
 							.isNotNull();
 				}

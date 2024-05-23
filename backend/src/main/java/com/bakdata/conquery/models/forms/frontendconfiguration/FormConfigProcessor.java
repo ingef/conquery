@@ -50,7 +50,7 @@ public class FormConfigProcessor {
 	@Getter(onMethod = @__({@TestOnly}))
 	private static final ObjectMapper
 			MAPPER =
-			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
+			Jackson.copyMapperAndInjectables(Jackson.MAPPER).disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
 	@Inject
 	private Validator validator;
 	@Inject

@@ -17,11 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -53,6 +48,10 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +107,7 @@ public class LoadingUtil {
 	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
-			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
+			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage());
 			uploadTable(support, table);
 
 			if (autoConcept) {
@@ -312,7 +311,7 @@ public class LoadingUtil {
 
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
+					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry());
 
 			support.getDatasetsProcessor()
 				   .addSecondaryId(support.getNamespace(), description);

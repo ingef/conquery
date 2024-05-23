@@ -16,11 +16,16 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
@@ -42,6 +47,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColum;
+
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
+	private Object2IntMap<Column> columnPositions = new Object2IntOpenHashMap<>();
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
@@ -102,6 +111,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		}
 
 		return null;
+	}
+
+	public int getColumnPosition(Column column) {
+		return columnPositions.computeIfAbsent(column, (c) -> ArrayUtils.indexOf(getColumns(), c));
 	}
 
 }

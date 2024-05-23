@@ -2,11 +2,11 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -28,7 +28,7 @@ public class NsIdReferenceKeyDeserializer<ID extends Id<VALUE> & NamespacedId, V
 	public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
 		final ID id = parser.parse(key);
 
-		return IdResolveContext.get(ctxt).<ID, VALUE>resolve(id);
+		return NsIdResolver.get(ctxt).get(id);
 	}
 
 	@Override

@@ -3,20 +3,17 @@ package com.bakdata.conquery.io.jackson;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.ext.ParamConverter;
-import jakarta.ws.rs.ext.ParamConverterProvider;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -46,6 +43,6 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 			return new NamespacedIdRefParamConverter(parser, datasetRegistry);
 		}
 
-		return new MetaIdRefParamConverter(parser, metaStorage.getCentralRegistry());
+		return new MetaIdRefParamConverter(parser, metaStorage);
 	}
 }

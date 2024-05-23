@@ -54,7 +54,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	public void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
+					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry());
 			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), description);
 		}
 	}
@@ -62,7 +62,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		for (RequiredTable requiredTable : tables) {
-			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage().getCentralRegistry());
+			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage());
 			support.getNamespaceStorage().addTable(table);
 		}
 	}

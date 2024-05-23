@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -155,15 +152,6 @@ public class DefaultColumnNameTest {
 	@ParameterizedTest
 	@MethodSource("provideCombinations")
 	void checkCombinations(TestConcept concept, boolean hasCQConceptLabel, String expectedColumnName) {
-
-		doAnswer(invocation -> {
-			final ConceptId id = invocation.getArgument(0);
-			if (!concept.getId().equals(id)) {
-				throw new IllegalStateException("Expected the id " + concept.getId() + " but got " + id);
-			}
-			return concept;
-		}).when(NAMESPACE).resolve(any());
-
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);

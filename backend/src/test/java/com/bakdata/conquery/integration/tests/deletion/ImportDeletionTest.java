@@ -101,8 +101,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().get(importId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {

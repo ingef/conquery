@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.execution;
 
 import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,12 +55,6 @@ public class DefaultLabelTest {
 		STORAGE.openStores(null);
 
 		I18n.init();
-
-		doAnswer((invocation -> {
-			return CONCEPT;
-
-		})).when(NAMESPACE)
-		   .resolve(CONCEPT.getId());
 	}
 
 	@ParameterizedTest
