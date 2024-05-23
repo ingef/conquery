@@ -15,6 +15,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Co
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -66,4 +68,8 @@ public class ConceptColumnSelect extends UniversalSelect {
 		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
 	}
 
+	@Override
+	public SelectConverter<ConceptColumnSelect> createConverter() {
+		return new ConceptColumnSelectConverter();
+	}
 }

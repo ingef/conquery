@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -27,6 +28,7 @@ public interface SqlFunctionProvider {
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
+	String SQL_STRING_COMMA_SEPARATOR = " || ',' || ";
 
 	String getMinDateExpression();
 
@@ -95,6 +97,8 @@ public interface SqlFunctionProvider {
 	 */
 	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
+	Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields);
+
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
 	 * <p>
@@ -135,7 +139,15 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
 
-	Field<Object[]> asArray(List<Field<?>> fields);
+	default Field<String> concat(List<Field<String>> fields) {
+		String concatenated = fields.stream()
+									// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+									// thus concat an empty string
+									.map(field -> DSL.when(field.isNull(), DSL.val("")).otherwise(field))
+									.map(Field::toString)
+									.collect(Collectors.joining(SQL_STRING_COMMA_SEPARATOR));
+		return DSL.field(concatenated, String.class);
+	}
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

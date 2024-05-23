@@ -81,9 +81,9 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		Map<String, ExtractingSqlSelect<Boolean>> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
-		FieldWrapper<Object[]> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
+		FieldWrapper<String> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<String> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelects(rootSelects.values())
@@ -151,7 +151,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 						 ));
 	}
 
-	private static FieldWrapper<Object[]> createFlagSelect(
+	private static FieldWrapper<String> createFlagSelect(
 			String alias,
 			SqlTables connectorTables,
 			SqlFunctionProvider functionProvider,
@@ -160,7 +160,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		Map<String, Field<Boolean>> flagFieldsMap = createRootSelectReferences(connectorTables, flagRootSelectMap);
 
 		// we first aggregate each flag column
-		List<Field<?>> flagAggregations = new ArrayList<>();
+		List<Field<String>> flagAggregations = new ArrayList<>();
 		for (Map.Entry<String, Field<Boolean>> entry : flagFieldsMap.entrySet()) {
 			Field<Boolean> boolColumn = entry.getValue();
 			Condition anyTrue = DSL.max(functionProvider.cast(boolColumn, SQLDataType.INTEGER))
@@ -171,7 +171,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		}
 
 		// and stuff them into 1 array field
-		Field<Object[]> flagsArray = functionProvider.asArray(flagAggregations).as(alias);
+		Field<String> flagsArray = functionProvider.concat(flagAggregations).as(alias);
 		// we also need the references for all flag columns for the flag aggregation of multiple columns
 		String[] requiredColumns = flagFieldsMap.values().stream().map(Field::getName).toArray(String[]::new);
 		return new FieldWrapper<>(flagsArray, requiredColumns);

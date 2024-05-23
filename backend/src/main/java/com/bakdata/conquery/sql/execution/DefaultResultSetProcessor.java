@@ -2,18 +2,20 @@ package com.bakdata.conquery.sql.execution;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Array;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Predicate;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 class DefaultResultSetProcessor implements ResultSetProcessor {
+
+	private static final String COMMA = ",";
 
 	private final SqlCDateSetParser sqlCDateSetParser;
 
@@ -67,15 +69,13 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException {
-		try {
-			Array result = resultSet.getArray(columnIndex);
-			// ResultSet does not provide a way to directly get an array of a specific type (see https://docs.oracle.com/javase/tutorial/jdbc/basics/array.html)
-			String[] casted = (String[]) result.getArray();
-			return Arrays.stream(casted).filter(Objects::nonNull).toList();
+		String arrayExpression = resultSet.getString(columnIndex);
+		if (arrayExpression == null) {
+			return Collections.emptyList();
 		}
-		catch (ClassCastException exception) {
-			throw new SQLException("Expected an array of type String at column index %s in ResultSet %s.".formatted(columnIndex, resultSet));
-		}
+		return Arrays.stream(arrayExpression.split(COMMA))
+					 .filter(Predicate.not(String::isBlank))
+					 .toList();
 	}
 
 	@FunctionalInterface
