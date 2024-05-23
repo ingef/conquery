@@ -53,6 +53,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
+
+	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
@@ -66,7 +71,13 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
-		importManually(conquery, test);
+		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+		TestDataImporter testImporter = conquery.getTestImporter();
+
+		testImporter.importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+		testImporter.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
+		testImporter.importConcepts(conquery, test.getRawConcepts());
+		testImporter.importTableContents(conquery, test.getContent().getTables());
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
@@ -230,13 +241,4 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		}
 	}
 
-	public static void importManually(StandaloneSupport conquery, QueryTest test) throws Exception {
-		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-		TestDataImporter testImporter = conquery.getTestImporter();
-
-		testImporter.importSecondaryIds(conquery, test.getContent().getSecondaryIds());
-		testImporter.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
-		testImporter.importConcepts(conquery, test.getRawConcepts());
-		testImporter.importTableContents(conquery, test.getContent().getTables());
-	}
 }

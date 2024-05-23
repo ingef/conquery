@@ -123,6 +123,7 @@ export default function Diagram({
           font: {
             weight: "normal",
             size: 14,
+            family: "Roboto",
           },
           position: "bottom",
           text: stat.label,
@@ -151,6 +152,7 @@ export default function Diagram({
       font: {
         weight: "normal",
         size: 14,
+        family: "Roboto",
       },
     };
 

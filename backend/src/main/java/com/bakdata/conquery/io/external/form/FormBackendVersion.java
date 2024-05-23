@@ -1,8 +1,10 @@
 package com.bakdata.conquery.io.external.form;
 
-import lombok.Data;
+import java.time.ZonedDateTime;
 
-@Data
-public class FormBackendVersion {
-	private String version;
+
+public record FormBackendVersion(
+		String version,
+		ZonedDateTime buildTime
+) {
 }

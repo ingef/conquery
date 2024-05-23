@@ -1,8 +1,13 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Map;
+
+import com.bakdata.conquery.models.datasets.Dataset;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -11,22 +16,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SqlConnectorConfig {
 
-	public static final String DEFAULT_PRIMARY_COLUMN = "pid";
-
 	boolean enabled;
-
-	private Dialect dialect;
 
 	/**
 	 * Determines if generated SQL should be formatted.
 	 */
 	private boolean withPrettyPrinting;
 
-	private String databaseUsername;
+	/**
+	 * Keys must match the name of existing {@link Dataset}s.
+	 */
+	@Getter(AccessLevel.PRIVATE)
+	private Map<String, DatabaseConfig> databaseConfigs;
 
-	private String databasePassword;
+	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
+		return databaseConfigs.get(dataset.getName());
+	}
 
-	private String jdbcConnectionUrl;
-
-	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
 }

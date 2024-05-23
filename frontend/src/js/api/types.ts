@@ -292,8 +292,11 @@ export interface QueryUploadConfigT {
 }
 
 export interface GetFrontendConfigResponseT {
-  version: string;
-  formBackendVersions: Record<string, string>;
+  versions: {
+    name: string;
+    version: string | null; // probably shouldn't be nullable at all
+    buildTime: string | null; // should be optional, not null
+  }[];
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;

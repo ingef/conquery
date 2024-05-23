@@ -11,6 +11,7 @@ import tw from "tailwind-styled-components";
 import IconButton from "../../../button/IconButton";
 import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
+import { usePrevious } from "../../../common/helpers/usePrevious";
 import FaIcon from "../../../icon/FaIcon";
 import InfoTooltip from "../../../tooltip/InfoTooltip";
 import { DisclosureListField as DisclosureListFieldT } from "../../config-types";
@@ -142,11 +143,6 @@ export const DisclosureListField = ({
     name: field.name,
   });
 
-  const { isOpen, toggleOpen } = useOpenState({
-    onlyOneOpenAtATime: field.onlyOneOpenAtATime,
-    defaultOpen: field.defaultOpen ? fields[0]?.id : undefined,
-  });
-
   useEffect(
     function applyDefaultValue() {
       if (
@@ -163,6 +159,51 @@ export const DisclosureListField = ({
       }
     },
     [fields.length, replace, defaultValue, commonProps],
+  );
+
+  const prevFieldsLength = usePrevious(fields.length);
+
+  const { isOpen, toggleOpen } = useOpenState({
+    onlyOneOpenAtATime: field.onlyOneOpenAtATime,
+    defaultOpen: field.defaultOpen ? fields[0]?.id : undefined,
+  });
+
+  useEffect(
+    function openFirstFieldIfNecessary() {
+      if (prevFieldsLength === 0 && fields.length > 0 && field.defaultOpen) {
+        const id = fields[0]?.id;
+        if (id && !isOpen[id]) {
+          toggleOpen(id);
+        }
+      }
+    },
+    [prevFieldsLength, fields, toggleOpen, isOpen, field.defaultOpen],
+  );
+
+  useEffect(
+    function openLastFieldAfterAppending() {
+      if (
+        exists(prevFieldsLength) &&
+        prevFieldsLength > 0 &&
+        prevFieldsLength < fields.length &&
+        field.defaultOpen
+      ) {
+        commonProps.trigger();
+
+        const id = fields[fields.length - 1]?.id;
+        if (id && !isOpen[id]) {
+          toggleOpen(id);
+        }
+      }
+    },
+    [
+      prevFieldsLength,
+      fields,
+      isOpen,
+      toggleOpen,
+      field.defaultOpen,
+      commonProps,
+    ],
   );
 
   if (field.fields.length === 0) return null;
@@ -187,7 +228,7 @@ export const DisclosureListField = ({
         <TransparentButton
           className="w-full flex items-center justify-center gap-2"
           small
-          onClick={() =>
+          onClick={() => {
             append(
               Object.fromEntries(
                 field.fields.filter(isFormFieldWithValue).map((f) => [
@@ -199,8 +240,8 @@ export const DisclosureListField = ({
                   }),
                 ]),
               ),
-            )
-          }
+            );
+          }}
         >
           <FontAwesomeIcon icon={faAdd} />
           {field.createNewLabel ? field.createNewLabel[locale] : undefined}

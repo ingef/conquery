@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql;
 
-import javax.sql.DataSource;
-
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -12,25 +11,28 @@ import org.jooq.impl.DSL;
 
 public class DslContextFactory {
 
-	public static DSLContext create(SqlConnectorConfig config) {
+	public static DSLContextWrapper create(DatabaseConfig config, SqlConnectorConfig connectorConfig) {
+
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setJdbcUrl(config.getJdbcConnectionUrl());
 		hikariConfig.setUsername(config.getDatabaseUsername());
 		hikariConfig.setPassword(config.getDatabasePassword());
 
-		DataSource dataSource = new HikariDataSource(hikariConfig);
+		HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
 
 		Settings settings = new Settings()
-				.withRenderFormatted(config.isWithPrettyPrinting())
+				.withRenderFormatted(connectorConfig.isWithPrettyPrinting())
 				// enforces all identifiers to be quoted if not explicitly unquoted via DSL.unquotedName()
 				// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
 				.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED);
 
-		return DSL.using(
-				dataSource,
+		DSLContext dslContext = DSL.using(
+				hikariDataSource,
 				config.getDialect().getJooqDialect(),
 				settings
 		);
+
+		return new DSLContextWrapper(dslContext, hikariDataSource);
 	}
 
 }
