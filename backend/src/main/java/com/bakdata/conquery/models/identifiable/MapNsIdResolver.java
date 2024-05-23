@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.NonNull;
 
 /**
- * Central Registry used to wire up incoming ids with already established ids.
+ * Helper class to wrap a map into a resolver.
  *
  * @param injections This map is intentionally NOT an IdMap as it allows wiring up mismatched ids.
  */
