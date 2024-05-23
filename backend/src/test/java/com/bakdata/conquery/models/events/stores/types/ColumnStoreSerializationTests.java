@@ -121,7 +121,6 @@ public class ColumnStoreSerializationTests {
 		SerializationTestUtil
 				.forType(ColumnStore.class)
 				.objectMappers(shardInternalMapper)
-				.idResolver(STORAGE)
 				.test(type);
 	}
 }

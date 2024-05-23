@@ -274,7 +274,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(Table.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.idResolver(namespaceStorage)
 				.test(table);
 	}
 
@@ -290,7 +289,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(TreeConcept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.idResolver(namespaceStorage)
 				.test(concept);
 	}
 
@@ -344,7 +342,6 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .idResolver(namespaceStorage)
 							 .injectables(metaStorage)
 							 .test(execution);
 	}
@@ -441,7 +438,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(CQConcept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.idResolver(namespaceStorage)
 				.test(cqConcept);
 	}
 
@@ -586,7 +582,6 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil.forType(CBlock.class)
 							 .objectMappers(getShardInternalMapper())
-							 .idResolver(workerStorage)
 							 .test(cBlock);
 	}
 
