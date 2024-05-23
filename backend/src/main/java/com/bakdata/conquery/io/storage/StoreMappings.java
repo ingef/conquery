@@ -80,8 +80,8 @@ public enum StoreMappings {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
-		return new DirectIdentifiableStore<>(baseStore);
+	public static <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
+		return new IdentifiableStore<>(baseStore);
 	}
 
 	/**
