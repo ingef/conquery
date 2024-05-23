@@ -120,6 +120,7 @@ public class WorkerStorage extends NamespacedStorage {
 		this.worker.update(worker);
 	}
 
+	@Override
 	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
 		if (id instanceof BucketId castId) {
 			return (VALUE) getBucket(castId);
