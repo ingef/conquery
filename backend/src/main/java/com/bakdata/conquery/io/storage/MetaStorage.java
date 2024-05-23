@@ -18,6 +18,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
 
+	private LoadingCache<Id<?>, Identifiable<?>> cache;
+
 	public void openStores(ObjectMapper mapper) {
 		if (mapper != null) {
 			this.injectInto(mapper);
@@ -45,6 +49,9 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		// Executions depend on users
 		executions = storageFactory.createExecutionsStore("meta", mapper);
 		formConfigs = storageFactory.createFormConfigStore("meta", mapper);
+
+		cache = Caffeine.from(storageFactory.getCacheSpec())
+						.build(this::<Id, Identifiable<?>>getFromStorage);
 
 	}
 
@@ -82,15 +89,18 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return executions.getAll();
 	}
 
-	public void updateExecution(ManagedExecution query) {
+	public synchronized void updateExecution(ManagedExecution query) {
+		cache.invalidate(query.getId());
 		executions.update(query);
 	}
 
-	public void removeExecution(ManagedExecutionId id) {
+	public synchronized void removeExecution(ManagedExecutionId id) {
+		cache.invalidate(id);
 		executions.remove(id);
 	}
 
-	public void addGroup(Group group) {
+	public synchronized void addGroup(Group group) {
+		cache.invalidate(group.getId());
 		log.info("Adding group = {}", group.getId());
 		authGroup.add(group);
 	}
@@ -101,21 +111,24 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return group;
 	}
 
-	public Collection<Group> getAllGroups() {
+	public synchronized Collection<Group> getAllGroups() {
 		return authGroup.getAll();
 	}
 
 	public void removeGroup(GroupId id) {
+		cache.invalidate(id);
 		log.info("Removing group = {}", id);
 		authGroup.remove(id);
 	}
 
-	public void updateGroup(Group group) {
+	public synchronized void updateGroup(Group group) {
+		cache.invalidate(group.getId());
 		log.info("Updating group = {}", group.getId());
 		authGroup.update(group);
 	}
 
-	public void addUser(User user) {
+	public synchronized void addUser(User user) {
+		cache.invalidate(user.getId());
 		log.info("Adding user = {}", user.getId());
 		authUser.add(user);
 	}
@@ -130,17 +143,20 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return authUser.getAll();
 	}
 
-	public void removeUser(UserId userId) {
+	public synchronized void removeUser(UserId userId) {
+		cache.invalidate(userId);
 		log.info("Removing user = {}", userId);
 		authUser.remove(userId);
 	}
 
-	public void updateUser(User user) {
+	public synchronized void updateUser(User user) {
+		cache.invalidate(user.getId());
 		log.info("Updating user = {}", user.getId());
 		authUser.update(user);
 	}
 
-	public void addRole(Role role) {
+	public synchronized void addRole(Role role) {
+		cache.invalidate(role.getId());
 		authRole.add(role);
 	}
 
@@ -154,12 +170,14 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return authRole.getAll();
 	}
 
-	public void removeRole(RoleId roleId) {
+	public synchronized void removeRole(RoleId roleId) {
+		cache.invalidate(roleId);
 		log.info("Removing role = {}", roleId);
 		authRole.remove(roleId);
 	}
 
-	public void updateRole(Role role) {
+	public synchronized void updateRole(Role role) {
+		cache.invalidate(role.getId());
 		log.info("Updating role = {}", role.getId());
 		authRole.update(role);
 	}
@@ -172,17 +190,20 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return formConfigs.getAll();
 	}
 
-	public void removeFormConfig(FormConfigId id) {
+	public synchronized void removeFormConfig(FormConfigId id) {
+		cache.invalidate(id);
 		formConfigs.remove(id);
 	}
 
 	@SneakyThrows
-	public void updateFormConfig(FormConfig formConfig) {
+	public synchronized void updateFormConfig(FormConfig formConfig) {
+		cache.invalidate(formConfig.getId());
 		formConfigs.update(formConfig);
 	}
 
 	@SneakyThrows
-	public void addFormConfig(FormConfig formConfig) {
+	public synchronized void addFormConfig(FormConfig formConfig) {
+		cache.invalidate(formConfig.getId());
 		formConfigs.add(formConfig);
 	}
 
@@ -193,6 +214,10 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		return (VALUE) cache.get(id);
+	}
+
+	protected <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof ManagedExecutionId executionId) {
 			return (VALUE) getExecution(executionId);
 		}

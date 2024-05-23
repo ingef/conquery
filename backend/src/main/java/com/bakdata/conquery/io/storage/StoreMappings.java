@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -82,13 +81,6 @@ public enum StoreMappings {
 	 */
 	public static <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
 		return new IdentifiableStore<>(baseStore);
-	}
-
-	/**
-	 * General Key-Value store with caching.
-	 */
-	public static <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
-		return new CachedStore<>(baseStore);
 	}
 
 	/**

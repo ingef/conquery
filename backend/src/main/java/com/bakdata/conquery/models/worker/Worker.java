@@ -70,7 +70,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 
 		storage.openStores(persistenceMapper);
-		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -99,7 +98,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setEntityBucketSize(entityBucketSize);
 
 		workerStorage.openStores(persistenceMapper);
-		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();

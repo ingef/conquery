@@ -56,14 +56,17 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
+import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jetbrains.exodus.env.Environment;
 import lombok.AllArgsConstructor;
@@ -129,6 +132,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	/**
 	 * Number of threads reading from XoduStore.
+	 *
 	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
 	 */
 	@Min(1)
@@ -144,7 +148,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private ExecutorService readerExecutorService;
 
 	public ExecutorService getReaderExecutorService() {
-		if (readerExecutorService == null){
+		if (readerExecutorService == null) {
 			readerExecutorService = new ThreadPoolExecutor(
 					1, getReaderWorkers(),
 					5, TimeUnit.MINUTES,
@@ -178,6 +182,12 @@ public class XodusStoreFactory implements StoreFactory {
 	 */
 	private boolean loadEnvironmentWithMissingStores;
 
+	/**
+	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeinSpec</a>
+	 */
+	@NotEmpty
+	private String caffeineSpec = "maximumSize=0";
+
 	@JsonIgnore
 	private transient Validator validator;
 
@@ -185,6 +195,19 @@ public class XodusStoreFactory implements StoreFactory {
 	private final transient Multimap<Environment, XodusStore>
 			openStoresInEnv =
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
+
+	@JsonIgnore
+	@ValidationMethod(message = "cannot be parsed")
+	public boolean isValidCaffeineSpec() {
+		try {
+			CaffeineSpec.parse(caffeineSpec);
+			return true;
+		}
+		catch (Exception e) {
+			log.error("Unable to parse caffeine spec", e);
+			return false;
+		}
+	}
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
@@ -274,8 +297,8 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
+	public Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper);
 	}
 
 	@Override
@@ -378,7 +401,6 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 
-
 	private Environment findEnvironment(String pathName) {
 		final File path = getStorageDir(pathName);
 		return registry.findOrCreateEnvironment(path, getXodus());
@@ -406,7 +428,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private void removeStore(XodusStore store) {
 		final Environment env = store.getEnvironment();
-		synchronized (openStoresInEnv){
+		synchronized (openStoresInEnv) {
 			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 
 			stores.remove(store);
@@ -422,9 +444,9 @@ public class XodusStoreFactory implements StoreFactory {
 	private void removeEnvironment(Environment env) {
 		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", env.getLocation());
 
-		final List<String> xodusStore= env.computeInReadonlyTransaction(env::getAllStoreNames);
+		final List<String> xodusStore = env.computeInReadonlyTransaction(env::getAllStoreNames);
 
-		if (!xodusStore.isEmpty()){
+		if (!xodusStore.isEmpty()) {
 			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);
 		}
 
@@ -442,7 +464,7 @@ public class XodusStoreFactory implements StoreFactory {
 		final StoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
 		synchronized (openStoresInEnv) {
 
-			if(openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))){
+			if (openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))) {
 				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
 			}
 
@@ -450,19 +472,22 @@ public class XodusStoreFactory implements StoreFactory {
 
 			openStoresInEnv.put(environment, store);
 
-			return new CachedStore<>(
-					new SerializingStore<>(
-							store,
-							validator,
-							objectMapper,
-							storeInfo.getKeyType(),
-							storeInfo.getValueType(),
-							isValidateOnWrite(),
-							isRemoveUnreadableFromStore(),
-							getUnreadableDataDumpDirectory(),
-							getReaderExecutorService()
-					));
+			return new SerializingStore<>(
+					store,
+					validator,
+					objectMapper,
+					storeInfo.getKeyType(),
+					storeInfo.getValueType(),
+					isValidateOnWrite(),
+					isRemoveUnreadableFromStore(),
+					getUnreadableDataDumpDirectory(),
+					getReaderExecutorService()
+			);
 		}
 	}
 
+	@Override
+	public CaffeineSpec getCacheSpec() {
+		return CaffeineSpec.parse(getCaffeineSpec());
+	}
 }

@@ -114,7 +114,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadNamespaces();
 
-		loadMetaStorage();
+		openMetaStorage();
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -223,12 +223,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
 	}
 
-	private void loadMetaStorage() {
+	private void openMetaStorage() {
 		log.info("Opening MetaStorage");
 		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
-		log.info("Loading MetaStorage");
-		getStorage().loadData();
-		log.info("MetaStorage loaded {}", getStorage());
 	}
 
 	@SneakyThrows(InterruptedException.class)

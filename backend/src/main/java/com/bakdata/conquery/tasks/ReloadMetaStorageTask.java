@@ -36,7 +36,6 @@ public class ReloadMetaStorageTask extends Task {
 					  allUsers, allGroups, allRoles, allExecutions, allFormConfigs);
 		}
 
-		storage.loadData();
 		output.println("DONE reloading MetaStorage within %s.".formatted(timer.elapsed()));
 
 		{

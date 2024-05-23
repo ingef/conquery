@@ -5,8 +5,8 @@ import java.util.Collection;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -27,8 +27,10 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -80,5 +82,10 @@ public interface StoreFactory {
 
 	SingletonStore<PreviewConfig> createPreviewStore(String pathName, ObjectMapper objectMapper);
 
-	CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
+	Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
+
+	@JsonIgnore
+	default CaffeineSpec getCacheSpec() {
+		return CaffeineSpec.parse("maximumSize=0");
+	}
 }

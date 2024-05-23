@@ -62,7 +62,6 @@ public abstract class AbstractSerializationTest {
 		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);
 
 		metaStorage.openStores(managerInternalMapper);
-		metaStorage.loadData();
 
 		namespaceStorage.openStores(managerInternalMapper);
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -33,7 +32,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Integer> entity2Bucket;
+	protected Store<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName, validator);
@@ -185,7 +184,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	@Override
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof InternToExternMapperId castId) {
 			return (VALUE) getInternToExternMapper(castId);
 		}
@@ -193,6 +192,6 @@ public class NamespaceStorage extends NamespacedStorage {
 			return (VALUE) getSearchIndex(castId);
 		}
 
-		return super.get(id);
+		return super.getFromStorage(id);
 	}
 }

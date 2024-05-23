@@ -32,6 +32,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -39,6 +42,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
@@ -65,6 +69,8 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
+	private LoadingCache<Id<?>, Identifiable<?>> cache;
+
 	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
@@ -87,6 +93,17 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		decorateTableStore(tables);
 		decorateImportStore(imports);
 		decorateConceptStore(concepts);
+
+
+		cache = Caffeine.from(storageFactory.getCacheSpec())
+						.build(new CacheLoader<Id<?>, Identifiable<?>>() {
+
+							@Nullable
+							@Override
+							public Identifiable<?> load(Id<?> key) throws Exception {
+								return getFromStorage((Id & NamespacedId) key);
+							}
+						});
 	}
 
 	@Override
@@ -214,7 +231,12 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		return concepts.getAll();
 	}
 
+
 	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+		return (VALUE) cache.get(id);
+	}
+
+	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof DatasetId castId) {
 			final Dataset dataset = getDataset();
 			if (dataset.getId().equals(castId)) {

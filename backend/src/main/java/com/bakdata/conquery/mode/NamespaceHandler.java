@@ -40,9 +40,8 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.forEach(i -> i.injectInto(communicationMapper));
 		injectables.forEach(i -> i.injectInto(preprocessMapper));
 
-		// Open and load the stores
+		// Open stores
 		storage.openStores(persistenceMapper);
-		storage.loadData();
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 

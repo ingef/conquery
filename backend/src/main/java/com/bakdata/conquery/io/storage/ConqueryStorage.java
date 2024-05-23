@@ -22,12 +22,12 @@ public abstract class ConqueryStorage implements Closeable {
 	 * @param objectMapper (optional) needed when the {@link com.bakdata.conquery.models.config.StoreFactory} deserializes objects
 	 */
 	public abstract void openStores(ObjectMapper objectMapper);
-	
-	public final void loadData(){
-		for (ManagedStore store : getStores()) {
-			store.loadData();
-		}
-	}
+
+	//	public final void loadData(){
+	//		for (ManagedStore store : getStores()) {
+	//			store.loadData();
+	//		}
+	//	}
 
 	/**
 	 * Delete the storage's contents.

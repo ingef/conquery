@@ -65,7 +65,6 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
         datasetStorage.openStores(persistenceMapper);
-        datasetStorage.loadData();
         datasetStorage.updateDataset(dataset);
         datasetStorage.updateIdMapping(new EntityIdMap());
         datasetStorage.setPreviewConfig(new PreviewConfig());

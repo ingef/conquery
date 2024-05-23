@@ -121,13 +121,13 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	@Override
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id) {
+	protected <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof BucketId castId) {
 			return (VALUE) getBucket(castId);
 		}
 		if (id instanceof CBlockId castId) {
 			return (VALUE) getCBlock(castId);
 		}
-		return super.get(id);
+		return super.getFromStorage(id);
 	}
 }

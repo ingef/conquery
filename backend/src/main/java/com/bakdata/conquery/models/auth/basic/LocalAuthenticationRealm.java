@@ -5,15 +5,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.auth.PasswordHashCredential;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -31,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
 import io.dropwizard.util.Duration;
+import jakarta.validation.Validator;
 import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
@@ -101,7 +99,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		// Open/create the database/store
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = StoreMappings.cached(
+		passwordStore =
 				new SerializingStore<>(
 						new XodusStore(
 								passwordEnvironment,
@@ -117,7 +115,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						false,
 						true,
 						null, Executors.newSingleThreadExecutor()
-				));
+				);
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
