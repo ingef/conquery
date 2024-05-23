@@ -9,13 +9,18 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+/**
+ * Interface for classes that can resolve an {@link NamespacedId} to a concrete object.
+ */
 public interface NsIdResolver extends Injectable {
 
 	/**
-	 * @param id
-	 * @param <ID>
-	 * @param <VALUE>
-	 * @return
+	 * Return the object identified by the given id
+	 * @param id reference to an object
+	 * @param <ID> id type
+	 * @param <VALUE> value type of the resolved object
+	 * @return the object or null if no object could be resolved. If the id type is not supported
+	 * throws a IllegalArgumentException
 	 */
 	<ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<?>> VALUE get(ID id);
 
