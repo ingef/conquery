@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -45,19 +44,15 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	@Getter
 	private final StoreFactory storageFactory;
 
-	@Getter
-	private final Validator validator;
-
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Table> tables;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
-		this.validator = validator;
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
