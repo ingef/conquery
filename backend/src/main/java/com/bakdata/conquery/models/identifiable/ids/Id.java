@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -80,4 +81,6 @@ public abstract class Id<TYPE> {
 	public TYPE resolve() {
 		return idResolver.get();
 	}
+
+	public abstract void collectIds(Collection<? super Id<?>> collect);
 }

@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,6 +23,12 @@ public class SearchIndexId extends Id<SearchIndex> implements NamespacedId {
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(name);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
 	}
 
 

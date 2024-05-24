@@ -18,6 +18,7 @@ import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import io.dropwizard.views.common.ViewRenderExceptionMapper;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.validation.internal.ValidationExceptionMapper;
 
 @UtilityClass
 public class RESTServer {
@@ -37,6 +38,7 @@ public class RESTServer {
 		// default Dropwizard's exception mappers
 		jersey.register(new ConqueryErrorExceptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);
+		jersey.register(ValidationExceptionMapper.class);
 		jersey.register(new LoggingExceptionMapper<Throwable>() {});
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin

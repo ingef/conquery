@@ -1,15 +1,13 @@
 package com.bakdata.conquery.models.identifiable;
 
+import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,20 +38,11 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Override
 	public ID getId() {
 		if (cachedId == null) {
-			cachedId = IdUtil.intern(createId());
-
+			final ID intern = IdUtil.intern(createId());
 			// Set resolver
-			if (cachedId instanceof NamespacedId) {
-				Preconditions.checkState(nsIdResolver != null);
-				cachedId.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) cachedId));
-			}
-			else if (cachedId instanceof WorkerId) {
-				// TODO WorkerIds are not resolved yet
-			}
-			else {
-				Preconditions.checkState(metaStorage != null);
-				cachedId.setIdResolver(() -> metaStorage.get(cachedId));
-			}
+			IdDeserializer.setResolver(intern, metaStorage, nsIdResolver);
+
+			cachedId = intern;
 		}
 		return cachedId;
 	}

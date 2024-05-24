@@ -108,7 +108,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		for (Column column : getRequiredColumns()) {
 
-			if (column == null || column.getTable() == connector.getTable()) {
+			if (column == null || column.getTable().equals(connector.getTable())) {
 				continue;
 			}
 

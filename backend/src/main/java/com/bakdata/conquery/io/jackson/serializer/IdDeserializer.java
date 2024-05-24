@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -46,20 +47,28 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 		try {
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
-			final Class<?> activeView = ctxt.getActiveView();
-			if (!isTestMode(ctxt, activeView)) {
-				if (id instanceof NamespacedId namespacedId) {
 
-					id.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) namespacedId));
-				}
-				else {
-					id.setIdResolver(() -> metaStorage.get(id));
-				}
-			}
+			setResolver(id, metaStorage, nsIdResolver);
+
 			return id;
 		}
 		catch (Exception e) {
 			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
+		}
+	}
+
+	public static void setResolver(Id<?> id, MetaStorage metaStorage, NsIdResolver nsIdResolver) {
+		// Set resolvers in this id and subIds
+		final HashSet<Id<?>> ids = new HashSet<>();
+		id.collectIds(ids);
+		for (Id<?> subId : ids) {
+			if (subId instanceof NamespacedId && nsIdResolver != null) {
+				subId.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) subId));
+			}
+			else if (metaStorage != null) {
+				subId.setIdResolver(() -> metaStorage.get(subId));
+			}
+			// TODO Handle special Ids such as WorkerId, TableImportDescriptorId ?
 		}
 	}
 

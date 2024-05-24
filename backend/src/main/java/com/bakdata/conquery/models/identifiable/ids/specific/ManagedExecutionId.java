@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,12 @@ public class ManagedExecutionId extends Id<ManagedExecution> {
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(execution);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ManagedExecutionId> {
