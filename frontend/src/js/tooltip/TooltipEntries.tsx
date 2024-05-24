@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import {
   faArrowsLeftRightToLine,
   faHashtag,
+  faMicroscope,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
@@ -75,11 +76,12 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
+  idLabel?: string;
 }
 
 const TooltipEntries = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange } = props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -101,6 +103,15 @@ const TooltipEntries = (props: Props) => {
 
   return (
     <Root {...props}>
+      {idLabel && (
+        <>
+          <StyledFaIcon icon={faMicroscope} />
+          <Info>
+            <Date>{idLabel}</Date>
+            <Text zero={isZero}>{t("queryEditor.secondaryId")}</Text>
+          </Info>
+        </>
+      )}
       <StyledFaIcon icon={faHashtag} />
       <Info>
         <Number zero={isZero}>

@@ -6,18 +6,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.ws.rs.client.Client;
-
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
+import com.bakdata.conquery.apiv1.frontend.VersionContainer;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
 import com.bakdata.conquery.io.external.form.ExternalFormMixin;
+import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
@@ -33,6 +29,11 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableCollection;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.client.Client;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -112,18 +113,20 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	private void updateVersion(ExternalFormBackendApi externalApi) {
 
 		try {
-			final String version = externalApi.getVersion();
-			final String oldVersion = VersionInfo.INSTANCE.setFormBackendVersion(getId(), version);
-			if (!version.equals(oldVersion)) {
-				log.info("Form Backend '{}' version update: {} -> {}", getId(), oldVersion, version);
+			final FormBackendVersion versionInfo = externalApi.getVersion();
+			final VersionContainer
+					oldVersion =
+					VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
+			if (!versionInfo.equals(oldVersion)) {
+				log.info("Form Backend '{}' versionInfo update: {} -> {}", getId(), oldVersion, versionInfo);
 			}
 		}
 		catch (Exception e) {
 			log.warn("Unable to retrieve version from form backend '{}'. Enable trace logging for more info", getId(), (Exception) (log.isTraceEnabled()
 																																	? e
 																																	: null));
-			// Set place holder
-			VersionInfo.INSTANCE.setFormBackendVersion(getId(), "no-version-available");
+
+			VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), null, null));
 		}
 
 	}

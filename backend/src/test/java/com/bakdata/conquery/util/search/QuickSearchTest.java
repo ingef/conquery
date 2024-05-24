@@ -24,7 +24,16 @@ class QuickSearchTest {
 
 		assertThat(results)
 				.describedAs("Query for %s".formatted(query))
-				.isEqualTo(List.of("Anaconda", "Condar", "Anaxonds", "Condor", "Honda", "Analysis", "Ananas", "Canada", "London"));
+				.isEqualTo(List.of("Anaconda",	// Full match
+								   "Condar",	// 3 trigrams
+								   "Condor",	// 2 trigrams
+								   "Honda",		// 2 trigrams
+								   "Anaxonds",	// 1 trigram
+								   "London",	// 1 trigram
+								   "Ananas",	// 1 trigram
+								   "Analysis",	// 1 trigram
+								   "Canada"		// 1 trigram
+				));
 
 	}
 

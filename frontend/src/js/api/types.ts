@@ -292,8 +292,11 @@ export interface QueryUploadConfigT {
 }
 
 export interface GetFrontendConfigResponseT {
-  version: string;
-  formBackendVersions: Record<string, string>;
+  versions: {
+    name: string;
+    version: string | null; // probably shouldn't be nullable at all
+    buildTime: string | null; // should be optional, not null
+  }[];
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
@@ -602,7 +605,6 @@ export type BarStatistics = BaseStatistics & {
 export type DateStatistics = BaseStatistics & {
   chart: "DATES";
   type: "DATE_RANGE" | "DATE";
-  quarterCounts: Record<string, number>;
   monthCounts: Record<string, number>;
   span: {
     min: string; // format "yyyy-MM-dd"

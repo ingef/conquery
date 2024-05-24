@@ -18,10 +18,9 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
@@ -36,6 +35,7 @@ import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -70,14 +70,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 															.flatMap(cqTable -> convertCqTable(pathGenerator, cqConcept, cqTable, context).stream())
 															.toList();
 
-		QueryStep lastConceptStep;
-		if (convertedConnectorTables.size() == 1) {
-			lastConceptStep = finishConceptConversion(convertedConnectorTables.get(0), cqConcept, pathGenerator, context);
-		}
-		else {
-			QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, LogicalOperation.OR, DateAggregationAction.MERGE, context);
-			lastConceptStep = finishConceptConversion(joinedStep, cqConcept, pathGenerator, context);
-		}
+		QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedConnectorTables, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.MERGE, context);
+		QueryStep lastConceptStep = finishConceptConversion(joinedStep, cqConcept, pathGenerator, context);
 		return context.withQueryStep(lastConceptStep);
 	}
 
@@ -123,11 +117,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Selects finalSelects = Selects.builder()
 									  .ids(predecessorSelects.getIds())
+									  .stratificationDate(predecessorSelects.getStratificationDate())
 									  .validityDate(predecessorSelects.getValidityDate())
 									  .sqlSelects(allConceptSelects)
 									  .build();
 
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
@@ -149,16 +144,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, conceptConnectorLabel, conversionContext);
 		ConceptConversionTables connectorTables = pathGenerator.createConnectorTables(cqConcept, cqTable, conceptConnectorLabel);
 
-		// validity date
-		IntervalPackingContext intervalPackingContext = null;
-		if (connectorTables.isWithIntervalPacking()) {
-			intervalPackingContext = IntervalPackingContext.builder()
-														   .ids(ids)
-														   .daterange(tablesValidityDate.get())
-														   .tables(connectorTables)
-														   .build();
-		}
-
 		// convert filters
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 		cqTable.getFilters().stream()
@@ -179,14 +164,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .sqlSelects(allSelectsForTable)
 							 .sqlFilters(allSqlFiltersForTable)
 							 .connectorTables(connectorTables)
-							 .intervalPackingContext(intervalPackingContext)
 							 .conversionContext(conversionContext)
 							 .build();
 	}
 
 	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
-		Field<Object> primaryColumn = DSL.field(DSL.name(conversionContext.getConfig().getPrimaryColumn())).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -205,7 +189,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				)
 		);
 
-		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName())).as(SharedAliases.SECONDARY_ID.getAlias());
+		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName()));
 		return new SqlIdColumns(primaryColumn, secondaryId);
 	}
 
@@ -213,12 +197,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (Objects.isNull(cqTable.findValidityDate())) {
 			return Optional.empty();
 		}
+		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		ColumnDateRange validityDate;
 		if (context.getDateRestrictionRange() != null) {
-			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, context.getDateRestrictionRange(), connectorLabel);
+			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate(), context.getDateRestrictionRange()).asValidityDateRange(connectorLabel);
 		}
 		else {
-			validityDate = context.getSqlDialect().getFunctionProvider().forTablesValidityDate(cqTable, connectorLabel);
+			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate()).asValidityDateRange(connectorLabel);
 		}
 		return Optional.of(validityDate);
 	}
@@ -277,8 +262,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		ColumnDateRange dateRestriction = functionProvider.forDateRestriction(context.getDateRestrictionRange())
-														  .asDateRestrictionRange();
+		ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
 																.map(FieldWrapper::new)

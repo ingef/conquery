@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.USERS_PATH_ELEMEN
 import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.common.View;
@@ -12,6 +13,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +24,13 @@ import lombok.RequiredArgsConstructor;
 public class UserUIResource {
 
 	protected final UIProcessor uiProcessor;
+	@Context
+	private ContainerRequestContext requestContext;
 
 	@GET
 	public View getUsers() {
-		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getAllUsers());
+		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
+																																			.getAllUsers());
 	}
 
 	/**
@@ -36,6 +42,6 @@ public class UserUIResource {
 	@Path("{" + USER_ID + "}")
 	@GET
 	public View getUser(@PathParam(USER_ID) User user) {
-		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(), uiProcessor.getUserContent(user));
+		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getUserContent(user));
 	}
 }

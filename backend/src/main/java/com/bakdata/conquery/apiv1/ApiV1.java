@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -63,8 +63,8 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		jersey.register(DefaultAuthFilter.class);
-		DefaultAuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
+		jersey.register(AuthFilter.class);
+		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
 
 		jersey.register(IdParamConverter.Provider.INSTANCE);

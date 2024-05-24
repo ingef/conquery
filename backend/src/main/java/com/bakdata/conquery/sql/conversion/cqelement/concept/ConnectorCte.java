@@ -18,12 +18,12 @@ abstract class ConnectorCte {
 		String cteName = tableContext.getConnectorTables().cteName(cteStep());
 		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(tableContext).cteName(cteName);
 
-		// only preprocessing has no previously converted step
+		// only preprocessing has no predecessor
 		if (previous.isEmpty()) {
 			queryStepBuilder.predecessors(List.of());
 		}
 		// if interval packing takes place, fromTable and predecessors of the final concept step are already set
-		else if (queryStepBuilder.build().getFromTable() == null && queryStepBuilder.build().getPredecessors().isEmpty()) {
+		else if (queryStepBuilder.build().getFromTables().isEmpty() && queryStepBuilder.build().getPredecessors().isEmpty()) {
 			queryStepBuilder.fromTable(QueryStep.toTableLike(previous.get().getCteName()))
 							.predecessors(List.of(previous.get()));
 		}

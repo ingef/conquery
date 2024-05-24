@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -32,6 +31,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import org.jooq.Condition;
 
 @Getter
 @Setter
@@ -67,12 +68,17 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConceptConversionTables tables) {
-		FilterContext<VALUE> filterContext = new FilterContext<>(ids, value, context, tables);
+		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
 		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
 		return sqlFilters;
+	}
+
+	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
+		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
+		return filter.convertForTableExport(filterContext);
 	}
 
 	@NoArgsConstructor

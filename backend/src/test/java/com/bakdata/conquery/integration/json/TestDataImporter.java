@@ -27,6 +27,11 @@ public interface TestDataImporter {
 
 	void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception;
 
+	default void waitUntilDone(StandaloneSupport support, CheckedRunnable<?> runnable) {
+		runnable.run();
+		support.waitUntilWorkDone();
+	}
+
 	@FunctionalInterface
 	interface CheckedRunnable<E extends Exception> extends Runnable {
 

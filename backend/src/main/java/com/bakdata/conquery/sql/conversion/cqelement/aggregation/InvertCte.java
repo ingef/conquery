@@ -42,7 +42,7 @@ class InvertCte extends DateAggregationCte {
 		SqlIdColumns ids = context.getIds();
 		SqlIdColumns leftIds = ids.qualify(ROWS_LEFT_TABLE_NAME);
 		SqlIdColumns rightIds = ids.qualify(ROWS_RIGHT_TABLE_NAME);
-		SqlIdColumns coalescedIds = SqlIdColumns.coalesce(List.of(leftIds, rightIds));
+		SqlIdColumns coalescedIds = leftIds.coalesce(List.of(rightIds));
 
 		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedIds, context);
 		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftIds, rightIds, rowNumberStep);
@@ -74,7 +74,7 @@ class InvertCte extends DateAggregationCte {
 					  .build();
 	}
 
-	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftPrimaryColumn, SqlIdColumns rightPrimaryColumn, QueryStep rowNumberStep) {
+	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftIds, SqlIdColumns rightIds, QueryStep rowNumberStep) {
 
 		Field<Integer> leftRowNumber = DSL.field(DSL.name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
 										  .plus(1);
@@ -82,7 +82,7 @@ class InvertCte extends DateAggregationCte {
 
 		Condition[] joinConditions = Stream.concat(
 												   Stream.of(leftRowNumber.eq(rightRowNumber)),
-												   SqlIdColumns.join(leftPrimaryColumn, rightPrimaryColumn).stream()
+												   leftIds.join(rightIds).stream()
 										   )
 										   .toArray(Condition[]::new);
 

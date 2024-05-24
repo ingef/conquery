@@ -1,4 +1,4 @@
-<#macro html title>
+<#macro html title >
 	<!doctype html>
 	<html lang="en">
 
@@ -16,6 +16,13 @@
 		<script src="/assets/popper-1.12.9/popper.min.js"></script>
 		<script src="/assets/bootstrap-4.3.1/js/bootstrap.min.js"></script>
 		<script src="/assets/custom/js/script.js"></script>
+
+
+		<script>
+			<#-- Global varaible for csrf used by rest-method  -->
+			var csrf_token = "${ctx.csrfToken}"
+		</script>
+
 		<title>${title}</title>
 	</head>
 	<#nested />
