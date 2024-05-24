@@ -67,8 +67,8 @@ public class StringStoreString implements StringStore {
 	}
 
 	@Override
-	public <T extends ColumnStore> T createDescription() {
-		return null;
+	public StringStoreString createDescription() {
+		return ColumnStore.emptyCopy(this);
 	}
 
 	@Override
