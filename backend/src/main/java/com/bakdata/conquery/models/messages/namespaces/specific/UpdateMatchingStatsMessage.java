@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Functions;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class UpdateMatchingStatsMessage extends WorkerMessage {
 
+	@Getter
 	private final Collection<ConceptId> concepts;
 
 
