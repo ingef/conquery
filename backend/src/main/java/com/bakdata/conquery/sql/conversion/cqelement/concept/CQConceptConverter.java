@@ -171,7 +171,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
-		final Table table = cqTable.getConnector().resolve().getTable();
+		final Table table = cqTable.getConnector().resolve().getResolvedTable();
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()

@@ -103,7 +103,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 									   Map.of(
 											   DATASET, conquery.getDataset().getId(),
 											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getTable().getId(),
+											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
 									   )
 							   );

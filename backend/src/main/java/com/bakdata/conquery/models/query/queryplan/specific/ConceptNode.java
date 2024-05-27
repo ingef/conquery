@@ -68,7 +68,7 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		final Connector connector = table.getConnector().resolve();
-		tableActive = connector.getTable().equals(currentTable)
+		tableActive = connector.getResolvedTable().equals(currentTable)
 					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 		if(tableActive) {
 			super.nextTable(ctx.withConnector(connector), currentTable);
@@ -139,7 +139,7 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getConnector().resolve().getTable());
+		requiredTables.add(table.getConnector().resolve().getResolvedTable());
 	}
 
 }

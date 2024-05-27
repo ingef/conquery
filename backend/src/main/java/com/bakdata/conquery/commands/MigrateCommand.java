@@ -53,7 +53,7 @@ import org.jetbrains.annotations.NotNull;
  * }
  * </code>
  * <p>
- * The migration will call the returned method on all values in all stores, the returned {@link Tuple} will be used to insert the value into the store. The first value should contain a {@link String} as key, and and {@link ObjectNode} as value to be written into the store.
+ * The migration will call the returned method on all values in all stores, the returned {@link Tuple} will be used to insert the value into the store. The first value should contain a {@link String} as key, and {@link ObjectNode} as value to be written into the store.
  * <p>
  * Returning null effectively deletes the processed value.
  * <p>

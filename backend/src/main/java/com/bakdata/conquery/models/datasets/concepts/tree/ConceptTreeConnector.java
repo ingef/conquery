@@ -54,7 +54,7 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override @JsonIgnore
-	public Table getTable() {
+	public Table getResolvedTable() {
 		if(column != null){
 			return column.getTable().resolve();
 		}

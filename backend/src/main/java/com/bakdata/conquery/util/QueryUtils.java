@@ -175,7 +175,7 @@ public class QueryUtils {
 				}
 
 				for (Connector connector : cqConcept.getConcept().getConnectors()) {
-					for (Column column : connector.getTable().getColumns()) {
+					for (Column column : connector.getResolvedTable().getColumns()) {
 						if(column.getSecondaryId() == null){
 							continue;
 						}

@@ -25,7 +25,7 @@ public class EventDateUnionSelect extends UniversalSelect {
 		return new EventDateUnionAggregator(getHolder().findConcept()
 													   .getConnectors()
 													   .stream()
-													   .map(Connector::getTable)
+													   .map(Connector::getResolvedTable)
 													   .collect(Collectors.toSet()));
 	}
 

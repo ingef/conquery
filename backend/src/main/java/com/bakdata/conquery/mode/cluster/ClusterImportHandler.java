@@ -48,7 +48,7 @@ class ClusterImportHandler implements ImportHandler {
 		allConcepts
 				.map(Concept::getConnectors)
 				.flatMap(List::stream)
-				.filter(connector -> connector.getTable().equals(table))
+				.filter(connector -> connector.getResolvedTable().equals(table))
 				.map(Connector::getConcept)
 				.forEach(Concept::clearMatchingStats);
 	}

@@ -88,7 +88,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final QPNode query = entry.getValue();
 			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector().resolve());
 
-			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().resolve().getTable())) {
+			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().resolve().getResolvedTable())) {
 
 				if (!shouldEvaluateBucket(query, bucket, entity, ctx)) {
 					continue;
@@ -161,9 +161,9 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 
 		final Connector connector = exportDescription.getConnector().resolve();
-		entry[1] = connector.getTable().getLabel();
+		entry[1] = connector.getResolvedTable().getLabel();
 
-		for (Column column : connector.getTable().getColumns()) {
+		for (Column column : connector.getResolvedTable().getColumns()) {
 
 			// ValidityDates are handled separately.
 			if (validityDate != null && validityDate.containsColumn(column)){

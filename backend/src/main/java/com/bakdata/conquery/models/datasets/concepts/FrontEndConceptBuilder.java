@@ -176,13 +176,13 @@ public class FrontEndConceptBuilder {
 		final FrontendTable
 				result =
 				FrontendTable.builder()
-							 .id(con.getTable().getId())
+							 .id(con.getResolvedTable().getId())
 							 .connectorId(con.getId())
 							 .label(con.getLabel())
 							 .isDefault(con.isDefault())
 							 .filters(con.collectAllFilters().stream().map(this::createFilter).collect(Collectors.toList()))
 							 .selects(con.getSelects().stream().map(this::createSelect).collect(Collectors.toList()))
-							 .supportedSecondaryIds(Arrays.stream(con.getTable().getColumns())
+							 .supportedSecondaryIds(Arrays.stream(con.getResolvedTable().getColumns())
 														  .map(Column::getSecondaryId)
 														  .filter(Objects::nonNull)
 														  .collect(Collectors.toSet()))

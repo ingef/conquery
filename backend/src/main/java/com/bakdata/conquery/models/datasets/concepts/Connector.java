@@ -109,7 +109,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 		return new ConnectorId(concept.getId(), getName());
 	}
 
-	public abstract Table getTable();
+	public abstract Table getResolvedTable();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")

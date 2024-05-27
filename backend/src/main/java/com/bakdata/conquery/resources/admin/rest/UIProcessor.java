@@ -209,7 +209,7 @@ public class UIProcessor {
 				storage.getAllConcepts()
 					   .map(Concept::getConnectors)
 					   .flatMap(Collection::stream)
-					   .filter(conn -> conn.getTable().equals(table))
+					   .filter(conn -> conn.getResolvedTable().equals(table))
 					   .map(Connector::getConcept).collect(Collectors.toSet())
 
 		);
@@ -229,7 +229,7 @@ public class UIProcessor {
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
 		return concepts.filter(TreeConcept.class::isInstance)
 					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-					   .filter(con -> con.getTable().equals(imp.getTable()))
+					   .filter(con -> con.getResolvedTable().equals(imp.getTable()))
 					   .mapToLong(con -> {
 						   // Per event an int array is stored marking the path to the concept child.
 						   final double avgDepth = con.getConcept()

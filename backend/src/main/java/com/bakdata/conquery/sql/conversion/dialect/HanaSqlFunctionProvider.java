@@ -323,7 +323,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
-		String tableName = validityDate.getConnector().getTable().getName();
+		String tableName = validityDate.getConnector().getResolvedTable().getName();
 
 		Column startColumn;
 		Column endColumn;

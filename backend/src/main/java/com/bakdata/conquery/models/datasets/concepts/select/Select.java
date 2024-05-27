@@ -108,11 +108,13 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		for (Column column : getRequiredColumns()) {
 
-			if (column == null || column.getTable().equals(connector.getTable())) {
+			if (column == null || column.getTable().equals(connector.getResolvedTable())) {
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable()
+																								  .getId(), connector.getId(), connector.getResolvedTable()
+																																		.getId());
 
 			valid = false;
 		}

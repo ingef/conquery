@@ -87,11 +87,11 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Columns is not for Connectors' Table.")
 	public boolean isForConnectorTable() {
 
-		if (getColumn().getTable().equals(((Connector) getHolder()).getTable().getId())) {
+		if (getColumn().getTable().equals(((Connector) getHolder()).getResolvedTable().getId())) {
 			return true;
 		}
 
-		log.error("Column[{}] ist not for Table[{}]", column, ((Connector) getHolder()).getTable());
+		log.error("Column[{}] ist not for Table[{}]", column, ((Connector) getHolder()).getResolvedTable());
 
 		return false;
 	}

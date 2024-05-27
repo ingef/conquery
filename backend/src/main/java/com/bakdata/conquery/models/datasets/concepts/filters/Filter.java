@@ -88,11 +88,12 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		boolean valid = true;
 
 		for (ColumnId column : getRequiredColumns()) {
-			if (column == null || column.getTable().equals(connector.getTable().getId())) {
+			if (column == null || column.getTable().equals(connector.getResolvedTable().getId())) {
 				continue;
 			}
 
-			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.getTable().getId());
+			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.getResolvedTable()
+																																		   .getId());
 
 			valid = false;
 		}

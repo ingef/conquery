@@ -220,7 +220,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 
 			final List<Aggregator<CDateSet>> eventDateUnionAggregators =
-					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().<Connector>resolve().getTable())))
+					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().<Connector>resolve().getResolvedTable())))
 										: Collections.emptyList();
 
 			aggregators.addAll(eventDateUnionAggregators);

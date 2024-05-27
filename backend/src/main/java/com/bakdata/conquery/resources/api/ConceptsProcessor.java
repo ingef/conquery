@@ -161,7 +161,7 @@ public class ConceptsProcessor {
 	@NotNull
 	private static Function<ConnectorId, FrontendPreviewConfig.Labelled> connectorToLabelled(Namespace namespace) {
 		// TODO might use a cache here to dereference id
-		return id -> new FrontendPreviewConfig.Labelled(id.toString(), id.<Connector>resolve().getTable().getLabel());
+		return id -> new FrontendPreviewConfig.Labelled(id.toString(), id.<Connector>resolve().getResolvedTable().getLabel());
 	}
 
 	/**

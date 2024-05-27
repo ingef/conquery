@@ -141,7 +141,7 @@ public class BucketManager {
 
 					   final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
 
-					   if (!connector.getTable().equals(bucket.getTable())) {
+					   if (!connector.getResolvedTable().equals(bucket.getTable())) {
 						   return;
 					   }
 
@@ -177,7 +177,7 @@ public class BucketManager {
 		storage.getAllConcepts()
 			   .filter(TreeConcept.class::isInstance)
 			   .flatMap(concept -> concept.getConnectors().stream())
-			   .filter(connector -> connector.getTable().equals(bucket.getTable()))
+			   .filter(connector -> connector.getResolvedTable().equals(bucket.getTable()))
 			   .filter(connector -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
 			   .forEach(connector -> job.addCBlock(bucket, (ConceptTreeConnector) connector));
 
@@ -340,7 +340,7 @@ public class BucketManager {
 		for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
 
 			storage.getAllBuckets()
-				   .filter(bucket -> bucket.getTable().equals(connector.getTable()))
+				   .filter(bucket -> bucket.getTable().equals(connector.getResolvedTable()))
 				   .filter(bucket -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
 				   .forEach(bucket -> job.addCBlock(bucket, connector));
 		}

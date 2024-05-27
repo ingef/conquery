@@ -112,7 +112,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			Map<Column, Integer> positions,
 			ConversionContext context
 	) {
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getTable(), context.getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, dateRestriction, context);
@@ -154,7 +154,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		String tableName = cqTable.getConnector().resolve().getTable().getName();
+		String tableName = cqTable.getConnector().resolve().getResolvedTable().getName();
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
@@ -186,7 +186,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static boolean matchesTableColumnOn(CQTable table, Predicate<Column> condition) {
-		return Arrays.stream(table.getConnector().resolve().getTable().getColumns()).anyMatch(condition);
+		return Arrays.stream(table.getConnector().resolve().getResolvedTable().getColumns()).anyMatch(condition);
 	}
 
 	private static boolean columnIsConnectorColumn(Column column, CQTable table) {
@@ -200,7 +200,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			ConversionContext context
 	) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getTable().getName()));
+		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getResolvedTable().getName()));
 		List<Condition> joinOnIds = ids.join(convertedPrerequisite.getQualifiedSelects().getIds());
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisite, joinOnIds);
 	}

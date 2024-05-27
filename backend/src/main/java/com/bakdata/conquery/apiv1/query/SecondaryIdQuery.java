@@ -111,7 +111,7 @@ public class SecondaryIdQuery extends Query {
 			final CQConcept concept = (CQConcept) queryElement;
 
 			for (CQTable connector : concept.getTables()) {
-				final Table table = connector.getConnector().resolve().getTable();
+				final Table table = connector.getConnector().resolve().getResolvedTable();
 				final Column secondaryIdColumn = table.findSecondaryIdColumn(secondaryId);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryId()) {

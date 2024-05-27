@@ -93,7 +93,7 @@ public class CQTable {
 
 	public boolean hasSelectedSecondaryId(SecondaryIdDescription secondaryId) {
 		final Connector resolvedConnector = connector.resolve();
-		return Arrays.stream(resolvedConnector.getTable().getColumns())
+		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns())
 					 .map(Column::getSecondaryId)
 					 .filter(Objects::nonNull)
 					 .anyMatch(o -> Objects.equals(secondaryId.getId(), o));

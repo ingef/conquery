@@ -40,7 +40,7 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 		this.concept = concept;
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
-								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
+								 .collect(Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
 	}
 
 	@Override

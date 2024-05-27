@@ -96,10 +96,10 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	public boolean isForConnectorsTable() {
 
 		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getTable().getId()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.getTable().getId()));
+				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable().getId());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTable().getId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}

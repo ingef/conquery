@@ -59,7 +59,7 @@ class TablePathGenerator {
 	private TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
-		tableInfo.setRootTable(cqTable.getConnector().resolve().getTable().getName());
+		tableInfo.setRootTable(cqTable.getConnector().resolve().getResolvedTable().getName());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 		tableInfo.setLastPredecessor(JOIN_BRANCHES);
 

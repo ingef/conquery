@@ -179,7 +179,7 @@ public class TableExportQuery extends Query {
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
 			  .flatMap(con -> con.getTables().stream())
-			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getTable().getColumns()))
+			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getResolvedTable().getColumns()))
 			  .map(Column::getSecondaryId)
 			  .map(SecondaryIdDescriptionId::resolve)
 			  .filter(Objects::nonNull)
@@ -205,7 +205,7 @@ public class TableExportQuery extends Query {
 			for (CQTable table : concept.getTables()) {
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
-				for (Column column : table.getConnector().resolve().getTable().getColumns()) {
+				for (Column column : table.getConnector().resolve().getResolvedTable().getColumns()) {
 
 					// ValidityDates are handled separately in column=0
 					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column))) {

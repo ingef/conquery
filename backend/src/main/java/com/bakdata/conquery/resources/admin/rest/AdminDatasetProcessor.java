@@ -286,7 +286,7 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(table.getDataset());
 
 		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().flatMap(c -> c.getConnectors().stream())
-															.filter(con -> con.getTable().equals(table))
+															.filter(con -> con.getResolvedTable().equals(table))
 															.map(Connector::getConcept)
 															.collect(Collectors.toList());
 
