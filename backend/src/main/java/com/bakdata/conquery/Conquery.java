@@ -9,6 +9,7 @@ import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.metrics.prometheus.PrometheusBundle;
 import com.bakdata.conquery.mode.Manager;
 import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
@@ -82,6 +83,8 @@ public class Conquery extends Application<ConqueryConfig> {
 						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
 			}
 		});
+
+		bootstrap.addBundle(new PrometheusBundle());
 	}
 
 	@Override
