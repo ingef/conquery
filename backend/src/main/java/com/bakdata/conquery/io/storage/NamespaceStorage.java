@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -19,6 +17,7 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,7 +33,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected CachedStore<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
-		super(storageFactory, pathName, validator);
+		super(storageFactory, pathName);
 	}
 
 

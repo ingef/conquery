@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { FC } from "react";
 
 import tw from "tailwind-styled-components";
 import FaIcon from "../icon/FaIcon";
@@ -15,7 +14,7 @@ const Root = styled("div")`
   align-items: flex-start;
 `;
 
-const Headline = tw("h2")<{ active: boolean }>`
+const Headline = tw("h2")<{ $active: boolean }>`
   text-sm
   mb-0
   mt-[6px]
@@ -30,10 +29,10 @@ const Headline = tw("h2")<{ active: boolean }>`
   tracking-wider
 
   border-b-[3px]
-  ${({ active }) =>
-    active ? "text-primary-500" : "text-gray-500 hover:text-black"};
-  ${({ active }) =>
-    active
+  ${({ $active }) =>
+    $active ? "text-primary-500" : "text-gray-500 hover:text-black"};
+  ${({ $active }) =>
+    $active
       ? "border-primary-500"
       : "border-transparent hover:border-primary-200"};
 
@@ -54,18 +53,16 @@ export interface TabNavigationTab {
   loading?: boolean;
 }
 
-interface PropsT {
-  onClickTab: (tab: string) => void;
-  activeTab: string | null;
-  tabs: TabNavigationTab[];
-  dataTestId: string;
-}
-
-const TabNavigation: FC<PropsT> = ({
+const TabNavigation = ({
   tabs,
   activeTab,
   onClickTab,
   dataTestId,
+}: {
+  onClickTab: (tab: string) => void;
+  activeTab: string | null;
+  tabs: TabNavigationTab[];
+  dataTestId: string;
 }) => {
   function createClickHandler(key: string) {
     return () => {
@@ -82,7 +79,7 @@ const TabNavigation: FC<PropsT> = ({
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
             <SxWithTooltip text={tooltip} lazy>
               <Headline
-                active={activeTab === key}
+                $active={activeTab === key}
                 onClick={createClickHandler(key)}
               >
                 {label}

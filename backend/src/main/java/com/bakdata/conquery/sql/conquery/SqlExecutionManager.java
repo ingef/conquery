@@ -1,16 +1,20 @@
 package com.bakdata.conquery.sql.conquery;
 
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
@@ -22,29 +26,27 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
+	private final Map<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(final SqlContext context, SqlExecutionService sqlExecutionService, MetaStorage storage) {
+	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage) {
 		super(storage);
-		executionService = sqlExecutionService;
-		converter = new SqlConverter(context.getSqlDialect(), context.getConfig());
+		this.converter = sqlConverter;
+		this.executionService = sqlExecutionService;
+		this.runningExecutions = new HashMap<>();
 	}
 
 	@Override
 	protected void doExecute(Namespace namespace, InternalExecution<?> execution) {
 
-		// todo(tm): Non-blocking execution
 		if (execution instanceof ManagedQuery managedQuery) {
-			SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
-			SqlExecutionResult result = executionService.execute(sqlQuery);
-			addResult(managedQuery, result);
-			managedQuery.setLastResultCount(((long) result.getRowCount()));
-			managedQuery.finish(ExecutionState.DONE);
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
+			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			managedForm.getSubQueries().values().forEach(subQuery -> doExecute(namespace, subQuery));
-			managedForm.finish(ExecutionState.DONE);
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(this::executeAsync).toArray(CompletableFuture[]::new))
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
 			return;
 		}
 
@@ -53,7 +55,30 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		// unsupported for now
+
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(query.getId());
+
+		// already finished/canceled
+		if (sqlQueryExecution == null) {
+			return;
+		}
+
+		if (!sqlQueryExecution.isCancelled()) {
+			sqlQueryExecution.cancel(true);
+		}
+
+		query.cancel();
+	}
+
+	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
+		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
+		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
+								.thenAccept(result -> {
+									addResult(managedQuery, result);
+									managedQuery.setLastResultCount(((long) result.getRowCount()));
+									managedQuery.finish(ExecutionState.DONE);
+									runningExecutions.remove(managedQuery.getId());
+								});
 	}
 
 }

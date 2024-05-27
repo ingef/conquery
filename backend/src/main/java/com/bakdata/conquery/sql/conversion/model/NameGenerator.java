@@ -47,10 +47,6 @@ public class NameGenerator {
 		return ensureValidLength(cteStep.cteName(nodeLabel));
 	}
 
-	public String cteStepName(String cteStep, String nodeLabel) {
-		return ensureValidLength("%s-%s".formatted(nodeLabel, cteStep));
-	}
-
 	public String selectName(Labeled<?> selectOrFilter) {
 		int selectCount = this.selectCountMap.merge(selectOrFilter.getName(), 1, Integer::sum);
 		String name = lowerAndReplaceWhitespace(selectOrFilter.getName());

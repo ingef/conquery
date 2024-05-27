@@ -34,7 +34,7 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
   const [folderName, setFolderName] = useState<string>("");
 
   return (
-    <Modal onClose={onClose} closeIcon headline={t("addFolderModal.headline")}>
+    <Modal onClose={onClose} headline={t("addFolderModal.headline")}>
       <Content>
         <p>{t("addFolderModal.description")}</p>
         <form

@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
@@ -25,7 +25,7 @@ import lombok.With;
 @Builder(toBuilder = true)
 public class ConversionContext implements Context {
 
-	SqlConnectorConfig config;
+	DatabaseConfig config;
 
 	NodeConversions nodeConversions;
 
@@ -84,4 +84,12 @@ public class ConversionContext implements Context {
 	public ConversionContext getConversionContext() {
 		return this;
 	}
+
+	/**
+	 * Get the last query {@link QueryStep} that has been added to this context query steps.
+	 */
+	public QueryStep getLastConvertedStep() {
+		return this.querySteps.get(this.querySteps.size() - 1);
+	}
+
 }
