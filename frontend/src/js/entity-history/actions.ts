@@ -29,6 +29,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
+import { canViewEntityPreview } from "../user/selectors";
 import { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util";
 
@@ -50,11 +51,18 @@ export const loadDefaultHistoryParamsSuccess = createAction(
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
+
+  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
+  const canViewHistoryRef = useRef(canViewHistory);
+  canViewHistoryRef.current = canViewHistory;
+
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
 
   return useCallback(
     async (datasetId: DatasetT["id"]) => {
       try {
+        if (!canViewHistoryRef.current) return;
+
         const result = await getEntityHistoryDefaultParams(datasetId);
 
         dispatch(loadDefaultHistoryParamsSuccess(result));
