@@ -155,7 +155,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * Executed right before execution submission.
 	 */
 	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
-		if (!namespace.getDataset().equals(dataset)) {
+		if (!namespace.getDataset().getId().equals(dataset)) {
 			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset, namespace.getDataset()
 																																										   .getId()));
 		}

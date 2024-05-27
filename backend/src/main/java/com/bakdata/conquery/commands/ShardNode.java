@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.NsIdResolver;
+import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -181,6 +182,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
+		PlaceholderMetaStorage.INSTANCE.injectInto(objectMapper);
 
 
 		// Set serialization config
