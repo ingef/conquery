@@ -54,7 +54,10 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		f.setTemplate((FilterTemplate) getTemplate().resolve());
+		final SearchIndexId searchIndexId = getTemplate();
+		if (searchIndexId != null) {
+			f.setTemplate((FilterTemplate) searchIndexId.resolve());
+		}
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values

@@ -45,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
 public class FilterTest extends AbstractQueryEngineTest {
 
+	public static final String CONCEPT_LABEL = "concept";
 	private ResourceFile expectedCsv;
 
 	@NotNull
@@ -88,7 +89,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
 		concept = new TreeConcept();
-		concept.setLabel("concept");
+		concept.setLabel(CONCEPT_LABEL);
 
 		concept.setDataset(support.getDataset().getId());
 
@@ -141,7 +142,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FrontendFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
+			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().get(0);
+			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);
