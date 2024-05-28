@@ -52,9 +52,9 @@ const Year = ({
   sourceColumn: ColumnDescription;
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const { searchVisible } = useTimelineSearch();
+  const { searchTerm } = useTimelineSearch();
 
-  const isYearOpen = searchVisible || getIsOpen(year);
+  const isYearOpen = !!searchTerm || getIsOpen(year);
   const totalEvents = quarterwiseData.reduce(
     (all, data) =>
       all + data.groupedEvents.reduce((s, evts) => s + evts.length, 0),
@@ -76,7 +76,7 @@ const Year = ({
             (s, evts) => s + evts.length,
             0,
           );
-          const isQuarterOpen = searchVisible || getIsOpen(year, quarter);
+          const isQuarterOpen = !!searchTerm || getIsOpen(year, quarter);
 
           return (
             <Quarter

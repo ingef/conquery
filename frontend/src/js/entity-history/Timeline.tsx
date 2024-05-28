@@ -338,8 +338,8 @@ const groupByQuarter = (
   }
 
   // Filter concepts by searchTerm
-  const filteredSortedEvents = sortedEvents.map(
-    ({ year, quarterwiseData }) => ({
+  const filteredSortedEvents = sortedEvents
+    .map(({ year, quarterwiseData }) => ({
       year,
       quarterwiseData: !searchTerm
         ? quarterwiseData
@@ -367,8 +367,12 @@ const groupByQuarter = (
               });
             }),
           })),
-    }),
-  );
+    }))
+    .filter((year) =>
+      !searchTerm
+        ? year
+        : year.quarterwiseData.some(({ events }) => events.length > 0),
+    );
 
   console.log(filteredSortedEvents);
 
