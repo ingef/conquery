@@ -40,11 +40,11 @@ const SxHeading3 = styled(Heading3)`
 const Count = styled(SxHeading3)`
   justify-self: end;
 `;
+
 const Text = styled("span")`
   font-size: ${({ theme }) => theme.font.md};
   color: ${({ theme }) => theme.col.gray};
-  text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 400;
 `;
 
 const SpecialText = styled("p")<{ zero?: boolean }>`
@@ -53,12 +53,6 @@ const SpecialText = styled("p")<{ zero?: boolean }>`
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
   text-transform: uppercase;
   font-weight: 400;
-`;
-
-const StatsGrid = styled("div")`
-  display: grid;
-  gap: 0px 4px;
-  grid-template-columns: auto 1fr;
 `;
 
 interface Props {
@@ -104,12 +98,12 @@ export const NavigationHeader = memo(
             />
           </WithTooltip>
         </BaseInfo>
-        <StatsGrid>
+        <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Count>{idsCount}</Count>
           <Text>{t("tooltip.entitiesFound", { count: idsCount })}</Text>
           <Count>{markedCount}</Count>
           <Text>{t("history.marked", { count: markedCount })}</Text>
-        </StatsGrid>
+        </div>
         <ProgressBar donePercent={100 * (markedCount / idsCount)} />
       </Root>
     );
