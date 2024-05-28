@@ -51,10 +51,6 @@ const Divider = styled("div")`
   background: ${({ theme }) => theme.col.grayLight};
 `;
 
-const SxEntityCard = styled(EntityCard)`
-  grid-column: span 2;
-`;
-
 const SxTimelineEmptyPlaceholder = styled(TimelineEmptyPlaceholder)`
   grid-column: span 2;
   height: 100%;
@@ -91,6 +87,8 @@ export const Timeline = memo(
       (state) => state.startup.config.currency,
     );
 
+    const { searchTerm } = useTimelineSearch();
+
     const {
       columns,
       dateColumn,
@@ -99,24 +97,28 @@ export const Timeline = memo(
       rootConceptIdsByColumn,
     } = useColumnInformation();
 
-    const { eventsByQuarterWithGroups } = useTimeBucketedSortedData(data, {
-      columns,
-      rootConceptIdsByColumn,
-      sourceColumn,
-      dateColumn,
-      sources,
-      secondaryIds: columnBuckets.secondaryIds,
-    });
+    const { matches, eventsByQuarterWithGroups } = useTimeBucketedSortedData(
+      data,
+      {
+        columns,
+        rootConceptIdsByColumn,
+        sourceColumn,
+        dateColumn,
+        sources,
+        secondaryIds: columnBuckets.secondaryIds,
+      },
+    );
 
     const isEmpty =
       eventsByQuarterWithGroups.length === 0 || !dateColumn || !sourceColumn;
 
     return (
       <div className="overflow-hidden w-full flex flex-col">
-        <TimelineSearch />
+        <TimelineSearch matches={matches} />
         <Root className={className} isEmpty={isEmpty}>
-          {!isEmpty && (
-            <SxEntityCard
+          {!isEmpty && !searchTerm && (
+            <EntityCard
+              className="col-span-2"
               blurred={blurred}
               infos={currentEntityInfos}
               timeStratifiedInfos={currentEntityTimeStratifiedInfos}
@@ -374,8 +376,6 @@ const groupByQuarter = (
         : year.quarterwiseData.some(({ events }) => events.length > 0),
     );
 
-  console.log(filteredSortedEvents);
-
   return filteredSortedEvents;
 };
 
@@ -423,7 +423,16 @@ const useTimeBucketedSortedData = (
       sourceColumn,
     );
 
+    const matches = searchTerm
+      ? eventsByQuarterWithGroups
+          .flatMap(({ quarterwiseData }) =>
+            quarterwiseData.flatMap(({ groupedEvents }) => groupedEvents),
+          )
+          .reduce((acc, events) => acc + events.length, 0)
+      : 0;
+
     return {
+      matches,
       eventsByQuarterWithGroups,
     };
   }, [

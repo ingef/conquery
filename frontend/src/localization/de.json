@@ -473,6 +473,8 @@
   },
   "history": {
     "search": "Suche",
+    "matches_one": "Eintrag",
+    "matches_other": "Einträge",
     "noData": "Keine Daten verfügbar",
     "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {
