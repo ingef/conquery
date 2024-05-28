@@ -472,6 +472,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "search": "Suche",
     "noData": "Keine Daten verfügbar",
     "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {

@@ -75,125 +75,127 @@ const SxSmallHeading = styled(SmallHeading)`
   line-height: 1;
 `;
 
-const Quarter = ({
-  quarter,
-  year,
-  totalEventsPerQuarter,
-  isOpen,
-  detailLevel,
-  groupedEvents,
-  toggleOpenQuarter,
-  differences,
-  columns,
-  dateColumn,
-  sourceColumn,
-  columnBuckets,
-  currencyConfig,
-  rootConceptIdsByColumn,
-  contentFilter,
-}: {
-  year: number;
-  quarter: number;
-  totalEventsPerQuarter: number;
-  isOpen: boolean;
-  groupedEvents: EntityEvent[][];
-  detailLevel: DetailLevel;
-  toggleOpenQuarter: (year: number, quarter: number) => void;
-  differences: string[][];
-  columns: Record<string, ColumnDescription>;
-  dateColumn: ColumnDescription;
-  sourceColumn: ColumnDescription;
-  columnBuckets: ColumnBuckets;
-  contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
-  rootConceptIdsByColumn: Record<string, ConceptIdT>;
-}) => {
-  const { t } = useTranslation();
+export const Quarter = memo(
+  ({
+    quarter,
+    year,
+    totalEventsPerQuarter,
+    isOpen,
+    detailLevel,
+    groupedEvents,
+    toggleOpenQuarter,
+    differences,
+    columns,
+    dateColumn,
+    sourceColumn,
+    columnBuckets,
+    currencyConfig,
+    rootConceptIdsByColumn,
+    contentFilter,
+  }: {
+    year: number;
+    quarter: number;
+    totalEventsPerQuarter: number;
+    isOpen: boolean;
+    groupedEvents: EntityEvent[][];
+    detailLevel: DetailLevel;
+    toggleOpenQuarter: (year: number, quarter: number) => void;
+    differences: string[][];
+    columns: Record<string, ColumnDescription>;
+    dateColumn: ColumnDescription;
+    sourceColumn: ColumnDescription;
+    columnBuckets: ColumnBuckets;
+    contentFilter: ContentFilterValue;
+    currencyConfig: CurrencyConfigT;
+    rootConceptIdsByColumn: Record<string, ConceptIdT>;
+  }) => {
+    const { t } = useTranslation();
 
-  const areEventsShown =
-    (isOpen || detailLevel !== "summary") && totalEventsPerQuarter > 0;
+    const areEventsShown =
+      (isOpen || detailLevel !== "summary") && totalEventsPerQuarter > 0;
 
-  return (
-    <QuarterGroup key={quarter}>
-      <QuarterHead empty={totalEventsPerQuarter === 0}>
-        <InlineGrid onClick={() => toggleOpenQuarter(year, quarter)}>
-          <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
-          <SxSmallHeading>Q{quarter} </SxSmallHeading>
-          <span>
-            – {totalEventsPerQuarter}{" "}
-            {t("history.events", {
-              count: totalEventsPerQuarter,
-            })}
-          </span>
-          {detailLevel === "summary" && (
-            <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
-          )}
-        </InlineGrid>
-      </QuarterHead>
-      {areEventsShown && (
-        <EventTimeline>
-          <VerticalLine />
-          <EventItemList>
-            {groupedEvents.map((group, index) => {
-              if (group.length === 0) return null;
+    return (
+      <QuarterGroup key={quarter}>
+        <QuarterHead empty={totalEventsPerQuarter === 0}>
+          <InlineGrid onClick={() => toggleOpenQuarter(year, quarter)}>
+            <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
+            <SxSmallHeading>Q{quarter} </SxSmallHeading>
+            <span>
+              – {totalEventsPerQuarter}{" "}
+              {t("history.events", {
+                count: totalEventsPerQuarter,
+              })}
+            </span>
+            {detailLevel === "summary" && (
+              <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
+            )}
+          </InlineGrid>
+        </QuarterHead>
+        {areEventsShown && (
+          <EventTimeline>
+            <VerticalLine />
+            <EventItemList>
+              {groupedEvents.map((group, index) => {
+                if (group.length === 0) return null;
 
-              const groupDifferences = [
-                ...new Set([
-                  ...differences[index],
-                  ...columnBuckets.concepts
-                    .filter((c) => !!group[0][c.label])
-                    .map((c) => c.label),
-                ]),
-              ];
+                const groupDifferences = [
+                  ...new Set([
+                    ...differences[index],
+                    ...columnBuckets.concepts
+                      .filter((c) => !!group[0][c.label])
+                      .map((c) => c.label),
+                  ]),
+                ];
 
-              if (detailLevel === "full") {
-                return group.map((evt, evtIdx) => (
-                  <EventCard
-                    key={`${index}-${evtIdx}`}
-                    columns={columns}
-                    dateColumn={dateColumn}
-                    sourceColumn={sourceColumn}
-                    columnBuckets={columnBuckets}
-                    contentFilter={contentFilter}
-                    rootConceptIdsByColumn={rootConceptIdsByColumn}
-                    row={evt}
-                    currencyConfig={currencyConfig}
-                  />
-                ));
-              } else {
-                const firstRowWithoutDifferences = Object.fromEntries(
-                  Object.entries(group[0]).filter(([key]) => {
-                    if (key === dateColumn.label) {
-                      return true; // always show dates, despite it being part of groupDifferences
-                    }
+                if (detailLevel === "full") {
+                  return group.map((evt, evtIdx) => (
+                    <EventCard
+                      key={`${index}-${evtIdx}`}
+                      columns={columns}
+                      dateColumn={dateColumn}
+                      sourceColumn={sourceColumn}
+                      columnBuckets={columnBuckets}
+                      contentFilter={contentFilter}
+                      rootConceptIdsByColumn={rootConceptIdsByColumn}
+                      row={evt}
+                      currencyConfig={currencyConfig}
+                    />
+                  ));
+                } else {
+                  const firstRowWithoutDifferences = Object.fromEntries(
+                    Object.entries(group[0]).filter(([key]) => {
+                      if (key === dateColumn.label) {
+                        return true; // always show dates, despite it being part of groupDifferences
+                      }
 
-                    return !groupDifferences.includes(key);
-                  }),
-                ) as EntityEvent;
+                      return !groupDifferences.includes(key);
+                    }),
+                  ) as EntityEvent;
 
-                return (
-                  <EventCard
-                    key={index}
-                    columns={columns}
-                    dateColumn={dateColumn}
-                    sourceColumn={sourceColumn}
-                    columnBuckets={columnBuckets}
-                    contentFilter={contentFilter}
-                    rootConceptIdsByColumn={rootConceptIdsByColumn}
-                    row={firstRowWithoutDifferences}
-                    currencyConfig={currencyConfig}
-                    groupedRows={group}
-                    groupedRowsKeysWithDifferentValues={groupDifferences}
-                  />
-                );
-              }
-            })}
-          </EventItemList>
-        </EventTimeline>
-      )}
-    </QuarterGroup>
-  );
-};
+                  return (
+                    <EventCard
+                      key={index}
+                      columns={columns}
+                      dateColumn={dateColumn}
+                      sourceColumn={sourceColumn}
+                      columnBuckets={columnBuckets}
+                      contentFilter={contentFilter}
+                      rootConceptIdsByColumn={rootConceptIdsByColumn}
+                      row={firstRowWithoutDifferences}
+                      currencyConfig={currencyConfig}
+                      groupedRows={group}
+                      groupedRowsKeysWithDifferentValues={groupDifferences}
+                    />
+                  );
+                }
+              })}
+            </EventItemList>
+          </EventTimeline>
+        )}
+      </QuarterGroup>
+    );
+  },
+);
 
 const MemoizedBoxes = memo(
   ({ totalEventsPerQuarter }: { totalEventsPerQuarter: number }) => {
@@ -206,5 +208,3 @@ const MemoizedBoxes = memo(
     );
   },
 );
-
-export default memo(Quarter);

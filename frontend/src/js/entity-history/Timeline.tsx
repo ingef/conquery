@@ -12,9 +12,11 @@ import {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { EntityCard } from "./EntityCard";
+import { TimelineSearch } from "./TimelineSearch";
 import type { DateRow, EntityEvent, EntityHistoryStateT } from "./reducer";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
@@ -28,16 +30,19 @@ import {
   isSourceColumn,
   isVisibleColumn,
 } from "./timeline/util";
+import { useTimelineSearch } from "./timelineSearchState";
 
-const Root = styled("div")`
+const Root = styled("div")<{ isEmpty?: boolean }>`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 20px 10px;
   display: inline-grid;
   grid-template-columns: 280px auto;
-  grid-auto-rows: minmax(min-content, max-content) 1fr;
+  grid-auto-rows: ${({ isEmpty }) =>
+    isEmpty ? "1fr" : "minmax(min-content, max-content) 1fr"};
   gap: 20px 4px;
   width: 100%;
+  height: 100%;
 `;
 
 const Divider = styled("div")`
@@ -55,90 +60,97 @@ const SxTimelineEmptyPlaceholder = styled(TimelineEmptyPlaceholder)`
   height: 100%;
 `;
 
-const Timeline = ({
-  className,
-  currentEntityInfos,
-  currentEntityTimeStratifiedInfos,
-  detailLevel,
-  sources,
-  contentFilter,
-  getIsOpen,
-  toggleOpenYear,
-  toggleOpenQuarter,
-  blurred,
-}: {
-  className?: string;
-  currentEntityInfos: EntityInfo[];
-  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
-  detailLevel: DetailLevel;
-  sources: Set<string>;
-  contentFilter: ContentFilterValue;
-  getIsOpen: (year: number, quarter?: number) => boolean;
-  toggleOpenYear: (year: number) => void;
-  toggleOpenQuarter: (year: number, quarter: number) => void;
-  blurred?: boolean;
-}) => {
-  const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
-    (state) => state.entityHistory.currentEntityData,
-  );
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
-
-  const {
-    columns,
-    dateColumn,
-    sourceColumn,
-    columnBuckets,
-    rootConceptIdsByColumn,
-  } = useColumnInformation();
-
-  const { eventsByQuarterWithGroups } = useTimeBucketedSortedData(data, {
-    sourceColumn,
-    dateColumn,
+export const Timeline = memo(
+  ({
+    className,
+    currentEntityInfos,
+    currentEntityTimeStratifiedInfos,
+    detailLevel,
     sources,
-    secondaryIds: columnBuckets.secondaryIds,
-  });
+    contentFilter,
+    getIsOpen,
+    toggleOpenYear,
+    toggleOpenQuarter,
+    blurred,
+  }: {
+    className?: string;
+    currentEntityInfos: EntityInfo[];
+    currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
+    detailLevel: DetailLevel;
+    sources: Set<string>;
+    contentFilter: ContentFilterValue;
+    getIsOpen: (year: number, quarter?: number) => boolean;
+    toggleOpenYear: (year: number) => void;
+    toggleOpenQuarter: (year: number, quarter: number) => void;
+    blurred?: boolean;
+  }) => {
+    const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
+      (state) => state.entityHistory.currentEntityData,
+    );
+    const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+      (state) => state.startup.config.currency,
+    );
 
-  const isEmpty =
-    eventsByQuarterWithGroups.length === 0 || !dateColumn || !sourceColumn;
+    const {
+      columns,
+      dateColumn,
+      sourceColumn,
+      columnBuckets,
+      rootConceptIdsByColumn,
+    } = useColumnInformation();
 
-  return (
-    <Root className={className}>
-      <SxEntityCard
-        blurred={blurred}
-        infos={currentEntityInfos}
-        timeStratifiedInfos={currentEntityTimeStratifiedInfos}
-      />
-      {isEmpty && <SxTimelineEmptyPlaceholder />}
-      {dateColumn &&
-        sourceColumn &&
-        eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
-          <Fragment key={year}>
-            <Year
-              year={year}
-              quarterwiseData={quarterwiseData}
+    const { eventsByQuarterWithGroups } = useTimeBucketedSortedData(data, {
+      columns,
+      rootConceptIdsByColumn,
+      sourceColumn,
+      dateColumn,
+      sources,
+      secondaryIds: columnBuckets.secondaryIds,
+    });
+
+    const isEmpty =
+      eventsByQuarterWithGroups.length === 0 || !dateColumn || !sourceColumn;
+
+    return (
+      <div className="overflow-hidden w-full flex flex-col">
+        <TimelineSearch />
+        <Root className={className} isEmpty={isEmpty}>
+          {!isEmpty && (
+            <SxEntityCard
+              blurred={blurred}
+              infos={currentEntityInfos}
               timeStratifiedInfos={currentEntityTimeStratifiedInfos}
-              getIsOpen={getIsOpen}
-              toggleOpenYear={toggleOpenYear}
-              toggleOpenQuarter={toggleOpenQuarter}
-              detailLevel={detailLevel}
-              currencyConfig={currencyConfig}
-              rootConceptIdsByColumn={rootConceptIdsByColumn}
-              columnBuckets={columnBuckets}
-              contentFilter={contentFilter}
-              columns={columns}
-              dateColumn={dateColumn}
-              sourceColumn={sourceColumn}
             />
-            {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
-          </Fragment>
-        ))}
-    </Root>
-  );
-};
-
-export default memo(Timeline);
+          )}
+          {isEmpty && <SxTimelineEmptyPlaceholder />}
+          {dateColumn &&
+            sourceColumn &&
+            eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
+              <Fragment key={year}>
+                <Year
+                  year={year}
+                  quarterwiseData={quarterwiseData}
+                  timeStratifiedInfos={currentEntityTimeStratifiedInfos}
+                  getIsOpen={getIsOpen}
+                  toggleOpenYear={toggleOpenYear}
+                  toggleOpenQuarter={toggleOpenQuarter}
+                  detailLevel={detailLevel}
+                  currencyConfig={currencyConfig}
+                  rootConceptIdsByColumn={rootConceptIdsByColumn}
+                  columnBuckets={columnBuckets}
+                  contentFilter={contentFilter}
+                  columns={columns}
+                  dateColumn={dateColumn}
+                  sourceColumn={sourceColumn}
+                />
+                {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
+              </Fragment>
+            ))}
+        </Root>
+      </div>
+    );
+  },
+);
 
 const diffObjects = (objects: object[]): string[] => {
   if (objects.length < 2) return [];
@@ -265,79 +277,123 @@ export interface EventsByQuarterWithGroups {
   differences: string[][];
 }
 
+const groupByQuarter = (
+  entityData: EntityHistoryStateT["currentEntityData"],
+  sources: Set<string>,
+  dateColumn: ColumnDescription,
+  sourceColumn: ColumnDescription,
+  rootConceptIdsByColumn: Record<string, ConceptIdT>,
+  columns: Record<string, ColumnDescription>,
+  searchTerm?: string,
+) => {
+  const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
+
+  for (const row of entityData) {
+    const [year, month] = (row[dateColumn.label] as DateRow).from.split("-");
+    const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
+
+    if (!result[year]) {
+      result[year] = { [quarter]: [] };
+    } else if (!result[year][quarter]) {
+      result[year][quarter] = [];
+    }
+
+    if (sources.has(row[sourceColumn.label] as string)) {
+      result[year][quarter].push(row);
+    }
+  }
+
+  // Fill empty quarters
+  for (const [, quarters] of Object.entries(result)) {
+    for (const q of [1, 2, 3, 4]) {
+      if (!quarters[q]) {
+        quarters[q] = [];
+      }
+    }
+  }
+
+  const sortedEvents = Object.entries(result)
+    .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
+    .map(([year, quarterwiseData]) => ({
+      year: parseInt(year),
+      quarterwiseData: Object.entries(quarterwiseData)
+        .sort(([qA], [qB]) => parseInt(qB) - parseInt(qA))
+        .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
+    }));
+
+  if (sortedEvents.length === 0) {
+    return sortedEvents;
+  }
+
+  // Fill empty years
+  const currentYear = new Date().getFullYear();
+  while (sortedEvents[0].year < currentYear) {
+    sortedEvents.unshift({
+      year: sortedEvents[0].year + 1,
+      quarterwiseData: [4, 3, 2, 1].map((q) => ({
+        quarter: q,
+        events: [],
+      })),
+    });
+  }
+
+  // Filter concepts by searchTerm
+  const filteredSortedEvents = sortedEvents.map(
+    ({ year, quarterwiseData }) => ({
+      year,
+      quarterwiseData: !searchTerm
+        ? quarterwiseData
+        : quarterwiseData.map(({ quarter, events }) => ({
+            quarter,
+            events: events.filter((event) => {
+              return Object.entries(event).some(([key, value]) => {
+                const column = columns[key];
+                if (!isConceptColumn(column)) return false;
+                const rootConceptId = rootConceptIdsByColumn[column.label];
+                const rootConcept = getConceptById(
+                  rootConceptId,
+                  rootConceptId,
+                );
+                if (!rootConcept) return false;
+                const concept = getConceptById(value as string, rootConceptId);
+                if (!concept) return false;
+
+                const isMatch = (str: string) =>
+                  str.toLowerCase().includes(searchTerm.toLowerCase());
+
+                return isMatch(
+                  `${rootConcept.label} ${concept.label} - ${concept.description}`,
+                );
+              });
+            }),
+          })),
+    }),
+  );
+
+  console.log(filteredSortedEvents);
+
+  return filteredSortedEvents;
+};
+
 const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],
   {
+    rootConceptIdsByColumn,
+    columns,
     sources,
     secondaryIds,
     sourceColumn,
     dateColumn,
   }: {
+    rootConceptIdsByColumn: Record<string, ConceptIdT>;
+    columns: Record<string, ColumnDescription>;
     sources: Set<string>;
     secondaryIds: ColumnDescription[];
     sourceColumn?: ColumnDescription;
     dateColumn?: ColumnDescription;
   },
 ) => {
-  const groupByQuarter = (
-    entityData: EntityHistoryStateT["currentEntityData"],
-    sources: Set<string>,
-    dateColumn: ColumnDescription,
-    sourceColumn: ColumnDescription,
-  ) => {
-    const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
-
-    for (const row of entityData) {
-      const [year, month] = (row[dateColumn.label] as DateRow).from.split("-");
-      const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
-
-      if (!result[year]) {
-        result[year] = { [quarter]: [] };
-      } else if (!result[year][quarter]) {
-        result[year][quarter] = [];
-      }
-
-      if (sources.has(row[sourceColumn.label] as string)) {
-        result[year][quarter].push(row);
-      }
-    }
-
-    // Fill empty quarters
-    for (const [, quarters] of Object.entries(result)) {
-      for (const q of [1, 2, 3, 4]) {
-        if (!quarters[q]) {
-          quarters[q] = [];
-        }
-      }
-    }
-
-    const sortedEvents = Object.entries(result)
-      .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
-      .map(([year, quarterwiseData]) => ({
-        year: parseInt(year),
-        quarterwiseData: Object.entries(quarterwiseData)
-          .sort(([qA], [qB]) => parseInt(qB) - parseInt(qA))
-          .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
-      }));
-
-    if (sortedEvents.length === 0) {
-      return sortedEvents;
-    }
-
-    // Fill empty years
-    const currentYear = new Date().getFullYear();
-    while (sortedEvents[0].year < currentYear) {
-      sortedEvents.unshift({
-        year: sortedEvents[0].year + 1,
-        quarterwiseData: [4, 3, 2, 1].map((q) => ({
-          quarter: q,
-          events: [],
-        })),
-      });
-    }
-
-    return sortedEvents;
-  };
+  const { searchTerm } = useTimelineSearch();
 
   return useMemo(() => {
     if (!data || !dateColumn || !sourceColumn) {
@@ -351,7 +407,11 @@ const useTimeBucketedSortedData = (
       sources,
       dateColumn,
       sourceColumn,
+      rootConceptIdsByColumn,
+      columns,
+      searchTerm,
     );
+
     const eventsByQuarterWithGroups = findGroups(
       eventsByQuarter,
       secondaryIds,
@@ -362,7 +422,16 @@ const useTimeBucketedSortedData = (
     return {
       eventsByQuarterWithGroups,
     };
-  }, [data, sources, secondaryIds, dateColumn, sourceColumn]);
+  }, [
+    data,
+    sources,
+    secondaryIds,
+    dateColumn,
+    sourceColumn,
+    columns,
+    searchTerm,
+    rootConceptIdsByColumn,
+  ]);
 };
 
 export interface ColumnBuckets {
