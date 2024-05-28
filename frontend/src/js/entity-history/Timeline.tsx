@@ -402,6 +402,7 @@ const useTimeBucketedSortedData = (
   return useMemo(() => {
     if (!data || !dateColumn || !sourceColumn) {
       return {
+        matches: 0,
         eventsByQuarterWithGroups: [],
       };
     }
