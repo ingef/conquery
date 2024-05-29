@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -52,6 +53,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 @RequiredArgsConstructor
 public class AdminProcessor {
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -60,18 +62,6 @@ public class AdminProcessor {
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
-
-	public void addRoles(List<Role> roles) {
-
-		for (Role role : roles) {
-			try {
-				addRole(role);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add Role: %s", role), e);
-			}
-		}
-	}
 
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
@@ -293,6 +283,7 @@ public class AdminProcessor {
 		final CompilerConfiguration config = new CompilerConfiguration();
 		final GroovyShell groovy = new GroovyShell(config);
 
+		groovy.setProperty("managerNode", getManagerNode());
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
 		groovy.setProperty("config", getConfig());
