@@ -5,12 +5,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -166,5 +168,13 @@ public abstract class Namespace extends IdResolveContext {
 				}
 		));
 
+	}
+
+	protected Collection<Concept<?>> collectConcepts() {
+		return this.getStorage()
+				   .getAllConcepts()
+				   .stream()
+				   .filter(concept -> concept.getMatchingStats() == null)
+				   .collect(Collectors.toSet());
 	}
 }
