@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,9 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	public static final String VALUES_QUERY_NAME = "VALUES";
 
 
+	@Valid
 	private final AbsoluteFormQuery infoCardQuery;
+	@Valid
 	private final TableExportQuery valuesQuery;
 
 
