@@ -92,6 +92,10 @@ public class CQTable {
 	}
 
 	public boolean hasSelectedSecondaryId(SecondaryIdDescription secondaryId) {
+		if (secondaryId == null) {
+			return false;
+		}
+
 		final Connector resolvedConnector = connector.resolve();
 		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns())
 					 .map(Column::getSecondaryId)

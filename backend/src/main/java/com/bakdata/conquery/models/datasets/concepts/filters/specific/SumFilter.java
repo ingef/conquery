@@ -98,7 +98,9 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		}
 
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
+			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn().stream()
+																														.map(ColumnId::resolve)
+																														.toList()));
 		}
 
 		return new RangeFilterNode(range, getAggregator());
@@ -114,7 +116,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Condition convertForTableExport(FilterContext<RANGE> filterContext) {
-		return SumCondition.onColumn(getColumn().resolve(), getSubtractColumn().resolve(), filterContext.getValue()).condition();
+		final Column subtrahend = getSubtractColumn() != null ? getSubtractColumn().resolve() : null;
+		return SumCondition.onColumn(getColumn().resolve(), subtrahend, filterContext.getValue()).condition();
 	}
 
 	@JsonIgnore

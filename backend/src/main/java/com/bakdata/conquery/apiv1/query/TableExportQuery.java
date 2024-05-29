@@ -181,8 +181,8 @@ public class TableExportQuery extends Query {
 			  .flatMap(con -> con.getTables().stream())
 			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getResolvedTable().getColumns()))
 			  .map(Column::getSecondaryId)
-			  .map(SecondaryIdDescriptionId::resolve)
 			  .filter(Objects::nonNull)
+			  .map(SecondaryIdDescriptionId::resolve)
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
 			  // Using for each and not a collector allows us to guarantee sorted insertion.

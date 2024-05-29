@@ -51,10 +51,10 @@ public class CountFilter extends Filter<Range.LongRange> {
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn().resolve()), getDistinctByColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn().resolve()), getDistinctByColumn().stream().map(ColumnId::resolve).toList()));
 		}
 
-		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn())));
+		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn().resolve())));
 
 	}
 
