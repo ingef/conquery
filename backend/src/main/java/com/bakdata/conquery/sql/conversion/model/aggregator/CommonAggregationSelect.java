@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 
@@ -23,23 +24,23 @@ import lombok.Getter;
 @Getter
 class CommonAggregationSelect<T> {
 
-	private final List<? extends SqlSelect> rootSelects;
+	private final List<SingleColumnSqlSelect> rootSelects;
 	private final FieldWrapper<T> groupBy;
 	private final QueryStep additionalPredecessor;
 
-	public CommonAggregationSelect(List<? extends SqlSelect> rootSelects, FieldWrapper<T> groupBy, QueryStep additionalPredecessor) {
+	public CommonAggregationSelect(List<SingleColumnSqlSelect> rootSelects, FieldWrapper<T> groupBy, QueryStep additionalPredecessor) {
 		this.rootSelects = rootSelects;
 		this.groupBy = groupBy;
 		this.additionalPredecessor = additionalPredecessor;
 	}
 
-	public CommonAggregationSelect(SqlSelect rootSelect, FieldWrapper<T> groupBy) {
+	public CommonAggregationSelect(SingleColumnSqlSelect rootSelect, FieldWrapper<T> groupBy) {
 		this.rootSelects = List.of(rootSelect);
 		this.groupBy = groupBy;
 		this.additionalPredecessor = null;
 	}
 
-	public CommonAggregationSelect(List<? extends SqlSelect> rootSelects, FieldWrapper<T> groupBy) {
+	public CommonAggregationSelect(List<SingleColumnSqlSelect> rootSelects, FieldWrapper<T> groupBy) {
 		this.rootSelects = rootSelects;
 		this.groupBy = groupBy;
 		this.additionalPredecessor = null;

@@ -30,6 +30,7 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -187,7 +188,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
-		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
+		List<SingleColumnSqlSelect> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
@@ -223,13 +224,13 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			ConnectorSqlTables tables,
 			NameGenerator nameGenerator
 	) {
-		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
+		List<SingleColumnSqlSelect> preprocessingSelects = new ArrayList<>();
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		List<ExtractingSqlSelect<?>> distinctByRootSelects =
+		List<SingleColumnSqlSelect> distinctByRootSelects =
 				distinctByColumns.stream()
 								 .map(column -> new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Object.class))
 								 .collect(Collectors.toList());
@@ -249,15 +250,15 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	 */
 	private static QueryStep createRowNumberCte(
 			SqlIdColumns ids,
-			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
-			List<ExtractingSqlSelect<?>> distinctByRootSelects,
+			SingleColumnSqlSelect sumColumnRootSelect,
+			List<SingleColumnSqlSelect> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
 			NameGenerator nameGenerator
 	) {
 		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
-		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
+		SingleColumnSqlSelect qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
 
 		List<Field<?>> partitioningFields = Stream.concat(
 														  qualifiedIds.toFields().stream(),
