@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -33,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -40,6 +42,7 @@ import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 @Slf4j
@@ -47,7 +50,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 	private static final String EVENTS_FIELD = "events";
 	private static final String EVENTS_TABLE = "events_unioned";
-	private static final String PRIMARY_COLUMN = "primary_column";
+	private static final String PRIMARY_COLUMN_ALIAS = SharedAliases.PRIMARY_COLUMN.getAlias();
 	private static final String ENTITIES_TABLE = "entities";
 	private static final String VALIDITY_DATE_SELECT = "unioned";
 	private static final String VALIDITY_DATES_TABLE = "validity_dates";
@@ -157,13 +160,16 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		org.jooq.Table<Record1<Object>> entitiesUnioned =
 				union(connectors, connector -> createCountEntitiesQuery(connector, childCondition), Select::union, ENTITIES_TABLE);
 
-		SelectJoinStep<Record1<Integer>> entitiesQuery = dslContext.select(DSL.countDistinct(entitiesUnioned.field(PRIMARY_COLUMN)).as(PRIMARY_COLUMN))
+		SelectJoinStep<Record1<Integer>> entitiesQuery = dslContext.select(
+																		   DSL.countDistinct(entitiesUnioned.field(PRIMARY_COLUMN_ALIAS))
+																			  .as(PRIMARY_COLUMN_ALIAS)
+																   )
 																   .from(entitiesUnioned);
 
 		Result<?> result = executionService.fetch(entitiesQuery);
 		try {
 			// we will get an Integer as SQL return type of SUM select, but MatchingStats expect a long
-			Integer value = (Integer) result.getValue(0, PRIMARY_COLUMN);
+			Integer value = (Integer) result.getValue(0, PRIMARY_COLUMN_ALIAS);
 			return Objects.requireNonNull(value).longValue();
 		}
 		catch (Exception e) {
@@ -173,9 +179,12 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	}
 
 	private SelectConditionStep<Record1<Object>> createCountEntitiesQuery(Connector connector, Optional<CTCondition> childCondition) {
-		return dslContext.select(TablePrimaryColumnUtil.findPrimaryColumn(connector.getTable(), databaseConfig))
-						 .from(DSL.table(DSL.name(connector.getTable().getName())))
-						 .where(toJooqCondition(connector, childCondition));
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(connector.getTable(), databaseConfig).as(PRIMARY_COLUMN_ALIAS);
+		Table<Record> connectorTable = DSL.table(DSL.name(connector.getTable().getName()));
+		Condition connectorCondition = toJooqCondition(connector, childCondition);
+		return dslContext.select(primaryColumn)
+						 .from(connectorTable)
+						 .where(connectorCondition);
 	}
 
 	/**
