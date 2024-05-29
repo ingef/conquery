@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @Builder
@@ -26,6 +27,7 @@ public class SqlConnectorConfig {
 	/**
 	 * Keys must match the name of existing {@link Dataset}s.
 	 */
+	@NonNull
 	@Getter(AccessLevel.PRIVATE)
 	private Map<String, DatabaseConfig> databaseConfigs;
 
