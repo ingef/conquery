@@ -121,7 +121,7 @@ public class PreviewConfig {
 	@JsonIgnore
 	public boolean isSelectsUnique() {
 		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
-			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).mapToLong(Collection::size).sum();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
