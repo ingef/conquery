@@ -20,7 +20,7 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 	@Override
 	public List<List<Integer>> toEpochDayRangeList(String multiDateRange) {
 
-		if (multiDateRange.equals(EMPTY_RANGE_BRACES)) {
+		if (multiDateRange == null || multiDateRange.equals(EMPTY_RANGE_BRACES)) {
 			return Collections.emptyList();
 		}
 
@@ -36,6 +36,10 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 
 	@Override
 	public List<Integer> toEpochDayRange(String daterange) {
+
+		if (daterange == null) {
+			return Collections.emptyList();
+		}
 
 		String[] dates = daterange.split(DATE_SEPARATOR);
 		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end.");
