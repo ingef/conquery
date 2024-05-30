@@ -16,12 +16,11 @@ export const useStartup = ({ ready }: { ready?: boolean }) => {
 
   useEffect(() => {
     async function load() {
-      dispatch(resetMessage());
-
       if (ready) {
-        await Promise.all([loadMe(), loadConfig()]);
-
-        loadDatasets();
+        dispatch(resetMessage());
+        await loadMe();
+        await loadConfig();
+        setTimeout(loadDatasets, 300);
       }
     }
     load();
