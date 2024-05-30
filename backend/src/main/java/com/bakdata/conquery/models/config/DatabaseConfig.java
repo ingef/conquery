@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.config;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Builder
+@Jacksonized
 public class DatabaseConfig {
 
 	private static final String DEFAULT_PRIMARY_COLUMN = "pid";
