@@ -1,10 +1,13 @@
 {
-  "label": "COUNT_QUARTERS on date range with start and end column",
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
   },
-  "expectedCsv": "tests/sql/selects/count_quarters/date_range/expected.csv",
+  "label": "COUNT_QUARTERS on single postgres daterange column",
+  "expectedCsv": "tests/sql/selects/count_quarters/postgres/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -39,8 +42,7 @@
           "selects": {
             "name": "count_quarters_select",
             "type": "COUNT_QUARTERS",
-            "startColumn": "table1.datum_start",
-            "endColumn": "table1.datum_end"
+            "column": "table1.datum"
           }
         }
       ]
@@ -49,7 +51,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/count_quarters/date_range/content.csv",
+        "csv": "tests/sql/selects/count_quarters/postgres/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -57,12 +59,8 @@
         },
         "columns": [
           {
-            "name": "datum_start",
-            "type": "DATE"
-          },
-          {
-            "name": "datum_end",
-            "type": "DATE"
+            "name": "datum",
+            "type": "DATE_RANGE"
           }
         ]
       }

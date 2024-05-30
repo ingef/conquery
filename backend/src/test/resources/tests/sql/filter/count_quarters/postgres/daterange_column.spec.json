@@ -1,10 +1,13 @@
 {
-  "label": "COUNT_QUARTERS on date range with start and end column",
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
   },
-  "expectedCsv": "tests/sql/selects/count_quarters/date_range/expected.csv",
+  "label": "COUNT_QUARTERS filter on single postgres daterange column",
+  "expectedCsv": "tests/sql/filter/count_quarters/postgres/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -19,9 +22,14 @@
           "tables": [
             {
               "id": "count.count_connector",
-              "selects": [
-                "count.count_connector.count_quarters_select"
-              ]
+              "filters": {
+                "filter": "count.count_connector.count_quarters_filter",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 2,
+                  "max": 3
+                }
+              }
             }
           ]
         }
@@ -36,11 +44,10 @@
         {
           "label": "count_connector",
           "table": "table1",
-          "selects": {
-            "name": "count_quarters_select",
+          "filters": {
+            "name": "count_quarters_filter",
             "type": "COUNT_QUARTERS",
-            "startColumn": "table1.datum_start",
-            "endColumn": "table1.datum_end"
+            "column": "table1.datum"
           }
         }
       ]
@@ -49,7 +56,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/count_quarters/date_range/content.csv",
+        "csv": "tests/sql/filter/count_quarters/postgres/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -57,12 +64,8 @@
         },
         "columns": [
           {
-            "name": "datum_start",
-            "type": "DATE"
-          },
-          {
-            "name": "datum_end",
-            "type": "DATE"
+            "name": "datum",
+            "type": "DATE_RANGE"
           }
         ]
       }
