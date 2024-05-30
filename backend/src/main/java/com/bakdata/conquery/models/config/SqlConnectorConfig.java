@@ -39,7 +39,10 @@ public class SqlConnectorConfig {
 
 	@ValidationMethod(message = "At lease 1 DatabaseConfig has to be present if SqlConnector config is enabled")
 	public boolean isValidSqlConnectorConfig() {
-		return enabled && databaseConfigs != null && !databaseConfigs.isEmpty();
+		if (!enabled) {
+			return true;
+		}
+		return databaseConfigs != null && !databaseConfigs.isEmpty();
 	}
 
 }
