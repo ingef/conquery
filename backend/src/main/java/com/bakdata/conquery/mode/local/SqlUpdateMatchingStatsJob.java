@@ -1,8 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record1;
-import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
@@ -208,27 +206,24 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		ColumnDateRange anyOfTheUnionedDates = validityDateMap.get(connectors.get(0)).get(0);
 		// ensure we have a start and end field (and not a single-column range), because we need to get the min(start) and max(end)
 		ColumnDateRange dualColumn = functionProvider.toDualColumn(anyOfTheUnionedDates);
-		SelectJoinStep<Record2<Date, Date>> dateSpanQuery = dslContext.select(
-																			  DSL.min(dualColumn.getStart()).as(MIN_VALIDITY_DATE_FIELD),
-																			  DSL.max(dualColumn.getEnd()).as(MAX_VALIDITY_DATE_FIELD)
-																	  )
-																	  .from(validityDatesUnioned);
+		// the get the overall min and max
+		ColumnDateRange minAndMax = ColumnDateRange.of(DSL.min(dualColumn.getStart()), DSL.max(dualColumn.getEnd()));
+		// finally, we create the proper string expression which handles possible +/-infinity date values
+		Field<String> validityDateExpression = functionProvider.daterangeStringExpression(minAndMax).as(VALIDITY_DATE_SELECT);
+		SelectJoinStep<Record1<String>> dateSpanQuery = dslContext.select(validityDateExpression)
+																  .from(validityDatesUnioned);
 
 		Result<?> result = executionService.fetch(dateSpanQuery);
-		try {
+		try (ResultSet resultSet = result.intoResultSet()) {
+
 			// If no values were encountered this the result is empty: Table might be empty, or condition does not match any node.
-			if (result.isEmpty()) {
+			if (!resultSet.isBeforeFirst()) {
 				return null;
 			}
 
-			LocalDate minDate = getDateFromResult(result, MIN_VALIDITY_DATE_FIELD, null);
-			LocalDate maxDate = getDateFromResult(result, MAX_VALIDITY_DATE_FIELD, null);
-
-			if (maxDate != null) {
-				// we treat the end date as excluded internally when using ColumnDateRanges, but a CDateRange expects an inclusive range
-				maxDate = maxDate.minusDays(1);
-			}
-			return CDateRange.of(minDate, maxDate);
+			resultSet.next(); // we advance to first line of the ResultSet
+			List<Integer> dateRange = executionService.getResultSetProcessor().getDateRange(resultSet, 1);
+			return CDateRange.fromList(dateRange);
 		}
 		catch (Exception e) {
 			log.error("Expecting exactly 2 columns (start and end date) of type date when querying for the date span of a concept. Error: ", e);
@@ -259,13 +254,6 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		return dslContext.select(columnDateRange.toFields())
 						 .from(DSL.table(DSL.name(connector.getTable().getName())))
 						 .where(toJooqCondition(connector, childCondition));
-	}
-
-	private LocalDate getDateFromResult(Result<?> result, String field, LocalDate defaultDate) {
-		return Optional.ofNullable(result.getValue(0, field))
-					   .map(Object::toString)
-					   .map(LocalDate::parse)
-					   .orElse(defaultDate);
 	}
 
 	private static <T, R extends Record> org.jooq.Table<R> union(
