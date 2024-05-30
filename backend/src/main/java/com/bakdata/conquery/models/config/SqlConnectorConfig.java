@@ -29,7 +29,7 @@ public class SqlConnectorConfig {
 	 */
 	@NonNull
 	@Getter(AccessLevel.PRIVATE)
-	private Map<String, DatabaseConfig> databaseConfigs;
+	private Map<String, @Valid DatabaseConfig> databaseConfigs;
 
 	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
 		return databaseConfigs.get(dataset.getName());
