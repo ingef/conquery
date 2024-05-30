@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Dataset;
+import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.jackson.Jacksonized;
 
 @Data
@@ -30,12 +30,16 @@ public class SqlConnectorConfig {
 	/**
 	 * Keys must match the name of existing {@link Dataset}s.
 	 */
-	@NonNull
 	@Getter(AccessLevel.PRIVATE)
 	private Map<String, @Valid DatabaseConfig> databaseConfigs;
 
 	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
 		return databaseConfigs.get(dataset.getName());
+	}
+
+	@ValidationMethod(message = "At lease 1 DatabaseConfig has to be present if SqlConnector config is enabled")
+	public boolean isValidSqlConnectorConfig() {
+		return enabled && databaseConfigs != null && !databaseConfigs.isEmpty();
 	}
 
 }
