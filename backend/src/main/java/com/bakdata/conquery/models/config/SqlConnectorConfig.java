@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -37,6 +38,7 @@ public class SqlConnectorConfig {
 		return databaseConfigs.get(dataset.getName());
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "At lease 1 DatabaseConfig has to be present if SqlConnector config is enabled")
 	public boolean isValidSqlConnectorConfig() {
 		if (!enabled) {
