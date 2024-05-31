@@ -142,7 +142,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		log.info("Restart complete");
 		
-		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
+		DatasetRegistry datasetRegistry = support.getAdminDatasetsProcessor().getDatasetRegistry();
 
 		assertThat(support.getMetaStorage().getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 

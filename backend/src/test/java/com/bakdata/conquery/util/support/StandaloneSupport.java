@@ -1,15 +1,12 @@
 package com.bakdata.conquery.util.support;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -21,9 +18,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientRequestContext;
-import jakarta.ws.rs.client.ClientRequestFilter;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -48,17 +42,7 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
-	private final AdminProcessor metaProcessor;
-	@Getter
-	private final AdminDatasetProcessor datasetsProcessor;
-	@Getter
-	private final User testUser;
-	@Getter
 	private final TestDataImporter testImporter;
-
-	public AuthorizationController getAuthorizationController() {
-		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
-	}
 
 	public void waitUntilWorkDone() {
 		testConquery.waitUntilWorkDone();
@@ -92,27 +76,11 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public Client getClient() {
-		return testConquery.getClient()
-						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(getTestUser().getId())));
+		return testConquery.getClient();
 	}
 
 	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<ID>> VALUE resolve(ID id) {
 		return (VALUE) getDatasetRegistry().get(id);
-	}
-
-	@Data
-	private static class ConqueryAuthenticationFilter implements ClientRequestFilter {
-		private final String token;
-
-		@Override
-		public void filter(ClientRequestContext requestContext) throws IOException {
-			// If none set to provided token
-			if(requestContext.getHeaders().containsKey("Authorization")){
-				return;
-			}
-
-			requestContext.getHeaders().add("Authorization", "Bearer " + getToken());
-		}
 	}
 
 }

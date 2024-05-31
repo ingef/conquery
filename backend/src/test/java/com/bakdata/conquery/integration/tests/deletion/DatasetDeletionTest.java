@@ -100,17 +100,17 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteDataset(dataset))
+			assertThatThrownBy(() -> conquery.getAdminDatasetsProcessor().deleteDataset(dataset))
 					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
 			conquery.getNamespace().getStorage().getTables()
-					.forEach(tableId -> conquery.getDatasetsProcessor().deleteTable(tableId, true));
+					.forEach(tableId -> conquery.getAdminDatasetsProcessor().deleteTable(tableId, true));
 
 			conquery.waitUntilWorkDone();
 
 			// Finally delete dataset
-			conquery.getDatasetsProcessor().deleteDataset(dataset);
+			conquery.getAdminDatasetsProcessor().deleteDataset(dataset);
 
 			conquery.waitUntilWorkDone();
 
@@ -178,7 +178,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conqueryReimport, test.getRawConcepts());
 			conqueryReimport.waitUntilWorkDone();
 
-			assertThat(conqueryReimport.getDatasetsProcessor().getDatasetRegistry().get(conqueryReimport.getDataset().getId()))
+			assertThat(conqueryReimport.getAdminDatasetsProcessor().getDatasetRegistry().get(conqueryReimport.getDataset().getId()))
 					.describedAs("Dataset after re-import.")
 					.isNotNull();
 

@@ -211,7 +211,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			log.info("Issuing deletion of import {}", conceptId);
 			concept = Objects.requireNonNull(conquery.getNamespace().getStorage().getConcept(conceptId));
-			conquery.getDatasetsProcessor().deleteConcept(concept);
+			conquery.getAdminDatasetsProcessor().deleteConcept(concept);
 
 			conquery.waitUntilWorkDone();
 		}

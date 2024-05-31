@@ -239,7 +239,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
+			conquery.getAdminDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
 			conquery.waitUntilWorkDone();
 		}
 

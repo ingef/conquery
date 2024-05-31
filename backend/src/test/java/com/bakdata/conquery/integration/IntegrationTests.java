@@ -253,6 +253,8 @@ public class IntegrationTests {
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf, testDataImporter);
 			reusedInstances.put(confString, conquery);
+
+			// Start the fresh instance
 			conquery.beforeAll();
 		}
 		TestConquery conquery = reusedInstances.get(confString);

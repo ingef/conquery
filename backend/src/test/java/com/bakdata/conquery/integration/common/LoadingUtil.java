@@ -321,7 +321,7 @@ public class LoadingUtil {
 		}
 
 		try (InputStream in = content.getIdMapping().stream()) {
-			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+			support.getAdminDatasetsProcessor().setIdMapping(in, support.getNamespace());
 		}
 	}
 

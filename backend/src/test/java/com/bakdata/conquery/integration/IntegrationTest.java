@@ -44,8 +44,6 @@ public interface IntegrationTest {
 		@Override
 		public void execute(String name, TestConquery testConquery) throws Exception {
 			StandaloneSupport conquery = testConquery.getSupport(name);
-			// Because Shiro works with a static Security manager
-			testConquery.getStandaloneCommand().getManagerNode().getAuthController().registerStaticSecurityManager();
 
 			try {
 				execute(conquery);
