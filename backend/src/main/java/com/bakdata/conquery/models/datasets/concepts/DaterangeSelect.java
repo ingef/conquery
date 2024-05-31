@@ -38,7 +38,7 @@ public interface DaterangeSelect {
 		if (getColumn() != null) {
 			return true;
 		}
-		return getStartColumn().getTable() == getEndColumn().getTable();
+		return getStartColumn().getTable().equals(getEndColumn().getTable());
 	}
 
 	@JsonIgnore
