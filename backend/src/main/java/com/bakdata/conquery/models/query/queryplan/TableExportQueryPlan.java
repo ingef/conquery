@@ -170,7 +170,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				continue;
 			}
 
-			if (!positions.containsKey(column)) {
+			final ColumnId columnId = column.getId();
+			if (!positions.containsKey(columnId)) {
 				continue;
 			}
 
@@ -178,9 +179,9 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				continue;
 			}
 
-			final int position = positions.get(column);
+			final int position = positions.get(columnId);
 
-			if (!rawConceptValues && column.equals(connector.getColumn())) {
+			if (!rawConceptValues && columnId.equals(connector.getColumn())) {
 				entry[position] = cblock.getMostSpecificChildLocalId(event);
 				continue;
 			}
