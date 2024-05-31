@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.NoSuchElementException;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -24,11 +22,7 @@ public interface NsIdResolver extends Injectable {
 	<ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id);
 
 	static NsIdResolver getResolver(DeserializationContext ctxt) throws JsonMappingException {
-		NsIdResolver nsIdResolver = (NsIdResolver) ctxt
+		return (NsIdResolver) ctxt
 				.findInjectableValue(NsIdResolver.class.getName(), null, null);
-		if (nsIdResolver == null) {
-			throw new NoSuchElementException("Could not find injected namespaces");
-		}
-		return nsIdResolver;
 	}
 }

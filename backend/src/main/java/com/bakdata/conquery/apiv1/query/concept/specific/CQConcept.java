@@ -158,7 +158,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@JsonIgnore
 	public Concept<?> getConcept() {
-		return elements.get(0).<ConceptElement<?>>resolve().getConcept();
+		return elements.get(0).resolve().getConcept();
 	}
 
 	@JsonIgnore

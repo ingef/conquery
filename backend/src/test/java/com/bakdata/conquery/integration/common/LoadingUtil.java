@@ -91,7 +91,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -102,11 +102,13 @@ public class LoadingUtil {
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 
-			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, false);
+
+			// Since we don't submit the query but injecting it into the manager we need to set the id resolver
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -328,15 +330,35 @@ public class LoadingUtil {
 
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry());
+					required.toSecondaryId(support.getDataset());
 
-			support.getDatasetsProcessor()
-				   .addSecondaryId(support.getNamespace(), description);
+			uploadSecondaryId(support, description);
 
 			out.put(description.getName(), description);
 		}
 
 		return out;
+	}
+
+	private static void uploadSecondaryId(@NonNull StandaloneSupport support, @NonNull SecondaryIdDescription secondaryIdDescription) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Invocation.Builder request = support.getClient()
+												  .target(conceptURI)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.post(Entity.entity(secondaryIdDescription, MediaType.APPLICATION_JSON_TYPE))) {
+
+
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -62,7 +61,11 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		final HashSet<Id<?>> ids = new HashSet<>();
 		id.collectIds(ids);
 		for (Id<?> subId : ids) {
-			if (subId instanceof NamespacedId && nsIdResolver != null) {
+			if (subId.getIdResolver() != null) {
+				// Ids are constructed of other ids that might already have a resolver set
+				continue;
+			}
+			if (subId instanceof NamespacedId) {
 				subId.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) subId));
 			}
 			else if (metaStorage != null) {
@@ -127,16 +130,9 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		MetaStorage metaStorage = null;
 		final Class<?> activeView = ctxt.getActiveView();
 		if (!isTestMode(ctxt, activeView)) {
-
-			if (NamespacedId.class.isAssignableFrom(idClass)) {
-				nsIdResolver = NsIdResolver.getResolver(ctxt);
-			}
-			else if (WorkerId.class.isAssignableFrom(idClass)) {
-				// TODO WorkerIds are not resolved yet
-			}
-			else {
-				metaStorage = MetaStorage.get(ctxt);
-			}
+			// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
+			nsIdResolver = NsIdResolver.getResolver(ctxt);
+			metaStorage = MetaStorage.get(ctxt);
 		}
 
 

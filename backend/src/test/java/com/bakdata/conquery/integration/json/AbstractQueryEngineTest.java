@@ -38,12 +38,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
+		// Don't validate query here because it is in an incomplete state
+		// The query is validated when it is received by the API
 		Query query = getQuery();
-
-		assertThat(standaloneSupport.getValidator().validate(query))
-				.describedAs("Query Validation Errors")
-				.isEmpty();
-
 
 		log.info("{} QUERY INIT", getLabel());
 

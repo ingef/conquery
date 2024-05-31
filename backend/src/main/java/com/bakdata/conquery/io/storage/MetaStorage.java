@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -241,11 +240,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
-		MetaStorage storage = (MetaStorage) ctxt
+		return (MetaStorage) ctxt
 				.findInjectableValue(MetaStorage.class.getName(), null, null);
-		if (storage == null) {
-			throw new NoSuchElementException("Could not find injected meta storage");
-		}
-		return storage;
 	}
 }

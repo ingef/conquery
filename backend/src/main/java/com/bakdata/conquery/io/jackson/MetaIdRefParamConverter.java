@@ -8,6 +8,12 @@ import jakarta.ws.rs.ext.ParamConverter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * This converter converts MetaIds to the concrete objects
+ *
+ * @param <ID>
+ * @param <VALUE>
+ */
 @RequiredArgsConstructor
 public class MetaIdRefParamConverter<ID extends Id<VALUE>, VALUE extends Identifiable<ID>> implements ParamConverter<VALUE> {
 

@@ -4,7 +4,6 @@ import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -38,7 +37,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Override
 	public ID getId() {
 		if (cachedId == null) {
-			final ID intern = IdUtil.intern(createId());
+			final ID intern = createId();
 			// Set resolver
 			IdDeserializer.setResolver(intern, metaStorage, nsIdResolver);
 

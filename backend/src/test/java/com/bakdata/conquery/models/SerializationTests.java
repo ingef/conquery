@@ -575,7 +575,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
 
 
-		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
+		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10, getWorkerStorage());
 
 		final WorkerStorage workerStorage = getWorkerStorage();
 		workerStorage.updateDataset(dataset);

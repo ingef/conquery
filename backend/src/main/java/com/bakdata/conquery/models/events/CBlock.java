@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -90,7 +91,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
-	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
+	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize, NsIdResolver nsIdResolver) {
 		final int root = bucket.getBucket() * bucketSize;
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
@@ -98,7 +99,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
-		return new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		cBlock.setNsIdResolver(nsIdResolver);
+		return cBlock;
 	}
 
 	/**

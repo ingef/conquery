@@ -6,15 +6,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
+import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -26,12 +27,33 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectReader;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 @UtilityClass
 @Slf4j
 public class IntegrationUtils {
+
+
+	/**
+	 * Get a configured json reader for test specifications.
+	 *
+	 * @return the configured object reader
+	 */
+	public static ObjectReader getTestSpecReader() {
+		final MutableInjectableValues values = new MutableInjectableValues();
+		PlaceholderMetaStorage.INSTANCE.inject(values);
+		PlaceHolderNsIdResolver.INSTANCE.inject(values);
+
+		return Jackson.MAPPER.copy()
+							 .setInjectableValues(values)
+							 .readerFor(ConqueryTestSpec.class)
+							 .withView(View.TestNoResolve.class); // TODO View might be obsolete
+	}
 
 
 	/**
@@ -57,7 +79,7 @@ public class IntegrationUtils {
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
+		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
 	}
 
 	/**

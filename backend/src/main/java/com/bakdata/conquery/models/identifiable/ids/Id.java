@@ -12,6 +12,7 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -32,6 +33,7 @@ public abstract class Id<TYPE> {
 	 */
 	@JsonIgnore
 	@Setter
+	@Getter
 	private Supplier<TYPE> idResolver;
 
 	@Override

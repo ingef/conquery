@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -100,15 +99,15 @@ public final class IdUtil {
 
 		default ID parse(List<String> parts) {
 			//first check if we get the result with the list (which might be a sublist)
-			ID result = IIdInterner.forParser(this).get(parts);
+			ID result = null; // TODO IIdInterner.forParser(this).get(parts);
 			if (result == null) {
 				result = createId(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(parts), result);
-				if (secondResult != null) {
-					checkConflict(result, secondResult);
-					return secondResult;
-				}
+				//				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(parts), result);
+				//				if (secondResult != null) {
+				//					checkConflict(result, secondResult);
+				//					return secondResult;
+				//				}
 			}
 			return result;
 		}
@@ -138,16 +137,16 @@ public final class IdUtil {
 		default ID parse(IdIterator parts) {
 			//first check if we get the result with the list (which might be a sublist)
 			List<String> input = parts.getRemaining();
-			ID result = IIdInterner.forParser(this).get(input);
+			ID result = null; // TODO IIdInterner.forParser(this).get(input);
 			if (result == null) {
 				parts.internNext();
 				result = parseInternally(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(input), result);
-				if (secondResult != null) {
-					checkConflict(result, secondResult);
-					return secondResult;
-				}
+				//				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(input), result);
+				//				if (secondResult != null) {
+				//					checkConflict(result, secondResult);
+				//					return secondResult;
+				//				}
 				return result;
 			}
 			parts.consumeAll();

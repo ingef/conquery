@@ -75,8 +75,9 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 		executionResults.put(execution.getId(), result);
 	}
 
-	public final  ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
-		final ManagedExecution execution = createExecution(query, user, submittedDataset, system);
+	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
+		final ManagedExecution execution = createExecution(query, user, namespace, system);
+
 		execute(namespace, execution, config);
 
 		return execution;
@@ -118,15 +119,17 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 	protected abstract void doExecute(Namespace namespace, InternalExecution<?> execution);
 
 	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		return createQuery(query, UUID.randomUUID(), user, submittedDataset, system);
+	public final ManagedExecution createExecution(QueryDescription query, User user, Namespace namespace, boolean system) {
+		return createQuery(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
+	public final ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, storage);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
+		managed.setMetaStorage(storage);
+		managed.setNsIdResolver(namespace.getStorage());
 
 		// Store the execution
 		storage.addExecution(managed);

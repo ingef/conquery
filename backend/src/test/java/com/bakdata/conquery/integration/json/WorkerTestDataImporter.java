@@ -15,6 +15,7 @@ import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -68,11 +69,10 @@ public class WorkerTestDataImporter implements TestDataImporter {
 								  test.getRawConnector(),
 								  ConceptTreeConnector.class,
 								  conn -> {
-									  conn.setTable(conn.getValidityDates().get(0).getColumn().getTable());
+									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
 									  conn.setConcept(test.getConcept());
-									  conn.getValidityDates().forEach(validityDate -> validityDate.setConnector(conn));
-									  conn.getFilters().forEach(filter -> filter.setConnector(conn));
-								  }
+								  },
+								  true
 						  )
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));

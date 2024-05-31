@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -26,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 
 	private final ConqueryTestSpec testSpec;
-	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.copy().readerFor(ConqueryTestSpec.class).withView(View.TestNoResolve.class);
+	public static final ObjectReader TEST_SPEC_READER = IntegrationUtils.getTestSpecReader();
 	public static final Validator VALIDATOR = Validators.newValidator();
 
 	public JsonIntegrationTest(InputStream in) throws IOException {

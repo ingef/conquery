@@ -319,7 +319,7 @@ public class QueryProcessor {
 				execution =
 				((ManagedQuery) namespace
 						.getExecutionManager()
-						.createExecution(query, subject.getUser(), dataset, false));
+						.createExecution(query, subject.getUser(), namespace, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -423,7 +423,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(namespace, query, subject.getUser(), dataset, config, system);
+		return executionManager.runQuery(namespace, query, subject.getUser(), config, system);
 	}
 
 	/**
@@ -464,7 +464,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(execution.getSubmitted(), user, execution.getDataset().resolve(), false);
+					executionManager.createExecution(execution.getSubmitted(), user, namespace, false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);

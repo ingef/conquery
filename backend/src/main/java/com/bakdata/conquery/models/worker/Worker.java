@@ -96,6 +96,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setDataset(dataset.getId());
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
+		info.setNsIdResolver(workerStorage);
 
 		workerStorage.openStores(persistenceMapper);
 		workerStorage.updateDataset(dataset);
