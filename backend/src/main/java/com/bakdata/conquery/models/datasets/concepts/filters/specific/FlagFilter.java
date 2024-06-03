@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -31,7 +31,7 @@ import lombok.ToString;
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
  * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
- *
+ * <p>
  * The selected flags are logically or-ed.
  */
 @Getter
@@ -73,7 +73,7 @@ public class FlagFilter extends Filter<String[]> {
 			columns[index] = column;
 		}
 
-		if(!missing.isEmpty()){
+		if (!missing.isEmpty()) {
 			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
@@ -93,7 +93,7 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterConverterHolder<?, String[]> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new FlagSqlAggregator());
+	public FilterConverter<FlagFilter, String[]> createConverter() {
+		return new FlagSqlAggregator();
 	}
 }

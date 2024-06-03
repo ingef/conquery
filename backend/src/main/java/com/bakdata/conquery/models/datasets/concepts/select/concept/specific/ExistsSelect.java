@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.ExistsSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
@@ -27,8 +27,8 @@ public class ExistsSelect extends UniversalSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new ExistsSelectConverter());
+	public SelectConverter<ExistsSelect> createConverter() {
+		return new ExistsSelectConverter();
 	}
 
 	private Set<Table> collectRequiredTables() {

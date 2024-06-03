@@ -6,14 +6,14 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.BigMultiSelectFilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
- *
+ * <p>
  * This Filter can use optional labels or a template for displaying, same as {@link MultiSelectFilter}.
  * However, the frontend will fetch and display data beyond the  defined values for {@link BigMultiSelectFilter}/BIG_MULTI_SELECT.
  */
@@ -34,7 +34,7 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterConverterHolder<?, String[]> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new BigMultiSelectFilterConverter());
+	public FilterConverter<BigMultiSelectFilter, String[]> createConverter() {
+		return new BigMultiSelectFilterConverter();
 	}
 }

@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,13 +24,15 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
  */
-@Getter @Setter @Slf4j
-@CPSType(id="DATE_DISTANCE", base=Filter.class)
+@Getter
+@Setter
+@Slf4j
+@CPSType(id = "DATE_DISTANCE", base = Filter.class)
 public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@NotNull
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
-	
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE);
@@ -44,14 +46,14 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 	}
-	
+
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
 		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
 	}
 
 	@Override
-	public FilterConverterHolder<?, Range.LongRange> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new DateDistanceSqlAggregator());
+	public FilterConverter<DateDistanceFilter, Range.LongRange> createConverter() {
+		return new DateDistanceSqlAggregator();
 	}
 }

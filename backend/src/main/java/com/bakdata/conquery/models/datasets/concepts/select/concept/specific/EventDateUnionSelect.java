@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.EventDateUnionSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 
 /**
  * Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query.
@@ -34,7 +34,7 @@ public class EventDateUnionSelect extends UniversalSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new EventDateUnionSelectConverter());
+	public SelectConverter<EventDateUnionSelect> createConverter() {
+		return new EventDateUnionSelectConverter();
 	}
 }

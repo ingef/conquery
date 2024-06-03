@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
@@ -43,7 +43,7 @@ public class CountQuartersSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new CountQuartersSqlAggregator());
+	public SelectConverter<CountQuartersSelect> createConverter() {
+		return new CountQuartersSqlAggregator();
 	}
 }
