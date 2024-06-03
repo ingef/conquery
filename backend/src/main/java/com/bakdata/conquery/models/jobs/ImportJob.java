@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportJob extends Job {
 
-	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 	private final DistributedNamespace namespace;
 	@Getter
 	private final Table table;
@@ -91,20 +90,15 @@ public class ImportJob extends Job {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 			}
 
-
 			log.trace("Begin reading data.");
+
 			Import imp = null;
 
-			while (true) {
-
-				final PreprocessedData container = parser.readData();
-
-				if (container == null) {
-					break;
-				}
+			for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> parser){
 
 				if (imp == null) {
-					imp = createImport(header, container.getStores(), table.getColumns(), container.size(), table);
+					// We need a container to create a description.
+					imp = createImport(header, container.getStores(), table.getColumns(), table);
 
 					namespace.getWorkerHandler().sendToAll(new AddImport(imp));
 					namespace.getStorage().updateImport(imp);
@@ -113,7 +107,7 @@ public class ImportJob extends Job {
 				log.trace("Done reading data. Contains {} Entities.", container.size());
 
 				log.info("Importing {} into {}", header.getName(), tableId);
-				//TODO immediately execute job so we dont persist the data
+
 				final ImportJob importJob = new ImportJob(
 						namespace,
 						table,
@@ -130,12 +124,12 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private static Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size, Table table) {
+	private static Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, Table table) {
 		final Import imp = new Import(table);
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
-		imp.setNumberOfEntities(size);
+		imp.setNumberOfEntities(header.getNumberOfEntities());
 
 		final ImportColumn[] importColumns = new ImportColumn[columns.length];
 

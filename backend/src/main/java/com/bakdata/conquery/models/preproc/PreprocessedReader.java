@@ -2,15 +2,16 @@ package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
 /**
@@ -18,7 +19,7 @@ import lombok.experimental.Accessors;
  * Header then Dictionaries then Data. Only this order is possible.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class PreprocessedReader implements AutoCloseable {
+public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedData> {
 	@Override
 	public void close() throws IOException {
 		parser.close();
@@ -35,6 +36,7 @@ public class PreprocessedReader implements AutoCloseable {
 
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
+	private int bucketsRemaining;
 	private final JsonParser parser;
 
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
@@ -49,27 +51,24 @@ public class PreprocessedReader implements AutoCloseable {
 		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
+		bucketsRemaining = header.getBuckets();
 
 		lastRead = lastRead.next();
 		return header;
 	}
 
 
+	@Override
+	public boolean hasNext() {
+		return bucketsRemaining > 0;
+	}
 
-	public PreprocessedData readData() throws IOException {
-		if(parser.isClosed()){
-			//TODO better handling obviously.
-			return null;
-		}
+	@SneakyThrows
+	@Override
+	public PreprocessedData next() {
+		bucketsRemaining--;
 
-		try {
-			final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
-			return dictionaries;
-		}catch (MismatchedInputException exception){
-			// MismatchedInputException is thrown when EOF file is reached.
-			//TODO actually handle end of input without state parameter.
-			return null;
-		}
+		return parser.readValueAs(PreprocessedData.class);
 	}
 
 }

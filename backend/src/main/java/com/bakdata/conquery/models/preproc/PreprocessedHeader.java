@@ -41,6 +41,9 @@ public class PreprocessedHeader {
 	 * Number of rows in the Preprocessed file.
 	 */
 	private long rows;
+	private long numberOfEntities;
+
+	private int buckets;
 
 	/**
 	 * The specific columns and their associated MajorType for validation.

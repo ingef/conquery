@@ -99,14 +99,17 @@ public class Preprocessed {
 
 		log.debug("Writing Headers");
 
+		//TODO this could actually be done at read-time, avoiding large allocations entirely. But in a different smaller PR.
+		final Map<Integer, List<String>> bucket2Entity = entityStart.keySet().stream()
+																	.collect(Collectors.groupingBy(id -> Hashing.consistentHash(id.hashCode(), buckets)));
+
+
 		final int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
 
-		final PreprocessedHeader header = new PreprocessedHeader(descriptor.getName(), descriptor.getTable(), rows, columns, hash);
+		final PreprocessedHeader header =
+				new PreprocessedHeader(descriptor.getName(), descriptor.getTable(), rows, entityStart.size(), bucket2Entity.size(), columns, hash);
 
-
-
-
-		writePreprocessed(file, header, entityStart, entityLength, columnStores, buckets);
+		writePreprocessed(file, header, entityStart, entityLength, columnStores, bucket2Entity);
 	}
 
 	/**
@@ -175,7 +178,7 @@ public class Preprocessed {
 		return columnStores;
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, int buckets) throws IOException {
+	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, Map<Integer, List<String>> bucket2Entities) throws IOException {
 		final OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createGenerator(out)) {
 
@@ -185,12 +188,9 @@ public class Preprocessed {
 
 			log.debug("Writing data");
 
-			final Map<Integer, List<String>>
-					entity2Bucket =
-					globalStarts.keySet().stream().collect(Collectors.groupingBy(id -> Hashing.consistentHash(id.hashCode(), buckets)));
-
-			for (Map.Entry<Integer, List<String>> bucketIds : entity2Bucket.entrySet()) {
+			for (Map.Entry<Integer, List<String>> bucketIds : bucket2Entities.entrySet()) {
 				final HashSet<String> entities = new HashSet<>(bucketIds.getValue());
+
 				final Map<String, Integer> starts = Maps.filterKeys(globalStarts, entities::contains);
 				final Map<String, Integer> lengths = Maps.filterKeys(globalLengths, entities::contains);
 
