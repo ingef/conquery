@@ -7,10 +7,10 @@ import org.jooq.impl.DSL;
 
 public class TablePrimaryColumnUtil {
 
-	public static Field<Object> findPrimaryColumn(Table table, DatabaseConfig sqlConfig) {
-		String primaryColumnName = table.getPrimaryColum() == null
-								   ? sqlConfig.getPrimaryColumn()
-								   : table.getPrimaryColum().getName();
+	public static Field<Object> findPrimaryColumn(Table table, DatabaseConfig databaseConfig) {
+		String primaryColumnName = table.getPrimaryColumn() == null
+								   ? databaseConfig.getPrimaryColumn()
+								   : table.getPrimaryColumn().getName();
 		return DSL.field(DSL.name(table.getName(), primaryColumnName));
 	}
 

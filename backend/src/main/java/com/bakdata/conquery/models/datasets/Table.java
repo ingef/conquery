@@ -41,7 +41,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	 */
 	@Nullable
 	@JsonManagedReference
-	private Column primaryColum;
+	private Column primaryColumn;
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
