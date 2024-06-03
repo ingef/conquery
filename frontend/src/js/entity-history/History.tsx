@@ -24,11 +24,13 @@ import { EntityHeader } from "./EntityHeader";
 import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
+import SearchControl from "./SearchControl";
 import SourcesControl from "./SourcesControl";
-import Timeline from "./Timeline";
+import { Timeline } from "./Timeline";
 import VisibilityControl from "./VisibilityControl";
 import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
+import { TimelineSearchProvider } from "./timelineSearchState";
 
 const FullScreen = styled("div")`
   position: fixed;
@@ -93,10 +95,6 @@ const Flex = styled("div")`
 const SxSourcesControl = styled(SourcesControl)`
   flex-shrink: 0;
   width: 450px;
-`;
-
-const SxTimeline = styled(Timeline)`
-  margin: 10px 0 0;
 `;
 
 export interface EntityIdsStatus {
@@ -179,93 +177,97 @@ export const History = () => {
     useOpenCloseInteraction();
 
   return (
-    <FullScreen>
-      <PanelGroup units="pixels" direction="horizontal">
-        <Panel minSize={400} defaultSize={400} maxSize={800}>
-          <SxNavigation
-            blurred={blurred}
-            entityIds={entityIds}
-            entityIdsStatus={entityIdsStatus}
-            currentEntityId={currentEntityId}
-            currentEntityIndex={currentEntityIndex}
-            entityStatusOptions={entityStatusOptions}
-            setEntityStatusOptions={setEntityStatusOptions}
-            onLoadFromFile={onLoadFromFile}
-            onResetHistory={onResetEntityStatus}
-          />
-        </Panel>
-        <ResizeHandle />
-        <Panel minSize={500}>
-          <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
-            <Main>
-              <Header>
-                <Controls>
-                  <SxSourcesControl
-                    options={options}
-                    sourcesFilter={sourcesFilter}
-                    setSourcesFilter={setSourcesFilter}
-                  />
-                </Controls>
-                {currentEntityId && (
-                  <EntityHeader
-                    blurred={blurred}
-                    currentEntityIndex={currentEntityIndex}
-                    currentEntityId={currentEntityId}
-                    status={currentEntityStatus}
-                    setStatus={setCurrentEntityStatus}
-                    entityStatusOptions={entityStatusOptions}
-                  />
-                )}
-              </Header>
-              <Flex>
-                <Sidebar>
-                  <VisibilityControl
-                    blurred={blurred}
-                    toggleBlurred={toggleBlurred}
-                  />
-                  {showAdvancedControls && (
-                    <DetailControl
-                      detailLevel={detailLevel}
-                      setDetailLevel={setDetailLevel}
+    <TimelineSearchProvider>
+      <FullScreen>
+        <PanelGroup units="pixels" direction="horizontal">
+          <Panel minSize={400} defaultSize={400} maxSize={800}>
+            <SxNavigation
+              blurred={blurred}
+              entityIds={entityIds}
+              entityIdsStatus={entityIdsStatus}
+              currentEntityId={currentEntityId}
+              currentEntityIndex={currentEntityIndex}
+              entityStatusOptions={entityStatusOptions}
+              setEntityStatusOptions={setEntityStatusOptions}
+              onLoadFromFile={onLoadFromFile}
+              onResetHistory={onResetEntityStatus}
+            />
+          </Panel>
+          <ResizeHandle />
+          <Panel minSize={500}>
+            <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
+              <Main>
+                <Header>
+                  <Controls>
+                    <SxSourcesControl
+                      options={options}
+                      sourcesFilter={sourcesFilter}
+                      setSourcesFilter={setSourcesFilter}
+                    />
+                  </Controls>
+                  {currentEntityId && (
+                    <EntityHeader
+                      blurred={blurred}
+                      currentEntityIndex={currentEntityIndex}
+                      currentEntityId={currentEntityId}
+                      status={currentEntityStatus}
+                      setStatus={setCurrentEntityStatus}
+                      entityStatusOptions={entityStatusOptions}
                     />
                   )}
-                  <InteractionControl
-                    onCloseAll={closeAll}
-                    onOpenAll={openAll}
-                  />
-                  <ContentControl
-                    value={contentFilter}
-                    onChange={setContentFilter}
-                  />
-                  <SidebarBottom>
-                    {resultUrls.length > 0 && (
-                      <DownloadResultsDropdownButton
-                        tiny
-                        resultUrls={resultUrls}
-                        tooltip={t("history.downloadEntityData")}
+                </Header>
+                <Flex>
+                  <Sidebar>
+                    <SearchControl />
+                    <VisibilityControl
+                      blurred={blurred}
+                      toggleBlurred={toggleBlurred}
+                    />
+                    {showAdvancedControls && (
+                      <DetailControl
+                        detailLevel={detailLevel}
+                        setDetailLevel={setDetailLevel}
                       />
                     )}
-                  </SidebarBottom>
-                </Sidebar>
-                <SxTimeline
-                  blurred={blurred}
-                  detailLevel={detailLevel}
-                  sources={sourcesSet}
-                  contentFilter={contentFilter}
-                  currentEntityInfos={currentEntityInfos}
-                  currentEntityTimeStratifiedInfos={
-                    currentEntityTimeStratifiedInfos
-                  }
-                  getIsOpen={getIsOpen}
-                  toggleOpenYear={toggleOpenYear}
-                  toggleOpenQuarter={toggleOpenQuarter}
-                />
-              </Flex>
-            </Main>
-          </ErrorBoundary>
-        </Panel>
-      </PanelGroup>
-    </FullScreen>
+                    <InteractionControl
+                      onCloseAll={closeAll}
+                      onOpenAll={openAll}
+                    />
+                    <ContentControl
+                      value={contentFilter}
+                      onChange={setContentFilter}
+                    />
+                    <SidebarBottom>
+                      {resultUrls.length > 0 && (
+                        <DownloadResultsDropdownButton
+                          tiny
+                          resultUrls={resultUrls}
+                          tooltip={t("history.downloadEntityData")}
+                        />
+                      )}
+                    </SidebarBottom>
+                  </Sidebar>
+                  <Timeline
+                    className="mt-[10px]"
+                    blurred={blurred}
+                    detailLevel={detailLevel}
+                    sources={sourcesSet}
+                    contentFilter={contentFilter}
+                    currentEntityInfos={currentEntityInfos}
+                    currentEntityTimeStratifiedInfos={
+                      currentEntityTimeStratifiedInfos
+                    }
+                    getIsOpen={getIsOpen}
+                    toggleOpenYear={toggleOpenYear}
+                    toggleOpenQuarter={toggleOpenQuarter}
+                  />
+                </Flex>
+              </Main>
+            </ErrorBoundary>
+          </Panel>
+        </PanelGroup>
+      </FullScreen>
+    </TimelineSearchProvider>
   );
 };
 

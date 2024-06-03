@@ -26,7 +26,7 @@ public class WorkerStorage extends NamespacedStorage {
 	private IdentifiableStore<CBlock> cBlocks;
 
 	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
-		super(storageFactory, pathName, validator);
+		super(storageFactory, pathName);
 	}
 
 	@Override

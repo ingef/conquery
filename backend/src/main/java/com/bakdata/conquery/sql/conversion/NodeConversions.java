@@ -1,11 +1,12 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import org.jooq.DSLContext;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
@@ -13,10 +14,10 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 public class NodeConversions extends Conversions<Visitable, ConversionContext, ConversionContext> {
 
 	private final SqlDialect dialect;
-	private final SqlConnectorConfig config;
+	private final DatabaseConfig config;
 
-	public NodeConversions(SqlDialect dialect, SqlConnectorConfig config) {
-		super(dialect.getNodeConverters());
+	public NodeConversions(SqlDialect dialect, DSLContext dslContext, DatabaseConfig config) {
+		super(dialect.getNodeConverters(dslContext));
 		this.dialect = dialect;
 		this.config = config;
 	}
