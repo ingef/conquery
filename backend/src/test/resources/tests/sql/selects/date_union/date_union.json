@@ -1,0 +1,67 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "DATE_UNION select test",
+  "expectedCsv": "tests/sql/selects/date_union/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": "concept.connector.date-union"
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "selects": {
+            "type": "DATE_UNION",
+            "name": "date-union",
+            "startColumn": "table.indexdatum_start",
+            "endColumn": "table.indexdatum_end"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/date_union/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "indexdatum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "indexdatum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "geburtsdatum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

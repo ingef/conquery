@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.DurationSumSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -44,7 +46,15 @@ public class DurationSumSelect extends Select implements DaterangeSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		// TODO fix this for 2 columns
-		return new DurationSumAggregator(getColumn());
+		if (getColumn() != null) {
+			return new DurationSumAggregator(getColumn());
+		}
+		// only relevant for ResultType in SQL mode
+		return new DurationSumAggregator(getStartColumn());
+	}
+
+	@Override
+	public SelectConverterHolder<?> createConverterHolder() {
+		return new SelectConverterHolder<>(this, new DurationSumSelectConverter());
 	}
 }

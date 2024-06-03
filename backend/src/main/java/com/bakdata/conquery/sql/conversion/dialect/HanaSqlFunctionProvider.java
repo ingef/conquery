@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -126,6 +127,15 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange forArbitraryDateRange(DaterangeSelect dateRangeSelect) {
+		String tableName = dateRangeSelect.getTable().getName();
+		if (dateRangeSelect.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, dateRangeSelect.getStartColumn(), dateRangeSelect.getEndColumn());
+		}
+		return ofStartAndEnd(tableName, dateRangeSelect.getColumn(), dateRangeSelect.getColumn());
+	}
+
+	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(
 									  DSL.min(columnDateRange.getStart()),
@@ -148,7 +158,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
+	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
 		// HANA does not support single column datemultiranges
 		return predecessor;
 	}
@@ -338,6 +348,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			startColumn = validityDate.getStartColumn();
 			endColumn = validityDate.getEndColumn();
 		}
+
+		return ofStartAndEnd(tableName, startColumn, endColumn);
+	}
+
+	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
 		Field<Date> rangeStart = DSL.coalesce(
 				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),

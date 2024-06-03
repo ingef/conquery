@@ -52,7 +52,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 									 .as(IntervalPacker.PREVIOUS_END_FIELD_NAME);
 
 		List<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
-		qualifiedSelects.add(new FieldWrapper<>(previousEnd));
+		qualifiedSelects.add(new FieldWrapper<>(previousEnd, daterange.getStart().getName(), daterange.getEnd().getName()));
 
 		Selects previousEndSelects = buildSelects(ids, daterange, qualifiedSelects, aggregationMode);
 
