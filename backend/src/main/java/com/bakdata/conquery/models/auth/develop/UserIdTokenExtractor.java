@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import jakarta.inject.Named;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -15,7 +15,7 @@ import org.jvnet.hk2.annotations.Service;
 @RequiredArgsConstructor
 @Service
 @Named("user-id")
-public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
+public class UserIdTokenExtractor implements AuthFilter.TokenExtractor {
 
 	private static final String UID_QUERY_STRING_PARAMETER = "access_token";
 

@@ -64,7 +64,7 @@ class IntervalPackingSelectsCte {
 		List<QueryStep> predecessors = List.of();
 		QueryStep actualPredecessor = predecessor;
 		if (predecessor.getQualifiedSelects().getValidityDate().get().isSingleColumnRange()) {
-			actualPredecessor = functionProvider.unnestValidityDate(predecessor, tables);
+			actualPredecessor = functionProvider.unnestValidityDate(predecessor, tables.cteName(ConceptCteStep.UNNEST_DATE));
 			predecessors = List.of(actualPredecessor);
 		}
 

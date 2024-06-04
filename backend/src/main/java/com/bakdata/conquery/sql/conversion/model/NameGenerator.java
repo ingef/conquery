@@ -47,10 +47,6 @@ public class NameGenerator {
 		return ensureValidLength(cteStep.cteName(nodeLabel));
 	}
 
-	public String cteStepName(String cteStep, String nodeLabel) {
-		return ensureValidLength("%s-%s".formatted(nodeLabel, cteStep));
-	}
-
 	public String selectName(Labeled<?> selectOrFilter) {
 		int selectCount = this.selectCountMap.merge(selectOrFilter.getName(), 1, Integer::sum);
 		String name = lowerAndReplaceWhitespace(selectOrFilter.getName());
@@ -68,10 +64,11 @@ public class NameGenerator {
 		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
 	}
 
-	public String joinedNodeName(LogicalOperation logicalOperation) {
+	public String joinedNodeName(ConqueryJoinType logicalOperation) {
 		return switch (logicalOperation) {
-			case AND -> "AND-%d".formatted(++andCount);
-			case OR -> "OR-%d".formatted(++orCount);
+			case INNER_JOIN -> "AND-%d".formatted(++andCount);
+			case OUTER_JOIN -> "OR-%d".formatted(++orCount);
+			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
 		};
 	}
 

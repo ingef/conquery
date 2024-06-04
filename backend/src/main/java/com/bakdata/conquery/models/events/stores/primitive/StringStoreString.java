@@ -27,11 +27,18 @@ public class StringStoreString implements StringStore {
 
 	@JsonCreator
 	public static StringStoreString withInternedStrings(String[] values) {
-		for (int index = 0; index < values.length; index++) {
-			values[index] = values[index] != null ? values[index].intern() : null;
+		if(shouldIntern()) {
+			for (int index = 0; index < values.length; index++) {
+				values[index] = values[index] != null ? values[index].intern() : null;
+			}
 		}
 
 		return new StringStoreString(values);
+	}
+
+	private static boolean shouldIntern() {
+		//TODO use mixin or properly wire this property
+		return "yes".equals(System.getProperty("cq.intern", "no"));
 	}
 
 	@Override
@@ -60,8 +67,8 @@ public class StringStoreString implements StringStore {
 	}
 
 	@Override
-	public <T extends ColumnStore> T createDescription() {
-		return null;
+	public StringStoreString createDescription() {
+		return ColumnStore.emptyCopy(this);
 	}
 
 	@Override

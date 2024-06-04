@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "DATE_UNION", base = Select.class)
+@JsonIgnoreProperties("categorical")
 public class DateUnionSelect extends Select implements DaterangeSelect {
 
 	@NsIdRef

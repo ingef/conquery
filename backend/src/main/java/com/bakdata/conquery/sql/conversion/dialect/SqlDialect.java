@@ -10,12 +10,19 @@ import com.bakdata.conquery.sql.conversion.Converter;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.CQExternalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
+import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
+import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
@@ -31,9 +38,7 @@ public interface SqlDialect {
 
 	SqlDateAggregator getDateAggregator();
 
-	List<NodeConverter<? extends Visitable>> getNodeConverters();
-
-	DSLContext getDSLContext();
+	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
 	SqlCDateSetParser getCDateSetParser();
 
@@ -45,15 +50,25 @@ public interface SqlDialect {
 		return false;
 	}
 
-	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
+	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters(DSLContext dslContext) {
+
+		QueryStepTransformer queryStepTransformer = new QueryStepTransformer(dslContext);
+		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepTransformer);
+
 		return List.of(
 				new CQDateRestrictionConverter(),
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
 				new CQConceptConverter(),
-				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext())),
-				new SecondaryIdQueryConverter()
+				new CQExternalConverter(),
+				new CQReusedQueryConverter(),
+				new ConceptQueryConverter(queryStepTransformer),
+				new SecondaryIdQueryConverter(),
+				new AbsoluteFormQueryConverter(formConversionUtil),
+				new EntityDateQueryConverter(formConversionUtil),
+				new RelativFormQueryConverter(formConversionUtil),
+				new TableExportQueryConverter(queryStepTransformer)
 		);
 	}
 

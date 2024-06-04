@@ -13,6 +13,8 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenCheckFilter;
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -120,7 +122,8 @@ public class AdminServlet {
 					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
-					.register(AuthCookieFilter.class);
+					.register(AuthCookieFilter.class)
+					.register(CsrfTokenCheckFilter.class);
 
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
@@ -136,7 +139,8 @@ public class AdminServlet {
 					  })
 					  .register(AdminPermissionFilter.class)
 					  .register(IdRefPathParamConverterProvider.class)
-					  .register(AuthCookieFilter.class);
+					  .register(AuthCookieFilter.class)
+					  .register(CsrfTokenSetFilter.class);
 
 	}
 

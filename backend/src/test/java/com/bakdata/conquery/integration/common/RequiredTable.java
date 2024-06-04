@@ -40,6 +40,7 @@ public class RequiredTable {
 
     public Table toTable(Dataset dataset, CentralRegistry centralRegistry) {
         Table table = new Table();
+		table.setPrimaryColumn(primaryColumn.toColumn(table, centralRegistry));
         table.setDataset(dataset);
         table.setName(name);
         table.setColumns(Arrays.stream(columns)

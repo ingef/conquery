@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
@@ -107,27 +108,26 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 */
 	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector) {
 
-		final Column column = connector.getColumn();
+		final Column column;
 
 		final TreeConcept treeConcept = connector.getConcept();
 
-		final StringStore stringStore;
-
 		// If we have a column, and it is of string-type, we initialize a cache.
-		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringStore) {
+		if (connector.getColumn() != null && bucket.getStore(connector.getColumn()) instanceof StringStore) {
 
-			stringStore = (StringStore) bucket.getStores()[column.getPosition()];
+			column = connector.getColumn();
 
 			treeConcept.initializeIdCache(bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
 		else if (treeConcept.countElements() == 1) {
-			stringStore = null;
+			column = null;
 		}
 		else {
 			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", connector.getId()));
 		}
 
+		final CTCondition connectorCondition = connector.getCondition();
 
 		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 
@@ -135,32 +135,32 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
 
-		final int[] root = treeConcept.getPrefix();
-
 		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
 
 			try {
-				// Events without values are omitted
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				if (column != null && !bucket.has(event, column)) {
-					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
 				String stringValue = "";
 
-				if (stringStore != null) {
+				final boolean has = column != null && bucket.has(event, column);
+
+				if (column != null && has) {
 					stringValue = bucket.getString(event, column);
 				}
 
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				// Lazy evaluation of map to avoid allocations if possible.
 				// Copy event for closure.
 				final int _event = event;
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
 
-
-				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
+				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
 					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+					continue;
+				}
+
+				// Events without values are assigned to the root
+				if (column != null && !has) {
+					mostSpecificChildren[event] = treeConcept.getPrefix();
 					continue;
 				}
 
@@ -170,7 +170,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
-					mostSpecificChildren[event] = root;
+					mostSpecificChildren[event] = treeConcept.getPrefix();
 					continue;
 				}
 
@@ -228,13 +228,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
 	 */
 	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
-		if (pathIndex < 0) {
-			return 0;
+
+		for (int index = pathIndex; index > 0; index--) {
+			// TODO how could they be > Long.SIZE?
+			if (mostSpecificChild[index] < Long.SIZE) {
+				return 1L << mostSpecificChild[index];
+			}
 		}
-		if (mostSpecificChild[pathIndex] < Long.SIZE) {
-			return 1L << mostSpecificChild[pathIndex];
-		}
-		return calculateBitMask(pathIndex - 1, mostSpecificChild);
+
+		return 0;
 	}
 
 	/**

@@ -126,7 +126,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	@JsonIgnore
-	public boolean requiresIntervalPacking() {
+	public boolean isEventDateSelect() {
 		return false;
 	}
 

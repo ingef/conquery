@@ -49,17 +49,21 @@ import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {
+
+	private static final Validator VALIDATOR = Validators.newValidator();
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null, null);
-	private static final QueryProcessor processor = new QueryProcessor(datasetRegistry, STORAGE, CONFIG);
+	private static final QueryProcessor processor = new QueryProcessor(datasetRegistry, STORAGE, CONFIG, VALIDATOR);
 
 	private static final Dataset DATASET_0 = new Dataset() {{
 		setName("dataset0");

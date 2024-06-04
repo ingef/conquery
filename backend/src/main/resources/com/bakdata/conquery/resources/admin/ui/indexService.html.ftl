@@ -30,11 +30,8 @@
 	<script type="application/javascript">
 		function resetIndexService() {
 			event.preventDefault();
-			fetch('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/${ctx.staticUriElem.INDEX_SERVICE_PATH_ELEMENT}/reset', {
-				method: 'post',
-				credentials: 'same-origin',
-				headers: {'Content-Type': 'application/json'},
-			
+			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/${ctx.staticUriElem.INDEX_SERVICE_PATH_ELEMENT}/reset', {
+				method: 'post',			
 		}).then(function() {location.reload()});
 		}
 	</script>

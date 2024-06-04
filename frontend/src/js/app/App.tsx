@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import Header from "../header/Header";
-import SnackMessage from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";
 
+import { SnackMessage } from "../snack-message/SnackMessage";
 import { About } from "./About";
 import Content from "./Content";
 
