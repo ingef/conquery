@@ -43,6 +43,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 				new DelegateManager<>(config, environment, datasetRegistry, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
 
 		environment.healthChecks().register("cluster", new ClusterHealthCheck(clusterState));
+		environment.healthChecks().register("matching-stats", new MatchingStatsHealthCheck(datasetRegistry, clusterState));
 
 		return new ClusterManager(delegate, connectionManager);
 	}

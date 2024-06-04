@@ -24,22 +24,15 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 
 	@Override
 	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
-		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
-		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
+		final NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
+		final DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
+		final WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
+
 		clusterState.getWorkerHandlers().put(storage.getDataset().getId(), workerHandler);
 
-		DistributedNamespace distributedNamespace = new DistributedNamespace(
-				namespaceData.getPreprocessMapper(),
-				namespaceData.getCommunicationMapper(),
-				storage,
-				executionManager,
-				namespaceData.getJobManager(),
-				namespaceData.getFilterSearch(),
-				namespaceData.getIndexService(),
-				namespaceData.getInjectables(),
-				workerHandler
-		);
+		final DistributedNamespace
+				distributedNamespace =
+				new DistributedNamespace(namespaceData.getPreprocessMapper(), namespaceData.getCommunicationMapper(), storage, executionManager, namespaceData.getJobManager(), namespaceData.getFilterSearch(), namespaceData.getIndexService(), namespaceData.getInjectables(), workerHandler);
 
 		for (ShardNodeInformation node : clusterState.getShardNodes().values()) {
 			node.send(new AddWorker(storage.getDataset()));
