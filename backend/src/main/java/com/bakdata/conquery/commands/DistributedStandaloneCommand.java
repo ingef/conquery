@@ -28,6 +28,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 @Getter
 public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> implements StandaloneCommand {
 
+	public static final String STANDALONE = "standalone";
 	private final Conquery conquery;
 	private ClusterManager manager;
 	private ManagerNode managerNode = new ManagerNode();
@@ -37,7 +38,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 	private Environment environment;
 
 	public DistributedStandaloneCommand(Conquery conquery) {
-		super(conquery, "standalone", "starts a server and a client at the same time.");
+		super(conquery, STANDALONE, "starts a server and a client at the same time.");
 		this.conquery = conquery;
 	}
 

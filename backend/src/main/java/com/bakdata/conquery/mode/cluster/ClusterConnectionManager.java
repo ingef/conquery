@@ -47,6 +47,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	private final InternalObjectMapperCreator internalObjectMapperCreator;
 	@Getter
 	private final ClusterState clusterState;
+	private final boolean isStandalone;
 
 	@Override
 	public void sessionOpened(IoSession session) {
@@ -108,7 +109,9 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	}
 
 	public void stop() {
-		clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
+		if (isStandalone) {
+			clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
+		}
 
 		try {
 			acceptor.dispose();

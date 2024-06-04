@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.mode.DelegateManager;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
@@ -31,7 +32,8 @@ public class ClusterManagerProvider implements ManagerProvider {
 		creator.init(datasetRegistry);
 
 		final ClusterConnectionManager connectionManager =
-				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, creator, clusterState);
+				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, creator, clusterState, environment.getName()
+																																				.equals(DistributedStandaloneCommand.STANDALONE));
 
 		final ImportHandler importHandler = new ClusterImportHandler(config, datasetRegistry);
 		final StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
