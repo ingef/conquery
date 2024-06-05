@@ -40,6 +40,6 @@ public class PrefixSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType<?> getResultType() {
-		return ResultType.StringT.INSTANCE;
+		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
 	}
 }

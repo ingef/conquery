@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,14 +9,13 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
 
 /**
  * Aggregator, returning all values of a column, beginning with a specified value.
  */
 @ToString(callSuper = true, of = "prefix")
-public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
+public class PrefixTextAggregator extends SingleColumnAggregator<Collection<String>> {
 
 	private final Set<String> entries = new HashSet<>();
 	private final String prefix;
@@ -46,8 +46,8 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	}
 
 	@Override
-	public Set<String> createAggregationResult() {
-		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
+	public Collection<String> createAggregationResult() {
+		return entries.isEmpty() ? null : entries;
 	}
 
 }
