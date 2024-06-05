@@ -31,11 +31,9 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		final Table table = ImportJob.createOrUpdate(
+		final Table table = ImportJob.readAndEnqueue(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
-				config.getCluster().getEntityBucketSize(),
-				config,
 				true
 		);
 
@@ -57,11 +55,9 @@ class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
-		final Table table = ImportJob.createOrUpdate(
+		final Table table = ImportJob.readAndEnqueue(
 				datasetRegistry.get(namespace.getDataset().getId()),
 				inputStream,
-				config.getCluster().getEntityBucketSize(),
-				config,
 				false
 		);
 

@@ -51,7 +51,7 @@ public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedD
 		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
-		bucketsRemaining = header.getBuckets();
+		bucketsRemaining = header.getNumberOfBuckets();
 
 		lastRead = lastRead.next();
 		return header;

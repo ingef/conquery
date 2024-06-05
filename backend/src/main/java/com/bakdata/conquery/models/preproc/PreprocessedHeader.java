@@ -43,7 +43,7 @@ public class PreprocessedHeader {
 	private long rows;
 	private long numberOfEntities;
 
-	private int buckets;
+	private int numberOfBuckets;
 
 	/**
 	 * The specific columns and their associated MajorType for validation.

@@ -192,6 +192,17 @@ public class WorkerHandler {
 		return workerBuckets.getBucketsForWorker(workerId);
 	}
 
+	public synchronized void assignResponsibleWorker(int bucket) {
+		log.debug("Updating bucket assignments.");
+
+
+		if (getResponsibleWorkerForBucket(bucket) != null) {
+			return;
+		}
+
+		addResponsibility(bucket);
+	}
+
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {
 
 		/**

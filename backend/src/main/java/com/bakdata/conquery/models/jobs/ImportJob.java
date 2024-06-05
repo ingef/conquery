@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -51,7 +50,7 @@ public class ImportJob extends Job {
 	private final PreprocessedHeader header;
 	private final PreprocessedData container;
 
-	public static Table createOrUpdate(DistributedNamespace namespace, InputStream inputStream, int entityBucketSize, ConqueryConfig config, boolean update)
+	public static Table readAndEnqueue(DistributedNamespace namespace, InputStream inputStream, boolean update)
 			throws IOException {
 
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
@@ -60,8 +59,7 @@ public class ImportJob extends Job {
 
 			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
 			// 1) the header to check metadata
-			// 3) The chunked Buckets
-
+			// 2..) The chunked Buckets
 
 			final PreprocessedHeader header = parser.readHeader();
 
@@ -90,11 +88,14 @@ public class ImportJob extends Job {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 			}
 
+			log.trace("BEGIN importing {} into {}", header.getName(), tableId);
+
 			log.trace("Begin reading data.");
 
 			Import imp = null;
 
-			for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> parser){
+			for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> parser) {
+
 
 				if (imp == null) {
 					// We need a container to create a description.
@@ -104,9 +105,8 @@ public class ImportJob extends Job {
 					namespace.getStorage().updateImport(imp);
 				}
 
-				log.trace("Done reading data. Contains {} Entities.", container.size());
+				log.trace("Done reading bucket {}.{}, contains {} entities.", importId, container.getBucketId(), container.size());
 
-				log.info("Importing {} into {}", header.getName(), tableId);
 
 				final ImportJob importJob = new ImportJob(
 						namespace,
@@ -154,7 +154,7 @@ public class ImportJob extends Job {
 
 		log.trace("Updating primary dictionary");
 
-		assignResponsibleWorker();
+		namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
 
 		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
 
@@ -172,19 +172,6 @@ public class ImportJob extends Job {
 
 		namespace.getWorkerHandler().addBucketsToWorker(workerAssignments, Set.of(bucket.getId()));
 
-	}
-
-	private void assignResponsibleWorker() {
-		log.debug("Updating bucket assignments.");
-
-		synchronized (namespace) {
-
-			if (namespace.getWorkerHandler().getResponsibleWorkerForBucket(bucketId) != null) {
-				return;
-			}
-
-			namespace.getWorkerHandler().addResponsibility(bucketId);
-		}
 	}
 
 	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
