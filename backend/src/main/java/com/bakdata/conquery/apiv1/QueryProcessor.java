@@ -53,6 +53,7 @@ import com.google.common.collect.MutableClassToInstanceMap;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
@@ -256,15 +257,17 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
-		final Namespace namespace = datasetRegistry.get(query.getDataset());
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution execution, Subject subject, UriBuilder url, Boolean allProviders) {
+		final Namespace namespace = datasetRegistry.get(execution.getDataset());
 
-		query.initExecutable(namespace, config);
+		namespace.getExecutionManager().awaitDone(execution.getId(), 1, TimeUnit.SECONDS);
 
-		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
+		execution.initExecutable(namespace, config);
 
-		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset().resolve(), Ability.DOWNLOAD)) {
-			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
+		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
+
+		if (execution.isReadyToDownload() && subject.isPermitted(execution.getDataset().resolve(), Ability.DOWNLOAD)) {
+			status.setResultUrls(getResultAssets(config.getResultProviders(), execution, url, allProviders));
 		}
 		return status;
 	}
@@ -330,7 +333,7 @@ public class QueryProcessor {
 		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
-		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		if (namespace.getExecutionManager().awaitDone(execution.getId(), 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
@@ -498,7 +501,7 @@ public class QueryProcessor {
 
 		final ManagedExecution execution = postQuery(dataset, query, subject, true);
 
-		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		if (namespace.getExecutionManager().awaitDone(execution.getId(), 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
@@ -549,6 +552,12 @@ public class QueryProcessor {
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(E managedQuery) {
+
+
+		if(datasetRegistry.get(managedQuery.getDataset()).getExecutionManager().awaitDone(managedQuery.getId(), 1, TimeUnit.SECONDS) != ExecutionState.DONE){
+			throw new WebApplicationException("Query is still running.", Response.Status.CONFLICT); // Request was submitted too early.
+		}
+
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>

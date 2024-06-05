@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -17,12 +18,15 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Data
@@ -31,6 +35,8 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 
 	public interface Result {
 		Stream<EntityResult> streamQueryResults();
+
+		CountDownLatch getExecutingLock();
 	}
 
 	private final MetaStorage storage;
@@ -67,8 +73,8 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 		return storage.getExecution(execution);
 	}
 
-	protected R getResult(ManagedExecution execution, Callable<R> defaultProvider) throws ExecutionException {
-		return executionResults.get(execution.getId(), defaultProvider);
+	protected R getResult(ManagedExecutionId id, Callable<R> defaultProvider) throws ExecutionException {
+		return executionResults.get(id, defaultProvider);
 	}
 
 	protected void addResult(ManagedExecution execution, R result) {
@@ -84,7 +90,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 	}
 
 
-	public final  void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
+	public final void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
 
 		clearQueryResults(execution);
 
@@ -120,10 +126,10 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, User user, Namespace namespace, boolean system) {
-		return createQuery(query, UUID.randomUUID(), user, namespace, system);
+		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage);
 		managed.setSystem(system);
@@ -150,5 +156,30 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 			   ? Stream.empty()
 			   : resultParts.streamQueryResults();
 
+	}
+
+
+
+
+	private void clearLock(ManagedExecutionId id) throws ExecutionException {
+		getResult(id, () -> {throw new IllegalStateException("Result was not present");} ).getExecutingLock().countDown();
+	}
+
+	/**
+	 * Blocks until an execution finished of the specified timeout is reached. Return immediately if the execution is not running
+	 */
+	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
+		ExecutionState state = id.resolve().getState();
+		if (state != ExecutionState.RUNNING) {
+			return state;
+		}
+
+		R result = executionResults.getIfPresent(id);
+		if (result == null) {
+			throw new IllegalStateException("Execution is running, but no result is registered");
+		}
+		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
+
+		return id.resolve().getState();
 	}
 }

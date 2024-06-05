@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
@@ -16,6 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Slf4j
 @CPSType(id = "UPDATE_METADATA", base = NamespacedMessage.class)
@@ -32,7 +32,8 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 	public void react(DistributedNamespace context) throws Exception {
 		for (Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
-				final ConceptElement<?> target = entry.getKey().resolve();
+				// TODO resolve does not work here jet, probably because id is the map key
+				final ConceptElement<?> target = context.getStorage().get(entry.getKey());
 				final MatchingStats.Entry value = entry.getValue();
 
 				MatchingStats matchingStats = target.getMatchingStats();

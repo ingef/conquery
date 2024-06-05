@@ -23,20 +23,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
 
-	public record DistributedResult(Map<WorkerId, List<EntityResult>> results) implements Result {
-
-		public DistributedResult() {
-			this(new ConcurrentHashMap<>());
-		}
+	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements Result {
 
 		@Override
 		public Stream<EntityResult> streamQueryResults() {
 			return results.values().stream().flatMap(Collection::stream);
+		}
+
+		@Override
+		public CountDownLatch getExecutingLock() {
+			return executingLock;
 		}
 	}
 
@@ -56,6 +58,8 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution);
+
+		addResult(((ManagedExecution) internalExecution), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 
 		workerHandler.sendToAll(internalExecution.createExecutionMessage());
 	}
@@ -88,7 +92,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			final DistributedResult results = getResult(query, DistributedResult::new);
+			final DistributedResult results = getResult(query.getId(), () -> {throw new IllegalStateException("There should already result present upon execution start");});
 			results.results.put(result.getWorkerId(), result.getResults());
 
 			final Set<WorkerId> finishedWorkers = results.results.keySet();

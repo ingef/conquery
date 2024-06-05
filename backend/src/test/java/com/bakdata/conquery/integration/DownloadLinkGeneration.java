@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -41,25 +41,17 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		test.importRequiredData(conquery);
 
-		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage);
-		exec.setLastResultCount(100L);
-
-		storage.addExecution(exec);
 
 		user.addPermission(DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset().getId()));
+		conquery.getNamespace().getStorage().getAllConcepts().forEach( concept ->
+			user.addPermission(concept.createPermission(Ability.READ.asSet()))
+		);
+
+		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, test.getQuery(), -1, ExecutionState.RUNNING, user, 201);
 
 		{
-			// Try to generate a download link: should not be possible, because the execution isn't run yet
-			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
-			assertThat(status.getResultUrls()).isEmpty();
-		}
-
-		{
-			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			exec.setState(ExecutionState.DONE);
-
-			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
+			// Try to generate a download link: not possible because of missing permissions
+			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, executionId, user, 200);
 			assertThat(status.getResultUrls()).isEmpty();
 		}
 
@@ -67,10 +59,10 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			// Add permission to download: now it should be possible
 			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
 
-			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
+			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, executionId, user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
 			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URI(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
-																																	 .toString(), exec.getId()))));
+																																	 .toString(), executionId))));
 		}
 	}
 

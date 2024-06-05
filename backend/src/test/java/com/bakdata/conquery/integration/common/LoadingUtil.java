@@ -1,22 +1,5 @@
 package com.bakdata.conquery.integration.common;
 
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -61,6 +44,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.*;
+
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 @Slf4j
 @UtilityClass
 public class LoadingUtil {
@@ -91,7 +85,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -108,7 +102,7 @@ public class LoadingUtil {
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 

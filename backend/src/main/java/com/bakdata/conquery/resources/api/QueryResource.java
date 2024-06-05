@@ -8,19 +8,16 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
-
-import java.util.concurrent.TimeUnit;
 
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -43,14 +40,12 @@ public class QueryResource {
 		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
-		query.awaitDone(1, TimeUnit.SECONDS);
-
 		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}/statistics")
-	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
+	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
 		if (!(query instanceof SingleTableResult)) {
 			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
@@ -59,11 +54,8 @@ public class QueryResource {
 		subject.authorize(query.getDataset().resolve(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
-		if(query.awaitDone(1, TimeUnit.SECONDS) != ExecutionState.DONE){
-			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
-		}
 
-		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
+		return processor.getResultStatistics(((ManagedExecution & SingleTableResult) query));
 	}
 
 	@PATCH

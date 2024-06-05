@@ -33,7 +33,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.Uninterruptibles;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.*;
@@ -50,8 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Getter
@@ -91,27 +88,20 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 
 	// we don't want to store or send query results or other result metadata
-	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient ExecutionState state = ExecutionState.NEW;
+	private ExecutionState state = ExecutionState.NEW;
 
-	//TODO FK: This is only locked/unlocked, there should be better primitives for that.
-	@JsonIgnore
+	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
-	private transient CountDownLatch executingLock;
+	private LocalDateTime startTime;
+	@EqualsAndHashCode.Exclude
+	private LocalDateTime finishTime;
+	@EqualsAndHashCode.Exclude
+	private Float progress;
 
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private transient LocalDateTime startTime;
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private transient LocalDateTime finishTime;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryErrorInfo error;
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private transient Float progress;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
@@ -203,17 +193,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-
-			resetLock();
+			getMetaStorage().updateExecution(this);
 		}
-	}
-
-	private void resetLock() {
-		executingLock = new CountDownLatch(1);
-	}
-
-	private void clearLock() {
-		executingLock.countDown();
 	}
 
 	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
@@ -228,12 +209,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			clearLock();
+			getStorage().updateExecution(this);
 
-			// No need to persist failed queries. (As they are most likely invalid)
-			if (getState() == ExecutionState.DONE) {
-				getStorage().updateExecution(this);
-			}
 		}
 
 		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
@@ -246,17 +223,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
-	/**
-	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
-	 */
-	public ExecutionState awaitDone(int time, TimeUnit unit) {
-		if (getState() != ExecutionState.RUNNING) {
-			return getState();
-		}
-		Uninterruptibles.awaitUninterruptibly(executingLock, time, unit);
 
-		return getState();
-	}
 
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
@@ -293,8 +260,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
-
-		initExecutable(namespace, config);
 
 		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusFull(status, subject, namespace);
