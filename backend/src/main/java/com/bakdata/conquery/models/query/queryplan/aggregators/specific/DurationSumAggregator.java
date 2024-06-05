@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -57,8 +56,4 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 		return set.countDays();
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
-	}
 }

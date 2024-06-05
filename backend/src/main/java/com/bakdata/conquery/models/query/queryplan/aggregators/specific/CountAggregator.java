@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -50,11 +49,6 @@ public class CountAggregator extends ColumnAggregator<Long> {
 	@Override
 	public Long createAggregationResult() {
 		return count > 0 ? count : null;
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
 	}
 
 	@Override

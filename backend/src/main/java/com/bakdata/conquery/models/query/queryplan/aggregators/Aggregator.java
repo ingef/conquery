@@ -36,10 +36,4 @@ public abstract class Aggregator<T> extends EventIterating {
 	public abstract void consumeEvent(Bucket bucket, int event) ;
 
 
-	/**
-	 * Specific type of the result used for rendering.
-	 */
-	@JsonIgnore
-	public abstract ResultType getResultType();
-
 }
