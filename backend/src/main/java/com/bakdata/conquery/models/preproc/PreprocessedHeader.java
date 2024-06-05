@@ -60,7 +60,7 @@ public class PreprocessedHeader {
 	 * Verify that the supplied table matches the preprocessed' data in shape.
 	 */
 	public void assertMatch(Table table) {
-		StringJoiner errors = new StringJoiner("\n");
+		final StringJoiner errors = new StringJoiner("\n");
 
 		if (table.getColumns().length != getColumns().length) {
 			errors.add(String.format("Import column count=`%d` does not match table column count=`%d`", getColumns().length, table.getColumns().length));
