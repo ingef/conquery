@@ -1,9 +1,29 @@
 package com.bakdata.conquery.io.result.parquet;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static org.apache.parquet.schema.LogicalTypeAnnotation.stringType;
-import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.io.result.arrow.ArrowResultGenerationTest;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.util.Mocks;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.parquet.example.data.Group;
+import org.apache.parquet.example.data.simple.SimpleGroup;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.io.DelegatingSeekableInputStream;
+import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.SeekableInputStream;
+import org.apache.parquet.schema.*;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,32 +34,10 @@ import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.result.ResultTestUtil;
-import com.bakdata.conquery.io.result.arrow.ArrowResultGenerationTest;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.parquet.example.data.Group;
-import org.apache.parquet.example.data.simple.SimpleGroup;
-import org.apache.parquet.hadoop.ParquetReader;
-import org.apache.parquet.io.DelegatingSeekableInputStream;
-import org.apache.parquet.io.InputFile;
-import org.apache.parquet.io.SeekableInputStream;
-import org.apache.parquet.schema.GroupType;
-import org.apache.parquet.schema.LogicalTypeAnnotation;
-import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.Type;
-import org.apache.parquet.schema.Types;
-import org.junit.jupiter.api.Test;
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
+import static org.apache.parquet.schema.LogicalTypeAnnotation.stringType;
+import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ParquetResultGenerationTest {
@@ -115,7 +113,8 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ExecutionManager<?> executionManager = Mocks.mockExecutionManager(results);
+		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty(), executionManager));
 
 		final byte[] buf = output.toByteArray();
 

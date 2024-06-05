@@ -1,12 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -24,6 +17,13 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
@@ -83,7 +83,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		}
 
 		if (result.getError().isPresent()) {
-			query.fail(result.getError().get());
+			query.fail(result.getError().get(), this);
 		}
 		else {
 
@@ -95,7 +95,8 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 			// If all known workers have returned a result, the query is DONE.
 			if (finishedWorkers.equals(getWorkerHandler(query).getAllWorkerIds())) {
-				query.finish(ExecutionState.DONE);
+				query.finish(ExecutionState.DONE, this);
+
 			}
 		}
 

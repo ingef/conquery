@@ -1,38 +1,10 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.ExternalUpload;
-import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
@@ -62,11 +34,7 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -90,6 +58,18 @@ import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Slf4j
 @NoArgsConstructor
@@ -260,8 +240,8 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			final Namespace namespace = query.getNamespace();
 
+			Namespace namespace = datasetRegistry.get(query.getDataset());
 			namespace.getExecutionManager().execute(namespace, query, config);
 		}
 	}
@@ -281,7 +261,7 @@ public class QueryProcessor {
 
 		query.initExecutable(namespace, config);
 
-		final FullExecutionStatus status = query.buildStatusFull(subject);
+		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
 		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset().resolve(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
@@ -340,7 +320,8 @@ public class QueryProcessor {
 		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
-		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
+		Namespace namespace = datasetRegistry.get(dataset.getId());
+		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 		final EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
 
@@ -360,7 +341,7 @@ public class QueryProcessor {
 		}
 
 
-		final FullExecutionStatus status = execution.buildStatusFull(subject);
+		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
 		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
@@ -547,7 +528,8 @@ public class QueryProcessor {
 		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
 
 		// For each included entity emit a Map of { Id-Name -> Id-Value }
-		return result.streamResults(OptionalLong.empty())
+		ExecutionManager<?> executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		return result.streamResults(OptionalLong.empty(), executionManager)
 					 .map(printer::createId)
 					 .map(entityPrintId -> {
 						 final Map<String, String> out = new HashMap<>();
@@ -566,7 +548,7 @@ public class QueryProcessor {
 					 .filter(Predicate.not(Map::isEmpty));
 	}
 
-	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
+	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(E managedQuery) {
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
@@ -581,9 +563,11 @@ public class QueryProcessor {
 
 		final NumberFormat integerFormat = NumberFormat.getNumberInstance(locale);
 
+		Namespace namespace = datasetRegistry.get(managedQuery.getDataset());
+
 
 		final PrintSettings printSettings =
-				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
+				new PrintSettings(true, locale, namespace, config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);

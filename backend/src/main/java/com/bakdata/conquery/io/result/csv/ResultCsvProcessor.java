@@ -1,14 +1,5 @@
 package com.bakdata.conquery.io.result.csv;
 
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
-
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.OptionalLong;
-
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -31,6 +22,15 @@ import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.OptionalLong;
+
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
@@ -62,7 +62,7 @@ public class ResultCsvProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults(limit));
+				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults(limit, namespace.getExecutionManager()));
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");

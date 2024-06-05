@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
@@ -24,6 +19,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 @Slf4j
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
@@ -37,7 +37,7 @@ public abstract class Namespace {
 	@ToString.Include
 	private final NamespaceStorage storage;
 
-	private final ExecutionManager executionManager;
+	private final ExecutionManager<?> executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;

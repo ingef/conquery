@@ -1,16 +1,10 @@
 package com.bakdata.conquery.io.result;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.OptionalLong;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -26,6 +20,13 @@ import com.bakdata.conquery.models.types.SemanticType;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.OptionalLong;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -78,7 +79,7 @@ public class ResultTestUtil {
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit, ExecutionManager<?> executionManager) {
 				return getTestEntityResults().stream();
 			}
 		};

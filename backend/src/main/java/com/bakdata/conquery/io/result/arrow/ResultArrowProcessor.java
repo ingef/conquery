@@ -1,17 +1,5 @@
 package com.bakdata.conquery.io.result.arrow;
 
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
-
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalLong;
-import java.util.function.Function;
-
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
@@ -38,6 +26,18 @@ import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
+
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.util.List;
+import java.util.Locale;
+import java.util.OptionalLong;
+import java.util.function.Function;
+
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
@@ -116,7 +116,7 @@ public class ResultArrowProcessor {
 						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
-						exec.streamResults(limit)
+						exec.streamResults(limit, namespace.getExecutionManager())
 				);
 			}
 			finally {

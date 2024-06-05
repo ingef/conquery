@@ -1,11 +1,5 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
@@ -22,13 +16,11 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -37,6 +29,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
@@ -77,13 +75,13 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public void doInitExecutable() {
+	public void doInitExecutable(Namespace namespace) {
 		// Convert sub queries to sub executions
-		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
-		subQueries.values().forEach(mq -> mq.initExecutable(getNamespace(), getConfig()));
+		subQueries.values().forEach(mq -> mq.initExecutable(namespace, getConfig()));
 	}
 
 	@NotNull
@@ -108,12 +106,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
-		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config, Namespace namespace) {
+		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config, namespace);
 	}
 
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
@@ -128,7 +126,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			return;
 		}
 		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
-		status.setColumnDescriptions(subQuery.generateColumnDescriptions(isInitialized(), getConfig()));
+		status.setColumnDescriptions(subQuery.generateColumnDescriptions(isInitialized(), getConfig(), namespace));
 	}
 
 	@Override
@@ -146,12 +144,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults(OptionalLong limit) {
+	public Stream<EntityResult> streamResults(OptionalLong limit, ExecutionManager<?> executionManager) {
 		if (subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().streamResults(limit);
+		return subQueries.values().iterator().next().streamResults(limit, executionManager);
 	}
 
 	@Override

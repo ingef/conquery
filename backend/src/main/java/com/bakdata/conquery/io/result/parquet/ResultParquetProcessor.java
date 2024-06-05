@@ -1,10 +1,5 @@
 package com.bakdata.conquery.io.result.parquet;
 
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-
-import java.util.Locale;
-import java.util.OptionalLong;
-
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -27,12 +22,17 @@ import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
+import java.util.OptionalLong;
+
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultParquetProcessor {
 	public static final MediaType PARQUET_MEDIA_TYPE = MediaType.valueOf(ResultParquetResource.PARQUET_MEDIA_TYPE_STRING);
 
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
 
 	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
@@ -68,7 +68,7 @@ public class ResultParquetProcessor {
 					config.getIdColumns().getIdResultInfos(),
 					singleTableResult.getResultInfos(),
 					settings,
-					singleTableResult.streamResults(limit)
+					singleTableResult.streamResults(limit, namespace.getExecutionManager())
 			);
 
 		};

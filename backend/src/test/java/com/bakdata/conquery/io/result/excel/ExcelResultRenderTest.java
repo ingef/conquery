@@ -1,33 +1,19 @@
 package com.bakdata.conquery.io.result.excel;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
-import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalLong;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.util.Mocks;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
@@ -37,6 +23,18 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ExcelResultRenderTest {
@@ -74,7 +72,7 @@ public class ExcelResultRenderTest {
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit, ExecutionManager<?> executionManager) {
 				return results.stream();
 			}
 		};
@@ -87,8 +85,8 @@ public class ExcelResultRenderTest {
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,
 				mquery,
-				output, OptionalLong.empty()
-		);
+				output, OptionalLong.empty(),
+				Mocks.mockExecutionManager(results));
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

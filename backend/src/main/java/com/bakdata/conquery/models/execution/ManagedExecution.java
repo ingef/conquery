@@ -1,19 +1,5 @@
 package com.bakdata.conquery.models.execution;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -39,30 +25,34 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.UriBuilder;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -128,9 +118,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient Namespace namespace;
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
 
 
@@ -169,11 +156,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				// IdMapper is not necessary here
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
-
-			this.namespace = namespace;
 			this.config = config;
 
-			doInitExecutable();
+			doInitExecutable(namespace);
 
 			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
 			containsDates = containsDates(getSubmitted());
@@ -182,7 +167,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	protected abstract void doInitExecutable();
+	protected abstract void doInitExecutable(Namespace namespace);
 
 
 	@Override
@@ -196,7 +181,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	public void fail(ConqueryErrorInfo error) {
+	public void fail(ConqueryErrorInfo error, ExecutionManager<?> executionManager) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -207,7 +192,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
 
-		finish(ExecutionState.FAILED);
+		finish(ExecutionState.FAILED, executionManager);
 	}
 
 	public void start() {
@@ -231,7 +216,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		executingLock.countDown();
 	}
 
-	public void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
@@ -307,21 +292,21 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(Subject subject) {
+	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
 		initExecutable(namespace, config);
 
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusFull(status, subject);
+		setStatusFull(status, subject, namespace);
 
 		return status;
 	}
 
-	public void setStatusFull(FullExecutionStatus status, Subject subject) {
+	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
-		setAdditionalFieldsForStatusWithSource(subject, status);
+		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
+		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
 		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
@@ -357,14 +342,14 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		QueryDescription query = getSubmitted();
 
 		status.setCanExpand(canSubjectExpand(subject, query));
@@ -441,7 +426,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
 
-	public void reset() {
+	public void reset(ExecutionManager<?> executionManager) {
 		// This avoids endless loops with already reset queries
 		if(getState().equals(ExecutionState.NEW)){
 			return;

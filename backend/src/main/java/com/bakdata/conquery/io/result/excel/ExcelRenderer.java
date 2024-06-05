@@ -1,14 +1,5 @@
 package com.bakdata.conquery.io.result.excel;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -16,6 +7,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -38,6 +30,15 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class ExcelRenderer {
 
@@ -74,7 +75,7 @@ public class ExcelRenderer {
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
 			List<ResultInfo> idHeaders,
 			E exec,
-			OutputStream outputStream, OptionalLong limit) throws IOException {
+			OutputStream outputStream, OptionalLong limit, ExecutionManager<?> executionManager) throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec);
@@ -88,7 +89,7 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table);
 
-			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
+			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES)), executionManager));
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 

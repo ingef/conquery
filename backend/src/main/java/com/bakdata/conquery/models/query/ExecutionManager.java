@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -24,6 +19,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 @Data
 @Slf4j
@@ -58,7 +58,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 
 		// The query might already be deleted
 		if (execution != null) {
-			execution.reset();
+			execution.reset(this);
 		}
 	}
 

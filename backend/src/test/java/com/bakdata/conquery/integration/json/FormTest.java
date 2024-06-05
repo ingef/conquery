@@ -1,15 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.OptionalLong;
-
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -44,6 +34,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.OptionalLong;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @Getter
@@ -162,7 +162,7 @@ public class FormTest extends ConqueryTestSpec {
 					resultInfos,
 					managed.getValue()
 						   .stream()
-						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty()))
+						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty(), printSettings.getNamespace().getExecutionManager()))
 			);
 
 			writer.close();
@@ -183,7 +183,7 @@ public class FormTest extends ConqueryTestSpec {
 	 *
 	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
 	 */
-	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 
 
@@ -195,7 +195,7 @@ public class FormTest extends ConqueryTestSpec {
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
-					managedForm.streamResults(OptionalLong.empty())
+					managedForm.streamResults(OptionalLong.empty(), printSettings.getNamespace().getExecutionManager())
 			);
 			writer.close();
 

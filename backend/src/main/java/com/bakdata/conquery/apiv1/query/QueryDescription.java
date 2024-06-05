@@ -1,9 +1,5 @@
 package com.bakdata.conquery.apiv1.query;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -30,6 +26,10 @@ import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface QueryDescription extends Visitable {
@@ -38,7 +38,7 @@ public interface QueryDescription extends Visitable {
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
 	 * However, steps that require add or manipulates queries programmatically based on the submitted query
-	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable()}.
+	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable(com.bakdata.conquery.models.worker.Namespace)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
 	 * @param user

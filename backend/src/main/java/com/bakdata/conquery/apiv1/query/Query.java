@@ -1,10 +1,5 @@
 package com.bakdata.conquery.apiv1.query;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -19,6 +14,11 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 public abstract class Query implements QueryDescription {
@@ -57,7 +57,7 @@ public abstract class Query implements QueryDescription {
 	 *
 	 * @param results
 	 * @return the number of results in the result List.
-	 * @see ManagedExecution#finish(ExecutionState) for how it's used.
+	 * @see ManagedExecution#finish(ExecutionState, com.bakdata.conquery.models.query.ExecutionManager) for how it's used.
 	 */
 	public long countResults(Stream<EntityResult> results) {
 		return results.map(EntityResult::listResultLines)

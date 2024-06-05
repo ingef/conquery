@@ -1,17 +1,5 @@
 package com.bakdata.conquery.io.result.csv;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalLong;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -21,9 +9,18 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.util.Mocks;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class CsvResultGenerationTest {
@@ -57,7 +54,7 @@ public class CsvResultGenerationTest {
 		StringWriter writer = new StringWriter();
 
 		CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()));
+		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty(), Mocks.mockExecutionManager(results)));
 
 		String computed = writer.toString();
 

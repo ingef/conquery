@@ -1,16 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.OptionalLong;
-
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -19,6 +8,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -32,6 +22,17 @@ import com.github.powerlibraries.io.In;
 import jakarta.validation.UnexpectedTypeException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.OptionalLong;
+
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -54,7 +55,8 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		//check result info size
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
-		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
+		ExecutionManager<?> executionManager = standaloneSupport.getNamespace().getExecutionManager();
+		assertThat(executionResult.streamResults(OptionalLong.empty(), executionManager).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
@@ -83,7 +85,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						  .containsExactlyInAnyOrderElementsOf(expected);
 
 		// check that getLastResultCount returns the correct size
-		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
+		if (executionResult.streamResults(OptionalLong.empty(), executionManager).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
 			if (executionResult instanceof ManagedQuery editorQuery) {
 				lastResultCount = editorQuery.getLastResultCount();

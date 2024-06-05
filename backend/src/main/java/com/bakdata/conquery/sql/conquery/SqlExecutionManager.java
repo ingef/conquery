@@ -1,10 +1,6 @@
 package com.bakdata.conquery.sql.conquery;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -20,6 +16,10 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
@@ -38,15 +38,17 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	@Override
 	protected void doExecute(Namespace namespace, InternalExecution<?> execution) {
 
+		SqlExecutionManager executionManager = (SqlExecutionManager) namespace.getExecutionManager();
+
 		if (execution instanceof ManagedQuery managedQuery) {
-			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, executionManager);
 			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(this::executeAsync).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync(managedQuery, executionManager)).toArray(CompletableFuture[]::new))
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, executionManager));
 			return;
 		}
 
@@ -70,13 +72,13 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		query.cancel();
 	}
 
-	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
+	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery, SqlExecutionManager executionManager) {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
 									addResult(managedQuery, result);
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
-									managedQuery.finish(ExecutionState.DONE);
+									managedQuery.finish(ExecutionState.DONE, executionManager);
 									runningExecutions.remove(managedQuery.getId());
 								});
 	}

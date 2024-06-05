@@ -1,13 +1,5 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
@@ -23,6 +15,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import com.bakdata.conquery.util.AuthUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -36,6 +30,14 @@ import jakarta.ws.rs.core.Response;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * This execution type is for external form backends which use Conquery as a proxy for their task execution.
@@ -80,7 +82,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	}
 
 	@Override
-	protected void doInitExecutable() {
+	protected void doInitExecutable(Namespace namespace) {
 		formBackendConfig = getConfig().getPluginConfigs(FormBackendConfig.class)
 									   .filter(c -> c.supportsFormType(getSubmittedForm().getFormType()))
 									   .collect(MoreCollectors.onlyElement());
@@ -129,12 +131,12 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 				setState(ExecutionState.RUNNING);
 				setProgress(formState.getProgress().floatValue());
 			}
-			case FAILURE -> fail(formState.getError());
+			case FAILURE -> fail(formState.getError(), null);
 			case SUCCESS -> {
 				resultsAssetMap = registerResultAssets(formState);
-				finish(ExecutionState.DONE);
+				finish(ExecutionState.DONE, null);
 			}
-			case CANCELLED -> reset();
+			case CANCELLED -> reset(null);
 		}
 	}
 
@@ -189,12 +191,12 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	}
 
 	@Override
-	public void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
 		if (getState().equals(executionState)) {
 			return;
 		}
 
-		super.finish(executionState);
+		super.finish(executionState, executionManager);
 		synchronized (this) {
 			AuthUtil.cleanUpUserAndBelongings(serviceUser, getStorage());
 			serviceUser = null;

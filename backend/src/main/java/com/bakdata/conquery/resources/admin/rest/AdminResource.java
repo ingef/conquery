@@ -1,15 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
-import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.UUID;
-
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -22,17 +12,17 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
@@ -104,12 +94,13 @@ public class AdminResource {
 		final MetaStorage storage = processor.getStorage();
 
 
+		// TODO move this to the processor
 		return storage.getAllExecutions()
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
 						  try {
-							  return t.buildStatusFull(currentUser);
+							  return t.buildStatusFull(currentUser, processor.getDatasetRegistry().get(t.getDataset()));
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status

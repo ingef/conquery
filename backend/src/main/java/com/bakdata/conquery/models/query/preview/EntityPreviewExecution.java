@@ -1,18 +1,5 @@
 package com.bakdata.conquery.models.query.preview;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -32,16 +19,14 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -52,6 +37,13 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Dedicated {@link ManagedExecution} to properly display/combine the two Queries submitted by {@link EntityPreviewForm}.
@@ -257,9 +249,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable() {
-		super.doInitExecutable();
-		previewConfig = getNamespace().getPreviewConfig();
+	public void doInitExecutable(Namespace namespace) {
+		super.doInitExecutable(namespace);
+		previewConfig = namespace.getPreviewConfig();
 	}
 
 	/**
@@ -268,19 +260,20 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(Subject subject) {
+	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getNamespace(), getConfig());
+		initExecutable(namespace, getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, subject);
+		setStatusFull(status, subject, namespace);
 		status.setQuery(getValuesQuery().getQuery());
 
 
+		ExecutionManager<?> executionManager = namespace.getExecutionManager();
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), namespace, getConfig(), null, previewConfig::resolveSelectLabel), executionManager));
 
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), namespace, getConfig(), null, previewConfig::resolveSelectLabel), executionManager));
 
 		return status;
 	}
@@ -289,11 +282,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, PrintSettings printSettings) {
+	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, PrintSettings printSettings, ExecutionManager<?> executionManager) {
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty(), executionManager).collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
@@ -323,13 +316,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings, ExecutionManager<?> executionManager) {
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.label());
 
-			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
+			final EntityResult entityResult = query.streamResults(OptionalLong.empty(), executionManager).collect(MoreCollectors.onlyElement());
 
 			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
 					description.selects().stream()
@@ -395,13 +388,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		throw new IllegalStateException("Result has no row for COMPLETE");
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig(), namespace));
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, config);
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config, Namespace namespace) {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, config, namespace);
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			// Add grouping semantics to secondaryIds to group by
@@ -430,8 +423,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig(), namespace));
 	}
 
 	@Override
@@ -447,8 +440,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults(OptionalLong limit) {
-		return getValuesQuery().streamResults(limit);
+	public Stream<EntityResult> streamResults(OptionalLong limit, ExecutionManager<?> executionManager) {
+		return getValuesQuery().streamResults(limit, executionManager);
 	}
 
 	@Override
