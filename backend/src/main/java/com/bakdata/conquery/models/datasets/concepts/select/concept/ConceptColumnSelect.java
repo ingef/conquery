@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.datasets.concepts.select.concept;
 import java.util.Collections;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -32,7 +33,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		if(isAsIds()){
+		if (isAsIds()) {
 			return new ConceptElementsAggregator(((TreeConcept) getHolder().findConcept()));
 		}
 
@@ -58,7 +59,11 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public ResultType<?> getResultType() {
-		return ResultType.StringT.INSTANCE;
+		if (isAsIds()) {
+			return new ResultType.ListT<>(new ResultType.StringT((val, settings) -> TableExportQuery.printValue(getHolder().findConcept(), val, settings)));
+		}
+
+		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
 	}
 
 }

@@ -23,7 +23,6 @@ import lombok.ToString;
 public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	private final IntSet entries = new IntOpenHashSet();
-	private final TreeConcept concept;
 
 	private Column column;
 	private Entity entity;
@@ -34,7 +33,6 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	public ConceptElementsAggregator(TreeConcept concept) {
 		super();
-		this.concept = concept;
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
 								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
