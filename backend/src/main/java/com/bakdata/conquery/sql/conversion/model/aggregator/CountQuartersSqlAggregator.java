@@ -90,7 +90,10 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 				countColumn.getName()
 		);
 
-		return new CommonAggregationSelect<>(rootSelect, countQuartersAggregation);
+		return CommonAggregationSelect.<Integer>builder()
+									  .rootSelect(rootSelect)
+									  .groupBy(countQuartersAggregation)
+									  .build();
 	}
 
 }

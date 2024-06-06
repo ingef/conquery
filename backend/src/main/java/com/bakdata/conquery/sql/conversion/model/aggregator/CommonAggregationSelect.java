@@ -10,7 +10,9 @@ import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /**
  * Container object for parts of the {@link ConnectorSqlSelects}.
@@ -21,30 +23,16 @@ import lombok.Getter;
  *
  * @param <T> The type parameter of the aggregation select.
  */
-@Getter
+@Value
+@Builder
 class CommonAggregationSelect<T> {
 
-	private final List<ExtractingSqlSelect<?>> rootSelects;
-	private final FieldWrapper<T> groupBy;
-	private final QueryStep additionalPredecessor;
+	@Singular
+	List<ExtractingSqlSelect<?>> rootSelects;
 
-	public CommonAggregationSelect(List<ExtractingSqlSelect<?>> rootSelects, FieldWrapper<T> groupBy, QueryStep additionalPredecessor) {
-		this.rootSelects = rootSelects;
-		this.groupBy = groupBy;
-		this.additionalPredecessor = additionalPredecessor;
-	}
+	FieldWrapper<T> groupBy;
 
-	public CommonAggregationSelect(ExtractingSqlSelect<?> rootSelect, FieldWrapper<T> groupBy) {
-		this.rootSelects = List.of(rootSelect);
-		this.groupBy = groupBy;
-		this.additionalPredecessor = null;
-	}
-
-	public CommonAggregationSelect(List<ExtractingSqlSelect<?>> rootSelects, FieldWrapper<T> groupBy) {
-		this.rootSelects = rootSelects;
-		this.groupBy = groupBy;
-		this.additionalPredecessor = null;
-	}
+	QueryStep additionalPredecessor;
 
 	public Optional<QueryStep> getAdditionalPredecessor() {
 		return Optional.ofNullable(additionalPredecessor);

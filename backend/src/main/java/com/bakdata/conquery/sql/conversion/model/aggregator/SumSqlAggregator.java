@@ -212,7 +212,10 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
 		}
 
-		return new CommonAggregationSelect<>(preprocessingSelects, sumGroupBy);
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelects(preprocessingSelects)
+									  .groupBy(sumGroupBy)
+									  .build();
 	}
 
 	private CommonAggregationSelect<BigDecimal> createDistinctSumAggregationSelect(

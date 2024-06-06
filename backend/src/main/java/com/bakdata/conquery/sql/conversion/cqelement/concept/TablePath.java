@@ -29,7 +29,7 @@ import lombok.Getter;
  */
 class TablePath {
 
-	private final Map<CQTable, ConnectorSqlTables> connectorTableMap;
+	private final Map<CQTable, ConnectorSqlTables> connectorTableMap = new HashMap<>();
 
 	@Getter
 	private final CQConcept cqConcept;
@@ -37,14 +37,9 @@ class TablePath {
 	@Getter
 	private final ConversionContext context;
 
-	@Getter
-	private final boolean multipleConnectors;
-
 	public TablePath(CQConcept cqConcept, ConversionContext context) {
 		this.cqConcept = cqConcept;
 		this.context = context;
-		this.multipleConnectors = cqConcept.getTables().size() > 1;
-		this.connectorTableMap = new HashMap<>();
 		cqConcept.getTables().forEach(cqTable -> this.connectorTableMap.put(cqTable, createConnectorTables(cqConcept, cqTable, context)));
 	}
 
