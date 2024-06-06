@@ -11,6 +11,10 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.CountQuartersSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,5 +49,10 @@ public class CountQuartersSelect extends SingleColumnSelect {
 	@Override
 	public SelectConverter<CountQuartersSelect> createConverter() {
 		return new CountQuartersSqlAggregator();
+	}
+
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

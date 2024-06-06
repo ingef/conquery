@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -64,11 +63,6 @@ public class DateAggregator extends Aggregator<CDateSet> {
 
         // Repackage to get the results sorted. Might need some optimization.
         return action.aggregate(all);
-    }
-
-    @Override
-    public ResultType getResultType() {
-        return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
     }
 
 	public boolean hasChildren() {

@@ -17,7 +17,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -54,16 +55,13 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	/**
 	 * When set, the Frontend will preselect the Select for the User.
 	 */
-	@Setter
-	@Getter
-	@JsonProperty("default")
+	@Setter @Getter @JsonProperty("default")
 	private boolean isDefault = false;
 
 	@JsonIgnore
 	public abstract List<Column> getRequiredColumns();
 
-	@JsonIgnore
-	@Getter(lazy = true)
+	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();
 
 	public abstract Aggregator<?> createAggregator();
@@ -102,7 +100,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public boolean isForConnectorsTable() {
 		boolean valid = true;
 
-		if (holder instanceof Concept) {
+		if(holder instanceof Concept){
 			return getRequiredColumns().isEmpty();
 		}
 
@@ -114,8 +112,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
-																																				   .getId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
 
 			valid = false;
 		}
