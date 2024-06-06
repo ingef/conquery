@@ -1,5 +1,17 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -8,7 +20,6 @@ import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
@@ -16,6 +27,7 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -25,19 +37,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -204,8 +204,8 @@ public class ExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedInternalForm<?> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		ManagedInternalForm<?> managedInternalForm = new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedInternalForm<?> toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
+		ManagedInternalForm<?> managedInternalForm = new ManagedInternalForm(this, owner, submittedDataset);
 		managedInternalForm.setMetaStorage(storage);
 		return managedInternalForm;
 	}

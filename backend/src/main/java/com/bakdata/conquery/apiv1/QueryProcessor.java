@@ -1,5 +1,23 @@
 package com.bakdata.conquery.apiv1;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -50,27 +68,9 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Slf4j
 @NoArgsConstructor
@@ -302,7 +302,7 @@ public class QueryProcessor {
 				execution =
 				((ManagedQuery) namespace
 						.getExecutionManager()
-						.createExecution(query, subject.getUser(), namespace, false));
+						.createExecution(query, subject.getUser().getId(), namespace, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -338,14 +338,15 @@ public class QueryProcessor {
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
-		// We need to resolve the execution here again, because it might have changed the state in the meantime
-		ManagedExecution refreshedExecution = execution.getId().resolve();
+		// We need to resolve the execution here again, because it should have changed the state in the meantime
+		final ManagedExecution refreshedExecution = execution.getId().resolve();
+		refreshedExecution.initExecutable(namespace, config);
 		if (refreshedExecution.getState() == ExecutionState.FAILED) {
 			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 
-		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
+		final FullExecutionStatus status = refreshedExecution.buildStatusFull(subject, namespace);
 		status.setResultUrls(getResultAssets(config.getResultProviders(), refreshedExecution, uriBuilder, false));
 		return status;
 	}
@@ -368,7 +369,7 @@ public class QueryProcessor {
 		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
 		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(subject, storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(subject.getId(), storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 
@@ -449,7 +450,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(execution.getSubmitted(), user, namespace, false);
+					executionManager.createExecution(execution.getSubmitted(), user.getId(), namespace, false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);

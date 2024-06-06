@@ -1,5 +1,17 @@
 package com.bakdata.conquery.models.execution;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -7,7 +19,6 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,6 +35,7 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
@@ -35,23 +47,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -74,9 +73,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private LocalDateTime creationTime = LocalDateTime.now();
 
-	@Nullable
-	@MetaIdRef
-	private User owner;
+	private UserId owner;
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -114,7 +111,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient ConqueryConfig config;
 
 
-	public ManagedExecution(User owner, DatasetId dataset) {
+	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset) {
 		this.owner = owner;
 		this.dataset = dataset;
 	}
@@ -231,8 +228,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			status.setOwner(owner.getId());
-			status.setOwnerName(owner.getLabel());
+			User user = owner.resolve();
+			status.setOwner(user.getId());
+			status.setOwnerName(user.getLabel());
 		}
 	}
 

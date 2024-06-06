@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -29,13 +31,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.TestOnly;
 
@@ -118,7 +114,7 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), datasetId);
+		final FormConfig internalConfig = config.intern(subject.getId(), datasetId);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

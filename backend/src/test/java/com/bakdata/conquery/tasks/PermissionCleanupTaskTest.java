@@ -1,5 +1,15 @@
 package com.bakdata.conquery.tasks;
 
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -14,16 +24,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
-import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class PermissionCleanupTaskTest {
 
@@ -120,7 +120,7 @@ class PermissionCleanupTaskTest {
         STORAGE.updateUser(user);
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
 
-        managedQueryOwned.setOwner(user);
+        managedQueryOwned.setOwner(user.getId());
         STORAGE.updateExecution(managedQueryOwned);
 
         // Created not owned execution
@@ -129,7 +129,7 @@ class PermissionCleanupTaskTest {
         user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
         // Set owner
-        managedQueryNotOwned.setOwner(user2);
+        managedQueryNotOwned.setOwner(user2.getId());
         STORAGE.updateExecution(managedQueryNotOwned);
 
         deletePermissionsOfOwnedInstances(STORAGE, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, STORAGE::getExecution);

@@ -1,5 +1,22 @@
 package com.bakdata.conquery.integration.common;
 
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.*;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -32,28 +49,11 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.*;
-
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 @UtilityClass
@@ -85,7 +85,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -102,7 +102,7 @@ public class LoadingUtil {
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 

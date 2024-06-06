@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -17,14 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.stream.Stream;
 
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
@@ -75,43 +75,45 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 	 * @implNote subQueries of Forms are managed by the form itself, so need to be passed from outside.
 	 */
 	@SneakyThrows
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, E query) {
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, E execution) {
 
 
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 		log.trace("Received Result\n{}", result.getResults());
 
-		if (query.getState() != ExecutionState.RUNNING) {
-			log.warn("Received result for Query[{}] that is not RUNNING but {}", query.getId(), query.getState());
+		if (execution.getState() != ExecutionState.RUNNING) {
+			log.warn("Received result for Query[{}] that is not RUNNING but {}", execution.getId(), execution.getState());
 			return;
 		}
 
 		if (result.getError().isPresent()) {
-			query.fail(result.getError().get(), this);
+			execution.fail(result.getError().get(), this);
+			clearLock(execution.getId());
 		}
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
 			// TODO generating a new DistributedResult here is currently used by form subqueries
-			final DistributedResult results = getResult(query.getId(), () -> new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+			final DistributedResult results = getResult(execution.getId(), () -> new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 			results.results.put(result.getWorkerId(), result.getResults());
 
 			final Set<WorkerId> finishedWorkers = results.results.keySet();
 
 			// If all known workers have returned a result, the query is DONE.
-			if (finishedWorkers.equals(getWorkerHandler(query).getAllWorkerIds())) {
-				query.finish(ExecutionState.DONE, this);
+			if (finishedWorkers.equals(getWorkerHandler(execution).getAllWorkerIds())) {
+				execution.finish(ExecutionState.DONE, this);
+				clearLock(execution.getId());
 
 			}
 		}
 
 		// State changed to DONE or FAILED
-		if (query.getState() != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), getStorage()).map(Group::getName).orElse("none");
+		if (execution.getState() != ExecutionState.RUNNING && execution.getOwner() != null) {
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), getStorage()).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
-			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
-			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(query.getExecutionTime().toMillis());
+			ExecutionMetrics.getQueryStateCounter(execution.getState(), primaryGroupName).inc();
+			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(execution.getExecutionTime().toMillis());
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
 			 existed anymore after the query finished and immediately was reset */

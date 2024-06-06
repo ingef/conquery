@@ -1,12 +1,7 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -135,7 +130,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
+		return object instanceof Owned && equals(((Owned) object).getOwner().resolve());
 	}
 
 	@JsonIgnore

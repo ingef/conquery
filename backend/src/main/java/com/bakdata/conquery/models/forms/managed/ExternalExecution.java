@@ -1,5 +1,14 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+import jakarta.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
@@ -15,6 +24,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
@@ -23,20 +33,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.Pair;
-import jakarta.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 /**
  * This execution type is for external form backends which use Conquery as a proxy for their task execution.
@@ -72,7 +73,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	@JsonIgnore
 	private List<Pair<ResultAsset, AssetBuilder>> resultsAssetMap = Collections.emptyList();
 
-	public ExternalExecution(ExternalForm form, User user, Dataset dataset, MetaStorage storage) {
+	public ExternalExecution(ExternalForm form, UserId user, Dataset dataset, MetaStorage storage) {
 		super(form, user, dataset);
 	}
 
@@ -103,9 +104,10 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 			super.start();
 
 			// Create service user
-			serviceUser = formBackendConfig.createServiceUser(getOwner(), getDataset().resolve());
+			User originalUser = getOwner().resolve();
+			serviceUser = formBackendConfig.createServiceUser(originalUser, getDataset().resolve());
 
-			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), getOwner(), serviceUser, getDataset().resolve());
+			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, getDataset().resolve());
 
 			externalTaskId = externalTaskState.getId();
 		}

@@ -1,12 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.CredentialType;
@@ -20,6 +14,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -37,9 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class AuthorizationHelper {
 
-	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage) {
+	public static List<Group> getGroupsOf(@NonNull UserId userId, @NonNull MetaStorage storage) {
 		return storage.getAllGroups()
-					  .filter(g -> g.getMembers().contains(subject.getId()))
+					  .filter(g -> g.getMembers().contains(userId))
 					  .sorted()
 					  .collect(Collectors.toList());
 	}
@@ -49,8 +44,8 @@ public class AuthorizationHelper {
 	 *
 	 * @implNote Currently this is the first group of a subject and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull Subject subject, @NonNull MetaStorage storage) {
-		List<Group> groups = getGroupsOf(subject, storage);
+	public static Optional<Group> getPrimaryGroup(@NonNull UserId userId, @NonNull MetaStorage storage) {
+		List<Group> groups = getGroupsOf(userId, storage);
 		if (groups.isEmpty()) {
 			return Optional.empty();
 		}

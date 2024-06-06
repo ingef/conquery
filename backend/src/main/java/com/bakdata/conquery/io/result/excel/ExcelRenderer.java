@@ -1,5 +1,14 @@
 package com.bakdata.conquery.io.result.excel;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -30,15 +39,6 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 public class ExcelRenderer {
 
@@ -108,7 +108,7 @@ public class ExcelRenderer {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final User owner = exec.getOwner();
+		final User owner = exec.getOwner().resolve();
 		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();

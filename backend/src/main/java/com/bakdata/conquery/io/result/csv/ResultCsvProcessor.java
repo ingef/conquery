@@ -1,5 +1,19 @@
 package com.bakdata.conquery.io.result.csv;
 
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.OptionalLong;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -14,36 +28,23 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
-
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.OptionalLong;
-
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset, OptionalLong limit) {
 
 		final Dataset dataset = exec.getDataset().resolve();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		exec.initExecutable(namespace, config);
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {}", exec.getId());

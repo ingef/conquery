@@ -1,20 +1,20 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.function.Consumer;
+
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DatabindContext;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.function.Consumer;
 
 /**
  * Internal runtime representation of a form query.
@@ -40,7 +40,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Getter
 	private Form submittedForm;
 
-	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset) {
+	protected ManagedForm(F submittedForm, UserId owner, Dataset submittedDataset) {
 		super(owner, submittedDataset.getId());
 		this.submittedForm = submittedForm;
 	}

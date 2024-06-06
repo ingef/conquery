@@ -1,10 +1,16 @@
 package com.bakdata.conquery.models.query.preview;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -16,8 +22,8 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
@@ -37,13 +43,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * Dedicated {@link ManagedExecution} to properly display/combine the two Queries submitted by {@link EntityPreviewForm}.
  * This mostly delegates to {@link EntityPreviewForm#VALUES_QUERY_NAME}, but embeds the result of {@link EntityPreviewForm#INFOS_QUERY_NAME} into {@link EntityPreviewStatus#getInfos()}.
@@ -56,7 +55,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset);
 	}
 
@@ -269,7 +268,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), namespace, getConfig(), null, previewConfig::resolveSelectLabel), executionManager));
 
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), namespace, getConfig(), null, previewConfig::resolveSelectLabel), executionManager));
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getInitializedSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), namespace, getConfig(), null, previewConfig::resolveSelectLabel), executionManager));
 
 		return status;
 	}
@@ -308,15 +307,15 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
-		return (ManagedQuery) getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME).resolve();
+		return getInitializedSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedExecutionId> subQueries, PrintSettings printSettings, ExecutionManager<?> executionManager) {
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings, ExecutionManager<?> executionManager) {
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
-			final ManagedQuery query = (ManagedQuery) subQueries.get(description.label()).resolve();
+			final ManagedQuery query = (ManagedQuery) subQueries.get(description.label());
 
 			final EntityResult entityResult = query.streamResults(OptionalLong.empty(), executionManager).collect(MoreCollectors.onlyElement());
 
@@ -415,7 +414,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getValuesQuery() {
-		return (ManagedQuery) getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME).resolve();
+		return getInitializedSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	@Override

@@ -1,10 +1,13 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -13,6 +16,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
@@ -26,10 +30,6 @@ import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface QueryDescription extends Visitable {
@@ -41,12 +41,12 @@ public interface QueryDescription extends Visitable {
 	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable(com.bakdata.conquery.models.worker.Namespace)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
-	 * @param user
+	 * @param owner
 	 * @param submittedDataset
 	 * @param storage
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage);
+	ManagedExecution toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage);
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();

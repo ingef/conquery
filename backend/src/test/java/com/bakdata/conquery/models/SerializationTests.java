@@ -1,5 +1,15 @@
 package com.bakdata.conquery.models;
 
+import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Stream;
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -77,22 +87,12 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Slf4j
@@ -334,7 +334,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		metaStorage.updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset);
+		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -368,7 +368,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset);
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -393,7 +393,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Dataset dataset = createDataset(namespaceStorage);
 		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user, dataset, getMetaStorage());
+		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset, getMetaStorage());
 
 
 		SerializationTestUtil.forType(ManagedExecution.class)

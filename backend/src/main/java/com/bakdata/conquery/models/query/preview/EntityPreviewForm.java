@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.query.preview;
 
+import java.time.LocalDate;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -9,7 +14,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -20,6 +24,7 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -34,11 +39,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @implNote This Form should only be used by invocations of {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport}.
@@ -163,8 +163,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, user, submittedDataset, storage);
+	public ManagedExecution toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
+		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset, storage);
 		entityPreviewExecution.setMetaStorage(storage);
 		return entityPreviewExecution;
 	}

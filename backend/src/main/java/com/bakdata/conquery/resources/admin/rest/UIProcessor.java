@@ -1,17 +1,10 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -34,16 +27,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
-import com.bakdata.conquery.resources.admin.ui.model.FrontendGroupContent;
-import com.bakdata.conquery.resources.admin.ui.model.FrontendPermission;
-import com.bakdata.conquery.resources.admin.ui.model.FrontendRoleContent;
-import com.bakdata.conquery.resources.admin.ui.model.FrontendUserContent;
-import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
-import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
-import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.bakdata.conquery.resources.admin.ui.model.*;
 import com.google.common.cache.CacheStats;
-import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +68,7 @@ public class UIProcessor {
 	public FrontendAuthOverview getAuthOverview() {
 		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers().toList()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user.getId(), getStorage());
 			Set<Role> effectiveRoles = user.getRoles().stream()
 										   .map(getStorage()::getRole)
 										   // Filter role_ids that might not map TODO how do we handle those
@@ -159,7 +144,7 @@ public class UIProcessor {
 		return FrontendUserContent
 				.builder()
 				.owner(user)
-				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
+				.groups(AuthorizationHelper.getGroupsOf(user.getId(), getStorage()))
 				.availableGroups(availableGroups)
 				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toCollection(TreeSet::new)))
 				.availableRoles(getStorage().getAllRoles().collect(Collectors.toCollection(TreeSet::new)))

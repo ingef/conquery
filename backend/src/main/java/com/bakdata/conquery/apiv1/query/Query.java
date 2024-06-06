@@ -1,11 +1,16 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -14,11 +19,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
 @EqualsAndHashCode
 public abstract class Query implements QueryDescription {
@@ -40,8 +40,8 @@ public abstract class Query implements QueryDescription {
 	public abstract List<ResultInfo> getResultInfos();
 
 	@Override
-	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		ManagedQuery managedQuery = new ManagedQuery(this, user, submittedDataset);
+	public ManagedQuery toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
+		ManagedQuery managedQuery = new ManagedQuery(this, owner, submittedDataset);
 		managedQuery.setMetaStorage(storage);
 		return managedQuery;
 	}

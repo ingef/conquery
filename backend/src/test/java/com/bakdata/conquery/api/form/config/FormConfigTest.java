@@ -1,5 +1,19 @@
 package com.bakdata.conquery.api.form.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
+
+import java.net.URL;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Stream;
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
@@ -35,23 +49,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
-
-import java.net.URL;
-import java.time.ZoneId;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 
 /**
@@ -148,7 +148,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset, formConfig);
 
-		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset.getId()));
+		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user.getId(), dataset.getId()));
 	}
 
 	@Test
@@ -181,7 +181,7 @@ public class FormConfigTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset.getId());
-		formConfig.setOwner(user);
+		formConfig.setOwner(user.getId());
 		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 
@@ -329,7 +329,7 @@ public class FormConfigTest {
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[]{"tag1", "tag2"});
-		patchedFormExpected.setOwner(user);
+		patchedFormExpected.setOwner(user.getId());
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))));
 
 		final FormConfigId formId = config.getId();

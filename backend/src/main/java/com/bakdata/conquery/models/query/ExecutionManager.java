@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -13,6 +21,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
@@ -21,13 +30,6 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 @Data
 @Slf4j
@@ -82,7 +84,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
-		final ManagedExecution execution = createExecution(query, user, namespace, system);
+		final ManagedExecution execution = createExecution(query, user.getId(), namespace, system);
 
 		execute(namespace, execution, config);
 
@@ -125,11 +127,11 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 	protected abstract void doExecute(Namespace namespace, InternalExecution<?> execution);
 
 	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, User user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage);
 		managed.setSystem(system);
@@ -158,11 +160,10 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 
 	}
 
+	public void clearLock(ManagedExecutionId id) {
+		R result = Objects.requireNonNull(executionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
 
-
-
-	private void clearLock(ManagedExecutionId id) throws ExecutionException {
-		getResult(id, () -> {throw new IllegalStateException("Result was not present");} ).getExecutingLock().countDown();
+		result.getExecutingLock().countDown();
 	}
 
 	/**

@@ -2,20 +2,15 @@ package com.bakdata.conquery.apiv1.forms;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.VariableDefaultValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+
+import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.util.VariableDefaultValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.*;
 import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
@@ -37,7 +32,7 @@ public class FormConfigAPI {
 	@VariableDefaultValue @Builder.Default
 	private LocalDateTime creationTime = LocalDateTime.now();
 
-	public FormConfig intern(User owner, DatasetId dataset) {
+	public FormConfig intern(UserId owner, DatasetId dataset) {
 		FormConfig intern = new FormConfig();
 		intern.setFormId(formId);
 		intern.setFormType(formType);

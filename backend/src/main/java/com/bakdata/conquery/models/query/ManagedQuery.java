@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.List;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -10,11 +16,11 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -25,12 +31,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.OptionalLong;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -50,7 +50,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
+	public ManagedQuery(Query query, UserId owner, Dataset submittedDataset) {
 		super(owner, submittedDataset.getId());
 		this.query = query;
 	}

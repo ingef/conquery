@@ -1,11 +1,17 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -13,6 +19,7 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.*;
@@ -28,13 +35,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
@@ -55,7 +55,10 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@EqualsAndHashCode.Exclude
 	private Map<String, ManagedExecutionId> subQueries;
 
-	public ManagedInternalForm(F form, User user, Dataset submittedDataset) {
+	@JsonIgnore
+	private Map<String, ManagedQuery> initializedSubQueries;
+
+	public ManagedInternalForm(F form, UserId user, Dataset submittedDataset) {
 		super(form, user, submittedDataset);
 	}
 
@@ -68,10 +71,21 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	public void doInitExecutable(Namespace namespace) {
 		// Convert sub queries to sub executions
 		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
-		subQueries = createSubExecutions();
+
+		if (subQueries == null || subQueries.isEmpty()) {
+			// Only create sub executions if init was never executed
+			subQueries = createSubExecutions();
+		}
 
 		// Initialize sub executions
-		subQueries.values().forEach(mq -> mq.resolve().initExecutable(namespace, getConfig()));
+		final Map<String, ManagedQuery> map = new HashMap<>(subQueries.size());
+		subQueries.forEach((k,v) -> {
+
+			ManagedExecution execution = v.resolve();
+			execution.initExecutable(namespace, getConfig());
+			map.put(k, (ManagedQuery) execution);
+		});
+		initializedSubQueries = map;
 	}
 
 	@NotNull
@@ -93,6 +107,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public void start() {
+		initializedSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
 	}
 
@@ -103,7 +118,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
-		// Set the ColumnDescription if the Form only consits of a single subquery
+		// Set the ColumnDescription if the Form only consists of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
 			subQueries = createSubExecutions();
@@ -154,8 +169,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), subQueries.values().stream()
-													  .collect(Collectors.toMap(Function.identity(), id -> ((ManagedQuery) id.resolve()).getQuery())));
+		return new ExecuteForm(getId(), initializedSubQueries.values().stream()
+													  .collect(Collectors.toMap(ManagedQuery::getId, ManagedQuery::getQuery)));
 	}
 
 
