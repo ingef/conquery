@@ -164,7 +164,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	@Override
 	public ManagedExecution toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
-		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset, storage);
+		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset);
 		entityPreviewExecution.setMetaStorage(storage);
 		return entityPreviewExecution;
 	}

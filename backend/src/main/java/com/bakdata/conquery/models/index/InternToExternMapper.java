@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public interface InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId>, Named<InternToExternMapperId> {
 
-	void init();
+	InternToExternMapper init();
 
 	boolean initialized();
 

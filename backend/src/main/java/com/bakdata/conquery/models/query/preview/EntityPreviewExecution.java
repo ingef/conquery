@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
@@ -55,7 +54,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, Dataset submittedDataset, MetaStorage storage) {
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, Dataset submittedDataset) {
 		super(entityPreviewQuery, user, submittedDataset);
 	}
 

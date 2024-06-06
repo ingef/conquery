@@ -120,7 +120,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getEntityData")
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
-		// Api uses NsIdRef so we have to use the real objects here.
+		// Api uses NsIdRef so we have to use the real objects here. TODO not any more, does that simplify stuff
 		final List<ConnectorId> allConnectors = conquery.getNamespaceStorage().getAllConcepts()
 														.map(Concept::getConnectors)
 														.flatMap(List::stream)

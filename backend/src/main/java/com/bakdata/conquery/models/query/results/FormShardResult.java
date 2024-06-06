@@ -47,6 +47,9 @@ public class FormShardResult extends ShardResult {
 							() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))
 					),
 					executionManager);
+
+			// Signal to waiting threads that the form finished
+			executionManager.clearLock(formId);
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {
