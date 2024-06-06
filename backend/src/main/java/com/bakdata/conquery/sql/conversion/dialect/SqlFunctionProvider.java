@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -28,7 +29,7 @@ public interface SqlFunctionProvider {
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
-	String SQL_STRING_COMMA_SEPARATOR = " || ',' || ";
+	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
 	String getMinDateExpression();
 
@@ -126,7 +127,7 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
-	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
+	<T> Field<T> first(Field<T> field, List<Field<?>> orderByColumn);
 
 	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
@@ -145,7 +146,7 @@ public interface SqlFunctionProvider {
 									// thus concat an empty string
 									.map(field -> DSL.when(field.isNull(), DSL.val("")).otherwise(field))
 									.map(Field::toString)
-									.collect(Collectors.joining(SQL_STRING_COMMA_SEPARATOR));
+									.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return DSL.field(concatenated, String.class);
 	}
 

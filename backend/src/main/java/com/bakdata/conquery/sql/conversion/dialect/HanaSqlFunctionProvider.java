@@ -41,7 +41,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		// HANAN would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
+		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
 		if (type == SQLDataType.VARCHAR) {
 			return DSL.function("TO_VARCHAR", type.getType(), field);
 		}

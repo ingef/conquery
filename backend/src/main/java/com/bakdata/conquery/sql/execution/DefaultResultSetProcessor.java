@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class DefaultResultSetProcessor implements ResultSetProcessor {
 
-	private static final String COMMA = ",";
-
 	private final SqlCDateSetParser sqlCDateSetParser;
 
 	@Override
@@ -73,7 +71,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 		if (arrayExpression == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.stream(arrayExpression.split(COMMA))
+		return Arrays.stream(arrayExpression.split(String.valueOf(ResultSetProcessor.UNIT_SEPARATOR)))
 					 .filter(Predicate.not(String::isBlank))
 					 .toList();
 	}

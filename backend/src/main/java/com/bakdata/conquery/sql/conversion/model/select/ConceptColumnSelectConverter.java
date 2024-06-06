@@ -19,6 +19,7 @@ import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,6 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		private final String suffix;
 	}
-
-	private static final Field<String> COMMA = DSL.toChar(",");
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(ConceptColumnSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
@@ -156,7 +155,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
 		Field<String> unionedColumn = DSL.field(DSL.name(unionStep.getCteName(), alias), String.class);
 		return new FieldWrapper<>(
-				functionProvider.stringAggregation(unionedColumn, COMMA, List.of(unionedColumn)).as(alias)
+				functionProvider.stringAggregation(unionedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of(unionedColumn)).as(alias)
 		);
 	}
 }
