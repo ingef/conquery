@@ -338,14 +338,15 @@ public class QueryProcessor {
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
-
-		if (execution.getState() == ExecutionState.FAILED) {
+		// We need to resolve the execution here again, because it might have changed the state in the meantime
+		ManagedExecution refreshedExecution = execution.getId().resolve();
+		if (refreshedExecution.getState() == ExecutionState.FAILED) {
 			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 
 		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
-		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
+		status.setResultUrls(getResultAssets(config.getResultProviders(), refreshedExecution, uriBuilder, false));
 		return status;
 	}
 

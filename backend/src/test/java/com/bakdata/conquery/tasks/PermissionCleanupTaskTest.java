@@ -1,15 +1,5 @@
 package com.bakdata.conquery.tasks;
 
-import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
-import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -24,6 +14,16 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PermissionCleanupTaskTest {
 
@@ -41,7 +41,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 

@@ -1,9 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Objects;
-import java.util.OptionalInt;
-import java.util.stream.Stream;
-
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -21,6 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.stream.Stream;
 
 @Slf4j
 public class NamespaceStorage extends NamespacedStorage {
@@ -193,5 +194,10 @@ public class NamespaceStorage extends NamespacedStorage {
 		}
 
 		return super.getFromStorage(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(NamespaceStorage.class, this);
 	}
 }

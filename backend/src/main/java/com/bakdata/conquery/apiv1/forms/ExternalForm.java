@@ -1,16 +1,6 @@
 package com.bakdata.conquery.apiv1.forms;
 
 
-import static com.bakdata.conquery.apiv1.forms.ExternalForm.Deserializer;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -29,24 +19,21 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Consumer;
+
+import static com.bakdata.conquery.apiv1.forms.ExternalForm.Deserializer;
 
 @Getter
 @Setter
@@ -133,7 +120,9 @@ public class ExternalForm extends Form implements SubTyped {
 
 	@Override
 	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ExternalExecution(this, user, submittedDataset, storage);
+		ExternalExecution externalExecution = new ExternalExecution(this, user, submittedDataset, storage);
+		externalExecution.setMetaStorage(storage);
+		return externalExecution;
 	}
 
 	@Override

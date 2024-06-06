@@ -1,24 +1,17 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ColumnConfig;
+import com.fasterxml.jackson.annotation.*;
+import com.univocity.parsers.common.record.Record;
+import com.univocity.parsers.csv.CsvParser;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.ColumnConfig;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.univocity.parsers.common.record.Record;
-import com.univocity.parsers.csv.CsvParser;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Mapping from uploaded {@link ExternalId} for resolving in {@link com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal}, and also for printing with {@link EntityPrintId}.
@@ -33,6 +26,7 @@ public class EntityIdMap {
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@JacksonInject(useInput = OptBoolean.FALSE)
 	private NamespaceStorage storage;
 
 	/**

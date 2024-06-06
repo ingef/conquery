@@ -8,7 +8,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -31,7 +30,10 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.UriBuilder;
@@ -58,6 +60,7 @@ import java.util.stream.Collectors;
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -111,19 +114,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient ConqueryConfig config;
 
 
-	@JsonIgnore
-	@Getter(AccessLevel.PROTECTED)
-	@NotNull
-	@EqualsAndHashCode.Exclude
-	private final MetaStorage storage;
-
-	protected ManagedExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		this.storage = storage;
-	}
-
-
-	public ManagedExecution(User owner, DatasetId dataset, MetaStorage storage) {
-		this(storage);
+	public ManagedExecution(User owner, DatasetId dataset) {
 		this.owner = owner;
 		this.dataset = dataset;
 	}
@@ -209,7 +200,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			getStorage().updateExecution(this);
+			getMetaStorage().updateExecution(this);
 
 		}
 
@@ -296,7 +287,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : storage.getAllGroups().toList()) {
+		for (Group group : getMetaStorage().getAllGroups().toList()) {
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());

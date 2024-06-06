@@ -19,15 +19,14 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import com.bakdata.conquery.util.AuthUtil;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.Pair;
 import jakarta.ws.rs.core.Response;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +46,7 @@ import java.util.stream.Stream;
 @Slf4j
 @CPSType(id = "EXTERNAL_EXECUTION", base = ManagedExecution.class)
 @EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExternalExecution extends ManagedForm<ExternalForm> implements ExternalResult {
 
 
@@ -72,13 +72,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	@JsonIgnore
 	private List<Pair<ResultAsset, AssetBuilder>> resultsAssetMap = Collections.emptyList();
 
-	@JsonCreator
-	protected ExternalExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	public ExternalExecution(ExternalForm form, User user, Dataset dataset, MetaStorage storage) {
-		super(form, user, dataset, storage);
+		super(form, user, dataset);
 	}
 
 	@Override
@@ -198,7 +193,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 
 		super.finish(executionState, executionManager);
 		synchronized (this) {
-			AuthUtil.cleanUpUserAndBelongings(serviceUser, getStorage());
+			AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
 			serviceUser = null;
 		}
 	}

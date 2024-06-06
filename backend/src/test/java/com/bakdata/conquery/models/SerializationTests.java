@@ -1,21 +1,5 @@
 package com.bakdata.conquery.models;
 
-import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -100,6 +84,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Slf4j
@@ -341,7 +334,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		metaStorage.updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset, metaStorage);
+		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -375,7 +368,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset, getMetaStorage());
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)

@@ -47,7 +47,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync(managedQuery, executionManager)).toArray(CompletableFuture[]::new))
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync((ManagedQuery) managedQuery.resolve(), executionManager)).toArray(CompletableFuture[]::new))
 							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, executionManager));
 			return;
 		}

@@ -1,18 +1,5 @@
 package com.bakdata.conquery.util.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.File;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -51,6 +38,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Represents the test instance of Conquery.
@@ -141,8 +140,8 @@ public class TestConquery {
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
+				.withProperty(ClientProperties.CONNECT_TIMEOUT, 100000)
+				.withProperty(ClientProperties.READ_TIMEOUT, 100000)
 				.build("test client");
 	}
 

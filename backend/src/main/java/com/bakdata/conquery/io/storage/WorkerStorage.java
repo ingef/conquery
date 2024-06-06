@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.stream.Stream;
-
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.events.Bucket;
@@ -17,6 +16,8 @@ import com.google.common.collect.ImmutableList;
 import jakarta.validation.Validator;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.stream.Stream;
 
 @Slf4j
 @ToString(of = "worker")
@@ -134,5 +135,10 @@ public class WorkerStorage extends NamespacedStorage {
 			return (VALUE) getCBlock(castId);
 		}
 		return super.getFromStorage(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(WorkerStorage.class, this);
 	}
 }

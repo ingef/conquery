@@ -41,7 +41,9 @@ public abstract class Query implements QueryDescription {
 
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedQuery(this, user, submittedDataset, storage);
+		ManagedQuery managedQuery = new ManagedQuery(this, user, submittedDataset);
+		managedQuery.setMetaStorage(storage);
+		return managedQuery;
 	}
 
 	/**

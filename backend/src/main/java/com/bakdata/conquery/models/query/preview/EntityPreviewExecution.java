@@ -16,9 +16,8 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
@@ -27,14 +26,14 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,17 +50,14 @@ import java.util.stream.Stream;
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> {
 
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(entityPreviewQuery, user, submittedDataset, storage);
+		super(entityPreviewQuery, user, submittedDataset);
 	}
 
 	/**
@@ -312,15 +308,15 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
-		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
+		return (ManagedQuery) getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME).resolve();
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings, ExecutionManager<?> executionManager) {
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedExecutionId> subQueries, PrintSettings printSettings, ExecutionManager<?> executionManager) {
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
-			final ManagedQuery query = subQueries.get(description.label());
+			final ManagedQuery query = (ManagedQuery) subQueries.get(description.label()).resolve();
 
 			final EntityResult entityResult = query.streamResults(OptionalLong.empty(), executionManager).collect(MoreCollectors.onlyElement());
 
@@ -419,19 +415,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
+		return (ManagedQuery) getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME).resolve();
 	}
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig(), namespace));
-	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet()
-														   .stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
 	@Override

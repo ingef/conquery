@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -35,6 +25,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,7 +65,9 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
         datasetStorage.openStores(persistenceMapper);
         datasetStorage.updateDataset(dataset);
-        datasetStorage.updateIdMapping(new EntityIdMap());
+        EntityIdMap idMapping = new EntityIdMap();
+        idMapping.setStorage(datasetStorage);
+        datasetStorage.updateIdMapping(idMapping);
         datasetStorage.setPreviewConfig(new PreviewConfig());
         datasetStorage.close();
 

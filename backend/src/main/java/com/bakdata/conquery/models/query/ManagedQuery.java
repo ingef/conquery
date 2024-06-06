@@ -9,7 +9,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -23,13 +22,8 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -43,6 +37,7 @@ import java.util.stream.Stream;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
@@ -55,19 +50,14 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
-
-	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset.getId(), storage);
+	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
+		super(owner, submittedDataset.getId());
 		this.query = query;
 	}
 
 	@Override
 	protected void doInitExecutable(Namespace namespace) {
-		query.resolve(new QueryResolveContext(namespace, getConfig(), getStorage(), null));
+		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
 	}
 
 

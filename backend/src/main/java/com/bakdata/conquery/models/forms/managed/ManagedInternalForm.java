@@ -4,7 +4,6 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -12,7 +11,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
@@ -21,11 +20,11 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +43,7 @@ import java.util.stream.Stream;
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
 
 
@@ -50,47 +51,41 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	 * Mapping of a result table name to a set of queries.
 	 * This is required by forms that have multiple results (CSVs) as output.
 	 */
-	@JsonIgnore
+	// TODO put this in the ExecutionManager
 	@EqualsAndHashCode.Exclude
-	private Map<String, ManagedQuery> subQueries;
+	private Map<String, ManagedExecutionId> subQueries;
 
-	/**
-	 * Subqueries that are sent to the workers.
-	 */
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
-
-	public ManagedInternalForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(form, user, submittedDataset, storage);
+	public ManagedInternalForm(F form, User user, Dataset submittedDataset) {
+		super(form, user, submittedDataset);
 	}
 
 	@Nullable
 	public ManagedQuery getSubQuery(ManagedExecutionId subQueryId) {
-		return flatSubQueries.get(subQueryId);
+		return (ManagedQuery) getMetaStorage().getExecution(subQueryId);
 	}
 
 	@Override
 	public void doInitExecutable(Namespace namespace) {
 		// Convert sub queries to sub executions
-		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
-		subQueries.values().forEach(mq -> mq.initExecutable(namespace, getConfig()));
+		subQueries.values().forEach(mq -> mq.resolve().initExecutable(namespace, getConfig()));
 	}
 
 	@NotNull
-	private Map<String, ManagedQuery> createSubExecutions() {
+	private Map<String, ManagedExecutionId> createSubExecutions() {
 		return getSubmitted().createSubQueries()
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset().resolve(), getStorage())
+						e -> {
+							ManagedQuery managedExecution = e.getValue().toManagedExecution(getOwner(), getDataset().resolve(), getMetaStorage());
+							managedExecution.setSystem(true);
+							getMetaStorage().updateExecution(managedExecution);
+							return managedExecution.getId();
+						}
 
 				));
 	}
@@ -98,16 +93,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public void start() {
-		synchronized (this) {
-			subQueries.values().stream().forEach(flatSubQueries::add);
-		}
-		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
 	}
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config, Namespace namespace) {
-		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config, namespace);
+		return ((ManagedQuery) subQueries.values().iterator().next().resolve()).generateColumnDescriptions(isInitialized, config, namespace);
 	}
 
 
@@ -125,13 +116,13 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			);
 			return;
 		}
-		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
+		ManagedQuery subQuery = (ManagedQuery) subQueries.entrySet().iterator().next().getValue().resolve();
 		status.setColumnDescriptions(subQuery.generateColumnDescriptions(isInitialized(), getConfig(), namespace));
 	}
 
 	@Override
 	public void cancel() {
-		subQueries.values().forEach(ManagedQuery::cancel);
+		subQueries.values().stream().map(Id::resolve).map(ManagedQuery.class::cast).forEach(ManagedQuery::cancel);
 	}
 
 	@Override
@@ -140,7 +131,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		if (subQueries.size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return subQueries.values().iterator().next().getResultInfos();
+		return ((ManagedQuery) subQueries.values().iterator().next().resolve()).getResultInfos();
 	}
 
 	@Override
@@ -149,7 +140,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().streamResults(limit, executionManager);
+		return ((ManagedQuery) subQueries.values().iterator().next().resolve()).streamResults(limit, executionManager);
 	}
 
 	@Override
@@ -158,20 +149,19 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().resultRowCount();
+		return ((ManagedQuery) subQueries.values().iterator().next().resolve()).resultRowCount();
 	}
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), flatSubQueries.entrySet().stream()
-													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
+		return new ExecuteForm(getId(), subQueries.values().stream()
+													  .collect(Collectors.toMap(Function.identity(), id -> ((ManagedQuery) id.resolve()).getQuery())));
 	}
 
 
 	public boolean allSubQueriesDone() {
 		synchronized (this) {
-			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
+			return subQueries.values().stream().map(Id::resolve).allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}
 	}
-
 }

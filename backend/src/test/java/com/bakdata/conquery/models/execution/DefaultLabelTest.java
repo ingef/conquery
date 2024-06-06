@@ -1,13 +1,5 @@
 package com.bakdata.conquery.models.execution;
 
-import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
@@ -31,6 +23,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultLabelTest {
 
@@ -119,7 +119,7 @@ public class DefaultLabelTest {
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQReusedQuery reused = new CQReusedQuery(managedQuery.getId());
@@ -159,7 +159,7 @@ public class DefaultLabelTest {
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();
@@ -192,7 +192,7 @@ public class DefaultLabelTest {
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();

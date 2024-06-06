@@ -1,16 +1,5 @@
 package com.bakdata.conquery.api;
 
-import static com.bakdata.conquery.models.execution.ExecutionState.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -28,11 +17,7 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.config.ArrowResultProvider;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.CsvResultProvider;
-import com.bakdata.conquery.models.config.ExcelResultProvider;
-import com.bakdata.conquery.models.config.ParquetResultProvider;
+import com.bakdata.conquery.models.config.*;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -53,6 +38,17 @@ import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.models.execution.ExecutionState.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
@@ -152,7 +148,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm(new ExportForm(), user, dataset, STORAGE) {
+		return new ManagedInternalForm(new ExportForm(), user, dataset) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -188,7 +184,7 @@ public class StoredQueriesProcessorTest {
 
 
 	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset, final long resultCount) {
-		return new ManagedQuery(queryDescription, user, dataset, STORAGE) {
+		return new ManagedQuery(queryDescription, user, dataset) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -209,7 +205,7 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId, Long resultCount) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
-		final ManagedQuery execMock = new ManagedQuery(null, owner, DATASET_0, STORAGE) {
+		final ManagedQuery execMock = new ManagedQuery(null, owner, DATASET_0) {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);

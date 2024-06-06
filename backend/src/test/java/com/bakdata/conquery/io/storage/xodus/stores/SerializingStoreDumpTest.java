@@ -1,11 +1,5 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
@@ -31,6 +25,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @Slf4j
 public class SerializingStoreDumpTest {
 
@@ -42,7 +42,7 @@ public class SerializingStoreDumpTest {
 	private ObjectMapper objectMapper;
 
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"), STORAGE);
+	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
 	private final ConceptQuery cQuery = new ConceptQuery(
 			new CQReusedQuery(managedQuery.getId()));
 	private final User user = new User("username", "userlabel");

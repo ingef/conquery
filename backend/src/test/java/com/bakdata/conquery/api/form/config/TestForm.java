@@ -1,10 +1,5 @@
 package com.bakdata.conquery.api.form.config;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -21,11 +16,18 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
 public abstract class TestForm extends Form implements InternalForm {
 
 	@Override
 	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
+		ManagedInternalForm<TestForm> form = new ManagedInternalForm<>(this, user, submittedDataset);
+		form.setMetaStorage(storage);
+		return form;
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 
 	@Override
-	protected void doExecute(Namespace namespace, InternalExecution internalExecution) {
+	protected void doExecute(Namespace namespace, InternalExecution<?> internalExecution) {
 		ManagedExecution execution = (ManagedExecution & InternalExecution<?>) internalExecution;
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
@@ -92,7 +92,8 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			final DistributedResult results = getResult(query.getId(), () -> {throw new IllegalStateException("There should already result present upon execution start");});
+			// TODO generating a new DistributedResult here is currently used by form subqueries
+			final DistributedResult results = getResult(query.getId(), () -> new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 			results.results.put(result.getWorkerId(), result.getResults());
 
 			final Set<WorkerId> finishedWorkers = results.results.keySet();
