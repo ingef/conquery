@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -47,7 +48,11 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			user.addPermission(concept.createPermission(Ability.READ.asSet()))
 		);
 
-		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, test.getQuery(), -1, ExecutionState.RUNNING, user, 201);
+		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, test.getQuery(), -1, ExecutionState.DONE, user, 201);
+
+		if (executionId == null) {
+			fail("Execution id should not be null");
+		}
 
 		{
 			// Try to generate a download link: not possible because of missing permissions
