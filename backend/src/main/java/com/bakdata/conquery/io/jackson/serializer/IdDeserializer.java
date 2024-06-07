@@ -16,11 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
@@ -33,8 +29,6 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
 	private boolean isNamespacedId;
-	private NsIdResolver nsIdResolver;
-	private MetaStorage metaStorage;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -46,6 +40,16 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 		try {
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
+
+
+			NsIdResolver nsIdResolver = null;
+			MetaStorage metaStorage = null;
+			final Class<?> activeView = ctxt.getActiveView();
+			if (!isTestMode(ctxt, activeView)) {
+				// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
+				nsIdResolver = NsIdResolver.getResolver(ctxt);
+				metaStorage = MetaStorage.get(ctxt);
+			}
 
 			setResolver(id, metaStorage, nsIdResolver);
 
@@ -116,7 +120,7 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
 		JavaType type = Optional.ofNullable(ctxt.getContextualType())
 								.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
@@ -126,23 +130,11 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		Class<Id<?>> idClass = (Class<Id<?>>) type.getRawClass();
 		IdUtil.Parser<Id<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
 
-		NsIdResolver nsIdResolver = null;
-		MetaStorage metaStorage = null;
-		final Class<?> activeView = ctxt.getActiveView();
-		if (!isTestMode(ctxt, activeView)) {
-			// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
-			nsIdResolver = NsIdResolver.getResolver(ctxt);
-			metaStorage = MetaStorage.get(ctxt);
-		}
-
-
 		return new IdDeserializer(
 				idClass,
 				parser,
 				//we only need to check for the dataset prefix if the id requires it
-				NamespacedId.class.isAssignableFrom(idClass),
-				nsIdResolver,
-				metaStorage
+				NamespacedId.class.isAssignableFrom(idClass)
 		);
 	}
 }
