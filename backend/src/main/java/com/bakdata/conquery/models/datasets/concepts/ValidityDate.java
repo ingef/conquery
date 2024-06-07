@@ -14,11 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -86,6 +82,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		return CDateRange.of(start, end);
 	}
 
+	// TODO use Id as parameter
 	public boolean containsColumn(Column column) {
 		final ColumnId id = column.getId();
 		return id.equals(getColumn()) || id.equals(getStartColumn()) || id.equals(getEndColumn());

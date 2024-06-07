@@ -21,8 +21,6 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -120,18 +118,16 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getEntityData")
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
-		// Api uses NsIdRef so we have to use the real objects here. TODO not any more, does that simplify stuff
-		final List<ConnectorId> allConnectors = conquery.getNamespaceStorage().getAllConcepts()
-														.map(Concept::getConnectors)
-														.flatMap(List::stream)
-														.map(Connector::getId)
-														.collect(Collectors.toList());
-
 		final EntityPreviewStatus result;
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
-													  .request(MediaType.APPLICATION_JSON_TYPE)
-													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new EntityPreviewRequest("ID", "1", dateRange, allConnectors)))) {
+				.request(MediaType.APPLICATION_JSON_TYPE)
+				.header("Accept-Language", "en-Us")
+				.post(Entity.json(new EntityPreviewRequest("ID", "1", dateRange,
+						List.of(
+								ConnectorId.Parser.INSTANCE.parse(dataset.getName() + ".tree1.connector"),
+								ConnectorId.Parser.INSTANCE.parse(dataset.getName() + ".tree2.connector")
+						)
+				)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))

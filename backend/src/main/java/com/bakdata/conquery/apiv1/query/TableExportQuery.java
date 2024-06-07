@@ -1,19 +1,13 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -32,18 +26,8 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.RequiredEntities;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
@@ -54,9 +38,6 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -158,7 +139,7 @@ public class TableExportQuery extends Query {
 													  .collect(Collectors.toSet());
 
 		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
-		final Set<Column> conceptColumns = tables.stream()
+		final List<Column> conceptColumns = tables.stream()
 												 .map(CQConcept::getTables)
 												 .flatMap(Collection::stream)
 												 .map(CQTable::getConnector)
@@ -166,7 +147,7 @@ public class TableExportQuery extends Query {
 												 .map(Connector::getColumn)
 												 .filter(Objects::nonNull)
 												 .map(ColumnId::resolve)
-												 .collect(Collectors.toSet());
+												 .collect(Collectors.toList());
 
 		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
 
@@ -195,8 +176,8 @@ public class TableExportQuery extends Query {
 			AtomicInteger currentPosition,
 			List<CQConcept> tables,
 			Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions,
-			Set<Column> conceptColumns,
-			Set<ValidityDate> validityDates
+			Collection<Column> conceptColumns,
+			Collection<ValidityDate> validityDates
 	) {
 		final Map<ColumnId, Integer> positions = new HashMap<>();
 
@@ -231,7 +212,7 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
+	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions, Collection<Column> conceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
@@ -266,7 +247,7 @@ public class TableExportQuery extends Query {
 		}
 
 
-		final Map<Column, Concept> connectorColumns =
+		final Map<Column, Concept<?>> connectorColumns =
 				tables.stream()
 					  .flatMap(con -> con.getTables().stream())
 					  .filter(tbl -> tbl.getConnector().resolve().getColumn() != null)
@@ -292,7 +273,7 @@ public class TableExportQuery extends Query {
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
-			ResultType resultType = ResultType.resolveResultType(column.getType());
+			ResultType<?> resultType = ResultType.resolveResultType(column.getType());
 
 			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
@@ -323,19 +304,17 @@ public class TableExportQuery extends Query {
 	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
 	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */
-	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
+	public static String printValue(Concept<?> concept, Object rawValue, PrintSettings printSettings) {
 
 		if (rawValue == null) {
 			return null;
 		}
 
-		if (!(concept instanceof TreeConcept)) {
+		if (!(concept instanceof TreeConcept tree)) {
 			return Objects.toString(rawValue);
 		}
 
-		final TreeConcept tree = (TreeConcept) concept;
-
-		final int localId = (int) rawValue;
+        final int localId = (int) rawValue;
 
 		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
 
