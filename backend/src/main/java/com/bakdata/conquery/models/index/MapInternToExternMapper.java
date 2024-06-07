@@ -89,7 +89,12 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
 		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
 
-		int2ext = mapIndex.getIndex(new MapIndexKey(resolvedURI, internalColumn, externalTemplate));
+		MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
+		try {
+			int2ext = mapIndex.getIndex(key);
+		} catch (Exception e) {
+			log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));
+		}
 		return this;
 	}
 
