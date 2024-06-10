@@ -89,7 +89,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.

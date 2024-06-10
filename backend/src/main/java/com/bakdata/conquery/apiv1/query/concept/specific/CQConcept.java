@@ -1,11 +1,10 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -21,17 +20,8 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.RequiredEntities;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -42,15 +32,8 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -100,7 +83,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			table.setConnector(((Connector) select.getHolder()).getId());
 
-			table.setSelects(List.of(select.getId()));
+			table.setSelects(List.of((ConnectorSelectId) select.getId()));
 		}
 		else {
 			cqConcept.setTables(((Concept<?>) select.getHolder())
@@ -157,16 +140,21 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@JsonIgnore
+	public ConceptId getConceptId() {
+		return elements.get(0).findConcept();
+	}
+
+	@JsonIgnore
 	public Concept<?> getConcept() {
-		return elements.get(0).resolve().getConcept();
+		return getConceptId().resolve();
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to the Concept.")
 	public boolean isAllSelectsForConcept() {
-		final Concept<?> concept = getConcept();
+		final ConceptId concept = getConceptId();
 
-		if (!getSelects().stream().map(SelectId::<Select>resolve).map(Select::getHolder).allMatch(concept::equals)) {
+		if (!getSelects().stream().map(SelectId::findConcept).allMatch(concept::equals)) {
 			log.error("Not all selects belong to Concept[{}]", concept);
 			return false;
 		}
@@ -177,7 +165,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonIgnore
 	@ValidationMethod(message = "Not all elements belong to the same Concept.")
 	public boolean isAllElementsForConcept() {
-		final ConceptId concept = getConcept().getId();
+
+		final ConceptId concept = getConceptId();
 
 		if (!getElements().stream().map(ConceptElementId::findConcept).allMatch(concept::equals)) {
 			log.error("Not all elements belong to Concept[{}]", concept);
@@ -266,7 +255,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
 	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<SelectId> selects) {
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
 		return selects.stream()
 					  .map(SelectId::<Select>resolve)
 					  .map(Select::createAggregator)
@@ -336,8 +325,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		setSelects(cSelects);
 
 		for (CQTable t : getTables()) {
-			final List<SelectId> conSelects = new ArrayList<>(t.getSelects());
-			conSelects.addAll(t.getConnector().resolve().getDefaultSelects().stream().map(Select::getId).toList());
+			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
+			conSelects.addAll(t.getConnector().resolve().getDefaultSelects().stream().map(Select::getId).map(ConnectorSelectId.class::cast).toList());
 			t.setSelects(conSelects);
 		}
 	}

@@ -12,11 +12,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.IdResolvingException;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -217,6 +214,23 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	public <ID extends Id<?>, VALUE> VALUE get(ID id) {
 		return (VALUE) cache.get(id);
+	}
+
+	/**
+	 * Almost identical to {@link MetaStorage#get(Id)}, but throws an IdResolvingException if no object could be resolved.
+	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
+	 */
+	public <ID extends Id<?>, VALUE> VALUE resolve(ID id) {
+		try {
+			VALUE o = get(id);
+			if (o == null) {
+				throw new IdResolvingException(id);
+			}
+			return o;
+		}
+		catch (Exception e) {
+			throw new IdResolvingException(id, e);
+		}
 	}
 
 	protected <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {

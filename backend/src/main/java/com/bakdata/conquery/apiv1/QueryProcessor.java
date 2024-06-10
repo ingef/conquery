@@ -49,6 +49,7 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.IdResolvingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
@@ -381,8 +382,13 @@ public class QueryProcessor {
 			consumerChain = consumerChain.andThen(visitor);
 		}
 
-		// Apply consumers to the query tree
-		query.visit(consumerChain);
+		try {
+			// Apply consumers to the query tree
+			query.visit(consumerChain);
+		} catch (IdResolvingException e) {
+			log.trace("Query description contained ids that could not be resolved. Cancelling request", e);
+			throw new BadRequestException(e);
+		}
 
 
 		query.authorize(subject, dataset, visitors, storage);

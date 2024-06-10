@@ -70,10 +70,10 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 				continue;
 			}
 			if (subId instanceof NamespacedId) {
-				subId.setIdResolver(() -> nsIdResolver.get((Id<?> & NamespacedId) subId));
+				subId.setIdResolver(() -> nsIdResolver.resolve((Id<?> & NamespacedId) subId));
 			}
 			else if (metaStorage != null) {
-				subId.setIdResolver(() -> metaStorage.get(subId));
+				subId.setIdResolver(() -> metaStorage.resolve(subId));
 			}
 			// TODO Handle special Ids such as WorkerId, TableImportDescriptorId ?
 		}

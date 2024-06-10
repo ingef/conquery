@@ -13,9 +13,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,7 +35,7 @@ public class CQTable {
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
 	@NotNull
-	private List<SelectId> selects = Collections.emptyList();
+	private List<ConnectorSelectId> selects = Collections.emptyList();
 
 	@JsonBackReference
 	@EqualsAndHashCode.Exclude
@@ -50,7 +49,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "Connector does not belong to Concept.")
 	public boolean isConnectorForConcept() {
-		return connector.resolve().getConcept().equals(concept.getConcept());
+		return connector.getConcept().equals(concept.getConceptId());
 	}
 
 	@JsonIgnore
@@ -62,7 +61,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to Connector.")
 	public boolean isAllSelectsForConnector() {
-		return selects.stream().map(SelectId::<Select>resolve).allMatch(select -> select.getHolder().equals(connector.<Connector>resolve()));
+		return selects.stream().map(ConnectorSelectId::getConnector).allMatch(connectorId -> connectorId.equals(connector));
 	}
 
 	@JsonIgnore
