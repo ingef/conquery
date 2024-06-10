@@ -109,7 +109,8 @@ public class QueryProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+							 Namespace namespace = datasetRegistry.get(mq.getDataset());
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, namespace);
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -189,7 +190,7 @@ public class QueryProcessor {
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
 		final ExecutionManager<?> executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
-		executionManager.cancelQuery(dataset, query);
+		executionManager.cancelQuery(query);
 	}
 
 	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {

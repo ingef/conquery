@@ -9,17 +9,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -33,12 +34,18 @@ import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Slf4j
-public abstract class ExecutionManager<R extends ExecutionManager.Result> {
+public abstract class ExecutionManager<R extends ExecutionManager.InternalResult> {
 
+	/**
+	 * TODO Result might not be the appropriate name any more, because we will put everything in this instance
+	 * belonging to an execution, which cannot/should not be serialized/cached in a store.
+	 */
 	public interface Result {
-		Stream<EntityResult> streamQueryResults();
 
 		CountDownLatch getExecutingLock();
+	}
+	public interface InternalResult extends Result{
+		Stream<EntityResult> streamQueryResults();
 	}
 
 	private final MetaStorage storage;
@@ -49,10 +56,16 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 						.removalListener(this::executionRemoved)
 						.build();
 
+	private final Cache<ManagedExecutionId, ExternalResult> externalExecutionResults =
+			CacheBuilder.newBuilder()
+					.softValues()
+					.removalListener(this::executionRemoved)
+					.build();
+
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, R> removalNotification) {
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, Result> removalNotification) {
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
@@ -79,8 +92,21 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 		return executionResults.get(id, defaultProvider);
 	}
 
+	public ExternalResult getExternalResult(ManagedExecutionId id) {
+		return externalExecutionResults.getIfPresent(id);
+	}
+
 	protected void addResult(ManagedExecution execution, R result) {
 		executionResults.put(execution.getId(), result);
+	}
+
+	/**
+	 * Is called upon start by the external execution
+	 * @param execution
+	 * @param result
+	 */
+	public void addResult(ExternalExecution execution, ExternalResult result) {
+		externalExecutionResults.put(execution.getId(), result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
@@ -145,10 +171,23 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 		return managed;
 	}
 
-	public abstract void cancelQuery(final Dataset dataset, final ManagedExecution query);
+	public final void cancelQuery(final ManagedExecution execution) {
+		if (execution instanceof ExternalExecution externalExecution) {
+			externalExecution.cancel();
+			externalExecutionResults.invalidate(execution.getId());
+			return;
+		}
+
+		doCancelQuery(execution);
+	}
+
+
+	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void clearQueryResults(ManagedExecution execution) {
 		executionResults.invalidate(execution.getId());
+
+		//TODO external execution
 	}
 
 	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
@@ -164,18 +203,26 @@ public abstract class ExecutionManager<R extends ExecutionManager.Result> {
 		R result = Objects.requireNonNull(executionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
+		//TODO external execution
 	}
 
 	/**
 	 * Blocks until an execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
 	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
-		ExecutionState state = id.resolve().getState();
+		ManagedExecution execution = id.resolve();
+		ExecutionState state = execution.getState();
 		if (state != ExecutionState.RUNNING) {
 			return state;
 		}
 
-		R result = executionResults.getIfPresent(id);
+		Result result = null;
+		if (execution instanceof InternalExecution<?>) {
+			result = executionResults.getIfPresent(id);
+		} else {
+			result = externalExecutionResults.getIfPresent(id);
+		}
+
 		if (result == null) {
 			throw new IllegalStateException("Execution is running, but no result is registered");
 		}

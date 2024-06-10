@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoRole;
@@ -241,6 +237,7 @@ public final class AuthorizationController implements Managed {
 
 		// Create copied user
 		final User copy = new User(name, originUser.getLabel());
+		copy.setMetaStorage(storage);
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 

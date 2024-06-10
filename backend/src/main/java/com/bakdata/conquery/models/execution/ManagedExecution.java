@@ -213,7 +213,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 
 
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -237,9 +237,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject, Namespace namespace) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(subject, status);
+		setStatusBase(subject, status, namespace);
 
 		return status;
 	}
@@ -257,7 +257,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
-		setStatusBase(subject, status);
+		setStatusBase(subject, status, namespace);
 
 		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);

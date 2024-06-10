@@ -1,5 +1,16 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
+
+import java.time.LocalDate;
+import java.util.*;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -8,21 +19,11 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import io.dropwizard.auth.Auth;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.*;
-
-import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
-import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
@@ -99,13 +100,15 @@ public class AdminResource {
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
+						  Namespace namespace = processor.getDatasetRegistry().get(t.getDataset());
+
 						  try {
-							  return t.buildStatusFull(currentUser, processor.getDatasetRegistry().get(t.getDataset()));
+							  return t.buildStatusFull(currentUser, namespace);
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status
 							  final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
-							  t.setStatusBase(currentUser, fullExecutionStatus);
+							  t.setStatusBase(currentUser, fullExecutionStatus, namespace);
 							  fullExecutionStatus.setStatus(ExecutionState.FAILED);
 							  fullExecutionStatus.setError(e);
 							  return fullExecutionStatus;

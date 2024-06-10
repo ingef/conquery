@@ -92,9 +92,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
 
-		super.setStatusBase(subject, status);
+		super.setStatusBase(subject, status, namespace);
 		status.setNumberOfResults(getLastResultCount());
 
 		Query query = getQuery();

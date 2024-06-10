@@ -13,7 +13,6 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -29,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
 
-	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements Result {
+	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalResult {
 
 		@Override
 		public Stream<EntityResult> streamQueryResults() {
@@ -58,8 +57,6 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution);
-
-		addResult(((ManagedExecution) internalExecution), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 
 		workerHandler.sendToAll(internalExecution.createExecutionMessage());
 	}
@@ -123,11 +120,11 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 	}
 
 	@Override
-	public void cancelQuery(Dataset dataset, ManagedExecution query) {
+	public void doCancelQuery(ManagedExecution execution) {
 		log.debug("Sending cancel message to all workers.");
 
-		query.cancel();
-		getWorkerHandler(query).sendToAll(new CancelQuery(query.getId()));
+		execution.cancel();
+		getWorkerHandler(execution).sendToAll(new CancelQuery(execution.getId()));
 	}
 
 }

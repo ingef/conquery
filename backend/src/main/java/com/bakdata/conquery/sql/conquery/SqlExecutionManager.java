@@ -1,8 +1,11 @@
 package com.bakdata.conquery.sql.conquery;
 
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -16,10 +19,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
@@ -56,9 +55,9 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	}
 
 	@Override
-	public void cancelQuery(Dataset dataset, ManagedExecution query) {
+	public void doCancelQuery(ManagedExecution execution) {
 
-		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(query.getId());
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
 
 		// already finished/canceled
 		if (sqlQueryExecution == null) {
@@ -69,7 +68,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 			sqlQueryExecution.cancel(true);
 		}
 
-		query.cancel();
+		execution.cancel();
 	}
 
 	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery, SqlExecutionManager executionManager) {

@@ -393,7 +393,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Dataset dataset = createDataset(namespaceStorage);
 		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset, getMetaStorage());
+		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset);
 
 
 		SerializationTestUtil.forType(ManagedExecution.class)

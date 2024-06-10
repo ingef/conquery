@@ -1,15 +1,15 @@
 package com.bakdata.conquery.sql.execution;
 
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import lombok.Value;
-
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import lombok.Value;
+
 @Value
-public class SqlExecutionResult implements ExecutionManager.Result {
+public class SqlExecutionResult implements ExecutionManager.InternalResult {
 
 	List<String> columnNames;
 	List<EntityResult> table;

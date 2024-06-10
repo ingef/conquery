@@ -5,6 +5,11 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.frontend.VersionContainer;
@@ -29,11 +34,6 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableCollection;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.ws.rs.client.Client;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -191,6 +191,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		final User
 				serviceUser =
 				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
+
 
 		// The user is able to read the dataset, ensure that the service user can download results
 		serviceUser.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
