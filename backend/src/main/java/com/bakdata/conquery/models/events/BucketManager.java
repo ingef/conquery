@@ -1,13 +1,6 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -60,6 +53,8 @@ public class BucketManager {
 	 * The final Map is the way the APIs expect the data to be delivered.
 	 * <p>
 	 * Connector -> Bucket -> [BucketId -> CBlock]
+	 *
+	 * TODO use Ids?
 	 */
 	private final Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorToCblocks;
 
@@ -200,7 +195,7 @@ public class BucketManager {
 
 	public void removeBucket(Bucket bucket) {
 		storage.getAllCBlocks()
-			   .filter(cblock -> cblock.getBucket().equals(bucket))
+			   .filter(cblock -> cblock.getBucket().equals(bucket.getId()))
 			   .forEach(this::removeCBlock);
 
 		tableToBuckets.getOrDefault(bucket.getTable(), Int2ObjectMaps.emptyMap())
@@ -212,7 +207,7 @@ public class BucketManager {
 
 	private void removeCBlock(CBlock cBlock) {
 
-		connectorToCblocks.getOrDefault(cBlock.getConnector(), Int2ObjectMaps.emptyMap())
+		connectorToCblocks.getOrDefault(cBlock.getConnector().resolve(), Int2ObjectMaps.emptyMap())
 						  .getOrDefault(cBlock.getBucket().getBucket(), Collections.emptyMap())
 						  .values()
 						  .remove(cBlock);
