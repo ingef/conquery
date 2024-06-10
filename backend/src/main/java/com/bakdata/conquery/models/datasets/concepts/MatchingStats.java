@@ -11,16 +11,13 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 public class MatchingStats {
 
+    // TODO may use a map with a smaller footprint here, since we have alot of these in large concept trees
     private Map<WorkerId, Entry> entries = new HashMap<>();
     @JsonIgnore
     private transient CDateRange span;

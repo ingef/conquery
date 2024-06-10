@@ -9,15 +9,13 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.common.RequiredTable;
-import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.integration.common.*;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -39,8 +37,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -282,7 +278,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-start");
 
 			{
-				assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(2);
+				assertThat(conquery2.getNamespace().getStorage().getAllImports().count()).isEqualTo(2);
 
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker worker : node.getWorkers().getWorkers().values()) {
