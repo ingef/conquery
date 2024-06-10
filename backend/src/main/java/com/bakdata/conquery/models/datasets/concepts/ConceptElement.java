@@ -31,6 +31,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@Getter
 	@Setter
 	@CheckForNull
+	@EqualsAndHashCode.Exclude
 	private MatchingStats matchingStats;
 
 	public abstract void clearMatchingStats();

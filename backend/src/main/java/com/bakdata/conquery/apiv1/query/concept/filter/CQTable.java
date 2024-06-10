@@ -4,8 +4,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.CheckForNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -20,8 +21,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +50,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "Connector does not belong to Concept.")
 	public boolean isConnectorForConcept() {
-		return connector.<Connector>resolve().getConcept().equals(concept.getConcept());
+		return connector.resolve().getConcept().equals(concept.getConcept());
 	}
 
 	@JsonIgnore
