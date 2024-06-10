@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import jakarta.ws.rs.core.Response;
 
 /**
  * Tests the mandator UI interface. Before the request is done, a mandator, a
@@ -33,10 +33,15 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
+
 		Role mandator = new Role("testMandatorName", "testMandatorLabel");
 		RoleId mandatorId = mandator.getId();
 		User user = new User("testUser@test.de", "testUserName");
 		UserId userId = user.getId();
+
+		mandator.setMetaStorage(storage);
+		user.setMetaStorage(storage);
+
 		try {
 
 			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));

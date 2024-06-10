@@ -32,7 +32,11 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 		Role role1 = new Role("role", "role");
 		TestUser user1 = new TestUser(storage);
 		Group group1 = new Group("company", "company");
-		
+
+		role1.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
+		group1.setMetaStorage(storage);
+
 		try {
 
 			storage.addRole(role1);

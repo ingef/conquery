@@ -31,6 +31,10 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 		Role role = new Role("role1", "role1");
 		TestUser user1 = new TestUser(storage);
 
+		group1.setMetaStorage(storage);
+		role.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
+
 		try {
 			storage.addRole(role);
 			storage.addUser(user1);
