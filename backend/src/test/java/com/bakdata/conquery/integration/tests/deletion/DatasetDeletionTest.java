@@ -1,8 +1,9 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
+
+import jakarta.ws.rs.WebApplicationException;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
@@ -12,7 +13,6 @@ import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.WebApplicationException;
+import jetbrains.exodus.env.EnvironmentClosedException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -36,11 +36,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
-		final MetaStorage storage = conquery.getMetaStorage();
-		final Dataset dataset = conquery.getDataset();
+        final Dataset dataset = conquery.getDataset();
 		Namespace namespace = conquery.getNamespace();
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();
@@ -96,7 +95,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 		// Delete Dataset.
 		{
-			log.info("Issuing deletion of import {}", dataset);
+			log.info("Issuing deletion of dataset {}", dataset);
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
@@ -121,13 +120,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 
-			// We have deleted an import now there should be two less!
-			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(0);
-
-			// The deleted import should not be found.
-			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset.getId()))
-					.isEmpty();
+			// We have deleted a dataset now its storage should not work anymore
+			assertThatCode(() -> namespace.getStorage().getAllImports().count()).hasCauseInstanceOf(EnvironmentClosedException.class);
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -152,18 +146,14 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			}
 
 
-			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that parsing the fails.
-			assertThatThrownBy(() -> {
-				IntegrationUtils.parseQuery(conquery, test.getRawQuery());
-			}).isNotNull();
-
+			// Try to execute the query after deletion
 			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
 		}
 
 
 		// Reload the dataset and assert the state.
 		// We have to do some weird trix with StandaloneSupport to open it with another Dataset
-		final StandaloneSupport conqueryReimport = testConquery.getSupport(namespace.getDataset().getName());
+		final StandaloneSupport conqueryReimport = testConquery.getSupport(dataset.getName());
 		{
 			// only import the deleted import/table
 			LoadingUtil.importTables(conqueryReimport, content.getTables(), content.isAutoConcept());
