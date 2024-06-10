@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -51,14 +50,15 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 
 	@Override
-	protected void doExecute(Namespace namespace, InternalExecution<?> internalExecution) {
-		ManagedExecution execution = (ManagedExecution & InternalExecution<?>) internalExecution;
+	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
 
-		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
+		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
+
+		addResult(execution, new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution);
 
-		workerHandler.sendToAll(internalExecution.createExecutionMessage());
+		workerHandler.sendToAll(execution.createExecutionMessage());
 	}
 
 	private WorkerHandler getWorkerHandler(ManagedExecution execution) {

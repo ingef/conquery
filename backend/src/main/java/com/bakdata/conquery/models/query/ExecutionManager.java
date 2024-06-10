@@ -102,8 +102,6 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 
 	/**
 	 * Is called upon start by the external execution
-	 * @param execution
-	 * @param result
 	 */
 	public void addResult(ExternalExecution execution, ExternalResult result) {
 		externalExecutionResults.put(execution.getId(), result);
@@ -146,11 +144,11 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
-			doExecute(namespace, internalExecution);
+			doExecute((ManagedExecution & InternalExecution<?>) internalExecution);
 		}
 	}
 
-	protected abstract void doExecute(Namespace namespace, InternalExecution<?> execution);
+	protected abstract <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution);
 
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
@@ -216,7 +214,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 			return state;
 		}
 
-		Result result = null;
+		Result result;
 		if (execution instanceof InternalExecution<?>) {
 			result = executionResults.getIfPresent(id);
 		} else {

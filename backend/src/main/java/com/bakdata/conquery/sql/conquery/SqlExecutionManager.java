@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
@@ -35,19 +34,17 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	}
 
 	@Override
-	protected void doExecute(Namespace namespace, InternalExecution<?> execution) {
-
-		SqlExecutionManager executionManager = (SqlExecutionManager) namespace.getExecutionManager();
+	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
 
 		if (execution instanceof ManagedQuery managedQuery) {
-			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, executionManager);
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
 			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync((ManagedQuery) managedQuery.resolve(), executionManager)).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, executionManager));
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync((ManagedQuery) managedQuery.resolve(), this)).toArray(CompletableFuture[]::new))
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, this));
 			return;
 		}
 
