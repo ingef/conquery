@@ -7,6 +7,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -31,11 +33,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
@@ -43,8 +41,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -214,6 +210,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				reused.setSecondaryId(query.getSecondaryId());
 
 				User shareHolder = new User("shareholder", "ShareHolder");
+				shareHolder.setMetaStorage(metaStorage);
 				conquery.getAdminProcessor().addUser(shareHolder);
 
 				shareHolder.addPermissions(Set.of(

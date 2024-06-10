@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -28,9 +31,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -102,7 +102,7 @@ public class IntegrationUtils {
 										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
+		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI).describedAs(() -> response.readEntity(String.class))
 															.isEqualTo(expectedResponseCode);
 
 		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {

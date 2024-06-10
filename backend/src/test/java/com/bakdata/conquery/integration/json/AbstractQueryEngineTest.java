@@ -1,5 +1,18 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.OptionalLong;
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -19,20 +32,7 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
-import jakarta.validation.UnexpectedTypeException;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.OptionalLong;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -50,6 +50,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
+		execution.initExecutable(standaloneSupport.getNamespace(), getConfig());
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
 		//check result info size
