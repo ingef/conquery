@@ -561,6 +561,11 @@ public class QueryProcessor {
 			throw new WebApplicationException("Query is still running.", Response.Status.CONFLICT); // Request was submitted too early.
 		}
 
+
+		Namespace namespace = datasetRegistry.get(managedQuery.getDataset());
+
+		managedQuery.initExecutable(namespace, config);
+
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
@@ -574,8 +579,6 @@ public class QueryProcessor {
 		decimalFormat.setMaximumFractionDigits(2);
 
 		final NumberFormat integerFormat = NumberFormat.getNumberInstance(locale);
-
-		Namespace namespace = datasetRegistry.get(managedQuery.getDataset());
 
 
 		final PrintSettings printSettings =
