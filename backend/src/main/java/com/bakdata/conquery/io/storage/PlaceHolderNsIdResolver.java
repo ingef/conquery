@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class PlaceHolderNsIdResolver implements NsIdResolver {
 
 	public final static PlaceHolderNsIdResolver INSTANCE = new PlaceHolderNsIdResolver();
-	public static final String ERROR_MSG = "Cannot be used in this environment. This id cannot be resolved on this node.";
+	public static final String ERROR_MSG = "Cannot be used in this environment. This id '%s' cannot be resolved on this node.";
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
@@ -19,6 +19,6 @@ public class PlaceHolderNsIdResolver implements NsIdResolver {
 
 	@Override
 	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
-		throw new UnsupportedOperationException(ERROR_MSG);
+		throw new UnsupportedOperationException(ERROR_MSG.formatted(id));
 	}
 }
