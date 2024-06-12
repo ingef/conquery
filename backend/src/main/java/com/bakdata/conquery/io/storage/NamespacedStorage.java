@@ -58,6 +58,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	protected LoadingCache<Id<?>, Identifiable<?>> cache;
+	private Dataset cachedDataset;
 
 	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		this.pathName = pathName;
@@ -166,13 +167,19 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	// Datasets
 
 	public Dataset getDataset() {
-		// TODO load cached
-		return dataset.get();
+		// TODO this is not ideal
+		Dataset local = cachedDataset;
+		if (local == null) {
+			local = dataset.get();
+			cachedDataset = local;
+		}
+		return local;
 	}
 
 
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
+		cachedDataset = dataset;
 		cache.refresh(dataset.getId());
 	}
 
@@ -292,10 +299,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	/**
 	 * This is just for convenience to have a single function for the cache to load primary storage instances
-	 * @param id
-	 * @return
-	 * @param <ID>
-	 * @param <VALUE>
 	 */
 	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof DatasetId castId) {

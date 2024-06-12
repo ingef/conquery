@@ -28,6 +28,8 @@ public class WorkerStorage extends NamespacedStorage {
 	private IdentifiableStore<Bucket> buckets;
 	private IdentifiableStore<CBlock> cBlocks;
 
+	private WorkerInformation cachedWorker;
+
 	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
 		super(storageFactory, pathName, validator);
 	}
@@ -128,8 +130,12 @@ public class WorkerStorage extends NamespacedStorage {
 	// Worker
 
 	public WorkerInformation getWorker() {
-		// TODO load cached
-		return worker.get();
+		WorkerInformation local = cachedWorker;
+		if (local == null) {
+			local = worker.get();
+			cachedWorker = local;
+		}
+		return local;
 	}
 
 	public void setWorker(WorkerInformation worker) {
