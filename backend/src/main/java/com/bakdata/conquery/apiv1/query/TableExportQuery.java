@@ -330,10 +330,10 @@ public class TableExportQuery extends Query {
 		}
 
 		if (node.getDescription() == null) {
-			return node.getName();
+			return node.getLabel();
 		}
 
-		return node.getName() + " - " + node.getDescription();
+		return node.getLabel() + " - " + node.getDescription();
 
 	}
 
