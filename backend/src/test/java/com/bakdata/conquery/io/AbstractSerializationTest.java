@@ -3,6 +3,8 @@ package com.bakdata.conquery.io;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -18,9 +20,9 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -61,9 +63,11 @@ public abstract class AbstractSerializationTest {
 		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);
 
-		metaStorage.openStores(managerInternalMapper);
+		MetricRegistry metricRegistry = new MetricRegistry();
 
-		namespaceStorage.openStores(managerInternalMapper);
+		metaStorage.openStores(managerInternalMapper, metricRegistry);
+
+		namespaceStorage.openStores(managerInternalMapper, metricRegistry);
 
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
@@ -72,7 +76,7 @@ public abstract class AbstractSerializationTest {
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
-		workerStorage.openStores(shardInternalMapper);
+		workerStorage.openStores(shardInternalMapper, metricRegistry);
 
 		// Prepare api response mapper
 		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));

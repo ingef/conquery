@@ -11,11 +11,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
@@ -84,6 +80,10 @@ public interface StoreFactory {
 
 	Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
 
+	/**
+     * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">Caffeine Specification</a> for possible values.
+     * @return a parsed Caffeine specification
+     */
 	@JsonIgnore
 	default CaffeineSpec getCacheSpec() {
 		return CaffeineSpec.parse("maximumSize=0");

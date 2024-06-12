@@ -6,22 +6,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
-import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.*;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
@@ -34,6 +25,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
@@ -180,7 +172,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 */
 	public MetaStorage createMetaStorage() {
 		final MetaStorage metaStorage = new MetaStorage(this);
-		metaStorage.openStores(null);
+		metaStorage.openStores(null, new MetricRegistry());
 		return metaStorage;
 	}
 }

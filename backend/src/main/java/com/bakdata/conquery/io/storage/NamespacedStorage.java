@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Set;
+import java.util.stream.Stream;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
@@ -15,21 +20,18 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
@@ -64,7 +66,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		this.validator = validator;
 	}
 
-	public void openStores(ObjectMapper objectMapper) {
+	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
 		if (objectMapper != null) {
 			injectInto(objectMapper);
 		}
@@ -83,14 +85,15 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 
 		cache = Caffeine.from(storageFactory.getCacheSpec())
-						.build(new CacheLoader<Id<?>, Identifiable<?>>() {
+						.recordStats(() -> new MetricsStatsCounter(metricRegistry, pathName + "-cache"))
+						.build(new CacheLoader<>() {
 
-							@Nullable
-							@Override
-							public Identifiable<?> load(Id<?> key) throws Exception {
-								return getFromStorage((Id<?> & NamespacedId) key);
-							}
-						});
+                            @Nullable
+                            @Override
+                            public Identifiable<?> load(Id<?> key) throws Exception {
+                                return getFromStorage((Id<?> & NamespacedId) key);
+                            }
+                        });
 	}
 
 	@Override
@@ -135,6 +138,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	public void addImport(Import imp) {
 		imports.add(imp);
+		cache.invalidate(imp.getId());
 	}
 
 	public Import getImport(ImportId id) {
@@ -147,10 +151,12 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	public void updateImport(Import imp) {
 		imports.update(imp);
+		cache.refresh(imp.getId());
 	}
 
 	public void removeImport(ImportId id) {
 		imports.remove(id);
+		cache.invalidate(id);
 	}
 
 	public Dataset getDataset() {
@@ -159,6 +165,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
+		cache.refresh(dataset.getId());
 	}
 
 	public Stream<Table> getTables() {
@@ -171,10 +178,12 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	public void addTable(Table table) {
 		tables.add(table);
+		cache.invalidate(table.getId());
 	}
 
 	public void removeTable(TableId table) {
 		tables.remove(table);
+		cache.invalidate(table);
 	}
 
 	public Stream<SecondaryIdDescription> getSecondaryIds() {
@@ -187,10 +196,12 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 
 	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
 		secondaryIds.add(secondaryIdDescription);
+		cache.invalidate(secondaryIdDescription.getId());
 	}
 
 	public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
 		secondaryIds.remove(secondaryIdDescriptionId);
+		cache.invalidate(secondaryIdDescriptionId);
 	}
 
 	public Concept<?> getConcept(ConceptId id) {
@@ -205,11 +216,13 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	public void updateConcept(Concept<?> concept) {
 		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);
+		cache.refresh(concept.getId());
 	}
 
 	public void removeConcept(ConceptId id) {
 		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
+		cache.invalidate(id);
 	}
 
 	public Stream<Concept<?>> getAllConcepts() {

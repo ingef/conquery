@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NsIdResolver;
@@ -19,9 +20,9 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -69,7 +70,7 @@ public class Workers implements NsIdResolver {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, MetricRegistry metricRegistry) {
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -78,14 +79,14 @@ public class Workers implements NsIdResolver {
 		injectInto(communicationMapper);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
 
 		addWorker(worker);
 
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError, MetricRegistry metricRegistry) {
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -95,7 +96,7 @@ public class Workers implements NsIdResolver {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
 
 		addWorker(worker);
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.storage;
 import java.io.Closeable;
 import java.io.IOException;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +20,11 @@ public abstract class ConqueryStorage implements Closeable {
 	/**
 	 * Initializes the internal stores.
 	 * Injects this storage into the provided object mapper.
-	 * @param objectMapper (optional) needed when the {@link com.bakdata.conquery.models.config.StoreFactory} deserializes objects
+	 *
+	 * @param objectMapper   (optional) needed when the {@link com.bakdata.conquery.models.config.StoreFactory} deserializes objects
+	 * @param metricRegistry
 	 */
-	public abstract void openStores(ObjectMapper objectMapper);
+	public abstract void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry);
 
 	//	public final void loadData(){
 	//		for (ManagedStore store : getStores()) {

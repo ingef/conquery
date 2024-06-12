@@ -1,5 +1,17 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
@@ -21,22 +33,11 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -47,6 +48,7 @@ public class AdminDatasetProcessor {
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "…";
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final Validator validator;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -67,7 +69,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset, getValidator(), metaStorage).getDataset();
+		return datasetRegistry.createNamespace(dataset, getValidator(), metaStorage, managerNode.getEnvironment().metrics()).getDataset();
 	}
 
 	/**

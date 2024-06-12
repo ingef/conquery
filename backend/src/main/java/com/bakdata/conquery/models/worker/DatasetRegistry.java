@@ -1,5 +1,16 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -17,24 +28,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.index.IndexService;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,12 +59,12 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
     private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, Validator validator, MetaStorage metaStorage) throws IOException {
+	public N createNamespace(Dataset dataset, Validator validator, MetaStorage metaStorage, MetricRegistry metricRegistry) throws IOException {
         // Prepare empty storage
         NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
-        datasetStorage.openStores(persistenceMapper);
+        datasetStorage.openStores(persistenceMapper, metricRegistry);
         datasetStorage.updateDataset(dataset);
         EntityIdMap idMapping = new EntityIdMap();
         idMapping.setStorage(datasetStorage);
@@ -71,11 +72,11 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
         datasetStorage.setPreviewConfig(new PreviewConfig());
         datasetStorage.close();
 
-		return createNamespace(datasetStorage, metaStorage);
+		return createNamespace(datasetStorage, metaStorage, metricRegistry);
     }
 
-	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage) {
-        final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
+	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, MetricRegistry metricRegistry) {
+        final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService, metricRegistry);
         add(namespace);
         return namespace;
     }

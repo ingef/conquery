@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -30,7 +31,8 @@ public class IdRefrenceTest {
 
 		NonPersistentStoreFactory storageFactory = new NonPersistentStoreFactory();
 		final NamespaceStorage storage = new NamespaceStorage(storageFactory, "IdRefrenceTest", null);
-		storage.openStores(mapper);
+		MetricRegistry metricRegistry = new MetricRegistry();
+		storage.openStores(mapper, metricRegistry);
 
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
@@ -44,7 +46,7 @@ public class IdRefrenceTest {
 
 		final MetaStorage metaStorage = new MetaStorage(storageFactory);
 
-		metaStorage.openStores(mapper);
+		metaStorage.openStores(mapper, metricRegistry);
 
 		User user = new User("usermail", "userlabel");
 		metaStorage.addUser(user);

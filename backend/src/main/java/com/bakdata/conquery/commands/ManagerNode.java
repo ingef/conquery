@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -39,7 +40,6 @@ import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -225,7 +225,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private void openMetaStorage() {
 		log.info("Opening MetaStorage");
-		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
+		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class), getEnvironment().metrics());
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -239,7 +239,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getStorage());
+				registry.createNamespace(namespaceStorage, getStorage(), getEnvironment().metrics());
 			});
 		}
 

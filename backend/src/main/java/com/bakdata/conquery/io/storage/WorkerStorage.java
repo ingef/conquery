@@ -1,5 +1,8 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.stream.Stream;
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -11,13 +14,11 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Validator;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.stream.Stream;
 
 @Slf4j
 @ToString(of = "worker")
@@ -32,8 +33,8 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	@Override
-	public void openStores(ObjectMapper objectMapper) {
-		super.openStores(objectMapper);
+	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+		super.openStores(objectMapper, metricRegistry);
 
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);

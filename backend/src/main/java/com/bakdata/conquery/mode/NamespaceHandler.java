@@ -1,5 +1,8 @@
 package com.bakdata.conquery.mode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -10,10 +13,8 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Handler of namespaces in a ConQuery instance.
@@ -22,14 +23,14 @@ import java.util.List;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService);
+	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry);
 
 	void removeNamespace(DatasetId id, N namespace);
 
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService, MetricRegistry metricRegistry) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
 		injectables.add(storage);
@@ -42,7 +43,7 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.forEach(i -> i.injectInto(preprocessMapper));
 
 		// Open stores
-		storage.openStores(persistenceMapper);
+		storage.openStores(persistenceMapper, metricRegistry);
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 

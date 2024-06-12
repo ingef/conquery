@@ -111,6 +111,7 @@ public class QueryProcessor {
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 Namespace namespace = datasetRegistry.get(mq.getDataset());
+							 mq.initExecutable(namespace, config);
 							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, namespace);
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));

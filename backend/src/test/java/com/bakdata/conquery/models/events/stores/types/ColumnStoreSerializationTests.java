@@ -19,25 +19,12 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
-import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
-import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.StringStoreString;
+import com.bakdata.conquery.models.events.stores.primitive.*;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
-import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
-import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
+import com.bakdata.conquery.models.events.stores.specific.*;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -60,7 +47,7 @@ public class ColumnStoreSerializationTests {
 
 	@BeforeAll
 	public static void setupRegistry() {
-		STORAGE.openStores(null);
+		STORAGE.openStores(null, new MetricRegistry());
 		STORAGE.updateDataset(Dataset.PLACEHOLDER);
 
 

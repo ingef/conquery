@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -25,8 +26,8 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -63,13 +64,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit, MetricRegistry metricRegistry) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 		this.communicationMapper = communicationMapper;
 
 
-		storage.openStores(persistenceMapper);
+		storage.openStores(persistenceMapper, metricRegistry);
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -87,7 +88,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit, MetricRegistry metricRegistry) {
 
 		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
@@ -98,12 +99,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setEntityBucketSize(entityBucketSize);
 		info.setNsIdResolver(workerStorage);
 
-		workerStorage.openStores(persistenceMapper);
+		workerStorage.openStores(persistenceMapper, metricRegistry);
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, metricRegistry);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {

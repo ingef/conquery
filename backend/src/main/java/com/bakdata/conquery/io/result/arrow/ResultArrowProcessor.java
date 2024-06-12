@@ -1,5 +1,21 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
+
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.util.List;
+import java.util.Locale;
+import java.util.OptionalLong;
+import java.util.function.Function;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
@@ -15,10 +31,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -26,18 +38,6 @@ import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
-
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalLong;
-import java.util.function.Function;
-
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
@@ -128,6 +128,7 @@ public class ResultArrowProcessor {
 	}
 
 	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+		exec.initExecutable(datasetRegistry.get(exec.getDataset()), conqueryConfig);
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,

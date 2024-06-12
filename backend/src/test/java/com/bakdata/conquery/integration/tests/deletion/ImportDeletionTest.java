@@ -61,7 +61,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -22,12 +23,12 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.parallel.Execution;
@@ -65,7 +66,7 @@ public class GroovyIndexedTest {
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest", null);
-		storage.openStores(mapper);
+		storage.openStores(mapper, new MetricRegistry());
 		Table table = new Table();
 
 		table.setName("the_table");

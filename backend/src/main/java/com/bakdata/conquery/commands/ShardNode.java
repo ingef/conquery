@@ -7,15 +7,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.mina.*;
 import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -41,7 +38,6 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -118,7 +114,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment.metrics()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

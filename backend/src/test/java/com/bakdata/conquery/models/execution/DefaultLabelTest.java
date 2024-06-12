@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,7 +53,7 @@ public class DefaultLabelTest {
 	@BeforeAll
 	public static void beforeAll() {
 		// no mapper required
-		STORAGE.openStores(null);
+		STORAGE.openStores(null, new MetricRegistry());
 
 		I18n.init();
 	}

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerHandler;
+import com.codahale.metrics.MetricRegistry;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,8 +24,8 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 	private final InternalObjectMapperCreator mapperCreator;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry) {
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService, metricRegistry);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
 		clusterState.getWorkerHandlers().put(storage.getDataset().getId(), workerHandler);

@@ -9,11 +9,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
@@ -31,7 +28,7 @@ public class PlaceholderMetaStorage extends MetaStorage {
 	}
 
 	@Override
-	public void openStores(ObjectMapper mapper) {
+	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
 		throw new UnsupportedOperationException(ERROR_MSG);
 	}
 

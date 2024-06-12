@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
@@ -18,35 +19,14 @@ import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminResource;
-import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
-import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
-import com.bakdata.conquery.resources.admin.rest.GroupResource;
-import com.bakdata.conquery.resources.admin.rest.PermissionResource;
-import com.bakdata.conquery.resources.admin.rest.RoleResource;
-import com.bakdata.conquery.resources.admin.rest.UIProcessor;
-import com.bakdata.conquery.resources.admin.rest.UserResource;
-import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
-import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
-import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
-import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
-import com.bakdata.conquery.resources.admin.ui.IndexServiceUIResource;
-import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
-import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
-import com.bakdata.conquery.resources.admin.ui.UserUIResource;
+import com.bakdata.conquery.resources.admin.rest.*;
+import com.bakdata.conquery.resources.admin.ui.*;
 import com.bakdata.conquery.resources.admin.ui.model.ConnectorUIResource;
 import io.dropwizard.core.setup.AdminEnvironment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.views.common.ViewMessageBodyWriter;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -97,6 +77,7 @@ public class AdminServlet {
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
+				manager,
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),

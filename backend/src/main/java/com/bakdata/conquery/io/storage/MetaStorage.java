@@ -14,6 +14,8 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdResolvingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +40,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	private LoadingCache<Id<?>, Identifiable<?>> cache;
 
-	public void openStores(ObjectMapper mapper) {
+	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
 		if (mapper != null) {
 			this.injectInto(mapper);
 		}
@@ -50,6 +52,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		formConfigs = storageFactory.createFormConfigStore("meta", mapper);
 
 		cache = Caffeine.from(storageFactory.getCacheSpec())
+						.recordStats(() -> new MetricsStatsCounter(metricRegistry, "meta-storage-cache"))
 						.build(this::<Id, Identifiable<?>>getFromStorage);
 
 	}
