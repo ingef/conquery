@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -19,8 +20,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -85,7 +84,8 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		return storage.getAllImports().filter(imp -> imp.getTable().equals(this));
+		TableId thisId = this.getId();
+		return storage.getAllImports().filter(imp -> imp.getTable().equals(thisId));
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
