@@ -3,6 +3,7 @@ package com.bakdata.conquery.mode.cluster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
@@ -80,7 +81,14 @@ public class ClusterImportHandler implements ImportHandler {
 		}
 
 		// Ensure that Import and Table have the same schema
-		header.assertMatch(table);
+		final List<String> errors = header.assertMatch(table);
+
+		if (!errors.isEmpty()){
+			final String errorsMessage = String.join("\n - ", errors);
+
+			log.error("Problems concerning Import `{}`:\n{}", importId, errorsMessage);
+			throw new BadRequestException("Headers[%s] do not match Table[%s]:\n%s".formatted(importId, table.getId(), errorsMessage));
+		}
 
 		final Import processedImport = namespace.getStorage().getImport(importId);
 

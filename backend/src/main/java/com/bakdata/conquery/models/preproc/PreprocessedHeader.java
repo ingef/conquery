@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -85,34 +86,32 @@ public class PreprocessedHeader {
 
 	/**
 	 * Verify that the supplied table matches the preprocessed' data in shape.
+	 *
+	 * @return
 	 */
-	public void assertMatch(Table table) {
-		final StringJoiner errors = new StringJoiner("\n");
+	public List<String> assertMatch(Table table) {
+		final List<String> errors = new ArrayList<>();
 
 		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Import column count=`%d` does not match table column count=`%d`", getColumns().length, table.getColumns().length));
+			errors.add("Import column count=`%d` does not match table column count=`%d`".formatted(getColumns().length, table.getColumns().length));
 		}
 
-		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
-													   .collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
 
 		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
 			final Column column = table.getColumns()[i];
 
-			if(!typesByName.containsKey(column.getName())){
-				errors.add(String.format("Column[%s] is missing.", column.getName()));
+			if (!typesByName.containsKey(column.getName())) {
+				errors.add("Column[%s] is missing.".formatted(column.getName()));
+				continue;
 			}
-			else if (!typesByName.get(column.getName()).equals(column.getType())) {
-				errors.add(String.format("Column[%s] Types do not match %s != %s"
-						, column.getName(),  typesByName.get(column.getName()), column.getType())
-				);
+
+			if (!typesByName.get(column.getName()).equals(column.getType())) {
+				errors.add("Column[%s] Types do not match %s != %s".formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
 			}
 		}
 
-		if (errors.length() != 0) {
-			log.error("Problems concerning Import `{}`:\n{}", name, errors);
-			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More info in logs.", getTable(), getName(), table.getId()));
-		}
+		return errors;
 	}
 
 
