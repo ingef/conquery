@@ -3,17 +3,12 @@ package com.bakdata.conquery.mode.cluster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.Map;
 
 import com.bakdata.conquery.mode.ImportHandler;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -41,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClusterImportHandler implements ImportHandler {
 
-	private final ConqueryConfig config;
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 
 	@SneakyThrows
@@ -58,15 +52,15 @@ public class ClusterImportHandler implements ImportHandler {
 
 	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update) throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
-			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
+			// We parse semi-manually as the incoming file consist of multiple documents we read progressively:
 			// 1) the header to check metadata
 			// 2...) The chunked Buckets
 
 			final PreprocessedHeader header = parser.readHeader();
 
-			final Table table = createOrUpdate(((DistributedNamespace) namespace), update, header);
+			final Table table = validateImportable(((DistributedNamespace) namespace), header, update);
 
-			readAndSubmitImportJobs(((DistributedNamespace) namespace), header, parser);
+			readAndSubmitImportJobs(((DistributedNamespace) namespace), table, header, parser);
 
 			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 		}
@@ -75,7 +69,7 @@ public class ClusterImportHandler implements ImportHandler {
 	/**
 	 * Handle validity and update logic.
 	 */
-	public static Table createOrUpdate(DistributedNamespace namespace, boolean update, PreprocessedHeader header) {
+	private static Table validateImportable(DistributedNamespace namespace, PreprocessedHeader header, boolean update) {
 		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
 		final ImportId importId = new ImportId(tableId, header.getName());
 
@@ -106,11 +100,9 @@ public class ClusterImportHandler implements ImportHandler {
 		return table;
 	}
 
-	public static void readAndSubmitImportJobs(DistributedNamespace namespace, PreprocessedHeader header, PreprocessedReader parser) {
+	private static void readAndSubmitImportJobs(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
 		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
 		final ImportId importId = new ImportId(tableId, header.getName());
-
-		final Table table = namespace.getStorage().getTable(tableId);
 
 		log.info("BEGIN importing {} into {}", header.getName(), table);
 
@@ -118,11 +110,11 @@ public class ClusterImportHandler implements ImportHandler {
 
 		int procesed = 0;
 
-		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> parser) {
+		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
 			if (imp == null) {
 				// We need a container to create a description.
-				imp = createImportDescription(header, container.getStores(), table.getColumns(), table);
+				imp = header.createImportDescription(table, container.getStores());
 
 				namespace.getWorkerHandler().sendToAll(new AddImport(imp));
 				namespace.getStorage().updateImport(imp);
@@ -150,31 +142,6 @@ public class ClusterImportHandler implements ImportHandler {
 			}
 		}
 	}
-
-	private static Import createImportDescription(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, Table table) {
-		final Import imp = new Import(table);
-
-		imp.setName(header.getName());
-		imp.setNumberOfEntries(header.getRows());
-		imp.setNumberOfEntities(header.getNumberOfEntities());
-
-		final ImportColumn[] importColumns = new ImportColumn[columns.length];
-
-		for (int i = 0; i < columns.length; i++) {
-			final ColumnStore store = stores.get(columns[i].getName());
-
-			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
-
-			col.setName(columns[i].getName());
-
-			importColumns[i] = col;
-		}
-
-		imp.setColumns(importColumns);
-
-		return imp;
-	}
-
 
 
 	@Override

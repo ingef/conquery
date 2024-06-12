@@ -6,8 +6,11 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -54,6 +57,30 @@ public class PreprocessedHeader {
 	 * A hash to check if any of the underlying files for generating this CQPP has changed.
 	 */
 	private int validityHash;
+
+	public Import createImportDescription(Table table, Map<String, ColumnStore> stores) {
+		final Import imp = new Import(table);
+
+		imp.setName(getName());
+		imp.setNumberOfEntries(getRows());
+		imp.setNumberOfEntities(getNumberOfEntities());
+
+		final ImportColumn[] importColumns = new ImportColumn[columns.length];
+
+		for (int i = 0; i < columns.length; i++) {
+			final ColumnStore store = stores.get(columns[i].getName());
+
+			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), numberOfBuckets * store.estimateMemoryConsumptionBytes());
+
+			col.setName(columns[i].getName());
+
+			importColumns[i] = col;
+		}
+
+		imp.setColumns(importColumns);
+
+		return imp;
+	}
 
 
 	/**
