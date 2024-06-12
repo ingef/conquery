@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.storage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -23,8 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -48,19 +44,15 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	@Getter
 	private final StoreFactory storageFactory;
 
-	@Getter
-	private final Validator validator;
-
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Table> tables;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
-		this.validator = validator;
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
@@ -122,13 +114,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 			concept.setDataset(dataset.get());
 
 			concept.initElements();
-
-			if (log.isTraceEnabled()) {
-				// Validating concepts is quite slow, so we only validate when requested.
-				final Set<ConstraintViolation<Concept<?>>> violations = validator.validate(concept);
-
-				ValidatorHelper.failOnError(log, violations);
-			}
 
 			concept.getSelects().forEach(centralRegistry::register);
 			for (Connector connector : concept.getConnectors()) {

@@ -9,8 +9,9 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.ExistsSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -33,5 +34,10 @@ public class ExistsSelect extends UniversalSelect {
 
 	private Set<Table> collectRequiredTables() {
 		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).collect(Collectors.toSet());
+	}
+
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.BooleanT.INSTANCE;
 	}
 }

@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -66,4 +67,9 @@ public class CountSelect extends Select {
 		return CountSqlAggregator.create(this, selectContext).getSqlSelects();
 	}
 
+
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.IntegerT.INSTANCE;
+	}
 }
