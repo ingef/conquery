@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -91,7 +92,7 @@ public class FlagSqlAggregator implements SqlAggregator {
 		return new FlagSqlAggregator(sqlSelects, WhereClauses.builder().build());
 	}
 
-	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
+	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<Set<String>> filterContext) {
 		SqlTables connectorTables = filterContext.getTables();
 		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
 
