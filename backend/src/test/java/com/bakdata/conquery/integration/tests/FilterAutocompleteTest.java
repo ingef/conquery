@@ -11,12 +11,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -30,10 +35,6 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -151,15 +152,17 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
-		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
+		final Concept<?> concept = namespaceStorage.getAllConcepts().iterator().next();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+		// TODO this file is not deleted at the end of this test
+		final Path tmpCsv = Files.createTempFile("conquery_search", "csv");
 
 		Files.write(
-				tmpCSv,
+				tmpCsv,
 				String.join(csvConf.getLineSeparator(), RAW_LINES).getBytes(),
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
@@ -168,8 +171,12 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
 		filter.setTemplate(filterTemplate.getId());
+
+		// We need to persist the modification before we submit the update matching stats request
+		namespaceStorage.addSearchIndex(filterTemplate);
+		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")

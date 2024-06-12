@@ -9,12 +9,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -28,111 +32,114 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FilterResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final String[] lines = new String[]{
-			"HEADER",
-			"a",
-			"aab",
-			"aaa",
-			"b"
-	};
+    private final String[] lines = new String[]{
+            "HEADER",
+            "a",
+            "aab",
+            "aaa",
+            "b"
+    };
 
-	@Override
-	public void execute(StandaloneSupport conquery) throws Exception {
-		//read test sepcification
-		final String
-				testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
+    @Override
+    public void execute(StandaloneSupport conquery) throws Exception {
+        //read test sepcification
+        final String
+                testJson =
+                In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
+                        .withUTF8()
+                        .readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
+        final DatasetId dataset = conquery.getDataset().getId();
 
-		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+        final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
-		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+        ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-		final CSVConfig csvConf = conquery.getConfig().getCsv();
+        final CSVConfig csvConf = conquery.getConfig().getCsv();
 
-		test.importRequiredData(conquery);
+        test.importRequiredData(conquery);
 
-		conquery.waitUntilWorkDone();
+        conquery.waitUntilWorkDone();
+
+        // Prepare the concept by injecting a filter template
+
+        NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
+        final Concept<?> concept = namespaceStorage.getAllConcepts().iterator().next();
+        final Connector connector = concept.getConnectors().iterator().next();
+        final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
+
+        // Copy search csv from resources to tmp folder.
+        final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+        Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
+                .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 
-		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		final Connector connector = concept.getConnectors().iterator().next();
-		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
+        final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
-		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        final FilterTemplate
+                filterTemplate =
+                new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+        filter.setTemplate(filterTemplate.getId());
 
+        // We need to persist the modification before we submit the update matching stats request
+        namespaceStorage.addSearchIndex(filterTemplate);
+        namespaceStorage.updateConcept(concept);
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+        final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
+                        , AdminDatasetResource.class, "postprocessNamespace")
+                .buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
-		final FilterTemplate
-				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
-		filter.setTemplate(filterTemplate.getId());
+        final Response post = conquery.getClient().target(matchingStatsUri)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(null);
+        post.close();
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
+        conquery.waitUntilWorkDone();
 
-		final Response post = conquery.getClient().target(matchingStatsUri)
-									  .request(MediaType.APPLICATION_JSON_TYPE)
-									  .post(null);
-		post.close();
+        final URI resolveUri =
+                HierarchyHelper.hierarchicalPath(
+                                conquery.defaultApiURIBuilder(),
+                                FilterResource.class, "resolveFilterValues"
+                        )
+                        .buildFromMap(
+                                Map.of(
+                                        DATASET, conquery.getDataset().getId(),
+                                        CONCEPT, concept.getId(),
+                                        TABLE, filter.getConnector().getResolvedTable().getId(),
+                                        FILTER, filter.getId()
+                                )
+                        );
 
-		conquery.waitUntilWorkDone();
+        // from csv
+        {
+            final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
 
-		final URI resolveUri =
-				HierarchyHelper.hierarchicalPath(
-									   conquery.defaultApiURIBuilder(),
-									   FilterResource.class, "resolveFilterValues"
-							   )
-							   .buildFromMap(
-									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
-											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getResolvedTable().getId(),
-											   FILTER, filter.getId()
-									   )
-							   );
+            final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
-		// from csv
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+            //check the resolved values
+            // "aaa" is hit by "a" and "aaa" therefore should be first
+            assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
+            assertThat(resolved.unknownCodes()).containsExactly("unknown");
+        }
 
-			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
+        // from column values
+        {
+            final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
 
-			//check the resolved values
-			// "aaa" is hit by "a" and "aaa" therefore should be first
-			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
-			assertThat(resolved.unknownCodes()).containsExactly("unknown");
-		}
+            final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
-		// from column values
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
-
-			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
-
-			//check the resolved values
-			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).contains("f");
-			assertThat(resolved.unknownCodes()).containsExactly("unknown");
-		}
-	}
+            //check the resolved values
+            assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).contains("f");
+            assertThat(resolved.unknownCodes()).containsExactly("unknown");
+        }
+    }
 }
