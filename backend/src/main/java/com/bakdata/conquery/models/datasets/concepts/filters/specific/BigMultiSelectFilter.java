@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -23,7 +25,7 @@ import org.jooq.Condition;
 @Getter
 @Setter
 @CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
-public class BigMultiSelectFilter extends SelectFilter<String[]> {
+public class BigMultiSelectFilter extends SelectFilter<Set<String>> {
 
 	@JsonIgnore
 	@Override
@@ -32,17 +34,17 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterNode createFilterNode(String[] value) {
+	public FilterNode createFilterNode(Set<String> value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
-		return SelectFilterUtil.convert(this, filterContext, filterContext.getValue());
+	public SqlFilters convertToSqlFilter(FilterContext<Set<String>> filterContext) {
+		return SelectFilterUtil.convert(this, filterContext, filterContext.getValue().toArray(String[]::new));
 	}
 
 	@Override
-	public Condition convertForTableExport(FilterContext<String[]> filterContext) {
-		return MultiSelectCondition.onColumn(getColumn(), filterContext.getValue(), filterContext.getSqlDialect().getFunctionProvider()).condition();
+	public Condition convertForTableExport(FilterContext<Set<String>> filterContext) {
+		return MultiSelectCondition.onColumn(getColumn(), filterContext.getValue().toArray(String[]::new), filterContext.getSqlDialect().getFunctionProvider()).condition();
 	}
 }
