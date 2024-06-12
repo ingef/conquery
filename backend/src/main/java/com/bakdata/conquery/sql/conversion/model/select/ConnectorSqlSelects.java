@@ -10,19 +10,29 @@ import lombok.Value;
 
 @Value
 @Builder
-public class SqlSelects {
+public class ConnectorSqlSelects {
+
 	@Singular
 	List<SqlSelect> preprocessingSelects;
+
 	// Empty if only used in event filter
 	@Singular
 	List<SqlSelect> aggregationSelects;
+
+	// Selects that are applied on the aggregated validity date.
+	@Singular
+	List<SqlSelect> eventDateSelects;
+
 	// Empty if only used in aggregation select
 	@Singular
 	List<SqlSelect> finalSelects;
-	// Selects that require an interval-packed date
-	@Singular
-	List<SqlSelect> intervalPackingSelects;
+
 	// An additional predecessor these SqlSelects require
 	@Builder.Default
 	Optional<QueryStep> additionalPredecessor = Optional.empty();
+
+	public static ConnectorSqlSelects none() {
+		return ConnectorSqlSelects.builder().build();
+	}
+
 }

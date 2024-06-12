@@ -19,22 +19,19 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.jooq.Condition;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
  * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
- *
+ * <p>
  * The selected flags are logically or-ed.
  */
 @Getter
@@ -76,7 +73,7 @@ public class FlagFilter extends Filter<String[]> {
 			columns[index] = column;
 		}
 
-		if(!missing.isEmpty()){
+		if (!missing.isEmpty()) {
 			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
@@ -96,12 +93,7 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
-		return FlagSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<String[]> filterContext) {
-		return FlagCondition.onColumn(getFlags(), filterContext.getValue()).condition();
+	public FilterConverter<FlagFilter, String[]> createConverter() {
+		return new FlagSqlAggregator();
 	}
 }
