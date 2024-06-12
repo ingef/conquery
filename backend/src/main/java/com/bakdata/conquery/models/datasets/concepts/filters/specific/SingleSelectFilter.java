@@ -7,8 +7,10 @@ import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectFilterUtil;
+import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import net.minidev.json.annotate.JsonIgnore;
+import org.jooq.Condition;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.",
@@ -34,4 +36,12 @@ public class SingleSelectFilter extends SelectFilter<String> {
 		return SelectFilterUtil.convert(this, filterContext, new String[]{filterContext.getValue()});
 	}
 
+	@Override
+	public Condition convertForTableExport(FilterContext<String> filterContext) {
+		return MultiSelectCondition.onColumn(
+				getColumn(),
+				new String[]{filterContext.getValue()},
+				filterContext.getSqlDialect().getFunctionProvider()
+		).condition();
+	}
 }

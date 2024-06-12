@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,6 +87,7 @@ public class ResultTestUtil {
 
 	public static class TypedSelectDummy extends Select {
 
+		@Getter
 		private final ResultType resultType;
 
 		public TypedSelectDummy(ResultType resultType) {
@@ -116,11 +118,6 @@ public class ResultTestUtil {
 				@Override
 				public String createAggregationResult() {
 					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public ResultType getResultType() {
-					return resultType;
 				}
 
 			};

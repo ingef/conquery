@@ -16,6 +16,7 @@
   ],
   "parser": "@typescript-eslint/parser",
   "rules": {
+    "no-debugger": "warn",
     "eqeqeq": "error",
     "jsx-a11y/accessible-emoji": "off",
     "no-case-declarations": "off",

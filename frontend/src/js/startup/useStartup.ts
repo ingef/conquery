@@ -15,12 +15,14 @@ export const useStartup = ({ ready }: { ready?: boolean }) => {
   const loadMe = useLoadMe();
 
   useEffect(() => {
-    dispatch(resetMessage());
-
-    if (ready) {
-      loadConfig();
-      loadDatasets();
-      loadMe();
+    async function load() {
+      if (ready) {
+        dispatch(resetMessage());
+        await loadMe();
+        await loadConfig();
+        setTimeout(loadDatasets, 300);
+      }
     }
+    load();
   }, [dispatch, ready, loadConfig, loadDatasets, loadMe]);
 };

@@ -33,7 +33,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected CachedStore<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
-		super(storageFactory, pathName, validator);
+		super(storageFactory, pathName);
 	}
 
 

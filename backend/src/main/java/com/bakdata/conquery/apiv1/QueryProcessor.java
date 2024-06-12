@@ -28,7 +28,6 @@ import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -57,6 +56,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -85,6 +85,7 @@ import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
@@ -103,6 +104,8 @@ public class QueryProcessor {
 	private MetaStorage storage;
 	@Inject
 	private ConqueryConfig config;
+	@Inject
+	private Validator validator;
 
 
 
@@ -137,11 +140,11 @@ public class QueryProcessor {
 	 */
 	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
-		if (!(q instanceof EditorQuery)) {
+		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
 
-		final Query query = ((EditorQuery) q).getQuery();
+		final Query query = ((ManagedQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
@@ -291,14 +294,15 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic
-				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
-						.getStorage()
-						.getIdMapping(), config.getIdColumns(), config.getLocale()
-																	  .getDateReader(), upload.isOneRowPerEntity()
-
-				);
+		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+				upload.getValues(),
+				upload.getFormat(),
+				namespace.getStorage().getIdMapping(),
+				config.getIdColumns(),
+				config.getLocale().getDateReader(),
+				upload.isOneRowPerEntity(),
+				true
+		);
 
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
@@ -338,6 +342,9 @@ public class QueryProcessor {
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
 		final EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
+
+		// Validate our own form because we provide it directly to the processor, which does not validate.
+		ValidatorHelper.failOnError(log, validator.validate(form));
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries

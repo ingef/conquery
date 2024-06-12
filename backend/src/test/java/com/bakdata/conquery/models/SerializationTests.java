@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
@@ -831,6 +833,15 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 
+	}
+
+	@Test
+	public void formBackendVersion() throws JSONException, IOException {
+		final FormBackendVersion version = new FormBackendVersion("3.45.45-g85ut85u43t8", ZonedDateTime.parse("2007-12-03T10:15:30+00:00"));
+
+		SerializationTestUtil.forType(FormBackendVersion.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(version);
 	}
 
 }

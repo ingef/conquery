@@ -61,8 +61,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	@JsonIgnore
 	public abstract List<Column> getRequiredColumns();
 
-	@JsonIgnore @Getter(lazy=true)
-	private final ResultType resultType = createAggregator().getResultType();
+	@JsonIgnore
+	public abstract ResultType<?> getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -126,7 +126,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	@JsonIgnore
-	public boolean requiresIntervalPacking() {
+	public boolean isEventDateSelect() {
 		return false;
 	}
 

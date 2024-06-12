@@ -40,7 +40,7 @@ public class Leaf extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return true;
+		return bucket.containsEntity(entity.getId());
 	}
 	
 	@Override

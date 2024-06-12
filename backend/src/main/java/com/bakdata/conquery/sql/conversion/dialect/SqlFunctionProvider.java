@@ -5,10 +5,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -42,22 +44,37 @@ public interface SqlFunctionProvider {
 	String getAnyCharRegex();
 
 	/**
-	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
+	 * @return A dummy table that enables selection of static values.
 	 */
-	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
-
-	ColumnDateRange forDateRestriction(CDateRange dateRestriction);
+	Table<? extends Record> getNoOpTable();
 
 	/**
-	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date.
+	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
+	 * exclusive.
 	 */
-	ColumnDateRange forTablesValidityDate(CQTable cqTable, String alias);
+	Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange);
+
+	/**
+	 * Creates a {@link ColumnDateRange} as a SQL representation of the {@link CDateRange}.
+	 */
+	ColumnDateRange forCDateRange(CDateRange daterange);
+
+	/**
+	 * Creates a list of {@link ColumnDateRange}s for each {@link CDateRange} of the given {@link CDateSet}. Each {@link ColumnDateRange} will be aliased with
+	 * the same given {@link SharedAliases}.
+	 */
+	List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias);
+
+	/**
+	 * Creates a {@link ColumnDateRange} for a tables {@link ValidityDate}.
+	 */
+	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
 	 */
-	ColumnDateRange forTablesValidityDate(CQTable cqTable, CDateRange dateRestriction, String alias);
+	ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
@@ -69,12 +86,14 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
+	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
+
 	/**
 	 * @param predecessor The predeceasing step containing an aggregated validity date.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestValidityDate(QueryStep predecessor, SqlTables sqlTables);
+	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
@@ -89,9 +108,19 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange);
 
+	/**
+	 * Combines the start and end column of a validity date entry into one compound string expression.
+	 * <p>
+	 * Example: [2013-11-10,2013-11-11)
+	 */
+	Field<String> daterangeStringExpression(ColumnDateRange columnDateRange);
+
+	/**
+	 * Calculates the date distance in the given {@link ChronoUnit} between an exclusive end date and an inclusive start date.
+	 */
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
-	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
+	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
 	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
 
@@ -150,12 +179,26 @@ public interface SqlFunctionProvider {
 				.on(joinConditions.toArray(Condition[]::new));
 	}
 
+	default TableOnConditionStep<Record> leftJoin(
+			Table<Record> leftPartQueryBase,
+			QueryStep rightPartQS,
+			List<Condition> joinConditions
+	) {
+		return leftPartQueryBase
+				.leftJoin(DSL.name(rightPartQS.getCteName()))
+				.on(joinConditions.toArray(Condition[]::new));
+	}
+
 	default Field<Date> toDateField(String dateExpression) {
 		return DSL.toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 
 	default Field<String> replace(Field<String> target, String old, String _new) {
 		return DSL.function("replace", String.class, target, DSL.val(old), DSL.val(_new));
+	}
+
+	default Field<String> encloseInCurlyBraces(Field<String> stringExpression) {
+		return DSL.field("'{' || {0} || '}'", String.class, stringExpression);
 	}
 
 	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {

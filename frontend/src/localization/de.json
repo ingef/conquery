@@ -410,7 +410,9 @@
     "dateError": "Datum unbekannt",
     "name": "Name",
     "value": "Wert",
-    "densityPlot": "Dichtediagramm"
+    "densityPlot": "Dichtediagramm",
+    "chartYLabel": "Anzahl",
+    "idLabel": "{{primaryIdLabel}} und {{secondaryIdLabel}}"
   },
   "login": {
     "headline": "Anfragen und Analyse",
@@ -470,6 +472,9 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "search": "Suche",
+    "matches_one": "Eintrag",
+    "matches_other": "Einträge",
     "noData": "Keine Daten verfügbar",
     "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {
