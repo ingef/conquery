@@ -27,6 +27,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Access to persisted entities that are not namespace/dataset crucial (see {@link NamespacedStorage}).
+ * All entities are loaded through a cache. The cache can be configured through the StoreFactory.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class MetaStorage extends ConqueryStorage implements Injectable {
@@ -39,6 +43,11 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	private LoadingCache<Id<?>, Identifiable<?>> cache;
+
+	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
+		return (MetaStorage) ctxt
+				.findInjectableValue(MetaStorage.class.getName(), null, null);
+	}
 
 	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
 		if (mapper != null) {
@@ -79,16 +88,22 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		super.clear();
 	}
 
+	// Executions
+
 	public void addExecution(ManagedExecution query) {
 		executions.add(query);
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId id) {
+		return get(id);
+	}
+
+	private ManagedExecution getExecutionFromStorage(ManagedExecutionId id) {
 		return executions.get(id);
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAll();
+		return executions.getAllKeys().map(this::get);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {
@@ -101,6 +116,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		executions.remove(id);
 	}
 
+	// Groups
+
 	public synchronized void addGroup(Group group) {
 		cache.invalidate(group.getId());
 		log.info("Adding group = {}", group.getId());
@@ -108,13 +125,17 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public Group getGroup(GroupId groupId) {
-		final Group group = authGroup.get(groupId);
+		final Group group = get(groupId);
 		log.trace("Requested group '{}' got: {}", groupId, group);
 		return group;
 	}
 
+	private Group getGroupFromStorage(GroupId groupId) {
+		return authGroup.get(groupId);
+	}
+
 	public Stream<Group> getAllGroups() {
-		return authGroup.getAll();
+		return authGroup.getAllKeys().map(this::get);
 	}
 
 	public void removeGroup(GroupId id) {
@@ -129,6 +150,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		authGroup.update(group);
 	}
 
+	// User
+
 	public synchronized void addUser(User user) {
 		cache.invalidate(user.getId());
 		log.info("Adding user = {}", user.getId());
@@ -136,13 +159,17 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public User getUser(UserId userId) {
-		final User user = authUser.get(userId);
+		final User user = get(userId);
 		log.trace("Requested user '{}' got: {}", userId, user);
 		return user;
 	}
 
+	private User getUserFromStorage(UserId userId) {
+		return authUser.get(userId);
+	}
+
 	public Stream<User> getAllUsers() {
-		return authUser.getAll();
+		return authUser.getAllKeys().map(this::get);
 	}
 
 	public synchronized void removeUser(UserId userId) {
@@ -157,19 +184,25 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		authUser.update(user);
 	}
 
+	// Roles
+
 	public synchronized void addRole(Role role) {
 		cache.invalidate(role.getId());
 		authRole.add(role);
 	}
 
 	public Role getRole(RoleId roleId) {
-		final Role role = authRole.get(roleId);
+		final Role role = get(roleId);
 		log.trace("Requested role '{}' got: {}", roleId, role);
 		return role;
 	}
 
+	public Role getRoleFromStorage(RoleId roleId) {
+		return authRole.get(roleId);
+	}
+
 	public Stream<Role> getAllRoles() {
-		return authRole.getAll();
+		return authRole.getAllKeys().map(this::get);
 	}
 
 	public synchronized void removeRole(RoleId roleId) {
@@ -184,12 +217,18 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		authRole.update(role);
 	}
 
+	// FormConfigs
+
 	public FormConfig getFormConfig(FormConfigId id) {
+		return get(id);
+	}
+
+	private FormConfig getFormConfigFromStorage(FormConfigId id) {
 		return formConfigs.get(id);
 	}
 
 	public Stream<FormConfig> getAllFormConfigs() {
-		return formConfigs.getAll();
+		return formConfigs.getAllKeys().map(this::get);
 	}
 
 	public synchronized void removeFormConfig(FormConfigId id) {
@@ -209,6 +248,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		formConfigs.add(formConfig);
 	}
 
+	// Utility
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
@@ -238,26 +278,21 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	protected <ID extends Id<VALUE>, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof ManagedExecutionId executionId) {
-			return (VALUE) getExecution(executionId);
+			return (VALUE) getExecutionFromStorage(executionId);
 		}
 		if (id instanceof FormConfigId formConfigId) {
-			return (VALUE) getFormConfig(formConfigId);
+			return (VALUE) getFormConfigFromStorage(formConfigId);
 		}
 		if (id instanceof GroupId groupId) {
-			return (VALUE) getGroup(groupId);
+			return (VALUE) getGroupFromStorage(groupId);
 		}
 		if (id instanceof RoleId roleId) {
-			return (VALUE) getRole(roleId);
+			return (VALUE) getRoleFromStorage(roleId);
 		}
 		if (id instanceof UserId userId) {
-			return (VALUE) getUser(userId);
+			return (VALUE) getUserFromStorage(userId);
 		}
 
 		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
-	}
-
-	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
-		return (MetaStorage) ctxt
-				.findInjectableValue(MetaStorage.class.getName(), null, null);
 	}
 }

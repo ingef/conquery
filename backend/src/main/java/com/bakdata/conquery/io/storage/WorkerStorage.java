@@ -73,49 +73,62 @@ public class WorkerStorage extends NamespacedStorage {
 		// Nothing to decorate
 	}
 
+	// CBlocks
 
 	public void addCBlock(CBlock cBlock) {
 		log.debug("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
+		cache.invalidate(cBlock.getId());
 	}
 
 	public CBlock getCBlock(CBlockId id) {
+		return get(id);
+	}
+
+	private CBlock getCBlockFromStorage(CBlockId id) {
 		return cBlocks.get(id);
 	}
 
 	public void removeCBlock(CBlockId id) {
 		log.debug("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
+		cache.invalidate(id);
 	}
 
 	public Stream<CBlock> getAllCBlocks() {
-		return cBlocks.getAll();
+		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::get);
 	}
+
+	// Buckets
 
 	public void addBucket(Bucket bucket) {
 		log.debug("Adding Bucket[{}]", bucket.getId());
 		buckets.add(bucket);
+		cache.invalidate(bucket.getId());
 	}
 
 	public Bucket getBucket(BucketId id) {
+		return get(id);
+	}
+
+	private Bucket getBucketFromStorage(BucketId id) {
 		return buckets.get(id);
 	}
 
 	public void removeBucket(BucketId id) {
 		log.debug("Removing Bucket[{}]", id);
 		buckets.remove(id);
-	}
-
-
-	public Stream<BucketId> getAllBucketIds() {
-		return buckets.getAllKeys().map(BucketId.class::cast);
+		cache.invalidate(id);
 	}
 
 	public Stream<Bucket> getAllBuckets() {
-		return buckets.getAll();
+		return buckets.getAllKeys().map(BucketId.class::cast).map(this::get);
 	}
 
+	// Worker
+
 	public WorkerInformation getWorker() {
+		// TODO load cached
 		return worker.get();
 	}
 
@@ -127,13 +140,15 @@ public class WorkerStorage extends NamespacedStorage {
 		this.worker.update(worker);
 	}
 
+	// Utilities
+
 	@Override
 	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof BucketId castId) {
-			return (VALUE) getBucket(castId);
+			return (VALUE) getBucketFromStorage(castId);
 		}
 		if (id instanceof CBlockId castId) {
-			return (VALUE) getCBlock(castId);
+			return (VALUE) getCBlockFromStorage(castId);
 		}
 		return super.getFromStorage(id);
 	}

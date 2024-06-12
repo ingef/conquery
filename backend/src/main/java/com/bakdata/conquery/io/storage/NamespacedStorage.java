@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -58,7 +57,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	private LoadingCache<Id<?>, Identifiable<?>> cache;
+	protected LoadingCache<Id<?>, Identifiable<?>> cache;
 
 	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		this.pathName = pathName;
@@ -135,6 +134,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		// Intentionally left blank
 	}
 
+	// Imports
 
 	public void addImport(Import imp) {
 		imports.add(imp);
@@ -142,6 +142,10 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	}
 
 	public Import getImport(ImportId id) {
+		return get(id);
+	}
+
+	private Import getImportFromStorage(ImportId id) {
 		return imports.get(id);
 	}
 
@@ -159,22 +163,33 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		cache.invalidate(id);
 	}
 
+	// Datasets
+
 	public Dataset getDataset() {
+		// TODO load cached
 		return dataset.get();
 	}
+
 
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 		cache.refresh(dataset.getId());
 	}
 
-	public Stream<Table> getTables() {
-		return tables.getAll();
-	}
+	// Tables
 
 	public Table getTable(TableId tableId) {
+		return get(tableId);
+	}
+
+	private Table getTableFromStorage(TableId tableId) {
 		return tables.get(tableId);
 	}
+
+	public Stream<Table> getTables() {
+		return tables.getAllKeys().map(TableId.class::cast).map(this::get);
+	}
+
 
 	public void addTable(Table table) {
 		tables.add(table);
@@ -186,12 +201,18 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		cache.invalidate(table);
 	}
 
-	public Stream<SecondaryIdDescription> getSecondaryIds() {
-		return secondaryIds.getAll();
-	}
+	// SecondaryId
 
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
+		return get(descriptionId);
+	}
+
+	private SecondaryIdDescription getSecondaryIdFromStorage(SecondaryIdDescriptionId descriptionId) {
 		return secondaryIds.get(descriptionId);
+	}
+
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::get);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
@@ -204,8 +225,18 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		cache.invalidate(secondaryIdDescriptionId);
 	}
 
+	// Concepts
+
 	public Concept<?> getConcept(ConceptId id) {
+		return get(id);
+	}
+
+	private Concept<?> getConceptFromStorage(ConceptId id) {
 		return concepts.get(id);
+	}
+
+	public Stream<Concept<?>> getAllConcepts() {
+		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::get);
 	}
 
 	public boolean hasConcept(ConceptId id) {
@@ -225,35 +256,10 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		cache.invalidate(id);
 	}
 
-	public Stream<Concept<?>> getAllConcepts() {
-		return concepts.getAll();
-	}
-
+	// Utility
 
 	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
-		return (VALUE) cache.get(id);
-	}
-
-	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
-		if (id instanceof DatasetId castId) {
-			final Dataset dataset = getDataset();
-			if (dataset.getId().equals(castId)) {
-				return (VALUE) dataset;
-			}
-			return null;
-		}
-		if (id instanceof ImportId castId) {
-			return (VALUE) getImport(castId);
-		}
-		if (id instanceof SecondaryIdDescriptionId castId) {
-			return (VALUE) getSecondaryId(castId);
-		}
-		if (id instanceof TableId castId) {
-			return (VALUE) getTable(castId);
-		}
-		if (id instanceof ConceptId castId) {
-			return (VALUE) getConcept(castId);
-		}
+		// First check if id belongs to an instance, that is nested in a primary storage instance
 		if (id instanceof ColumnId castId) {
 			return (VALUE) getTable(castId.getTable()).getColumnByName(castId.getColumn());
 		}
@@ -273,11 +279,43 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 			return (VALUE) getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(castId.getFilter());
 		}
 		if (id instanceof ConceptTreeChildId castId) {
-			return (VALUE) ((TreeConcept) getConcept(castId.findConcept())).findById(castId);
+			return (VALUE) getConcept(castId.findConcept()).findById(castId);
 		}
 		if (id instanceof ValidityDateId castId) {
 			return (VALUE) getConcept(castId.getConnector().getConcept()).getConnectorByName(castId.getConnector().getConnector())
-																		 .getValidityDateByName(castId.getValidityDate());
+					.getValidityDateByName(castId.getValidityDate());
+		}
+
+		// get primary storage instance
+		return (VALUE) cache.get(id);
+	}
+
+	/**
+	 * This is just for convenience to have a single function for the cache to load primary storage instances
+	 * @param id
+	 * @return
+	 * @param <ID>
+	 * @param <VALUE>
+	 */
+	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
+		if (id instanceof DatasetId castId) {
+			final Dataset dataset = getDataset();
+			if (dataset.getId().equals(castId)) {
+				return (VALUE) dataset;
+			}
+			return null;
+		}
+		if (id instanceof ImportId castId) {
+			return (VALUE) getImportFromStorage(castId);
+		}
+		if (id instanceof SecondaryIdDescriptionId castId) {
+			return (VALUE) getSecondaryIdFromStorage(castId);
+		}
+		if (id instanceof TableId castId) {
+			return (VALUE) getTableFromStorage(castId);
+		}
+		if (id instanceof ConceptId castId) {
+			return (VALUE) getConceptFromStorage(castId);
 		}
 
 		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");

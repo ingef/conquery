@@ -91,16 +91,17 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 
-
+	// IdMapping
 
 	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
-
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
+
+	// Bucket to Worker Assignment
 
 	public void setWorkerToBucketsMap(WorkerToBucketsMap map) {
 		workerToBuckets.update(map);
@@ -109,6 +110,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
 	}
+
+	// Entity to Bucket Assignment
 
 	public int getNumberOfEntities() {
 		return entity2Bucket.count();
@@ -132,6 +135,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		return bucket;
 	}
 
+	// Structure
 
 	public StructureNode[] getStructure() {
 		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
@@ -141,7 +145,13 @@ public class NamespaceStorage extends NamespacedStorage {
 		this.structure.update(structure);
 	}
 
+	// InternToExternMappers
+
 	public InternToExternMapper getInternToExternMapper(InternToExternMapperId id) {
+		return get(id);
+	}
+
+	private InternToExternMapper getInternToExternMapperFromStorage(InternToExternMapperId id) {
 		return internToExternMappers.get(id);
 	}
 
@@ -157,12 +167,18 @@ public class NamespaceStorage extends NamespacedStorage {
 		return internToExternMappers.getAll();
 	}
 
-	public void removeSearchIndex(SearchIndexId id) {
-		searchIndexes.remove(id);
-	}
+	// SearchIndices
 
 	public SearchIndex getSearchIndex(SearchIndexId id) {
+		return get(id);
+	}
+
+	private SearchIndex getSearchIndexFromStorage(SearchIndexId id) {
 		return searchIndexes.get(id);
+	}
+
+	public void removeSearchIndex(SearchIndexId id) {
+		searchIndexes.remove(id);
 	}
 
 	public void addSearchIndex(SearchIndex searchIndex) {
@@ -172,6 +188,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	public Stream<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
 	}
+
+	// PreviewConfig
 
 	public void setPreviewConfig(PreviewConfig previewConfig){
 		preview.update(previewConfig);
@@ -185,13 +203,15 @@ public class NamespaceStorage extends NamespacedStorage {
 		preview.remove();
 	}
 
+	// Utilities
+
 	@Override
 	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
 		if (id instanceof InternToExternMapperId castId) {
-			return (VALUE) getInternToExternMapper(castId);
+			return (VALUE) getInternToExternMapperFromStorage(castId);
 		}
 		if (id instanceof SearchIndexId castId) {
-			return (VALUE) getSearchIndex(castId);
+			return (VALUE) getSearchIndexFromStorage(castId);
 		}
 
 		return super.getFromStorage(id);
