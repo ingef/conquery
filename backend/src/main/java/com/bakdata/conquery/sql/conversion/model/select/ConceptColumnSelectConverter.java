@@ -106,37 +106,35 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 			String alias,
 			SelectContext<TreeConcept, ConceptSqlTables> selectContext
 	) {
-		List<QueryStep> unionSteps = connectors.stream()
-											   .filter(connector -> connector.getColumn() != null)
-											   .map(connector -> createConnectorColumnSelectQuery(connector, alias, selectContext))
-											   .toList();
+		List<QueryStep> unionSteps = selectContext.getTables()
+												  .getConnectorTables()
+												  .stream()
+												  .map(tables -> createConnectorColumnSelectQuery(tables, connectors, alias, selectContext))
+												  .toList();
 
 		String unionedColumnsCteName = selectContext.getNameGenerator().cteStepName(CONCEPT_COLUMN_STEPS.UNIONED_COLUMNS, alias);
 		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList());
 	}
 
 	private static QueryStep createConnectorColumnSelectQuery(
-			Connector connector,
+			ConnectorSqlTables tables,
+			List<? extends Connector> connectors,
 			String alias,
 			SelectContext<TreeConcept, ConceptSqlTables> selectContext
 	) {
-		// a  ConceptColumn select uses all connectors a Concept has, even if they are not part of the CQConcept
-		// but if they are, we need to make sure we use the event-filtered table instead of the root table
-		String tableName = selectContext.getTables()
-										.getConnectorTables()
-										.stream()
-										.filter(tables -> Objects.equals(tables.getRootTable(), connector.getTable().getName()))
-										.findFirst()
-										.map(tables -> tables.cteName(ConceptCteStep.EVENT_FILTER))
-										.orElse(connector.getTable().getName());
+		Connector matchingConnector =
+				connectors.stream()
+						  .filter(connector -> isMatchingConnector(tables, connector))
+						  .findFirst()
+						  .orElseThrow(() -> new IllegalStateException("Could not find matching connector for ConnectorSqlTables %s".formatted(tables)));
 
-		Table<Record> connectorTable = DSL.table(DSL.name(tableName));
+		Table<Record> connectorTable = DSL.table(DSL.name(tables.cteName(ConceptCteStep.EVENT_FILTER)));
 
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(connector.getTable(), selectContext.getConversionContext().getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(matchingConnector.getTable(), selectContext.getConversionContext().getConfig());
 		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, connectorTable.getName()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		SqlIdColumns ids = new SqlIdColumns(qualifiedPrimaryColumn);
 
-		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().getName()));
+		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), matchingConnector.getColumn().getName()));
 		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
 
@@ -151,6 +149,10 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 						.build();
 	}
 
+	private static boolean isMatchingConnector(final ConnectorSqlTables tables, final Connector connector) {
+		return connector.getColumn() != null && (Objects.equals(tables.getRootTable(), connector.getTable().getName()));
+	}
+
 	private static FieldWrapper<String> createConnectorColumnStringAgg(SelectContext<TreeConcept, ConceptSqlTables> selectContext, QueryStep unionStep, String alias) {
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
 		Field<String> unionedColumn = DSL.field(DSL.name(unionStep.getCteName(), alias), String.class);
@@ -158,4 +160,5 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 				functionProvider.stringAggregation(unionedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of(unionedColumn)).as(alias)
 		);
 	}
+
 }
