@@ -188,7 +188,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
-		List<SingleColumnSqlSelect> preprocessingSelects = new ArrayList<>();
+		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
@@ -213,7 +213,10 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
 		}
 
-		return new CommonAggregationSelect<>(preprocessingSelects, sumGroupBy);
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelects(preprocessingSelects)
+									  .groupBy(sumGroupBy)
+									  .build();
 	}
 
 	private CommonAggregationSelect<BigDecimal> createDistinctSumAggregationSelect(
@@ -224,13 +227,13 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			ConnectorSqlTables tables,
 			NameGenerator nameGenerator
 	) {
-		List<SingleColumnSqlSelect> preprocessingSelects = new ArrayList<>();
+		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		List<SingleColumnSqlSelect> distinctByRootSelects =
+		List<ExtractingSqlSelect<?>> distinctByRootSelects =
 				distinctByColumns.stream()
 								 .map(column -> new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Object.class))
 								 .collect(Collectors.toList());
@@ -241,7 +244,11 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, sumGroupBy, alias, nameGenerator);
 
-		return new CommonAggregationSelect<>(preprocessingSelects, sumGroupBy, rowNumberFilteredCte);
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelects(preprocessingSelects)
+									  .additionalPredecessor(rowNumberFilteredCte)
+									  .groupBy(sumGroupBy)
+									  .build();
 	}
 
 	/**
@@ -251,7 +258,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	private static QueryStep createRowNumberCte(
 			SqlIdColumns ids,
 			SingleColumnSqlSelect sumColumnRootSelect,
-			List<SingleColumnSqlSelect> distinctByRootSelects,
+			List<ExtractingSqlSelect<?>> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
 			NameGenerator nameGenerator

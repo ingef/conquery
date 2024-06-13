@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.LastValueAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.LastValueSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "LAST", base = Select.class)
@@ -27,7 +27,7 @@ public class LastValueSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new LastValueSelectConverter());
+	public SelectConverter<LastValueSelect> createConverter() {
+		return new LastValueSelectConverter();
 	}
 }

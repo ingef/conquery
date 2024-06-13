@@ -61,7 +61,8 @@ public class CountQuartersFilter extends Filter<Range.LongRange> implements Date
 	}
 
 	@Override
-	public FilterConverterHolder<?, Range.LongRange> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new CountQuartersSqlAggregator());
+	public FilterConverter<CountQuartersFilter, Range.LongRange> createConverter() {
+		return new CountQuartersSqlAggregator();
 	}
+
 }

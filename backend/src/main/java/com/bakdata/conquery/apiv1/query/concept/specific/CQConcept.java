@@ -99,6 +99,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			table.setConnector(((Connector) select.getHolder()));
 
 			table.setSelects(List.of(select));
+			table.setConcept(cqConcept);
 		}
 		else {
 			cqConcept.setTables(((Concept<?>) select.getHolder())

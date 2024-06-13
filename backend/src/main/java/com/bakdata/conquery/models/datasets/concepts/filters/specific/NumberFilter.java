@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,7 +57,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	}
 
 	@Override
-	public FilterConverterHolder<?, RANGE> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new NumberFilterConverter<>());
+	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
+		return new NumberFilterConverter<>();
 	}
 }

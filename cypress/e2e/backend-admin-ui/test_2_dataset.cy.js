@@ -36,10 +36,23 @@ context("Admin UI Single Dataset", () => {
     });
   });
 
-  describe("Can upload test table and concept", () => {
+  describe("Can upload mapping, table and concept", () => {
     beforeEach(() => {
       visitAdminUI(`datasets/${testDSID}`);
     });
+
+    
+    it("Can upload mapping", () => {
+      cy.intercept("/admin/datasets/*/internToExtern").as("apiCall");
+      cy.get('[data-test-id="upload-select"]').select("Mapping JSON");
+      cy.get('[data-test-id="upload-input"]').selectFile(
+        "./cypress/support/test_data/mapping.mapping.json"
+      );
+      cy.get('[data-test-id="upload-btn"]').click();
+      cy.wait("@apiCall").reload();
+      cy.get('[data-test-id="accordion-Mappings"]').contains("td", `example_mapping`);
+    });
+
 
     it("Can upload table", () => {
       cy.intercept("/admin/datasets/*/tables").as("apiCall");
@@ -126,7 +139,7 @@ context("Admin UI Single Dataset", () => {
     it("Counts are right", () => {
       visitAdminUI(`datasets/${testDSID}/connectors/${testDSID}.concept1.column`);
       cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("20 entries");
-      cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("16 entries");
+      cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("17 entries");
     });
   });
 
@@ -168,6 +181,35 @@ context("Admin UI Single Dataset", () => {
         .location("hash")
         .should("equal", "#Connectors");
     });
+  });
+
+
+
+  describe("Perform Update Matching Stats", () => {
+
+    it("Start Update Matching Stats", () => {
+      visitAdminUI("datasets");
+      cy.get('[data-cy="datasets"]').contains(testDSID).click();
+      cy.get('[data-cy="update-matching-stats"]').click();
+    })
+
+    it("Wait for Update Matching Stats to finish", () => {
+      visitAdminUI("jobs");
+      cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
+    })
+  });
+  describe("Visit Index Service Page", () => {
+
+    it("Check Statistics", () => {
+      visitAdminUI("index-service");
+
+      cy.get('[data-cy="statistics"]').contains('Miss count').next().should('not.equal', 0);
+      cy.get('[data-cy="statistics"]').contains('Total load time').next().should('not.equal', 0);
+
+      cy.get('[data-cy="indexes"]').contains('mapping_data.csv')
+        .next().contains("internal")
+        .next().contains('{{external}}');
+    })
   });
 
   describe("Can delete test concept and table", () => {

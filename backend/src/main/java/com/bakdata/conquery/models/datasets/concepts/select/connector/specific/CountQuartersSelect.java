@@ -15,6 +15,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,7 +68,12 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new CountQuartersSqlAggregator());
+	public ResultType<?> getResultType() {
+		return ResultType.IntegerT.INSTANCE;
+	}
+
+	@Override
+	public SelectConverter<CountQuartersSelect> createConverter() {
+		return new CountQuartersSqlAggregator();
 	}
 }

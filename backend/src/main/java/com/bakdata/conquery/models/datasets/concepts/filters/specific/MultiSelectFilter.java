@@ -5,7 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectFilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -33,7 +33,7 @@ public class MultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterConverterHolder<?, String[]> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new MultiSelectFilterConverter());
+	public FilterConverter<MultiSelectFilter, String[]> createConverter() {
+		return new MultiSelectFilterConverter();
 	}
 }
