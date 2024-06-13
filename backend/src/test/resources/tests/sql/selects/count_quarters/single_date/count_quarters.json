@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": true
   },
-  "expectedCsv": "tests/sql/selects/count_quarters/expected.csv",
+  "expectedCsv": "tests/sql/selects/count_quarters/single_date/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -48,7 +48,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/count_quarters/content.csv",
+        "csv": "tests/sql/selects/count_quarters/single_date/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",

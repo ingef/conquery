@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -278,7 +279,7 @@ class RelativeStratification {
 		}
 
 		return Range.of(
-				- timeCountBefore,
+				-timeCountBefore,
 				timeCountAfter
 		);
 	}

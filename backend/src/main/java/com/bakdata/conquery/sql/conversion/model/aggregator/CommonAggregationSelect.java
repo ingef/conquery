@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
@@ -28,7 +28,7 @@ import lombok.Value;
 class CommonAggregationSelect<T> {
 
 	@Singular
-	List<ExtractingSqlSelect<?>> rootSelects;
+	List<SingleColumnSqlSelect> rootSelects;
 
 	FieldWrapper<T> groupBy;
 
