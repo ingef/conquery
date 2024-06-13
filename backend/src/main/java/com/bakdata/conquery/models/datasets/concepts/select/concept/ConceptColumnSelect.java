@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.datasets.concepts.select.concept;
 import java.util.Collections;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -62,7 +62,8 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public ResultType<?> getResultType() {
 		if (isAsIds()) {
-			return new ResultType.ListT<>(new ResultType.StringT((val, settings) -> TableExportQuery.printValue(getHolder().findConcept(), val, settings)));
+			final Concept<?> concept = getHolder().findConcept();
+			return new ResultType.ListT<>(new ResultType.StringT(concept::printConceptLocalId));
 		}
 
 		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
