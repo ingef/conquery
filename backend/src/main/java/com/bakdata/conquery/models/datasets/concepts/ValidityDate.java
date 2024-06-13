@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelect {
+public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
 
 	@NsIdRef
 	@Nullable
