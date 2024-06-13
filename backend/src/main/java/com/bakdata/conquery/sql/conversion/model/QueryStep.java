@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.Collections;
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
@@ -38,16 +37,30 @@ public class QueryStep {
 	@Builder.Default
 	List<QueryStep> union = Collections.emptyList();
 	/**
+	 * Determines if this steps union steps should be unioned using a UNION ALL. Default is true.
+	 */
+	@Builder.Default
+	boolean unionAll = true;
+	/**
 	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
 	 */
 	@Singular
 	List<QueryStep> predecessors;
 
+	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
+		return createUnionStep(unionSteps, cteName, predecessors, true);
+	}
+
 	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
+		return createUnionStep(unionSteps, cteName, predecessors, false);
+	}
+
+	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll) {
 		return unionSteps.get(0)
 						 .toBuilder()
 						 .cteName(cteName)
 						 .union(unionSteps.subList(1, unionSteps.size()))
+						 .unionAll(unionAll)
 						 .predecessors(predecessors)
 						 .build();
 	}

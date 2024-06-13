@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -27,6 +29,7 @@ public interface SqlFunctionProvider {
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
+	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
 	String getMinDateExpression();
 
@@ -95,6 +98,8 @@ public interface SqlFunctionProvider {
 	 */
 	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
+	Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields);
+
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
 	 * <p>
@@ -122,7 +127,7 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
-	<T> Field<T> first(Field<T>  field, List<Field<?>> orderByColumn);
+	<T> Field<T> first(Field<T> field, List<Field<?>> orderByColumn);
 
 	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
@@ -135,7 +140,15 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
 
-	Field<Object[]> asArray(List<Field<?>> fields);
+	default Field<String> concat(List<Field<String>> fields) {
+		String concatenated = fields.stream()
+									// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+									// thus concat an empty string
+									.map(field -> DSL.when(field.isNull(), DSL.val("")).otherwise(field))
+									.map(Field::toString)
+									.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+		return DSL.field(concatenated, String.class);
+	}
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

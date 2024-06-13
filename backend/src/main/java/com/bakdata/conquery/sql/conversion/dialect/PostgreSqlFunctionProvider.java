@@ -23,7 +23,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import com.google.common.base.Preconditions;
 import org.jooq.impl.SQLDataType;
 
 /**
@@ -167,6 +166,18 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
+		return DSL.field(
+				"{0}({1}, {2} {3})",
+				String.class,
+				DSL.keyword("string_agg"),
+				stringField,
+				delimiter,
+				DSL.orderBy(orderByFields)
+		);
+	}
+
+	@Override
 	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
 		Field<Object> asMultirange = rangeAgg(columnDateRange);
 		return daterangeStringExpression(ColumnDateRange.of(asMultirange));
@@ -248,14 +259,6 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				DSL.extract(dateField, DatePart.YEAR),
 				DSL.extract(dateField, DatePart.QUARTER)
 		);
-	}
-
-	@Override
-	public Field<Object[]> asArray(List<Field<?>> fields) {
-		String arrayExpression = fields.stream()
-									   .map(Field::toString)
-									   .collect(Collectors.joining(", ", "array[", "]"));
-		return DSL.field(arrayExpression, Object[].class);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -56,7 +57,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.withValidityDate(ColumnDateRange.empty());
 		}
 		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
-		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation));
+		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
