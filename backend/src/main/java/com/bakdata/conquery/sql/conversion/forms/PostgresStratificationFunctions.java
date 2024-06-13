@@ -138,7 +138,7 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	protected Field<Date> lower(ColumnDateRange dateRange) {
+	public Field<Date> lower(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
 		return DSL.function("lower", Date.class, dateRange.getRange());
 	}

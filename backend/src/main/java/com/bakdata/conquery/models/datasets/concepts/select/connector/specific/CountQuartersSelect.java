@@ -50,12 +50,6 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 
 	@Override
 	public Aggregator<?> createAggregator() {
-
-		// TODO createAggregator() is called when resolving a query, but we don't need it besides for getResultType()
-		if (!isSingleColumnDaterange()) {
-			return new CountQuartersOfDatesAggregator(getStartColumn());
-		}
-
 		return switch (getColumn().getType()) {
 			case DATE_RANGE -> new CountQuartersOfDateRangeAggregator(getColumn());
 			case DATE -> new CountQuartersOfDatesAggregator(getColumn());

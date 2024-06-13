@@ -59,7 +59,7 @@ public abstract class StratificationFunctions {
 	/**
 	 * Extract the lower bounds from a given daterange.
 	 */
-	protected abstract Field<Date> lower(ColumnDateRange dateRange);
+	public abstract Field<Date> lower(ColumnDateRange dateRange);
 
 	/**
 	 * Extract the inclusive upper bound from a given daterange.

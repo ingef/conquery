@@ -32,7 +32,7 @@ class HanaStratificationFunctions extends StratificationFunctions {
 	private final HanaSqlFunctionProvider functionProvider;
 
 	@Override
-	protected Field<Date> lower(ColumnDateRange dateRange) {
+	public Field<Date> lower(ColumnDateRange dateRange) {
 		// HANA does not support single-column ranges, so we can return start and end directly
 		return dateRange.getStart();
 	}
