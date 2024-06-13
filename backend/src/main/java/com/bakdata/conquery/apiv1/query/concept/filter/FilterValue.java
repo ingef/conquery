@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -85,8 +86,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMultiSelectFilter extends FilterValue<String[]> {
-		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
+	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
+		public CQMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
 		}
 
@@ -95,8 +96,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
-		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
+	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
+		public CQBigMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
 		}
 

@@ -38,7 +38,7 @@ import lombok.ToString;
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
-public class FlagFilter extends Filter<String[]> {
+public class FlagFilter extends Filter<Set<String>> {
 
 	@NsIdRefCollection
 	private final Map<String, Column> flags;
@@ -56,13 +56,12 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String[] labels) {
-		final Column[] columns = new Column[labels.length];
+	public FilterNode<?> createFilterNode(Set<String> labels) {
 
-		final Set<String> missing = new HashSet<>(labels.length);
+		final Set<String> missing = new HashSet<>(labels.size());
+		final List<Column> columns = new ArrayList<>();
 
-		for (int index = 0; index < labels.length; index++) {
-			final String label = labels[index];
+		for (String label : labels) {
 			final Column column = flags.get(label);
 
 			// Column is not defined with us.
@@ -70,14 +69,14 @@ public class FlagFilter extends Filter<String[]> {
 				missing.add(label);
 			}
 
-			columns[index] = column;
+			columns.add(column);
 		}
 
 		if (!missing.isEmpty()) {
 			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
-		return new FlagColumnsFilterNode(columns);
+		return new FlagColumnsFilterNode(columns.toArray(Column[]::new));
 	}
 
 	@JsonIgnore
@@ -93,7 +92,7 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterConverter<FlagFilter, String[]> createConverter() {
+	public FilterConverter<FlagFilter, Set<String>> createConverter() {
 		return new FlagSqlAggregator();
 	}
 }

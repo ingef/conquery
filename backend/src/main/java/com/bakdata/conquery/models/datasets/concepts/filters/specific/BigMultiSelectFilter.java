@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -20,7 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
-public class BigMultiSelectFilter extends SelectFilter<String[]> {
+public class BigMultiSelectFilter extends SelectFilter<Set<String>> {
 
 	@JsonIgnore
 	@Override
@@ -29,12 +31,12 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterNode createFilterNode(String[] value) {
+	public FilterNode createFilterNode(Set<String> value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 
 	@Override
-	public FilterConverter<MultiSelectFilter, String[]> createConverter() {
+	public FilterConverter<MultiSelectFilter, Set<String>> createConverter() {
 		return new MultiSelectFilterConverter();
 	}
 }
