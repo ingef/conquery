@@ -53,7 +53,9 @@ public class ExternalFormBackendApi {
 		this.tokenCreator = tokenCreator;
 		this.conqueryApiUrl = conqueryApiUrl;
 
-		client.register(authFilterProvider.getFilter());
+		if (authFilterProvider != null) {
+			client.register(authFilterProvider.getFilter());
+		}
 
 		baseTarget = this.client.target(baseURI);
 

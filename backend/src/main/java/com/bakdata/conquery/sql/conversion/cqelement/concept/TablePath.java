@@ -2,13 +2,13 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.JOIN_BRANCHES;
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,55 +17,73 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.google.common.base.Preconditions;
 import lombok.Data;
-import lombok.Value;
+import lombok.Getter;
 
-@Value
-class TablePathGenerator {
+/**
+ * Determines all table/CTE names and creates the respective required {@link ConnectorSqlTables} and {@link ConceptSqlTables} which will be created during the
+ * conversion of a {@link CQConcept}.
+ */
+class TablePath {
 
-	SqlDialect sqlDialect;
-	NameGenerator nameGenerator;
+	private final Map<CQTable, ConnectorSqlTables> connectorTableMap = new HashMap<>();
 
-	public TablePathGenerator(ConversionContext context) {
-		this.sqlDialect = context.getSqlDialect();
-		this.nameGenerator = context.getNameGenerator();
+	@Getter
+	private final CQConcept cqConcept;
+
+	@Getter
+	private final ConversionContext context;
+
+	public TablePath(CQConcept cqConcept, ConversionContext context) {
+		this.cqConcept = cqConcept;
+		this.context = context;
+		cqConcept.getTables().forEach(cqTable -> this.connectorTableMap.put(cqTable, createConnectorTables(cqConcept, cqTable, context)));
 	}
 
-	public ConceptConversionTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, String label) {
-		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable);
-		return create(tableInfo, label);
+	public ConnectorSqlTables getConnectorTables(CQTable cqTable) {
+		return connectorTableMap.get(cqTable);
 	}
 
-	public ConceptConversionTables createUniversalTables(QueryStep predecessor, CQConcept cqConcept) {
-		TablePathInfo tableInfo = collectConceptTables(predecessor, cqConcept);
-		String conceptName = nameGenerator.conceptName(cqConcept);
-		return create(tableInfo, conceptName);
-	}
+	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
-	private ConceptConversionTables create(TablePathInfo tableInfo, String label) {
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), label, nameGenerator);
-		String lastPredecessorName = cteNameMap.get(tableInfo.getLastPredecessor());
-		return new ConceptConversionTables(
+		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector());
+		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptConnectorLabel, context.getNameGenerator());
+
+		return new ConnectorSqlTables(
+				conceptConnectorLabel,
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				lastPredecessorName,
 				tableInfo.isContainsIntervalPacking()
 		);
 	}
 
-	private TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable) {
+	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
+
+		TablePathInfo tableInfo = collectConceptTables(predecessor);
+		String conceptName = context.getNameGenerator().conceptName(cqConcept);
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptName, context.getNameGenerator());
+		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
+
+		return new ConceptSqlTables(
+				conceptName,
+				tableInfo.getRootTable(),
+				cteNameMap,
+				tableInfo.getMappings(),
+				tableInfo.isContainsIntervalPacking(),
+				connectorSqlTables
+		);
+	}
+
+	private static TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
 		tableInfo.setRootTable(cqTable.getConnector().getTable().getName());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
-		tableInfo.setLastPredecessor(JOIN_BRANCHES);
 
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().anyMatch(Select::isEventDateSelect);
 		// no validity date aggregation possible nor necessary
@@ -75,14 +93,14 @@ class TablePathGenerator {
 
 		// interval packing required
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, sqlDialect));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getSqlDialect()));
 
 		if (!eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
 		// interval packing selects required with optional unnest step
-		if (sqlDialect.supportsSingleColumnRanges()) {
+		if (context.getSqlDialect().supportsSingleColumnRanges()) {
 			tableInfo.addMappings(Map.of(
 					UNNEST_DATE, INTERVAL_COMPLETE,
 					INTERVAL_PACKING_SELECTS, UNNEST_DATE
@@ -97,7 +115,7 @@ class TablePathGenerator {
 		return tableInfo;
 	}
 
-	private TablePathInfo collectConceptTables(QueryStep predecessor, CQConcept cqConcept) {
+	private TablePathInfo collectConceptTables(QueryStep predecessor) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
 		tableInfo.setRootTable(predecessor.getCteName()); // last table of a single connector or merged and aggregated table of multiple connectors
@@ -110,17 +128,19 @@ class TablePathGenerator {
 
 		Preconditions.checkArgument(
 				predecessor.getSelects().getValidityDate().isPresent(),
-				"Can not convert Selects that require interval packing without a validity date present in QueryStep %s".formatted(predecessor)
+				"Can not convert Selects that require interval packing without a validity date present after converting (a) connector(s)"
 		);
 
 		// universal event date selects required with optional additional unnest step
-		if (sqlDialect.supportsSingleColumnRanges()) {
+		if (context.getSqlDialect().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
 		}
 		else {
 			tableInfo.addRootTableMapping(INTERVAL_PACKING_SELECTS);
 		}
+
+		tableInfo.addMappings(Map.of(UNIVERSAL_SELECTS, INTERVAL_PACKING_SELECTS));
 
 		return tableInfo;
 	}
@@ -137,12 +157,6 @@ class TablePathGenerator {
 		 * The root table is the predecessor of all CteSteps from {@link TablePathInfo#mappings} which have a null-predecessor.
 		 */
 		private String rootTable;
-
-		/**
-		 * When converting {@link Selects}, we need to qualify the final references onto the predecessor of the last CTE that is part of the conversion.
-		 * It varies depending on the given {@link CQConcept}, thus we need to set it explicitly.
-		 */
-		private CteStep lastPredecessor;
 
 		/**
 		 * True if this path info contains CTEs from {@link IntervalPackingCteStep}.

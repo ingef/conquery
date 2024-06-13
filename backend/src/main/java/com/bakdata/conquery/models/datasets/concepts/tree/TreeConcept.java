@@ -10,12 +10,14 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -205,5 +207,33 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public ConceptTreeNode<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
+	}
+
+	/**
+	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
+	 * <p>
+	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
+	 */
+	public String printConceptLocalId(Object rawValue, PrintSettings printSettings) {
+
+		if (rawValue == null) {
+			return null;
+		}
+
+		final int localId = (int) rawValue;
+
+		final ConceptTreeNode<?> node = getElementByLocalId(localId);
+
+		if (!printSettings.isPrettyPrint()) {
+			return node.getId().toString();
+		}
+
+		if (node.getDescription() == null) {
+			return node.getLabel();
+		}
+
+		return node.getLabel() + " - " + node.getDescription();
+
 	}
 }

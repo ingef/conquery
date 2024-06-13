@@ -19,29 +19,26 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.jooq.Condition;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
  * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
- *
+ * <p>
  * The selected flags are logically or-ed.
  */
 @Getter
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
-public class FlagFilter extends Filter<String[]> {
+public class FlagFilter extends Filter<Set<String>> {
 
 	@NsIdRefCollection
 	private final Map<String, Column> flags;
@@ -59,13 +56,12 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String[] labels) {
-		final Column[] columns = new Column[labels.length];
+	public FilterNode<?> createFilterNode(Set<String> labels) {
 
-		final Set<String> missing = new HashSet<>(labels.length);
+		final Set<String> missing = new HashSet<>(labels.size());
+		final List<Column> columns = new ArrayList<>();
 
-		for (int index = 0; index < labels.length; index++) {
-			final String label = labels[index];
+		for (String label : labels) {
 			final Column column = flags.get(label);
 
 			// Column is not defined with us.
@@ -73,14 +69,14 @@ public class FlagFilter extends Filter<String[]> {
 				missing.add(label);
 			}
 
-			columns[index] = column;
+			columns.add(column);
 		}
 
-		if(!missing.isEmpty()){
+		if (!missing.isEmpty()) {
 			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
-		return new FlagColumnsFilterNode(columns);
+		return new FlagColumnsFilterNode(columns.toArray(Column[]::new));
 	}
 
 	@JsonIgnore
@@ -96,12 +92,7 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<String[]> filterContext) {
-		return FlagSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<String[]> filterContext) {
-		return FlagCondition.onColumn(getFlags(), filterContext.getValue()).condition();
+	public FilterConverter<FlagFilter, Set<String>> createConverter() {
+		return new FlagSqlAggregator();
 	}
 }

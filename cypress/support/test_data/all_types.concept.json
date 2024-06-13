@@ -118,17 +118,23 @@
             }
         ],
         "selects": [
-            {
-                "label": "SUM",
-                "type": "SUM",
-                "column": "table.INTEGER"
-            },
-            {
-                "label": "COUNT",
-                "type": "COUNT",
-                "column": "table.INTEGER"
-            },
-            {
+          {
+            "label": "FIRST MAPPED",
+            "type": "FIRST",
+            "column": "table.INTEGER",
+            "mapping": "example_mapping"
+          },
+          {
+            "label": "SUM",
+            "type": "SUM",
+            "column": "table.INTEGER"
+          },
+          {
+            "label": "COUNT",
+            "type": "COUNT",
+            "column": "table.INTEGER"
+          },
+          {
                 "label": "DISTINCT",
                 "type": "DISTINCT",
                 "column": "table.INTEGER"
