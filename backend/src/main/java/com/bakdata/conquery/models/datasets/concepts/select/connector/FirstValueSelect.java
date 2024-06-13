@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.FirstValueAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.FirstValueSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "FIRST", base = Select.class)
@@ -27,7 +27,7 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new FirstValueSelectConverter());
+	public SelectConverter<FirstValueSelect> createConverter() {
+		return new FirstValueSelectConverter();
 	}
 }

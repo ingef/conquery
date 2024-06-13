@@ -100,7 +100,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		SelectContext<TreeConcept, ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
-													 .map(select -> select.createConverterHolder().conceptSelect(selectContext))
+													 .map(select -> select.createConverter().conceptSelect(select, selectContext))
 													 .toList();
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
@@ -154,7 +154,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// convert selects
 		SelectContext<Connector, ConnectorSqlTables> selectContext = SelectContext.create(cqTable, ids, tablesValidityDate, connectorTables, conversionContext);
 		List<ConnectorSqlSelects> allSelectsForTable = cqTable.getSelects().stream()
-															  .map(select -> select.createConverterHolder().connectorSelect(selectContext))
+															  .map(select -> select.createConverter().connectorSelect(select, selectContext))
 															  .toList();
 
 		return CQTableContext.builder()

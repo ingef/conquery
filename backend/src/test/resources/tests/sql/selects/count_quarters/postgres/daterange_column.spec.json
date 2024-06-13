@@ -1,10 +1,13 @@
 {
-  "label": "COUNT_QUARTERS on single date column",
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
   },
-  "expectedCsv": "tests/sql/filter/count_quarters/expected.csv",
+  "label": "COUNT_QUARTERS on single postgres daterange column",
+  "expectedCsv": "tests/sql/selects/count_quarters/postgres/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -19,14 +22,9 @@
           "tables": [
             {
               "id": "count.count_connector",
-              "filters": {
-                "filter": "count.count_connector.count_quarters_filter",
-                "type": "INTEGER_RANGE",
-                "value": {
-                  "min": 2,
-                  "max": 3
-                }
-              }
+              "selects": [
+                "count.count_connector.count_quarters_select"
+              ]
             }
           ]
         }
@@ -41,10 +39,10 @@
         {
           "label": "count_connector",
           "table": "table1",
-          "filters": {
-            "name": "count_quarters_filter",
+          "selects": {
+            "name": "count_quarters_select",
             "type": "COUNT_QUARTERS",
-            "column": "table1.behandlungsdatum"
+            "column": "table1.datum"
           }
         }
       ]
@@ -53,7 +51,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/filter/count_quarters/content.csv",
+        "csv": "tests/sql/selects/count_quarters/postgres/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -61,8 +59,8 @@
         },
         "columns": [
           {
-            "name": "behandlungsdatum",
-            "type": "DATE"
+            "name": "datum",
+            "type": "DATE_RANGE"
           }
         ]
       }

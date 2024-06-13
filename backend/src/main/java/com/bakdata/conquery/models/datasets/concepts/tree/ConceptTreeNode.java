@@ -32,4 +32,5 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	void setMatchingStats(MatchingStats matchingStats);
 
 	String getDescription();
+	String getLabel();
 }

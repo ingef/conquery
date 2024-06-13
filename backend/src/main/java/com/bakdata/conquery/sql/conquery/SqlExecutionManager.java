@@ -78,6 +78,11 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE);
 									runningExecutions.remove(managedQuery.getId());
+								})
+								.exceptionally(e -> {
+									managedQuery.finish(ExecutionState.FAILED);
+									runningExecutions.remove(managedQuery.getId());
+									return null;
 								});
 	}
 

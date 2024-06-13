@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -46,9 +45,5 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	public BigDecimal createAggregationResult() {
 		return hit ? sum : null;
 	}
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.NumericT.INSTANCE;
-	}
+
 }

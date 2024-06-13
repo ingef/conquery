@@ -29,7 +29,6 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
-import { canViewEntityPreview } from "../user/selectors";
 import { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util";
 
@@ -52,16 +51,21 @@ export const loadDefaultHistoryParamsSuccess = createAction(
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
 
-  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
-  const canViewHistoryRef = useRef(canViewHistory);
-  canViewHistoryRef.current = canViewHistory;
+  // TODO: Get this to work such that we only try to load
+  // if the user has the permission to do so.
+  // So far, if we enable this, we won't load the entityHistoryDefaultParams
+  // on the first app load, because we'd have to time the result of /me (permissions)
+  // to be available before loading this.
+  // const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
+  // const canViewHistoryRef = useRef(canViewHistory);
+  // canViewHistoryRef.current = canViewHistory;
 
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
 
   return useCallback(
     async (datasetId: DatasetT["id"]) => {
       try {
-        if (!canViewHistoryRef.current) return;
+        // if (!canViewHistoryRef.current) return;
 
         const result = await getEntityHistoryDefaultParams(datasetId);
 

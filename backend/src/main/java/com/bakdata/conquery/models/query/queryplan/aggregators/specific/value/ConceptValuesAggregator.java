@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
@@ -73,8 +72,4 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 	}
 
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.StringT.INSTANCE);
-	}
 }

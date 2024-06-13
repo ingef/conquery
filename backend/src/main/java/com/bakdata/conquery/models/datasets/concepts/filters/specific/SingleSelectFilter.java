@@ -5,7 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SingleSelectFilterConverter;
 import net.minidev.json.annotate.JsonIgnore;
 
@@ -29,7 +29,7 @@ public class SingleSelectFilter extends SelectFilter<String> {
 	}
 
 	@Override
-	public FilterConverterHolder<?, String> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new SingleSelectFilterConverter());
+	public FilterConverter<SingleSelectFilter, String> createConverter() {
+		return new SingleSelectFilterConverter();
 	}
 }

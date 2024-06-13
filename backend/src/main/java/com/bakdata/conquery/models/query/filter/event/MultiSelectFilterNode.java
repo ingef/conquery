@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import java.util.Arrays;
 import java.util.Set;
-
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -11,6 +8,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,7 +19,7 @@ import org.apache.logging.log4j.util.Strings;
  */
 
 @ToString(callSuper = true, of = "column")
-public class MultiSelectFilterNode extends EventFilterNode<String[]> {
+public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 
 	@NotNull
 	@Getter
@@ -30,14 +28,12 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	private boolean empty;
 	
-	private Set<String> selectedValues;
 
-	public MultiSelectFilterNode(Column column, String[] filterValue) {
+	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
 		super(filterValue);
 		this.column = column;
-		setFilterValue(filterValue);
+		empty = filterValue.stream().anyMatch(Strings::isEmpty);
 	}
-
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -45,18 +41,8 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	@Override
-	public void setFilterValue(String[] strings) {
-		super.setFilterValue(strings);
-		selectedValues = Set.of(strings);
-		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
-	}
-
-	@Override
 	public void nextBlock(Bucket bucket) {
 	}
-
-
-
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
@@ -67,7 +53,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 		final String stringToken = bucket.getString(event, getColumn());
 
-		return selectedValues.contains(stringToken);
+		return getFilterValue().contains(stringToken);
 	}
 
 	@Override

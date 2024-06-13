@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -61,7 +62,8 @@ public abstract class FilterValue<VALUE> {
 	private VALUE value;
 
 
-	public void resolve(QueryResolveContext context) {};
+	public void resolve(QueryResolveContext context) {
+	}
 
 	public FilterNode<?> createNode() {
 		return getFilter().createFilterNode(getValue());
@@ -69,7 +71,7 @@ public abstract class FilterValue<VALUE> {
 
 	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
-		SqlFilters sqlFilters = filter.createConverterHolder().convertToSqlFilter(filterContext);
+		SqlFilters sqlFilters = filter.createConverter().convertToSqlFilter(filter, filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
@@ -78,14 +80,14 @@ public abstract class FilterValue<VALUE> {
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
 		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
-		return filter.createConverterHolder().convertForTableExport(filterContext);
+		return filter.createConverter().convertForTableExport(filter, filterContext);
 	}
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMultiSelectFilter extends FilterValue<String[]> {
-		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
+	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
+		public CQMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
 		}
 
@@ -94,8 +96,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
-		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
+	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
+		public CQBigMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
 		}
 
@@ -217,7 +219,11 @@ public abstract class FilterValue<VALUE> {
 			final Filter<?> filter = nsIdDeserializer.deserialize(filterTraverse, ctxt);
 
 			if (!(filter instanceof GroupFilter)) {
-				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter != null ? filter.getClass() : null));
+				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class,
+																										  filter != null
+																										  ? filter.getClass()
+																										  : null
+				));
 			}
 			GroupFilter groupFilter = (GroupFilter) filter;
 
