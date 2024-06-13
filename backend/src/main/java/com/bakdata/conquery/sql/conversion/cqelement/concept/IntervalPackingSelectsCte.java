@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -9,8 +10,8 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.google.common.base.Preconditions;
 
 class IntervalPackingSelectsCte {
@@ -18,7 +19,7 @@ class IntervalPackingSelectsCte {
 	public static QueryStep forConnector(QueryStep predecessor, CQTableContext cqTableContext) {
 		return create(
 				predecessor,
-				cqTableContext.getSqlSelects(),
+				cqTableContext.getSqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				cqTableContext.getConnectorTables(),
 				cqTableContext.getConversionContext().getSqlDialect().getFunctionProvider()
 		);
@@ -27,12 +28,12 @@ class IntervalPackingSelectsCte {
 	public static QueryStep forConcept(
 			QueryStep predecessor,
 			SqlTables tables,
-			List<SqlSelects> sqlSelects,
+			List<ConceptSqlSelects> sqlSelects,
 			ConversionContext conversionContext
 	) {
 		return create(
 				predecessor,
-				sqlSelects,
+				sqlSelects.stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				tables,
 				conversionContext.getSqlDialect().getFunctionProvider()
 		);
@@ -40,17 +41,16 @@ class IntervalPackingSelectsCte {
 
 	/**
 	 * @param predecessor The preceding query step which must contain an aggregated validity date.
-	 * @param sqlSelects  {@link SqlSelects} who's interval packing selects will be part of the returned {@link QueryStep}.
+	 * @param intervalPackingSelects {@link Select}s that require an interval-packed date.
 	 * @return A {@link QueryStep} containing converted interval packing selects, like {@link EventDurationSumSelect}, {@link EventDateUnionSelect}, etc.
-	 * Returns the given predecessor as is if there are no interval packing selects in the given list of {@link SqlSelects}.
+	 * Returns the given predecessor as is if the given list of interval packing selects is empty.
 	 */
 	private static QueryStep create(
 			QueryStep predecessor,
-			List<SqlSelects> sqlSelects,
+			List<SqlSelect> intervalPackingSelects,
 			SqlTables tables,
 			SqlFunctionProvider functionProvider
 	) {
-		List<SqlSelect> intervalPackingSelects = sqlSelects.stream().flatMap(selects -> selects.getIntervalPackingSelects().stream()).toList();
 		if (intervalPackingSelects.isEmpty()) {
 			return predecessor;
 		}

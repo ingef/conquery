@@ -13,8 +13,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +24,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.Condition;
 
 /**
  * This class is the abstract superclass for all filters.
@@ -92,7 +90,8 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 				continue;
 			}
 
-			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
+																																				   .getId());
 
 			valid = false;
 		}
@@ -101,13 +100,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	}
 
 	@JsonIgnore
-	public SqlFilters convertToSqlFilter(FilterContext<FILTER_VALUE> filterContext) {
-		throw new UnsupportedOperationException("SQL conversion of filter %s not implemented yet.".formatted(getClass()));
+	public <F extends Filter<FILTER_VALUE>> FilterConverter<F, FILTER_VALUE> createConverter() {
+		throw new UnsupportedOperationException("No converter implemented for Filter %s".formatted(getClass()));
 	}
-
-	@JsonIgnore
-	public Condition convertForTableExport(FilterContext<FILTER_VALUE> filterContext) {
-		throw new UnsupportedOperationException("SQL conversion of filter %s not implemented yet".formatted(getClass()));
-	}
-
 }
