@@ -30,6 +30,7 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -243,7 +244,11 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, sumGroupBy, alias, nameGenerator);
 
-		return new CommonAggregationSelect<>(preprocessingSelects, sumGroupBy, rowNumberFilteredCte);
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelects(preprocessingSelects)
+									  .additionalPredecessor(rowNumberFilteredCte)
+									  .groupBy(sumGroupBy)
+									  .build();
 	}
 
 	/**
@@ -252,7 +257,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	 */
 	private static QueryStep createRowNumberCte(
 			SqlIdColumns ids,
-			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
+			SingleColumnSqlSelect sumColumnRootSelect,
 			List<ExtractingSqlSelect<?>> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
@@ -260,7 +265,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	) {
 		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
-		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
+		SingleColumnSqlSelect qualifiedSumRootSelect = sumColumnRootSelect.qualify(predecessor);
 
 		List<Field<?>> partitioningFields = Stream.concat(
 														  qualifiedIds.toFields().stream(),
