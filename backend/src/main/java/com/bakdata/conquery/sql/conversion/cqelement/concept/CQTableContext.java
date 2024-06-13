@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -23,17 +23,17 @@ class CQTableContext implements Context {
 
 	SqlIdColumns ids;
 	Optional<ColumnDateRange> validityDate;
-	List<SqlSelects> sqlSelects;
+	List<ConnectorSqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
-	ConceptConversionTables connectorTables;
+	ConnectorSqlTables connectorTables;
 	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
 
 	/**
-	 * @return All concepts {@link SqlSelects} that are either required for {@link Filter}'s or {@link Select}'s.
+	 * @return All {@link ConnectorSqlSelects} that are either required for {@link Filter}'s or {@link Select}'s.
 	 */
-	public List<SqlSelects> allSqlSelects() {
+	public List<ConnectorSqlSelects> allSqlSelects() {
 		return Stream.concat(sqlSelects.stream(), sqlFilters.stream().map(SqlFilters::getSelects)).toList();
 	}
 

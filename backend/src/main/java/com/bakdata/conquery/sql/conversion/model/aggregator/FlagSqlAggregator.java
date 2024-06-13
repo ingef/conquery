@@ -1,24 +1,29 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
-import lombok.Value;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Param;
@@ -63,15 +68,12 @@ import org.jooq.impl.SQLDataType;
  * }
  * </pre>
  */
-@Value
-public class FlagSqlAggregator implements SqlAggregator {
+public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterConverter<FlagFilter, String[]>, SqlAggregator {
 
 	private static final Param<Integer> NUMERIC_TRUE_VAL = DSL.val(1);
 
-	SqlSelects sqlSelects;
-	WhereClauses whereClauses;
-
-	public static FlagSqlAggregator create(FlagSelect flagSelect, SelectContext selectContext) {
+	@Override
+	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getSqlDialect().getFunctionProvider();
 		SqlTables connectorTables = selectContext.getTables();
@@ -83,25 +85,28 @@ public class FlagSqlAggregator implements SqlAggregator {
 
 		ExtractingSqlSelect<Object[]> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
-		SqlSelects sqlSelects = SqlSelects.builder().preprocessingSelects(rootSelects.values())
-										  .aggregationSelect(flagAggregation)
-										  .finalSelect(finalSelect)
-										  .build();
-
-		return new FlagSqlAggregator(sqlSelects, WhereClauses.builder().build());
+		return ConnectorSqlSelects.builder()
+								  .preprocessingSelects(rootSelects.values())
+								  .aggregationSelect(flagAggregation)
+								  .finalSelect(finalSelect)
+								  .build();
 	}
 
-	public static FlagSqlAggregator create(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
+	@Override
+	public SqlFilters convertToSqlFilter(FlagFilter flagFilter, FilterContext<String[]> filterContext) {
+
 		SqlTables connectorTables = filterContext.getTables();
 		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
 
-		List<ExtractingSqlSelect<Boolean>> rootSelects = FlagCondition.getRequiredColumns(flagFilter.getFlags(), filterContext.getValue()).stream()
-																	  .map(Column::getName)
-																	  .map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
-																	  .collect(Collectors.toList());
-		SqlSelects selects = SqlSelects.builder()
-									   .preprocessingSelects(rootSelects)
-									   .build();
+		List<ExtractingSqlSelect<Boolean>> rootSelects = getRequiredColumns(flagFilter.getFlags(), filterContext.getValue())
+				.stream()
+				.map(Column::getName)
+				.map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
+				.collect(Collectors.toList());
+
+		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
+														 .preprocessingSelects(rootSelects)
+														 .build();
 
 		List<Field<Boolean>> flagFields = rootSelects.stream()
 													 .map(sqlSelect -> sqlSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select())
@@ -111,7 +116,27 @@ public class FlagSqlAggregator implements SqlAggregator {
 												.eventFilter(flagCondition)
 												.build();
 
-		return new FlagSqlAggregator(selects, whereClauses);
+		return new SqlFilters(selects, whereClauses);
+	}
+
+	@Override
+	public Condition convertForTableExport(FlagFilter filter, FilterContext<String[]> filterContext) {
+
+		List<Field<Boolean>> flagFields = getRequiredColumns(filter.getFlags(), filterContext.getValue())
+				.stream()
+				.map(column -> DSL.field(DSL.name(column.getTable().getName(), column.getName()), Boolean.class))
+				.toList();
+
+		return new FlagCondition(flagFields).condition();
+	}
+
+	/**
+	 * @return Columns names of a given flags map that match the selected flags of the filter value.
+	 */
+	private static List<Column> getRequiredColumns(Map<String, Column> flags, String[] selectedFlags) {
+		return Arrays.stream(selectedFlags)
+					 .map(flags::get)
+					 .toList();
 	}
 
 	/**

@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,14 +28,18 @@ public class FilterContext<V> implements Context {
 	 * Not present if this context is for table export.
 	 */
 	@Nullable
-	ConceptConversionTables tables;
+	ConnectorSqlTables tables;
 
-	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, ConceptConversionTables tables) {
+	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, ConnectorSqlTables tables) {
 		return new FilterContext<>(ids, value, conversionContext, tables);
 	}
 
 	public static <V> FilterContext<V> forTableExport(SqlIdColumns ids, V value, ConversionContext conversionContext) {
 		return new FilterContext<>(ids, value, conversionContext, null);
+	}
+
+	public SqlFunctionProvider getFunctionProvider() {
+		return getSqlDialect().getFunctionProvider();
 	}
 
 }
