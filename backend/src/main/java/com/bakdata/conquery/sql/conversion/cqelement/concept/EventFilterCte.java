@@ -58,15 +58,18 @@ class EventFilterCte extends ConnectorCte {
 	}
 
 	/**
-	 * Collects the columns required in {@link ConceptCteStep#AGGREGATION_SELECT}, but also columns additional tables require (like the ones created by the
-	 * {@link SumSqlAggregator}) when distinct-by columns are present. An additional predecessor can contain an N-ary tree of predecessors itself
-	 * (like all {@link QueryStep}s), so we want to look for the deepest preceding QueryStep leafs and collect their {@link ConnectorSqlSelects},
-	 * because they expect this CTE to contain all their {@link SqlSelect#requiredColumns()}.
+	 * Collects the columns required in {@link ConceptCteStep#AGGREGATION_SELECT}, the optional connector column, but also columns additional tables require
+	 * (like the ones created by the {@link SumSqlAggregator}) when distinct-by columns are present. An additional predecessor can contain an N-ary tree of
+	 * predecessors itself (like all {@link QueryStep}s), so we want to look for the deepest preceding QueryStep leafs and collect their
+	 * {@link ConnectorSqlSelects}, because they expect this CTE to contain all their {@link SqlSelect#requiredColumns()}.
 	 */
 	private static List<SqlSelect> collectSelects(ConnectorSqlSelects sqlSelects) {
 		return Stream.concat(
-							 sqlSelects.getAggregationSelects().stream(),
-							 sqlSelects.getAdditionalPredecessor().map(EventFilterCte::collectDeepestPredecessorsColumns).orElse(Stream.empty())
+							 sqlSelects.getConnectorColumn().stream(),
+							 Stream.concat(
+									 sqlSelects.getAggregationSelects().stream(),
+									 sqlSelects.getAdditionalPredecessor().map(EventFilterCte::collectDeepestPredecessorsColumns).orElse(Stream.empty())
+							 )
 					 )
 					 .toList();
 	}

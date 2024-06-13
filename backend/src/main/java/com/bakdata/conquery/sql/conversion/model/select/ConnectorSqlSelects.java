@@ -15,6 +15,12 @@ public class ConnectorSqlSelects {
 	@Singular
 	List<SqlSelect> preprocessingSelects;
 
+	/**
+	 * ConceptColumnSelect is an edge case which requires the connector column to be present in the event-filter step, but not afterward.
+	 */
+	@Builder.Default
+	Optional<SqlSelect> connectorColumn = Optional.empty();
+
 	// Empty if only used in event filter
 	@Singular
 	List<SqlSelect> aggregationSelects;
