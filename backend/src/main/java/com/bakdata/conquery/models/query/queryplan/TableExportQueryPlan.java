@@ -13,6 +13,8 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -86,9 +88,10 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final CQTable cqTable = entry.getKey();
 			final ValidityDate validityDate = cqTable.findValidityDate();
 			final QPNode query = entry.getValue();
-			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector().resolve());
+			final Map<BucketId, CBlockId> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
 
-			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().resolve().getResolvedTable())) {
+			for (BucketId bucketId : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().resolve().getResolvedTableId())) {
+				Bucket bucket = bucketId.resolve();
 
 				if (!shouldEvaluateBucket(query, bucket, entity, ctx)) {
 					continue;
@@ -108,7 +111,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 						continue;
 					}
 
-					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDate, cblocks.get(bucket));
+					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDate, cblocks.get(bucketId).resolve());
 
 					results.add(resultRow);
 				}

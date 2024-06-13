@@ -101,6 +101,10 @@ public class WorkerStorage extends NamespacedStorage {
 		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::get);
 	}
 
+	public Stream<CBlockId> getAllCBlockIds() {
+		return cBlocks.getAllKeys().map(CBlockId.class::cast);
+	}
+
 	// Buckets
 
 	public void addBucket(Bucket bucket) {
@@ -125,6 +129,10 @@ public class WorkerStorage extends NamespacedStorage {
 
 	public Stream<Bucket> getAllBuckets() {
 		return buckets.getAllKeys().map(BucketId.class::cast).map(this::get);
+	}
+
+	public Stream<BucketId> getAllBucketIds() {
+		return buckets.getAllKeys().map(BucketId.class::cast);
 	}
 
 	// Worker

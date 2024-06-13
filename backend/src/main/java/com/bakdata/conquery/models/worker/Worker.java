@@ -212,7 +212,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void removeTable(TableId table) {
-		bucketManager.removeTable(table.resolve());
+		bucketManager.removeTable(table);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {

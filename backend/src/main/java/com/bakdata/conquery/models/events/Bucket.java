@@ -5,21 +5,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.events.stores.root.BooleanStore;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
-import com.bakdata.conquery.models.events.stores.root.DateStore;
-import com.bakdata.conquery.models.events.stores.root.DecimalStore;
-import com.bakdata.conquery.models.events.stores.root.IntegerStore;
-import com.bakdata.conquery.models.events.stores.root.MoneyStore;
-import com.bakdata.conquery.models.events.stores.root.RealStore;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.events.stores.root.*;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -31,14 +25,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,6 +70,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 
+	//TODO use Id
 	@JsonIgnore
 	public Table getTable() {
 		return imp.resolve().getTable().resolve();

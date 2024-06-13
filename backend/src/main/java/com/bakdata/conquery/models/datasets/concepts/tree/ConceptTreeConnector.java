@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.CheckForNull;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +60,18 @@ public class ConceptTreeConnector extends Connector {
 
 		if (table != null) {
 			return table.resolve();
+		}
+		return null;
+	}
+
+	@Override @JsonIgnore
+	public TableId getResolvedTableId() {
+		if(column != null){
+			return column.getTable();
+		}
+
+		if (table != null) {
+			return table;
 		}
 		return null;
 	}

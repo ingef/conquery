@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -16,21 +17,11 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.fasterxml.jackson.annotation.*;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -110,6 +101,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	}
 
 	public abstract Table getResolvedTable();
+	public abstract TableId getResolvedTableId();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
