@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import lombok.Getter;
 import lombok.Setter;
 

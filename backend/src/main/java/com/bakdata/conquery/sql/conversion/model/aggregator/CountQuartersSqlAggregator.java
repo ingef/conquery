@@ -119,7 +119,10 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 				countColumn.getName()
 		);
 
-		return new CommonAggregationSelect<>(rootSelect, countQuartersAggregation);
+		return CommonAggregationSelect.<Integer>builder()
+									  .rootSelect(rootSelect)
+									  .groupBy(countQuartersAggregation)
+									  .build();
 	}
 
 	private static CommonAggregationSelect<BigDecimal> createSingleDaterangeColumnAggregationSelect(
@@ -168,7 +171,10 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.EVENT_FILTER)).select();
 		FieldWrapper<BigDecimal> quarterCountAggregation = new FieldWrapper<>(DSL.sum(qualifiedQuarterCount).as(alias));
 
-		return new CommonAggregationSelect<>(quarterCountWrapper, quarterCountAggregation);
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelect(quarterCountWrapper)
+									  .groupBy(quarterCountAggregation)
+									  .build();
 	}
 
 	private static Field<Integer> calcQuarterCount(Field<Date> quarterStart, Field<Date> nextQuarterStart, String alias, SqlFunctionProvider functionProvider) {
