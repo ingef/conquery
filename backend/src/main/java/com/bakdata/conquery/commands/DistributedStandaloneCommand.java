@@ -80,7 +80,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 						.setNameFormat("ShardNode Storage Loader %d")
 						.setUncaughtExceptionHandler((t, e) -> {
 							ConqueryMDC.setLocation(t.getName());
-                            log.error("{} failed to init storage of ShardNode", t.getName(), e);
+							log.error("{} failed to init storage of ShardNode", t.getName(), e);
 						})
 						.build()
 		);
@@ -116,7 +116,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 		boolean failed = false;
 		for (Future<ShardNode> f : tasks) {
 			try {
-				ShardNode shardNode = f.get();
+				f.get();
 
 			}
 			catch (ExecutionException e) {
