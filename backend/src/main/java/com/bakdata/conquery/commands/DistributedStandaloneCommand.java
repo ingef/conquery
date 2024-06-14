@@ -4,11 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
@@ -84,7 +80,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 						.setNameFormat("ShardNode Storage Loader %d")
 						.setUncaughtExceptionHandler((t, e) -> {
 							ConqueryMDC.setLocation(t.getName());
-							log.error(t.getName() + " failed to init storage of ShardNode", e);
+                            log.error("{} failed to init storage of ShardNode", t.getName(), e);
 						})
 						.build()
 		);
@@ -120,7 +116,8 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 		boolean failed = false;
 		for (Future<ShardNode> f : tasks) {
 			try {
-				f.get();
+				ShardNode shardNode = f.get();
+
 			}
 			catch (ExecutionException e) {
 				log.error("during ShardNodes creation", e);
