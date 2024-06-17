@@ -45,10 +45,10 @@ public class ImportJob extends Job {
 
 		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
 
-		log.info("Start sending {} Bucket", bucketId);
-
 		final Bucket bucket =
 				new Bucket(bucketId, storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), imp);
+
+		log.debug("BEGIN distributing Bucket {}", bucket.getId());
 
 		for (String entity : bucket.entities()) {
 			namespace.getStorage().assignEntityBucket(entity, bucketId);
@@ -58,6 +58,8 @@ public class ImportJob extends Job {
 		final WorkerId workerAssignments = sendBucket(bucket);
 
 		namespace.getWorkerHandler().addBucketsToWorker(workerAssignments, Set.of(bucket.getId()));
+
+		log.trace("DONE distributing Bucket {}", bucket.getId());
 
 	}
 
@@ -103,7 +105,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public String getLabel() {
-		return "Importing into " + table.getName() + " from " + imp.getName();
+		return "Importing into %s from %s.%s".formatted(table.getName(), imp.getName(), getBucketId());
 	}
 
 }
