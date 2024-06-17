@@ -113,9 +113,11 @@ public class WorkerHandler {
 		// Ensure that add and remove are not executed at the same time.
 		// We don't make assumptions about the underlying implementation regarding thread safety
 		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+
 		if (workerBuckets == null) {
 			workerBuckets = createWorkerBucketsMap();
 		}
+
 		workerBuckets.addBucketForWorker(id, bucketIds);
 
 		storage.setWorkerToBucketsMap(workerBuckets);
