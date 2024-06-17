@@ -2,28 +2,22 @@ package com.bakdata.conquery.mode.cluster;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.MinaAttributes;
-import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.mina.*;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,8 +102,6 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	}
 
 	public void stop() {
-		clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
-
 		try {
 			acceptor.dispose();
 		}
