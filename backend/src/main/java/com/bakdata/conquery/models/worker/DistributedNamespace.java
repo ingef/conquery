@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -61,10 +60,7 @@ public class DistributedNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
-													.stream()
-													.filter(concept -> concept.getMatchingStats() == null)
-													.collect(Collectors.toSet());
+		final Collection<Concept<?>> concepts = collectConcepts();
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 	}
 

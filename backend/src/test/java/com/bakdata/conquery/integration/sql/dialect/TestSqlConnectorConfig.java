@@ -11,7 +11,7 @@ public class TestSqlConnectorConfig extends SqlConnectorConfig {
 	private final DatabaseConfig databaseConfig;
 
 	public TestSqlConnectorConfig(DatabaseConfig databaseConfig) {
-		super(true, true, Map.of());
+		super(true, true, Runtime.getRuntime().availableProcessors(), Map.of());
 		this.databaseConfig = databaseConfig;
 	}
 
