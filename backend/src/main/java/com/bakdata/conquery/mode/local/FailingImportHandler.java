@@ -23,6 +23,11 @@ public class FailingImportHandler implements ImportHandler {
 		fail();
 	}
 
+	@Override
+	public void calculateCBlocks(Namespace namespace) {
+		fail();
+	}
+
 	private static void fail() {
 		throw new UnsupportedOperationException("Imports are not supported when running in SQL mode");
 	}

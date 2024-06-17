@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.StartCalculateCblocks;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
@@ -50,6 +51,7 @@ public class ClusterImportHandler implements ImportHandler {
 	public void addImport(Namespace namespace, InputStream inputStream) {
 		handleImport(namespace, inputStream, false);
 	}
+
 
 	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update) throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
@@ -165,5 +167,10 @@ public class ClusterImportHandler implements ImportHandler {
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	@Override
+	public void calculateCBlocks(Namespace namespace) {
+		((DistributedNamespace) namespace).getWorkerHandler().sendToAll(new StartCalculateCblocks());
 	}
 }

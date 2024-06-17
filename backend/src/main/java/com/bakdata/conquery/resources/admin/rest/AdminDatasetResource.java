@@ -101,6 +101,12 @@ public class AdminDatasetResource {
 	}
 
 	@POST
+	@Path("calculate-cblocks")
+	public void calculateCBlocks() {
+		processor.calculateCBlocks(namespace);
+	}
+
+	@POST
 	@Path("secondaryId")
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {
 		processor.addSecondaryId(namespace, secondaryId);
