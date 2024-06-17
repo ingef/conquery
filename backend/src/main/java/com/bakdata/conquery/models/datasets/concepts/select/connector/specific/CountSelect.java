@@ -14,8 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -55,7 +54,7 @@ public class CountSelect extends Select {
 		final List<Column> out = new ArrayList<>();
 		out.add(getColumn());
 
-		if(distinctByColumn != null) {
+		if (distinctByColumn != null) {
 			out.addAll(getDistinctByColumn());
 		}
 
@@ -63,8 +62,8 @@ public class CountSelect extends Select {
 	}
 
 	@Override
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		return CountSqlAggregator.create(this, selectContext).getSqlSelects();
+	public SelectConverter<CountSelect> createConverter() {
+		return new CountSqlAggregator();
 	}
 
 

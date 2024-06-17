@@ -75,7 +75,6 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	private URL conqueryApiUrl;
 
 	@Valid
-	@NotNull
 	private AuthenticationClientFilterProvider authentication;
 
 	@JsonIgnore
@@ -117,7 +116,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 			final VersionContainer
 					oldVersion =
 					VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
-			if (!versionInfo.equals(oldVersion)) {
+			if (!versionInfo.version().equals(oldVersion.version())) {
 				log.info("Form Backend '{}' versionInfo update: {} -> {}", getId(), oldVersion, versionInfo);
 			}
 		}

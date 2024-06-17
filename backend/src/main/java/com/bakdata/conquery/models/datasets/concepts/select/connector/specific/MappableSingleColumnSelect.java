@@ -75,6 +75,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	private String applyMapping(Object intern) {
+
 		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
 	}
 }

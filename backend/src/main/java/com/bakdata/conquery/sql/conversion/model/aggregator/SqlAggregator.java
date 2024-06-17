@@ -1,19 +1,13 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 
-public interface SqlAggregator {
-
-	SqlSelects getSqlSelects();
-
-	WhereClauses getWhereClauses();
-
-	default SqlFilters getSqlFilters() {
-		return new SqlFilters(getSqlSelects(), getWhereClauses());
-	}
-
+/**
+ * Marker interface. SQL aggregators extend {@link SelectConverter} and {@link FilterConverter} and share common code for {@link Select} and
+ * {@link Filter} conversion.
+ */
+interface SqlAggregator {
 }
