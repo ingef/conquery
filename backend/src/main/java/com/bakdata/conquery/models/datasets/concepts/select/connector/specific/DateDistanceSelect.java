@@ -11,8 +11,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColu
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDistanceAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -42,7 +43,12 @@ public class DateDistanceSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new DateDistanceSqlAggregator());
+	public SelectConverter<DateDistanceSelect> createConverter() {
+		return new DateDistanceSqlAggregator();
+	}
+
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

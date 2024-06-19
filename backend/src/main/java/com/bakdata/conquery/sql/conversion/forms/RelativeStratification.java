@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -155,7 +156,7 @@ class RelativeStratification {
 		QueryStep featureTable = form.getTimeCountBefore() > 0 ? createCompleteFeatureTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
 		QueryStep outcomeTable = form.getTimeCountAfter() > 0 ? createCompleteOutcomeTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
 
-		return QueryStep.createUnionStep(
+		return QueryStep.createUnionAllStep(
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
 				FormCteStep.COMPLETE.getSuffix(),
 				Collections.emptyList()
@@ -187,7 +188,7 @@ class RelativeStratification {
 		QueryStep timeBeforeStep = createFeatureTable(totalBoundsStep, interval, seriesIndex, bounds, ids);
 		QueryStep timeAfterStep = createOutcomeTable(totalBoundsStep, interval, seriesIndex, bounds, ids);
 
-		return QueryStep.createUnionStep(
+		return QueryStep.createUnionAllStep(
 				List.of(timeBeforeStep, timeAfterStep),
 				FormCteStep.stratificationCte(resolution).getSuffix(),
 				Collections.emptyList()

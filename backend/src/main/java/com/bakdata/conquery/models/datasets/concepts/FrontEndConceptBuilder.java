@@ -1,25 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FrontendList;
-import com.bakdata.conquery.apiv1.frontend.FrontendNode;
-import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
-import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
-import com.bakdata.conquery.apiv1.frontend.FrontendSelect;
-import com.bakdata.conquery.apiv1.frontend.FrontendTable;
-import com.bakdata.conquery.apiv1.frontend.FrontendValidityDate;
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.apiv1.frontend.*;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -80,12 +65,7 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for (StructureNode sn : storage.getStructure()) {
-			final FrontendNode node = createStructureNode(sn, roots);
-			if (node == null) {
-				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
-				continue;
-			}
-			roots.put(sn.getId(), node);
+			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
 		root.getSecondaryIds()
@@ -134,31 +114,44 @@ public class FrontEndConceptBuilder {
 		return node;
 	}
 
-	@Nullable
-	private FrontendNode createStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
-		final List<ConceptId> unstructured = new ArrayList<>();
+	/**
+	 * StructureNodes can be nested and the frontend needs them plain.
+	 * This method puts the given {@link StructureNode} and its children into the given root.
+	 * If the node references only instances not contained in the given roots element, it is skipped.
+	 * This method calls itself recursively.
+	 * @param structureNode the node to process (and its children)
+	 * @param roots the map where the given and child nodes are inserted into.
+	 */
+	private void insertStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
+		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
 				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
 			}
-			unstructured.add(id);
+			contained.add(id);
 		}
 
-		if (unstructured.isEmpty()) {
-			return null;
+		if (contained.isEmpty()) {
+			log.trace("Did not create a structure node entry for {}. Contained no concepts.", structureNode.getId());
+			return;
 		}
 
-		return FrontendNode.builder()
-						   .active(false)
-						   .description(structureNode.getDescription())
-						   .label(structureNode.getLabel())
-						   .detailsAvailable(Boolean.FALSE)
-						   .codeListResolvable(false)
-						   .additionalInfos(structureNode.getAdditionalInfos())
-						   .parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-						   .children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), unstructured.stream()).toArray(Id[]::new))
-						   .build();
+		// Add Children to root
+        structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
+
+		FrontendNode currentNode = FrontendNode.builder()
+				.active(false)
+				.description(structureNode.getDescription())
+				.label(structureNode.getLabel())
+				.detailsAvailable(Boolean.FALSE)
+				.codeListResolvable(false)
+				.additionalInfos(structureNode.getAdditionalInfos())
+				.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
+				.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(Id[]::new))
+				.build();
+
+		roots.put(structureNode.getId(), currentNode);
 	}
 
 	public FrontendSelect createSelect(Select select) {

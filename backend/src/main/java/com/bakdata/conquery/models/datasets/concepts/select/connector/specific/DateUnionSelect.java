@@ -7,12 +7,11 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.DateUnionSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverterHolder;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -24,7 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "DATE_UNION", base = Select.class)
 @JsonIgnoreProperties("categorical")
-public class DateUnionSelect extends Select implements DaterangeSelect {
+public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 
 	@NsIdRef
 	@Nullable
@@ -46,15 +45,12 @@ public class DateUnionSelect extends Select implements DaterangeSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		if (getColumn() != null) {
-			return new DateUnionAggregator(getColumn());
-		}
-		// only relevant for ResultType in SQL mode
-		return new DateUnionAggregator(getStartColumn());
+		// TODO fix this for 2 columns
+		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public SelectConverterHolder<?> createConverterHolder() {
-		return new SelectConverterHolder<>(this, new DateUnionSelectConverter());
+	public ResultType<?> getResultType() {
+		return new ResultType.ListT<>(ResultType.DateRangeT.INSTANCE);
 	}
 }

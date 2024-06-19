@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -100,7 +101,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		SelectContext<TreeConcept, ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
-													 .map(select -> select.createConverterHolder().conceptSelect(selectContext))
+													 .map(select -> select.createConverter().conceptSelect(select, selectContext))
 													 .toList();
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
@@ -153,9 +154,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		// convert selects
 		SelectContext<Connector, ConnectorSqlTables> selectContext = SelectContext.create(cqTable, ids, tablesValidityDate, connectorTables, conversionContext);
-		List<ConnectorSqlSelects> allSelectsForTable = cqTable.getSelects().stream()
-															  .map(select -> select.createConverterHolder().connectorSelect(selectContext))
-															  .toList();
+		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
+		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
+		allSelectsForTable.add(conceptColumnSelect);
+		cqTable.getSelects().stream().map(select -> select.createConverter().connectorSelect(select, selectContext)).forEach(allSelectsForTable::add);
 
 		return CQTableContext.builder()
 							 .ids(ids)
@@ -273,6 +275,14 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				ConnectorSqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
 				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition, ConditionType.EVENT)).build()
 		));
+	}
+
+	private static ConnectorSqlSelects createConceptColumnConnectorSqlSelects(CQConcept cqConcept, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+		return cqConcept.getSelects().stream()
+						.filter(select -> select instanceof ConceptColumnSelect)
+						.findFirst()
+						.map(select -> select.createConverter().connectorSelect(select, selectContext))
+						.orElse(ConnectorSqlSelects.none());
 	}
 
 }

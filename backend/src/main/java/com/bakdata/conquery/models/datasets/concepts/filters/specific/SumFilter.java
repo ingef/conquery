@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Mone
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -105,8 +105,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterConverterHolder<?, RANGE> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new SumSqlAggregator<>());
+	public FilterConverter<? extends SumFilter<RANGE>, RANGE> createConverter() {
+		return new SumSqlAggregator<>();
 	}
 
 	@JsonIgnore

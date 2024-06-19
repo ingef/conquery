@@ -1,11 +1,11 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.conversion.dialect;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-enum Interval {
+public enum Interval {
 
 	ONE_YEAR_INTERVAL(1),
 	YEAR_AS_DAYS_INTERVAL(365),

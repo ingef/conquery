@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -90,8 +89,4 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.resolveResultType(getColumn().getType());
-	}
 }

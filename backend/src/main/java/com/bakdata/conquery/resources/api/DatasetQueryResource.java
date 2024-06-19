@@ -57,7 +57,7 @@ public class DatasetQueryResource {
 
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, EntityPreviewRequest query, @Context HttpServletRequest request) {
+	public FullExecutionStatus getEntityData(@Auth Subject subject, @Valid EntityPreviewRequest query, @Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 

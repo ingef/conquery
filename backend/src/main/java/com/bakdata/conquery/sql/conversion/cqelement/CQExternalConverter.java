@@ -42,7 +42,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 										 .toList();
 
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 converted resolved row when converting a CQExternal");
-		QueryStep externalStep = QueryStep.createUnionStep(unions, CQ_EXTERNAL_CTE_NAME, Collections.emptyList());
+		QueryStep externalStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_CTE_NAME, Collections.emptyList());
 		return context.withQueryStep(externalStep);
 	}
 

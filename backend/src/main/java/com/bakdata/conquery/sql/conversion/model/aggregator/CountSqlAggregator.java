@@ -94,7 +94,10 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 									: DSL.count(qualifiedRootSelect);
 		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(countField.as(alias), countColumn.getName());
 
-		return new CommonAggregationSelect<>(rootSelect, countGroupBy);
+		return CommonAggregationSelect.<Integer>builder()
+									  .rootSelect(rootSelect)
+									  .groupBy(countGroupBy)
+									  .build();
 	}
 
 }

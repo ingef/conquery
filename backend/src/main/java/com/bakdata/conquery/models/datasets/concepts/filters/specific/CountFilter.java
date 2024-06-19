@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -71,7 +71,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	}
 
 	@Override
-	public FilterConverterHolder<?, Range.LongRange> createConverterHolder() {
-		return new FilterConverterHolder<>(this, new CountSqlAggregator());
+	public FilterConverter<CountFilter, Range.LongRange> createConverter() {
+		return new CountSqlAggregator();
 	}
 }

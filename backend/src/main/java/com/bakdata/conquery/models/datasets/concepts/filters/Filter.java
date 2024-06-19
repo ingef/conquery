@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverterHolder;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -90,7 +90,8 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 				continue;
 			}
 
-			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
+																																				   .getId());
 
 			valid = false;
 		}
@@ -99,7 +100,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	}
 
 	@JsonIgnore
-	public FilterConverterHolder<?, FILTER_VALUE> createConverterHolder() {
-		throw new UnsupportedOperationException("No converter holder implemented for Filter %s".formatted(getClass()));
+	public <F extends Filter<FILTER_VALUE>> FilterConverter<F, FILTER_VALUE> createConverter() {
+		throw new UnsupportedOperationException("No converter implemented for Filter %s".formatted(getClass()));
 	}
 }

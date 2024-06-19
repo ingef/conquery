@@ -1,7 +1,6 @@
 package com.bakdata.conquery.commands;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -31,7 +31,6 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -39,16 +38,11 @@ import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.FilterEvent;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -58,7 +52,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
  */
 @Slf4j
 @Getter
-public class ManagerNode extends IoHandlerAdapter implements Managed {
+public class ManagerNode implements Managed {
 
 	public static final String DEFAULT_NAME = "manager";
 
@@ -280,46 +274,5 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			log.error("{} could not be closed", getStorage(), e);
 		}
 
-	}
-
-	private void setLocation(IoSession session) {
-		final String loc = session.getLocalAddress().toString();
-		ConqueryMDC.setLocation(loc);
-	}
-
-	@Override
-	public void sessionClosed(IoSession session) {
-		setLocation(session);
-		log.info("Disconnected.");
-	}
-
-	@Override
-	public void sessionCreated(IoSession session) {
-		setLocation(session);
-		log.debug("Session created.");
-	}
-
-	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) {
-		setLocation(session);
-		log.warn("Session idle {}. Last read: {}. Last write: {}.", status, Instant.ofEpochMilli(session.getLastReadTime()), Instant.ofEpochMilli(session.getLastWriteTime()));
-	}
-
-	@Override
-	public void messageSent(IoSession session, Object message) {
-		setLocation(session);
-		log.trace("Message sent: {}", message);
-	}
-
-	@Override
-	public void inputClosed(IoSession session) {
-		setLocation(session);
-		log.info("Session closed.");
-	}
-
-	@Override
-	public void event(IoSession session, FilterEvent event) throws Exception {
-		setLocation(session);
-		log.trace("Event handled: {}", event);
 	}
 }
