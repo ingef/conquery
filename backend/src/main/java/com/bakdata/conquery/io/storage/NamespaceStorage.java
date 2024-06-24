@@ -111,6 +111,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	public OptionalInt getEntityBucket(String entity) {
+		// TODO no longer needed/used
 		final Integer bucket = entity2Bucket.get(entity);
 
 		if(bucket == null){
@@ -121,6 +122,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	public void assignEntityBucket(String entity, int bucket) {
+		// TODO only needed to track entity count
 		entity2Bucket.update(entity, bucket);
 	}
 
