@@ -61,7 +61,7 @@ public enum StoreMappings {
 	C_BLOCKS(CBlock.class, CBlockId.class),
 	DATASET(Dataset.class, Boolean.class),
 	ENTITY_PREVIEW(PreviewConfig.class, Boolean.class),
-	ENTITY_TO_BUCKET(Integer.class, String.class),
+	ENTITY_TO_BUCKET(Boolean.class, String.class),
 	EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
 	FORM_CONFIG(FormConfig.class, FormConfigId.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
