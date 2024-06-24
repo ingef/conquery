@@ -124,7 +124,7 @@ export const Timeline = memo(
               timeStratifiedInfos={currentEntityTimeStratifiedInfos}
             />
           )}
-          {isEmpty && <SxTimelineEmptyPlaceholder />}
+          {isEmpty && <SxTimelineEmptyPlaceholder searchTerm={searchTerm} />}
           {dateColumn &&
             sourceColumn &&
             eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
