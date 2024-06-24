@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDebounce } from "../common/helpers/useDebounce";
-import BaseInput from "../ui-components/BaseInput";
+import { useDebounce } from "../../common/helpers/useDebounce";
+import BaseInput from "../../ui-components/BaseInput";
 import { useTimelineSearch } from "./timelineSearchState";
 
 export const TimelineSearch = ({ matches }: { matches: number }) => {

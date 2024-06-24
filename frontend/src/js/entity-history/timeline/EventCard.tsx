@@ -17,15 +17,15 @@ import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
-import { ColumnBuckets } from "../Timeline";
 import type { DateRow, EntityEvent } from "../reducer";
 
 import Highlighter from "react-highlight-words";
-import { useTimelineSearch } from "../timelineSearchState";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
-import { isDateColumn, isSourceColumn } from "./util";
+import { ColumnBuckets } from "./util/useColumnInformation";
+import { isDateColumn, isSourceColumn } from "./util/util";
 
 const Card = styled("div")`
   display: grid;

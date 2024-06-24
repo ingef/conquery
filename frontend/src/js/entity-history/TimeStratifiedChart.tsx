@@ -17,7 +17,7 @@ import { Bar } from "react-chartjs-2";
 import { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-import { formatCurrency } from "./timeline/util";
+import { formatCurrency } from "./timeline/util/util";
 
 const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
