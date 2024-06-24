@@ -4,16 +4,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.ImportJob;
+import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.StartCalculateCblocks;
@@ -23,6 +28,8 @@ import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.WorkerInformation;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -116,25 +123,54 @@ public class ClusterImportHandler implements ImportHandler {
 
 		log.info("BEGIN importing {} into {}", header.getName(), table);
 
-		Import imp = null;
+		final AtomicReference<Import> imp = new AtomicReference<>();
 
 		int procesed = 0;
 
+
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
-			if (imp == null) {
+			if (imp.get() == null) {
 				// We need a container to create a description.
-				imp = header.createImportDescription(table, container.getStores());
+				imp.set(header.createImportDescription(table, container.getStores()));
 
-				namespace.getWorkerHandler().sendToAll(new AddImport(imp));
-				namespace.getStorage().updateImport(imp);
+				namespace.getWorkerHandler().sendToAll(new AddImport(imp.get()));
+				namespace.getStorage().updateImport(imp.get());
 			}
 
-			log.trace("DONE reading bucket {}.{}, contains {} entities.", importId, container.getBucketId(), container.size());
+			final int bucketId = container.getBucketId();
 
-			final ImportJob importJob = new ImportJob(namespace, table, imp, container.getBucketId(), container);
+			log.trace("DONE reading bucket {}.{}, contains {} entities.", importId, bucketId, container.size());
 
-			namespace.getJobManager().addSlowJob(importJob);
+			final WorkerInformation assigned = namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
+
+			final ColumnStore[] storesSorted = ImportJob.sortColumns(table, container.getStores());
+
+			final Bucket bucket =
+					new Bucket(bucketId, storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), imp.get());
+
+			final Collection<String> entities = bucket.entities();
+
+			ImportJob.sendBucket(bucket, namespace);
+
+			namespace.getJobManager().addSlowJob(
+					new Job() {
+						@Override
+						public void execute() {
+							for (String entity : entities) {
+								namespace.getStorage().assignEntityBucket(entity, bucketId);
+							}
+
+							namespace.getWorkerHandler().addBucketsToWorker(assigned.getId(), Set.of(bucket.getId()));
+						}
+
+						@Override
+						public String getLabel() {
+							return "Handle Bucket %s assignments.".formatted(bucket.getId());
+						}
+					}
+			);
+
 			procesed++;
 		}
 

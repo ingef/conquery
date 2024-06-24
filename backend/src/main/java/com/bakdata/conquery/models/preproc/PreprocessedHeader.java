@@ -47,6 +47,7 @@ public class PreprocessedHeader {
 	private long rows;
 	private long numberOfEntities;
 
+	//TODO use Set<Integer> to track actually included buckets,to split phase bucket assignment.
 	private int numberOfBuckets;
 
 	/**

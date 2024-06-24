@@ -140,11 +140,12 @@ public class WorkerHandler {
 	}
 
 	/**
+	 * @return
 	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for
 	 * dedicated Workers, or entity weightings)
 	 */
 
-	public synchronized void addResponsibility(int bucket) {
+	public synchronized WorkerInformation addResponsibility(int bucket) {
 		final WorkerInformation smallest = workers
 				.stream()
 				.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
@@ -155,6 +156,8 @@ public class WorkerHandler {
 		bucket2WorkerMap.put(bucket, smallest);
 
 		smallest.getIncludedBuckets().add(bucket);
+
+		return smallest;
 	}
 
 	public void register(ShardNodeInformation node, WorkerInformation info) {
@@ -194,15 +197,15 @@ public class WorkerHandler {
 		return workerBuckets.getBucketsForWorker(workerId);
 	}
 
-	public synchronized void assignResponsibleWorker(int bucket) {
+	public synchronized WorkerInformation assignResponsibleWorker(int bucket) {
 		log.debug("Updating bucket assignments.");
 
 
 		if (getResponsibleWorkerForBucket(bucket) != null) {
-			return;
+			return getResponsibleWorkerForBucket(bucket);
 		}
 
-		addResponsibility(bucket);
+		return addResponsibility(bucket);
 	}
 
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {

@@ -55,7 +55,7 @@ public class ImportJob extends Job {
 		}
 
 		// we use this to track assignment to workers.
-		final WorkerId workerAssignments = sendBucket(bucket);
+		final WorkerId workerAssignments = sendBucket(bucket, namespace);
 
 		namespace.getWorkerHandler().addBucketsToWorker(workerAssignments, Set.of(bucket.getId()));
 
@@ -63,7 +63,7 @@ public class ImportJob extends Job {
 
 	}
 
-	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
+	public static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
 		final ColumnStore[] storesSorted =
 				Arrays.stream(table.getColumns())
 					  .map(Column::getName)
@@ -76,13 +76,15 @@ public class ImportJob extends Job {
 	/**
 	 * select, then send buckets.
 	 */
-	private WorkerId sendBucket(Bucket bucket) {
+	public static WorkerId sendBucket(Bucket bucket, DistributedNamespace namespace1) {
+
+		log.trace("BEGIN distributing Bucket {}", bucket.getId());
 
 		final WorkerInformation responsibleWorker = Objects.requireNonNull(
-				namespace
+				namespace1
 						.getWorkerHandler()
-						.getResponsibleWorkerForBucket(bucketId),
-				() -> "No responsible worker for Bucket#" + bucketId
+						.getResponsibleWorkerForBucket(bucket.getBucket()),
+				() -> "No responsible worker for Bucket#" + bucket.getBucket()
 		);
 
 		awaitFreeJobQueue(responsibleWorker);
@@ -90,10 +92,13 @@ public class ImportJob extends Job {
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 		responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
 
+		log.trace("DONE distributing Bucket {}", bucket.getId());
+
+
 		return responsibleWorker.getId();
 	}
 
-	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
+	private static void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
 		try {
 			responsibleWorker.getConnectedShardNode().waitForFreeJobQueue();
 		}
