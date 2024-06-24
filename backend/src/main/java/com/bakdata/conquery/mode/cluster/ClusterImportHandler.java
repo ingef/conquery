@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
@@ -13,13 +11,13 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.jobs.ImportJob;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
+import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.StartCalculateCblocks;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
@@ -29,7 +27,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -53,13 +50,6 @@ public class ClusterImportHandler implements ImportHandler {
 		handleImport(namespace, inputStream, true);
 	}
 
-	@SneakyThrows
-	@Override
-	public void addImport(Namespace namespace, InputStream inputStream) {
-		handleImport(namespace, inputStream, false);
-	}
-
-
 	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update) throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 			// We parse semi-manually as the incoming file consist of multiple documents we read progressively:
@@ -70,7 +60,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final Table table = validateImportable(((DistributedNamespace) namespace), header, update);
 
-			readAndSubmitImportJobs(((DistributedNamespace) namespace), table, header, parser);
+			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
 			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 		}
@@ -92,7 +82,7 @@ public class ClusterImportHandler implements ImportHandler {
 		// Ensure that Import and Table have the same schema
 		final List<String> errors = header.assertMatch(table);
 
-		if (!errors.isEmpty()){
+		if (!errors.isEmpty()) {
 			final String errorsMessage = String.join("\n - ", errors);
 
 			log.error("Problems concerning Import `{}`:\n{}", importId, errorsMessage);
@@ -117,51 +107,45 @@ public class ClusterImportHandler implements ImportHandler {
 		return table;
 	}
 
-	private static void readAndSubmitImportJobs(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
+	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
 		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
 		final ImportId importId = new ImportId(tableId, header.getName());
 
 		log.info("BEGIN importing {} into {}", header.getName(), table);
 
-		final AtomicReference<Import> imp = new AtomicReference<>();
-
-		int procesed = 0;
-
+		Import imp = null;
 
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
-			if (imp.get() == null) {
+			if (imp == null) {
 				// We need a container to create a description.
-				imp.set(header.createImportDescription(table, container.getStores()));
+				imp = header.createImportDescription(table, container.getStores());
 
-				namespace.getWorkerHandler().sendToAll(new AddImport(imp.get()));
-				namespace.getStorage().updateImport(imp.get());
+				namespace.getWorkerHandler().sendToAll(new AddImport(imp));
+				namespace.getStorage().updateImport(imp);
 			}
 
-			final int bucketId = container.getBucketId();
+			log.trace("DONE reading bucket {}.{}, contains {} entities.", importId, container.getBucketId(), container.size());
 
-			log.trace("DONE reading bucket {}.{}, contains {} entities.", importId, bucketId, container.size());
+			final Bucket bucket = Bucket.fromPreprocessed(table, container, imp);
 
-			final WorkerInformation assigned = namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
+			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucket.getId());
 
-			final ColumnStore[] storesSorted = ImportJob.sortColumns(table, container.getStores());
+			sendBucket(bucket, responsibleWorker);
 
-			final Bucket bucket =
-					new Bucket(bucketId, storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), imp.get());
-
+			// NOTE: I want the bucket to be GC'd as early as possible, so I just store the part(s) I need later.
 			final Collection<String> entities = bucket.entities();
-
-			ImportJob.sendBucket(bucket, namespace);
 
 			namespace.getJobManager().addSlowJob(
 					new Job() {
 						@Override
 						public void execute() {
-							for (String entity : entities) {
-								namespace.getStorage().assignEntityBucket(entity, bucketId);
-							}
+							//TODO make this into a job.
 
-							namespace.getWorkerHandler().addBucketsToWorker(assigned.getId(), Set.of(bucket.getId()));
+							// This task is quite slow, so be delay it as far as possible.
+							for (String entity : entities) {
+								namespace.getStorage().registerEntity(entity);
+							}
 						}
 
 						@Override
@@ -170,11 +154,12 @@ public class ClusterImportHandler implements ImportHandler {
 						}
 					}
 			);
-
-			procesed++;
 		}
 
-		log.debug("Successfully read {} Buckets for {}", procesed, importId);
+		log.debug("Successfully read {} Buckets, containing {} entities for {}", header.getNumberOfBuckets(), header.getNumberOfEntities(), importId);
+
+		namespace.getWorkerHandler().sendUpdatedWorkerInformation();
+
 	}
 
 	private static void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
@@ -189,6 +174,24 @@ public class ClusterImportHandler implements ImportHandler {
 		}
 	}
 
+	/**
+	 * select, then send buckets.
+	 */
+	public static WorkerId sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
+
+		responsibleWorker.awaitFreeJobQueue();
+
+		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
+		responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
+
+		return responsibleWorker.getId();
+	}
+
+	@SneakyThrows
+	@Override
+	public void addImport(Namespace namespace, InputStream inputStream) {
+		handleImport(namespace, inputStream, false);
+	}
 
 	@Override
 	public void deleteImport(Import imp) {

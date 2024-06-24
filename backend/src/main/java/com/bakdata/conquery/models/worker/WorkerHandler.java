@@ -103,13 +103,13 @@ public class WorkerHandler {
 		sendUpdatedWorkerInformation();
 	}
 
-	private synchronized void sendUpdatedWorkerInformation() {
+	public synchronized void sendUpdatedWorkerInformation() {
 		for (WorkerInformation w : workers.values()) {
 			w.send(new UpdateWorkerBucket(w));
 		}
 	}
 
-	public synchronized void addBucketsToWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
+	public synchronized void registerBucketForWorker(@NonNull WorkerId id, @NonNull BucketId bucketId) {
 		// Ensure that add and remove are not executed at the same time.
 		// We don't make assumptions about the underlying implementation regarding thread safety
 		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
@@ -118,11 +118,9 @@ public class WorkerHandler {
 			workerBuckets = createWorkerBucketsMap();
 		}
 
-		workerBuckets.addBucketForWorker(id, bucketIds);
+		workerBuckets.addBucketForWorker(id, bucketId);
 
 		storage.setWorkerToBucketsMap(workerBuckets);
-
-		sendUpdatedWorkerInformation();
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
@@ -197,15 +195,17 @@ public class WorkerHandler {
 		return workerBuckets.getBucketsForWorker(workerId);
 	}
 
-	public synchronized WorkerInformation assignResponsibleWorker(int bucket) {
-		log.debug("Updating bucket assignments.");
+	public synchronized WorkerInformation assignResponsibleWorker(BucketId bucket) {
 
+		WorkerInformation responsibleWorkerForBucket = getResponsibleWorkerForBucket(bucket.getBucket());
 
-		if (getResponsibleWorkerForBucket(bucket) != null) {
-			return getResponsibleWorkerForBucket(bucket);
+		if (responsibleWorkerForBucket == null) {
+			responsibleWorkerForBucket = addResponsibility(bucket.getBucket());
 		}
 
-		return addResponsibility(bucket);
+		registerBucketForWorker(responsibleWorkerForBucket.getId(), bucket);
+
+		return responsibleWorkerForBucket;
 	}
 
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {

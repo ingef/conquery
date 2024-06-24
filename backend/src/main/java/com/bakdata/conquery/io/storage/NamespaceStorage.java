@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.OptionalInt;
 
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
@@ -30,7 +29,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Integer> entity2Bucket;
+	protected CachedStore<String, Boolean> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName);
@@ -110,20 +109,13 @@ public class NamespaceStorage extends NamespacedStorage {
 		return entity2Bucket.count();
 	}
 
-	public OptionalInt getEntityBucket(String entity) {
-		// TODO no longer needed/used
-		final Integer bucket = entity2Bucket.get(entity);
 
-		if(bucket == null){
-			return OptionalInt.empty();
-		}
-
-		return OptionalInt.of(bucket);
+	public boolean containsEntity(String entity) {
+		return entity2Bucket.get(entity) != null;
 	}
 
-	public void assignEntityBucket(String entity, int bucket) {
-		// TODO only needed to track entity count
-		entity2Bucket.update(entity, bucket);
+	public void registerEntity(String entity) {
+		entity2Bucket.update(entity, Boolean.TRUE);
 	}
 
 

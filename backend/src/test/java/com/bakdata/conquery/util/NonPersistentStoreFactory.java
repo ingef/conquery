@@ -103,7 +103,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+	public CachedStore<String, Boolean> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.cached(entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>()));
 	}
 
