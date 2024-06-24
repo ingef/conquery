@@ -12,12 +12,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.cps.SubTyped;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -119,7 +119,7 @@ public class ExternalForm extends Form implements SubTyped {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
+	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ExternalExecution externalExecution = new ExternalExecution(this, owner, submittedDataset);
 		externalExecution.setMetaStorage(storage);
 		return externalExecution;

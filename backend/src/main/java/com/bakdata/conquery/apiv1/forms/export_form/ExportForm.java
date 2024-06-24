@@ -20,12 +20,12 @@ import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -204,8 +204,8 @@ public class ExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedInternalForm<?> toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
-		ManagedInternalForm<?> managedInternalForm = new ManagedInternalForm(this, owner, submittedDataset);
+	public ManagedInternalForm<?> toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
+		ManagedInternalForm<?> managedInternalForm = new ManagedInternalForm<>(this, owner, submittedDataset);
 		managedInternalForm.setMetaStorage(storage);
 		return managedInternalForm;
 	}

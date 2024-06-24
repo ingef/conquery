@@ -5,9 +5,9 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
@@ -40,8 +40,8 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Getter
 	private Form submittedForm;
 
-	protected ManagedForm(F submittedForm, UserId owner, Dataset submittedDataset) {
-		super(owner, submittedDataset.getId());
+	protected ManagedForm(F submittedForm, UserId owner, DatasetId submittedDataset) {
+		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}
 

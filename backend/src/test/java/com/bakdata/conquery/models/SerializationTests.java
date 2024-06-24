@@ -334,7 +334,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		metaStorage.updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset);
+		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset.getId());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -368,7 +368,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset);
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -393,7 +393,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Dataset dataset = createDataset(namespaceStorage);
 		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset);
+		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset.getId());
 
 
 		SerializationTestUtil.forType(ManagedExecution.class)

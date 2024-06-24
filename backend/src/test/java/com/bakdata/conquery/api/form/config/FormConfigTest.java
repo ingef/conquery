@@ -113,12 +113,13 @@ public class FormConfigTest {
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);
 		controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
 		controller.start();
+
 	}
 
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset.getId());
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();
@@ -129,6 +130,7 @@ public class FormConfigTest {
 
 
 		user = new User("test", "test");
+		user.setMetaStorage(storage);
 		storage.addUser(user);
 	}
 
@@ -160,6 +162,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
 		formConfig.setDataset(dataset.getId());
+		formConfig.setOwner(user.getId());
 
 		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
@@ -296,8 +299,10 @@ public class FormConfigTest {
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1", "test1");
+		group1.setMetaStorage(storage);
 		storage.addGroup(group1);
 		Group group2 = new Group("test2", "test2");
+		group2.setMetaStorage(storage);
 		storage.addGroup(group2);
 
 		group1.addMember(user);

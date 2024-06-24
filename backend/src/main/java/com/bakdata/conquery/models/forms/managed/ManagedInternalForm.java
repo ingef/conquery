@@ -13,11 +13,11 @@ import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -58,7 +58,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@JsonIgnore
 	private Map<String, ManagedQuery> initializedSubQueries;
 
-	public ManagedInternalForm(F form, UserId user, Dataset submittedDataset) {
+	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset) {
 		super(form, user, submittedDataset);
 	}
 
@@ -95,7 +95,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
 						e -> {
-							ManagedQuery managedExecution = e.getValue().toManagedExecution(getOwner(), getDataset().resolve(), getMetaStorage());
+							ManagedQuery managedExecution = e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage());
 							managedExecution.setSystem(true);
 							getMetaStorage().updateExecution(managedExecution);
 							return managedExecution.getId();

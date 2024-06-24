@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -163,7 +164,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId owner, Dataset submittedDataset, MetaStorage storage) {
+	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset);
 		entityPreviewExecution.setMetaStorage(storage);
 		return entityPreviewExecution;

@@ -16,10 +16,10 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
@@ -50,8 +50,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
-	public ManagedQuery(Query query, UserId owner, Dataset submittedDataset) {
-		super(owner, submittedDataset.getId());
+	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset) {
+		super(owner, submittedDataset);
 		this.query = query;
 	}
 

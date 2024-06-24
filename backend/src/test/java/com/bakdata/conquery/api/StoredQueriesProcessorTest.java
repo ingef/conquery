@@ -94,7 +94,7 @@ public class StoredQueriesProcessorTest {
 			mockUser(1, List.of(QUERY_ID_3, QUERY_ID_4))
 	};
 
-	private static final List<ManagedExecution> queries = ImmutableList.of(
+	private static final List<ManagedExecution> QUERIES = ImmutableList.of(
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0, 100L),            // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW, DATASET_1, 100L),            // not included: wrong dataset
 			mockManagedForm(USERS[0], QUERY_ID_2, NEW, DATASET_0),                            // not included: not a ManagedQuery
@@ -120,7 +120,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries.stream(), true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], QUERIES.stream(), true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
@@ -149,7 +149,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm(new ExportForm(), user.getId(), dataset) {
+		return new ManagedInternalForm(new ExportForm(), user.getId(), dataset.getId()) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -185,7 +185,7 @@ public class StoredQueriesProcessorTest {
 
 
 	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset, final long resultCount) {
-		return new ManagedQuery(queryDescription, user.getId(), dataset) {
+		return new ManagedQuery(queryDescription, user.getId(), dataset.getId()) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -206,7 +206,7 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId, Long resultCount) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
-		final ManagedQuery execMock = new ManagedQuery(null, owner.getId(), DATASET_0) {
+		final ManagedQuery execMock = new ManagedQuery(null, owner.getId(), DATASET_0.getId()) {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);

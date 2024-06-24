@@ -14,13 +14,13 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.*;
@@ -54,7 +54,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, Dataset submittedDataset) {
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset) {
 		super(entityPreviewQuery, user, submittedDataset);
 	}
 

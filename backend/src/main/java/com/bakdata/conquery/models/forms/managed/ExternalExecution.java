@@ -18,10 +18,10 @@ import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.FormBackendConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ExternalResultImpl;
@@ -56,7 +56,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 
 
-	public ExternalExecution(ExternalForm form, UserId user, Dataset dataset) {
+	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset) {
 		super(form, user, dataset);
 	}
 

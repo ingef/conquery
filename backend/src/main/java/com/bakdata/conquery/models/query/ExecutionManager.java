@@ -157,7 +157,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 
 	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 		managed.setMetaStorage(storage);
