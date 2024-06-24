@@ -34,14 +34,14 @@ public class FilterSearchItemTest {
 		column.setTable(table);
 
 		Column dateColumn1 = new Column();
-		column.setName("dateColumn1");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn1.setName("dateColumn1");
+		dateColumn1.setType(MajorTypeId.DATE);
+		dateColumn1.setTable(table);
 
 		Column dateColumn2 = new Column();
-		column.setName("dateColumn2");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn2.setName("dateColumn2");
+		dateColumn2.setType(MajorTypeId.DATE);
+		dateColumn2.setTable(table);
 
 
 

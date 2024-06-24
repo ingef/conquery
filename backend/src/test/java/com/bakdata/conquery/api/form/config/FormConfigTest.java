@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
@@ -117,7 +118,7 @@ public class FormConfigTest {
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();

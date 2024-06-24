@@ -20,6 +20,7 @@ public class CopyUserTest {
 
 		// Create test role
 		Role role = new Role("role", "role");
+		role.setMetaStorage(storage);
 		storage.addRole(role);
 		role.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0")));
 

@@ -138,6 +138,7 @@ public class StoredQueriesProcessorTest {
 		final User user = new User("user" + id, null);
 
 		STORAGE.addUser(user);
+		user.setMetaStorage(STORAGE);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId));

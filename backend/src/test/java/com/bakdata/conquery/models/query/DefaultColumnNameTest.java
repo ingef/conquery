@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.MapIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -39,6 +41,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j
 public class DefaultColumnNameTest {
 	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
+	private final static MapIdResolver NS_ID_RESOLVER = new MapIdResolver(new HashMap<>());
 	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
@@ -160,7 +163,7 @@ public class DefaultColumnNameTest {
 
 
 	private static class TestCQConcept extends CQConcept {
-		private static CQConcept create(boolean withLabel, TestConcept concept) {
+		private static CQConcept  create(boolean withLabel, TestConcept concept) {
 			CQConcept cqConcept = new CQConcept();
 			if (withLabel) {
 				cqConcept.setLabel("TestCQLabel");
@@ -198,18 +201,30 @@ public class DefaultColumnNameTest {
 
 	private static class TestConcept extends TreeConcept {
 
-		private static final Dataset DATASET = new Dataset() {
-			{
-				setName("test");
-			}
-		};
+		/**
+		 * We use a different dataset for each concept/test. Otherwise, the concepts override each other in the
+		 * NsIdResolver map during test parameter creation.
+		 */
+		private static final AtomicInteger DATASET_COUNTER = new AtomicInteger(0);
+
 		private final BiFunction<TestConcept, CQConcept, Select> selectExtractor;
 
 		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) {
 			this.selectExtractor = selectExtractor;
 			setName("TestConceptName");
 			setLabel("TestConceptLabel");
+			Dataset DATASET = new Dataset() {
+				{
+					setName("test_" + DATASET_COUNTER.getAndIncrement());
+					setNsIdResolver(NS_ID_RESOLVER);
+					NS_ID_RESOLVER.injections().put(this.getId(), this);
+				}
+			};
 			setDataset(DATASET.getId());
+
+			setNsIdResolver(NS_ID_RESOLVER);
+			NS_ID_RESOLVER.injections().put(this.getId(), this);
+
 			setSelects(List.of(new TestUniversalSelect(this)));
 		}
 
@@ -228,6 +243,8 @@ public class DefaultColumnNameTest {
 			if (overwriteLabel != null) {
 				concept.setLabel(overwriteLabel);
 			}
+
+
 			List<ConceptTreeConnector> connectors = new ArrayList<>();
 			concept.setConnectors(connectors);
 			for (; countConnectors > 0; countConnectors--) {
@@ -248,6 +265,10 @@ public class DefaultColumnNameTest {
 					child.setLabel(overwriteLabel);
 				}
 				child.setCondition(new EqualCondition(Set.of(childName)));
+
+				child.setNsIdResolver(NS_ID_RESOLVER);
+				NS_ID_RESOLVER.injections().put(child.getId(), child);
+
 				children.add(child);
 			}
 
