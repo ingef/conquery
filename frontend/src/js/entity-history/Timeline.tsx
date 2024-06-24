@@ -100,7 +100,7 @@ export const Timeline = memo(
     const { matches, eventsByQuarterWithGroups } = useTimeBucketedSortedData(
       data,
       {
-        columns,
+        columnBuckets,
         rootConceptIdsByColumn,
         sourceColumn,
         dateColumn,
@@ -285,11 +285,12 @@ const groupByQuarter = (
   dateColumn: ColumnDescription,
   sourceColumn: ColumnDescription,
   rootConceptIdsByColumn: Record<string, ConceptIdT>,
-  columns: Record<string, ColumnDescription>,
+  columnBuckets: ColumnBuckets,
   searchTerm?: string,
 ) => {
   const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
 
+  // Bucket by quarter
   for (const row of entityData) {
     const [year, month] = (row[dateColumn.label] as DateRow).from.split("-");
     const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
@@ -314,6 +315,7 @@ const groupByQuarter = (
     }
   }
 
+  // Sort within quarter
   const sortedEvents = Object.entries(result)
     .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
     .map(([year, quarterwiseData]) => ({
@@ -340,6 +342,9 @@ const groupByQuarter = (
   }
 
   // Filter concepts by searchTerm
+  const isMatch = (str: string) =>
+    !searchTerm || str.toLowerCase().includes(searchTerm.toLowerCase());
+
   const filteredSortedEvents = sortedEvents
     .map(({ year, quarterwiseData }) => ({
       year,
@@ -349,23 +354,52 @@ const groupByQuarter = (
             quarter,
             events: events.filter((event) => {
               return Object.entries(event).some(([key, value]) => {
-                const column = columns[key];
-                if (!isConceptColumn(column)) return false;
-                const rootConceptId = rootConceptIdsByColumn[column.label];
-                const rootConcept = getConceptById(
-                  rootConceptId,
-                  rootConceptId,
+                const conceptColumn = columnBuckets.concepts.find(
+                  (col) => col.label === key,
                 );
-                if (!rootConcept) return false;
-                const concept = getConceptById(value as string, rootConceptId);
-                if (!concept) return false;
 
-                const isMatch = (str: string) =>
-                  str.toLowerCase().includes(searchTerm.toLowerCase());
+                if (conceptColumn) {
+                  const rootConceptId =
+                    rootConceptIdsByColumn[conceptColumn.label];
+                  const rootConcept = getConceptById(
+                    rootConceptId,
+                    rootConceptId,
+                  );
 
-                return isMatch(
-                  `${rootConcept.label} ${concept.label} - ${concept.description}`,
+                  if (!rootConcept) return false;
+
+                  const concept = getConceptById(
+                    value as string,
+                    rootConceptId,
+                  );
+
+                  if (!concept) return false;
+
+                  return isMatch(
+                    `${rootConcept.label} ${concept.label} - ${concept.description}`,
+                  );
+                }
+
+                const restColumn = columnBuckets.rest.find(
+                  (col) => col.label === key,
                 );
+
+                if (restColumn) {
+                  return isMatch(value as string);
+                }
+
+                const groupableColumn = columnBuckets.groupableIds.find(
+                  (col) =>
+                    col.label === key &&
+                    !isDateColumn(col) && // Because they're already displayed somewhere else
+                    !isSourceColumn(col), // Because they're already displayed somewhere else
+                );
+
+                if (groupableColumn) {
+                  return isMatch(value as string);
+                }
+
+                return false;
               });
             }),
           })),
@@ -383,14 +417,14 @@ const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],
   {
     rootConceptIdsByColumn,
-    columns,
+    columnBuckets,
     sources,
     secondaryIds,
     sourceColumn,
     dateColumn,
   }: {
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
-    columns: Record<string, ColumnDescription>;
+    columnBuckets: ColumnBuckets;
     sources: Set<string>;
     secondaryIds: ColumnDescription[];
     sourceColumn?: ColumnDescription;
@@ -413,7 +447,7 @@ const useTimeBucketedSortedData = (
       dateColumn,
       sourceColumn,
       rootConceptIdsByColumn,
-      columns,
+      columnBuckets,
       searchTerm,
     );
 
@@ -442,7 +476,7 @@ const useTimeBucketedSortedData = (
     secondaryIds,
     dateColumn,
     sourceColumn,
-    columns,
+    columnBuckets,
     searchTerm,
     rootConceptIdsByColumn,
   ]);
