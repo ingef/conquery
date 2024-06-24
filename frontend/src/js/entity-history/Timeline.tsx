@@ -279,6 +279,59 @@ export interface EventsByQuarterWithGroups {
   differences: string[][];
 }
 
+// Filter concepts by searchTerm
+const isMatch = (str: string, searchTerm: string) =>
+  str.toLowerCase().includes(searchTerm.toLowerCase());
+
+const entryMatchesSearchTerm = ({
+  entry: [key, value],
+  columnBuckets,
+  searchTerm,
+  rootConceptIdsByColumn,
+}: {
+  entry: [key: string, value: unknown];
+  columnBuckets: ColumnBuckets;
+  searchTerm: string;
+  rootConceptIdsByColumn: Record<string, ConceptIdT>;
+}) => {
+  const conceptColumn = columnBuckets.concepts.find((col) => col.label === key);
+
+  if (conceptColumn) {
+    const rootConceptId = rootConceptIdsByColumn[conceptColumn.label];
+    const rootConcept = getConceptById(rootConceptId, rootConceptId);
+
+    if (!rootConcept) return false;
+
+    const concept = getConceptById(value as string, rootConceptId);
+
+    if (!concept) return false;
+
+    return isMatch(
+      `${rootConcept.label} ${concept.label} - ${concept.description}`,
+      searchTerm,
+    );
+  }
+
+  const restColumn = columnBuckets.rest.find((col) => col.label === key);
+
+  if (restColumn) {
+    return isMatch(value as string, searchTerm);
+  }
+
+  const groupableColumn = columnBuckets.groupableIds.find(
+    (col) =>
+      col.label === key &&
+      !isDateColumn(col) && // Because they're already displayed somewhere else
+      !isSourceColumn(col), // Because they're already displayed somewhere else
+  );
+
+  if (groupableColumn) {
+    return isMatch(value as string, searchTerm);
+  }
+
+  return false;
+};
+
 const groupByQuarter = (
   entityData: EntityHistoryStateT["currentEntityData"],
   sources: Set<string>,
@@ -341,10 +394,6 @@ const groupByQuarter = (
     });
   }
 
-  // Filter concepts by searchTerm
-  const isMatch = (str: string) =>
-    !searchTerm || str.toLowerCase().includes(searchTerm.toLowerCase());
-
   const filteredSortedEvents = sortedEvents
     .map(({ year, quarterwiseData }) => ({
       year,
@@ -353,54 +402,14 @@ const groupByQuarter = (
         : quarterwiseData.map(({ quarter, events }) => ({
             quarter,
             events: events.filter((event) => {
-              return Object.entries(event).some(([key, value]) => {
-                const conceptColumn = columnBuckets.concepts.find(
-                  (col) => col.label === key,
-                );
-
-                if (conceptColumn) {
-                  const rootConceptId =
-                    rootConceptIdsByColumn[conceptColumn.label];
-                  const rootConcept = getConceptById(
-                    rootConceptId,
-                    rootConceptId,
-                  );
-
-                  if (!rootConcept) return false;
-
-                  const concept = getConceptById(
-                    value as string,
-                    rootConceptId,
-                  );
-
-                  if (!concept) return false;
-
-                  return isMatch(
-                    `${rootConcept.label} ${concept.label} - ${concept.description}`,
-                  );
-                }
-
-                const restColumn = columnBuckets.rest.find(
-                  (col) => col.label === key,
-                );
-
-                if (restColumn) {
-                  return isMatch(value as string);
-                }
-
-                const groupableColumn = columnBuckets.groupableIds.find(
-                  (col) =>
-                    col.label === key &&
-                    !isDateColumn(col) && // Because they're already displayed somewhere else
-                    !isSourceColumn(col), // Because they're already displayed somewhere else
-                );
-
-                if (groupableColumn) {
-                  return isMatch(value as string);
-                }
-
-                return false;
-              });
+              return Object.entries(event).some((entry) =>
+                entryMatchesSearchTerm({
+                  entry,
+                  columnBuckets,
+                  rootConceptIdsByColumn,
+                  searchTerm,
+                }),
+              );
             }),
           })),
     }))
