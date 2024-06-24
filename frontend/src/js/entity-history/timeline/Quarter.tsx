@@ -11,8 +11,8 @@ import {
 import FaIcon from "../../icon/FaIcon";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets } from "../Timeline";
 import { EntityEvent } from "../reducer";
+import { ColumnBuckets } from "./util/useColumnInformation";
 
 import EventCard from "./EventCard";
 import { SmallHeading } from "./SmallHeading";
