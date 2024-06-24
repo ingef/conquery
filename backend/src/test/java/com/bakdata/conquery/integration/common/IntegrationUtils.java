@@ -102,7 +102,7 @@ public class IntegrationUtils {
 										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI).describedAs(() -> response.readEntity(String.class))
+		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
 															.isEqualTo(expectedResponseCode);
 
 		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
