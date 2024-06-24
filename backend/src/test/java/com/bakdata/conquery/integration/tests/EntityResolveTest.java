@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -86,8 +87,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 													  .post(Entity.json(
 															  new FilterValue[]{
 																	  // Bit lazy, but this explicitly or's two filters
-																	  new FilterValue.CQMultiSelectFilter(filter.getId(), new String[]{"A1"}),
-																	  new FilterValue.CQMultiSelectFilter(filter.getId(), new String[]{"B2"})
+																	  new FilterValue.CQMultiSelectFilter((Filter<Set<String>>) filter, Set.of("A1")),
+																	  new FilterValue.CQMultiSelectFilter((Filter<Set<String>>) filter, Set.of("B2"))
 															  }
 													  ))) {
 

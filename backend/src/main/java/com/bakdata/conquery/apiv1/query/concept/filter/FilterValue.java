@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -14,7 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptConversionTables;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -47,17 +48,18 @@ public abstract class FilterValue<VALUE> {
 	private VALUE value;
 
 
-	public void resolve(QueryResolveContext context) {};
+	public void resolve(QueryResolveContext context) {
+	}
 
 	public FilterNode<?> createNode() {
 		final Filter<VALUE> resolve = (Filter<VALUE>) getFilter().resolve();
 		return resolve.createFilterNode(getValue());
 	}
 
-	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConceptConversionTables tables) {
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		SqlFilters sqlFilters = resolve.convertToSqlFilter(filterContext);
+		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(filter, filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
@@ -66,15 +68,14 @@ public abstract class FilterValue<VALUE> {
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
 		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
-		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		return resolve.convertForTableExport(filterContext);
+		return filter.createConverter().convertForTableExport(filter.resolve(), filterContext);
 	}
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
-		public CQMultiSelectFilter(FilterId filter, String[] value) {
+		public CQMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
 
@@ -84,7 +85,7 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
-		public CQBigMultiSelectFilter(FilterId filter, String[] value) {
+		public CQBigMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
 
@@ -209,7 +210,11 @@ public abstract class FilterValue<VALUE> {
 	//			final Filter<?> filter = nsIdDeserializer.deserialize(filterTraverse, ctxt);
 	//
 	//			if (!(filter instanceof GroupFilter groupFilter)) {
-	//				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter != null ? filter.getClass() : null));
+	//				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class,
+																										  filter != null
+																										  ? filter.getClass()
+																										  : null
+				));
 	//			}
 	//
 	//			// Second parse the value for the filter

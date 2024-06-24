@@ -4,6 +4,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -14,7 +17,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -48,9 +50,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	@Getter
 	private final StoreFactory storageFactory;
 
-	@Getter
-	private final Validator validator;
-
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Table> tables;
@@ -60,10 +59,9 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	protected LoadingCache<Id<?>, Identifiable<?>> cache;
 	private Dataset cachedDataset;
 
-	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
-		this.validator = validator;
 	}
 
 	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {

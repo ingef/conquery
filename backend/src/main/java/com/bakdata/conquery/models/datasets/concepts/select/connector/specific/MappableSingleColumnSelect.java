@@ -61,12 +61,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public ResultType getResultType() {
+	public ResultType<?> getResultType() {
 		if (mapping == null) {
-			return super.getResultType();
+			return ResultType.resolveResultType(getColumn().getType());
 		}
 		return new ResultType.StringT(mapper);
-
 	}
 
 	public void loadMapping() {
@@ -76,6 +75,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	private String applyMapping(Object intern) {
+
 		return intern == null || getMapping() == null ? "" : getMapping().resolve().external(intern.toString());
 	}
 }

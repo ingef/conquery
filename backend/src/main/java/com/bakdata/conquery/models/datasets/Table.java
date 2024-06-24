@@ -44,7 +44,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	 */
 	@Nullable
 	@JsonManagedReference
-	private Column primaryColum;
+	private Column primaryColumn;
 
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)

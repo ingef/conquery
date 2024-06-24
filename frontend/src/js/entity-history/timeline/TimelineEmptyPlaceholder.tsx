@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import { faListUl } from "@fortawesome/free-solid-svg-icons";
+import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import { useMemo } from "react";
 import { StateT } from "../../app/reducers";
 import FaIcon from "../../icon/FaIcon";
 import { EntityHistoryStateT } from "../reducer";
@@ -49,8 +50,10 @@ const Description = styled("p")`
 
 export const TimelineEmptyPlaceholder = ({
   className,
+  searchTerm,
 }: {
   className?: string;
+  searchTerm?: string;
 }) => {
   const { t } = useTranslation();
 
@@ -61,20 +64,28 @@ export const TimelineEmptyPlaceholder = ({
     (state) => state.entityHistory.currentEntityId,
   );
 
+  const message = useMemo(() => {
+    if (searchTerm) {
+      return t("history.emptyTimeline.descriptionWithSearchTerm", {
+        searchTerm,
+      });
+    }
+
+    if (ids.length === 0 || !id) {
+      return t("history.emptyTimeline.descriptionWithoutIds");
+    }
+
+    return t("history.emptyTimeline.descriptionWithId");
+  }, [ids, id, t, searchTerm]);
+
   return (
     <Root className={className}>
       <Row>
-        <BigIcon icon={faListUl} />
+        <BigIcon icon={searchTerm ? faMagnifyingGlass : faListUl} />
         <div>
           <Headline>{t("history.emptyTimeline.headline")}</Headline>
           <Description>{t("history.emptyTimeline.description")}</Description>
-          <Message>
-            {ids.length === 0
-              ? t("history.emptyTimeline.descriptionWithoutIds")
-              : id
-              ? t("history.emptyTimeline.descriptionWithId")
-              : t("history.emptyTimeline.descriptionWithoutId")}
-          </Message>
+          <Message dangerouslySetInnerHTML={{ __html: message }} />
         </div>
       </Row>
     </Root>

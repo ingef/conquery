@@ -31,7 +31,7 @@ public class WorkerStorage extends NamespacedStorage {
 	private WorkerInformation cachedWorker;
 
 	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
-		super(storageFactory, pathName, validator);
+		super(storageFactory, pathName);
 	}
 
 	@Override

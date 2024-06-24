@@ -105,7 +105,7 @@ public interface ColumnStore {
 	@JsonIgnore
 	<T extends ColumnStore> T createDescription();
 
-	public static <T extends ColumnStore> T emptyCopy(T store) {
+	static <T extends ColumnStore> T emptyCopy(T store) {
 		return store.select(new int[0], new int[0]);
 	}
 

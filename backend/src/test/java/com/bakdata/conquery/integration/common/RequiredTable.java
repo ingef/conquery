@@ -40,7 +40,7 @@ public class RequiredTable {
 
 	public Table toTable(Dataset dataset, NsIdResolver idResolver) {
         Table table = new Table();
-		table.setPrimaryColum(primaryColumn.toColumn(table, idResolver));
+		table.setPrimaryColumn(primaryColumn.toColumn(table, idResolver));
 		table.setDataset(dataset.getId());
         table.setName(name);
         table.setColumns(Arrays.stream(columns)

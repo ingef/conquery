@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.PrefixTextAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,5 +35,10 @@ public class PrefixSelect extends SingleColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new PrefixTextAggregator(getColumn().resolve(), prefix);
+	}
+
+	@Override
+	public ResultType<?> getResultType() {
+		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
 	}
 }

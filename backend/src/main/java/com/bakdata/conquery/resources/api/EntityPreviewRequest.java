@@ -6,6 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class EntityPreviewRequest {
 	private String idKind; //TODO I think ID is fallback, but i dont currently know.
 	private final String entityId;
 	private final Range<LocalDate> time;
+	@NotEmpty
 	private final List<ConnectorId> sources;
 
 	//TODO uncomment, when frontend is adapted to support this

@@ -472,6 +472,9 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "search": "Search",
+    "matches_one": "Match",
+    "matches_other": "Matches",
     "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
@@ -479,7 +482,8 @@
       "description": "Exploring individual events chronologically.",
       "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
       "descriptionWithoutId": "Select an ID from the list on the left side",
-      "descriptionWithId": "Couldn't find any data for this ID."
+      "descriptionWithId": "Couldn't find any data for this ID.",
+      "descriptionWithSearchTerm": "Couldn't find any data for the search term '<strong>{{ searchTerm }}</strong>'."
     },
     "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",

@@ -5,12 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.mode.DelegateManager;
-import com.bakdata.conquery.mode.ImportHandler;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
-import com.bakdata.conquery.mode.ManagerProvider;
-import com.bakdata.conquery.mode.NamespaceHandler;
-import com.bakdata.conquery.mode.StorageListener;
+import com.bakdata.conquery.mode.*;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.ClusterHealthCheck;
@@ -28,7 +23,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDistributedDatasetRegistry(namespaceHandler, config, creator);
+		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		final MetaStorage metaStorage = ManagerProvider.createMetaStorage(config.getStorage());
 		creator.init(datasetRegistry, metaStorage);
 

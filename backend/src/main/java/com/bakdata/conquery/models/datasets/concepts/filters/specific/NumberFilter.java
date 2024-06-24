@@ -18,14 +18,11 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.aggregator.NumberSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.Condition;
 
 /**
  * This filter represents a filter on an integer columnof each event.
@@ -65,12 +62,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FilterContext<RANGE> filterContext) {
-		return NumberSqlAggregator.create(this, filterContext).getSqlFilters();
-	}
-
-	@Override
-	public Condition convertForTableExport(FilterContext<RANGE> filterContext) {
-		return NumberCondition.onColumn(getColumn().resolve(), filterContext.getValue()).condition();
+	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
+		return new NumberFilterConverter<>();
 	}
 }

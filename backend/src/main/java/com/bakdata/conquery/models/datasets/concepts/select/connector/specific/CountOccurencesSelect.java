@@ -10,11 +10,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.MultiSelectAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SelectAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+//TODO delete?
 @CPSType(id = "COUNT_OCCURENCES", base = Select.class)
 public class CountOccurencesSelect extends SingleColumnSelect {
 
@@ -41,5 +43,10 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 		}
 
 		return new MultiSelectAggregator(getColumn().resolve(), selection);
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

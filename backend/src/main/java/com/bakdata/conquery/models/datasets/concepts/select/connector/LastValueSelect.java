@@ -7,6 +7,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.LastValueAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.LastValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.model.aggregator.LastValueSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -29,8 +31,7 @@ public class LastValueSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		return LastValueSqlAggregator.create(this, selectContext).getSqlSelects();
+	public SelectConverter<LastValueSelect> createConverter() {
+		return new LastValueSelectConverter();
 	}
-
 }

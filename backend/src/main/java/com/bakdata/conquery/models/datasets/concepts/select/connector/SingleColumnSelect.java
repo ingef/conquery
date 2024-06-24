@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -55,11 +54,6 @@ public abstract class SingleColumnSelect extends Select {
 		}
 
 		return new SelectResultInfo(this, cqConcept);
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return super.getResultType();
 	}
 
 	@Nullable

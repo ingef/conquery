@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -53,6 +54,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 @RequiredArgsConstructor
 public class AdminProcessor {
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -288,6 +290,7 @@ public class AdminProcessor {
 		final CompilerConfiguration config = new CompilerConfiguration();
 		final GroovyShell groovy = new GroovyShell(config);
 
+		groovy.setProperty("managerNode", getManagerNode());
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
 		groovy.setProperty("config", getConfig());

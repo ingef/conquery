@@ -6,8 +6,6 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.core.setup.Environment;
 import jakarta.validation.Validator;
@@ -29,26 +27,10 @@ public interface ManagerProvider {
 		return new InternalObjectMapperCreator(config, validator);
 	}
 
-	static DatasetRegistry<DistributedNamespace> createDistributedDatasetRegistry(
-			NamespaceHandler<DistributedNamespace> namespaceHandler,
-			ConqueryConfig config,
-			InternalObjectMapperCreator creator
-	) {
-		return createDatasetRegistry(namespaceHandler, creator, config);
-	}
-
-	static DatasetRegistry<LocalNamespace> createLocalDatasetRegistry(
-			NamespaceHandler<LocalNamespace> namespaceHandler,
-			ConqueryConfig config,
-			InternalObjectMapperCreator creator
-	) {
-		return createDatasetRegistry(namespaceHandler, creator, config);
-	}
-
-	private static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
+	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
 			NamespaceHandler<N> namespaceHandler,
-			InternalObjectMapperCreator creator,
-			ConqueryConfig config
+			ConqueryConfig config,
+			InternalObjectMapperCreator creator
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
 		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(

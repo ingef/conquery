@@ -83,11 +83,11 @@ const ContentControl = ({ value, onChange }: Props) => {
 
 export const useContentControl = () => {
   const [contentFilter, setContentFilter] = useState<ContentFilterValue>({
-    groupId: false,
+    groupId: true,
     secondaryId: true,
     concept: true,
     money: true,
-    rest: false,
+    rest: true,
     dates: true,
   });
 

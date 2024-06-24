@@ -51,7 +51,7 @@ public class StratificationTableFactory {
 																					.build())
 														 .toList();
 
-		return QueryStep.createUnionStep(
+		return QueryStep.createUnionAllStep(
 				withQualifiedSelects,
 				FormCteStep.FULL_STRATIFICATION.getSuffix(),
 				Stream.concat(predecessors.stream(), unionSteps.stream()).toList()

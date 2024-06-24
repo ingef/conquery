@@ -10,6 +10,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Ra
 import com.bakdata.conquery.sql.conversion.model.aggregator.RandomValueSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.RandomValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "RANDOM", base = Select.class)
@@ -28,8 +30,7 @@ public class RandomValueSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		return RandomValueSqlAggregator.create(this, selectContext).getSqlSelects();
+	public SelectConverter<RandomValueSelect> createConverter() {
+		return new RandomValueSelectConverter();
 	}
-
 }

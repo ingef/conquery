@@ -67,7 +67,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 														  )))
 														  .toList();
 
-		QueryStep unionedTables = QueryStep.createUnionStep(
+		QueryStep unionedTables = QueryStep.createUnionAllStep(
 				convertedTables,
 				null, // no CTE name required as this step will be the final select
 				List.of(convertedPrerequisite)
