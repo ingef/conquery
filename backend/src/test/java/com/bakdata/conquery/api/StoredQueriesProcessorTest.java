@@ -137,8 +137,8 @@ public class StoredQueriesProcessorTest {
 	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
 		final User user = new User("user" + id, null);
 
-		STORAGE.addUser(user);
 		user.setMetaStorage(STORAGE);
+		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId));
