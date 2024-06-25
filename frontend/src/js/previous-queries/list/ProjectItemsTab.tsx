@@ -13,13 +13,13 @@ import { canUploadResult } from "../../user/selectors";
 import ProjectItemsFilter from "../filter/ProjectItemsFilter";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
 import { toggleFoldersOpen } from "../folder-filter/actions";
-import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
 import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { ResizeHandle } from "../../common/ResizeHandle";
+import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import { ProjectItemT } from "./ProjectItem";
@@ -45,9 +45,6 @@ const FoldersAndQueries = styled(Row)`
   margin: 8px 8px 0 10px;
   overflow: hidden;
   position: relative;
-`;
-const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
-  flex-grow: 1;
 `;
 
 const Filters = styled("div")`
@@ -119,7 +116,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
-        <SxProjectItemsSearchBox />
+        <ProjectItemsSearchBox />
         {hasPermissionToUpload && (
           <SxUploadQueryResults datasetId={datasetId} />
         )}

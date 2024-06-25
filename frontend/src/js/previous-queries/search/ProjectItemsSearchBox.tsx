@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,11 +8,7 @@ import SearchBar from "../../search-bar/SearchBar";
 import { clearSearch, useSearchItems } from "./actions";
 import type { ProjectItemsSearchStateT } from "./reducer";
 
-interface Props {
-  className?: string;
-}
-
-const ProjectItemsSearchBox: FC<Props> = ({ className }) => {
+const ProjectItemsSearchBox = () => {
   const { t } = useTranslation();
   const search = useSelector<StateT, ProjectItemsSearchStateT>(
     (state) => state.projectItemsSearch,
@@ -25,7 +21,6 @@ const ProjectItemsSearchBox: FC<Props> = ({ className }) => {
 
   return (
     <SearchBar
-      className={className}
       searchTerm={search.searchTerm}
       placeholder={t("previousQueries.searchPlaceholder")}
       onClear={onClear}
