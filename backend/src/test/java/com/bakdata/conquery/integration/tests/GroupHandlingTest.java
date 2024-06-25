@@ -26,10 +26,10 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 		User user1copy = new User("user", "user");
 		User user2 = new User("user2", "user2");
 
-		group1.setMetaStorage(storage);
-		user1.setMetaStorage(storage);
-		user1copy.setMetaStorage(storage);
-		user2.setMetaStorage(storage);
+		group1.setMetaIdResolver(storage);
+		user1.setMetaIdResolver(storage);
+		user1copy.setMetaIdResolver(storage);
+		user2.setMetaIdResolver(storage);
 
 		try {
 			storage.addGroup(group1);

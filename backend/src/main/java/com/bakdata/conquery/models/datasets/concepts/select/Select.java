@@ -4,16 +4,12 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
@@ -60,7 +56,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	private boolean isDefault = false;
 
 	@JsonIgnore
-	public abstract List<Column> getRequiredColumns();
+	public abstract List<ColumnId> getRequiredColumns();
 
 	@JsonIgnore
 	public abstract ResultType<?> getResultType();
@@ -107,14 +103,13 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		final Connector connector = (Connector) holder;
 
-		for (Column column : getRequiredColumns()) {
+		for (ColumnId column : getRequiredColumns()) {
 
-			if (column == null || column.getTable().equals(connector.getResolvedTable())) {
+			if (column == null || column.getTable().equals(connector.getResolvedTableId())) {
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable()
-																								  .getId(), connector.getId(), connector.getResolvedTable()
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.getResolvedTable()
 																																		.getId());
 
 			valid = false;

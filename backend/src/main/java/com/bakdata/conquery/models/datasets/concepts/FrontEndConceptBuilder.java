@@ -169,7 +169,7 @@ public class FrontEndConceptBuilder {
 		final FrontendTable
 				result =
 				FrontendTable.builder()
-							 .id(con.getResolvedTable().getId())
+							 .id(con.getResolvedTableId())
 							 .connectorId(con.getId())
 							 .label(con.getLabel())
 							 .isDefault(con.isDefault())

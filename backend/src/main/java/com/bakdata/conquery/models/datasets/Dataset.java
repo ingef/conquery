@@ -49,7 +49,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 
 		// We could use the resolvers of this dataset, but actually this table's id should never be resolved
 		table.setNsIdResolver(PlaceHolderNsIdResolver.INSTANCE);
-		table.setMetaStorage(PlaceholderMetaStorage.INSTANCE);
+		table.setMetaIdResolver(PlaceholderMetaStorage.INSTANCE);
 		return table;
 	}
 

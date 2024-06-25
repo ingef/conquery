@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -47,8 +48,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -142,7 +141,7 @@ public class StoredQueriesProcessorTest {
 	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
 		final User user = new User("user" + id, null);
 
-		user.setMetaStorage(STORAGE);
+		user.setMetaIdResolver(STORAGE);
 		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {

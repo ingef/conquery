@@ -210,7 +210,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				reused.setSecondaryId(query.getSecondaryId());
 
 				User shareHolder = new User("shareholder", "ShareHolder");
-				shareHolder.setMetaStorage(metaStorage);
+				shareHolder.setMetaIdResolver(metaStorage);
 				conquery.getAdminProcessor().addUser(shareHolder);
 
 				shareHolder.addPermissions(Set.of(

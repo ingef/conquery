@@ -2,6 +2,7 @@ package com.bakdata.conquery.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,11 +14,14 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.MapIdResolver;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
 
 public class FilterSearchTest {
+
+	private final MapIdResolver idResolver = new MapIdResolver(new HashMap<>());
 
 	@Test
 	public void totals() {
@@ -42,6 +46,8 @@ public class FilterSearchTest {
 		connector.setConcept(concept);
 		column.setTable(table);
 		column.setName("test_column");
+		column.setNsIdResolver(idResolver);
+		idResolver.injections().put(column.getId(), column);
 		filter.setColumn(column.getId());
 		filter.setConnector(connector);
 
@@ -92,6 +98,8 @@ public class FilterSearchTest {
 		column.setTable(table);
 		column.setName("test_column");
 		column.setSearchDisabled(true);
+		column.setNsIdResolver(idResolver);
+		idResolver.injections().put(column.getId(), column);
 		filter.setColumn(column.getId());
 		filter.setConnector(connector);
 

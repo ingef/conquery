@@ -1,12 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Set;
 import java.util.stream.Stream;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -118,13 +112,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 			}
 
 			concept.setDataset(dataset.get().getId());
-
-			if (log.isTraceEnabled()) {
-				// Validating concepts is quite slow, so we only validate when requested.
-				final Set<ConstraintViolation<Concept<?>>> violations = validator.validate(concept);
-
-				ValidatorHelper.failOnError(log, violations);
-			}
 
 		});
 	}

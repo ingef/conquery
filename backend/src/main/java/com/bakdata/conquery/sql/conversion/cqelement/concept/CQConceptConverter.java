@@ -12,32 +12,21 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
-import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.*;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
@@ -102,7 +91,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		SelectContext<TreeConcept, ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
-													 .map(select -> select.createConverter().conceptSelect(select, selectContext))
+													 .map(select -> {
+														 Select resolved = select.resolve();
+														 return resolved.createConverter().conceptSelect(resolved, selectContext);
+													 })
 													 .toList();
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
@@ -158,7 +150,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
-		cqTable.getSelects().stream().map(select -> select.createConverter().connectorSelect(select, selectContext)).forEach(allSelectsForTable::add);
+		cqTable.getSelects().stream().map(select -> {
+			Select resolved = select.resolve();
+			return resolved.createConverter().connectorSelect(resolved, selectContext);
+		}).forEach(allSelectsForTable::add);
 
 		return CQTableContext.builder()
 							 .ids(ids)
@@ -288,6 +283,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static ConnectorSqlSelects createConceptColumnConnectorSqlSelects(CQConcept cqConcept, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 		return cqConcept.getSelects().stream()
+				.map(SelectId::resolve)
 						.filter(select -> select instanceof ConceptColumnSelect)
 						.findFirst()
 						.map(select -> select.createConverter().connectorSelect(select, selectContext))

@@ -24,8 +24,8 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 
 		storage.addRole(role1);
 
-		role1.setMetaStorage(storage);
-		user1.setMetaStorage(storage);
+		role1.setMetaIdResolver(storage);
+		user1.setMetaIdResolver(storage);
 
 		try {
 			user1.addRole(role1);

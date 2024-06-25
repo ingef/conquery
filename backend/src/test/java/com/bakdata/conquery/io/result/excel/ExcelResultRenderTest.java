@@ -1,10 +1,25 @@
 package com.bakdata.conquery.io.result.excel;
 
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -15,6 +30,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.Mocks;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -23,18 +39,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
-import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ExcelResultRenderTest {
@@ -63,7 +67,15 @@ public class ExcelResultRenderTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null) {
+		MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		metaStorage.openStores(null, new MetricRegistry());
+
+		User user = new User("test", "test");
+		user.setMetaIdResolver(metaStorage);
+		user.updateStorage();
+
+
+		ManagedQuery mquery = new ManagedQuery(null, user.getId(), new DatasetId("test_dataset")) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)

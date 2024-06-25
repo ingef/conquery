@@ -227,6 +227,11 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return formConfigs.get(id);
 	}
 
+
+	public Stream<FormConfigId> getAllFormConfigIds() {
+		return formConfigs.getAllKeys().map(FormConfigId.class::cast);
+	}
+
 	public Stream<FormConfig> getAllFormConfigs() {
 		return formConfigs.getAllKeys().map(this::get);
 	}

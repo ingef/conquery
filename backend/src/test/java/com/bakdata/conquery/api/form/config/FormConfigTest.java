@@ -62,17 +62,15 @@ import org.mockito.Mockito;
 @TestInstance(Lifecycle.PER_CLASS)
 public class FormConfigTest {
 
-	private ConqueryConfig config = new ConqueryConfig();
+	private final ConqueryConfig config = new ConqueryConfig();
 
 	private MetaStorage storage;
-	private DatasetRegistry<?> namespacesMock;
 
 	private FormConfigProcessor processor;
-	private AuthorizationController controller;
-	private Validator validator = Validators.newValidatorFactory().getValidator();
+	private final Validator validator = Validators.newValidatorFactory().getValidator();
 
-	private Dataset dataset = new Dataset("test");
-	private Dataset dataset1 = new Dataset("test1");
+	private final Dataset dataset = new Dataset("test");
+	private final Dataset dataset1 = new Dataset("test1");
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
@@ -86,7 +84,7 @@ public class FormConfigTest {
 		datasetId1 = dataset1.getId();
 
 		// Mock DatasetRegistry for translation
-		namespacesMock = Mockito.mock(DatasetRegistry.class);
+		DatasetRegistry<?> namespacesMock = Mockito.mock(DatasetRegistry.class);
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
@@ -111,7 +109,7 @@ public class FormConfigTest {
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues())
 				.add(NsIdResolver.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);
-		controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
+		AuthorizationController controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
 		controller.start();
 
 	}
@@ -130,7 +128,7 @@ public class FormConfigTest {
 
 
 		user = new User("test", "test");
-		user.setMetaStorage(storage);
+		user.setMetaIdResolver(storage);
 		storage.addUser(user);
 	}
 
@@ -299,10 +297,10 @@ public class FormConfigTest {
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1", "test1");
-		group1.setMetaStorage(storage);
+		group1.setMetaIdResolver(storage);
 		storage.addGroup(group1);
 		Group group2 = new Group("test2", "test2");
-		group2.setMetaStorage(storage);
+		group2.setMetaIdResolver(storage);
 		storage.addGroup(group2);
 
 		group1.addMember(user);

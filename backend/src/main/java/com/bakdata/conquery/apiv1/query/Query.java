@@ -42,7 +42,7 @@ public abstract class Query implements QueryDescription {
 	@Override
 	public ManagedQuery toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ManagedQuery managedQuery = new ManagedQuery(this, owner, submittedDataset);
-		managedQuery.setMetaStorage(storage);
+		managedQuery.setMetaIdResolver(storage);
 		return managedQuery;
 	}
 

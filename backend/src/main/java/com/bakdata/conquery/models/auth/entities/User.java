@@ -46,7 +46,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = getMetaStorage().getRole(roleId);
+			Role role = getMetaIdResolver().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
@@ -54,7 +54,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
 
-		for (Group group : getMetaStorage().getAllGroups().toList()) {
+		for (Group group : getMetaIdResolver().getAllGroups().toList()) {
 			if (!group.containsMember(this)) {
 				continue;
 			}
@@ -89,7 +89,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public void updateStorage() {
-		getMetaStorage().updateUser(this);
+		getMetaIdResolver().updateUser(this);
 	}
 
 	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {

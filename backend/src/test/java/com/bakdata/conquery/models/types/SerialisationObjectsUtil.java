@@ -129,7 +129,7 @@ public class SerialisationObjectsUtil {
 	@NotNull
 	public static User createUser(MetaStorage metaStorage) {
 		final User user = new User("test-user", "test-user");
-		user.setMetaStorage(metaStorage);
+		user.setMetaIdResolver(metaStorage);
 		user.updateStorage();
 		return user;
 	}

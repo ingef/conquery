@@ -20,11 +20,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Param;
@@ -172,9 +168,10 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	/**
 	 * @return Columns names of a given flags map that match the selected flags of the filter value.
 	 */
-	private static List<Column> getRequiredColumns(Map<String, Column> flags, Set<String> selectedFlags) {
+	private static List<Column> getRequiredColumns(Map<String, ColumnId> flags, Set<String> selectedFlags) {
 		return selectedFlags.stream()
 							.map(flags::get)
+							.map(ColumnId::resolve)
 							.toList();
 	}
 

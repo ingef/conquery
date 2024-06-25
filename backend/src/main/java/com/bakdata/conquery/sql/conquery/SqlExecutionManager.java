@@ -78,7 +78,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									runningExecutions.remove(managedQuery.getId());
 								})
 								.exceptionally(e -> {
-									managedQuery.finish(ExecutionState.FAILED);
+									managedQuery.finish(ExecutionState.FAILED, this);
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});

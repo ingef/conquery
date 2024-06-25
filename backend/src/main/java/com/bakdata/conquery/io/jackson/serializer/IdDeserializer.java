@@ -60,7 +60,7 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		}
 	}
 
-	public static void setResolver(Id<?> id, MetaStorage metaStorage, NsIdResolver nsIdResolver) {
+	public static void setResolver(Id<?> id, MetaStorage metaIdResolver, NsIdResolver nsIdResolver) {
 		// Set resolvers in this id and subIds
 		final HashSet<Id<?>> ids = new HashSet<>();
 		id.collectIds(ids);
@@ -72,8 +72,8 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 			if (subId instanceof NamespacedId) {
 				subId.setIdResolver(() -> nsIdResolver.resolve((Id<?> & NamespacedId) subId));
 			}
-			else if (metaStorage != null) {
-				subId.setIdResolver(() -> metaStorage.resolve(subId));
+			else if (metaIdResolver != null) {
+				subId.setIdResolver(() -> metaIdResolver.resolve(subId));
 			}
 			// TODO Handle special Ids such as WorkerId, TableImportDescriptorId ?
 		}

@@ -20,19 +20,19 @@ public class CopyUserTest {
 
 		// Create test role
 		Role role = new Role("role", "role");
-		role.setMetaStorage(storage);
+		role.setMetaIdResolver(storage);
 		storage.addRole(role);
 		role.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0")));
 
 		// Create test group
 		Group group = new Group("group", "group");
-		group.setMetaStorage(storage);
+		group.setMetaIdResolver(storage);
 		storage.addGroup(group);
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset1")));
 
 		// Create original user with role and group mapping
 		User originUser = new User("user", "user");
-		originUser.setMetaStorage(storage);
+		originUser.setMetaIdResolver(storage);
 		storage.addUser(originUser);
 		originUser.addRole(role);
 		group.addMember(originUser);

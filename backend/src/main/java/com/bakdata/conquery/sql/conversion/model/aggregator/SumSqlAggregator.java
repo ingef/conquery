@@ -11,26 +11,16 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.*;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -98,9 +88,9 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 
-		Column sumColumn = sumSelect.getColumn();
-		Column subtractColumn = sumSelect.getSubtractColumn();
-		List<Column> distinctByColumns = sumSelect.getDistinctByColumn();
+		Column sumColumn = sumSelect.getColumn().resolve();
+		Column subtractColumn = sumSelect.getSubtractColumn().resolve();
+		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		NameGenerator nameGenerator = selectContext.getNameGenerator();
 		String alias = nameGenerator.selectName(sumSelect);
 		ConnectorSqlTables tables = selectContext.getTables();
@@ -130,9 +120,9 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public SqlFilters convertToSqlFilter(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
 
-		Column sumColumn = sumFilter.getColumn();
-		Column subtractColumn = sumFilter.getSubtractColumn();
-		List<Column> distinctByColumns = sumFilter.getDistinctByColumn();
+		Column sumColumn = sumFilter.getColumn().resolve();
+		Column subtractColumn = sumFilter.getSubtractColumn().resolve();
+		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		String alias = filterContext.getNameGenerator().selectName(sumFilter);
 		ConnectorSqlTables tables = filterContext.getTables();
 
@@ -169,18 +159,19 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public Condition convertForTableExport(SumFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
 
-		Column subtractColumn = filter.getSubtractColumn();
+		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
 			return new SumCondition(field, filterContext.getValue()).condition();
 		}
 
-		String subtractColumnName = subtractColumn.getName();
-		String subtractTableName = subtractColumn.getTable().getName();
+		Column resolvedSubtractionColumn = subtractColumn.resolve();
+		String subtractColumnName = resolvedSubtractionColumn.getName();
+		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
 		Field<Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), Number.class);
 		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}

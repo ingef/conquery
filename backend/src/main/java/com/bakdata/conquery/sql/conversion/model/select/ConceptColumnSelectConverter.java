@@ -13,12 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.*;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import lombok.Getter;
@@ -47,7 +42,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		if (connector.getColumn() == null) {
 			return ConnectorSqlSelects.none();
 		}
-		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.getTable().getName(), connector.getColumn().getName(), Object.class);
+		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.getResolvedTable().getName(), connector.getColumn().resolve().getName(), Object.class);
 		ExtractingSqlSelect<Object> qualified = connectorColumn.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.EVENT_FILTER));
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelect(connectorColumn)
@@ -130,11 +125,11 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tables.cteName(ConceptCteStep.EVENT_FILTER)));
 
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(matchingConnector.getTable(), selectContext.getConversionContext().getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(matchingConnector.getResolvedTable(), selectContext.getConversionContext().getConfig());
 		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, connectorTable.getName()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		SqlIdColumns ids = new SqlIdColumns(qualifiedPrimaryColumn);
 
-		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), matchingConnector.getColumn().getName()));
+		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), matchingConnector.getColumn().resolve().getName()));
 		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
 
@@ -150,7 +145,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 	}
 
 	private static boolean isMatchingConnector(final ConnectorSqlTables tables, final Connector connector) {
-		return connector.getColumn() != null && (Objects.equals(tables.getRootTable(), connector.getTable().getName()));
+		return connector.getColumn() != null && (Objects.equals(tables.getRootTable(), connector.getResolvedTable().getName()));
 	}
 
 	private static FieldWrapper<String> createConnectorColumnStringAgg(SelectContext<TreeConcept, ConceptSqlTables> selectContext, QueryStep unionStep, String alias) {

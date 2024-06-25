@@ -123,7 +123,7 @@ public class FullExportForm extends Form implements InternalForm {
 	@Override
 	public ManagedInternalForm<FullExportForm> toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ManagedInternalForm<FullExportForm> form = new ManagedInternalForm<>(this, owner, submittedDataset);
-		form.setMetaStorage(storage);
+		form.setMetaIdResolver(storage);
 		return form;
 	}
 }

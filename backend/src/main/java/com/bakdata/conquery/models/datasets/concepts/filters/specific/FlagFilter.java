@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -69,7 +65,7 @@ public class FlagFilter extends Filter<Set<String>> {
 				continue;
 			}
 
-			columns.add(column);
+			columns.add(columnId.resolve());
 		}
 
 		if (!missing.isEmpty()) {

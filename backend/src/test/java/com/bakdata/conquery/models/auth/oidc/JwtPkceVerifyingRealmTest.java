@@ -9,11 +9,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -108,6 +104,9 @@ class JwtPkceVerifyingRealmTest {
 		// Setup the expected user id
 		User expected = new User("Test", "Test");
 		Role role = new Role("admin", "admin");
+
+		expected.setMetaIdResolver(STORAGE);
+		role.setMetaIdResolver(STORAGE);
 
 		STORAGE.updateRole(role);
 		STORAGE.updateUser(expected);

@@ -1,5 +1,11 @@
 package com.bakdata.conquery.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.net.URI;
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -17,12 +23,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.URI;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
@@ -31,7 +31,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		final MetaStorage storage = conquery.getMetaStorage();
 
 		final User user = new User("testU", "testU");
-		user.setMetaStorage(storage);
+		user.setMetaIdResolver(storage);
 
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(conquery.getDataset(), testJson);

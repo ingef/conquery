@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.FlagsAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,8 +38,8 @@ public class FlagSelect extends Select {
 
 
 	@Override
-	public List<Column> getRequiredColumns() {
-		return new ArrayList<>(flags.values().stream().map(ColumnId::resolve).toList());
+	public List<ColumnId> getRequiredColumns() {
+		return flags.values().stream().toList();
 	}
 
 	@Override

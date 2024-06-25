@@ -64,13 +64,13 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Nullable
 	public ManagedQuery getSubQuery(ManagedExecutionId subQueryId) {
-		return (ManagedQuery) getMetaStorage().getExecution(subQueryId);
+		return (ManagedQuery) getMetaIdResolver().getExecution(subQueryId);
 	}
 
 	@Override
 	public void doInitExecutable(Namespace namespace) {
 		// Convert sub queries to sub executions
-		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(namespace, getConfig(), getMetaIdResolver(), null));
 
 		if (subQueries == null || subQueries.isEmpty()) {
 			// Only create sub executions if init was never executed
@@ -95,9 +95,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
 						e -> {
-							ManagedQuery managedExecution = e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage());
+							ManagedQuery managedExecution = e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaIdResolver());
 							managedExecution.setSystem(true);
-							getMetaStorage().updateExecution(managedExecution);
+							getMetaIdResolver().updateExecution(managedExecution);
 							return managedExecution.getId();
 						}
 

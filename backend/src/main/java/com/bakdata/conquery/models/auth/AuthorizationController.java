@@ -237,7 +237,7 @@ public final class AuthorizationController implements Managed {
 
 		// Create copied user
 		final User copy = new User(name, originUser.getLabel());
-		copy.setMetaStorage(storage);
+		copy.setMetaIdResolver(storage);
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 

@@ -206,7 +206,7 @@ public class ExportForm extends Form implements InternalForm {
 	@Override
 	public ManagedInternalForm<?> toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ManagedInternalForm<?> managedInternalForm = new ManagedInternalForm<>(this, owner, submittedDataset);
-		managedInternalForm.setMetaStorage(storage);
+		managedInternalForm.setMetaIdResolver(storage);
 		return managedInternalForm;
 	}
 }

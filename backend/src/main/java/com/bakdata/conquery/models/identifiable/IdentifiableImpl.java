@@ -7,12 +7,7 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @NoArgsConstructor
 public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
@@ -26,10 +21,12 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@EqualsAndHashCode.Exclude
-	private transient MetaStorage metaStorage;
+	@JsonIgnore
+	private transient MetaStorage metaIdResolver;
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@EqualsAndHashCode.Exclude
+	@JsonIgnore
 	private transient NsIdResolver nsIdResolver;
 
 	@ToString.Include
@@ -39,7 +36,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 		if (cachedId == null) {
 			final ID intern = createId();
 			// Set resolver
-			IdDeserializer.setResolver(intern, metaStorage, nsIdResolver);
+			IdDeserializer.setResolver(intern, metaIdResolver, nsIdResolver);
 
 			cachedId = intern;
 		}
@@ -77,12 +74,10 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 		}
 		IdentifiableImpl<?> other = (IdentifiableImpl<?>) obj;
 		if (getId() == null) {
-			if (other.getId() != null) {
-				return false;
-			}
-		} else if (!getId().equals(other.getId())) {
-			return false;
+			return other.getId() == null;
 		}
-		return true;
+		else {
+			return getId().equals(other.getId());
+		}
 	}
 }

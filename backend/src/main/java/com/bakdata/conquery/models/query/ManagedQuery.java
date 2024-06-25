@@ -57,7 +57,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	protected void doInitExecutable(Namespace namespace) {
-		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
+		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaIdResolver(), null));
 	}
 
 

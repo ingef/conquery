@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.validation.Validator;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -28,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import io.dropwizard.validation.BaseValidator;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -213,8 +213,9 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionSimpleUserExisting() {
-		STORAGE.addUser(USER_1);
-		
+		USER_1.setMetaIdResolver(STORAGE);
+		USER_1.updateStorage();
+
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 		
 		assertThat(info)
@@ -226,7 +227,8 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionGroupedUser() {
-		STORAGE.addUser(USER_2);
+		USER_2.setMetaIdResolver(STORAGE);
+		USER_2.updateStorage();
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_2_TOKEN_WRAPPED);
 

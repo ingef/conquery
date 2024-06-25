@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -27,7 +28,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -93,17 +93,17 @@ public class SumSelect extends Select {
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
 
 	@Override
-	public List<Column> getRequiredColumns() {
-		final List<Column> out = new ArrayList<>();
+	public List<ColumnId> getRequiredColumns() {
+		final List<ColumnId> out = new ArrayList<>();
 
-		out.add(getColumn().resolve());
+		out.add(getColumn());
 
 		if (getSubtractColumn() != null) {
-			out.add(getSubtractColumn().resolve());
+			out.add(getSubtractColumn());
 		}
 
 		if (distinctByColumn == null) {
-			out.addAll(getDistinctByColumn().stream().map(ColumnId::resolve).toList());
+			out.addAll(getDistinctByColumn());
 		}
 
 		return out;
@@ -111,7 +111,7 @@ public class SumSelect extends Select {
 
 	@Override
 	public ResultType<?> getResultType() {
-		return ResultType.resolveResultType(getColumn().getType());
+		return ResultType.resolveResultType(getColumn().resolve().getType());
 	}
 
 	@ValidationMethod(message = "Column is not of Summable Type.")

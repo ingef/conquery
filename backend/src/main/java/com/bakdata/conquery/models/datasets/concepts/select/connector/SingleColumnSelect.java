@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +58,8 @@ public abstract class SingleColumnSelect extends Select {
 
 	@Nullable
 	@Override
-	public List<Column> getRequiredColumns() {
-		return List.of(getColumn().resolve());
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@JsonIgnore

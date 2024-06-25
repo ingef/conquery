@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
@@ -34,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -169,7 +169,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	@Override
 	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset);
-		entityPreviewExecution.setMetaStorage(storage);
+		entityPreviewExecution.setMetaIdResolver(storage);
 		return entityPreviewExecution;
 	}
 

@@ -35,14 +35,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, getMetaIdResolver().getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
 	}
 
 	@Override
 	public void updateStorage() {
-		getMetaStorage().updateGroup(this);
+		getMetaIdResolver().updateGroup(this);
 	}
 
 	@Override

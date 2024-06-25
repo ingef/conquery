@@ -2,8 +2,8 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -20,13 +20,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.jooq.Condition;
 
 @Getter
@@ -59,7 +53,7 @@ public abstract class FilterValue<VALUE> {
 	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(filter, filterContext);
+		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
 		if (context.isNegation()) {
 			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
@@ -68,13 +62,14 @@ public abstract class FilterValue<VALUE> {
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
 		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
-		return filter.createConverter().convertForTableExport(filter.resolve(), filterContext);
+		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
+		return resolve.createConverter().convertForTableExport(resolve, filterContext);
 	}
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMultiSelectFilter extends FilterValue<String[]> {
+	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
 		public CQMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
@@ -84,7 +79,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
+	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
 		public CQBigMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
@@ -211,10 +206,10 @@ public abstract class FilterValue<VALUE> {
 	//
 	//			if (!(filter instanceof GroupFilter groupFilter)) {
 	//				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class,
-																										  filter != null
-																										  ? filter.getClass()
-																										  : null
-				));
+//																										  filter != null
+//																										  ? filter.getClass()
+//																										  : null
+//				));
 	//			}
 	//
 	//			// Second parse the value for the filter

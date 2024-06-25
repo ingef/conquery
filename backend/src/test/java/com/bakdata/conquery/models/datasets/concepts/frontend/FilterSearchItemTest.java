@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.frontend;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
@@ -15,9 +16,12 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.MapIdResolver;
 import org.junit.jupiter.api.Test;
 
 public class FilterSearchItemTest {
+
+	private final MapIdResolver idResolver = new MapIdResolver(new HashMap<>());
 
 	@Test
 	public void sortedValidityDates() {
@@ -28,6 +32,8 @@ public class FilterSearchItemTest {
 		Table table = new Table();
 		table.setDataset(dataset.getId());
 		table.setName("testTable");
+		table.setNsIdResolver(idResolver);
+		idResolver.injections().put(table.getId(), table);
 
 		Column column = new Column();
 		column.setName("testColumn");

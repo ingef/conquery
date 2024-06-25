@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -33,11 +31,11 @@ public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 	private ColumnId endColumn;
 
 	@Override
-	public List<Column> getRequiredColumns() {
+	public List<ColumnId> getRequiredColumns() {
 		if (column != null) {
-			return List.of(column.resolve());
+			return List.of(column);
 		}
-		return List.of(startColumn.resolve(), endColumn.resolve());
+		return List.of(startColumn, endColumn);
 	}
 
 	@Override

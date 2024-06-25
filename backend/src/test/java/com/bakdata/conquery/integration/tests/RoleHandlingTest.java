@@ -29,10 +29,10 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 		Role mandator2 = new Role("company2", "company2");
 		User user1 = new User("user", "user");
 
-		mandator1.setMetaStorage(storage);
-		mandator1Copy.setMetaStorage(storage);
-		mandator2.setMetaStorage(storage);
-		user1.setMetaStorage(storage);
+		mandator1.setMetaIdResolver(storage);
+		mandator1Copy.setMetaIdResolver(storage);
+		mandator2.setMetaIdResolver(storage);
+		user1.setMetaIdResolver(storage);
 
 		try {
 			storage.addRole(mandator1);

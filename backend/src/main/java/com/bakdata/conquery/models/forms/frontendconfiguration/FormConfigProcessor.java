@@ -66,7 +66,7 @@ public class FormConfigProcessor {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
-			// However if a subject queries for specific form types, we will show all matching regardless whether
+			// However, if a subject queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the subject again.
 			final Set<String> allowedFormTypes = new HashSet<>();
 
@@ -82,10 +82,11 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs()
-												 .filter(c -> dataset.equals(c.getDataset()))
-												 .filter(c -> formTypesFinal.contains(c.getFormType()))
-												 .filter(c -> subject.isPermitted(c, Ability.READ));
+		final Stream<FormConfig> stream = storage.getAllFormConfigIds()
+				.filter(c -> dataset.getId().equals(c.getDataset()))
+				.map(FormConfigId::resolve)
+				.filter(c -> formTypesFinal.contains(c.getFormType()))
+				.filter(c -> subject.isPermitted(c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(subject));

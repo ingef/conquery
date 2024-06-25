@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -21,8 +23,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-
 @Slf4j
 public class ConceptPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
@@ -34,7 +34,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final QueryTest test = JsonIntegrationTest.readJson(dataset.getId(), testJson);
 		final User user = new User("testUser", "testUserLabel");
 
-		user.setMetaStorage(storage);
+		user.setMetaIdResolver(storage);
 		user.updateStorage();
 
 		// Manually import data, so we can do our own work.

@@ -27,7 +27,7 @@ public class Role extends PermissionOwner<RoleId> {
 
 	@Override
 	protected void updateStorage() {
-		getMetaStorage().updateRole(this);
+		getMetaIdResolver().updateRole(this);
 
 	}
 
