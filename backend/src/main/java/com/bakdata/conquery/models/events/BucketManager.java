@@ -153,7 +153,7 @@ public class BucketManager {
 						continue;
 					}
 
-					log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+					log.trace("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
 					job.addCBlock(bucket, con);
 				}
 			}
