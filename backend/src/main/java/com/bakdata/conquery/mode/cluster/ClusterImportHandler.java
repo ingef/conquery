@@ -2,6 +2,7 @@ package com.bakdata.conquery.mode.cluster;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -115,6 +116,8 @@ public class ClusterImportHandler implements ImportHandler {
 
 		Import imp = null;
 
+		List<Collection<String>> collectedEntities =  new ArrayList<>();
+
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
 			if (imp == null) {
@@ -134,27 +137,13 @@ public class ClusterImportHandler implements ImportHandler {
 			sendBucket(bucket, responsibleWorker);
 
 			// NOTE: I want the bucket to be GC'd as early as possible, so I just store the part(s) I need later.
-			final Collection<String> entities = bucket.entities();
 
-			namespace.getJobManager().addSlowJob(
-					new Job() {
-						@Override
-						public void execute() {
-							//TODO make this into a job.
-
-							// This task is quite slow, so be delay it as far as possible.
-							for (String entity : entities) {
-								namespace.getStorage().registerEntity(entity);
-							}
-						}
-
-						@Override
-						public String getLabel() {
-							return "Handle Bucket %s assignments.".formatted(bucket.getId());
-						}
-					}
-			);
+			collectedEntities.add(bucket.entities());
 		}
+
+		namespace.getJobManager().addSlowJob(
+				new RegisterImportEntities(collectedEntities, namespace, importId)
+		);
 
 		log.debug("Successfully read {} Buckets, containing {} entities for {}", header.getNumberOfBuckets(), header.getNumberOfEntities(), importId);
 
@@ -210,6 +199,19 @@ public class ClusterImportHandler implements ImportHandler {
 
 	@Override
 	public void calculateCBlocks(Namespace namespace) {
-		((DistributedNamespace) namespace).getWorkerHandler().sendToAll(new StartCalculateCblocks());
+		namespace.getJobManager().addSlowJob(
+				new Job() {
+					@Override
+					public void execute() {
+						((DistributedNamespace) namespace).getWorkerHandler().sendToAll(new StartCalculateCblocks());
+					}
+
+					@Override
+					public String getLabel() {
+						return "Initiate calculateCBlocksJob";
+					}
+				}
+		);
 	}
+
 }
