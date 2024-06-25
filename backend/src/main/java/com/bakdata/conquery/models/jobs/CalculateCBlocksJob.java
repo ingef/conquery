@@ -77,7 +77,7 @@ public class CalculateCBlocksJob extends Job {
 				all.get(1, TimeUnit.MINUTES);
 			}
 			catch (TimeoutException exception) {
-				log.debug("submitted={}, pool={}", infos, getExecutorService());
+				log.debug("submitted={}, pool={}", infos.size(), getExecutorService());
 			}
 		}
 	}
