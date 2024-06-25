@@ -16,9 +16,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,7 +28,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-
+@Data
+@ToString(onlyExplicitlyIncluded = true)
 public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
@@ -36,6 +37,7 @@ public class CalculateCBlocksJob extends Job {
 	private final BucketManager bucketManager;
 	private final ExecutorService executorService;
 
+	@ToString.Include
 	@Override
 	public String getLabel() {
 		return "Calculate CBlocks[" + infos.size() + "]";
@@ -51,15 +53,19 @@ public class CalculateCBlocksJob extends Job {
 			return;
 		}
 
+		log.info("BEGIN calculate CBlocks for {} entries.", infos.size());
+
 		getProgressReporter().setMax(infos.size());
 
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(this.executorService);
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(getExecutorService());
 
-		final List<? extends ListenableFuture<?>> futures = infos.stream()
-				.map(this::createInformationProcessor)
-				.map(executorService::submit)
-				.peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
-				.collect(Collectors.toList());
+		final List<? extends ListenableFuture<?>> futures =
+				infos.stream()
+					 .map(this::createInformationProcessor)
+					 .map(executorService::submit)
+					 .collect(Collectors.toList());
+
+		log.debug("DONE CalculateCBlocks for {} entries.", infos.size());
 
 		Futures.allAsList(futures).get();
 	}
@@ -76,9 +82,7 @@ public class CalculateCBlocksJob extends Job {
 		return infos.isEmpty();
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	@Setter
+	@Data
 	private static class CalculationInformation {
 		private final ConceptTreeConnector connector;
 		private final Bucket bucket;
@@ -89,7 +93,7 @@ public class CalculateCBlocksJob extends Job {
 	}
 
 
-	@RequiredArgsConstructor
+	@Data
 	private static class CalculationInformationProcessor implements Runnable {
 		private final CalculationInformation info;
 		private final BucketManager bucketManager;
@@ -104,21 +108,18 @@ public class CalculateCBlocksJob extends Job {
 						return;
 					}
 
-					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+					log.trace("BEGIN calculating CBlock for {}" , info);
+
+					final CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+
+					log.trace("DONE calculating CBlock for {}" , info);
 
 					bucketManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);
 				}
 			}
 			catch (Exception e) {
-				throw new RuntimeException(
-						String.format(
-								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s)",
-								info.getCBlockId(),
-								info.getConnector()
-						),
-						e
-				);
+				throw new RuntimeException("Exception in CalculateCBlocksJob %s".formatted(info), e);
 			}
 		}
 
