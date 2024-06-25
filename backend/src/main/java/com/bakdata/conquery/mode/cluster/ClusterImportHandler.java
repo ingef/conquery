@@ -116,7 +116,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 		Import imp = null;
 
-		List<Collection<String>> collectedEntities =  new ArrayList<>();
+		final List<Collection<String>> collectedEntities =  new ArrayList<>();
 
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 

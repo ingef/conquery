@@ -17,11 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -53,6 +48,10 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -132,10 +131,6 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
-		importTableContents(support, Arrays.asList(tables));
-	}
-
 	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
 		List<File> descriptions = new ArrayList<>();
@@ -177,30 +172,48 @@ public class LoadingUtil {
 		return preprocessedFiles;
 	}
 
-	public static void importCqppFile(StandaloneSupport support, File cqpp) {
-		assertThat(cqpp).exists();
+	public static void uploadCqpp(StandaloneSupport support, File cqpp, boolean update, Response.Status.Family expectedResponseFamily) {
+		if(update) {
+			assertThat(cqpp).exists();
+		}
 
-		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
-											 .queryParam("file", cqpp)
-											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId().toString()));
+		final String methodName = update ? "updateImport" : "addImport";
+
+		final URI addImport =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, methodName)
+							   .queryParam("file", cqpp)
+							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+
+		final Entity<Entity<String>> entity = Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE);
 
 		final Invocation.Builder request = support.getClient()
 												  .target(addImport)
 												  .request(MediaType.APPLICATION_JSON);
-		try (final Response response = request
-				.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))) {
+
+		final Invocation invocation = update ? request.buildPut(entity) : request.buildPost(entity);
+
+		log.info("sending CQPP with {}", invocation);
+
+		try (final Response response = invocation.invoke()) {
 
 			assertThat(response.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+					.isEqualTo(expectedResponseFamily);
 		}
 	}
 
-	public static void updateCqppFile(StandaloneSupport support, File cqpp, Response.Status.Family expectedResponseFamily, String expectedReason) {
-		assertThat(cqpp).exists();
+	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
+		for (File cqpp : cqppFiles) {
+			uploadCqpp(support, cqpp, false, Response.Status.Family.SUCCESSFUL);
+		}
 
-		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateImport")
-											 .queryParam("file", cqpp)
+		support.waitUntilWorkDone();
+
+		calculateCBlocks(support);
+	}
+
+	public static void calculateCBlocks(StandaloneSupport support) {
+		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "calculateCBlocks")
 											 .buildFromMap(Map.of(
 													 ResourceConstants.DATASET, support.getDataset().getId()
 											 ));
@@ -208,26 +221,18 @@ public class LoadingUtil {
 		final Invocation.Builder request = support.getClient()
 												  .target(addImport)
 												  .request(MediaType.APPLICATION_JSON);
-		try (final Response response = request
-				.put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
 
+		try (final Response response = request.post(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
 			assertThat(response.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(expectedResponseFamily);
-			assertThat(response.getStatusInfo().getReasonPhrase())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(expectedReason);
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
-	}
 
-	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
-		for (File cqpp : cqppFiles) {
-			importCqppFile(support, cqpp);
-		}
 	}
 
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		List<File> cqpps = generateCqpp(support, tables);
+
 		importCqppFiles(support, cqpps);
 	}
 
@@ -275,6 +280,8 @@ public class LoadingUtil {
 		for (Concept<?> concept : concepts) {
 			updateConcept(support, concept, expectedResponseFamily);
 		}
+
+		calculateCBlocks(support);
 	}
 
 	private static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
