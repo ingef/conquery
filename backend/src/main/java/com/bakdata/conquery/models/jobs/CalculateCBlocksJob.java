@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -57,6 +59,7 @@ public class CalculateCBlocksJob extends Job {
 
 		getProgressReporter().setMax(infos.size());
 
+
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(getExecutorService());
 
 		final List<? extends ListenableFuture<?>> futures =
@@ -67,7 +70,17 @@ public class CalculateCBlocksJob extends Job {
 
 		log.debug("DONE CalculateCBlocks for {} entries.", infos.size());
 
-		Futures.allAsList(futures).get();
+
+		final ListenableFuture<?> all = Futures.allAsList(futures);
+
+		while(!all.isDone()) {
+			try {
+				all.get(1, TimeUnit.MINUTES);
+			}
+			catch (TimeoutException exception) {
+				log.debug("submitted={}, pool={}", infos, getExecutorService());
+			}
+		}
 	}
 
 	private CalculationInformationProcessor createInformationProcessor(CalculationInformation info) {
