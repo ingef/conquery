@@ -25,7 +25,7 @@ class RegisterImportEntities extends Job {
 
 
 				if (namespace.getStorage().containsEntity(entity)) {
-					return;
+					continue;
 				}
 
 				namespace.getStorage().registerEntity(entity);

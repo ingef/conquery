@@ -24,7 +24,7 @@ public class ImportBucket extends WorkerMessage {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.trace("Received {}", bucket.getId());
+		log.debug("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
 
 		context.addBucket(bucket);
 	}
