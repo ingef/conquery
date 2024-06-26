@@ -26,7 +26,7 @@ public abstract class TestForm extends Form implements InternalForm {
 	@Override
 	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ManagedInternalForm<TestForm> form = new ManagedInternalForm<>(this, owner, submittedDataset);
-		form.setMetaIdResolver(storage);
+		form.setMetaStorage(storage);
 		return form;
 	}
 

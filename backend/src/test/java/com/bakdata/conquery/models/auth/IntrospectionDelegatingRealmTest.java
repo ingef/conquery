@@ -213,7 +213,7 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionSimpleUserExisting() {
-		USER_1.setMetaIdResolver(STORAGE);
+		USER_1.setMetaStorage(STORAGE);
 		USER_1.updateStorage();
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
@@ -227,7 +227,7 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionGroupedUser() {
-		USER_2.setMetaIdResolver(STORAGE);
+		USER_2.setMetaStorage(STORAGE);
 		USER_2.updateStorage();
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_2_TOKEN_WRAPPED);

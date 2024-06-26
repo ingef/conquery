@@ -8,9 +8,11 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -21,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -45,7 +46,8 @@ public class SerializationTestUtil<T> {
 					ThreadLocal.class,
 					User.ShiroUserAdapter.class,
 					Validator.class,
-					WeakReference.class
+					WeakReference.class,
+					NamespaceStorage.class
 			};
 
 	private final JavaType type;
@@ -117,6 +119,9 @@ public class SerializationTestUtil<T> {
 	}
 
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
+
+		ValidatorHelper.failOnError(log, validator.validate(value));
+
 		for (Injectable injectable : injectables) {
 			mapper = injectable.injectInto(mapper);
 		}
@@ -124,7 +129,6 @@ public class SerializationTestUtil<T> {
 		ObjectReader reader = mapper.readerFor(type);
 
 
-		ValidatorHelper.failOnError(log, validator.validate(value));
 		byte[] src = writer.writeValueAsBytes(value);
 		T copy = reader.readValue(src);
 
@@ -145,7 +149,9 @@ public class SerializationTestUtil<T> {
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
-				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
+				.usingOverriddenEquals()
+				.ignoringFieldsOfTypes(TYPES_TO_IGNORE)
+				.ignoringFields("metaStorage", "nsIdResolver");
 
 		// Apply assertion customizations
 		ass = assertCustomizer.apply(ass);

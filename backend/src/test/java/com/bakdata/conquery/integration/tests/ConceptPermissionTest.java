@@ -34,7 +34,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final QueryTest test = JsonIntegrationTest.readJson(dataset.getId(), testJson);
 		final User user = new User("testUser", "testUserLabel");
 
-		user.setMetaIdResolver(storage);
+		user.setMetaStorage(storage);
 		user.updateStorage();
 
 		// Manually import data, so we can do our own work.

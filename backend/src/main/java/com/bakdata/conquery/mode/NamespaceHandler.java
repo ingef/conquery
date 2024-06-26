@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.View;
@@ -23,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry);
+	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry, InternalObjectMapperCreator mapperCreator);
 
 	void removeNamespace(DatasetId id, N namespace);
 
@@ -31,17 +30,15 @@ public interface NamespaceHandler<N extends Namespace> {
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService, MetricRegistry metricRegistry) {
-		List<Injectable> injectables = new ArrayList<>();
+		ArrayList<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
 		injectables.add(storage);
-		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
-		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
-		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+		Injectable[] injectablesArray = injectables.toArray(Injectable[]::new);
 
+		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class, injectablesArray);
+		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class, injectablesArray);
+		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null, injectablesArray);
 		// Open stores
 		storage.openStores(persistenceMapper, metricRegistry);
 

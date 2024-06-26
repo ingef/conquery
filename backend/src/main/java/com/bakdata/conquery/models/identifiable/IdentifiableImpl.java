@@ -22,7 +22,8 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Getter(AccessLevel.PROTECTED)
 	@EqualsAndHashCode.Exclude
 	@JsonIgnore
-	private transient MetaStorage metaIdResolver;
+	private transient MetaStorage metaStorage;
+
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@EqualsAndHashCode.Exclude
@@ -36,7 +37,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 		if (cachedId == null) {
 			final ID intern = createId();
 			// Set resolver
-			IdDeserializer.setResolver(intern, metaIdResolver, nsIdResolver);
+			IdDeserializer.setResolver(intern, metaStorage, nsIdResolver);
 
 			cachedId = intern;
 		}

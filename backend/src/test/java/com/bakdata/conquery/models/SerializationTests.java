@@ -44,6 +44,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -135,6 +136,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void user() throws IOException, JSONException {
 		User user = new User("user", "user");
+		user.setMetaStorage(getMetaStorage());
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company");
@@ -152,6 +154,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void group() throws IOException, JSONException {
 		Group group = new Group("group", "group");
+		group.setMetaStorage(getMetaStorage());
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(new Role("company", "company"));
@@ -284,7 +287,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		TreeConcept concept = createConcept(dataset, namespaceStorage, workerStorage);
 
 		SerializationTestUtil
-				.forType(TreeConcept.class)
+				.forType(Concept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(concept);
 	}
@@ -506,7 +509,9 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		concept.setElements(Collections.singletonList(testConcept.getId()));
 		CQTable[] tables = {new CQTable()};
-		connector.setTable(new Table().getId());
+		Table table = new Table();
+		table.setDataset(dataset.getId());
+		connector.setTable(table.getId());
 		tables[0].setConnector(connector.getId());
 		tables[0].setConcept(concept);
 		concept.setTables(Arrays.asList(tables));
@@ -543,39 +548,45 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 	@Test
-	public void serialize() throws IOException, JSONException {
+	public void cBlock() throws IOException, JSONException {
+		final WorkerStorage workerStorage = getWorkerStorage();
 
 		final Dataset dataset = new Dataset();
+		dataset.setNsIdResolver(workerStorage);
 		dataset.setName("dataset");
 
 		final TreeConcept concept = new TreeConcept();
+		concept.setNsIdResolver(workerStorage);
 		concept.setDataset(dataset.getId());
 		concept.setName("concept");
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
+		connector.setNsIdResolver(workerStorage);
 		connector.setName("connector");
 
 		connector.setConcept(concept);
 		concept.setConnectors(List.of(connector));
 
 		final Table table = new Table();
+		table.setNsIdResolver(workerStorage);
 		table.setName("table");
 		table.setDataset(dataset.getId());
 
 		final Import imp = new Import(table.getId());
+		imp.setNsIdResolver(workerStorage);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
-
-
-		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10, getWorkerStorage());
-
-		final WorkerStorage workerStorage = getWorkerStorage();
 		workerStorage.updateDataset(dataset);
 		workerStorage.addTable(table);
 		workerStorage.updateConcept(concept);
-		workerStorage.addBucket(bucket);
 		workerStorage.addImport(imp);
+
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
+
+		workerStorage.addBucket(bucket);
+
+		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10, getWorkerStorage());
+
 
 		SerializationTestUtil.forType(CBlock.class)
 							 .objectMappers(getShardInternalMapper())

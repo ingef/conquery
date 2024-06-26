@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
@@ -53,6 +54,10 @@ public class SerialisationObjectsUtil {
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
 
+		final SecondaryIdDescription secondaryIdDescription = new SecondaryIdDescription();
+		secondaryIdDescription.setDataset(dataset.getId());
+		secondaryIdDescription.setName("sid");
+
 		Table table = new Table();
 
 		Column column = new Column();
@@ -69,9 +74,9 @@ public class SerialisationObjectsUtil {
 
 
 		table.setColumns(new Column[]{column, dateColumn});
-		table.setDataset(dataset.getId());
 		table.setLabel("tableLabel");
 		table.setName("tableName");
+		table.setDataset(dataset.getId());
 
 		column.setTable(table);
 
@@ -79,9 +84,27 @@ public class SerialisationObjectsUtil {
 		connector.setConcept(concept);
 		connector.setLabel("connLabel");
 		connector.setName("connName");
-		connector.setColumn(column.getId());
 
 		concept.setConnectors(List.of(connector));
+
+
+		for (NamespacedStorage storage : storages) {
+			// TODO this is not clean setting the resolver
+			connector.setNsIdResolver(storage);
+			column.setNsIdResolver(storage);
+			dateColumn.setNsIdResolver(storage);
+			secondaryIdDescription.setNsIdResolver(storage);
+			table.setNsIdResolver(storage);
+
+			storage.updateDataset(dataset);
+			storage.addSecondaryId(secondaryIdDescription);
+			storage.addTable(table);
+
+		}
+
+		// Set/Create ids after setting id resolver
+		connector.setColumn(column.getId());
+		column.setSecondaryId(secondaryIdDescription.getId());
 
 		ValidityDate valDate = ValidityDate.create(dateColumn);
 		valDate.setConnector(connector);
@@ -89,9 +112,9 @@ public class SerialisationObjectsUtil {
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
 
-		for (NamespacedStorage storage : storages) {
-			storage.addTable(table);
-		}
+		// Initialize Concept
+		concept = new TreeConcept.TreeConceptInitializer().convert(concept);
+
 		return concept;
 	}
 
@@ -129,7 +152,7 @@ public class SerialisationObjectsUtil {
 	@NotNull
 	public static User createUser(MetaStorage metaStorage) {
 		final User user = new User("test-user", "test-user");
-		user.setMetaIdResolver(metaStorage);
+		user.setMetaStorage(metaStorage);
 		user.updateStorage();
 		return user;
 	}

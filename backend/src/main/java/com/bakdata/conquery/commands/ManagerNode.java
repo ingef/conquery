@@ -214,12 +214,14 @@ public class ManagerNode implements Managed {
 	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
+		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass, getConfig(), getDatasetRegistry(), getStorage());
 	}
 
 	private void openMetaStorage() {
 		log.info("Opening MetaStorage");
-		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class), getEnvironment().metrics());
+		getStorage().openStores(
+				getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class, getStorage(), getDatasetRegistry(), getConfig()),
+				getEnvironment().metrics());
 	}
 
 	@SneakyThrows(InterruptedException.class)

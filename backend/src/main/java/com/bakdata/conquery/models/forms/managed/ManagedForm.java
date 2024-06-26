@@ -60,7 +60,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
 				final FormConfig formConfig = build.intern(getOwner(), getDataset());
 
-				getMetaIdResolver().addFormConfig(formConfig);
+				getMetaStorage().addFormConfig(formConfig);
 			}
 		}
 	}

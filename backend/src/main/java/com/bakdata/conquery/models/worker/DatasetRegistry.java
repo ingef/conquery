@@ -65,6 +65,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
         datasetStorage.openStores(persistenceMapper, metricRegistry);
+        dataset.setNsIdResolver(datasetStorage);
         datasetStorage.updateDataset(dataset);
         EntityIdMap idMapping = new EntityIdMap();
         idMapping.setStorage(datasetStorage);
@@ -76,7 +77,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
     }
 
 	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, MetricRegistry metricRegistry) {
-        final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService, metricRegistry);
+        final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService, metricRegistry, internalObjectMapperCreator);
         add(namespace);
         return namespace;
     }

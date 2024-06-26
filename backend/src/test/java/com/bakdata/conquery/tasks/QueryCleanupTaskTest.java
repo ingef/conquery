@@ -41,7 +41,7 @@ class QueryCleanupTaskTest {
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
 		STORAGE.addExecution(managedQuery);
-		managedQuery.setMetaIdResolver(STORAGE);
+		managedQuery.setMetaStorage(STORAGE);
 
 		return managedQuery;
 	}

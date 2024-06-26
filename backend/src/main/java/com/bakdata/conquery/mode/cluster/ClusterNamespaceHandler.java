@@ -21,10 +21,9 @@ import lombok.RequiredArgsConstructor;
 public class ClusterNamespaceHandler implements NamespaceHandler<DistributedNamespace> {
 	private final ClusterState clusterState;
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry) {
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry, InternalObjectMapperCreator mapperCreator) {
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService, metricRegistry);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);

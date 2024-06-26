@@ -160,7 +160,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
-		managed.setMetaIdResolver(storage);
+		managed.setMetaStorage(storage);
 		managed.setNsIdResolver(namespace.getStorage());
 
 		// Store the execution

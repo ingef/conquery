@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.storage.NsIdResolver;
@@ -30,7 +31,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -119,7 +119,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 			column = connector.getColumn().resolve();
 
-			treeConcept.initializeIdCache(bucket.getImp().resolve());
+			treeConcept.initializeIdCache(bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
 		else if (treeConcept.countElements() == 1) {
@@ -135,7 +135,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
 
-		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp().resolve());
+		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
 
 		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 

@@ -39,8 +39,8 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 		User user = new User("testUser@test.de", "testUserName");
 		UserId userId = user.getId();
 
-		mandator.setMetaIdResolver(storage);
-		user.setMetaIdResolver(storage);
+		mandator.setMetaStorage(storage);
+		user.setMetaStorage(storage);
 
 		try {
 

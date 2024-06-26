@@ -235,7 +235,7 @@ public class BucketManager {
 
 		storage.getAllConcepts()
 			   .filter(TreeConcept.class::isInstance)
-			   .forEach(concept -> ((TreeConcept) concept).removeImportCache(imp));
+			   .forEach(concept -> ((TreeConcept) concept).removeImportCache(imp.getId()));
 
 		storage.removeImport(imp.getId());
 	}

@@ -42,7 +42,7 @@ public class ProtoRole {
 
 
 		Role role = new Role(name, label);
-		role.setMetaIdResolver(storage);
+		role.setMetaStorage(storage);
 
 		storage.updateRole(role);
 

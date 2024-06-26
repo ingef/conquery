@@ -55,7 +55,7 @@ public class ProtoUser {
 		}
 
 		final User user = new User(name, label);
-		user.setMetaIdResolver(storage);
+		user.setMetaStorage(storage);
 		storage.updateUser(user);
 
 		if (roles != null){

@@ -71,7 +71,7 @@ public class ExcelResultRenderTest {
 		metaStorage.openStores(null, new MetricRegistry());
 
 		User user = new User("test", "test");
-		user.setMetaIdResolver(metaStorage);
+		user.setMetaStorage(metaStorage);
 		user.updateStorage();
 
 

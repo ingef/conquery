@@ -50,6 +50,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
+	@JsonIgnore
+	private transient Namespace namespace;
+
 	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
@@ -57,9 +60,14 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	protected void doInitExecutable(Namespace namespace) {
-		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaIdResolver(), null));
+		this.namespace = namespace;
 	}
 
+	@Override
+	public void start() {
+		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
+		super.start();
+	}
 
 	@Override
 	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {

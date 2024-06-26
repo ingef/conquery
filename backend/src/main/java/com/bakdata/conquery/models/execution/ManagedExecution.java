@@ -181,7 +181,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			getMetaIdResolver().updateExecution(this);
+			getMetaStorage().updateExecution(this);
 		}
 	}
 
@@ -197,7 +197,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			getMetaIdResolver().updateExecution(this);
+			getMetaStorage().updateExecution(this);
 
 		}
 
@@ -285,7 +285,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : getMetaIdResolver().getAllGroups().toList()) {
+		for (Group group : getMetaStorage().getAllGroups().toList()) {
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());

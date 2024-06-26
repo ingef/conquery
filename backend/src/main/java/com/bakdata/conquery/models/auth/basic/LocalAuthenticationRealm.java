@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
@@ -16,7 +17,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
-import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
 import io.dropwizard.util.Duration;
-import jakarta.validation.Validator;
 import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
@@ -143,7 +142,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			throw new CredentialsException("No password hash was found for user: " + username);
 		}
 
-		final String hash = hashedEntry.getHash();
+		final String hash = hashedEntry.hash();
 		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
 			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
 		}

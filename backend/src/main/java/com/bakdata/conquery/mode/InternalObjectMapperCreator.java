@@ -1,18 +1,16 @@
 package com.bakdata.conquery.mode;
 
 import javax.annotation.Nullable;
+import jakarta.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -24,27 +22,22 @@ import lombok.RequiredArgsConstructor;
 public class InternalObjectMapperCreator {
 	private final ConqueryConfig config;
 	private final Validator validator;
-	private DatasetRegistry<? extends Namespace> datasetRegistry = null;
-	private MetaStorage storage = null;
 
-	public void init(DatasetRegistry<? extends Namespace> datasetRegistry, MetaStorage storage) {
-		this.datasetRegistry = datasetRegistry;
-		this.storage = storage;
-	}
-
-	public ObjectMapper createInternalObjectMapper(@Nullable Class<? extends View> viewClass) {
-		if (datasetRegistry == null || storage == null) {
-			throw new IllegalStateException("%s must be initialized by calling its init method".formatted(this.getClass().getSimpleName()));
-		}
+	public ObjectMapper createInternalObjectMapper(@Nullable Class<? extends View> viewClass, Injectable ... injectables) {
 
 		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER.copy()));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
-		getDatasetRegistry().injectInto(objectMapper);
-		getStorage().injectInto(objectMapper);
+
 		getConfig().injectInto(objectMapper);
+
+		for (Injectable injectable : injectables) {
+			injectable.injectInto(objectMapper);
+		}
+
 
 
 		if (viewClass != null) {

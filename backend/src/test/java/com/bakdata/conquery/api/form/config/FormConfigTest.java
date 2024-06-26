@@ -128,7 +128,7 @@ public class FormConfigTest {
 
 
 		user = new User("test", "test");
-		user.setMetaIdResolver(storage);
+		user.setMetaStorage(storage);
 		storage.addUser(user);
 	}
 
@@ -297,10 +297,10 @@ public class FormConfigTest {
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1", "test1");
-		group1.setMetaIdResolver(storage);
+		group1.setMetaStorage(storage);
 		storage.addGroup(group1);
 		Group group2 = new Group("test2", "test2");
-		group2.setMetaIdResolver(storage);
+		group2.setMetaStorage(storage);
 		storage.addGroup(group2);
 
 		group1.addMember(user);

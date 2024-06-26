@@ -31,11 +31,10 @@ import org.jooq.DSLContext;
 public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
 	private final SqlDialectFactory dialectFactory;
 
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry) {
+	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry, InternalObjectMapperCreator mapperCreator) {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService, metricRegistry);
 

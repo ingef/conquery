@@ -88,12 +88,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		Group group = new Group("group", "GROUP");
 		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
 
-		role.setMetaIdResolver(storage);
-		roleToDelete.setMetaIdResolver(storage);
-		user.setMetaIdResolver(storage);
-		userToDelete.setMetaIdResolver(storage);
-		group.setMetaIdResolver(storage);
-		groupToDelete.setMetaIdResolver(storage);
+		role.setMetaStorage(storage);
+		roleToDelete.setMetaStorage(storage);
+		user.setMetaStorage(storage);
+		userToDelete.setMetaStorage(storage);
+		group.setMetaStorage(storage);
+		groupToDelete.setMetaStorage(storage);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation

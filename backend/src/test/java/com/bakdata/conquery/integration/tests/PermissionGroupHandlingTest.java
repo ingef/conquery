@@ -33,9 +33,9 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 		TestUser user1 = new TestUser(storage);
 		Group group1 = new Group("company", "company");
 
-		role1.setMetaIdResolver(storage);
-		user1.setMetaIdResolver(storage);
-		group1.setMetaIdResolver(storage);
+		role1.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
+		group1.setMetaStorage(storage);
 
 		try {
 

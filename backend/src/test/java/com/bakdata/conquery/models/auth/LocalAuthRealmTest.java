@@ -22,12 +22,7 @@ import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.CredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.util.LifecycleUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
@@ -69,8 +64,9 @@ public class LocalAuthRealmTest {
 	public void setupEach() {
 		// Create User in Realm
 		user1 = new User("TestUser", "Test User");
+		user1.setMetaStorage(storage);
+		user1.updateStorage();
 		PasswordCredential user1Password = new PasswordCredential("testPassword");
-		storage.addUser(user1);
 		realm.addUser(user1, user1Password);
 	}
 

@@ -96,7 +96,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
 				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTable().getId());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTableId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}

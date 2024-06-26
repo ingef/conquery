@@ -121,7 +121,7 @@ public class ExternalForm extends Form implements SubTyped {
 	@Override
 	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
 		ExternalExecution externalExecution = new ExternalExecution(this, owner, submittedDataset);
-		externalExecution.setMetaIdResolver(storage);
+		externalExecution.setMetaStorage(storage);
 		return externalExecution;
 	}
 

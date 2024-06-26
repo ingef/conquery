@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -68,14 +68,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private List<UniversalSelect> selects = new ArrayList<>();
 
 	@JsonIgnore
-	private final Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
+	private final Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
 
-	public ConceptTreeCache getCache(Import imp) {
+	public ConceptTreeCache getCache(ImportId imp) {
 		return caches.get(imp);
 	}
 
@@ -101,8 +101,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		setLocalId(0);
 		localIdMap.add(this);
 
-		final List<ConceptTreeChild> openList = new ArrayList<>();
-		openList.addAll(getChildren());
+		final List<ConceptTreeChild> openList = new ArrayList<>(getChildren());
 
 		for (ConceptTreeConnector con : getConnectors()) {
 			if (con.getCondition() == null) {
@@ -195,11 +194,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return nChildren = 1 + (int) getAllChildren().count();
 	}
 
-	public void initializeIdCache(Import importId) {
+	public void initializeIdCache(ImportId importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this));
 	}
 
-	public void removeImportCache(Import imp) {
+	public void removeImportCache(ImportId imp) {
 		caches.remove(imp);
 	}
 

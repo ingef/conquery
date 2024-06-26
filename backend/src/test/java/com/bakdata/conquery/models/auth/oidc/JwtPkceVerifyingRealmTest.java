@@ -105,8 +105,8 @@ class JwtPkceVerifyingRealmTest {
 		User expected = new User("Test", "Test");
 		Role role = new Role("admin", "admin");
 
-		expected.setMetaIdResolver(STORAGE);
-		role.setMetaIdResolver(STORAGE);
+		expected.setMetaStorage(STORAGE);
+		role.setMetaStorage(STORAGE);
 
 		STORAGE.updateRole(role);
 		STORAGE.updateUser(expected);

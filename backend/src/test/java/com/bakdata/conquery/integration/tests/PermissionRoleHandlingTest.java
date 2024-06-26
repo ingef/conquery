@@ -25,8 +25,8 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 		Role mandator1 = new Role("company", "company");
 		TestUser user1 = new TestUser(storage);
 
-		mandator1.setMetaIdResolver(storage);
-		user1.setMetaIdResolver(storage);
+		mandator1.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
 
 		try {
 
