@@ -277,7 +277,7 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+	public CachedStore<String, Boolean> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
 	}
 

@@ -73,8 +73,10 @@ public class StandaloneSupport implements TestSupport {
 				Map.of(
 						"in", tmpDir,
 						"out", tmpDir,
-						"desc", descriptions
-
+						"desc", descriptions,
+						"buckets", 10,
+						"strict", true,
+						"fast-fail", true
 				)
 		);
 

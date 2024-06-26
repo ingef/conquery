@@ -20,7 +20,7 @@ public class AddImport extends WorkerMessage {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.info("Received Import[{}], containing {} entries.", imp.getId(), imp.getNumberOfEntries());
+		log.trace("Received Import[{}], containing {} entries.", imp.getId(), imp.getNumberOfEntries());
 		context.addImport(imp);
 	}
 

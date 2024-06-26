@@ -20,7 +20,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), null);
+		super(0, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), null);
 		this.setStores(new ColumnStore[0]);
 	}
 

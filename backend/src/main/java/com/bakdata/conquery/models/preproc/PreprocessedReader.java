@@ -2,13 +2,8 @@ package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
 
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +11,7 @@ import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
 /**
@@ -23,7 +19,7 @@ import lombok.experimental.Accessors;
  * Header then Dictionaries then Data. Only this order is possible.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class PreprocessedReader implements AutoCloseable {
+public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedData> {
 	@Override
 	public void close() throws IOException {
 		parser.close();
@@ -40,45 +36,39 @@ public class PreprocessedReader implements AutoCloseable {
 
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
+	private int bucketsRemaining;
 	private final JsonParser parser;
-	private final Map<Id<?>, Identifiable<?>> replacements = new HashMap<>();
 
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
-		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(objectMapper)
-				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-				.getFactory()
-				.createParser(inputStream);
+		parser = objectMapper.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+							 .getFactory()
+							 .createParser(inputStream);
 	}
 
-	public void addReplacement(Id<?> id, Identifiable<?> replacement) {
-		this.replacements.put(id, replacement);
-	}
-
-	public <K extends Id<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
-		this.replacements.putAll(replacements);
-	}
 
 	public PreprocessedHeader readHeader() throws IOException {
 		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
+		bucketsRemaining = header.getNumberOfBuckets();
 
 		lastRead = lastRead.next();
 		return header;
 	}
 
 
+	@Override
+	public boolean hasNext() {
+		return bucketsRemaining > 0;
+	}
 
-	public PreprocessedData readData() throws IOException {
-		Preconditions.checkState(lastRead.equals(LastRead.HEADER));
+	@SneakyThrows
+	@Override
+	public PreprocessedData next() {
+		bucketsRemaining--;
 
-		final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
-
-		lastRead = lastRead.next();
-		return dictionaries;
+		return parser.readValueAs(PreprocessedData.class);
 	}
 
 }
