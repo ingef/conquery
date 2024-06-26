@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -135,7 +136,10 @@ public class StoredQueriesProcessorTest {
 		NamespaceStorage namespaceStorage0 = namespace0.getStorage();
 		NamespaceStorage namespaceStorage1 = namespace1.getStorage();
 
-
+		EntityIdMap entityIdMap = new EntityIdMap();
+		String idColumnName = CONFIG.getIdColumns().getIds().get(0).getName();
+		entityIdMap.addInputMapping("0", new EntityIdMap.ExternalId(idColumnName, "0"));
+		namespaceStorage0.updateIdMapping(entityIdMap);
 
 		Concept<?> CONCEPT_0 = SerialisationObjectsUtil.createConcept(DATASET_0, namespaceStorage0);
 		Concept<?> CONCEPT_1 = SerialisationObjectsUtil.createConcept(DATASET_1, namespaceStorage1);
@@ -179,7 +183,8 @@ public class StoredQueriesProcessorTest {
 		cqConcept.setTables(List.of(cqTable));
 
 		final String[][] externalValues= new String[][]{
-				{"ext_val"}
+				{idColumnName},
+				{"0"}
 		};
 		QUERIES= ImmutableList.of(
 				mockManagedConceptQueryFrontEnd(user0, QUERY_ID_0, NEW, CONCEPT_0, 100L),            // included
@@ -193,7 +198,7 @@ public class StoredQueriesProcessorTest {
 					setChildren(List.of(cqConcept));
 				}}, secondaryIdDescription0),    // included, but secondaryId-Query
 				mockManagedSecondaryIdQueryFrontEnd(user1, QUERY_ID_8, DONE, cqConcept, secondaryIdDescription0),    // not-included, wrong structure
-				mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), externalValues, false)), user1, QUERY_ID_9, DONE, DATASET_0, 100L),        // included
+				mockManagedQuery(new ConceptQuery(new CQExternal(List.of(idColumnName), externalValues, false)), user1, QUERY_ID_9, DONE, DATASET_0, 100L),        // included
 				mockManagedConceptQueryFrontEnd(user1, QUERY_ID_10, DONE, CONCEPT_0, 2_000_000L)        // included, but no result url for xlsx (result has too many rows)
 
 		);
