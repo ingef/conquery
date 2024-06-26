@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.PrincipalCollection;
 
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, Subject {
 
@@ -34,6 +36,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	// protected for testing purposes
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
+	@EqualsAndHashCode.Exclude
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	@JsonCreator

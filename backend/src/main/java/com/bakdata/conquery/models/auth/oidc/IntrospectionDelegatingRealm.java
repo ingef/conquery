@@ -41,11 +41,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.BearerToken;
-import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.jetbrains.annotations.Nullable;
@@ -291,6 +287,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		private synchronized Group createGroup(String name, String label) {
 			// TODO mark group as managed by keycloak
 			final Group group = new Group(name, label);
+			group.setMetaStorage(storage);
 
 			// Recheck group existence in synchronized part
 			final Group existing = storage.getGroup(group.getId());

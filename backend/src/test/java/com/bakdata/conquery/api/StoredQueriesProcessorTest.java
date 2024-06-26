@@ -75,9 +75,9 @@ public class StoredQueriesProcessorTest {
 	@RegisterExtension
 	private static final MetaStorageExtention STORAGE_EXTENTION = new MetaStorageExtention(METRIC_REGISTRY);
 	@RegisterExtension
-	private static final UserExtension USER_0_EXTENSIONS = new UserExtension(STORAGE_EXTENTION.getMetaStorage(), 0);
+	private static final UserExtension USER_0_EXTENSIONS = new UserExtension(STORAGE_EXTENTION.getMetaStorage(), "0");
 	@RegisterExtension
-	private static final UserExtension USER_1_EXTENSIONS = new UserExtension(STORAGE_EXTENTION.getMetaStorage(), 1);
+	private static final UserExtension USER_1_EXTENSIONS = new UserExtension(STORAGE_EXTENTION.getMetaStorage(), "1");
 
 	private static final Validator VALIDATOR = Validators.newValidator();
 	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{ setStorage(new NonPersistentStoreFactory());}};

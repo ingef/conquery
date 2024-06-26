@@ -12,9 +12,13 @@ public class UserExtension implements BeforeAllCallback {
 	@Getter
 	private final User user;
 
-	public UserExtension(MetaStorage metaStorage, int id) {
+	public UserExtension(MetaStorage metaStorage, String id, String label) {
 		this.metaStorage = metaStorage;
-		user = new User("user" + id, null);
+		user = new User(id, label);
+	}
+
+	public UserExtension(MetaStorage metaStorage, String id) {
+		this(metaStorage, id, id);
 	}
 
 	@Override
