@@ -128,9 +128,10 @@ public class ClusterImportHandler implements ImportHandler {
 				namespace.getStorage().updateImport(imp);
 			}
 
-			log.trace("DONE reading bucket {}.{}, contains {} entities.", importId, container.getBucketId(), container.size());
 
 			final Bucket bucket = Bucket.fromPreprocessed(table, container, imp);
+
+			log.trace("DONE reading bucket `{}`, contains {} entities.", bucket.getId(), bucket.entities().size());
 
 			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucket.getId());
 
@@ -145,7 +146,7 @@ public class ClusterImportHandler implements ImportHandler {
 				new RegisterImportEntities(collectedEntities, namespace, importId)
 		);
 
-		log.debug("Successfully read {} Buckets, containing {} entities for {}", header.getNumberOfBuckets(), header.getNumberOfEntities(), importId);
+		log.debug("Successfully read {} Buckets, containing {} entities for `{}`", header.getNumberOfBuckets(), header.getNumberOfEntities(), importId);
 
 		namespace.getWorkerHandler().sendUpdatedWorkerInformation();
 

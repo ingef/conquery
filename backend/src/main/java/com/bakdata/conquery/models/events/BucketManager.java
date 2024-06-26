@@ -351,6 +351,11 @@ public class BucketManager {
 				job.addCBlock(bucket, connector);
 			}
 		}
+
+		if(job.isEmpty()){
+			return;
+		}
+
 		jobManager.addSlowJob(job);
 	}
 
