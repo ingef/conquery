@@ -50,6 +50,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
+	@Setter(onMethod_ = @TestOnly)
 	private NamespaceStorage storage;
 
 	@Setter
