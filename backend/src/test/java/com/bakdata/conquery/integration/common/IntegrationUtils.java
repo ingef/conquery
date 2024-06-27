@@ -15,15 +15,12 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
-import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -51,28 +48,6 @@ public class IntegrationUtils {
 		return Jackson.MAPPER.copy()
 							 .setInjectableValues(values)
 							 .readerFor(ConqueryTestSpec.class);
-	}
-
-
-	/**
-	 * Load the constellation of roles, users and permissions into the provided storage.
-	 */
-	public static void importPermissionConstellation(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
-
-		for (Role role : roles) {
-			storage.addRole(role);
-		}
-
-		for (RequiredUser rUser : rUsers) {
-			final User user = rUser.getUser();
-			storage.addUser(user);
-
-			final RoleId[] rolesInjected = rUser.getRolesInjected();
-
-			for (RoleId mandatorId : rolesInjected) {
-				user.addRole(storage.getRole(mandatorId));
-			}
-		}
 	}
 
 
