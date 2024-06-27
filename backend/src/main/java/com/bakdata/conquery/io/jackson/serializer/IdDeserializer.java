@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -42,15 +41,9 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
 
 
-			NsIdResolver nsIdResolver = null;
-			MetaStorage metaStorage = null;
-			final Class<?> activeView = ctxt.getActiveView();
-			if (!isTestMode(ctxt, activeView)) {
-				// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
-				nsIdResolver = NsIdResolver.getResolver(ctxt);
-				metaStorage = MetaStorage.get(ctxt);
-			}
-
+			// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
+			NsIdResolver nsIdResolver = NsIdResolver.getResolver(ctxt);
+			MetaStorage metaStorage = MetaStorage.get(ctxt);
 			setResolver(id, metaStorage, nsIdResolver);
 
 			return id;
@@ -77,10 +70,6 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 			}
 			// TODO Handle special Ids such as WorkerId, TableImportDescriptorId ?
 		}
-	}
-
-	private static boolean isTestMode(DeserializationContext ctxt, Class<?> activeView) {
-		return activeView != null && View.TestNoResolve.class.isAssignableFrom(ctxt.getActiveView());
 	}
 
 	public static <ID extends Id<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)

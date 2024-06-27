@@ -15,7 +15,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
@@ -51,8 +50,7 @@ public class IntegrationUtils {
 
 		return Jackson.MAPPER.copy()
 							 .setInjectableValues(values)
-							 .readerFor(ConqueryTestSpec.class)
-							 .withView(View.TestNoResolve.class); // TODO View might be obsolete
+							 .readerFor(ConqueryTestSpec.class);
 	}
 
 
@@ -84,8 +82,6 @@ public class IntegrationUtils {
 
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
-	 *
-	 * @return
 	 */
 	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
