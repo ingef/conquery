@@ -91,11 +91,9 @@ public class FormConfigTest {
 			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
-			}
-			else if (id.equals(datasetId1)) {
+			} else if (id.equals(datasetId1)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset1);
-			}
-			else {
+			} else {
 				throw new IllegalStateException("Unknown dataset id.");
 			}
 			return namespaceMock;
@@ -143,9 +141,9 @@ public class FormConfigTest {
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfigAPI formConfig = FormConfigAPI.builder()
-												.formType(form.getFormType())
-												.values(mapper.valueToTree(form))
-												.build();
+				.formType(form.getFormType())
+				.values(mapper.valueToTree(form))
+				.build();
 
 		processor.addConfig(user, dataset, formConfig);
 
@@ -192,19 +190,19 @@ public class FormConfigTest {
 
 		// CHECK
 		assertThat(response).usingRecursiveComparison()
-							.ignoringFields(FormConfigOverviewRepresentation.Fields.createdAt)
-							.isEqualTo(FormConfigFullRepresentation.builder()
-																   .formType(form.getClass().getAnnotation(CPSType.class).id())
-																   .id(formConfig.getId())
-																   .label(formConfig.getLabel())
-																   .own(true)
-																   .ownerName(user.getLabel())
-																   .shared(false)
-																   .groups(Collections.emptySet())
-																   .system(false)
-																   .tags(formConfig.getTags())
-																   .values(values)
-																   .build());
+				.ignoringFields(FormConfigOverviewRepresentation.Fields.createdAt)
+				.isEqualTo(FormConfigFullRepresentation.builder()
+						.formType(form.getClass().getAnnotation(CPSType.class).id())
+						.id(formConfig.getId())
+						.label(formConfig.getLabel())
+						.own(true)
+						.ownerName(user.getLabel())
+						.shared(false)
+						.groups(Collections.emptySet())
+						.system(false)
+						.tags(formConfig.getTags())
+						.values(values)
+						.build());
 
 	}
 
@@ -243,18 +241,18 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 
 		FormConfigAPI formConfig = FormConfigAPI.builder()
-												.formType(form.getFormType())
-												.values(mapper.valueToTree(form))
-												.build();
+				.formType(form.getFormType())
+				.values(mapper.valueToTree(form))
+				.build();
 		FormConfigAPI formConfig2 = FormConfigAPI.builder()
-												 .formType(form2.getFormType())
-												 .values(mapper.valueToTree(form2))
-												 .build();
+				.formType(form2.getFormType())
+				.values(mapper.valueToTree(form2))
+				.build();
 		// This should not be retrieved by the user because it does not hold the Permission to create TestForms
 		FormConfigAPI formConfig3 = FormConfigAPI.builder()
-												 .formType(form3.getFormType())
-												 .values(mapper.valueToTree(form2))
-												 .build();
+				.formType(form3.getFormType())
+				.values(mapper.valueToTree(form2))
+				.build();
 		FormConfigId formId = processor.addConfig(user, dataset, formConfig).getId();
 		FormConfigId formId2 = processor.addConfig(user, dataset, formConfig2).getId();
 		FormConfigId _formId3 = processor.addConfig(user, dataset, formConfig3).getId();
@@ -268,27 +266,27 @@ public class FormConfigTest {
 		// CHECK
 		assertThat(response).containsExactlyInAnyOrder(
 				FormConfigOverviewRepresentation.builder()
-												.formType(form.getClass().getAnnotation(CPSType.class).id())
-												.id(formId)
-												.label(formConfig.getLabel())
-												.own(true)
-												.ownerName(user.getLabel())
-												.shared(false)
-												.system(false)
-												.tags(formConfig.getTags())
-												.createdAt(formConfig.getCreationTime().atZone(ZoneId.systemDefault()))
-												.build(),
+						.formType(form.getClass().getAnnotation(CPSType.class).id())
+						.id(formId)
+						.label(formConfig.getLabel())
+						.own(true)
+						.ownerName(user.getLabel())
+						.shared(false)
+						.system(false)
+						.tags(formConfig.getTags())
+						.createdAt(formConfig.getCreationTime().atZone(ZoneId.systemDefault()))
+						.build(),
 				FormConfigOverviewRepresentation.builder()
-												.formType(form2.getClass().getAnnotation(CPSType.class).id())
-												.id(formId2)
-												.label(formConfig2.getLabel())
-												.own(true)
-												.ownerName(user.getLabel())
-												.shared(false)
-												.system(false)
-												.tags(formConfig2.getTags())
-												.createdAt(formConfig2.getCreationTime().atZone(ZoneId.systemDefault()))
-												.build()
+						.formType(form2.getClass().getAnnotation(CPSType.class).id())
+						.id(formId2)
+						.label(formConfig2.getLabel())
+						.own(true)
+						.ownerName(user.getLabel())
+						.shared(false)
+						.system(false)
+						.tags(formConfig2.getTags())
+						.createdAt(formConfig2.getCreationTime().atZone(ZoneId.systemDefault()))
+						.build()
 		);
 	}
 
@@ -309,9 +307,9 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfigAPI formConfig = FormConfigAPI.builder()
-												.formType(form.getFormType())
-												.values(values)
-												.build();
+				.formType(form.getFormType())
+				.values(values)
+				.build();
 		FormConfig config = processor.addConfig(user, dataset, formConfig);
 
 		// EXECUTE PART 1
@@ -319,11 +317,11 @@ public class FormConfigTest {
 				user,
 				config,
 				FormConfigPatch.builder()
-							   .label("newTestLabel")
-							   .tags(new String[]{"tag1", "tag2"})
-							   .groups(List.of(group1.getId()))
-							   .values(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))))
-							   .build()
+						.label("newTestLabel")
+						.tags(new String[]{"tag1", "tag2"})
+						.groups(List.of(group1.getId()))
+						.values(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))))
+						.build()
 		);
 
 		// CHECK PART 1
@@ -336,10 +334,13 @@ public class FormConfigTest {
 		patchedFormExpected.setOwner(user.getId());
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))));
 
+		final String[] fieldsToIgnore = new String[] {FormConfig.Fields.creationTime, "cachedId", "metaStorage", "nsIdResolver"};
 		final FormConfigId formId = config.getId();
-		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-												 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
-												 .isEqualTo(patchedFormExpected);
+		assertThat(storage.getFormConfig(formId))
+				.usingRecursiveComparison()
+				.usingOverriddenEquals()
+				.ignoringFields(fieldsToIgnore)
+				.isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
@@ -350,16 +351,16 @@ public class FormConfigTest {
 				user,
 				config,
 				FormConfigPatch.builder()
-							   .groups(List.of())
-							   .build()
+						.groups(List.of())
+						.build()
 		);
 
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 
 		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-												 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
-												 .isEqualTo(patchedFormExpected);
+				.ignoringFields(fieldsToIgnore)
+				.isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));

@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.index.IndexService;
@@ -42,6 +43,10 @@ public class IndexServiceTest {
 	public static void beforeAll() {
 
 		CONFIG.getIndex().setBaseUrl(new URI(String.format("http://localhost:%d/", REF_SERVER.getPort())));
+
+		NamespaceStorage namespaceStorage = STORAGE_EXTENSION.getStorage();
+		DATASET.setNsIdResolver(namespaceStorage);
+		namespaceStorage.updateDataset(DATASET);
 
 	}
 
@@ -104,6 +109,8 @@ public class IndexServiceTest {
 
 	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
+
+		mapInternToExternMapper.setStorage(STORAGE_EXTENSION.getStorage());
 
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);

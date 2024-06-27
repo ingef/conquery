@@ -20,13 +20,11 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
-	@EqualsAndHashCode.Exclude
 	@JsonIgnore
 	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
-	@EqualsAndHashCode.Exclude
 	@JsonIgnore
 	private transient NsIdResolver nsIdResolver;
 

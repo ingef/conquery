@@ -13,10 +13,12 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
@@ -151,7 +153,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		log.info("Restart complete");
 		
 		DatasetRegistry<?> datasetRegistry = support.getAdminDatasetsProcessor().getDatasetRegistry();
-
 		final MetaStorage restartedStorage = support.getMetaStorage();
 		assertThat(restartedStorage.getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
@@ -160,7 +161,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		{// Auth actual tests
 			User userStored = restartedStorage.getUser(user.getId());
-			assertThat(userStored).isEqualTo(user);
+			assertThat(userStored).satisfies(
+					u -> assertThat(u.getName()).isEqualTo("user@test.email"),
+					u -> assertThat(u.getLabel()).isEqualTo("USER"),
+					u -> assertThat(u.getRoles()).containsExactly(new RoleId("role")),
+					u -> assertThat(u.getPermissions()).containsExactly(new WildcardPermission("datasets:read:testdataset1"))
+			);
 			assertThat(restartedStorage.getRole(role.getId())).isEqualTo(role);
 			assertThat(restartedStorage.getGroup(group.getId())).isEqualTo(group);
 

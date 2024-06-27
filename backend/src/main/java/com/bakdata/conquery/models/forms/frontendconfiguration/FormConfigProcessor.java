@@ -117,20 +117,22 @@ public class FormConfigProcessor {
 
 		final FormConfig internalConfig = config.intern(subject.getId(), datasetId);
 		// Add the config immediately to the submitted dataset
-		addConfigToDataset(internalConfig);
-
-		return internalConfig;
+		return addConfigToDataset(internalConfig);
 	}
 
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
+	private FormConfig addConfigToDataset(FormConfig internalConfig) {
+
+		internalConfig.setMetaStorage(storage);
+		internalConfig.setNsIdResolver(datasetRegistry);
 
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
+
 		storage.addFormConfig(internalConfig);
 
-		return internalConfig.getId();
+		return storage.getFormConfig(internalConfig.getId());
 	}
 
 	/**

@@ -297,6 +297,7 @@ public class StoredQueriesProcessorTest {
 		status.setPristineLabel(true);
 		status.setCreatedAt(LocalDateTime.MIN.atZone(ZoneId.systemDefault()));
 		status.setOwner(owner.getId());
+		status.setOwnerName(owner.getLabel());
 		status.setShared(false);
 		status.setOwn(owner.equals(callingUser));
 		status.setId(id);
