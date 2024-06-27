@@ -7,8 +7,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -23,11 +21,13 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -35,6 +35,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
 public class FilterTest extends AbstractQueryEngineTest {
 
+	public static final String CONCEPT_LABEL = "concept";
+	public static final String TABLE_NAME = "table";
 	private ResourceFile expectedCsv;
 
 	@NotNull
@@ -79,22 +82,24 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Connector connector;
+	@JsonIgnore
 	private TreeConcept concept;
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 
-		((ObjectNode) rawContent.get("tables")).put("name", "table");
+		((ObjectNode) rawContent.get("tables")).put("name", TABLE_NAME);
 
-		content = parseSubTree(support, rawContent, RequiredData.class);
+		content = parseSubTree(support, rawContent, RequiredData.class, true);
 
 		concept = new TreeConcept();
-		concept.setLabel("concept");
+		concept.setLabel(CONCEPT_LABEL);
 
-		concept.setDataset(support.getDataset());
+		concept.setDataset(new DatasetId(support.getDataset().getId().getName()));
+		concept.setNsIdResolver(PlaceHolderNsIdResolver.INSTANCE);
 
 		rawConnector.put("name", "connector");
-		rawConnector.put("table", "table");
+		rawConnector.put(TABLE_NAME, TABLE_NAME);
 
 		((ObjectNode) rawConnector.get("filters")).put("name", "filter");
 
@@ -113,18 +118,18 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
+		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), false);
 
 		CQTable cqTable = new CQTable();
 
 		cqTable.setFilters(Collections.singletonList(result));
-		cqTable.setConnector(connector);
+		cqTable.setConnector(connector.getId());
 
 		CQConcept cqConcept = new CQConcept();
 
 		cqTable.setConcept(cqConcept);
 
-		cqConcept.setElements(Collections.singletonList(concept));
+		cqConcept.setElements(Collections.singletonList(concept.getId()));
 		cqConcept.setTables(Collections.singletonList(cqTable));
 
 		if (dateRange != null) {
@@ -142,7 +147,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FrontendFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
+			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().get(0);
+			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);

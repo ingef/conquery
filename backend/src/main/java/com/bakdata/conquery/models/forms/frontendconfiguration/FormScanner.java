@@ -6,12 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -43,7 +38,7 @@ public class FormScanner extends Task {
 	 * task accounts the change.
 	 */
 	private final ConqueryConfig config;
-	private List<FormConfigProvider> formConfigProviders = new ArrayList<>();
+	private final List<FormConfigProvider> formConfigProviders = new ArrayList<>();
 
 	public FormScanner(ConqueryConfig config) {
 		super("form-scanner");

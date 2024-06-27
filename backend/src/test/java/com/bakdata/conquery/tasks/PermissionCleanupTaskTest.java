@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -41,7 +42,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test_user"), new Dataset("test").getId());
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 
@@ -56,8 +57,10 @@ class PermissionCleanupTaskTest {
 
         final ManagedQuery managedQuery = createManagedQuery();
         // Saving the Execution
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
+		User user = new User("test", "test");
+        user.setMetaStorage(STORAGE);
+        user.updateStorage();
+
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
         deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
@@ -73,8 +76,10 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery = createManagedQuery();
         // Removing the execution
         STORAGE.removeExecution(managedQuery.getId());
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
+		User user = new User("test", "test");
+        user.setMetaStorage(STORAGE);
+        user.updateStorage();
+
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
         deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
@@ -91,8 +96,10 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery2 = createManagedQuery();
         // Removing the second execution
         STORAGE.removeExecution(managedQuery2.getId());
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
+		User user = new User("test", "test");
+        user.setMetaStorage(STORAGE);
+        user.updateStorage();
+
         user.addPermission(
 				// Build a permission with multiple instances
                 new WildcardPermission(List.of(
@@ -114,13 +121,18 @@ class PermissionCleanupTaskTest {
         // Created owned execution
         final ManagedQuery managedQueryOwned = createManagedQuery();
         // Setup user
-		User user = new User("test", "test", STORAGE);
-		User user2 = new User("test2", "test2", STORAGE);
+		User user = new User("test", "test");
+		User user2 = new User("test2", "test2");
 
-        STORAGE.updateUser(user);
+        user.setMetaStorage(STORAGE);
+        user.updateStorage();
+
+        user2.setMetaStorage(STORAGE);
+        user2.updateStorage();
+
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
 
-        managedQueryOwned.setOwner(user);
+        managedQueryOwned.setOwner(user.getId());
         STORAGE.updateExecution(managedQueryOwned);
 
         // Created not owned execution
@@ -129,7 +141,7 @@ class PermissionCleanupTaskTest {
         user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
         // Set owner
-        managedQueryNotOwned.setOwner(user2);
+        managedQueryNotOwned.setOwner(user2.getId());
         STORAGE.updateExecution(managedQueryNotOwned);
 
         deletePermissionsOfOwnedInstances(STORAGE, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, STORAGE::getExecution);

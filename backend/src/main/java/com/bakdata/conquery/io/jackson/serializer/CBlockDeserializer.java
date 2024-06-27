@@ -3,8 +3,6 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -29,24 +27,24 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	@Override
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
-
-		TreeConcept concept = block.getConnector().getConcept();
-
-		if(block.getMostSpecificChildren() != null) {
-
-			// deduplicate concrete paths after loading from disk.
-			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
-				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
-
-				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
-					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
-
-				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
-				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(mostSpecificChildren).getPrefix();
-			}
-		}
+		// If we cache we don't need to optimize this
+		//		TreeConcept concept = block.getConnector().getConcept();
+		//
+		//		if(block.getMostSpecificChildren() != null) {
+		//
+		//			// deduplicate concrete paths after loading from disk.
+		//			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
+		//				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
+		//
+		//				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
+		//					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
+		//					continue;
+		//				}
+		//
+		//				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
+		//				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(mostSpecificChildren).getPrefix();
+		//			}
+		//		}
 		return block;
 	}
 

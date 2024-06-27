@@ -5,7 +5,7 @@
 <#import "templates/table.html.ftl" as table>
 
 <#macro deleteTagButton id>
-  <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${id}', {method : 'delete'}).then(() => location.reload());"><i class="fas fa-trash-alt text-danger"></i></a>
+  <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.table.dataset}/tables/${c.table.id}/imports/${id}', {method : 'delete'}).then(() => location.reload());"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <#macro columnInfoRender id>
@@ -22,11 +22,11 @@
 
 <@layout.layout>
   <@breadcrumbs.breadcrumbs
-    labels=["Datasets", c.table.dataset.label, "Tables", c.table.label]
+    labels=["Datasets", c.table.dataset.resolve().label, "Tables", c.table.label]
     links=[
       "/admin-ui/datasets",
-      "/admin-ui/datasets/${c.table.dataset.id}",
-      "/admin-ui/datasets/${c.table.dataset.id}#Tables"
+      "/admin-ui/datasets/${c.table.dataset}",
+      "/admin-ui/datasets/${c.table.dataset}#Tables"
     ]
   />
   <@infoCard.infoCard
@@ -41,7 +41,7 @@
       <@table.table
         columns=["id", "name", "numberOfEntries", "actions"]
         items=c.imports?sort_by("name")
-        link="/admin-ui/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/"
+        link="/admin-ui/datasets/${c.table.dataset}/tables/${c.table.id}/import/"
         deleteButton=deleteTagButton
       />
     </@accordion.accordion>
@@ -49,7 +49,7 @@
       <@table.table
         columns=["id", "name"]
         items=c.concepts?sort_by("name")
-        link="/admin-ui/datasets/${c.table.dataset.id}/concepts/"
+        link="/admin-ui/datasets/${c.table.dataset}/concepts/"
       />
     </@accordion.accordion>
     <@accordion.accordion summary="Columns" infoText="${c.table.columns?size} entries">

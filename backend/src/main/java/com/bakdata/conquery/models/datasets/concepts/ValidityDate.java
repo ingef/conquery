@@ -3,22 +3,18 @@ package com.bakdata.conquery.models.datasets.concepts;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -27,15 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
 
-	@NsIdRef
 	@Nullable
-	private Column column;
-	@NsIdRef
+	private ColumnId column;
 	@Nullable
-	private Column startColumn;
-	@NsIdRef
+	private ColumnId startColumn;
 	@Nullable
-	private Column endColumn;
+	private ColumnId endColumn;
 	@JsonBackReference
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
@@ -43,14 +36,14 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 
 	public static ValidityDate create(Column column) {
 		final ValidityDate validityDate = new ValidityDate();
-		validityDate.setColumn(column);
+		validityDate.setColumn(column.getId());
 		return validityDate;
 	}
 
 	public static ValidityDate create(Column startColumn, Column endColumn) {
 		final ValidityDate validityDate = new ValidityDate();
-		validityDate.setColumn(startColumn);
-		validityDate.setColumn(endColumn);
+		validityDate.setColumn(startColumn.getId());
+		validityDate.setColumn(endColumn.getId());
 		return validityDate;
 	}
 
@@ -65,15 +58,16 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		// JsonCreator was not happy, and I could not figure out why. This is probably the most performant implementation that's not two classes.
 
 		if (getColumn() != null) {
-			if (bucket.has(event, getColumn())) {
-				return bucket.getAsDateRange(event, getColumn());
+			final Column resolvedColumn = getColumn().resolve();
+			if (bucket.has(event, resolvedColumn)) {
+				return bucket.getAsDateRange(event, resolvedColumn);
 			}
 
 			return null;
 		}
 
-		final Column startColumn = getStartColumn();
-		final Column endColumn = getEndColumn();
+		final Column startColumn = getStartColumn() != null ? getStartColumn().resolve() : null;
+		final Column endColumn = getEndColumn() != null ? getEndColumn().resolve() : null;
 
 		final boolean hasStart = bucket.has(event, startColumn);
 		final boolean hasEnd = bucket.has(event, endColumn);
@@ -88,8 +82,10 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		return CDateRange.of(start, end);
 	}
 
+	// TODO use Id as parameter
 	public boolean containsColumn(Column column) {
-		return column.equals(getColumn()) || column.equals(getStartColumn()) || column.equals(getEndColumn());
+		final ColumnId id = column.getId();
+		return id.equals(getColumn()) || id.equals(getStartColumn()) || id.equals(getEndColumn());
 	}
 
 	@JsonIgnore
@@ -97,17 +93,17 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	public boolean isForConnectorsTable() {
 
 		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getTable()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.getTable()));
+				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTableId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return connector.getDataset();
 	}
 

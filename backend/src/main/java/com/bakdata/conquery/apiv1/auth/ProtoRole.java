@@ -3,14 +3,14 @@ package com.bakdata.conquery.apiv1.auth;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -41,7 +41,8 @@ public class ProtoRole {
 		label = Objects.requireNonNullElse(label, name);
 
 
-		Role role = new Role(name, label, storage);
+		Role role = new Role(name, label);
+		role.setMetaStorage(storage);
 
 		storage.updateRole(role);
 

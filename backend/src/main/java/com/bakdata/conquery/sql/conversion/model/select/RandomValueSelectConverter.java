@@ -14,7 +14,7 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		String rootTableName = tables.getRootTable();
-		String columnName = select.getColumn().getName();
+		String columnName = select.getColumn().resolve().getName();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
 		String alias = selectContext.getNameGenerator().selectName(select);

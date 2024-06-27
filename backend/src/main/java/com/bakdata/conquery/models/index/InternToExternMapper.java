@@ -1,10 +1,9 @@
 package com.bakdata.conquery.models.index;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -12,13 +11,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public interface InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId>, Named<InternToExternMapperId> {
 
-	void init();
+	InternToExternMapper init();
 
 	boolean initialized();
 
 	String external(String internalValue);
 
-	void setDataset(Dataset dataset);
+	void setDataset(DatasetId dataset);
 
 	@Override
 	InternToExternMapperId getId();

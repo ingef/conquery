@@ -3,11 +3,15 @@ package com.bakdata.conquery.io;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -16,9 +20,9 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -28,7 +32,9 @@ public abstract class AbstractSerializationTest {
 	private final Validator validator = Validators.newValidator();
 	private final ConqueryConfig config = new ConqueryConfig();
 	private DatasetRegistry<DistributedNamespace> datasetRegistry;
+	private NamespaceStorage namespaceStorage;
 	private MetaStorage metaStorage;
+	private WorkerStorage workerStorage;
 
 	private ObjectMapper managerInternalMapper;
 	private ObjectMapper shardInternalMapper;
@@ -39,11 +45,11 @@ public abstract class AbstractSerializationTest {
 	public void before() {
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
-		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
+		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
-		datasetRegistry.setMetaStorage(metaStorage);
-		creator.init(datasetRegistry);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		namespaceStorage = new NamespaceStorage(new NonPersistentStoreFactory(), "serializationTestNamespace", null);
+		workerStorage = new WorkerStorage(new NonPersistentStoreFactory(), null, "serializationTestWorker");
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);
@@ -56,8 +62,11 @@ public abstract class AbstractSerializationTest {
 		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);
 
-		metaStorage.openStores(managerInternalMapper);
-		metaStorage.loadData();
+		MetricRegistry metricRegistry = new MetricRegistry();
+
+		metaStorage.openStores(managerInternalMapper, metricRegistry);
+
+		namespaceStorage.openStores(managerInternalMapper, metricRegistry);
 
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
@@ -66,11 +75,14 @@ public abstract class AbstractSerializationTest {
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		workerStorage.openStores(shardInternalMapper, metricRegistry);
 
 		// Prepare api response mapper
 		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		managerNode.customizeApiObjectMapper(apiMapper);
+		// This overrides the injected datasetRegistry
+		namespaceStorage.injectInto(apiMapper);
 	}
 
 

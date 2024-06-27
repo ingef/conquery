@@ -19,16 +19,8 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -38,7 +30,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 
-		Column column = select.getColumn();
+		Column column = select.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = selectContext.getTables();
 		ConversionContext conversionContext = selectContext.getConversionContext();
@@ -61,7 +53,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(filter);
 		ConnectorSqlTables tables = filterContext.getTables();
 		ConversionContext conversionContext = filterContext.getConversionContext();
@@ -81,7 +73,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public Condition convertForTableExport(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 

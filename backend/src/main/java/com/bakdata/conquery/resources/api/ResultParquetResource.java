@@ -58,7 +58,7 @@ public class ResultParquetResource {
 			@QueryParam("limit") OptionalLong limit) {
 
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset().getId(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, execution, pretty, limit);
 	}
 

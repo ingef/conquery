@@ -17,11 +17,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -57,6 +53,12 @@ public class ShardResult  extends NamespaceMessage {
 		this.workerId = workerId;
 	}
 
+	/**
+	 * Executed on the worker when the shard result is completed
+	 * @param results
+	 * @param exc
+	 * @param worker
+	 */
 	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.

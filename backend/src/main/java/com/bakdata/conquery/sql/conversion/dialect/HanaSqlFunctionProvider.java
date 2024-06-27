@@ -315,19 +315,19 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
-		String tableName = validityDate.getConnector().getTable().getName();
+		String tableName = validityDate.getConnector().getResolvedTable().getName();
 
 		Column startColumn;
 		Column endColumn;
 
 		// if no end column is present, the only existing column is both start and end of the date range
 		if (validityDate.getEndColumn() == null) {
-			startColumn = validityDate.getColumn();
-			endColumn = validityDate.getColumn();
+			startColumn = validityDate.getColumn().resolve();
+			endColumn = validityDate.getColumn().resolve();
 		}
 		else {
-			startColumn = validityDate.getStartColumn();
-			endColumn = validityDate.getEndColumn();
+			startColumn = validityDate.getStartColumn().resolve();
+			endColumn = validityDate.getEndColumn().resolve();
 		}
 
 		Field<Date> rangeStart = DSL.coalesce(

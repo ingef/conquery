@@ -24,11 +24,16 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role mandator1 = new Role("company", "company", storage);
-		Role mandator1Copy = new Role("company", "company", storage);
-		Role mandator2 = new Role("company2", "company2", storage);
-		User user1 = new User("user", "user", storage);
-		
+		Role mandator1 = new Role("company", "company");
+		Role mandator1Copy = new Role("company", "company");
+		Role mandator2 = new Role("company2", "company2");
+		User user1 = new User("user", "user");
+
+		mandator1.setMetaStorage(storage);
+		mandator1Copy.setMetaStorage(storage);
+		mandator2.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
+
 		try {
 			storage.addRole(mandator1);
 			storage.addRole(mandator2);

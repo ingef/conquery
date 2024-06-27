@@ -13,20 +13,20 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class SuperPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-
-	
-
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role role1 = new Role("company", "company", storage);
+		Role role1 = new Role("company", "company");
 		TestUser user1 = new TestUser(storage);
 
 		storage.addRole(role1);
-		
+
+		role1.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
+
 		try {
 			user1.addRole(role1);
 			// Add SuperPermission to User

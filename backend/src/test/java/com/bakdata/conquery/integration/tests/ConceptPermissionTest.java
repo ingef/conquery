@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,10 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = JsonIntegrationTest.readJson(dataset.getId(), testJson);
-		final User user  = new User("testUser", "testUserLabel", storage);
+		final User user = new User("testUser", "testUserLabel");
+
+		user.setMetaStorage(storage);
+		user.updateStorage();
 
 		// Manually import data, so we can do our own work.
 		{
@@ -49,8 +53,6 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
-
-			storage.addUser(user);
 			user.addPermission(DatasetPermission.onInstance(Ability.READ, dataset.getId()));
 		}
 
@@ -71,11 +73,12 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 
 		// Only assert permissions
-		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.DONE, user, 201);
+		ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.DONE, user, 201);
 
 		conquery.waitUntilWorkDone();
 		// Clean up
 		{
+			storage.removeExecution(managedExecutionId);
 			storage.removeUser(user.getId());
 		}
 	}

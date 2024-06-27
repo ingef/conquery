@@ -10,7 +10,7 @@ import org.apache.shiro.authz.Permission;
 public class TestUser extends User {
 
     public TestUser(MetaStorage storage) {
-        super("user", "user", storage);
+		super("user", "user");
     }
 
     public boolean isPermitted(Permission permission) {

@@ -1,15 +1,9 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
@@ -22,15 +16,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.PrincipalCollection;
 
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, Subject {
 
@@ -40,15 +34,12 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	// protected for testing purposes
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
+	@EqualsAndHashCode.Exclude
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	@JsonCreator
-	protected User(String name, String label) {
-		this(name, label, null);
-	}
-
-	public User(String name, String label, MetaStorage storage) {
-		super(name, label, storage);
+	public User(String name, String label) {
+		super(name, label);
 		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
 
@@ -56,14 +47,15 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = storage.getRole(roleId);
+			Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Group group : getMetaStorage().getAllGroups().toList()) {
 			if (!group.containsMember(this)) {
 				continue;
 			}
@@ -98,7 +90,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public void updateStorage() {
-		storage.updateUser(this);
+		getMetaStorage().updateUser(this);
 	}
 
 	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
@@ -139,7 +131,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
+		return object instanceof Owned && equals(((Owned) object).getOwner().resolve());
 	}
 
 	@JsonIgnore

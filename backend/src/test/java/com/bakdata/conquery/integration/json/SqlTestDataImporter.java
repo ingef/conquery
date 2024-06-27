@@ -54,15 +54,15 @@ public class SqlTestDataImporter implements TestDataImporter {
 	public void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
-			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), description);
+					required.toSecondaryId(support.getDataset());
+			support.getAdminDatasetsProcessor().addSecondaryId(support.getNamespace(), description);
 		}
 	}
 
 	@Override
 	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		for (RequiredTable requiredTable : tables) {
-			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage().getCentralRegistry());
+			final Table table = requiredTable.toTable(support.getDataset(), support.getNamespaceStorage());
 			support.getNamespaceStorage().addTable(table);
 		}
 	}
@@ -70,7 +70,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
 		List<Concept<?>> concepts =
-				ConqueryTestSpec.parseSubTreeList(support, rawConcepts, Concept.class, concept -> concept.setDataset(support.getDataset()));
+				ConqueryTestSpec.parseSubTreeList(support, rawConcepts, Concept.class, concept -> concept.setDataset(support.getDataset().getId()));
 		for (Concept<?> concept : concepts) {
 			support.getNamespaceStorage().updateConcept(concept);
 		}

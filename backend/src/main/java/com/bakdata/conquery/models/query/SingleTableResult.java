@@ -1,11 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalLong;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -16,15 +10,21 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.OptionalLong;
+import java.util.stream.Stream;
+
 public interface SingleTableResult {
 
-	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config, Namespace namespace) {
 		Preconditions.checkArgument(isInitialized, "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null);
+		PrintSettings settings = new PrintSettings(true, locale, namespace, config, null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
@@ -46,15 +46,13 @@ public interface SingleTableResult {
 	List<ResultInfo> getResultInfos();
 
 	/**
-	 * @param limit Optionally limits how many lines are emitted.
+	 * @param limit            Optionally limits how many lines are emitted.
+	 * @param executionManager
 	 */
-	Stream<EntityResult> streamResults(OptionalLong limit);
+	Stream<EntityResult> streamResults(OptionalLong limit, ExecutionManager<?> executionManager);
 
 	@JsonIgnore
 	long resultRowCount();
-
-	@JsonIgnore
-	Namespace getNamespace();
 
 
 }

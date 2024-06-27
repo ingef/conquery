@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -22,6 +23,12 @@ public class InternToExternMapperId extends Id<InternToExternMapper> implements 
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(name);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
 	}
 
 

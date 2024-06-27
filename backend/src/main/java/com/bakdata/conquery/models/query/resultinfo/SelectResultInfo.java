@@ -37,7 +37,7 @@ public class SelectResultInfo extends ResultInfo {
 	public Set<SemanticType> getSemantics() {
 		return ImmutableSet.<SemanticType>builder()
 						   .addAll(additionalSemantics)
-						   .add(new SemanticType.SelectResultT(select))
+						   .add(new SemanticType.SelectResultT(select.getId()))
 						   .build();
 	}
 

@@ -9,6 +9,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -21,7 +23,7 @@ public class ValidityDateNode extends QPChainNode {
 	private final ValidityDate validityDate;
 	private transient CDateSet restriction;
 
-	protected Map<Bucket, CBlock> preCurrentRow;
+	protected Map<BucketId, CBlockId> preCurrentRow;
 
 	public ValidityDateNode(ValidityDate validityDate, QPNode child) {
 		super(child);
@@ -43,7 +45,7 @@ public class ValidityDateNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		final CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
+		final CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()).resolve());
 
 		final CDateRange range = cBlock.getEntityDateRange(entity.getId());
 
@@ -60,6 +62,6 @@ public class ValidityDateNode extends QPChainNode {
 		super.nextTable(ctx.withValidityDateColumn(validityDate), currentTable);
 		restriction = ctx.getDateRestriction();
 
-		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector());
+		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
 	}
 }

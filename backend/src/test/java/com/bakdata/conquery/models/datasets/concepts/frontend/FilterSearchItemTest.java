@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.frontend;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
@@ -15,9 +16,12 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.MapIdResolver;
 import org.junit.jupiter.api.Test;
 
 public class FilterSearchItemTest {
+
+	private final MapIdResolver idResolver = new MapIdResolver(new HashMap<>());
 
 	@Test
 	public void sortedValidityDates() {
@@ -26,22 +30,24 @@ public class FilterSearchItemTest {
 		dataset.setName("testDataset");
 
 		Table table = new Table();
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setName("testTable");
+		table.setNsIdResolver(idResolver);
+		idResolver.injections().put(table.getId(), table);
 
 		Column column = new Column();
 		column.setName("testColumn");
 		column.setTable(table);
 
 		Column dateColumn1 = new Column();
-		column.setName("dateColumn1");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn1.setName("dateColumn1");
+		dateColumn1.setType(MajorTypeId.DATE);
+		dateColumn1.setTable(table);
 
 		Column dateColumn2 = new Column();
-		column.setName("dateColumn2");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn2.setName("dateColumn2");
+		dateColumn2.setType(MajorTypeId.DATE);
+		dateColumn2.setTable(table);
 
 
 
@@ -49,7 +55,7 @@ public class FilterSearchItemTest {
 		connector.setName("testConnector");
 
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		concept.setName("testConcept");
 
 		ValidityDate val0 = ValidityDate.create(dateColumn1);
@@ -65,7 +71,7 @@ public class FilterSearchItemTest {
 		val2.setConnector(connector);
 
 		List<ValidityDate> validityDates = List.of(val0, val1, val2);
-		connector.setColumn(column);
+		connector.setColumn(column.getId());
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
 		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);

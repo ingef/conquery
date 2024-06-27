@@ -108,7 +108,7 @@ public class ManagerNode implements Managed {
 
 		loadNamespaces();
 
-		loadMetaStorage();
+		openMetaStorage();
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -214,15 +214,14 @@ public class ManagerNode implements Managed {
 	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
+		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass, getConfig(), getDatasetRegistry(), getStorage());
 	}
 
-	private void loadMetaStorage() {
+	private void openMetaStorage() {
 		log.info("Opening MetaStorage");
-		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
-		log.info("Loading MetaStorage");
-		getStorage().loadData();
-		log.info("MetaStorage loaded {}", getStorage());
+		getStorage().openStores(
+				getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class, getStorage(), getDatasetRegistry(), getConfig()),
+				getEnvironment().metrics());
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -236,16 +235,16 @@ public class ManagerNode implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage);
+				registry.createNamespace(namespaceStorage, getStorage(), getEnvironment().metrics());
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = registry.getDatasets().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
-																												  - coundLoaded);
+			final int countLoaded = registry.getDatasets().size();
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																												  - countLoaded);
 		}
 	}
 

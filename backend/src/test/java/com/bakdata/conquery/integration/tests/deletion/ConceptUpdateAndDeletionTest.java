@@ -84,8 +84,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getConcept(conceptId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -94,12 +94,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					}
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
-					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-							.isNotEmpty();
+					assertThat(workerStorage.getConcept(conceptId))
+							.isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -129,8 +129,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getConcept(conceptId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -140,12 +140,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-							.isNotEmpty();
+					assertThat(workerStorage.getConcept(conceptId))
+							.isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -178,8 +178,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isNotEmpty();
 
-				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-						.isNotEmpty();
+				assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+						.isNotNull();
 
 				for (ShardNode node : conquery.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -189,12 +189,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-								.isNotEmpty();
+						assertThat(workerStorage.getConcept(conceptId))
+								.isNotNull();
 
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 								.isNotEmpty();
 					}
 				}
@@ -211,7 +211,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			log.info("Issuing deletion of import {}", conceptId);
 			concept = Objects.requireNonNull(conquery.getNamespace().getStorage().getConcept(conceptId));
-			conquery.getDatasetsProcessor().deleteConcept(concept);
+			conquery.getAdminDatasetsProcessor().deleteConcept(concept);
 
 			conquery.waitUntilWorkDone();
 		}
@@ -225,8 +225,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isEmpty();
 
-			assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-					.isEmpty();
+			assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+					.isNull();
 
 			assertThat(
 					conquery.getShardNodes().stream()
@@ -238,8 +238,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .stream()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
@@ -267,8 +266,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isEmpty();
 
-				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-						.isEmpty();
+				assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+						.isNull();
 
 				assertThat(
 						conquery.getShardNodes().stream()
@@ -280,8 +279,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 						// CBlocks of Concept are deleted on Workers
 						.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-																 .stream()
-																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
 				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");

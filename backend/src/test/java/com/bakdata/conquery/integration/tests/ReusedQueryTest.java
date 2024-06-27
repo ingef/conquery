@@ -7,6 +7,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -21,22 +23,17 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
@@ -44,8 +41,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -139,15 +134,15 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			// We select only a single event of the query by the exact filtering.
 			final CQConcept cqConcept = new CQConcept();
 			final ConceptId conceptId = new ConceptId(conquery.getDataset().getId(), "concept");
-			final Concept<?> concept = conquery.getNamespaceStorage().getConcept(conceptId);
-			cqConcept.setElements(List.of(concept));
+			final NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
+			final Concept<?> concept = namespaceStorage.getConcept(conceptId);
+			cqConcept.setElements(List.of(concept.getId()));
 			final CQTable cqTable = new CQTable();
 			cqTable.setConcept(cqConcept);
 
-			final CentralRegistry centralRegistry = conquery.getNamespaceStorage().getCentralRegistry();
-			final Connector connector = centralRegistry.resolve(new ConnectorId(conceptId, "connector1"));
-			cqTable.setConnector(connector);
-			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+			final Connector connector = namespaceStorage.get(new ConnectorId(conceptId, "connector1"));
+			cqTable.setConnector(connector.getId());
+			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(new FilterId(connector.getId(), "filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
 			cqConcept.setTables(List.of(cqTable));
 			cqConcept.setExcludeFromSecondaryId(false);
@@ -195,9 +190,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				reusedDiffId.setRoot(new CQReusedQuery(execution1.getId()));
 
 				// ignored is a single global value and therefore the same as by-PID
-				reusedDiffId.setSecondaryId(conquery.getNamespace()
-													.getStorage()
-													.getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
+				reusedDiffId.setSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored"));
 
 				final ManagedExecutionId
 						executionId =
@@ -216,8 +209,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				reused.setSecondaryId(query.getSecondaryId());
 
-				User shareHolder = new User("shareholder", "ShareHolder", conquery.getMetaStorage());
-				conquery.getMetaProcessor().addUser(shareHolder);
+				User shareHolder = new User("shareholder", "ShareHolder");
+				shareHolder.setMetaStorage(metaStorage);
+				conquery.getAdminProcessor().addUser(shareHolder);
 
 				shareHolder.addPermissions(Set.of(
 						dataset.createPermission(Set.of(Ability.READ)),

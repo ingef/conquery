@@ -2,6 +2,8 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -11,10 +13,12 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
@@ -23,7 +27,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -60,7 +63,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
-		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+		final long numberOfExecutions = conquery.getMetaStorage().getAllExecutions().count();
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
@@ -78,14 +81,21 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 
 
-		MetaStorage storage = conquery.getMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 
-		Role role = new Role("role", "ROLE", storage);
-		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage);
-		User user = new User("user@test.email", "USER", storage);
-		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage);
-		Group group = new Group("group", "GROUP", storage);
-		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage);
+		Role role = new Role("role", "ROLE");
+		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE");
+		User user = new User("user@test.email", "USER");
+		User userToDelete = new User("userDelete@test.email", "USER_DELETE");
+		Group group = new Group("group", "GROUP");
+		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
+
+		role.setMetaStorage(storage);
+		roleToDelete.setMetaStorage(storage);
+		user.setMetaStorage(storage);
+		userToDelete.setMetaStorage(storage);
+		group.setMetaStorage(storage);
+		groupToDelete.setMetaStorage(storage);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
@@ -142,21 +152,27 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		log.info("Restart complete");
 		
-		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
-
-		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		DatasetRegistry<?> datasetRegistry = support.getAdminDatasetsProcessor().getDatasetRegistry();
+		final MetaStorage restartedStorage = support.getMetaStorage();
+		assertThat(restartedStorage.getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
 		test.executeTest(support);
 
-		{// Auth actual tests
-			User userStored = storage.getUser(user.getId());
-			assertThat(userStored).isEqualTo(user);
-			assertThat(storage.getRole(role.getId())).isEqualTo(role);
-			assertThat(storage.getGroup(group.getId())).isEqualTo(group);
 
-			assertThat(storage.getUser(userToDelete.getId())).as("deleted user should stay deleted").isNull();
-			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
-			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
+		{// Auth actual tests
+			User userStored = restartedStorage.getUser(user.getId());
+			assertThat(userStored).satisfies(
+					u -> assertThat(u.getName()).isEqualTo("user@test.email"),
+					u -> assertThat(u.getLabel()).isEqualTo("USER"),
+					u -> assertThat(u.getRoles()).containsExactly(new RoleId("role")),
+					u -> assertThat(u.getPermissions()).containsExactly(new WildcardPermission("datasets:read:testdataset1"))
+			);
+			assertThat(restartedStorage.getRole(role.getId())).isEqualTo(role);
+			assertThat(restartedStorage.getGroup(group.getId())).isEqualTo(group);
+
+			assertThat(restartedStorage.getUser(userToDelete.getId())).as("deleted user should stay deleted").isNull();
+			assertThat(restartedStorage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
+			assertThat(restartedStorage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
 			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
 			assertThat(userStored.isPermitted(datasetRegistry

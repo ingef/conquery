@@ -3,20 +3,12 @@ package com.bakdata.conquery.models.forms.configs;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
-
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -24,40 +16,36 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+import org.jetbrains.annotations.Nullable;
 
 @Slf4j
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
-	@NsIdRef
-	protected Dataset dataset;
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -73,8 +61,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@NotNull
 	private JsonNode values;
-	@MetaIdRef
-	private User owner;
+	private UserId owner;
 	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
@@ -86,7 +73,13 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(dataset.getId(), formType, formId);
+		return new FormConfigId(dataset, formType, formId);
+	}
+
+
+	@JsonIgnore
+	private @Nullable String getOwnerName() {
+		return Optional.ofNullable(owner).map(UserId::resolve).map(User.class::cast).map(User::getLabel).orElse(null);
 	}
 
 	/**
@@ -94,7 +87,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * actual form field values.
 	 */
 	public FormConfigOverviewRepresentation overview(Subject subject) {
-		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
+		String ownerName = getOwnerName();
 
 		return FormConfigOverviewRepresentation.builder()
 			.id(getId())
@@ -113,18 +106,17 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
-		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
+		String ownerName = getOwnerName();
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for(Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}

@@ -1,123 +1,106 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
-import com.bakdata.conquery.util.io.ProgressBar;
-import com.google.common.base.Stopwatch;
-import com.jakewharton.byteunits.BinaryByteUnit;
-import lombok.RequiredArgsConstructor;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
+import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-@RequiredArgsConstructor
+/**
+ * Weakly cached store, using {@link LoadingCache} to maintain values. Is a wrapper around the supplied {@link Store}.
+ */
 @Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private final LoadingCache<KEY, VALUE> cache;
 
-	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
+
+	public CachedStore(Store<KEY, VALUE> store, Duration weakCacheDuration) {
+		this.store = store;
+		this.cache = Caffeine.newBuilder()
+							 .weakValues()
+							 .expireAfterAccess(
+									 weakCacheDuration.getQuantity(),
+									 weakCacheDuration.getUnit()
+							 )
+							 .removalListener(new RemovalListener<KEY, VALUE>() {
+								 @Override
+								 public void onRemoval(@Nullable KEY key, @Nullable VALUE value, RemovalCause cause) {
+									 if (!cause.wasEvicted()) {
+										 store.remove(key);
+										 log.trace("Removed {} from underlying store. Value: {}", key, value);
+									 }
+								 }
+							 })
+							 .build(new CacheLoader<KEY, VALUE>() {
+								 @Override
+								 public VALUE load(KEY key) {
+									 log.trace("Needing to load entry " + key + " in " + this);
+									 return store.get(key);
+								 }
+							 });
+	}
+
 
 	@Override
 	public void add(KEY key, VALUE value) {
-		if (cache.putIfAbsent(key, value) != null) {
+		VALUE old = cache.get(key);
+		if (old != null) {
 			throw new IllegalStateException("The id " + key + " is already part of this store");
 		}
+		cache.put(key, value);
 		store.add(key, value);
 	}
 
 	@Override
 	public VALUE get(KEY key) {
-		// TODO: 08.01.2020 fk: This assumes that all values have been read at some point!
 		return cache.get(key);
 	}
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		return store.forEach(consumer);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void update(KEY key, VALUE value) {
-		cache.put(key, value);
-		store.update(key, value);
+		synchronized (this) {
+			cache.put(key, value);
+			store.update(key, value);
+		}
 	}
 
 	@Override
 	public void remove(KEY key) {
-		cache.remove(key);
-		store.remove(key);
+		cache.invalidate(key);
 	}
 
 	@Override
 	public int count() {
-		if (cache.isEmpty()) {
-			return store.count();
-		}
-		return cache.size();
+		return store.count();
 	}
 
 	@Override
 	public void loadData() {
-		final LongAdder totalSize = new LongAdder();
-		final int count = count();
-		cache = new ConcurrentHashMap<>(count);
-		final ProgressBar bar;
-
-		if (count > 100) {
-			synchronized (PROGRESS_BAR) {
-				bar = PROGRESS_BAR;
-				bar.addMaxValue(count);
-			}
-		}
-		else {
-			bar = null;
-		}
-
-		log.info("BEGIN loading store {}", this);
-
-
-		final Stopwatch timer = Stopwatch.createStarted();
-
-		store.forEach((key, value, size) -> {
-			try {
-				totalSize.add(size);
-				cache.put(key, value);
-			}
-			catch (RuntimeException e) {
-				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
-					log.warn(
-							"Probably failed to read id '{}' because it is not yet present, skipping",
-							((IdReferenceResolvingException) e.getCause()).getValue(),
-							e
-					);
-				}
-				else {
-					throw e;
-				}
-			}
-			finally {
-				if (bar != null) {
-					bar.addCurrentValue(1);
-				}
-			}
-		});
-		log.debug("\tloaded store {}: {} entries, {} within {}",
-				this,
-				cache.values().size(),
-				BinaryByteUnit.format(totalSize.sum()),
-				timer.stop()
-		);
 	}
 
 	@Override
-	public Collection<VALUE> getAll() {
-		return cache.values();
+	public Stream<VALUE> getAll() {
+		return store.getAllKeys().map(cache::get);
+	}
+
+	@Override
+	public Stream<KEY> getAllKeys() {
+		return store.getAllKeys();
 	}
 
 	@Override
@@ -125,19 +108,16 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return "cached " + store.toString();
 	}
 
-	@Override
-	public Collection<KEY> getAllKeys() {
-		return cache.keySet();
-	}
 
 	@Override
 	public void clear() {
-		cache.clear();
+		cache.invalidateAll();
 		store.clear();
 	}
 
 	@Override
 	public void removeStore() {
+		cache.invalidateAll();
 		store.removeStore();
 	}
 

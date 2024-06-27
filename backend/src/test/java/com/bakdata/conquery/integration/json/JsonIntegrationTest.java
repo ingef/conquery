@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -15,6 +13,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 
 	private final ConqueryTestSpec testSpec;
-	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
+	public static final ObjectReader TEST_SPEC_READER = IntegrationUtils.getTestSpecReader();
 	public static final Validator VALIDATOR = Validators.newValidator();
 
 	public JsonIntegrationTest(InputStream in) throws IOException {
@@ -63,5 +62,4 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 
 		return jsonReader.readValue(json);
 	}
-
 }

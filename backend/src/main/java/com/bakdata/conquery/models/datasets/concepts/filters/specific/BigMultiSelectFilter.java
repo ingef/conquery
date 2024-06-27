@@ -32,7 +32,7 @@ public class BigMultiSelectFilter extends SelectFilter<Set<String>> {
 
 	@Override
 	public FilterNode createFilterNode(Set<String> value) {
-		return new MultiSelectFilterNode(getColumn(), value);
+		return new MultiSelectFilterNode(getColumn().resolve(), value);
 	}
 
 	@Override

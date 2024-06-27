@@ -36,7 +36,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 
 	@Override
 	public FilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {
-		return new MultiSelectFilterNode(getColumn(), Set.of(compoundFilterValue.getResolvedValues()));
+		return new MultiSelectFilterNode(getColumn().resolve(), Set.of(compoundFilterValue.getResolvedValues()));
 	}
 
 	private Map<String, FrontendFilterConfiguration.Nested> getFEFilter() {

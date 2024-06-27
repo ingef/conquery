@@ -6,15 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -34,6 +28,9 @@ import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -47,6 +44,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -68,7 +66,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -78,7 +75,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.bakdata.conquery.util.SerialisationObjectsUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -92,7 +88,6 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
@@ -127,7 +122,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void role() throws IOException, JSONException {
-		Role mandator = new Role("company", "company", getMetaStorage());
+		Role mandator = new Role("company", "company");
 
 		SerializationTestUtil
 				.forType(Role.class)
@@ -140,37 +135,38 @@ public class SerializationTests extends AbstractSerializationTest {
 	 */
 	@Test
 	public void user() throws IOException, JSONException {
-		User user = new User("user", "user", getMetaStorage());
+		User user = new User("user", "user");
+		user.setMetaStorage(getMetaStorage());
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		Role role = new Role("company", "company", getMetaStorage());
+		Role role = new Role("company", "company");
 		user.addRole(role);
 
-		CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(role);
+		getMetaStorage().addRole(role);
 
 		SerializationTestUtil
 				.forType(User.class)
 				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.registry(registry)
+				.injectables(getMetaStorage())
 				.test(user);
 	}
 
 	@Test
 	public void group() throws IOException, JSONException {
-		Group group = new Group("group", "group", getMetaStorage());
+		Group group = new Group("group", "group");
+		group.setMetaStorage(getMetaStorage());
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		group.addRole(new Role("company", "company", getMetaStorage()));
+		group.addRole(new Role("company", "company"));
 
-		Role role = new Role("company", "company", getMetaStorage());
+		Role role = new Role("company", "company");
 		group.addRole(role);
-		User user = new User("userName", "userLabel", getMetaStorage());
+		User user = new User("userName", "userLabel");
 		group.addMember(user);
 
-		CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(role);
-		registry.register(user);
+		final MetaStorage metaStorage = getMetaStorage();
+		metaStorage.addRole(role);
+		metaStorage.addUser(user);
 
 		SerializationTestUtil
 				.forType(Group.class)
@@ -205,11 +201,11 @@ public class SerializationTests extends AbstractSerializationTest {
 		compoundCol.setTable(table);
 
 		table.setColumns(new Column[]{startCol, endCol, compoundCol});
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setName("tableName");
 
 
-		Import imp = new Import(table);
+		Import imp = new Import(table.getId());
 		imp.setName("importTest");
 
 
@@ -220,28 +216,25 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		Bucket
+				bucket =
+				new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
 
 		compoundStore.setParent(bucket);
 
+		final WorkerStorage workerStorage = getWorkerStorage();
 
-		CentralRegistry registry = getMetaStorage().getCentralRegistry();
-
-		registry.register(dataset);
-		registry.register(startCol);
-		registry.register(endCol);
-		registry.register(compoundCol);
-		registry.register(table);
-		registry.register(imp);
-		registry.register(bucket);
+		workerStorage.updateDataset(dataset);
+		workerStorage.addTable(table);
+		workerStorage.addImport(imp);
+		workerStorage.addBucket(bucket);
 
 
 		final Validator validator = Validators.newValidator();
 
 		SerializationTestUtil
 				.forType(Bucket.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
-				.registry(registry)
+				.objectMappers(getShardInternalMapper())
 				.injectables(new Injectable() {
 					@Override
 					public MutableInjectableValues inject(MutableInjectableValues values) {
@@ -255,8 +248,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void table() throws JSONException, IOException {
-		Dataset dataset = new Dataset();
-		dataset.setName("datasetName");
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
+		final WorkerStorage workerStorage = getWorkerStorage();
+
+		Dataset dataset = createDataset(namespaceStorage, workerStorage);
 
 		Table table = new Table();
 
@@ -268,36 +263,32 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 		table.setColumns(new Column[]{column});
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 
+		workerStorage.addTable(table);
 
-		CentralRegistry registry = getMetaStorage().getCentralRegistry();
-
-		registry.register(dataset);
-		registry.register(table);
-		registry.register(column);
+		namespaceStorage.addTable(table);
 
 		SerializationTestUtil
 				.forType(Table.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.registry(registry)
 				.test(table);
 	}
 
 	@Test
 	public void treeConcept() throws IOException, JSONException {
 
-		CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		Dataset dataset = createDataset(registry);
+		final WorkerStorage workerStorage = getWorkerStorage();
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
 
-		TreeConcept concept = createConcept(registry, dataset);
+		final Dataset dataset = createDataset(namespaceStorage, workerStorage);
+		TreeConcept concept = createConcept(dataset, namespaceStorage, workerStorage);
 
 		SerializationTestUtil
-				.forType(TreeConcept.class)
+				.forType(Concept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.registry(registry)
 				.test(concept);
 	}
 
@@ -312,9 +303,9 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void formConfig() throws JSONException, IOException {
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
 
-		final Dataset dataset = createDataset(registry);
+		final Dataset dataset = createDataset(namespaceStorage);
 
 		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -324,74 +315,67 @@ public class SerializationTests extends AbstractSerializationTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
 				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.registry(registry)
 				.test(formConfig);
 	}
 
 	@Test
 	public void managedQuery() throws JSONException, IOException {
 
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
+		final MetaStorage metaStorage = getMetaStorage();
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user", "test-user", getMetaStorage());
+		final User user = new User("test-user", "test-user");
 
-		registry.register(dataset);
-		registry.register(user);
+		namespaceStorage.updateDataset(dataset);
 
-		getMetaStorage().updateUser(user);
+		metaStorage.updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset, getMetaStorage());
+		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset.getId());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .registry(registry)
+							 .injectables(metaStorage)
 							 .test(execution);
 	}
 
 	@Test
 	public void testExportForm() throws JSONException, IOException {
 
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
 
-		final Dataset dataset = createDataset(registry);
+		final Dataset dataset = createDataset(namespaceStorage);
 
-
-		registry.register(dataset);
-
-		final ExportForm exportForm = createExportForm(registry, dataset);
+		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
 		SerializationTestUtil.forType(QueryDescription.class)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .registry(registry)
 							 .checkHashCode()
 							 .test(exportForm);
 	}
 
 	@Test
 	public void managedForm() throws JSONException, IOException {
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
 
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		final Dataset dataset = createDataset(namespaceStorage);
 
-		final Dataset dataset = createDataset(registry);
+		final User user = createUser(getMetaStorage());
 
-		final User user = createUser(registry, getMetaStorage());
+		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		final ExportForm exportForm = createExportForm(registry, dataset);
-
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset, getMetaStorage());
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .registry(registry)
 							 .test(execution);
 	}
 
@@ -399,7 +383,8 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void testExternalExecution() throws IOException, JSONException {
 
-		final CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
+
 
 		final String subType = "test-type";
 		JsonNodeFactory factory = new JsonNodeFactory(false);
@@ -408,52 +393,51 @@ public class SerializationTests extends AbstractSerializationTest {
 		));
 
 		ExternalForm form = new ExternalForm(node, subType);
-		final Dataset dataset = SerialisationObjectsUtil.createDataset(centralRegistry);
-		final User user = SerialisationObjectsUtil.createUser(centralRegistry, getMetaStorage());
+		final Dataset dataset = createDataset(namespaceStorage);
+		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user, dataset, getMetaStorage());
+		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset.getId());
+
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .objectMappers(getManagerInternalMapper())
-							 .registry(centralRegistry)
 							 .test(execution);
 
 	}
 
 	@Test
 	public void cqConcept() throws JSONException, IOException {
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
+		final WorkerStorage workerStorage = getWorkerStorage();
 
-		final Dataset dataset = new Dataset();
-		dataset.setName("dataset");
+		Dataset dataset = createDataset(namespaceStorage, workerStorage);
 
 		final TreeConcept concept = new TreeConcept();
 		concept.setName("concept");
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
+		connector.setName("connector");
 		concept.setConnectors(List.of(connector));
 
 		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(concept));
+		cqConcept.setElements(List.of(concept.getId()));
 		cqConcept.setLabel("Label");
 
 		final CQTable cqTable = new CQTable();
-		cqTable.setConnector(connector);
+		cqTable.setConnector(connector.getId());
 		cqTable.setFilters(List.of());
 		cqTable.setConcept(cqConcept);
 
 		cqConcept.setTables(List.of(cqTable));
 
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(dataset);
-		registry.register(concept);
-		registry.register(connector);
+		namespaceStorage.updateConcept(concept);
+		workerStorage.updateConcept(concept);
 
 		SerializationTestUtil
 				.forType(CQConcept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.registry(registry)
 				.test(cqConcept);
 	}
 
@@ -494,7 +478,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", getMetaStorage());
+		User user = new User("name", "labe");
 
 		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
 																				  .userName(user.getLabel())
@@ -515,7 +499,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final TreeConcept testConcept = new TreeConcept();
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
-		testConcept.setDataset(dataset);
+		testConcept.setDataset(dataset.getId());
 		testConcept.setName("concept");
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(testConcept);
@@ -523,10 +507,12 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		testConcept.setConnectors(List.of(connector));
 
-		concept.setElements(Collections.singletonList(testConcept));
+		concept.setElements(Collections.singletonList(testConcept.getId()));
 		CQTable[] tables = {new CQTable()};
-		connector.setTable(new Table());
-		tables[0].setConnector(connector);
+		Table table = new Table();
+		table.setDataset(dataset.getId());
+		connector.setTable(table.getId());
+		tables[0].setConnector(connector.getId());
 		tables[0].setConcept(concept);
 		concept.setTables(Arrays.asList(tables));
 		ConceptQuery subQuery = new ConceptQuery(concept);
@@ -546,58 +532,64 @@ public class SerializationTests extends AbstractSerializationTest {
 				)
 		);
 
-		CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
-		centralRegistry.register(dataset);
-		centralRegistry.register(testConcept);
-		centralRegistry.register(connector);
+		final NamespaceStorage namespaceStorage = getNamespaceStorage();
+		namespaceStorage.updateDataset(dataset);
+		namespaceStorage.updateConcept(testConcept);
+
+		WorkerStorage workerStorage = getWorkerStorage();
+		workerStorage.updateDataset(dataset);
+		workerStorage.updateConcept(testConcept);
 
 		SerializationTestUtil
 				.forType(AbsoluteFormQuery.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
-				.registry(centralRegistry)
 				.test(query);
 	}
 
 
 	@Test
-	public void serialize() throws IOException, JSONException {
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+	public void cBlock() throws IOException, JSONException {
+		final WorkerStorage workerStorage = getWorkerStorage();
 
 		final Dataset dataset = new Dataset();
+		dataset.setNsIdResolver(workerStorage);
 		dataset.setName("dataset");
 
 		final TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setNsIdResolver(workerStorage);
+		concept.setDataset(dataset.getId());
 		concept.setName("concept");
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
+		connector.setNsIdResolver(workerStorage);
 		connector.setName("connector");
 
 		connector.setConcept(concept);
 		concept.setConnectors(List.of(connector));
 
 		final Table table = new Table();
+		table.setNsIdResolver(workerStorage);
 		table.setName("table");
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 
-		final Import imp = new Import(table);
+		final Import imp = new Import(table.getId());
+		imp.setNsIdResolver(workerStorage);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		workerStorage.updateDataset(dataset);
+		workerStorage.addTable(table);
+		workerStorage.updateConcept(concept);
+		workerStorage.addImport(imp);
 
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp.getId());
 
-		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
+		workerStorage.addBucket(bucket);
 
-		registry.register(dataset)
-				.register(table)
-				.register(concept)
-				.register(connector)
-				.register(bucket)
-				.register(imp);
+		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10, getWorkerStorage());
+
 
 		SerializationTestUtil.forType(CBlock.class)
 							 .objectMappers(getShardInternalMapper())
-							 .registry(registry)
 							 .test(cBlock);
 	}
 

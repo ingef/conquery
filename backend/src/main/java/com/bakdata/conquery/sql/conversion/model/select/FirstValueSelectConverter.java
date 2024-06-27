@@ -9,7 +9,7 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 	@Override
 	public ConnectorSqlSelects connectorSelect(FirstValueSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
-				select.getColumn(),
+				select.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(select),
 				(valueField, orderByFields) -> selectContext.getFunctionProvider().first(valueField, orderByFields),
 				selectContext

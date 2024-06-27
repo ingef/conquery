@@ -104,7 +104,7 @@ public class CalculateCBlocksJob extends Job {
 						return;
 					}
 
-					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize(), storage);
 
 					bucketManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);

@@ -21,7 +21,7 @@ public class AuthUtil {
 
 		// Remove form configurations
 		int countForms = 0;
-		for (FormConfig formConfig : storage.getAllFormConfigs()) {
+		for (FormConfig formConfig : storage.getAllFormConfigs().toList()) {
 			if (!user.isOwner(formConfig)) {
 				continue;
 			}
@@ -32,7 +32,7 @@ public class AuthUtil {
 
 		// Remove executions
 		int countExecs = 0;
-		for (ManagedExecution exec : storage.getAllExecutions()) {
+		for (ManagedExecution exec : storage.getAllExecutions().toList()) {
 			if (!user.isOwner(exec)) {
 				continue;
 			}
@@ -43,7 +43,7 @@ public class AuthUtil {
 
 		log.debug("Removed {} form configs and {} executions for user '{}'", countForms, countExecs, user);
 
-		for (Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			if (group.containsMember(user)) {
 				group.removeMember(user);
 				group.updateStorage();

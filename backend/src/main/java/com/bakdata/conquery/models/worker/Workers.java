@@ -8,17 +8,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -30,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
-public class Workers extends IdResolveContext {
+public class Workers implements NsIdResolver {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -66,7 +70,7 @@ public class Workers extends IdResolveContext {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, MetricRegistry metricRegistry) {
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -75,14 +79,14 @@ public class Workers extends IdResolveContext {
 		injectInto(communicationMapper);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
 
 		addWorker(worker);
 
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError, MetricRegistry metricRegistry) {
 
 		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
 		injectInto(persistenceMapper);
@@ -92,7 +96,7 @@ public class Workers extends IdResolveContext {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
 
 		addWorker(worker);
 
@@ -107,21 +111,6 @@ public class Workers extends IdResolveContext {
 
 	public Worker getWorker(WorkerId worker) {
 		return Objects.requireNonNull(workers.get(worker));
-	}
-
-
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) {
-		if (!dataset2Worker.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
-		}
-
-		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return null; // Workers simply have no MetaRegistry.
 	}
 
 	public void removeWorkerFor(DatasetId dataset) {
@@ -161,5 +150,20 @@ public class Workers extends IdResolveContext {
 		for (Worker w : workers.values()) {
 			w.close();
 		}
+	}
+
+	@Override
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
+		final DatasetId dataset = id.getDataset();
+		if (!dataset2Worker.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
+		}
+
+		return dataset2Worker.get(dataset).getStorage().get(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NsIdResolver.class, this);
 	}
 }

@@ -15,26 +15,21 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -42,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
@@ -54,33 +50,31 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
+	@JsonIgnore
+	private transient Namespace namespace;
 
-	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset) {
+		super(owner, submittedDataset);
 		this.query = query;
 	}
 
 	@Override
-	protected void doInitExecutable() {
-		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
-	}
+	protected void doInitExecutable(Namespace namespace) {
+		query.resolve(new QueryResolveContext(namespace, getConfig(), getMetaStorage(), null));
 
+	}
 
 	@Override
-	public void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
-		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
+		lastResultCount = query.countResults(streamResults(OptionalLong.empty(), executionManager));
 
-		super.finish(executionState);
+		super.finish(executionState, executionManager);
 	}
 
 
-	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
-		final Stream<EntityResult> results = getNamespace().getExecutionManager().streamQueryResults(this);
+	public Stream<EntityResult> streamResults(OptionalLong maybeLimit, ExecutionManager<?> executionManager) {
+		final Stream<EntityResult> results = executionManager.streamQueryResults(this);
 
 		if(maybeLimit.isEmpty()){
 			return results;
@@ -101,22 +95,22 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
 
-		super.setStatusBase(subject, status);
+		super.setStatusBase(subject, status, namespace);
 		status.setNumberOfResults(getLastResultCount());
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 
 		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
-			status.setSecondaryId((secondaryIdQuery).getSecondaryId().getId());
+			status.setSecondaryId((secondaryIdQuery).getSecondaryId());
 		}
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions(isInitialized(), getConfig());
+			columnDescriptions = generateColumnDescriptions(isInitialized(), getConfig(), namespace);
 		}
 		status.setColumnDescriptions(columnDescriptions);
 	}
@@ -127,9 +121,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void reset() {
-		super.reset();
-		getNamespace().getExecutionManager().clearQueryResults(this);
+	public void reset(ExecutionManager<?> executionManager) {
+		super.reset(executionManager);
+		executionManager.clearQueryResults(this);
 	}
 
 	@Override

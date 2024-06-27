@@ -36,7 +36,7 @@ public class SelectContext<S extends SelectHolder<?>, T extends SqlTables> imple
 			ConnectorSqlTables tables,
 			ConversionContext conversionContext
 	) {
-		return new SelectContext<>(cqTable.getConnector(), ids, validityDate, tables, conversionContext);
+		return new SelectContext<>(cqTable.getConnector().resolve(), ids, validityDate, tables, conversionContext);
 	}
 
 	public static SelectContext<TreeConcept, ConceptSqlTables> create(

@@ -11,12 +11,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
@@ -44,8 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 
 	@Getter
-	@NsIdRefCollection
-	private final Set<Column> columns;
+	private final Set<ColumnId> columns;
 
 	/**
 	 * This exists only on the manager for the afterAllReaction.
@@ -56,7 +54,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<Table, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets().stream()
+		final Map<Table, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
 															  .collect(Collectors.groupingBy(Bucket::getTable));
 
 
@@ -67,13 +65,13 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
-					   .filter(column -> table2Buckets.get(column.getTable()) != null)
+					   .filter(column -> table2Buckets.get(column.getTable().resolve()) != null)
 					   .map(column ->
 									jobsExecutorService.submit(() -> {
-										final List<Bucket> buckets = table2Buckets.get(column.getTable());
+										final List<Bucket> buckets = table2Buckets.get(column.getTable().resolve());
 
 										final Set<String> values = buckets.stream()
-																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column.resolve())).streamValues())
 																		  .collect(Collectors.toSet());
 										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column, values));
 										log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
@@ -120,9 +118,9 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 			log.debug("{} shrinking searches", this);
 
-			for (Column column : columns) {
+			for (ColumnId column : columns) {
 				try {
-					filterSearch.shrinkSearch(column);
+					filterSearch.shrinkSearch(column.resolve());
 				}
 				catch (Exception e) {
 					log.warn("Unable to shrink search for {}", column, e);

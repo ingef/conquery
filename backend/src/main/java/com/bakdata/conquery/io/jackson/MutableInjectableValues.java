@@ -12,7 +12,7 @@ public class MutableInjectableValues extends InjectableValues {
 
 	private final ConcurrentHashMap<String, Object> values = new ConcurrentHashMap<>();
 	
-	public <T> MutableInjectableValues add(Class<T> type, T value) {
+	public <T> MutableInjectableValues add(Class<? extends T> type, T value) {
 		if(!type.isInstance(value)) {
 			throw new IllegalArgumentException(value+" is not of type "+type);
 		}

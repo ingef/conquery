@@ -4,12 +4,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -22,13 +22,15 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -50,12 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
 	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
-	@NsIdRef
-	private final Bucket bucket;
+	private final BucketId bucket;
 	@NotNull
-	@NsIdRef
 	@ToString.Include
-	private final ConceptTreeConnector connector;
+	private final ConnectorId connector;
 	/**
 	 * We leverage the fact that a Bucket contains entities from bucketSize * {@link Bucket#getBucket()} to (1 + bucketSize) * {@link Bucket#getBucket()} - 1 to layout our internal structure.
 	 * This is maps the first Entities entry in this bucket to 0.
@@ -91,7 +91,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
-	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
+	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize, NsIdResolver nsIdResolver) {
 		final int root = bucket.getBucket() * bucketSize;
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
@@ -99,7 +99,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
-		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		cBlock.setNsIdResolver(nsIdResolver);
+		return cBlock;
 	}
 
 	/**
@@ -113,9 +115,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final TreeConcept treeConcept = connector.getConcept();
 
 		// If we have a column, and it is of string-type, we initialize a cache.
-		if (connector.getColumn() != null && bucket.getStore(connector.getColumn()) instanceof StringStore) {
+		if (connector.getColumn() != null && bucket.getStore(connector.getColumn().resolve()) instanceof StringStore) {
 
-			column = connector.getColumn();
+			column = connector.getColumn().resolve();
 
 			treeConcept.initializeIdCache(bucket.getImp());
 		}
@@ -320,7 +322,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(bucket.getId(), connector.getId());
+		return new CBlockId(bucket, connector);
 	}
 
 	public boolean isConceptIncluded(String entity, long requiredBits) {
@@ -340,7 +342,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	@Override
 	@JsonIgnore
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return bucket.getDataset();
 	}
 

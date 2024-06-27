@@ -6,34 +6,32 @@ import static org.mockserver.model.HttpRequest.request;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.apiv1.frontend.VersionContainer;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.config.PluginConfig;
-import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.auth.ApiKeyClientFilterProvider;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -98,12 +96,12 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 		final ManagedExecution storedExecution = testConquery.getSupport(name).getMetaStorage().getExecution(managedExecutionId);
 		final URI
 				downloadURLasset1 =
-				ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ManagedExecution & ExternalResult) storedExecution, executionStatus.getResultUrls()
+				ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ExternalExecution) storedExecution, executionStatus.getResultUrls()
 																																				 .get(0)
 																																				 .getAssetId());
 		final URI
 				downloadURLasset2 =
-				ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ManagedExecution & ExternalResult) storedExecution, executionStatus.getResultUrls()
+				ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ExternalExecution) storedExecution, executionStatus.getResultUrls()
 																																				 .get(1)
 																																				 .getAssetId());
 
@@ -139,12 +137,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		conf.setPlugins(plugins);
 
-
-		// Create new storage path to prevent xodus lock conflicts
-		XodusStoreFactory storageConfig = (XodusStoreFactory) conf.getStorage();
-		final Path storageDir = workdir.toPath().resolve(storageConfig.getDirectory().resolve(getClass().getSimpleName()));
-
-		return conf.withStorage(storageConfig.withDirectory(storageDir));
+		return conf;
 	}
 
 	@SneakyThrows

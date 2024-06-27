@@ -4,9 +4,9 @@ package com.bakdata.conquery.sql.conquery;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
@@ -36,17 +35,19 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	}
 
 	@Override
-	protected void doExecute(Namespace namespace, InternalExecution<?> execution) {
+	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
+
+		addResult(execution, new SqlExecutionResult());
 
 		if (execution instanceof ManagedQuery managedQuery) {
-			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
 			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(this::executeAsync).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync((ManagedQuery) managedQuery.resolve(), this)).toArray(CompletableFuture[]::new))
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, this));
 			return;
 		}
 
@@ -54,9 +55,9 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	}
 
 	@Override
-	public void cancelQuery(Dataset dataset, ManagedExecution query) {
+	public void doCancelQuery(ManagedExecution execution) {
 
-		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(query.getId());
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
 
 		// already finished/canceled
 		if (sqlQueryExecution == null) {
@@ -67,20 +68,30 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 			sqlQueryExecution.cancel(true);
 		}
 
-		query.cancel();
+		execution.cancel();
 	}
 
-	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
+	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery, SqlExecutionManager executionManager) {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
-									addResult(managedQuery, result);
+									try {
+										// We need to transfer the columns and data from the query result together with the execution lock to a new result
+										SqlExecutionResult startResult = getResult(managedQuery.getId(), null);
+										SqlExecutionResult finishResult = new SqlExecutionResult(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+										addResult(managedQuery, finishResult);
+									} catch (ExecutionException e) {
+										throw new RuntimeException(e);
+									}
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
-									managedQuery.finish(ExecutionState.DONE);
+									managedQuery.finish(ExecutionState.DONE, executionManager);
 									runningExecutions.remove(managedQuery.getId());
+
+									// Unlock waiting requests
+									clearLock(managedQuery.getId());
 								})
 								.exceptionally(e -> {
-									managedQuery.finish(ExecutionState.FAILED);
+									managedQuery.finish(ExecutionState.FAILED, this);
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});
