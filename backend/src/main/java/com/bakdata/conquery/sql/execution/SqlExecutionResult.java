@@ -16,6 +16,13 @@ public class SqlExecutionResult implements ExecutionManager.InternalResult {
 	int rowCount;
 	CountDownLatch executingLock;
 
+	public SqlExecutionResult() {
+		this.columnNames = null;
+		this.table = null;
+		this.executingLock = new CountDownLatch(1);
+		rowCount = 0;
+	}
+
 	public SqlExecutionResult(List<String> columnNames, List<EntityResult> table, CountDownLatch executingLock) {
 		this.columnNames = columnNames;
 		this.table = table;

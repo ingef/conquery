@@ -8,12 +8,13 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 /**
  * Json views that allow fine grain control over serialization of fields.
- *
+ * <br/>
  * Basically the differentiations are:
- * - is a field internal or external (REST api) visible
- * - should a field be persistent or transient
- * - should a field be sent to the shards/manager
- *
+ * <ul>
+ *   <li>is a field internal or external (REST api) visible</li>
+ *   <li>should a field be persistent or transient</li>
+ *   <li>should a field be sent to the shards/manager</li>
+ * </ul>
  * By default, a field has no view and written and expected/read by all mappers, as {@link com.fasterxml.jackson.databind.MapperFeature#DEFAULT_VIEW_INCLUSION} is enabled (the default).
  */
 public interface View {
@@ -43,9 +44,6 @@ public interface View {
 	 * @see View.Internal for fields that are shared between manager and shards and should be persisted.
 	 */
 	interface InternalCommunication extends View {}
-
-	interface TestNoResolve extends View {
-	}
 
 	/**
 	 * Meta annotation for fields that are internally created, used, persisted and shared between manager node and shard nodes,

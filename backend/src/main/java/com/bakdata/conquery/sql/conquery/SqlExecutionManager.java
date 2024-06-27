@@ -4,6 +4,7 @@ package com.bakdata.conquery.sql.conquery;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -35,6 +36,8 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 	@Override
 	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
+
+		addResult(execution, new SqlExecutionResult());
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
@@ -72,10 +75,20 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
-									addResult(managedQuery, result);
+									try {
+										// We need to transfer the columns and data from the query result together with the execution lock to a new result
+										SqlExecutionResult startResult = getResult(managedQuery.getId(), null);
+										SqlExecutionResult finishResult = new SqlExecutionResult(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+										addResult(managedQuery, finishResult);
+									} catch (ExecutionException e) {
+										throw new RuntimeException(e);
+									}
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE, executionManager);
 									runningExecutions.remove(managedQuery.getId());
+
+									// Unlock waiting requests
+									clearLock(managedQuery.getId());
 								})
 								.exceptionally(e -> {
 									managedQuery.finish(ExecutionState.FAILED, this);
