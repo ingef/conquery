@@ -23,18 +23,10 @@ public interface IntegrationTest {
 	 * @param conf    A clone of the base config which can be adapted.
 	 * @param workdir The workdir for the test instance
 	 * @return the Config that will be used by the test instance
-	 * @implNote If the config is changed a new storage path must be registered. Otherwise
-	 * spinning up the instance with the new config fails because xodus is locked by the first
-	 * instance. Add this code to override the storage path:
-	 * <pre>
-	 * // Create new storage path to prevent xodus lock conflicts
-	 * XodusStoreFactory storageConfig = (XodusStoreFactory) conf.getStorage();
-	 * final Path storageDir = workdir.toPath().resolve(storageConfig.getDirectory().resolve(getClass().getSimpleName()));
-	 *
-	 * return conf.withStorage(storageConfig.withDirectory(storageDir));
-	 * </pre>
+	 * @implNote If the config is changed a new storage path will be configured afterward, so
+	 * the implementer does not need to change the storage path of the overridden config.
 	 */
-	public default ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workdir) {
+	default ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workdir) {
 		return conf;
 	}
 

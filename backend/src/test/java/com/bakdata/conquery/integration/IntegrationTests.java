@@ -7,14 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,6 +24,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -38,17 +32,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import io.github.classgraph.Resource;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
 public class IntegrationTests {
@@ -76,15 +65,13 @@ public class IntegrationTests {
 	@Getter
 	private final File workDir;
 	@Getter
-	@RegisterExtension
-	public TestConqueryConfig config;
+	public final ConqueryConfig config = new ConqueryConfig();
 
 	@SneakyThrows(IOException.class)
 	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
 		this.defaultTestRoot = defaultTestRoot;
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
-		this.config = new TestConqueryConfig();
 		ConfigOverride.configurePathsAndLogging(this.config, this.workDir);
 	}
 
@@ -247,9 +234,15 @@ public class IntegrationTests {
 		// This should be fast enough and a stable comparison
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
 		if (!reusedInstances.containsKey(confString)) {
-			// For the overriden config we must override the ports so there are no clashes
+
+			// For the overriden config we must override the ports and storage path (xodus) so there are no clashes
 			// We do it here so the config "hash" is not influenced by the port settings
 			ConfigOverride.configureRandomPorts(conf);
+
+			if (conf.getStorage() instanceof XodusStoreFactory storeFactory) {
+				ConfigOverride.configureWorkdir(storeFactory, workDir.toPath().resolve(String.valueOf(confString.hashCode())));
+			}
+
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf, testDataImporter);
 			reusedInstances.put(confString, conquery);
@@ -259,19 +252,6 @@ public class IntegrationTests {
 		}
 		TestConquery conquery = reusedInstances.get(confString);
 		return conquery;
-	}
-
-	@EqualsAndHashCode(callSuper = true)
-	public static class TestConqueryConfig extends ConqueryConfig implements Extension, BeforeAllCallback {
-
-		@Override
-		public void beforeAll(ExtensionContext context) throws Exception {
-
-			context.getTestInstance()
-				   .filter(ConfigOverride.class::isInstance)
-				   .map(ConfigOverride.class::cast)
-				   .ifPresent(co -> co.override(this));
-		}
 	}
 
 	private static ResourceTree scanForResources(String testRoot, String pattern) {

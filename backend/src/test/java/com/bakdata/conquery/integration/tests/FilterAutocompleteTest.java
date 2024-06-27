@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
@@ -54,6 +56,12 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	@Override
 	public Set<StandaloneSupport.Mode> forModes() {
 		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
+
+	@Override
+	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
+		conf.getIndex().setEmptyLabel("emptyDefaultLabel");
+		return conf;
 	}
 
 	@Override
@@ -167,7 +175,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		IndexService indexService = conquery.getNamespace().getIndexService();
 
 		final FilterTemplate
 				filterTemplate =

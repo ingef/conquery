@@ -6,7 +6,6 @@ import static org.mockserver.model.HttpRequest.request;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +21,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.config.PluginConfig;
-import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.auth.ApiKeyClientFilterProvider;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -139,12 +137,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		conf.setPlugins(plugins);
 
-
-		// Create new storage path to prevent xodus lock conflicts
-		XodusStoreFactory storageConfig = (XodusStoreFactory) conf.getStorage();
-		final Path storageDir = workdir.toPath().resolve(storageConfig.getDirectory().resolve(getClass().getSimpleName()));
-
-		return conf.withStorage(storageConfig.withDirectory(storageDir));
+		return conf;
 	}
 
 	@SneakyThrows
