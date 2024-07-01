@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useRef } from "react";
+import { FC, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -48,8 +48,11 @@ const TopRow = styled("div")`
   align-items: center;
   gap: 5px;
 `;
+interface PropsT {
+  className?: string;
+}
 
-const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
+const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
   const showMismatches = useSelector<StateT, boolean>(
     (state) => state.conceptTrees.search.showMismatches,
   );
