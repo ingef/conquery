@@ -20,7 +20,7 @@ import {
   isMoneyColumn,
   isSecondaryIdColumn,
   isVisibleColumn,
-} from "./util";
+} from "./util/util";
 
 const Grid = styled("div")`
   display: inline-grid;

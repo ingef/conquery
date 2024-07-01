@@ -482,7 +482,8 @@
       "description": "Hier werden Informationen chronologisch dargestellt.",
       "descriptionWithoutIds": "Importiere IDs in die leere Liste auf der linken Seite, um zu starten.",
       "descriptionWithoutId": "Wähle eine ID aus der Liste auf der linken Seite.",
-      "descriptionWithId": "Für diese ID konnten keine Daten gefunden werden."
+      "descriptionWithId": "Für diese ID konnten keine Daten gefunden werden.",
+      "descriptionWithSearchTerm": "Für den Suchbegriff '<strong>{{ searchTerm }}</strong>' konnten keine Daten gefunden werden."
     },
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",

@@ -50,14 +50,14 @@ public class QueryStepJoiner {
 			return queriesToJoin.get(0);
 		}
 
-		String joinedCteName = context.getNameGenerator().joinedNodeName(logicalOperation);
+		String joinedNodeName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		SqlIdColumns ids = coalesceIds(queriesToJoin);
 		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
 		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
 
 		QueryStep joinedStep;
 		QueryStep.QueryStepBuilder joinedStepBuilder = QueryStep.builder()
-																.cteName(joinedCteName)
+																.cteName(joinedNodeName)
 																.fromTable(joinedTable)
 																.predecessors(queriesToJoin);
 

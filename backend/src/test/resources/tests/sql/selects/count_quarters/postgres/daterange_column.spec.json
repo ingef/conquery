@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "label": "COUNT_QUARTERS on single postgres daterange column",
+  "expectedCsv": "tests/sql/selects/count_quarters/postgres/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "count"
+          ],
+          "type": "CONCEPT",
+          "label": "count",
+          "tables": [
+            {
+              "id": "count.count_connector",
+              "selects": [
+                "count.count_connector.count_quarters_select"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "count",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "count_connector",
+          "table": "table1",
+          "selects": {
+            "name": "count_quarters_select",
+            "type": "COUNT_QUARTERS",
+            "column": "table1.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/count_quarters/postgres/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

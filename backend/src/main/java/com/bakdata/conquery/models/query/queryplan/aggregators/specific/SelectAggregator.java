@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 
@@ -51,11 +50,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public Long createAggregationResult() {
 		return hits > 0 ? hits : null;
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
 	}
 
 	@Override

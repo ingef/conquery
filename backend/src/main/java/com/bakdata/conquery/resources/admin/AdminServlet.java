@@ -87,6 +87,7 @@ public class AdminServlet {
 		// freemarker support
 
 		adminProcessor = new AdminProcessor(
+				manager,
 				manager.getConfig(),
 				manager.getStorage(),
 				manager.getDatasetRegistry(),

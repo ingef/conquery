@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.filters;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -35,7 +36,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 
 	@Override
 	public FilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {
-		return new MultiSelectFilterNode(getColumn(), compoundFilterValue.getResolvedValues());
+		return new MultiSelectFilterNode(getColumn(), Set.of(compoundFilterValue.getResolvedValues()));
 	}
 
 	private Map<String, FrontendFilterConfiguration.Nested> getFEFilter() {

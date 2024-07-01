@@ -6,7 +6,7 @@ import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
 
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
 import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
-import { isConceptColumn, isMoneyColumn } from "./timeline/util";
+import { isConceptColumn, isMoneyColumn } from "./timeline/util/util";
 
 const Container = styled("div")`
   align-self: flex-start;

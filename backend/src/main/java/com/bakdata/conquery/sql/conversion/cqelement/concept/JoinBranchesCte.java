@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumDistinctSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Record;
 import org.jooq.TableLike;
@@ -22,7 +22,7 @@ import org.jooq.TableLike;
  * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
  * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
- * take place. See {@link SumDistinctSqlAggregator} for an example of additional predecessors.
+ * take place. See {@link SumSqlAggregator} with distinct-by columns for an example of additional predecessors.
  *
  * <pre>
  *     {@code
