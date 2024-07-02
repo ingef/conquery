@@ -70,8 +70,10 @@ public class FilterSearch {
 	}
 
 	public long getTotal(SelectFilter<?> filter) {
-		return totals.computeIfAbsent(filter, (f) -> filter.getSearchReferences().stream()
+		return totals.computeIfAbsent(filter, (f) -> filter.getSearchReferences()
+														   .stream()
 														   .map(searchCache::get)
+														   .filter(Objects::nonNull)
 														   .flatMap(TrieSearch::stream)
 														   .distinct()
 														   .count());
