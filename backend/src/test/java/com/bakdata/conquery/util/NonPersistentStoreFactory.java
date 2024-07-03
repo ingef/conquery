@@ -63,7 +63,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<User>, User>> userStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Role>, Role>> roleStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Group>, Group>> groupStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<String, Boolean>> entity2Bucket = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<String, Integer>> entity2Bucket = new ConcurrentHashMap<>();
 
 
 	@Override
@@ -103,7 +103,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public CachedStore<String, Boolean> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.cached(entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>()));
 	}
 

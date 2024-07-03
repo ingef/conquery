@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IntSummaryStatistics;
@@ -100,8 +101,10 @@ public class Preprocessed {
 		log.debug("Writing Headers");
 
 		//TODO this could actually be done at read-time, avoiding large allocations entirely. But in a different smaller PR.
-		final Map<Integer, List<String>> bucket2Entity = entityStart.keySet().stream()
-																	.collect(Collectors.groupingBy(id -> Hashing.consistentHash(id.hashCode(), buckets)));
+		final Map<Integer, Collection<String>> bucket2Entity = entityStart.keySet().stream()
+																		  .collect(Collectors.groupingBy(id -> getEntityBucket(buckets, id)))
+																		  .entrySet().stream()
+																		  .collect(Collectors.toMap(Map.Entry::getKey, entry -> new HashSet<>(entry.getValue())));
 
 
 		final int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
@@ -110,6 +113,10 @@ public class Preprocessed {
 				new PreprocessedHeader(descriptor.getName(), descriptor.getTable(), rows, entityStart.size(), bucket2Entity.size(), columns, hash);
 
 		writePreprocessed(file, header, entityStart, entityLength, columnStores, bucket2Entity);
+	}
+
+	public static int getEntityBucket(int buckets, String id) {
+		return Hashing.consistentHash(id.hashCode(), buckets);
 	}
 
 	/**
@@ -178,7 +185,7 @@ public class Preprocessed {
 		return columnStores;
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, Map<Integer, List<String>> bucket2Entities) throws IOException {
+	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, Map<Integer, Collection<String>> bucket2Entities) throws IOException {
 		final OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createGenerator(out)) {
 
@@ -188,8 +195,8 @@ public class Preprocessed {
 
 			log.debug("Writing data");
 
-			for (Map.Entry<Integer, List<String>> bucketIds : bucket2Entities.entrySet()) {
-				final HashSet<String> entities = new HashSet<>(bucketIds.getValue());
+			for (Map.Entry<Integer, Collection<String>> bucketIds : bucket2Entities.entrySet()) {
+				final Collection<String> entities = bucketIds.getValue();
 
 				final Map<String, Integer> starts = Maps.filterKeys(globalStarts, entities::contains);
 				final Map<String, Integer> lengths = Maps.filterKeys(globalLengths, entities::contains);

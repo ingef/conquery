@@ -15,7 +15,6 @@ public class PreprocessedData {
 	private final int bucketId;
 
 	private final Map<String, Integer> starts;
-	// TODO make sure that everyone respects this is an end not a length
 	private final Map<String, Integer> ends;
 
 	private final Map<String, ColumnStore> stores;

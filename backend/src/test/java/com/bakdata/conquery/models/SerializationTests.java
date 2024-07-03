@@ -220,7 +220,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), imp);
+		Bucket bucket = new Bucket(0, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4),4, imp);
 
 		compoundStore.setParent(bucket);
 
@@ -583,7 +583,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		final Bucket bucket = new Bucket(0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(),0, imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);

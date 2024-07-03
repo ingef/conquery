@@ -56,6 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
+
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
@@ -76,6 +77,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	 */
 	private final Object2IntMap<String> ends;
 
+	private final int numberOfEvents;
+
 	@NsIdRef
 	private final Import imp;
 
@@ -89,15 +92,9 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	public static Bucket fromPreprocessed(Table table, PreprocessedData container, Import imp) {
 		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
+		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
 
-		return new Bucket(container.getBucketId(), storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), imp);
-	}
-
-
-	@JsonIgnore
-	@ToString.Include
-	public int getNumberOfEvents(){
-		return ends.values().intStream().max().orElse(0);
+		return new Bucket(container.getBucketId(), storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()),numberOfEvents, imp);
 	}
 
 	@JsonIgnore

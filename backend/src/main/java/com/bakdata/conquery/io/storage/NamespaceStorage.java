@@ -29,7 +29,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Boolean> entity2Bucket;
+	protected CachedStore<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName);
@@ -114,8 +114,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		return entity2Bucket.get(entity) != null;
 	}
 
-	public void registerEntity(String entity) {
-		entity2Bucket.update(entity, Boolean.TRUE);
+	public void registerEntity(String entity, int bucket) {
+		entity2Bucket.update(entity, bucket);
 	}
 
 

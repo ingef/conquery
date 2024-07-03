@@ -1,7 +1,7 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -13,22 +13,24 @@ import lombok.Data;
  */
 @Data
 class RegisterImportEntities extends Job {
-	private final List<Collection<String>> collectedEntities;
+
+	private final Map<Integer, Collection<String>> collectedEntities;
+
+
 	private final DistributedNamespace namespace;
 	private final ImportId importId;
 
 	@Override
 	public void execute() {
 		// This task is quite slow, so be delay it as far as possible.
-		for (Collection<String> entities : collectedEntities) {
-			for (String entity : entities) {
-
+		for (Map.Entry<Integer, Collection<String>> bucket2Entities : collectedEntities.entrySet()) {
+			for (String entity : bucket2Entities.getValue()) {
 
 				if (namespace.getStorage().containsEntity(entity)) {
 					continue;
 				}
 
-				namespace.getStorage().registerEntity(entity);
+				namespace.getStorage().registerEntity(entity, bucket2Entities.getKey());
 			}
 		}
 	}

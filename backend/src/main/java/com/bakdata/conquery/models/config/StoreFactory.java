@@ -83,5 +83,5 @@ public interface StoreFactory {
 
 	SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 
-	CachedStore<String, Boolean> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
+	CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper);
 }
