@@ -72,7 +72,7 @@ public class WorkerStorage extends NamespacedStorage {
 
 
 	public void addCBlock(CBlock cBlock) {
-		log.debug("Adding CBlock[{}]", cBlock.getId());
+		log.trace("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
 	}
 
@@ -81,7 +81,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void removeCBlock(CBlockId id) {
-		log.debug("Removing CBlock[{}]", id);
+		log.trace("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
 	}
 
@@ -90,7 +90,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void addBucket(Bucket bucket) {
-		log.debug("Adding Bucket[{}]", bucket.getId());
+		log.trace("Adding Bucket[{}]", bucket.getId());
 		buckets.add(bucket);
 	}
 
@@ -99,7 +99,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void removeBucket(BucketId id) {
-		log.debug("Removing Bucket[{}]", id);
+		log.trace("Removing Bucket[{}]", id);
 		buckets.remove(id);
 	}
 
