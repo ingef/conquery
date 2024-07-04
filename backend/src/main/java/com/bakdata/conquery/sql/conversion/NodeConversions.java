@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import org.jooq.DSLContext;
 
 /**
@@ -15,19 +16,24 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 
 	private final SqlDialect dialect;
 	private final DatabaseConfig config;
+	private final NameGenerator nameGenerator;
+	private final SqlExecutionService executionService;
 
-	public NodeConversions(SqlDialect dialect, DSLContext dslContext, DatabaseConfig config) {
+	public NodeConversions(SqlDialect dialect, DSLContext dslContext, DatabaseConfig config, final SqlExecutionService executionService) {
 		super(dialect.getNodeConverters(dslContext));
 		this.dialect = dialect;
 		this.config = config;
+		this.nameGenerator = new NameGenerator(config.getDialect().getNameMaxLength());
+		this.executionService = executionService;
 	}
 
 	public ConversionContext convert(QueryDescription queryDescription) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.config(config)
-														.nameGenerator(new NameGenerator(config.getDialect().getNameMaxLength()))
+														.nameGenerator(nameGenerator)
 														.nodeConversions(this)
-														.sqlDialect(this.dialect)
+														.sqlDialect(dialect)
+														.executionService(executionService)
 														.build();
 		return convert(queryDescription, initialCtx);
 	}

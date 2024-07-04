@@ -19,6 +19,13 @@ public class DatabaseConfig {
 
 	private String jdbcConnectionUrl;
 
+	// TODO remove defaults and set values in test config
+	@Builder.Default
+	private String allIdsTable = "vers_stamm";
+
+	@Builder.Default
+	private String allIdsTableId = DEFAULT_PRIMARY_COLUMN;
+
 	@Builder.Default
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
 

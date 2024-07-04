@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -32,6 +33,8 @@ public class ConversionContext implements Context {
 	SqlDialect sqlDialect;
 
 	NameGenerator nameGenerator;
+
+	SqlExecutionService executionService;
 
 	@Singular
 	List<QueryStep> querySteps;
