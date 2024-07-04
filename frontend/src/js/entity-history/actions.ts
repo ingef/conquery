@@ -30,7 +30,7 @@ import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
 import { EntityEvent, EntityId } from "./reducer";
-import { isDateColumn, isSourceColumn } from "./timeline/util";
+import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory

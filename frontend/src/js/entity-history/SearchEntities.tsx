@@ -24,8 +24,8 @@ import {
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
 
-import { useDefaultStatusOptions } from "./History";
 import { LoadingPayload } from "./LoadHistoryDropzone";
+import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
 
 export const SearchEntites = ({
   onLoad,

@@ -1,20 +1,13 @@
 import styled from "@emotion/styled";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useState } from "react";
 
-import IconButton from "../button/IconButton";
 import { exists } from "../common/helpers/exists";
+import { useDebounce } from "../common/helpers/useDebounce";
 import BaseInput from "../ui-components/BaseInput";
-
-const InputContainer = styled("div")`
-  flex-grow: 1;
-  position: relative;
-`;
 
 const SxBaseInput = styled(BaseInput)`
   width: 100%;
   input {
-    padding-right: 60px;
     height: 34px;
     width: 100%;
     &::placeholder {
@@ -24,44 +17,33 @@ const SxBaseInput = styled(BaseInput)`
   }
 `;
 
-const Right = styled("div")`
-  position: absolute;
-  top: 0px;
-  right: 30px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 34px;
-`;
-
-const StyledIconButton = styled(IconButton)`
-  padding: 8px 10px;
-  color: ${({ theme }) => theme.col.gray};
-`;
-
-interface Props {
-  className?: string;
-  searchTerm: string | null;
-  placeholder: string;
-  onSearch: (value: string) => void;
-  onClear: () => void;
-}
-
 const SearchBar = ({
-  className,
   searchTerm,
   placeholder,
   onSearch,
   onClear,
-}: Props) => {
+}: {
+  searchTerm: string | null;
+  placeholder: string;
+  onSearch: (value: string) => void;
+  onClear: () => void;
+}) => {
   const [localSearchTerm, setLocalSearchTerm] = useState<string | null>(null);
+
+  useDebounce(
+    () => {
+      if (exists(localSearchTerm)) onSearch(localSearchTerm);
+    },
+    500,
+    [localSearchTerm],
+  );
 
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
   }, [searchTerm]);
 
   return (
-    <InputContainer className={className}>
+    <div className="flex-grow">
       <SxBaseInput
         inputType="text"
         placeholder={placeholder}
@@ -71,24 +53,8 @@ const SearchBar = ({
 
           setLocalSearchTerm(value as string | null);
         }}
-        inputProps={{
-          onKeyPress: (e) => {
-            return e.key === "Enter" && exists(localSearchTerm)
-              ? onSearch(localSearchTerm)
-              : null;
-          },
-        }}
       />
-      {exists(localSearchTerm) && (
-        <Right>
-          <StyledIconButton
-            icon={faSearch}
-            aria-hidden="true"
-            onClick={() => onSearch(localSearchTerm)}
-          />
-        </Right>
-      )}
-    </InputContainer>
+    </div>
   );
 };
 

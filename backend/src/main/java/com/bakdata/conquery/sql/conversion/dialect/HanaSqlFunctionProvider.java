@@ -5,23 +5,21 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Param;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -43,6 +41,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
+		if (type == SQLDataType.VARCHAR) {
+			return DSL.function("TO_VARCHAR", type.getType(), field);
+		}
 		return DSL.function(
 				"CAST",
 				type.getType(),
@@ -154,20 +156,29 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
-
-		Field<String> stringAggregation = DSL.field(
+	public Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
+		return DSL.field(
 				"{0}({1}, {2} {3})",
 				String.class,
 				DSL.keyword("STRING_AGG"),
+				stringField,
+				delimiter,
+				DSL.orderBy(orderByFields)
+		);
+	}
+
+	@Override
+	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
+
+		Field<String> stringAggregation = stringAggregation(
 				daterangeStringExpression(columnDateRange),
 				DSL.toChar(DELIMITER),
-				DSL.orderBy(columnDateRange.getStart())
+				List.of(columnDateRange.getStart())
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
 		return DSL.when(stringAggregation.isNull(), DSL.val("{}"))
-				  .otherwise(DSL.field("'{' || {0} || '}'", String.class, stringAggregation));
+				  .otherwise(encloseInCurlyBraces(stringAggregation));
 	}
 
 	@Override
@@ -180,9 +191,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Field<Date> startDate = columnDateRange.getStart();
 		Field<Date> endDate = columnDateRange.getEnd();
 
-		Param<Integer> dateLength = DSL.val(DEFAULT_DATE_FORMAT.length());
-		Field<String> startDateExpression = toVarcharField(startDate, dateLength);
-		Field<String> endDateExpression = toVarcharField(endDate, dateLength);
+		Field<String> startDateExpression = cast(startDate, SQLDataType.VARCHAR);
+		Field<String> endDateExpression = cast(endDate, SQLDataType.VARCHAR);
 
 		Field<String> withMinDateReplaced = replace(startDateExpression, MIN_DATE_VALUE, MINUS_INFINITY_SIGN);
 		Field<String> withMaxDateReplaced = replace(endDateExpression, MAX_DATE_VALUE, INFINITY_SIGN);
@@ -279,31 +289,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object[]> asArray(List<Field<?>> fields) {
-		String arrayExpression = fields.stream()
-									   .map(Field::toString)
-									   .collect(Collectors.joining(", ", "array(", ")"));
-		return DSL.field(arrayExpression, Object[].class);
-	}
-
-	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",
 				Date.class,
 				dateColumn,
 				amountOfDays
-		);
-	}
-
-	private Field<String> toVarcharField(Field<Date> startDate, Param<Integer> dateExpressionLength) {
-		return DSL.field(
-				"{0}({1} {2}({3}))",
-				String.class,
-				DSL.keyword("CAST"),
-				startDate,
-				DSL.keyword("AS VARCHAR"),
-				dateExpressionLength
 		);
 	}
 

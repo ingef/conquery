@@ -48,7 +48,7 @@ public class QueryStepTransformer {
 		if (!queryStep.isUnion()) {
 			return ordered;
 		}
-		return unionAll(queryStep, ordered);
+		return union(queryStep, ordered);
 	}
 
 	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep) {
@@ -86,15 +86,15 @@ public class QueryStepTransformer {
 		}
 
 		if (queryStep.isUnion()) {
-			selectStep = unionAll(queryStep, selectStep);
+			selectStep = union(queryStep, selectStep);
 		}
 
 		return selectStep;
 	}
 
-	private Select<Record> unionAll(QueryStep queryStep, Select<Record> base) {
+	private Select<Record> union(QueryStep queryStep, Select<Record> base) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
-			base = base.unionAll(toSelectStep(unionStep));
+			base = queryStep.isUnionAll() ? base.unionAll(toSelectStep(unionStep)) : base.union(toSelectStep(unionStep));
 		}
 		return base;
 	}

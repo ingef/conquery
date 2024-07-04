@@ -16,6 +16,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
@@ -98,11 +99,16 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 			SqlTables tables,
 			ConversionContext conversionContext
 	) {
-		if (column.getType() != MajorTypeId.DATE) {
-			throw new UnsupportedOperationException("Can't calculate date distance to column of type " + column.getType());
+		Field<Date> startDate;
+		if (column.getType() == MajorTypeId.DATE) {
+			startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
+		}
+		else {
+			StratificationFunctions stratificationFunctions = StratificationFunctions.create(conversionContext);
+			Field<Date> daterangeColumn = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
+			startDate = stratificationFunctions.lower(ColumnDateRange.of(daterangeColumn));
 		}
 
-		Field<Date> startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 		Field<Date> endDate = getEndDate(conversionContext);
 
 		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();

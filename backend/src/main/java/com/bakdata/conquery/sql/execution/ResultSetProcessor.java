@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ResultSetProcessor {
 
+	char UNIT_SEPARATOR = (char) 31; // https://www.ascii-code.com/character/%E2%90%9F
+
 	String getString(ResultSet resultSet, int columnIndex) throws SQLException;
 
 	Integer getInteger(ResultSet resultSet, int columnIndex) throws SQLException;

@@ -55,6 +55,9 @@ public class CalculateCBlocksJob extends Job {
 
 	@Override
 	public void execute() throws Exception {
+		if (tasks.isEmpty()) {
+			return;
+		}
 
 		log.info("BEGIN calculate CBlocks for {} entries.", tasks.size());
 
