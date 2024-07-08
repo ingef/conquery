@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.index;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @CPSBase
@@ -16,10 +16,11 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	boolean initialized();
 
-	String external(String internalValue);
+	ResultType<?> createMappedType();
 
 	void setDataset(Dataset dataset);
 
 	@Override
 	InternToExternMapperId getId();
+
 }

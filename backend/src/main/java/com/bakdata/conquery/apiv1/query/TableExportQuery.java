@@ -230,15 +230,10 @@ public class TableExportQuery extends Query {
 			final Integer pos = e.getValue();
 
 			// If mapping is available, values are mapped
-			final ResultType.StringT resultType =
-					desc.getMapping() != null
-					? new ResultType.StringT((internal, printSettings) -> {
-						if (internal == null) {
-							return null;
-						}
-						return desc.getMapping().external((String) internal);
-					})
-					: ResultType.StringT.INSTANCE;
+			final ResultType<?> resultType =
+					desc.getMapping() == null
+					? ResultType.StringT.INSTANCE
+					: desc.getMapping().createMappedType();
 
 			final Set<SemanticType> semantics = new HashSet<>();
 

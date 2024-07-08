@@ -91,14 +91,14 @@ public class IndexServiceTest {
 		mapperUrlAbsolute.init();
 		mapperUrlRelative.init();
 
-		assertThat(mapper.external("int1")).as("Internal Value").isEqualTo("hello");
-		assertThat(mapper.external("int2")).as("Internal Value").isEqualTo("int2");
+		assertThat(mapper.externalValue("int1")).as("Internal Value").isEqualTo("hello");
+		assertThat(mapper.externalValue("int2")).as("Internal Value").isEqualTo("int2");
 
-		assertThat(mapperUrlAbsolute.external("int1")).as("Internal Value").isEqualTo("hello");
-		assertThat(mapperUrlAbsolute.external("int2")).as("Internal Value").isEqualTo("int2");
+		assertThat(mapperUrlAbsolute.externalValue("int1")).as("Internal Value").isEqualTo("hello");
+		assertThat(mapperUrlAbsolute.externalValue("int2")).as("Internal Value").isEqualTo("int2");
 
-		assertThat(mapperUrlRelative.external("int1")).as("Internal Value").isEqualTo("hello");
-		assertThat(mapperUrlRelative.external("int2")).as("Internal Value").isEqualTo("int2");
+		assertThat(mapperUrlRelative.externalValue("int1")).as("Internal Value").isEqualTo("hello");
+		assertThat(mapperUrlRelative.externalValue("int2")).as("Internal Value").isEqualTo("int2");
 
 	}
 
@@ -133,7 +133,7 @@ public class IndexServiceTest {
 		mapInternToExternMapper.init();
 
 		// Before eviction the result should be the same
-		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
+		assertThat(mapInternToExternMapper.externalValue("int1")).as("Internal Value").isEqualTo("hello");
 
 
 		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
@@ -141,7 +141,7 @@ public class IndexServiceTest {
 		indexService.evictCache();
 
 		// Request mapping and trigger reinitialization
-		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
+		assertThat(mapInternToExternMapper.externalValue("int1")).as("Internal Value").isEqualTo("hello");
 
 		mapInternToExternMapper.init();
 

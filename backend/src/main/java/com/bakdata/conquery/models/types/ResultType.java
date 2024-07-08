@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -215,7 +217,48 @@ public abstract class ResultType<T> {
 		}
 	}
 
-	@CPSType(id = "STRING", base = ResultType.class)
+	@CPSType(id = "STRING_LIST", base = ResultType.class)
+	@Data
+	public static class MappedListStringT extends ResultType<List<String>> {
+
+		private final Function<String, List<String>> mapping;
+
+		@Override
+		public String typeInfo() {
+			return "LIST[STRING]";
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+
+			final List<String> mappedResult = mapping.apply(((String) f));
+
+			// Not sure if this escaping is enough
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			final StringJoiner joiner = listFormat.createListJoiner();
+
+			for (String obj : mappedResult) {
+				joiner.add(listFormat.escapeListElement(obj));
+			}
+			return joiner.toString();
+		}
+
+		@Override
+		public List<String> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+
+			final String result = resultSetProcessor.getString(resultSet, columnIndex);
+
+			if (result == null) {
+				return null;
+			}
+
+			return mapping.apply(result);
+		}
+
+
+	}
+
+		@CPSType(id = "STRING", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class StringT extends PrimitiveResultType<String> {
 		@Getter(onMethod_ = @JsonCreator)
