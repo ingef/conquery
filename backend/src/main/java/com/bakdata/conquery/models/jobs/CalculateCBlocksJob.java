@@ -71,8 +71,6 @@ public class CalculateCBlocksJob extends Job {
 					 .peek(fut -> fut.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
 					 .collect(Collectors.toList());
 
-		log.debug("DONE CalculateCBlocks for {} entries.", tasks.size());
-
 
 		final ListenableFuture<?> all = Futures.allAsList(futures);
 
@@ -88,6 +86,9 @@ public class CalculateCBlocksJob extends Job {
 				}
 			}
 		}
+
+		log.debug("DONE CalculateCBlocks for {} entries.", tasks.size());
+
 	}
 
 	private void incrementProgressReporter() {
@@ -100,6 +101,7 @@ public class CalculateCBlocksJob extends Job {
 
 
 	@Data
+	@ToString(onlyExplicitlyIncluded = true)
 	private static class CalculationInformationProcessor implements Runnable {
 		private final ConceptTreeConnector connector;
 		private final Bucket bucket;
@@ -129,6 +131,7 @@ public class CalculateCBlocksJob extends Job {
 			}
 		}
 
+		@ToString.Include
 		public CBlockId getCBlockId() {
 			return new CBlockId(getBucket().getId(), getConnector().getId());
 		}
