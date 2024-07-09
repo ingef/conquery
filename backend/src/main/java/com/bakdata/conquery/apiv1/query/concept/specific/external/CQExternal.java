@@ -138,17 +138,17 @@ public class CQExternal extends CQElement {
 	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<String, Map<String, String>> extraFlat = extra.entrySet().stream()
-																 .collect(Collectors.toMap(
-																		 Map.Entry::getKey,
-																		 entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
-																										 .filter(headerToValue -> !headerToValue.getValue()
-																																				.isEmpty())
-																										 .collect(Collectors.toMap(
-																												 Map.Entry::getKey,
-																												 headerToValue -> headerToValue.getValue()
-																																			   .get(0)
-																										 ))
-																 ));
+																.collect(Collectors.toMap(
+																		Map.Entry::getKey,
+																		entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
+																										.filter(headerToValue -> !headerToValue.getValue()
+																																			   .isEmpty())
+																										.collect(Collectors.toMap(
+																												Map.Entry::getKey,
+																												headerToValue -> headerToValue.getValue()
+																																			  .get(0)
+																										))
+																));
 
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
@@ -296,9 +296,6 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
-	 *
-	 * TODO implement SQL-Mode
-	 * TODO move to Namespace to distinguish between cluster and sql.
 	 */
 	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles, boolean isInSqlMode) {
 		final Map<String, CDateSet> resolved = new HashMap<>();
