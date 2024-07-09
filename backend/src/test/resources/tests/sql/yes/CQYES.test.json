@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "CQYES Test",
-  "expectedCsv": "tests/query/CQYES/expected.csv",
+  "expectedCsv": "tests/sql/yes/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
