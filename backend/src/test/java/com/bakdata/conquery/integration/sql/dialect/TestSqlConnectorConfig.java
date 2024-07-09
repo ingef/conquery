@@ -5,7 +5,6 @@ import java.util.Map;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ import lombok.NoArgsConstructor;
 @JsonDeserialize(as = TestSqlConnectorConfig.class)
 public class TestSqlConnectorConfig extends SqlConnectorConfig {
 
-	@JsonIgnore
 	private static final String TEST_DATASET = "test";
 
 	public TestSqlConnectorConfig(DatabaseConfig databaseConfig) {
