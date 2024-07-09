@@ -5,10 +5,11 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "YES"
+      "type" : "YES"
     }
   },
   "concepts": [
+
   ],
   "content": {
     "tables": [
