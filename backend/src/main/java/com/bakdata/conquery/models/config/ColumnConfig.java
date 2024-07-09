@@ -88,12 +88,6 @@ public class ColumnConfig {
 	private int length = -1;
 
 	/**
-	 * Set to true, if the column should be resolvable in upload. This can be used to add supplemental information to an entity, for example it's data-source, which would not be unique among entities.
-	 */
-	@Builder.Default
-	private boolean resolvable = false;
-
-	/**
 	 * Set to true, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
 	 */
 	@Builder.Default
@@ -101,9 +95,11 @@ public class ColumnConfig {
 	private boolean print = true;
 
 	/**
-	 * Used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
+	 * Used for CQYes to select all entities. And CQExternal as primaryId for decoding. And for IdMapping for outputting additional Ids.
+	 *
+	 * Additionally, used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
 	 */
 	@Builder.Default
 	@JsonView(View.Persistence.class)
-	private boolean fillAnon = false;
+	private boolean primaryId = false;
 }

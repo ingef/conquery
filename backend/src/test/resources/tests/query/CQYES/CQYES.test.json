@@ -5,14 +5,47 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type" : "YES"
+      "type": "YES"
     }
   },
   "concepts": [
-
   ],
+  "decoding": {
+    "source": "tests/query/CQYES/personen.csv",
+    "idColumns": {
+      "table" : "sql_database/table_name",
+      "ids": [
+        {
+          "name": "PID",
+          "field": "PID",
+          "primaryId": true,
+          "label": {
+            "de": "PID"
+          },
+          "description": {
+            "en": "Pid of an Entity.",
+            "de": "Pid einer Entität."
+          }
+        }
+      ]
+    }
+  },
   "content": {
     "tables": [
+      {
+        "csv": "tests/query/CQYES/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      },
       {
         "csv": "tests/query/CQYES/content.csv",
         "name": "test_table",

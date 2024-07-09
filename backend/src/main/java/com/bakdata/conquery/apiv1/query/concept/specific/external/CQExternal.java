@@ -296,6 +296,9 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
+	 *
+	 * TODO implement SQL-Mode
+	 * TODO move to Namespace to distinguish between cluster and sql.
 	 */
 	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles, boolean isInSqlMode) {
 		final Map<String, CDateSet> resolved = new HashMap<>();
