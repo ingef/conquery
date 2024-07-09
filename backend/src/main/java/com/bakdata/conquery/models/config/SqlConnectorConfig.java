@@ -6,11 +6,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
@@ -31,7 +29,6 @@ public class SqlConnectorConfig {
 	/**
 	 * Keys must match the name of existing {@link Dataset}s.
 	 */
-	@Getter(AccessLevel.PRIVATE)
 	private Map<String, @Valid DatabaseConfig> databaseConfigs;
 
 	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
