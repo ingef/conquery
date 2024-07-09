@@ -55,9 +55,11 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 
 		return new LocalNamespace(
+				config,
 				namespaceData.getPreprocessMapper(),
 				namespaceData.getCommunicationMapper(),
 				namespaceStorage,
+				sqlExecutionService,
 				executionManager,
 				dslContextWrapper,
 				sqlStorageHandler,

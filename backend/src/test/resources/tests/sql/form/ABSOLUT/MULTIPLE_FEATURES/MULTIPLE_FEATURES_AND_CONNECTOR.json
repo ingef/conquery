@@ -54,10 +54,24 @@
   ],
   "content": {
     "tables": [
-      "/shared/vers_stamm.table.json"
+      "/shared/vers_stamm.table.json",
+      "/shared/persons.table.json"
     ],
     "previousQueryResults": [
       "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"
+    ]
+  },
+  "idColumns": {
+    "table": "persons",
+    "ids": [
+      {
+        "name": "ID",
+        "field": "pid",
+        "primaryId": true,
+        "label": {
+          "de": "result"
+        }
+      }
     ]
   }
 }

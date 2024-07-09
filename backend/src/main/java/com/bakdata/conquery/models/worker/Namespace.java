@@ -260,11 +260,39 @@ public abstract class Namespace extends IdResolveContext {
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
+	abstract String tryInnerResolveId(final EntityIdMap mapping, final EntityIdMap.ExternalId externalId);
+
 	/**
 	 * Try to extract a {@link com.bakdata.conquery.models.identifiable.mapping.EntityIdMap.ExternalId} from the row,
 	 * then try to map it to an internal {@link com.bakdata.conquery.models.query.entity.Entity}
 	 */
-	abstract String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping);
+	private String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
+		String resolvedId = null;
+
+		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
+			final EntityIdMap.ExternalId externalId = reader.apply(row);
+
+			if (externalId == null) {
+				continue;
+			}
+
+			// differs between SQL and Worker mode
+			String innerResolved = tryInnerResolveId(mapping, externalId);
+
+			if (innerResolved == null) {
+				continue;
+			}
+
+			// Only if all resolvable ids agree on the same entity, do we return the id.
+			if (resolvedId != null && !innerResolved.equals(resolvedId)) {
+				log.error("`{}` maps to different Entities", (Object) row);
+				continue;
+			}
+
+			resolvedId = innerResolved;
+		}
+		return resolvedId;
+	}
 
 	/**
 	 * For each row try and collect all dates.

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -75,30 +74,9 @@ public class DistributedNamespace extends Namespace {
 		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
 	}
 
-	protected String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
-		String resolvedId = null;
-
-		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
-			final EntityIdMap.ExternalId externalId = reader.apply(row);
-
-			if (externalId == null) {
-				continue;
-			}
-
-			String innerResolved = mapping.resolve(externalId);
-
-			if (innerResolved == null) {
-				continue;
-			}
-
-			// Only if all resolvable ids agree on the same entity, do we return the id.
-			if (resolvedId != null && !innerResolved.equals(resolvedId)) {
-				log.error("`{}` maps to different Entities", (Object) row);
-				continue;
-			}
-
-			resolvedId = innerResolved;
-		}
-		return resolvedId;
+	@Override
+	String tryInnerResolveId(final EntityIdMap mapping, final EntityIdMap.ExternalId externalId) {
+		return mapping.resolve(externalId);
 	}
+
 }
