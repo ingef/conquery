@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,8 +22,11 @@ public class ConceptTreeCache {
 	 * Store of all cached values.
 	 */
 
+	/**
+	 * @implNote We are wrapping this in Optional because ConcurrentHashMap does not like null-values, but null is a real result denoting a miss.
+	 */
 	@JsonIgnore
-	private final ConcurrentMap<String, ConceptTreeChild> cached;
+	private final ConcurrentMap<String, Optional<ConceptElement<?>>> cached;
 	/**
 	 * Statistics for Cache.
 	 */
@@ -43,19 +48,20 @@ public class ConceptTreeCache {
 	 *
 	 * @param value
 	 */
-	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptElement<?> findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
 		if (cached.containsKey(value)) {
 			hits++;
-			return cached.get(value);
+			return cached.get(value).orElse(null);
 		}
 
 		misses++;
 
-		final ConceptTreeChild child = treeConcept.findMostSpecificChild(value, rowMap);
+		final ConceptElement<?> child = treeConcept.findMostSpecificChild(value, rowMap);
+		final Optional<ConceptElement<?>> out = Optional.ofNullable(child);
 
 		if (!rowMap.isCalculated()) {
-			cached.put(value, child);
+			cached.put(value, out);
 		}
 
 		return child;
