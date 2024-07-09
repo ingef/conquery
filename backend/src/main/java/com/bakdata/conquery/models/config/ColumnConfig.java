@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Configuration class for QueryUpload and IdMapping.
- *
+ * <p>
  * Describes how rows are mapped for {@link EntityIdMap}/{@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
  */
 @Builder
@@ -32,10 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 public class ColumnConfig {
 
 	public EntityIdMap.ExternalId read(String value) {
-		if (!isResolvable()) {
-			return null;
-		}
-
 		if (Strings.isNullOrEmpty(value)) {
 			return null;
 		}
@@ -96,7 +92,7 @@ public class ColumnConfig {
 
 	/**
 	 * Used for CQYes to select all entities. And CQExternal as primaryId for decoding. And for IdMapping for outputting additional Ids.
-	 *
+	 * <p>
 	 * Additionally, used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
 	 */
 	@Builder.Default

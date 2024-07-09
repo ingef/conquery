@@ -8,6 +8,7 @@ import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
@@ -26,7 +27,9 @@ import lombok.With;
 @Builder(toBuilder = true)
 public class ConversionContext implements Context {
 
-	DatabaseConfig config;
+	IdColumnConfig idColumns;
+
+	DatabaseConfig databaseConfig;
 
 	NodeConversions nodeConversions;
 

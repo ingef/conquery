@@ -130,7 +130,9 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tables.cteName(ConceptCteStep.EVENT_FILTER)));
 
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(matchingConnector.getTable(), selectContext.getConversionContext().getConfig());
+		Field<Object>
+				primaryColumn =
+				TablePrimaryColumnUtil.findPrimaryColumn(matchingConnector.getTable(), selectContext.getConversionContext().getDatabaseConfig());
 		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, connectorTable.getName()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		SqlIdColumns ids = new SqlIdColumns(qualifiedPrimaryColumn);
 

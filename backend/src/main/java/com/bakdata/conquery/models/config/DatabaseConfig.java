@@ -1,12 +1,16 @@
 package com.bakdata.conquery.models.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Builder
 @Jacksonized
+@NoArgsConstructor
+@AllArgsConstructor
 public class DatabaseConfig {
 
 	private static final String DEFAULT_PRIMARY_COLUMN = "pid";
@@ -18,13 +22,6 @@ public class DatabaseConfig {
 	private String databasePassword;
 
 	private String jdbcConnectionUrl;
-
-	// TODO remove defaults and set values in test config
-	@Builder.Default
-	private String allIdsTable = "vers_stamm";
-
-	@Builder.Default
-	private String allIdsTableId = DEFAULT_PRIMARY_COLUMN;
 
 	@Builder.Default
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;

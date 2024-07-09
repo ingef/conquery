@@ -10,11 +10,28 @@
   },
   "concepts": [
   ],
+  "idColumns": {
+    "table": "persons",
+    "ids": [
+      {
+        "name": "PID",
+        "field": "pid",
+        "primaryId": true,
+        "label": {
+          "de": "PID"
+        },
+        "description": {
+          "en": "Pid of an Entity.",
+          "de": "Pid einer Entität."
+        }
+      }
+    ]
+  },
   "content": {
     "tables": [
       {
-        "csv": "tests/query/CQYES/content.csv",
-        "name": "test_table",
+        "csv": "tests/sql/yes/persons.csv",
+        "name": "persons",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

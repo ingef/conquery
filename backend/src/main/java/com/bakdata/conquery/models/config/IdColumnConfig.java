@@ -67,8 +67,7 @@ public class IdColumnConfig {
 	@JsonIgnore
 	@Setter(AccessLevel.NONE)
 	@Getter(lazy = true, value = AccessLevel.PUBLIC)
-	private final Map<String, ColumnConfig> idMappers = ids.stream()
-														   .collect(Collectors.toMap(ColumnConfig::getName, Functions.identity()));
+	private final Map<String, ColumnConfig> idMappers = ids.stream().collect(Collectors.toMap(ColumnConfig::getName, Functions.identity()));
 
 
 	@ValidationMethod(message = "Duplicate Claims for Mapping Columns.")

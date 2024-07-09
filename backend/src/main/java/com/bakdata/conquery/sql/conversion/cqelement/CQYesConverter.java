@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
 import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -21,11 +22,16 @@ public class CQYesConverter implements NodeConverter<CQYes> {
 	@Override
 	public ConversionContext convert(CQYes cqYes, ConversionContext context) {
 
-		Field<Object> primaryColumn = DSL.field(DSL.name(context.getConfig().getAllIdsTableId()));
+		ColumnConfig primaryColumnConfig = context.getIdColumns().getIds().stream()
+												  .filter(ColumnConfig::isPrimaryId)
+												  .findFirst()
+												  .orElseThrow(() -> new IllegalStateException("SQL mode requires a primary key column in IdColumnConfig"));
+
+		Field<Object> primaryColumn = DSL.field(DSL.name(primaryColumnConfig.getField()));
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 
 		Selects selects = Selects.builder().ids(ids).build();
-		org.jooq.Table<Record> fromTable = DSL.table(DSL.name(context.getConfig().getAllIdsTable()));
+		org.jooq.Table<Record> fromTable = DSL.table(DSL.name(context.getIdColumns().getTable()));
 
 		QueryStep cqYesTep = QueryStep.builder()
 									  .cteName(ALL_IDS_CTE)
