@@ -29,7 +29,7 @@ public class ConversionContext implements Context {
 
 	IdColumnConfig idColumns;
 
-	DatabaseConfig databaseConfig;
+	DatabaseConfig config;
 
 	NodeConversions nodeConversions;
 

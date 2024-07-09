@@ -39,7 +39,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	public ConversionContext convert(QueryDescription queryDescription) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.idColumns(idColumns)
-														.databaseConfig(config)
+														.config(config)
 														.nameGenerator(nameGenerator)
 														.nodeConversions(this)
 														.sqlDialect(dialect)

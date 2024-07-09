@@ -44,7 +44,7 @@ public abstract class StratificationFunctions {
 
 	public static StratificationFunctions create(ConversionContext context) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		return switch (context.getDatabaseConfig().getDialect()) {
+		return switch (context.getConfig().getDialect()) {
 			case POSTGRESQL -> new PostgresStratificationFunctions((PostgreSqlFunctionProvider) functionProvider);
 			case HANA -> new HanaStratificationFunctions((HanaSqlFunctionProvider) functionProvider);
 		};
