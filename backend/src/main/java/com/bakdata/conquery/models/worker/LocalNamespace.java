@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,6 +11,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -55,6 +57,12 @@ public class LocalNamespace extends Namespace {
 			final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
 			getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
 		}
+	}
+
+	@Override
+	String tryResolveId(final String[] row, final List<Function<String[], EntityIdMap.ExternalId>> readers, final EntityIdMap mapping) {
+		// TODO implement table lookup
+		return String.valueOf(row[0]);
 	}
 
 	@Override

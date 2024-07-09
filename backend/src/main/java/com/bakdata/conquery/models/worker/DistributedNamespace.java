@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
@@ -35,7 +37,6 @@ public class DistributedNamespace extends Namespace {
 
 	private final WorkerHandler workerHandler;
 	private final DistributedExecutionManager executionManager;
-
 
 	public DistributedNamespace(
 			ObjectMapper preprocessMapper,
@@ -74,4 +75,30 @@ public class DistributedNamespace extends Namespace {
 		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
 	}
 
+	protected String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
+		String resolvedId = null;
+
+		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
+			final EntityIdMap.ExternalId externalId = reader.apply(row);
+
+			if (externalId == null) {
+				continue;
+			}
+
+			String innerResolved = mapping.resolve(externalId);
+
+			if (innerResolved == null) {
+				continue;
+			}
+
+			// Only if all resolvable ids agree on the same entity, do we return the id.
+			if (resolvedId != null && !innerResolved.equals(resolvedId)) {
+				log.error("`{}` maps to different Entities", (Object) row);
+				continue;
+			}
+
+			resolvedId = innerResolved;
+		}
+		return resolvedId;
+	}
 }

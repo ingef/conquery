@@ -108,7 +108,6 @@ public class QueryProcessor {
 	private Validator validator;
 
 
-
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
@@ -294,14 +293,13 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+		final CQExternal.ResolveStatistic statistic = namespace.resolveEntities(
 				upload.getValues(),
 				upload.getFormat(),
 				namespace.getStorage().getIdMapping(),
 				config.getIdColumns(),
 				config.getLocale().getDateReader(),
-				upload.isOneRowPerEntity(),
-				true
+				upload.isOneRowPerEntity()
 		);
 
 		// Resolving nothing is a problem thus we fail.
