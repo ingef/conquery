@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -13,6 +14,14 @@ import lombok.Getter;
  */
 public class ConceptTreeCache {
 
+	@JsonIgnore
+	private final TreeConcept treeConcept;
+	/**
+	 * Store of all cached values.
+	 */
+
+	@JsonIgnore
+	private final ConcurrentMap<String, ConceptTreeChild> cached;
 	/**
 	 * Statistics for Cache.
 	 */
@@ -24,19 +33,9 @@ public class ConceptTreeCache {
 	@Getter
 	private int misses;
 
-	@JsonIgnore
-	private final TreeConcept treeConcept;
-
-	/**
-	 * Store of all cached values.
-	 */
-
-	@JsonIgnore
-	private final Map<String, ConceptTreeChild> cached;
-
 	public ConceptTreeCache(TreeConcept treeConcept) {
 		this.treeConcept = treeConcept;
-		cached = new HashMap<>();
+		cached = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -46,7 +45,7 @@ public class ConceptTreeCache {
 	 */
 	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
-		if(cached.containsKey(value)) {
+		if (cached.containsKey(value)) {
 			hits++;
 			return cached.get(value);
 		}
@@ -55,7 +54,7 @@ public class ConceptTreeCache {
 
 		final ConceptTreeChild child = treeConcept.findMostSpecificChild(value, rowMap);
 
-		if(!rowMap.isCalculated()) {
+		if (!rowMap.isCalculated()) {
 			cached.put(value, child);
 		}
 
