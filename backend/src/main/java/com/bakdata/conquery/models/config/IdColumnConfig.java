@@ -69,6 +69,13 @@ public class IdColumnConfig {
 	@Getter(lazy = true, value = AccessLevel.PUBLIC)
 	private final Map<String, ColumnConfig> idMappers = ids.stream().collect(Collectors.toMap(ColumnConfig::getName, Functions.identity()));
 
+	@JsonIgnore
+	public ColumnConfig findPrimaryIdColumn() {
+		return ids.stream()
+				  .filter(ColumnConfig::isPrimaryId)
+				  .findFirst()
+				  .orElseThrow(() -> new IllegalStateException("Requiring at least 1 primary key column in IdColumnConfig"));
+	}
 
 	@ValidationMethod(message = "Duplicate Claims for Mapping Columns.")
 	@JsonIgnore
