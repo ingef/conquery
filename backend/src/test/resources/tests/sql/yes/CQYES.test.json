@@ -10,23 +10,6 @@
   },
   "concepts": [
   ],
-  "idColumns": {
-    "table": "persons",
-    "ids": [
-      {
-        "name": "PID",
-        "field": "pid",
-        "primaryId": true,
-        "label": {
-          "de": "PID"
-        },
-        "description": {
-          "en": "Pid of an Entity.",
-          "de": "Pid einer Entität."
-        }
-      }
-    ]
-  },
   "content": {
     "tables": [
       {
