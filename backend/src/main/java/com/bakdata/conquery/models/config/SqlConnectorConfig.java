@@ -19,7 +19,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 public class SqlConnectorConfig {
 
-	boolean enabled;
+	private boolean enabled;
 
 	/**
 	 * Determines if generated SQL should be formatted.
