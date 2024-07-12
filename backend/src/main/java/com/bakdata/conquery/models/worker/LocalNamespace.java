@@ -68,8 +68,12 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void registerColumnValuesInSearch(Set<Column> columns) {
 		for (Column column : columns) {
-			final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
-			getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
+			try {
+				final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
+				getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
+			}catch (Exception e) {
+				log.error("Problem collecting column values for {}", column, e);
+			}
 		}
 	}
 

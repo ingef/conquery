@@ -7,6 +7,8 @@ import java.util.Map;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonIgnoreProperties(value = {"resolvable"}) // for backwards compatibility
 public class ColumnConfig {
 
 	public EntityIdMap.ExternalId read(String value) {
@@ -90,6 +93,12 @@ public class ColumnConfig {
 	@JsonView(View.Persistence.class)
 	private boolean print = true;
 
+	/*
+	 * Set to true, if the column should be resolvable in upload. This can be used to add supplemental information to an entity, for example it's data-source, which would not be unique among entities.
+	 */
+	@Builder.Default
+	private boolean resolvable = false;
+
 	/**
 	 * Used for CQYes to select all entities. And CQExternal as primaryId for decoding. And for IdMapping for outputting additional Ids.
 	 * <p>
@@ -97,5 +106,6 @@ public class ColumnConfig {
 	 */
 	@Builder.Default
 	@JsonView(View.Persistence.class)
+	@JsonAlias("fillAnon")
 	private boolean primaryId = false;
 }
