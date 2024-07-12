@@ -36,8 +36,7 @@
   ],
   "content": {
     "tables": [
-      "/shared/vers_stamm.table.json",
-      "/shared/persons.table.json"
+      "/shared/vers_stamm.table.json"
     ],
     "previousQueryResults": [
       "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"

@@ -17,17 +17,21 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 public class SqlTestDataImporter implements TestDataImporter {
 
+	private static final RequiredTable ALL_IDS_TABLE = importRequiredTable("/shared/persons.table.json");
+
 	private final CsvTableImporter csvTableImporter;
 
 	@Override
 	public void importQueryTestData(StandaloneSupport support, QueryTest test) throws Exception {
 		RequiredData content = test.getContent();
+		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), true);
 		importConcepts(support, test.getRawConcepts());
@@ -37,6 +41,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importFormTestData(StandaloneSupport support, FormTest test) throws Exception {
 		RequiredData content = test.getContent();
+		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), true);
 		importConcepts(support, test.getRawConcepts());
@@ -81,6 +86,11 @@ public class SqlTestDataImporter implements TestDataImporter {
 		for (RequiredTable table : tables) {
 			csvTableImporter.importTableIntoDatabase(table);
 		}
+	}
+
+	@SneakyThrows
+	private static RequiredTable importRequiredTable(String fileResource) {
+		return RequiredTable.fromFile(fileResource);
 	}
 
 }
