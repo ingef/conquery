@@ -526,9 +526,8 @@ public class QueryProcessor {
 
 		final List<ColumnConfig> ids = config.getIdColumns()
 											 .getIds().stream()
-											 // We're only interested in returning printable AND resolvable ids
+											 // We're only interested in returning printable ids
 											 .filter(ColumnConfig::isPrint)
-											 .filter(ColumnConfig::isResolvable)
 											 .collect(Collectors.toList());
 
 

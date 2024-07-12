@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQExternalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
@@ -60,6 +61,7 @@ public interface SqlDialect {
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
+				new CQYesConverter(),
 				new CQConceptConverter(),
 				new CQExternalConverter(),
 				new CQReusedQueryConverter(),
