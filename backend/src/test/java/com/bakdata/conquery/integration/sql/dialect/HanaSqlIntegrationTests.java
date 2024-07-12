@@ -48,7 +48,7 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
-	// SAP does not provide more than 1 image and on update, the earlier image is deleted from dockerhub, thus latest tag is fine
+	// SAP does not provide more than 1 image and on an update, the earlier image is deleted from dockerhub, thus latest tag is fine
 	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:latest");
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
 	private static boolean useLocalHanaDb = true;
