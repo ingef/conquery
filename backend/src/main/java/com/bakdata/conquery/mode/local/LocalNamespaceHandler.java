@@ -53,6 +53,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions);
 		ExecutionManager<SqlExecutionResult> executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
+		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver();
 
 		return new LocalNamespace(
 				namespaceData.getPreprocessMapper(),
@@ -64,6 +65,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
 				namespaceData.getIndexService(),
+				sqlEntityResolver,
 				namespaceData.getInjectables()
 		);
 	}
