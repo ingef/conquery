@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -39,10 +39,10 @@ class DaterangeSelectUtil {
 	}
 
 	/**
-	 * Aggregates the daterange of a corresponding {@link DaterangeSelect} and applies the respective converted aggregation via
+	 * Aggregates the daterange of a corresponding {@link DaterangeSelectOrFilter} and applies the respective converted aggregation via
 	 * {@link IntervalPackingSelectsCte}s using additional predecessor tables.
 	 */
-	public static <S extends DaterangeSelect & Named<?>> ConnectorSqlSelects createConnectorSqlSelects(
+	public static <S extends DaterangeSelectOrFilter & Named<?>> ConnectorSqlSelects createConnectorSqlSelects(
 			S select,
 			AggregationFunction aggregationFunction,
 			SelectContext<Connector, ConnectorSqlTables> context

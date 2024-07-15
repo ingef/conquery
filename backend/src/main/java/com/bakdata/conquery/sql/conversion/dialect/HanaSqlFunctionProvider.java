@@ -9,7 +9,7 @@ import java.util.Objects;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -129,12 +129,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange forArbitraryDateRange(DaterangeSelect dateRangeSelect) {
-		String tableName = dateRangeSelect.getTable().getName();
-		if (dateRangeSelect.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, dateRangeSelect.getStartColumn(), dateRangeSelect.getEndColumn());
+	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
+		String tableName = daterangeSelectOrFilter.getTable().getName();
+		if (daterangeSelectOrFilter.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn(), daterangeSelectOrFilter.getEndColumn());
 		}
-		return ofStartAndEnd(tableName, dateRangeSelect.getColumn(), dateRangeSelect.getColumn());
+		return ofStartAndEnd(tableName, daterangeSelectOrFilter.getColumn(), daterangeSelectOrFilter.getColumn());
 	}
 
 	@Override

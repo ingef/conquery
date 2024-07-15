@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -80,7 +80,7 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction);
 
-	ColumnDateRange forArbitraryDateRange(DaterangeSelect dateRangeSelect);
+	ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter);
 
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 

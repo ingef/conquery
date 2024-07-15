@@ -9,16 +9,12 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.models.datasets.concepts.DaterangeSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.google.common.base.Preconditions;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -34,7 +30,8 @@ import org.jooq.impl.SQLDataType;
  *
  * @see <a href="https://www.postgresql.org/docs/15/functions.html">PostgreSQL Documentation</a>
  */
-public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
+public class
+PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
@@ -123,12 +120,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange forArbitraryDateRange(DaterangeSelect dateRangeSelect) {
-		String tableName = dateRangeSelect.getTable().getName();
-		if (dateRangeSelect.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, dateRangeSelect.getStartColumn(), dateRangeSelect.getEndColumn());
+	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
+		String tableName = daterangeSelectOrFilter.getTable().getName();
+		if (daterangeSelectOrFilter.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn(), daterangeSelectOrFilter.getEndColumn());
 		}
-		return ofSingleColumn(tableName, dateRangeSelect.getColumn());
+		return ofSingleColumn(tableName, daterangeSelectOrFilter.getColumn());
 	}
 
 	@Override
