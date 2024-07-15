@@ -41,8 +41,7 @@ import org.jooq.impl.SQLDataType;
  * 	        "aggregated" as (
  *    			 select
  *    			   "select-1-distinct"."pid",
- *    			   --  (ASCII 31 Unit Seperator)
- *    			   string_agg(cast("column" as varchar), cast('' as varchar) ) as "select-1"
+ *    			   string_agg(cast("column" as varchar), cast(' ' as varchar) ) as "select-1"
  *    			 from "distinct"
  *    			 group by "pid"
  *   			)
