@@ -7,6 +7,7 @@ import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.NamespaceSetupData;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
+import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialectFactory;
@@ -38,6 +40,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService);
 
+		IdColumnConfig idColumns = config.getIdColumns();
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
 		DatabaseConfig databaseConfig = sqlConnectorConfig.getDatabaseConfig(namespaceStorage.getDataset());
 
@@ -45,8 +48,9 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 
-		SqlConverter sqlConverter = new SqlConverter(sqlDialect, dslContext, databaseConfig);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(sqlDialect));
+		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
+		SqlConverter sqlConverter = new SqlConverter(nodeConversions);
 		ExecutionManager<SqlExecutionResult> executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 

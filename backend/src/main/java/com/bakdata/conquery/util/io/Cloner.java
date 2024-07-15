@@ -25,7 +25,6 @@ public class Cloner {
 					ConqueryConfig.class
 			);
 			clone.setLoggingFactory(config.getLoggingFactory());
-			clone.setSqlConnectorConfig(config.getSqlConnectorConfig());
 			return clone;
 		}
 		catch (IOException e) {
