@@ -6,7 +6,6 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -104,7 +103,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
 		String arrayExpression = resultSet.getString(columnIndex);
 		if (arrayExpression == null) {
-			return Collections.emptyList();
+			return null;
 		}
 		return Arrays.stream(arrayExpression.split(String.valueOf(ResultSetProcessor.UNIT_SEPARATOR)))
 					 .filter(Predicate.not(String::isBlank))
