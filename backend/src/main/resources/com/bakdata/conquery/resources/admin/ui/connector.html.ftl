@@ -31,8 +31,8 @@
   <@infoCard.infoCard
     class="d-inline-flex mt-2"
     labels=["ID", "Label", "Validity Dates", "Table"]
-    values=[c.id, c.label, c.validityDates?join(', '), c.table.name]
-    links={"Table": "/admin-ui/datasets/${c.dataset}/tables/${c.table.id}"}
+    values=[c.id, c.label, c.validityDates?join(', '), c.getResolvedTable().name]
+    links={"Table": "/admin-ui/datasets/${c.dataset}/tables/${c.getResolvedTable().id}"}
   />
   <@accordion.accordionGroup>
     <#assign idHeader = "id">
