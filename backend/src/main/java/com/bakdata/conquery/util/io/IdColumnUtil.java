@@ -48,7 +48,7 @@ public class IdColumnUtil {
 		final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 		final int pos = IntStream.range(0, ids.size())
-								 .filter(idx -> ids.get(idx).isFillAnon())
+								 .filter(idx -> ids.get(idx).isPrimaryId())
 								 .findFirst()
 								 .orElseThrow();
 

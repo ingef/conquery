@@ -10,8 +10,6 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.identifiable.IdMutex;
-import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -41,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BucketManager {
 
-	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
 
@@ -120,9 +117,6 @@ public class BucketManager {
 						.put(cBlock.getBucket(), cBlock.getId());
 	}
 
-	public Locked acquireLock(Connector connector) {
-		return cBlockLocks.acquire(connector.getId());
-	}
 
 	@SneakyThrows
 	public void fullUpdate() {

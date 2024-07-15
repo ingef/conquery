@@ -263,7 +263,7 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private long countAllValues(SelectFilter<?> searchable) {
+	private int countAllValues(SelectFilter<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
@@ -322,10 +322,10 @@ public class ConceptsProcessor {
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
-	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
+	private record CursorAndLength(Cursor<FrontendValue> values, int size) {
 	}
 
-	public record AutoCompleteResult(List<FrontendValue> values, long total) {
+	public record AutoCompleteResult(List<FrontendValue> values, int total) {
 	}
 
 	public record ResolvedFilterResult(ConnectorId tableId, String filterId, Collection<FrontendValue> value) {

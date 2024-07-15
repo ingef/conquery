@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -47,7 +46,7 @@ public class CalculateCBlocksJob extends Job {
 
 	@Override
 	public void execute() throws Exception {
-		if(infos.isEmpty()){
+		if (infos.isEmpty()) {
 			return;
 		}
 
@@ -56,10 +55,10 @@ public class CalculateCBlocksJob extends Job {
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(this.executorService);
 
 		final List<? extends ListenableFuture<?>> futures = infos.stream()
-				.map(this::createInformationProcessor)
-				.map(executorService::submit)
-				.peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
-				.collect(Collectors.toList());
+																 .map(this::createInformationProcessor)
+																 .map(executorService::submit)
+																 .peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
+																 .collect(Collectors.toList());
 
 		Futures.allAsList(futures).get();
 	}
@@ -98,17 +97,15 @@ public class CalculateCBlocksJob extends Job {
 		@Override
 		public void run() {
 			try {
-				try(IdMutex.Locked ignored = bucketManager.acquireLock(info.connector)) {
-					if (bucketManager.hasCBlock(info.getCBlockId())) {
-						log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
-						return;
-					}
-
-					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize(), storage);
-
-					bucketManager.addCalculatedCBlock(cBlock);
-					storage.addCBlock(cBlock);
+				if (bucketManager.hasCBlock(info.getCBlockId())) {
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
+					return;
 				}
+
+				CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize(), storage);
+
+				bucketManager.addCalculatedCBlock(cBlock);
+				storage.addCBlock(cBlock);
 			}
 			catch (Exception e) {
 				throw new RuntimeException(

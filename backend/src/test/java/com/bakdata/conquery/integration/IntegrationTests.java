@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -52,7 +53,9 @@ public class IntegrationTests {
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
-					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class));
+					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class))
+					   // to always deserialize into TestSqlConnectorConfig for our tests
+					   .addMixIn(SqlConnectorConfig.class, TestSqlConnectorConfig.class);
 
 		CONFIG_WRITER = MAPPER.writerFor(ConqueryConfig.class);
 	}

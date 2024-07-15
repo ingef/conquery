@@ -15,7 +15,6 @@ import java.util.Map;
 
 /**
  * Mapping from uploaded {@link ExternalId} for resolving in {@link com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal}, and also for printing with {@link EntityPrintId}.
- *
  */
 @Getter
 @EqualsAndHashCode
@@ -61,15 +60,11 @@ public class EntityIdMap {
 				final String otherId = record.getString(columnConfig.getField());
 
 				// Collect printable parts into id
-				if(columnConfig.isPrint()) {
+				if (columnConfig.isPrint()) {
 					idParts.add(otherId);
 				}
 
 				if (otherId == null) {
-					continue;
-				}
-
-				if (!columnConfig.isResolvable()) {
 					continue;
 				}
 
@@ -135,7 +130,7 @@ public class EntityIdMap {
 
 	/**
 	 * Resolve external ID to Entity Id.
-	 *
+	 * <p>
 	 * Return -1 when not resolved.
 	 */
 	public String resolve(ExternalId key) {

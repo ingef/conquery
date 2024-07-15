@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -34,28 +35,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@Setter
+@Getter
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Slf4j @CPSBase
+@Slf4j
+@CPSBase
 public abstract class ConqueryTestSpec {
 
-	@Getter
-	@Setter
 	private String label;
 
-	@Setter
-	@Getter
 	@Nullable
 	private String description;
 
-	@Setter
-	@Getter
 	@Nullable
 	private ConqueryConfig config;
 
-	@Setter
-	@Getter
 	@Nullable
 	SqlSpec sqlSpec;
+
+	@Nullable
+	private IdColumnConfig idColumns;
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
@@ -65,7 +64,9 @@ public abstract class ConqueryTestSpec {
 			return conqueryConfig;
 		}
 
-		return config.withStorage(new NonPersistentStoreFactory());
+		final IdColumnConfig idColumnConfig = idColumns != null ? idColumns : config.getIdColumns();
+		return config.withIdColumns(idColumnConfig)
+					 .withStorage(new NonPersistentStoreFactory());
 	}
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
@@ -89,13 +90,13 @@ public abstract class ConqueryTestSpec {
 			Class<T> expectedClass,
 			Consumer<T> modifierBeforeValidation,
 			boolean usePlaceholderResolvers
-	) throws IOException, JSONException {
+	) throws IOException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory()
 														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, usePlaceholderResolvers);
 	}
 
 	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean usePlaceholderResolvers)
-			throws IOException, JSONException {
+			throws IOException {
 		return parseSubTree(support, node, expectedType, null, usePlaceholderResolvers);
 	}
 
@@ -127,7 +128,8 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 
-	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException {
 		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
@@ -150,8 +152,8 @@ public abstract class ConqueryTestSpec {
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
 					}
-					catch(Exception e2) {
-						throw new RuntimeException("Could not parse value "+potentialPath, e2);
+					catch (Exception e2) {
+						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
 				}
 				else {
@@ -163,6 +165,7 @@ public abstract class ConqueryTestSpec {
 				modifierBeforeValidation.accept(value);
 			}
 			result.add(value);
+			// TODO remove/add commented code ?
 			//			ValidatorHelper.failOnError(log, support.getValidator().validate(value));
 		}
 		return result;
