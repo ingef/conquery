@@ -1,0 +1,48 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CQYES Test",
+  "expectedCsv": "tests/sql/yes/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "YES"
+    }
+  },
+  "concepts": [
+  ],
+  "idColumns": {
+    "table": "persons",
+    "ids": [
+      {
+        "name": "PID",
+        "field": "pid",
+        "primaryId": true,
+        "label": {
+          "de": "PID"
+        },
+        "description": {
+          "en": "Pid of an Entity.",
+          "de": "Pid einer Entität."
+        }
+      }
+    ]
+  },
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/yes/persons.csv",
+        "name": "persons",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

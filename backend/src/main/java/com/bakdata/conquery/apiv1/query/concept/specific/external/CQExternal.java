@@ -138,17 +138,17 @@ public class CQExternal extends CQElement {
 	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<String, Map<String, String>> extraFlat = extra.entrySet().stream()
-																 .collect(Collectors.toMap(
-																		 Map.Entry::getKey,
-																		 entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
-																										 .filter(headerToValue -> !headerToValue.getValue()
-																																				.isEmpty())
-																										 .collect(Collectors.toMap(
-																												 Map.Entry::getKey,
-																												 headerToValue -> headerToValue.getValue()
-																																			   .get(0)
-																										 ))
-																 ));
+																.collect(Collectors.toMap(
+																		Map.Entry::getKey,
+																		entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
+																										.filter(headerToValue -> !headerToValue.getValue()
+																																			   .isEmpty())
+																										.collect(Collectors.toMap(
+																												Map.Entry::getKey,
+																												headerToValue -> headerToValue.getValue()
+																																			  .get(0)
+																										))
+																));
 
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {

@@ -14,7 +14,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import { ConceptBubble } from "../ConceptBubble";
 
 import { SmallHeading } from "./SmallHeading";
-import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util";
+import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
