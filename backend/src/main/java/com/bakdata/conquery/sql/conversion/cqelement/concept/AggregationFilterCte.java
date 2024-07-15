@@ -39,7 +39,7 @@ class AggregationFilterCte extends ConnectorCte {
 				tableContext.allSqlSelects().stream()
 							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
 							.map(sqlSelect -> {
-								// universal select like an ExistsSelect have no predecessor in preceding CTE
+								// universal selects like an ExistsSelect have no predecessor in preceding CTE
 								if (sqlSelect.isUniversal()) {
 									return sqlSelect;
 								}
