@@ -107,6 +107,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+			// TODO why no event filter
 			SqlIdColumns ids = selectContext.getIds();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);

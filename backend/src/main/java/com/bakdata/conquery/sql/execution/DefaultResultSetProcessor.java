@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import lombok.RequiredArgsConstructor;
@@ -67,12 +68,47 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(resultSet, columnIndex, (string) -> string);
+	}
+
+	@Override
+	public List<Boolean> getBooleanList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(resultSet, columnIndex, Boolean::valueOf);
+	}
+
+	@Override
+	public List<Integer> getIntegerList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(resultSet, columnIndex, Integer::valueOf);
+	}
+
+	@Override
+	public List<Double> getDoubleList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(resultSet, columnIndex, Double::valueOf);
+	}
+
+	@Override
+	public List<BigDecimal> getMoneyList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(
+				resultSet,
+				columnIndex,
+				(string) -> BigDecimal.valueOf(Double.parseDouble(string))
+									  .setScale(2, RoundingMode.HALF_EVEN)
+		);
+	}
+
+	@Override
+	public List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return fromString(resultSet, columnIndex, (string) -> Date.valueOf(string).toLocalDate().toEpochDay());
+	}
+
+	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
 		String arrayExpression = resultSet.getString(columnIndex);
 		if (arrayExpression == null) {
 			return Collections.emptyList();
 		}
 		return Arrays.stream(arrayExpression.split(String.valueOf(ResultSetProcessor.UNIT_SEPARATOR)))
 					 .filter(Predicate.not(String::isBlank))
+					 .map(parseFunction)
 					 .toList();
 	}
 

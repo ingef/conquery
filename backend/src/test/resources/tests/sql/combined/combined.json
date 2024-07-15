@@ -19,7 +19,8 @@
             "concept.connector.event-date",
             "concept.connector.event_duration_sum",
             "concept.connector.first_value",
-            "concept.connector.sum_distinct"
+            "concept.connector.sum_distinct",
+            "concept.connector.distinct_select"
           ],
           "filters": [
             {
@@ -95,6 +96,11 @@
               "label": "first_value",
               "column": "table.value",
               "type": "FIRST"
+            },
+            {
+              "label": "distinct_select",
+              "column": "table.value",
+              "type": "DISTINCT"
             },
             {
               "name": "sum_distinct",
