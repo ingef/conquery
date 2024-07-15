@@ -5,12 +5,10 @@ import java.util.stream.Stream;
 
 import org.jooq.CommonTableExpression;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectHavingStep;
-import org.jooq.SelectSeekStepN;
 import org.jooq.impl.DSL;
 
 /**
@@ -40,15 +38,11 @@ public class QueryStepTransformer {
 			grouped = queryBase.groupBy(queryStep.getGroupBy());
 		}
 
-		// ordering
-		List<Field<?>> orderByFields = queryStep.getSelects().getIds().toFields();
-		SelectSeekStepN<Record> ordered = grouped.orderBy(orderByFields);
-
 		// union
 		if (!queryStep.isUnion()) {
-			return ordered;
+			return grouped;
 		}
-		return union(queryStep, ordered);
+		return union(queryStep, grouped);
 	}
 
 	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep) {
