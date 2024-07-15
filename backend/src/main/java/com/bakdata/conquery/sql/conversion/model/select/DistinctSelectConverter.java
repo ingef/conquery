@@ -23,7 +23,33 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 /**
- * TODO comment with example SQL query
+ * <pre>
+ *  The two additional CTEs this aggregator creates:
+ * 	<ol>
+ * 	    <li>
+ * 	        Select distinct values of a column.
+ *            {@code
+ * 	        	"distinct" as (
+ *     				select distinct "pid", "column"
+ *     				from "event_filter"
+ *  			)
+ *            }
+ * 	    </li>
+ * 	    <li>
+ * 	        String agg all distinct values of the column.
+ *            {@code
+ * 	        "aggregated" as (
+ *    			 select
+ *    			   "select-1-distinct"."pid",
+ *    			   --  (ASCII 31 Unit Seperator)
+ *    			   string_agg(cast("column" as varchar), cast('' as varchar) ) as "select-1"
+ *    			 from "distinct"
+ *    			 group by "pid"
+ *   			)
+ *            }
+ * 	    </li>
+ * 	</ol>
+ * </pre>
  */
 public class DistinctSelectConverter implements SelectConverter<DistinctSelect> {
 
