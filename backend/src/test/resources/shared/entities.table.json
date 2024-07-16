@@ -1,6 +1,6 @@
 {
-  "csv": "shared/persons.csv",
-  "name": "persons",
+  "csv": "shared/entities.csv",
+  "name": "entities",
   "primaryColumn": {
     "name": "pid",
     "type": "STRING"

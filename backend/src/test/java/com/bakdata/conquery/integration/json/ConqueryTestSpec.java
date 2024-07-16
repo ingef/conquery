@@ -60,13 +60,13 @@ public abstract class ConqueryTestSpec {
 
 	// default IdColumnConfig for SQL mode
 	private IdColumnConfig idColumns = new IdColumnConfig(
-			"persons",
+			"entities",
 			List.of(
 					ColumnConfig.builder()
 								.name("ID")
 								.field("pid")
 								.primaryId(true)
-								.label(Map.of(Locale.GERMANY, "result"))
+								.label(Map.of(Locale.ROOT, "result"))
 								.build()
 			)
 	);

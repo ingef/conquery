@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SqlTestDataImporter implements TestDataImporter {
 
-	private static final RequiredTable ALL_IDS_TABLE = importRequiredTable("/shared/persons.table.json");
+	private static final RequiredTable ALL_IDS_TABLE = importRequiredTable("/shared/entities.table.json");
 
 	private final CsvTableImporter csvTableImporter;
 

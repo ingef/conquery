@@ -131,12 +131,12 @@ public class SqlEntityResolver implements EntityResolver {
 	 * 		select "row",
 	 * 		       "primary_id",
 	 * 		       case
-	 * 		           when "persons"."id" is not null then true
+	 * 		           when "entities"."id" is not null then true
 	 * 		           else false
 	 * 		           end as "is_resolved"
-	 * 		from "persons"
+	 * 		from "entities"
 	 * 		         join "ids_unresolved"
-	 * 		              on "primary_id" = "persons"."id"
+	 * 		              on "primary_id" = "entities"."id"
 	 * 		where "primary_id" = "pid"
 	 *     }
 	 * </pre>

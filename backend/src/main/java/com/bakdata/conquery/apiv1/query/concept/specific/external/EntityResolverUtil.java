@@ -90,15 +90,16 @@ public class EntityResolverUtil {
 	}
 
 	public static void verifyOnlySingles(boolean onlySingles, Map<String, Map<String, List<String>>> extraDataByEntity) {
-		if (onlySingles) {
-			// Check that there is at most one value per entity and per column
-			final boolean alright = extraDataByEntity.values().stream()
-													 .map(Map::values)
-													 .flatMap(Collection::stream)
-													 .allMatch(l -> l.size() <= 1);
-			if (!alright) {
-				throw new ConqueryError.ExternalResolveOnePerRowError();
-			}
+		if (!onlySingles) {
+			return;
+		}
+		// Check that there is at most one value per entity and per column
+		final boolean alright = extraDataByEntity.values().stream()
+												 .map(Map::values)
+												 .flatMap(Collection::stream)
+												 .allMatch(l -> l.size() <= 1);
+		if (!alright) {
+			throw new ConqueryError.ExternalResolveOnePerRowError();
 		}
 	}
 
