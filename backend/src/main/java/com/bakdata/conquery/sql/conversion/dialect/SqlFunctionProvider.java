@@ -98,8 +98,6 @@ public interface SqlFunctionProvider {
 	 */
 	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
 
-	Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields);
-
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
 	 * <p>
@@ -139,6 +137,17 @@ public interface SqlFunctionProvider {
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
+
+	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
+		return DSL.field(
+				"{0}({1}, {2} {3})",
+				String.class,
+				DSL.keyword("string_agg"),
+				stringField,
+				delimiter,
+				DSL.orderBy(orderByFields)
+		);
+	}
 
 	default Field<String> concat(List<Field<String>> fields) {
 		String concatenated = fields.stream()

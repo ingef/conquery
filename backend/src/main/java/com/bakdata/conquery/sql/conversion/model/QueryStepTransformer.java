@@ -9,6 +9,7 @@ import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectHavingStep;
+import org.jooq.SelectSelectStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -70,10 +71,15 @@ public class QueryStepTransformer {
 
 	private Select<Record> toSelectStep(QueryStep queryStep) {
 
-		Select<Record> selectStep = this.dslContext
-				.select(queryStep.getSelects().all())
-				.from(queryStep.getFromTables())
-				.where(queryStep.getConditions());
+		SelectSelectStep<Record> selectClause;
+		if (queryStep.isSelectDistinct()) {
+			selectClause = dslContext.selectDistinct(queryStep.getSelects().all());
+		}
+		else {
+			selectClause = dslContext.select(queryStep.getSelects().all());
+		}
+
+		Select<Record> selectStep = selectClause.from(queryStep.getFromTables()).where(queryStep.getConditions());
 
 		if (queryStep.isGroupBy()) {
 			selectStep = ((SelectConditionStep<Record>) selectStep).groupBy(queryStep.getGroupBy());
