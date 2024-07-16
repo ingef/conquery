@@ -188,7 +188,11 @@ public class SqlEntityResolver implements EntityResolver {
 
 			Field<Integer> rowIndex = val(i).as(ROW_INDEX);
 			Field<String> externalPrimaryColumn = val(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
-			selects.add(context.select(rowIndex, externalPrimaryColumn));
+			Select<Record2<Integer, String>> externalIdSelect = context.select(rowIndex, externalPrimaryColumn)
+																	   // some dialects can't just select static values without FROM clause
+																	   .from(dialect.getFunctionProvider().getNoOpTable());
+
+			selects.add(externalIdSelect);
 		}
 
 		return UNRESOLVED_CTE.as(selects.stream().reduce(Select::unionAll).orElseThrow(IllegalStateException::new));
