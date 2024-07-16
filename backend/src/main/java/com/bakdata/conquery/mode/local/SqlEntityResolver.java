@@ -119,6 +119,28 @@ public class SqlEntityResolver implements EntityResolver {
 
 	}
 
+	/**
+	 * Create a SQL query like this
+	 * <pre>
+	 *     {@code
+	 *      with "ids_unresolved" as (select 1   as "row",
+	 *                                      '1'  as "primary_id"
+	 *                                -- will select more ids here via union all)
+	 * 		select "row",
+	 * 		       "primary_id",
+	 * 		       case
+	 * 		           when "persons"."id" is not null then true
+	 * 		           else false
+	 * 		           end as "is_resolved"
+	 * 		from "persons"
+	 * 		         join "ids_unresolved"
+	 * 		              on "primary_id" = "persons"."id"
+	 * 		where "primary_id" = "pid"
+	 *     }
+	 * </pre>
+	 * <p>
+	 * For each ID, that had a matching reader, it will return an entry in the map with row number -> IdResolveInfo.
+	 */
 	private Map<Integer, IdResolveInfo> resolveIds(String[][] values, List<Function<String[], EntityIdMap.ExternalId>> readers) {
 
 		CommonTableExpression<?> unresolvedCte = createUnresolvedCte(values, readers);
