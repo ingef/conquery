@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -39,8 +38,13 @@ class AggregationFilterCte extends ConnectorCte {
 		List<SqlSelect> forAggregationFilterStep =
 				tableContext.allSqlSelects().stream()
 							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-							.filter(Predicate.not(SqlSelect::isUniversal))
-							.map(sqlSelect -> sqlSelect.qualify(previous.getCteName()))
+							.map(sqlSelect -> {
+								// universal selects like an ExistsSelect have no predecessor in preceding CTE
+								if (sqlSelect.isUniversal()) {
+									return sqlSelect;
+								}
+								return sqlSelect.qualify(previous.getCteName());
+							})
 							.collect(Collectors.toList());
 
 		return Selects.builder()
