@@ -49,9 +49,7 @@ public abstract class ResultType<T> {
 
 	public abstract T getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
 
-	protected List<T> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
-		throw new UnsupportedOperationException("ResultType list of type %s not supported for now.".formatted(getClass().getSimpleName()));
-	}
+	protected abstract List<T> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
 
 	public static ResultType<?> resolveResultType(MajorTypeId majorTypeId) {
 		return switch (majorTypeId) {
@@ -99,6 +97,11 @@ public abstract class ResultType<T> {
 		public Boolean getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getBoolean(resultSet, columnIndex);
 		}
+
+		@Override
+		protected List<Boolean> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getBooleanList(resultSet, columnIndex);
+		}
 	}
 
 
@@ -120,6 +123,11 @@ public abstract class ResultType<T> {
 		public Integer getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getInteger(resultSet, columnIndex);
 		}
+
+		@Override
+		protected List<Integer> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getIntegerList(resultSet, columnIndex);
+		}
 	}
 
 	@CPSType(id = "NUMERIC", base = ResultType.class)
@@ -139,6 +147,11 @@ public abstract class ResultType<T> {
 		@Override
 		public Double getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getDouble(resultSet, columnIndex);
+		}
+
+		@Override
+		protected List<Double> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDoubleList(resultSet, columnIndex);
 		}
 	}
 
@@ -160,6 +173,11 @@ public abstract class ResultType<T> {
 		@Override
 		public Number getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getDate(resultSet, columnIndex);
+		}
+
+		@Override
+		protected List<Number> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDateList(resultSet, columnIndex);
 		}
 
 		public static String print(Number num, DateTimeFormatter formatter) {
@@ -276,6 +294,11 @@ public abstract class ResultType<T> {
 		public BigDecimal readIntermediateValue(PrintSettings cfg, Number f) {
 			return new BigDecimal(f.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
 		}
+
+		@Override
+		protected List<BigDecimal> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getMoneyList(resultSet, columnIndex);
+		}
 	}
 
 	@CPSType(id = "LIST", base = ResultType.class)
@@ -313,11 +336,12 @@ public abstract class ResultType<T> {
 
 		@Override
 		public List<T> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
-			if (elementType.getClass() == DateRangeT.class || elementType.getClass() == StringT.class) {
-				return elementType.getFromResultSetAsList(resultSet, columnIndex, resultSetProcessor);
-			}
-			// TODO handle all other list types properly
-			throw new UnsupportedOperationException("Other result type lists not supported for now.");
+			return elementType.getFromResultSetAsList(resultSet, columnIndex, resultSetProcessor);
+		}
+
+		@Override
+		protected List<List<T>> getFromResultSetAsList(final ResultSet resultSet, final int columnIndex, final ResultSetProcessor resultSetProcessor) {
+			throw new UnsupportedOperationException("Nested lists not supported in SQL mode");
 		}
 
 		@Override
