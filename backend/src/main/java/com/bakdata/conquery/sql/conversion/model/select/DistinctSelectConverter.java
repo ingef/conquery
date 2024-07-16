@@ -91,7 +91,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	) {
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
 		Field<String> castedColumn = functionProvider.cast(preprocessingSelect.qualify(distinctSelectCte.getCteName()).select(), SQLDataType.VARCHAR);
-		Field<String> aggregatedColumn = functionProvider.stringAggregation(castedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of())
+		Field<String> aggregatedColumn = functionProvider.stringAggregation(castedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of(castedColumn))
 														 .as(alias);
 
 		SqlIdColumns ids = distinctSelectCte.getQualifiedSelects().getIds();
