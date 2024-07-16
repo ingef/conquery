@@ -44,7 +44,7 @@ public class SqlEntityResolver implements EntityResolver {
 
 	private static final Name IS_RESOLVED_ALIAS = name("is_resolved");
 	private static final Name UNRESOLVED_CTE = name("ids_unresolved");
-	public static final String ROW_INDEX = "row";
+	public static final String ROW_INDEX = "rowIndex";
 
 	private final IdColumnConfig idColumns;
 	private final DSLContext context;
