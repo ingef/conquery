@@ -16,6 +16,7 @@
         {
           "id": "concept.connector",
           "selects": [
+            "concept.connector.exists",
             "concept.connector.event-date",
             "concept.connector.event_duration_sum",
             "concept.connector.first_value",
@@ -83,6 +84,10 @@
             }
           ],
           "selects": [
+            {
+              "type": "EXISTS",
+              "name": "exists"
+            },
             {
               "type": "EVENT_DATE_UNION",
               "name": "event-date"
