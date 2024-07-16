@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -47,7 +48,7 @@ public abstract class ResultType<T> {
 
 	public abstract String typeInfo();
 
-	public abstract T getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
+	public abstract T getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException, ParseException;
 
 	protected abstract List<T> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
 
@@ -285,7 +286,7 @@ public abstract class ResultType<T> {
 		}
 
 		@Override
-		public BigDecimal getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+		public BigDecimal getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException, ParseException {
 			return resultSetProcessor.getMoney(resultSet, columnIndex);
 		}
 

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -35,12 +37,13 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	}
 
 	@Override
-	public BigDecimal getMoney(ResultSet resultSet, int columnIndex) throws SQLException {
-		BigDecimal money = resultSet.getBigDecimal(columnIndex);
-		if (money == null) {
+	public BigDecimal getMoney(ResultSet resultSet, int columnIndex) throws SQLException, ParseException {
+		String moneyString = resultSet.getString(columnIndex);
+		if (moneyString == null) {
 			return null;
 		}
-		return money.setScale(2, RoundingMode.HALF_EVEN);
+		NumberFormat format = NumberFormat.getNumberInstance(config.getLocale().getFrontend());
+		return BigDecimal.valueOf(format.parse(moneyString).doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	@Override
