@@ -100,10 +100,11 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, (string) -> {
-			DateReader dateReader = config.getLocale().getDateReader();
-			return dateReader.parseToLocalDate(string).toEpochDay();
-		});
+		return fromString(resultSet, columnIndex, this::parseWithDateReader);
+	}
+
+	private Number parseWithDateReader(String string) {
+		return config.getLocale().getDateReader().parseToLocalDate(string).toEpochDay();
 	}
 
 	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
