@@ -168,6 +168,31 @@ public class BucketManager {
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
 		registerBucket(bucket, entity2Bucket, tableToBuckets);
+
+		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+
+		for (Concept<?> concept : storage.getAllConcepts()) {
+			if (!(concept instanceof TreeConcept)) {
+				continue;
+			}
+			for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
+				if (!connector.getTable().equals(bucket.getTable())) {
+					continue;
+				}
+
+				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+
+
+				if (hasCBlock(cBlockId)) {
+					continue;
+				}
+
+				job.addCBlock(bucket, connector);
+
+			}
+		}
+
+		jobManager.addSlowJob(job);
 	}
 
 	public void removeTable(Table table) {

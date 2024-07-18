@@ -16,6 +16,4 @@ public interface ImportHandler {
 
 	void deleteImport(Import imp);
 
-	void calculateCBlocks(Namespace namespace);
-
 }

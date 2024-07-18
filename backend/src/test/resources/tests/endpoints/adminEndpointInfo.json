@@ -61,11 +61,6 @@
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/calculate-cblocks",
-    "clazz": "AdminDatasetResource"
-  },
-  {
-    "method": "POST",
     "path": "/datasets/{dataset}/imports",
     "clazz": "AdminDatasetResource"
   },

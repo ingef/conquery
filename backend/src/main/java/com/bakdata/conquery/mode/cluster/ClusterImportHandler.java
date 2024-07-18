@@ -17,11 +17,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.StartCalculateCblocks;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
@@ -195,21 +193,6 @@ public class ClusterImportHandler implements ImportHandler {
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);
-	}
-
-	@Override
-	public void calculateCBlocks(Namespace namespace) {
-		namespace.getJobManager().addSlowJob(new Job() {
-			@Override
-			public void execute() {
-				((DistributedNamespace) namespace).getWorkerHandler().sendToAll(new StartCalculateCblocks());
-			}
-
-			@Override
-			public String getLabel() {
-				return "Initiate calculateCBlocksJob";
-			}
-		});
 	}
 
 }

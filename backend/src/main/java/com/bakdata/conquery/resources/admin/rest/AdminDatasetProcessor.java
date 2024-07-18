@@ -273,10 +273,6 @@ public class AdminDatasetProcessor {
 		this.importHandler.deleteImport(imp);
 	}
 
-	public void calculateCBlocks(Namespace namespace){
-		this.importHandler.calculateCBlocks(namespace);
-	}
-
 
 	/**
 	 * Deletes a table if it has no dependents or not forced to do so.
