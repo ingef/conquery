@@ -3,8 +3,8 @@
   "sqlSpec": {
     "isEnabled": true
   },
-  "label": "AND DURATION SUM Test",
-  "expectedCsv": "tests/sql/selects/sum/duration_sum/expected.csv",
+  "label": "AND DURATION SUM on event date Test",
+  "expectedCsv": "tests/sql/selects/sum/event_duration_sum/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -45,10 +45,13 @@
       "connectors": {
         "name": "connector",
         "column": "table.column",
-        "selects": {
-          "type": "DURATION_SUM",
-          "name": "event_duration_sum",
+        "validityDates": {
+          "name": "datum",
           "column": "table.datum"
+        },
+        "selects": {
+          "type": "EVENT_DURATION_SUM",
+          "name": "event_duration_sum"
         }
       },
       "children": [
@@ -74,7 +77,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/sum/duration_sum/content.csv",
+        "csv": "tests/sql/selects/sum/event_duration_sum/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

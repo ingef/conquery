@@ -57,7 +57,8 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		// we want to create a stratification for each distinct validity date range of an entity,
 		// so we first need to unnest the validity date in case it is a multirange
-		QueryStep unnestedEntityDate = functionProvider.unnestValidityDate(prerequisite, FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix());
+		String unnestCteName = FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix();
+		QueryStep unnestedEntityDate = functionProvider.unnestDaterange(prerequisite.getSelects().getValidityDate().get(), prerequisite, unnestCteName);
 		Selects unnestedSelects = unnestedEntityDate.getQualifiedSelects();
 
 		ColumnDateRange withOverwrittenBounds;
