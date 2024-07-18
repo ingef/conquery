@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.execution;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -10,11 +9,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.DateReader;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 class DefaultResultSetProcessor implements ResultSetProcessor {
 
+	private final ConqueryConfig config;
 	private final SqlCDateSetParser sqlCDateSetParser;
 
 	@Override
@@ -48,11 +50,12 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public Number getDate(ResultSet resultSet, int columnIndex) throws SQLException {
-		Date date = resultSet.getDate(columnIndex);
-		if (date == null) {
+		String dateString = resultSet.getString(columnIndex);
+		if (dateString == null) {
 			return null;
 		}
-		return date.toLocalDate().toEpochDay();
+		DateReader dateReader = config.getLocale().getDateReader();
+		return dateReader.parseToLocalDate(dateString).toEpochDay();
 	}
 
 	@Override
@@ -97,7 +100,11 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, (string) -> Date.valueOf(string).toLocalDate().toEpochDay());
+		return fromString(resultSet, columnIndex, this::parseWithDateReader);
+	}
+
+	private Number parseWithDateReader(String string) {
+		return config.getLocale().getDateReader().parseToLocalDate(string).toEpochDay();
 	}
 
 	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
