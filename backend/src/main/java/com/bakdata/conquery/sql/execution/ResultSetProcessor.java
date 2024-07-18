@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.execution;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 
 public interface ResultSetProcessor {
@@ -15,7 +16,7 @@ public interface ResultSetProcessor {
 
 	Double getDouble(ResultSet resultSet, int columnIndex) throws SQLException;
 
-	BigDecimal getMoney(ResultSet resultSet, int columnIndex) throws SQLException;
+	BigDecimal getMoney(ResultSet resultSet, int columnIndex) throws SQLException, ParseException;
 
 	Boolean getBoolean(ResultSet resultSet, int columnIndex) throws SQLException;
 

@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +62,7 @@ public class SqlExecutionService {
 			return new SqlExecutionResult(columnNames, resultTable);
 		}
 		// not all DB vendors throw SQLExceptions
-		catch (SQLException | RuntimeException e) {
+		catch (SQLException | ParseException | RuntimeException e) {
 			throw new ConqueryError.SqlError(e);
 		}
 	}
@@ -73,7 +74,7 @@ public class SqlExecutionService {
 						.toList();
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
+	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException, ParseException {
 		final List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
 		while (resultSet.next()) {
 			final SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
@@ -91,7 +92,7 @@ public class SqlExecutionService {
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException, ParseException {
 
 		final String id = resultSet.getString(PID_COLUMN_INDEX);
 		final Object[] resultRow = new Object[columnCount - 1];
