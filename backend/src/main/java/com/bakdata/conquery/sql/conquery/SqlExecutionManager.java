@@ -37,7 +37,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	@Override
 	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
 
-		addResult(execution, new SqlExecutionResult());
+		addResult(execution.getId(), new SqlExecutionResult());
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
@@ -75,20 +75,21 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
+									ManagedExecutionId id = managedQuery.getId();
 									try {
 										// We need to transfer the columns and data from the query result together with the execution lock to a new result
-										SqlExecutionResult startResult = getResult(managedQuery.getId(), null);
+										SqlExecutionResult startResult = getResult(id);
 										SqlExecutionResult finishResult = new SqlExecutionResult(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
-										addResult(managedQuery, finishResult);
+										addResult(id, finishResult);
 									} catch (ExecutionException e) {
 										throw new RuntimeException(e);
 									}
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE, executionManager);
-									runningExecutions.remove(managedQuery.getId());
+									runningExecutions.remove(id);
 
 									// Unlock waiting requests
-									clearLock(managedQuery.getId());
+									clearLock(id);
 								})
 								.exceptionally(e -> {
 									managedQuery.finish(ExecutionState.FAILED, this);

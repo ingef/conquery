@@ -22,18 +22,12 @@ import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
+//@Testcontainers
 @Slf4j
 public class PostgreSqlIntegrationTests extends IntegrationTests {
 
@@ -61,10 +55,10 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	@BeforeAll
 	static void before() {
-		POSTGRESQL_CONTAINER.start();
+//		POSTGRESQL_CONTAINER.start();
 		databaseConfig = DatabaseConfig.builder()
 									   .dialect(Dialect.POSTGRESQL)
-									   .jdbcConnectionUrl(POSTGRESQL_CONTAINER.getJdbcUrl())
+									   .jdbcConnectionUrl("jdbc:postgresql://lyo-peva02.spectrumk.ads:6432/"+DATABASE_NAME)
 									   .databaseUsername(USERNAME)
 									   .databasePassword(PASSWORD)
 									   .build();

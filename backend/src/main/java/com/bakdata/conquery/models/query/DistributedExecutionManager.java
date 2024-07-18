@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -54,7 +55,11 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addResult(execution, new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+		addResult(execution.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+
+		if (execution instanceof ManagedInternalForm<?> form) {
+			form.getSubQueries().values().forEach((id) -> addResult(id, new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1))));
+		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution);
 
@@ -90,8 +95,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			// TODO generating a new DistributedResult here is currently used by form subqueries
-			final DistributedResult results = getResult(execution.getId(), () -> new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+			final DistributedResult results = getResult(execution.getId());
 			results.results.put(result.getWorkerId(), result.getResults());
 
 			final Set<WorkerId> finishedWorkers = results.results.keySet();

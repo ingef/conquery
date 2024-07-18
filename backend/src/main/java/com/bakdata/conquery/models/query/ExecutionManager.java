@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -88,16 +87,16 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 		return storage.getExecution(execution);
 	}
 
-	protected R getResult(ManagedExecutionId id, Callable<R> defaultProvider) throws ExecutionException {
-		return executionResults.get(id, defaultProvider);
+	protected R getResult(ManagedExecutionId id) throws ExecutionException {
+		return executionResults.getIfPresent(id);
 	}
 
 	public ExternalResult getExternalResult(ManagedExecutionId id) {
 		return externalExecutionResults.getIfPresent(id);
 	}
 
-	protected void addResult(ManagedExecution execution, R result) {
-		executionResults.put(execution.getId(), result);
+	protected void addResult(ManagedExecutionId id, R result) {
+		executionResults.put(id, result);
 	}
 
 	/**
