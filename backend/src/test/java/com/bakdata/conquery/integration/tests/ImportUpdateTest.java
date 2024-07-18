@@ -174,7 +174,6 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.uploadCqpp(conquery, newPreprocessedFile, true, Response.Status.Family.SUCCESSFUL);
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.calculateCBlocks(conquery);
 
 			conquery.waitUntilWorkDone();
 		}

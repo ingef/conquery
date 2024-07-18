@@ -209,24 +209,6 @@ public class LoadingUtil {
 
 		support.waitUntilWorkDone();
 
-		calculateCBlocks(support);
-	}
-
-	public static void calculateCBlocks(StandaloneSupport support) {
-		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "calculateCBlocks")
-											 .buildFromMap(Map.of(
-													 ResourceConstants.DATASET, support.getDataset().getId()
-											 ));
-
-		final Invocation.Builder request = support.getClient()
-												  .target(addImport)
-												  .request(MediaType.APPLICATION_JSON);
-
-		try (final Response response = request.post(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
-		}
 
 	}
 
@@ -281,7 +263,7 @@ public class LoadingUtil {
 			updateConcept(support, concept, expectedResponseFamily);
 		}
 
-		calculateCBlocks(support);
+
 	}
 
 	private static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
