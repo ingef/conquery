@@ -165,7 +165,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				final ConceptElement child = cache == null
+				final ConceptElement<?> child = cache == null
 											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
 											   : cache.findMostSpecificChild(stringValue, rowMap);
 

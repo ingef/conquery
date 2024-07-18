@@ -5,19 +5,22 @@ import java.util.Map;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@JsonDeserialize(as = TestSqlConnectorConfig.class)
 public class TestSqlConnectorConfig extends SqlConnectorConfig {
 
-	private final DatabaseConfig databaseConfig;
+	private static final String TEST_DATASET = "test";
 
 	public TestSqlConnectorConfig(DatabaseConfig databaseConfig) {
-		super(true, true, Map.of());
-		this.databaseConfig = databaseConfig;
+		super(true, true, Map.of(TEST_DATASET, databaseConfig));
 	}
 
 	@Override
 	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
-		return databaseConfig;
+		return getDatabaseConfigs().get(TEST_DATASET);
 	}
 
 }
