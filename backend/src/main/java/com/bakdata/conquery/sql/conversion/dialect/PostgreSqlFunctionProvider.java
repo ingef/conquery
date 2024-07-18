@@ -169,18 +169,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
-		return DSL.field(
-				"{0}({1}, {2} {3})",
-				String.class,
-				DSL.keyword("string_agg"),
-				stringField,
-				delimiter,
-				DSL.orderBy(orderByFields)
-		);
-	}
-
-	@Override
 	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
 		Field<Object> asMultirange = rangeAgg(columnDateRange);
 		return daterangeStringExpression(ColumnDateRange.of(asMultirange));

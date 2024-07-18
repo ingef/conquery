@@ -166,18 +166,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
-		return DSL.field(
-				"{0}({1}, {2} {3})",
-				String.class,
-				DSL.keyword("STRING_AGG"),
-				stringField,
-				delimiter,
-				DSL.orderBy(orderByFields)
-		);
-	}
-
-	@Override
 	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
 
 		Field<String> stringAggregation = stringAggregation(
