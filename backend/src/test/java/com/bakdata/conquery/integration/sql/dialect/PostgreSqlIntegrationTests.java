@@ -17,6 +17,7 @@ import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Getter;
@@ -78,7 +79,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	public void shouldThrowException() {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
-		SqlExecutionService executionService = new SqlExecutionService(dslContextWrapper.getDslContext(), ResultSetProcessorFactory.create(testSqlDialect));
+		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, testSqlDialect);
+		SqlExecutionService executionService = new SqlExecutionService(dslContextWrapper.getDslContext(), resultSetProcessor);
 		SqlQuery validQuery = new TestSqlQuery("SELECT 1");
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 

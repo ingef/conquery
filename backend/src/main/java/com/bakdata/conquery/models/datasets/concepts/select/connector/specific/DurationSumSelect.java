@@ -10,6 +10,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.DurationSumSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -40,12 +42,16 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		// TODO fix this for 2 columns
 		return new DurationSumAggregator(getColumn().resolve());
 	}
 
 	@Override
 	public ResultType<?> getResultType() {
 		return ResultType.IntegerT.INSTANCE;
+	}
+
+	@Override
+	public SelectConverter<DurationSumSelect> createConverter() {
+		return new DurationSumSelectConverter();
 	}
 }
