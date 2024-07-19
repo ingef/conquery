@@ -135,15 +135,20 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 			throw e;
 		}
 
-		log.info("Starting execution[{}]", execution.getQueryId());
+		ManagedExecutionId executionId = execution.getId();
+		log.info("Starting execution[{}]", executionId);
+		try {
+			execution.start();
 
-		execution.start();
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
+			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
-		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
-
-		if (execution instanceof InternalExecution<?> internalExecution) {
-			doExecute((ManagedExecution & InternalExecution<?>) internalExecution);
+			if (execution instanceof InternalExecution<?> internalExecution) {
+				doExecute((ManagedExecution & InternalExecution<?>) internalExecution);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to execute '{}'", executionId);
+			execution.fail(ConqueryError.asConqueryError(e), this);
 		}
 	}
 

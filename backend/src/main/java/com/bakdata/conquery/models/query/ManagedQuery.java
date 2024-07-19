@@ -67,7 +67,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
-		lastResultCount = query.countResults(streamResults(OptionalLong.empty(), executionManager));
+		if (executionState.equals(ExecutionState.DONE)) {
+			lastResultCount = query.countResults(streamResults(OptionalLong.empty(), executionManager));
+		}
 
 		super.finish(executionState, executionManager);
 	}
