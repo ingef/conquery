@@ -47,7 +47,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 		Set<SemanticType> additionalSemantics = Collections.emptySet();
 
 		if (isAsIds()) {
-			additionalSemantics = Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept()));
+			additionalSemantics = Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept().getId()));
 		}
 
 		return new SelectResultInfo(this, cqConcept, additionalSemantics);

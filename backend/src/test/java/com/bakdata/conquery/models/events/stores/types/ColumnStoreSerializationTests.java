@@ -15,28 +15,16 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
-import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
-import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
-import com.bakdata.conquery.models.events.stores.primitive.StringStoreString;
+import com.bakdata.conquery.models.events.stores.primitive.*;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
-import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
-import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
+import com.bakdata.conquery.models.events.stores.specific.*;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -53,13 +41,14 @@ public class ColumnStoreSerializationTests {
 	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(CompoundDateRangeStore.class);
 
-	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
+	private static final NamespaceStorage STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), "ColumnStoreSerializationTests", null);
 
 	private static ObjectMapper shardInternalMapper;
 
 	@BeforeAll
 	public static void setupRegistry() {
-		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
+		STORAGE.openStores(null, new MetricRegistry());
+		STORAGE.updateDataset(Dataset.PLACEHOLDER);
 
 
 		// Prepare shard node internal mapper
@@ -119,7 +108,6 @@ public class ColumnStoreSerializationTests {
 		SerializationTestUtil
 				.forType(ColumnStore.class)
 				.objectMappers(shardInternalMapper)
-				.registry(CENTRAL_REGISTRY)
 				.test(type);
 	}
 }

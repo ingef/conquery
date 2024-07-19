@@ -47,6 +47,7 @@ public class PrintSettings {
 
 	/**
 	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept#getElements()}.
+	 * TODO remove namespace from this class because it does not fits in here
 	 */
 	private final Namespace namespace;
 

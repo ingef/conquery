@@ -5,6 +5,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -16,12 +22,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Priority;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.container.PreMatching;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -60,7 +60,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		}
 
 		final User user = (User) userPrincipal;
-		final Optional<Group> groupOptional = AuthorizationHelper.getPrimaryGroup(user, storage);
+		final Optional<Group> groupOptional = AuthorizationHelper.getPrimaryGroup(user.getId(), storage);
 
 		if (groupOptional.isEmpty()) {
 			log.trace("{} has no primary group", user);

@@ -3,18 +3,18 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +28,9 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public abstract class SingleColumnSelect extends Select {
 
-	@NsIdRef
 	@NotNull
 	@NonNull
-	private Column column;
+	private ColumnId column;
 
 	/**
 	 * Indicates if the values in the specified column belong to a categorical set
@@ -59,7 +58,7 @@ public abstract class SingleColumnSelect extends Select {
 
 	@Nullable
 	@Override
-	public List<Column> getRequiredColumns() {
+	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
 	}
 
@@ -67,11 +66,13 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Column does not match required Type.")
 	public boolean isValidColumnType() {
 
-		if (getAcceptedColumnTypes().contains(getColumn().getType())) {
+		final Column resolved = this.getColumn().resolve();
+		final MajorTypeId typeId = resolved.getType();
+		if (getAcceptedColumnTypes().contains(typeId)) {
 			return true;
 		}
 
-		log.error("Column[{}] is of Type[{}]. Not one of [{}]", column.getId(), column.getType(), getAcceptedColumnTypes());
+		log.error("Column[{}] is of Type[{}]. Not one of [{}]", column, typeId, getAcceptedColumnTypes());
 
 		return false;
 	}
@@ -80,11 +81,11 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Columns is not for Connectors' Table.")
 	public boolean isForConnectorTable() {
 
-		if (getColumn().getTable().equals(((Connector) getHolder()).getTable())) {
+		if (getColumn().getTable().equals(((Connector) getHolder()).getResolvedTable().getId())) {
 			return true;
 		}
 
-		log.error("Column[{}] ist not for Table[{}]", column.getId(), ((Connector) getHolder()).getTable());
+		log.error("Column[{}] ist not for Table[{}]", column, ((Connector) getHolder()).getResolvedTable());
 
 		return false;
 	}

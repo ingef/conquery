@@ -13,6 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -78,6 +80,7 @@ public class ImportJob extends Job {
 
 
 			final PreprocessedHeader header = parser.readHeader();
+			log.info("Received import {} for table {}", header.getName(), header.getTable());
 
 			final TableId tableId = new TableId(ds.getId(), header.getTable());
 			final Table table = namespace.getStorage().getTable(tableId);
@@ -104,7 +107,7 @@ public class ImportJob extends Job {
 					throw new WebApplicationException(String.format("Import[%s] is not present.", importId), Response.Status.NOT_FOUND);
 				}
 				// before updating the import, make sure that all workers removed the last import
-				namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport));
+				namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport.getId()));
 				namespace.getStorage().removeImport(importId);
 			}
 			else if (processedImport != null) {
@@ -173,7 +176,7 @@ public class ImportJob extends Job {
 
 		getProgressReporter().report(1);
 
-		final Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
+		final Import imp = createImport(header, container.getStores(), table.getColumns(), container.size(), namespace.getStorage());
 
 		namespace.getStorage().updateImport(imp);
 
@@ -214,8 +217,8 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
-		final Import imp = new Import(table);
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size, NamespacedStorage namespacedStorage) {
+		final Import imp = new Import(table.getId());
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
@@ -234,8 +237,8 @@ public class ImportJob extends Job {
 		}
 
 		imp.setColumns(importColumns);
-
-		namespace.getWorkerHandler().sendToAll(new AddImport(imp));
+		imp.setNsIdResolver(namespacedStorage);
+		this.namespace.getWorkerHandler().sendToAll(new AddImport(imp));
 		return imp;
 	}
 
@@ -349,14 +352,17 @@ public class ImportJob extends Job {
 					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
 					  .toArray(ColumnStore[]::new);
 
-		return new Bucket(
+		final Bucket bucket = new Bucket(
 				bucketId,
 				selectionLength.intStream().sum(),
 				bucketStores,
 				entityStarts,
 				entityEnds,
-				imp
+				imp.getId()
 		);
+
+		bucket.setNsIdResolver(PlaceHolderNsIdResolver.INSTANCE);
+		return bucket;
 	}
 
 	private Dataset getDataset() {

@@ -10,17 +10,18 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.fasterxml.jackson.databind.node.TextNode;
 import lombok.experimental.UtilityClass;
@@ -34,18 +35,28 @@ public class SerialisationObjectsUtil {
 
 
 	@NotNull
-	public static Dataset createDataset(CentralRegistry registry) {
-		final Dataset dataset = new Dataset("test-dataset");
-		registry.register(dataset);
+	public static Dataset createDataset(NamespacedStorage ... storages) {
+		Dataset dataset = new Dataset("test-dataset");
+		for (NamespacedStorage storage : storages) {
+			storage.updateDataset(dataset);
+		}
 		return dataset;
 	}
 
+	/**
+	 * Does not add the produced concept to a store, only dependencies.
+	 * Otherwise, it might clash during serdes because init was not executed
+	 */
 	@NotNull
-	public static TreeConcept createConcept(CentralRegistry registry, Dataset dataset) {
+	public static TreeConcept createConcept(Dataset dataset, NamespacedStorage ... storages) {
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
+
+		final SecondaryIdDescription secondaryIdDescription = new SecondaryIdDescription();
+		secondaryIdDescription.setDataset(dataset.getId());
+		secondaryIdDescription.setName("sid");
 
 		Table table = new Table();
 
@@ -63,9 +74,9 @@ public class SerialisationObjectsUtil {
 
 
 		table.setColumns(new Column[]{column, dateColumn});
-		table.setDataset(dataset);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
+		table.setDataset(dataset.getId());
 
 		column.setTable(table);
 
@@ -73,9 +84,27 @@ public class SerialisationObjectsUtil {
 		connector.setConcept(concept);
 		connector.setLabel("connLabel");
 		connector.setName("connName");
-		connector.setColumn(column);
 
 		concept.setConnectors(List.of(connector));
+
+
+		for (NamespacedStorage storage : storages) {
+			// TODO this is not clean setting the resolver
+			connector.setNsIdResolver(storage);
+			column.setNsIdResolver(storage);
+			dateColumn.setNsIdResolver(storage);
+			secondaryIdDescription.setNsIdResolver(storage);
+			table.setNsIdResolver(storage);
+
+			storage.updateDataset(dataset);
+			storage.addSecondaryId(secondaryIdDescription);
+			storage.addTable(table);
+
+		}
+
+		// Set/Create ids after setting id resolver
+		connector.setColumn(column.getId());
+		column.setSecondaryId(secondaryIdDescription.getId());
 
 		ValidityDate valDate = ValidityDate.create(dateColumn);
 		valDate.setConnector(connector);
@@ -83,18 +112,15 @@ public class SerialisationObjectsUtil {
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
 
-		registry.register(concept);
-		registry.register(column);
-		registry.register(dateColumn);
-		registry.register(table);
-		registry.register(connector);
-		registry.register(valDate);
+		// Initialize Concept
+		concept = new TreeConcept.TreeConceptInitializer().convert(concept);
+
 		return concept;
 	}
 
 	@NotNull
-	public static ExportForm createExportForm(CentralRegistry registry, Dataset dataset) {
-		final TreeConcept concept = createConcept(registry, dataset);
+	public static ExportForm createExportForm(Dataset dataset, NamespacedStorage ... storages) {
+		final TreeConcept concept = createConcept(dataset, storages);
 		final ExportForm exportForm = new ExportForm();
 		final AbsoluteMode mode = new AbsoluteMode();
 		mode.setDateRange(new Range<>(LocalDate.of(2200, 6, 1), LocalDate.of(2200, 6, 2)));
@@ -104,25 +130,29 @@ public class SerialisationObjectsUtil {
 
 		final CQTable table = new CQTable();
 		table.setConcept(cqConcept);
-		table.setConnector(concept.getConnectors().get(0));
+		table.setConnector(concept.getConnectors().get(0).getId());
 
-		// Use ArrayList instead of ImmutalbeList here because they use different hash code implementations
+		// Use ArrayList instead of ImmutableList here because they use different hash code implementations
 		cqConcept.setTables(new ArrayList<>(List.of(table)));
-		cqConcept.setElements(new ArrayList<>(List.of(concept)));
+		cqConcept.setElements(new ArrayList<>(List.of(concept.getId())));
 
 		exportForm.setTimeMode(mode);
 		exportForm.setFeatures(new ArrayList<>(List.of(cqConcept)));
 		exportForm.setValues(new TextNode("Some Node"));
 		exportForm.setQueryGroupId(new ManagedExecutionId(dataset.getId(), UUID.randomUUID()));
 		exportForm.setResolution(new ArrayList<>(List.of(ResolutionShortNames.COMPLETE)));
+
+		for (NamespacedStorage storage : storages) {
+			storage.updateConcept(concept);
+		}
+
 		return exportForm;
 	}
 
 	@NotNull
-	public static User createUser(CentralRegistry registry, MetaStorage storage) {
-		final User user = new User("test-user", "test-user", storage);
-		registry.register(user);
-
+	public static User createUser(MetaStorage metaStorage) {
+		final User user = new User("test-user", "test-user");
+		user.setMetaStorage(metaStorage);
 		user.updateStorage();
 		return user;
 	}

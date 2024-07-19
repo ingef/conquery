@@ -92,7 +92,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 		try {
 			delegate.filter(request);
 		}
-		//TODO shouldn't this be something with NotAuthenticated?
+
 		catch (NotAuthorizedException e) {
 			// The request could not be authenticated
 			// First check if the request belongs to a multi-step authentication

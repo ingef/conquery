@@ -24,6 +24,7 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import com.codahale.metrics.MetricRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -33,13 +34,12 @@ import org.jooq.DSLContext;
 public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
 	private final SqlDialectFactory dialectFactory;
 
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService) {
+	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry, InternalObjectMapperCreator mapperCreator) {
 
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService);
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService, metricRegistry);
 
 		IdColumnConfig idColumns = config.getIdColumns();
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();

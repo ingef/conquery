@@ -42,7 +42,7 @@ public class ConceptResource extends HAuthorized {
 
 	@GET
 	public Response getNode() {
-		subject.authorize(concept.getDataset(), Ability.READ);
+		subject.authorize(concept.getDataset().resolve(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
 		final FrontendList result = processor.getNode(concept);
@@ -59,7 +59,7 @@ public class ConceptResource extends HAuthorized {
 	@POST
 	@Path("resolve")
 	public ConceptsProcessor.ResolvedConceptsResult resolve(@NotNull ConceptResource.ConceptCodeList conceptCodes) {
-		subject.authorize(concept.getDataset(), Ability.READ);
+		subject.authorize(concept.getDataset().resolve(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
 		final List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());

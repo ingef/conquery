@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,6 +32,12 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	public void collectComponents(List<Object> components) {
 		parent.collectComponents(components);
 		components.add(name);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		parent.collectIds(collect);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ConceptTreeChildId> {

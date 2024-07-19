@@ -8,9 +8,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -33,7 +36,7 @@ public class ResultTestUtil {
 
 
 	@NotNull
-	public static List<ResultType> getResultTypes() {
+	public static List<ResultType<?>> getResultTypes() {
 		return List.of(
 				ResultType.BooleanT.INSTANCE,
 				ResultType.IntegerT.INSTANCE,
@@ -42,9 +45,9 @@ public class ResultTestUtil {
 				ResultType.DateRangeT.INSTANCE,
 				ResultType.StringT.INSTANCE,
 				ResultType.MoneyT.INSTANCE,
-				new ResultType.ListT(ResultType.BooleanT.INSTANCE),
-				new ResultType.ListT(ResultType.DateRangeT.INSTANCE),
-				new ResultType.ListT(ResultType.StringT.INSTANCE)
+				new ResultType.ListT<>(ResultType.BooleanT.INSTANCE),
+				new ResultType.ListT<>(ResultType.DateRangeT.INSTANCE),
+				new ResultType.ListT<>(ResultType.StringT.INSTANCE)
 		);
 	}
 
@@ -69,7 +72,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, null, null, null) {
+		return new ManagedQuery(null, new UserId("test_user"), new DatasetId("test_dataset")) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
@@ -79,25 +82,25 @@ public class ResultTestUtil {
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit, ExecutionManager<?> executionManager) {
 				return getTestEntityResults().stream();
 			}
 		};
 	}
 
+	@Getter
 	public static class TypedSelectDummy extends Select {
 
-		@Getter
-		private final ResultType resultType;
+		private final ResultType<?> resultType;
 
-		public TypedSelectDummy(ResultType resultType) {
+		public TypedSelectDummy(ResultType<?> resultType) {
 			this.setLabel(resultType.toString());
 			this.resultType = resultType;
 		}
 
 		@Nullable
 		@Override
-		public List<Column> getRequiredColumns() {
+		public List<ColumnId> getRequiredColumns() {
 			return Collections.emptyList();
 		}
 

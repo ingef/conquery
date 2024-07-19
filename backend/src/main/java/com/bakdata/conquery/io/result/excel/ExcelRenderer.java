@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -74,7 +75,7 @@ public class ExcelRenderer {
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
 			List<ResultInfo> idHeaders,
 			E exec,
-			OutputStream outputStream, OptionalLong limit) throws IOException {
+			OutputStream outputStream, OptionalLong limit, ExecutionManager<?> executionManager) throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec);
@@ -88,7 +89,7 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table);
 
-			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
+			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES)), executionManager));
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
@@ -107,7 +108,7 @@ public class ExcelRenderer {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final User owner = exec.getOwner();
+		final User owner = exec.getOwner().resolve();
 		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();

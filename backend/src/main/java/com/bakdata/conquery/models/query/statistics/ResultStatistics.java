@@ -1,19 +1,9 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -29,6 +19,17 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 @Slf4j
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
@@ -49,8 +50,10 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 		final boolean containsDates = dateInfo.isPresent();
 
+		ExecutionManager<?> executionManager = printSettings.getNamespace().getExecutionManager();
+
 		if (containsDates) {
-			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get()));
+			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get(), executionManager));
 		}
 		else {
 			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
@@ -60,7 +63,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
 
 		final ListenableFuture<Integer> futureEntities =
-				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
+				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty(), executionManager).count());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
@@ -77,7 +80,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 log.trace("BEGIN stats collection for {}", info);
 
-							 managedQuery.streamResults(OptionalLong.empty())
+							 managedQuery.streamResults(OptionalLong.empty(), executionManager)
 										 .map(EntityResult::listResultLines)
 										 .flatMap(List::stream)
 										 .forEach(line -> statsCollector.consume(line[col]));
@@ -103,7 +106,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		return new ResultStatistics(entities, lines, descriptions, span);
 	}
 
-	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex) {
+	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex, ExecutionManager<?> executionManager) {
 		if (dateInfo.isEmpty()) {
 			return CDateRange.all().toSimpleRange();
 		}
@@ -111,7 +114,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final AtomicReference<CDateRange> spanRef = new AtomicReference<>(null);
 		final Consumer<Object[]> dateAggregator = getDateSpanner(dateInfo.get(), dateIndex, spanRef);
 
-		managedQuery.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues).forEach(dateAggregator);
+		managedQuery.streamResults(OptionalLong.empty(), executionManager).flatMap(EntityResult::streamValues).forEach(dateAggregator);
 
 		final CDateRange span = spanRef.get();
 

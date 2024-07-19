@@ -12,6 +12,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -26,6 +27,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -53,6 +55,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Slf4j
@@ -143,16 +146,22 @@ public class ConceptsProcessor {
 		return new FrontendPreviewConfig(
 				previewConfig.getAllConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(connectorToLabelled(namespace))
 							 .collect(Collectors.toSet()),
 
 				previewConfig.getDefaultConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(connectorToLabelled(namespace))
 							 .collect(Collectors.toSet()),
 				previewConfig.resolveSearchFilters(),
 				previewConfig.resolveSearchConcept()
 		);
+	}
+
+	@NotNull
+	private static Function<ConnectorId, FrontendPreviewConfig.Labelled> connectorToLabelled(Namespace namespace) {
+		// TODO might use a cache here to dereference id
+		return id -> new FrontendPreviewConfig.Labelled(id.toString(), id.<Connector>resolve().getResolvedTable().getLabel());
 	}
 
 	/**
@@ -164,7 +173,7 @@ public class ConceptsProcessor {
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
@@ -230,7 +239,7 @@ public class ConceptsProcessor {
 	}
 
 	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -255,7 +264,7 @@ public class ConceptsProcessor {
 	}
 
 	private int countAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}
@@ -265,7 +274,7 @@ public class ConceptsProcessor {
 	 * Is used by the serach cache to load missing items
 	 */
 	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we exploit:

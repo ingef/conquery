@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
-
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
@@ -13,13 +12,11 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.auth.PasswordHashCredential;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
-import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
@@ -27,7 +24,6 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
 import io.dropwizard.util.Duration;
@@ -101,7 +97,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		// Open/create the database/store
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = StoreMappings.cached(
+		passwordStore =
 				new SerializingStore<>(
 						new XodusStore(
 								passwordEnvironment,
@@ -117,7 +113,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						false,
 						true,
 						null, Executors.newSingleThreadExecutor()
-				));
+				);
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -146,7 +142,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			throw new CredentialsException("No password hash was found for user: " + username);
 		}
 
-		final String hash = hashedEntry.getHash();
+		final String hash = hashedEntry.hash();
 		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
 			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
 		}
@@ -216,7 +212,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	@Override
 	public List<UserId> getAllUsers() {
-		return ImmutableList.copyOf(passwordStore.getAllKeys());
+		return passwordStore.getAllKeys().toList();
 	}
 
 

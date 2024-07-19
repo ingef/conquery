@@ -8,25 +8,23 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
@@ -48,13 +46,13 @@ public class SerializationTestUtil<T> {
 					ThreadLocal.class,
 					User.ShiroUserAdapter.class,
 					Validator.class,
-					WeakReference.class
+					WeakReference.class,
+					NamespaceStorage.class
 			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
-	@Setter
-	private CentralRegistry registry;
+
 	private ObjectMapper[] objectMappers;
 	@NonNull
 	private Injectable[] injectables = {};
@@ -101,11 +99,18 @@ public class SerializationTestUtil<T> {
 		}
 
 		for (ObjectMapper objectMapper : objectMappers) {
-			test(
-					value,
-					expected,
-					objectMapper
-			);
+
+			try {
+				test(
+						value,
+						expected,
+						objectMapper
+				);
+			}
+			catch (Exception e) {
+				Class<?> activeView = objectMapper.getSerializationConfig().getActiveView();
+				throw new IllegalStateException("Serdes failed with object mapper using view '" + activeView + "'", e);
+			}
 		}
 	}
 
@@ -115,9 +120,8 @@ public class SerializationTestUtil<T> {
 
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 
-		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
-		}
+		ValidatorHelper.failOnError(log, validator.validate(value));
+
 		for (Injectable injectable : injectables) {
 			mapper = injectable.injectInto(mapper);
 		}
@@ -125,7 +129,6 @@ public class SerializationTestUtil<T> {
 		ObjectReader reader = mapper.readerFor(type);
 
 
-		ValidatorHelper.failOnError(log, validator.validate(value));
 		byte[] src = writer.writeValueAsBytes(value);
 		T copy = reader.readValue(src);
 
@@ -139,14 +142,16 @@ public class SerializationTestUtil<T> {
 		}
 
 		// Preliminary check that ids of identifiables are equal
-		if (value instanceof IdentifiableImpl identifiableValue) {
+		if (value instanceof IdentifiableImpl<?> identifiableValue) {
 			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
-				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
+				.usingOverriddenEquals()
+				.ignoringFieldsOfTypes(TYPES_TO_IGNORE)
+				.ignoringFields("metaStorage", "nsIdResolver");
 
 		// Apply assertion customizations
 		ass = assertCustomizer.apply(ass);

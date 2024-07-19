@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoRole;
@@ -225,7 +221,7 @@ public final class AuthorizationController implements Managed {
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
-				storage.getAllExecutions().stream()
+				storage.getAllExecutions()
 					   .filter(originUser::isOwner)
 					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
 					   .collect(Collectors.toSet())
@@ -233,14 +229,15 @@ public final class AuthorizationController implements Managed {
 
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
-				storage.getAllFormConfigs().stream()
+				storage.getAllFormConfigs()
 					   .filter(originUser::isOwner)
 					   .map(conf -> conf.createPermission(Ability.READ.asSet()))
 					   .collect(Collectors.toSet())
 		);
 
 		// Create copied user
-		final User copy = new User(name, originUser.getLabel(), storage);
+		final User copy = new User(name, originUser.getLabel());
+		copy.setMetaStorage(storage);
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 

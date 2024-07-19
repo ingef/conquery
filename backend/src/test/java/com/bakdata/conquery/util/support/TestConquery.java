@@ -1,27 +1,17 @@
 package com.bakdata.conquery.util.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.File;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.SqlStandaloneCommand;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterState;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -30,6 +20,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -38,6 +30,7 @@ import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -45,6 +38,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Represents the test instance of Conquery.
@@ -65,9 +70,7 @@ public class TestConquery {
 	@Getter
 	private Client client;
 
-	private AtomicBoolean started = new AtomicBoolean(false);
-
-	/**
+    /**
 	 * Returns the extension context used by the beforeAll-callback.
 	 *
 	 * @return The context.
@@ -75,6 +78,7 @@ public class TestConquery {
 	@Getter
 	private ExtensionContext beforeAllContext;
 	// Initial user which is set before each test from the config.
+	@Getter
 	private User testUser;
 
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
@@ -95,8 +99,13 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			Dataset dataset = new Dataset(name);
-			standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
-			return createSupport(dataset.getId(), name);
+			final DatasetId datasetId = new DatasetId(name);
+			datasetId.setIdResolver(() -> dataset);
+			waitUntilWorkDone();
+			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
+			waitUntilWorkDone();
+
+			return createSupport(datasetId, name);
 		}
 		catch (Exception e) {
 			return fail("Failed to create a support for " + name, e);
@@ -131,8 +140,8 @@ public class TestConquery {
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
+				.withProperty(ClientProperties.CONNECT_TIMEOUT, 100000)
+				.withProperty(ClientProperties.READ_TIMEOUT, 100000)
 				.build("test client");
 	}
 
@@ -190,9 +199,16 @@ public class TestConquery {
 	}
 
 	public void beforeEach() {
+
+		// Because Shiro works with a static Security manager
+		getStandaloneCommand().getManagerNode().getAuthController().registerStaticSecurityManager();
+
 		final MetaStorage storage = standaloneCommand.getManagerNode().getStorage();
 		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
 		storage.updateUser(testUser);
+
+		// TODO investigate if this has downsides as we add
+		client.register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(testUser.getId())));;
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
@@ -245,10 +261,7 @@ public class TestConquery {
 				ns.getStorage().getDataset(),
 				localTmpDir,
 				localCfg,
-				standaloneCommand.getManagerNode().getAdmin().getAdminProcessor(),
-				standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
-				testUser,
 				testDataImporter
 		);
 
@@ -263,7 +276,6 @@ public class TestConquery {
 		busy |= standaloneCommand.getManagerNode()
 								 .getStorage()
 								 .getAllExecutions()
-								 .stream()
 								 .map(ManagedExecution::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
@@ -275,5 +287,49 @@ public class TestConquery {
 			busy |= shard.isBusy();
 		}
 		return busy;
+	}
+
+
+	public Validator getValidator() {
+		return getStandaloneCommand().getManagerNode().getValidator();
+	}
+
+	public MetaStorage getMetaStorage() {
+		return getStandaloneCommand().getManagerNode().getStorage();
+	}
+
+	public DatasetRegistry getDatasetRegistry() {
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry();
+	}
+
+	public List<ShardNode> getShardNodes() {
+		return getStandaloneCommand().getShardNodes();
+	}
+
+	public AdminProcessor getAdminProcessor() {
+		return standaloneCommand.getManagerNode().getAdmin().getAdminProcessor();
+	}
+
+	public AdminDatasetProcessor getAdminDatasetsProcessor() {
+		return standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor();
+	}
+
+	public AuthorizationController getAuthorizationController() {
+		return getStandaloneCommand().getManagerNode().getAuthController();
+	}
+
+
+	public UriBuilder defaultApiURIBuilder() {
+		return UriBuilder.fromPath("api")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(dropwizard.getLocalPort());
+	}
+
+	public UriBuilder defaultAdminURIBuilder() {
+		return UriBuilder.fromPath("admin")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(dropwizard.getAdminPort());
 	}
 }

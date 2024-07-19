@@ -7,15 +7,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.mina.*;
+import com.bakdata.conquery.io.storage.NsIdResolver;
+import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -29,7 +28,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardN
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
@@ -40,7 +38,6 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +88,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.environment = environment;
 		this.config = config;
 
-
 		jobManager = new JobManager(getName(), config.isFailOnError());
 		environment.lifecycle().manage(this);
 		validator = environment.getValidator();
@@ -118,7 +114,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment.metrics()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);
@@ -182,6 +178,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
+		PlaceholderMetaStorage.INSTANCE.injectInto(objectMapper);
 
 
 		// Set serialization config
@@ -357,12 +354,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
+	private NioSocketConnector getClusterConnector(NsIdResolver idResolver) {
 		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		NioSocketConnector connector = new NioSocketConnector();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(idResolver, validator, om);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());

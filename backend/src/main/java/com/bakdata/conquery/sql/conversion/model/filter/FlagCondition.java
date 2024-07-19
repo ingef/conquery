@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;

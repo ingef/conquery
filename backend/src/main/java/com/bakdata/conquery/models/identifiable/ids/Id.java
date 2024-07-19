@@ -2,15 +2,19 @@ package com.bakdata.conquery.models.identifiable.ids;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
@@ -23,6 +27,14 @@ public abstract class Id<TYPE> {
 	 */
 	@JsonIgnore
 	private WeakReference<String> escapedId = new WeakReference<>(null);
+
+	/**
+	 * Injected by deserializer
+	 */
+	@JsonIgnore
+	@Setter
+	@Getter
+	private Supplier<TYPE> idResolver;
 
 	@Override
 	public abstract boolean equals(Object obj);
@@ -67,4 +79,10 @@ public abstract class Id<TYPE> {
 
 		return result;
 	}
+
+	public TYPE resolve() {
+		return idResolver.get();
+	}
+
+	public abstract void collectIds(Collection<? super Id<?>> collect);
 }

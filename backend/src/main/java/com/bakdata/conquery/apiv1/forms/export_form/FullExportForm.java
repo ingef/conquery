@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,21 +14,17 @@ import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
-import com.bakdata.conquery.apiv1.query.CQYes;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
+import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -126,7 +121,9 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedInternalForm<FullExportForm> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
+	public ManagedInternalForm<FullExportForm> toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
+		ManagedInternalForm<FullExportForm> form = new ManagedInternalForm<>(this, owner, submittedDataset);
+		form.setMetaStorage(storage);
+		return form;
 	}
 }

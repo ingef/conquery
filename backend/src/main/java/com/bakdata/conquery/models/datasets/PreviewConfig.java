@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.datasets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -114,19 +115,21 @@ public class PreviewConfig {
 	/**
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
 	 */
-	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects) {
 	}
 
 	@ValidationMethod(message = "Selects may be referenced only once.")
 	@JsonIgnore
 	public boolean isSelectsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
 	@JsonIgnore
 	public boolean isLabelsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@JsonIgnore
@@ -180,36 +183,36 @@ public class PreviewConfig {
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
-								   .flatMap(Optional::stream)
+								   .map(SelectId::<Select>resolve)
+								   .filter(Objects::nonNull)
 								   .collect(Collectors.toList());
 	}
 
-	public List<Filter<?>> resolveSearchFilters() {
+	public List<FilterId> resolveSearchFilters() {
 		if (searchFilters == null) {
 			return Collections.emptyList();
 		}
 
 		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+							.map(FilterId::resolve)
+							.filter(Objects::nonNull)
+							.map(Filter::getId)
 							.toList();
 	}
 
-	public Concept<?> resolveSearchConcept() {
+	public ConceptId resolveSearchConcept() {
 		if (searchFilters == null) {
 			return null;
 		}
 
 
 		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+							.map(FilterId::<Filter<?>>resolve)
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()
+							.map(Concept::getId)
 							.collect(MoreCollectors.onlyElement());
 	}
-
 
 
 }

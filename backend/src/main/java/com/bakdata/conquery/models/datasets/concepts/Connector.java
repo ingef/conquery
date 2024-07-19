@@ -5,12 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -18,19 +17,11 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.fasterxml.jackson.annotation.*;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -87,7 +78,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	private boolean isDefault = true;
 
 	@CheckForNull
-	public abstract Column getColumn();
+	public abstract ColumnId getColumn();
 
 	@CheckForNull
 	public abstract CTCondition getCondition();
@@ -109,7 +100,8 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 		return new ConnectorId(concept.getId(), getName());
 	}
 
-	public abstract Table getTable();
+	public abstract Table getResolvedTable();
+	public abstract TableId getResolvedTableId();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
@@ -137,11 +129,42 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getConcept().getDataset();
 	}
 
 	public void init() {
 		getSelects().forEach(Select::init);
 	}
+
+	public Filter<?> getFilterByName(String name) {
+		for (Filter<?> filter : collectAllFilters()) {
+			if (filter.getName().equals(name)) {
+				return filter;
+			}
+		}
+		return null;
+	}
+
+
+	public Select getSelectByName(String name) {
+		for (Select select : getSelects()) {
+
+			if (select.getName().equals(name)) {
+				return select;
+			}
+		}
+
+		return null;
+	}
+
+	public ValidityDate getValidityDateByName(String name) {
+		for (ValidityDate validityDate : validityDates) {
+			if (validityDate.getName().equals(name)) {
+				return validityDate;
+			}
+		}
+		return null;
+	}
+
 }

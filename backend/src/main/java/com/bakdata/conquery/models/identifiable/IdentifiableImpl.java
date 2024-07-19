@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.identifiable;
 
+import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.*;
 
 @NoArgsConstructor
 public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
@@ -14,12 +17,27 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@JsonIgnore
 	private transient int cachedHash = Integer.MIN_VALUE;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	private transient MetaStorage metaStorage;
+
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@JsonIgnore
+	private transient NsIdResolver nsIdResolver;
+
 	@ToString.Include
 	@JsonIgnore
 	@Override
 	public ID getId() {
 		if (cachedId == null) {
-			cachedId = IdUtil.intern(createId());
+			final ID intern = createId();
+			// Set resolver
+			IdDeserializer.setResolver(intern, metaStorage, nsIdResolver);
+
+			cachedId = intern;
 		}
 		return cachedId;
 	}
@@ -55,12 +73,10 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 		}
 		IdentifiableImpl<?> other = (IdentifiableImpl<?>) obj;
 		if (getId() == null) {
-			if (other.getId() != null) {
-				return false;
-			}
-		} else if (!getId().equals(other.getId())) {
-			return false;
+			return other.getId() == null;
 		}
-		return true;
+		else {
+			return getId().equals(other.getId());
+		}
 	}
 }

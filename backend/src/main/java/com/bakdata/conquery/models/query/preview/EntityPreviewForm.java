@@ -1,28 +1,20 @@
 package com.bakdata.conquery.models.query.preview;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
+import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -32,15 +24,17 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -79,11 +73,12 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	@Nullable
 	@Override
+	@JsonIgnore
 	public JsonNode getValues() {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -98,7 +93,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.
@@ -108,7 +103,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																  ArrayConceptQuery.createFromFeatures(
 																		  selects.selects().stream()
 																				 .map(PreviewConfig.InfoCardSelect::select)
-																				 .map(datasetRegistry::resolve)
+																				 .map(selectId -> (Select) datasetRegistry.get(selectId))
 																				 .map(CQConcept::forSelect)
 																				 .collect(Collectors.toList())),
 																  List.of(
@@ -172,8 +167,10 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new EntityPreviewExecution(this, user, submittedDataset, storage);
+	public ManagedExecution toManagedExecution(UserId owner, DatasetId submittedDataset, MetaStorage storage) {
+		EntityPreviewExecution entityPreviewExecution = new EntityPreviewExecution(this, owner, submittedDataset);
+		entityPreviewExecution.setMetaStorage(storage);
+		return entityPreviewExecution;
 	}
 
 	@Override

@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 
@@ -25,17 +24,14 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.TestOnly;
 
@@ -50,7 +46,7 @@ public class FormConfigProcessor {
 	@Getter(onMethod = @__({@TestOnly}))
 	private static final ObjectMapper
 			MAPPER =
-			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
+			Jackson.copyMapperAndInjectables(Jackson.MAPPER).disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
 	@Inject
 	private Validator validator;
 	@Inject
@@ -70,7 +66,7 @@ public class FormConfigProcessor {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
-			// However if a subject queries for specific form types, we will show all matching regardless whether
+			// However, if a subject queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the subject again.
 			final Set<String> allowedFormTypes = new HashSet<>();
 
@@ -86,10 +82,11 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-												 .filter(c -> dataset.equals(c.getDataset()))
-												 .filter(c -> formTypesFinal.contains(c.getFormType()))
-												 .filter(c -> subject.isPermitted(c, Ability.READ));
+		final Stream<FormConfig> stream = storage.getAllFormConfigIds()
+				.filter(c -> dataset.getId().equals(c.getDataset()))
+				.map(FormConfigId::resolve)
+				.filter(c -> formTypesFinal.contains(c.getFormType()))
+				.filter(c -> subject.isPermitted(c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(subject));
@@ -113,26 +110,29 @@ public class FormConfigProcessor {
 	public FormConfig addConfig(Subject subject, Dataset targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
-		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
+		final DatasetId datasetId = targetDataset.getId();
+		final Namespace namespace = datasetRegistry.get(datasetId);
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
+		final FormConfig internalConfig = config.intern(subject.getId(), datasetId);
 		// Add the config immediately to the submitted dataset
-		addConfigToDataset(internalConfig);
-
-		return internalConfig;
+		return addConfigToDataset(internalConfig);
 	}
 
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
+	private FormConfig addConfigToDataset(FormConfig internalConfig) {
+
+		internalConfig.setMetaStorage(storage);
+		internalConfig.setNsIdResolver(datasetRegistry);
 
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
+
 		storage.addFormConfig(internalConfig);
 
-		return internalConfig.getId();
+		return storage.getFormConfig(internalConfig.getId());
 	}
 
 	/**

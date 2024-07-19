@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -29,6 +29,12 @@ public class ColumnId extends Id<Column> implements NamespacedId {
 	public void collectComponents(List<Object> components) {
 		table.collectComponents(components);
 		components.add(column);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		table.collectIds(collect);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ColumnId> {

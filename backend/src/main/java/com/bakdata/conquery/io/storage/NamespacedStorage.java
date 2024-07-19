@@ -1,30 +1,32 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
@@ -34,10 +36,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorage extends ConqueryStorage {
+public abstract class NamespacedStorage extends ConqueryStorage implements NsIdResolver, Injectable {
 
-	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	@Getter
 	@ToString.Include
 	private final String pathName;
@@ -50,25 +50,42 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
+	protected LoadingCache<Id<?>, Identifiable<?>> cache;
+	private Dataset cachedDataset;
+
 	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
 	}
 
-	public void openStores(ObjectMapper objectMapper) {
-
+	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+		if (objectMapper != null) {
+			injectInto(objectMapper);
+		}
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
-		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
-		tables = storageFactory.createTableStore(centralRegistry, pathName, objectMapper);
-		imports = storageFactory.createImportStore(centralRegistry, pathName, objectMapper);
-		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
+		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(pathName, objectMapper);
+		tables = storageFactory.createTableStore(pathName, objectMapper);
+		imports = storageFactory.createImportStore(pathName, objectMapper);
+		concepts = storageFactory.createConceptStore(pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
 		decorateSecondaryIdDescriptionStore(secondaryIds);
 		decorateTableStore(tables);
 		decorateImportStore(imports);
 		decorateConceptStore(concepts);
+
+
+		cache = Caffeine.from(storageFactory.getCacheSpec())
+						.recordStats(() -> new MetricsStatsCounter(metricRegistry, pathName + "-cache"))
+						.build(new CacheLoader<>() {
+
+                            @Nullable
+                            @Override
+                            public Identifiable<?> load(Id<?> key) throws Exception {
+                                return getFromStorage((Id<?> & NamespacedId) key);
+                            }
+                        });
 	}
 
 	@Override
@@ -76,14 +93,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
 	}
 
-	@Override
-	public void clear() {
-		super.clear();
-		centralRegistry.clear();
-	}
-
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-		store.onAdd(centralRegistry::register).onRemove(centralRegistry::remove);
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
@@ -91,55 +101,18 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
-		store.onAdd(table -> {
-				 for (Column column : table.getColumns()) {
-					 column.init();
-					 getCentralRegistry().register(column);
-				 }
-			 })
-			 .onRemove(table -> {
-				 for (Column c : table.getColumns()) {
-					 getCentralRegistry().remove(c);
-				 }
-			 });
+
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
 		store.onAdd(concept -> {
 
-			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
+			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
 				throw new IllegalStateException("Concept is not for this dataset.");
 			}
 
-			concept.setDataset(dataset.get());
+			concept.setDataset(dataset.get().getId());
 
-			concept.initElements();
-
-			concept.getSelects().forEach(centralRegistry::register);
-			for (Connector connector : concept.getConnectors()) {
-				centralRegistry.register(connector);
-				connector.collectAllFilters().forEach(centralRegistry::register);
-				connector.getSelects().forEach(centralRegistry::register);
-				connector.getValidityDates().forEach(centralRegistry::register);
-			}
-
-
-			if (concept instanceof TreeConcept) {
-				((TreeConcept) concept).getAllChildren().forEach(centralRegistry::register);
-			}
-		}).onRemove(concept -> {
-			concept.getSelects().forEach(centralRegistry::remove);
-			//see #146  remove from Dataset.concepts
-			for (Connector connector : concept.getConnectors()) {
-				connector.getSelects().forEach(centralRegistry::remove);
-				connector.collectAllFilters().forEach(centralRegistry::remove);
-				connector.getValidityDates().forEach(centralRegistry::remove);
-				centralRegistry.remove(connector);
-			}
-
-			if (concept instanceof TreeConcept) {
-				((TreeConcept) concept).getAllChildren().forEach(centralRegistry::remove);
-			}
 		});
 	}
 
@@ -147,69 +120,115 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		// Intentionally left blank
 	}
 
+	// Imports
 
 	public void addImport(Import imp) {
 		imports.add(imp);
+		cache.invalidate(imp.getId());
 	}
 
 	public Import getImport(ImportId id) {
+		return get(id);
+	}
+
+	private Import getImportFromStorage(ImportId id) {
 		return imports.get(id);
 	}
 
-	public Collection<Import> getAllImports() {
+	public Stream<Import> getAllImports() {
 		return imports.getAll();
 	}
 
 	public void updateImport(Import imp) {
 		imports.update(imp);
+		cache.refresh(imp.getId());
 	}
 
 	public void removeImport(ImportId id) {
 		imports.remove(id);
+		cache.invalidate(id);
 	}
 
+	// Datasets
+
 	public Dataset getDataset() {
-		return dataset.get();
+		// TODO this is not ideal
+		Dataset local = cachedDataset;
+		if (local == null) {
+			local = dataset.get();
+			cachedDataset = local;
+		}
+		return local;
 	}
+
 
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
+		cachedDataset = dataset;
+		cache.refresh(dataset.getId());
 	}
 
-	public List<Table> getTables() {
-		return new ArrayList<>(tables.getAll());
-	}
+	// Tables
 
 	public Table getTable(TableId tableId) {
+		return get(tableId);
+	}
+
+	private Table getTableFromStorage(TableId tableId) {
 		return tables.get(tableId);
 	}
 
+	public Stream<Table> getTables() {
+		return tables.getAllKeys().map(TableId.class::cast).map(this::get);
+	}
+
+
 	public void addTable(Table table) {
 		tables.add(table);
+		cache.invalidate(table.getId());
 	}
 
 	public void removeTable(TableId table) {
 		tables.remove(table);
+		cache.invalidate(table);
 	}
 
-	public List<SecondaryIdDescription> getSecondaryIds() {
-		return new ArrayList<>(secondaryIds.getAll());
-	}
+	// SecondaryId
 
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
+		return get(descriptionId);
+	}
+
+	private SecondaryIdDescription getSecondaryIdFromStorage(SecondaryIdDescriptionId descriptionId) {
 		return secondaryIds.get(descriptionId);
+	}
+
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::get);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
 		secondaryIds.add(secondaryIdDescription);
+		cache.invalidate(secondaryIdDescription.getId());
 	}
 
 	public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
 		secondaryIds.remove(secondaryIdDescriptionId);
+		cache.invalidate(secondaryIdDescriptionId);
 	}
 
+	// Concepts
+
 	public Concept<?> getConcept(ConceptId id) {
+		return get(id);
+	}
+
+	private Concept<?> getConceptFromStorage(ConceptId id) {
 		return concepts.get(id);
+	}
+
+	public Stream<Concept<?>> getAllConcepts() {
+		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::get);
 	}
 
 	public boolean hasConcept(ConceptId id) {
@@ -218,15 +237,81 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 
 	@SneakyThrows
 	public void updateConcept(Concept<?> concept) {
+		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);
+		cache.refresh(concept.getId());
 	}
 
 	public void removeConcept(ConceptId id) {
+		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
+		cache.invalidate(id);
 	}
 
-	public Collection<Concept<?>> getAllConcepts() {
-		return concepts.getAll();
+	// Utility
+
+	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
+		// First check if id belongs to an instance, that is nested in a primary storage instance
+		if (id instanceof ColumnId castId) {
+			return (VALUE) getTable(castId.getTable()).getColumnByName(castId.getColumn());
+		}
+		if (id instanceof ConnectorId castId) {
+			return (VALUE) getConcept(castId.getConcept()).getConnectorByName(castId.getConnector());
+		}
+		if (id instanceof ConceptSelectId castId) {
+			final ConceptId concept = castId.findConcept();
+			return (VALUE) getConcept(concept).getSelectByName(castId.getSelect());
+		}
+		if (id instanceof ConnectorSelectId castId) {
+			final ConceptId concept = castId.findConcept();
+			return (VALUE) getConcept(concept).getConnectorByName(castId.getConnector().getConnector()).getSelectByName(castId.getSelect());
+		}
+		if (id instanceof FilterId castId) {
+			final ConnectorId connector = castId.getConnector();
+			return (VALUE) getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(castId.getFilter());
+		}
+		if (id instanceof ConceptTreeChildId castId) {
+			return (VALUE) getConcept(castId.findConcept()).findById(castId);
+		}
+		if (id instanceof ValidityDateId castId) {
+			return (VALUE) getConcept(castId.getConnector().getConcept()).getConnectorByName(castId.getConnector().getConnector())
+					.getValidityDateByName(castId.getValidityDate());
+		}
+
+		// get primary storage instance
+		return (VALUE) cache.get(id);
 	}
 
+	/**
+	 * This is just for convenience to have a single function for the cache to load primary storage instances
+	 */
+	protected <ID extends Id<?> & NamespacedId, VALUE extends Identifiable<?>> VALUE getFromStorage(ID id) {
+		if (id instanceof DatasetId castId) {
+			final Dataset dataset = getDataset();
+			if (dataset.getId().equals(castId)) {
+				return (VALUE) dataset;
+			}
+			return null;
+		}
+		if (id instanceof ImportId castId) {
+			return (VALUE) getImportFromStorage(castId);
+		}
+		if (id instanceof SecondaryIdDescriptionId castId) {
+			return (VALUE) getSecondaryIdFromStorage(castId);
+		}
+		if (id instanceof TableId castId) {
+			return (VALUE) getTableFromStorage(castId);
+		}
+		if (id instanceof ConceptId castId) {
+			return (VALUE) getConceptFromStorage(castId);
+		}
+
+		throw new IllegalArgumentException("Id type '" + id.getClass() + "' is not supported");
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NsIdResolver.class, this).
+				add(NamespacedStorage.class, this);
+	}
 }

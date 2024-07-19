@@ -1,25 +1,5 @@
 package com.bakdata.conquery.io.result.arrow;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.OptionalLong;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
@@ -34,6 +14,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.util.Mocks;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
@@ -48,6 +29,20 @@ import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.arrow.vector.util.JsonStringArrayList;
 import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ArrowResultGenerationTest {
@@ -136,7 +131,7 @@ public class ArrowResultGenerationTest {
 				new ArrowConfig(BATCH_SIZE),
 				ResultTestUtil.ID_FIELDS,
 				mquery.getResultInfos(),
-				mquery.streamResults(OptionalLong.empty())
+				mquery.streamResults(OptionalLong.empty(), Mocks.mockExecutionManager(results))
 		);
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());

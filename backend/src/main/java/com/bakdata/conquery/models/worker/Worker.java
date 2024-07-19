@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
+import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -19,14 +19,15 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -63,14 +64,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit, MetricRegistry metricRegistry) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 		this.communicationMapper = communicationMapper;
 
 
-		storage.openStores(persistenceMapper);
-		storage.loadData();
+		storage.openStores(persistenceMapper, metricRegistry);
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -88,7 +88,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit, MetricRegistry metricRegistry) {
 
 		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
@@ -97,14 +97,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setDataset(dataset.getId());
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
+		info.setNsIdResolver(workerStorage);
 
-		workerStorage.openStores(persistenceMapper);
-		workerStorage.loadData();
+		workerStorage.openStores(persistenceMapper, metricRegistry);
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, metricRegistry);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -123,11 +123,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
-	}
-
-	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage.getCentralRegistry())
-				.injectIntoNew(binaryMapper);
 	}
 
 	@Override
@@ -176,8 +171,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		bucketManager.addBucket(bucket);
 	}
 
-	public void removeConcept(Concept<?> conceptId) {
-		bucketManager.removeConcept(conceptId);
+	public void removeConcept(Concept<?> concept) {
+		bucketManager.removeConcept(concept);
 	}
 
 	public void updateConcept(Concept<?> concept) {
@@ -216,7 +211,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(@NsIdRef Table table) {
+	public void removeTable(TableId table) {
 		bucketManager.removeTable(table);
 	}
 

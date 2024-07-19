@@ -2,22 +2,22 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
+import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -25,9 +25,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -35,12 +33,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -54,14 +46,17 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-	private static final String ABBREVIATION_MARKER = "\u2026";
+	private static final String ABBREVIATION_MARKER = "…";
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final Validator validator;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final ImportHandler importHandler;
 	private final StorageListener storageListener;
+	private final MetaStorage metaStorage;
+
 
 
 	/**
@@ -74,7 +69,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
+		return datasetRegistry.createNamespace(dataset, getValidator(), metaStorage, managerNode.getEnvironment().metrics()).getDataset();
 	}
 
 	/**
@@ -83,12 +78,12 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		if (!namespace.getStorage().getTables().isEmpty()) {
+		if (namespace.getStorage().getTables().findAny().isPresent()) {
 			throw new WebApplicationException(
 					String.format(
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							dataset.getId(),
-							namespace.getStorage().getTables().stream()
+							namespace.getStorage().getTables()
 									 .map(Table::getId)
 									 .map(Objects::toString)
 									 .collect(Collectors.joining(","))
@@ -106,7 +101,7 @@ public class AdminDatasetProcessor {
 	 */
 	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
 		final Dataset dataset = namespace.getDataset();
-		secondaryId.setDataset(dataset);
+		secondaryId.setDataset(dataset.getId());
 
 		if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
 			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
@@ -122,12 +117,13 @@ public class AdminDatasetProcessor {
 	 * Delete SecondaryId if it does not have any dependents.
 	 */
 	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
-		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
+		final SecondaryIdDescriptionId secondaryIdId = secondaryId.getId();
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
-		final List<Column> dependents = namespace.getStorage().getTables().stream()
+		final List<Column> dependents = namespace.getStorage().getTables()
 												 .map(Table::getColumns).flatMap(Arrays::stream)
-												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
+												 .filter(column -> secondaryIdId.equals(column.getSecondaryId()))
 												 .toList();
 
 		if (!dependents.isEmpty()) {
@@ -143,7 +139,7 @@ public class AdminDatasetProcessor {
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);
 
-		namespace.getStorage().removeSecondaryId(secondaryId.getId());
+		namespace.getStorage().removeSecondaryId(secondaryIdId);
 		storageListener.onDeleteSecondaryId(secondaryId);
 	}
 
@@ -154,10 +150,11 @@ public class AdminDatasetProcessor {
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
 		Dataset dataset = namespace.getDataset();
 
+		final DatasetId datasetId = dataset.getId();
 		if (table.getDataset() == null) {
-			table.setDataset(dataset);
+			table.setDataset(datasetId);
 		}
-		else if (!table.getDataset().equals(dataset)) {
+		else if (!table.getDataset().equals(datasetId)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -178,7 +175,7 @@ public class AdminDatasetProcessor {
 	 * Therefore, the concept will be deleted first then added
 	 */
 	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
@@ -191,7 +188,7 @@ public class AdminDatasetProcessor {
 	 * Add the concept to the dataset if it does not exist yet
 	 */
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
-		concept.setDataset(dataset);
+		concept.setDataset(dataset.getId());
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
@@ -201,8 +198,6 @@ public class AdminDatasetProcessor {
 			deleteConcept(concept);
 			log.info("Force deleted previous concept: {}", concept.getId());
 		}
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -234,6 +229,8 @@ public class AdminDatasetProcessor {
 			parser.beginParsing(data);
 
 			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds());
+			NamespaceStorage namespaceStorage = namespace.getStorage();
+			mapping.setStorage(namespaceStorage);
 			namespace.getStorage().updateIdMapping(mapping);
 
 		}
@@ -278,10 +275,10 @@ public class AdminDatasetProcessor {
 	 * Deletes a table if it has no dependents or not forced to do so.
 	 */
 	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
-		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(table.getDataset());
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-															.filter(con -> con.getTable().equals(table))
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().flatMap(c -> c.getConnectors().stream())
+															.filter(con -> con.getResolvedTable().equals(table))
 															.map(Connector::getConcept)
 															.collect(Collectors.toList());
 
@@ -290,8 +287,8 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept);
 			}
 
-			namespace.getStorage().getAllImports().stream()
-					 .filter(imp -> imp.getTable().equals(table))
+			namespace.getStorage().getAllImports()
+					 .filter(imp -> imp.getTable().equals(table.getId()))
 					 .forEach(this::deleteImport);
 
 			namespace.getStorage().removeTable(table.getId());
@@ -305,7 +302,7 @@ public class AdminDatasetProcessor {
 	 * Deletes a concept.
 	 */
 	public synchronized void deleteConcept(Concept<?> concept) {
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(concept.getDataset());
 
 		namespace.getStorage().removeConcept(concept.getId());
 		storageListener.onDeleteConcept(concept);
@@ -325,7 +322,7 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
-		internToExternMapper.setDataset(namespace.getDataset());
+		internToExternMapper.setDataset(namespace.getDataset().getDataset());
 
 		ValidatorHelper.failOnError(log, validator.validate(internToExternMapper));
 
@@ -340,9 +337,9 @@ public class AdminDatasetProcessor {
 	}
 
 	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
-		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset());
 
-		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
 														   .filter(
 																   c -> c.getSelects().stream()
 																		 .filter(MappableSingleColumnSelect.class::isInstance)
@@ -369,7 +366,7 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addSearchIndex(Namespace namespace, SearchIndex searchIndex) {
-		searchIndex.setDataset(namespace.getDataset());
+		searchIndex.setDataset(namespace.getDataset().getId());
 
 		ValidatorHelper.failOnError(log, validator.validate(searchIndex));
 
@@ -382,9 +379,10 @@ public class AdminDatasetProcessor {
 	}
 
 	public List<ConceptId> deleteSearchIndex(SearchIndex searchIndex, boolean force) {
-		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset());
+		final SearchIndexId searchIndexId = searchIndex.getId();
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
 															.filter(
 																	c -> c.getConnectors().stream()
 																		  .map(Connector::getFilters)
@@ -393,7 +391,7 @@ public class AdminDatasetProcessor {
 																		  .map(SelectFilter.class::cast)
 																		  .map(SelectFilter::getTemplate)
 																		  .filter(Objects::nonNull)
-																		  .anyMatch(searchIndex::equals)
+																		  .anyMatch(searchIndexId::equals)
 															)
 															.toList();
 
@@ -402,7 +400,7 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept);
 			}
 
-			namespace.getStorage().removeSearchIndex(searchIndex.getId());
+			namespace.getStorage().removeSearchIndex(searchIndexId);
 		}
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());

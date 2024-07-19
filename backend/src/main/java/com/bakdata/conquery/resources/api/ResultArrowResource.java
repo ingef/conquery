@@ -48,7 +48,7 @@ public class ResultArrowResource {
 			) {
 
 		checkSingleTableResult(query);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, query, pretty, limit);
 	}
 
@@ -84,7 +84,7 @@ public class ResultArrowResource {
 			@QueryParam("limit") OptionalLong limit
 	) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}
 }

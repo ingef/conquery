@@ -1,22 +1,18 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
@@ -40,8 +36,7 @@ import lombok.ToString;
 @ToString
 public class FlagFilter extends Filter<Set<String>> {
 
-	@NsIdRefCollection
-	private final Map<String, Column> flags;
+	private final Map<String, ColumnId> flags;
 
 	@Override
 	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -51,7 +46,7 @@ public class FlagFilter extends Filter<Set<String>> {
 	}
 
 	@Override
-	public List<Column> getRequiredColumns() {
+	public List<ColumnId> getRequiredColumns() {
 		return new ArrayList<>(flags.values());
 	}
 
@@ -62,14 +57,15 @@ public class FlagFilter extends Filter<Set<String>> {
 		final List<Column> columns = new ArrayList<>();
 
 		for (String label : labels) {
-			final Column column = flags.get(label);
+			final ColumnId columnId = flags.get(label);
 
 			// Column is not defined with us.
-			if (column == null) {
+			if (columnId == null) {
 				missing.add(label);
+				continue;
 			}
 
-			columns.add(column);
+			columns.add(columnId.resolve());
 		}
 
 		if (!missing.isEmpty()) {
@@ -88,7 +84,7 @@ public class FlagFilter extends Filter<Set<String>> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
-		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
 
 	@Override

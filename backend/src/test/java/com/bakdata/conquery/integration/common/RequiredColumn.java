@@ -2,11 +2,11 @@ package com.bakdata.conquery.integration.common;
 
 import javax.annotation.Nullable;
 
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -43,7 +43,7 @@ public class RequiredColumn {
 		return out;
 	}
 
-	public Column toColumn(Table table, CentralRegistry storage) {
+	public Column toColumn(Table table, NsIdResolver idResolver) {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
@@ -51,9 +51,9 @@ public class RequiredColumn {
 		col.setDescription(description);
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
-			final SecondaryIdDescription description = storage.resolve(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));
+			final SecondaryIdDescription description = idResolver.get(new SecondaryIdDescriptionId(table.getDataset(), secondaryId));
 
-			col.setSecondaryId(description);
+			col.setSecondaryId(description.getId());
 		}
 
 		return col;

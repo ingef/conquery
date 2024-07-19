@@ -15,6 +15,8 @@ public class QueryResolveContext {
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 
+	// TODO Remove this. It influences how many columns a result has (NONE-Mode vs. others)
+	// Because of this we need to resolve a query first in order to obtain a FullExecutionStatus
 	@With
 	private final DateAggregationMode dateAggregationMode;
 

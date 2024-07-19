@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
@@ -31,8 +30,8 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	 */
 	@Getter
 	@Setter
-	@JsonIgnore
 	@CheckForNull
+	@EqualsAndHashCode.Exclude
 	private MatchingStats matchingStats;
 
 	public abstract void clearMatchingStats();

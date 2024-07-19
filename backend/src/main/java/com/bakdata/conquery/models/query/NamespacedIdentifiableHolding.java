@@ -13,5 +13,5 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
  */
 public interface NamespacedIdentifiableHolding {
 
-	void collectNamespacedObjects(Set<NamespacedIdentifiable<?>> identifiables);
+	void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables);
 }

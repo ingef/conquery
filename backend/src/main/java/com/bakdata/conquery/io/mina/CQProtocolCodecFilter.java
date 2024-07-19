@@ -252,6 +252,10 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 					break;
 				}
 			}
+			catch (OutOfMemoryError e) {
+				LOGGER.warn("Encountered out of memory. Trying to recover by backing off and retry allocation.", e);
+				Thread.sleep(2000);
+			}
 		}
 	}
 

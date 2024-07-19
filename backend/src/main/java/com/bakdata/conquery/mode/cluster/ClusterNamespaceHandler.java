@@ -14,17 +14,17 @@ import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerHandler;
+import com.codahale.metrics.MetricRegistry;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ClusterNamespaceHandler implements NamespaceHandler<DistributedNamespace> {
 	private final ClusterState clusterState;
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService, MetricRegistry metricRegistry, InternalObjectMapperCreator mapperCreator) {
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService, metricRegistry);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
 		clusterState.getWorkerHandlers().put(storage.getDataset().getId(), workerHandler);
@@ -50,7 +50,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 
 	@Override
 	public void removeNamespace(DatasetId id, DistributedNamespace namespace) {
-		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset())));
+		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset().getId())));
 		clusterState.getWorkerHandlers().keySet().removeIf(worker -> worker.getDataset().getDataset().equals(id));
 	}
 

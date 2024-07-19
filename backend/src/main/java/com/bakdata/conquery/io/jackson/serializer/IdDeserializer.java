@@ -1,9 +1,12 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NsIdResolver;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -12,11 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
@@ -28,7 +27,7 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
-	private boolean checkForInjectedPrefix;
+	private boolean isNamespacedId;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,10 +38,37 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		String text = parser.getText();
 
 		try {
-			return deserializeId(text, idParser, checkForInjectedPrefix, ctxt);
+			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
+
+
+			// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. Executions)
+			NsIdResolver nsIdResolver = NsIdResolver.getResolver(ctxt);
+			MetaStorage metaStorage = MetaStorage.get(ctxt);
+			setResolver(id, metaStorage, nsIdResolver);
+
+			return id;
 		}
 		catch (Exception e) {
 			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
+		}
+	}
+
+	public static void setResolver(Id<?> id, MetaStorage metaIdResolver, NsIdResolver nsIdResolver) {
+		// Set resolvers in this id and subIds
+		final HashSet<Id<?>> ids = new HashSet<>();
+		id.collectIds(ids);
+		for (Id<?> subId : ids) {
+			if (subId.getIdResolver() != null) {
+				// Ids are constructed of other ids that might already have a resolver set
+				continue;
+			}
+			if (subId instanceof NamespacedId) {
+				subId.setIdResolver(() -> nsIdResolver.resolve((Id<?> & NamespacedId) subId));
+			}
+			else if (metaIdResolver != null) {
+				subId.setIdResolver(() -> metaIdResolver.resolve(subId));
+			}
+			// TODO Handle special Ids such as WorkerId, TableImportDescriptorId ?
 		}
 	}
 
@@ -83,7 +109,7 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
 		JavaType type = Optional.ofNullable(ctxt.getContextualType())
 								.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 

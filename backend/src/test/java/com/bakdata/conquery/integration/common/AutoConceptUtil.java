@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValue
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +48,7 @@ public class AutoConceptUtil {
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
 		connector.setName(CONNECTOR_NAME);
-		connector.setTable(table);
+		connector.setTable(table.getId());
 
 		// Prepare selects
 		List<Select> selects = new ArrayList<>();
@@ -85,17 +86,18 @@ public class AutoConceptUtil {
 		final String prefix = column.getName() + "_";
 
 		// Create basic single column selects
-		final LastValueSelect last = new LastValueSelect(column, null);
+		final ColumnId id = column.getId();
+		final LastValueSelect last = new LastValueSelect(id, null);
 		last.setName(prefix + LastValueSelect.class.getAnnotation(CPSType.class).id());
-		last.setColumn(column);
+		last.setColumn(id);
 
-		final FirstValueSelect first = new FirstValueSelect(column, null);
+		final FirstValueSelect first = new FirstValueSelect(id, null);
 		first.setName(prefix + FirstValueSelect.class.getAnnotation(CPSType.class).id());
-		first.setColumn(column);
+		first.setColumn(id);
 
-		final DistinctSelect distinct = new DistinctSelect(column, null);
+		final DistinctSelect distinct = new DistinctSelect(id, null);
 		distinct.setName(prefix + DistinctSelect.class.getAnnotation(CPSType.class).id());
-		distinct.setColumn(column);
+		distinct.setColumn(id);
 
 		return List.of(
 				last,

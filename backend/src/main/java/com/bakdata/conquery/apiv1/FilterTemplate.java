@@ -2,16 +2,12 @@ package com.bakdata.conquery.apiv1;
 
 import java.net.URI;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.IndexConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
@@ -24,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -44,8 +42,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	@NotEmpty
 	private final String name;
@@ -108,6 +105,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 
 	@Override
 	public SearchIndexId createId() {
-		return new SearchIndexId(dataset.getId(), name);
+		return new SearchIndexId(dataset, name);
 	}
 }

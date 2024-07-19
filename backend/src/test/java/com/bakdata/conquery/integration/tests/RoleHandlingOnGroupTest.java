@@ -27,9 +27,13 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Group group1 = new Group("company", "company", storage);
-		Role role = new Role("role1", "role1", storage);
+		Group group1 = new Group("company", "company");
+		Role role = new Role("role1", "role1");
 		TestUser user1 = new TestUser(storage);
+
+		group1.setMetaStorage(storage);
+		role.setMetaStorage(storage);
+		user1.setMetaStorage(storage);
 
 		try {
 			storage.addRole(role);

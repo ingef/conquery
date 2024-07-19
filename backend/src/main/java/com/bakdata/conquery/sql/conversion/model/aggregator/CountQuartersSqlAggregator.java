@@ -21,11 +21,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Param;
@@ -43,14 +39,14 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 
 		CommonAggregationSelect<? extends Number> countAggregationSelect;
 		if (countQuartersSelect.isSingleColumnDaterange()) {
-			Column countColumn = countQuartersSelect.getColumn();
+			Column countColumn = countQuartersSelect.getColumn().resolve();
 			countAggregationSelect = countColumn.getType() == MajorTypeId.DATE_RANGE
 									 ? createSingleDaterangeColumnAggregationSelect(countColumn, alias, tables, functionProvider, stratificationFunctions)
 									 : createSingleDateColumnAggregationSelect(countColumn, alias, tables, functionProvider);
 		}
 		else {
-			Column startColumn = countQuartersSelect.getStartColumn();
-			Column endColumn = countQuartersSelect.getEndColumn();
+			Column startColumn = countQuartersSelect.getStartColumn().resolve();
+			Column endColumn = countQuartersSelect.getEndColumn().resolve();
 			countAggregationSelect = createTwoDateColumnAggregationSelect(startColumn, endColumn, alias, tables, functionProvider, stratificationFunctions);
 		}
 
@@ -74,14 +70,14 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 
 		CommonAggregationSelect<? extends Number> countAggregationSelect;
 		if (countQuartersFilter.isSingleColumnDaterange()) {
-			Column countColumn = countQuartersFilter.getColumn();
+			Column countColumn = countQuartersFilter.getColumn().resolve();
 			countAggregationSelect = countColumn.getType() == MajorTypeId.DATE_RANGE
 									 ? createSingleDaterangeColumnAggregationSelect(countColumn, alias, tables, functionProvider, stratificationFunctions)
 									 : createSingleDateColumnAggregationSelect(countColumn, alias, tables, functionProvider);
 		}
 		else {
-			Column startColumn = countQuartersFilter.getStartColumn();
-			Column endColumn = countQuartersFilter.getEndColumn();
+			Column startColumn = countQuartersFilter.getStartColumn().resolve();
+			Column endColumn = countQuartersFilter.getEndColumn().resolve();
 			countAggregationSelect = createTwoDateColumnAggregationSelect(startColumn, endColumn, alias, tables, functionProvider, stratificationFunctions);
 		}
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()

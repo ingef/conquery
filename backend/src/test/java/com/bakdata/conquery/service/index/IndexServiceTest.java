@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.index;
+package com.bakdata.conquery.service.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
@@ -9,18 +9,19 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.index.IndexService;
+import com.bakdata.conquery.models.index.MapIndex;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
+import com.bakdata.conquery.util.extentions.NamespaceStorageExtension;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
@@ -28,6 +29,9 @@ import org.mockserver.model.MediaType;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
 public class IndexServiceTest {
+
+	@RegisterExtension
+	private static final NamespaceStorageExtension STORAGE_EXTENSION = new NamespaceStorageExtension();
 
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
@@ -39,6 +43,10 @@ public class IndexServiceTest {
 	public static void beforeAll() {
 
 		CONFIG.getIndex().setBaseUrl(new URI(String.format("http://localhost:%d/", REF_SERVER.getPort())));
+
+		NamespaceStorage namespaceStorage = STORAGE_EXTENSION.getStorage();
+		DATASET.setNsIdResolver(namespaceStorage);
+		namespaceStorage.updateDataset(DATASET);
 
 	}
 
@@ -80,9 +88,9 @@ public class IndexServiceTest {
 		);
 
 
-		injectComponents(mapper, indexService, CONFIG);
-		injectComponents(mapperUrlAbsolute, indexService, CONFIG);
-		injectComponents(mapperUrlRelative, indexService, CONFIG);
+		injectComponents(mapper, indexService);
+		injectComponents(mapperUrlAbsolute, indexService);
+		injectComponents(mapperUrlRelative, indexService);
 
 		mapper.init();
 		mapperUrlAbsolute.init();
@@ -99,8 +107,10 @@ public class IndexServiceTest {
 
 	}
 
-	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService, ConqueryConfig config)
+	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
+
+		mapInternToExternMapper.setStorage(STORAGE_EXTENSION.getStorage());
 
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);
@@ -108,9 +118,9 @@ public class IndexServiceTest {
 
 		final Field configField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.config);
 		configField.setAccessible(true);
-		configField.set(mapInternToExternMapper, config);
+		configField.set(mapInternToExternMapper, CONFIG);
 
-		mapInternToExternMapper.setDataset(DATASET);
+		mapInternToExternMapper.setDataset(DATASET.getId());
 	}
 
 	@Test
@@ -124,8 +134,9 @@ public class IndexServiceTest {
 				"internal",
 				"{{external}}"
 		);
+		mapInternToExternMapper.setStorage(STORAGE_EXTENSION.getStorage());
 
-		injectComponents(mapInternToExternMapper, indexService, CONFIG);
+		injectComponents(mapInternToExternMapper, indexService);
 		mapInternToExternMapper.init();
 
 		// Before eviction the result should be the same
