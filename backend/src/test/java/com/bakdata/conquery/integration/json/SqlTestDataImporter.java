@@ -40,7 +40,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 	}
 
 	@Override
-	public void importFilterTestData(StandaloneSupport support, FilterTest filterTest) throws Exception {
+	public void importFilterTestData(StandaloneSupport support, FilterTest filterTest) {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 

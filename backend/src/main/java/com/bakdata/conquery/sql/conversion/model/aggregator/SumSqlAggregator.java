@@ -89,14 +89,14 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
 
 		Column sumColumn = sumSelect.getColumn().resolve();
-		Column subtractColumn = sumSelect.getSubtractColumn().resolve();
+		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		NameGenerator nameGenerator = selectContext.getNameGenerator();
 		String alias = nameGenerator.selectName(sumSelect);
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+		if (!distinctByColumns.isEmpty()) {
 			SqlIdColumns ids = selectContext.getIds();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);
@@ -121,7 +121,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	public SqlFilters convertToSqlFilter(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
 
 		Column sumColumn = sumFilter.getColumn().resolve();
-		Column subtractColumn = sumFilter.getSubtractColumn().resolve();
+		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		String alias = filterContext.getNameGenerator().selectName(sumFilter);
 		ConnectorSqlTables tables = filterContext.getTables();
@@ -129,7 +129,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		ConnectorSqlSelects selects;
 
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+		if (!distinctByColumns.isEmpty()) {
 			sumAggregationSelect =
 					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
 			selects = ConnectorSqlSelects.builder()
