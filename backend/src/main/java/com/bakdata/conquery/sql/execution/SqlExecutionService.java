@@ -1,5 +1,13 @@
 package com.bakdata.conquery.sql.execution;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -13,14 +21,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 
 @Slf4j
@@ -55,7 +55,7 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionResult(columnNames, resultTable, new CountDownLatch(0));
+			return new SqlExecutionResult(columnNames, resultTable, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {

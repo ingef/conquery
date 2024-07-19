@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -46,8 +47,15 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> executeAsync((ManagedQuery) managedQuery.resolve(), this)).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, this));
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> {
+						addResult(managedQuery, new SqlExecutionResult());
+						return executeAsync((ManagedQuery) managedQuery.resolve(), this);
+
+					}).toArray(CompletableFuture[]::new))
+					.thenRun(() -> {
+						managedForm.finish(ExecutionState.DONE, this);
+						clearLock(managedForm.getId());
+					});
 			return;
 		}
 
@@ -92,7 +100,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									clearLock(id);
 								})
 								.exceptionally(e -> {
-									managedQuery.finish(ExecutionState.FAILED, this);
+									managedQuery.fail(ConqueryError.asConqueryError(e), this);
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});
