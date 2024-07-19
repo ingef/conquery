@@ -26,9 +26,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-//@Testcontainers
+@Testcontainers
 @Slf4j
 public class PostgreSqlIntegrationTests extends IntegrationTests {
 
@@ -56,10 +57,10 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	@BeforeAll
 	static void before() {
-//		POSTGRESQL_CONTAINER.start();
+		POSTGRESQL_CONTAINER.start();
 		databaseConfig = DatabaseConfig.builder()
 									   .dialect(Dialect.POSTGRESQL)
-									   .jdbcConnectionUrl("jdbc:postgresql://lyo-peva02.spectrumk.ads:6432/"+DATABASE_NAME)
+									   .jdbcConnectionUrl(POSTGRESQL_CONTAINER.getJdbcUrl())
 									   .databaseUsername(USERNAME)
 									   .databasePassword(PASSWORD)
 									   .build();
