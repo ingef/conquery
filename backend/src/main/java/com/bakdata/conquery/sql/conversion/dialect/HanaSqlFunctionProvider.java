@@ -14,11 +14,8 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import org.jooq.Condition;
-import org.jooq.DataType;
-import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -132,9 +129,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
 		String tableName = daterangeSelectOrFilter.getTable().getName();
 		if (daterangeSelectOrFilter.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn(), daterangeSelectOrFilter.getEndColumn());
+			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
 		}
-		return ofStartAndEnd(tableName, daterangeSelectOrFilter.getColumn(), daterangeSelectOrFilter.getColumn());
+		Column column = daterangeSelectOrFilter.getColumn().resolve();
+		return ofStartAndEnd(tableName, column, column);
 	}
 
 	@Override
@@ -320,8 +318,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		// if no end column is present, the only existing column is both start and end of the date range
 		if (validityDate.getEndColumn() == null) {
-			startColumn = validityDate.getColumn().resolve();
-			endColumn = validityDate.getColumn().resolve();
+			Column column = validityDate.getColumn().resolve();
+			startColumn = column;
+			endColumn = column;
 		}
 		else {
 			startColumn = validityDate.getStartColumn().resolve();

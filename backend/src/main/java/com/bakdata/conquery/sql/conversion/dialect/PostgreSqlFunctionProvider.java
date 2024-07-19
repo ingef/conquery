@@ -15,13 +15,8 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import org.jooq.ArrayAggOrderByStep;
-import org.jooq.Condition;
-import org.jooq.DataType;
-import org.jooq.DatePart;
-import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -312,7 +307,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 		String tableName = validityDate.getConnector().getResolvedTable().getName();
 		if (validityDate.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, validityDate.getStartColumn().resolve(), validityDate.getEndColumn());
+			return ofStartAndEnd(tableName, validityDate.getStartColumn().resolve(), validityDate.getEndColumn().resolve());
 		}
 		return ofSingleColumn(tableName, validityDate.getColumn().resolve());
 	}
@@ -337,7 +332,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
-				Field<Date> singleDate = DSL.field(DSL.name(tableName, column.resolve().getName()), Date.class);
+				Field<Date> singleDate = DSL.field(DSL.name(tableName, column.getName()), Date.class);
 				Field<Date> startColumn = DSL.coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
 				Field<Date> endColumn = DSL.coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
 				yield daterange(startColumn, endColumn, "[]");

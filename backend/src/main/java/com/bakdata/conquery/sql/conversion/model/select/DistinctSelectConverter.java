@@ -69,7 +69,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
 
 		ConnectorSqlTables tables = selectContext.getTables();
-		FieldWrapper<Object> preprocessingSelect = new FieldWrapper<>(field(name(tables.getRootTable(), distinctSelect.getColumn().getName())).as(alias));
+		FieldWrapper<Object> preprocessingSelect = new FieldWrapper<>(field(name(tables.getRootTable(), distinctSelect.getColumn().resolve().getName())).as(alias));
 
 		QueryStep distinctSelectCte = createDistinctSelectCte(preprocessingSelect, alias, selectContext);
 		QueryStep aggregatedCte = createAggregationCte(selectContext, preprocessingSelect, distinctSelectCte, alias);
