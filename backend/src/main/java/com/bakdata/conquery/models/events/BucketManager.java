@@ -51,8 +51,6 @@ public class BucketManager {
 	 * The final Map is the way the APIs expect the data to be delivered.
 	 * <p>
 	 * Connector -> Bucket -> [BucketId -> CBlock]
-	 *
-	 * TODO use Ids?
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorToCblocks;
 
@@ -126,24 +124,22 @@ public class BucketManager {
 			   .filter(TreeConcept.class::isInstance)
 			   .flatMap(concept -> concept.getConnectors().stream().map(ConceptTreeConnector.class::cast))
 
-			   .forEach(connector -> {
-				   storage.getAllBuckets().forEach(bucket -> {
+			   .forEach(connector -> storage.getAllBucketIds().forEach(bucketId -> {
 
-					   final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+				   final CBlockId cBlockId = new CBlockId(bucketId, connector.getId());
 
-					   if (!connector.getResolvedTable().equals(bucket.getTable())) {
-						   return;
-					   }
+				   if (!connector.getResolvedTableId().equals(bucketId.getImp().getTable())) {
+					   return;
+				   }
 
-					   if (hasCBlock(cBlockId)) {
-						   log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
-						   return;
-					   }
+				   if (hasCBlock(cBlockId)) {
+					   log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
+					   return;
+				   }
 
-					   log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-					   job.addCBlock(bucket, connector);
-				   });
-			   });
+				   log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+				   job.addCBlock(bucketId.resolve(), connector);
+			   }));
 
 		if (!job.isEmpty()) {
 			jobManager.addSlowJob(job);
