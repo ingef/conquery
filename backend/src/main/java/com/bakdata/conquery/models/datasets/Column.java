@@ -46,6 +46,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
 
+	/**
+	 * @implNote the position is not stored in the {@link Table} as a mapping because the frequent map lookups could
+	 * mean a large processing overhead.
+	 */
 	@JsonIgnore
 	private int position = -1;
 
