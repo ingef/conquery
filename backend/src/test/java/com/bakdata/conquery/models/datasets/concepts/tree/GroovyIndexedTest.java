@@ -8,12 +8,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -88,12 +86,7 @@ public class GroovyIndexedTest {
 
 		// Prepare Serdes injections
 		final Validator validator = Validators.newValidator();
-		final ObjectReader conceptReader = new Injectable(){
-			@Override
-			public MutableInjectableValues inject(MutableInjectableValues values) {
-				return values.add(Validator.class, validator);
-			}
-		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
+		final ObjectReader conceptReader = ((Injectable) values -> values.add(Validator.class, validator)).injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);

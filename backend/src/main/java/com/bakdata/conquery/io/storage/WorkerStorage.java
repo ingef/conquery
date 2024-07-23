@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Validator;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +26,7 @@ public class WorkerStorage extends NamespacedStorage implements Injectable {
 	private IdentifiableStore<Bucket> buckets;
 	private IdentifiableStore<CBlock> cBlocks;
 
-	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
+	public WorkerStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
@@ -38,10 +37,6 @@ public class WorkerStorage extends NamespacedStorage implements Injectable {
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(centralRegistry, getPathName(), objectMapper);
 		cBlocks = getStorageFactory().createCBlockStore(centralRegistry, getPathName(), objectMapper);
-
-		decorateWorkerStore(worker);
-		decorateBucketStore(buckets);
-		decorateCBlockStore(cBlocks);
 	}
 
 	@Override
@@ -57,19 +52,6 @@ public class WorkerStorage extends NamespacedStorage implements Injectable {
 				buckets,
 				cBlocks
 		);
-	}
-
-
-	private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
-		// Nothing to decorate
 	}
 
 

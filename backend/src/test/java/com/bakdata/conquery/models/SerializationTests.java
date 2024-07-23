@@ -6,15 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -31,8 +25,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -93,7 +85,6 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
@@ -243,12 +234,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				.forType(Bucket.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.registry(registry)
-				.injectables(new Injectable() {
-					@Override
-					public MutableInjectableValues inject(MutableInjectableValues values) {
-						return values.add(Validator.class, validator);
-					}
-				})
+				.injectables(values -> values.add(Validator.class, validator))
 				.test(bucket);
 
 	}

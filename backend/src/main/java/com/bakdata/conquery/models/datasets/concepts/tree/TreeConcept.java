@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
@@ -15,22 +17,13 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.util.StdConverter;
-import com.google.common.base.Throwables;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -136,11 +129,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
+		return findMostSpecificChild(stringValue, rowMap, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
+	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
+		ConceptTreeChild best = null;
 
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;
@@ -209,7 +203,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(int[] ids) {
 		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}

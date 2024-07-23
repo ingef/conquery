@@ -8,11 +8,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -67,9 +63,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements Injec
 		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
-		decorateSecondaryIdDescriptionStore(secondaryIds);
 		decorateTableStore(tables);
-		decorateImportStore(imports);
 		decorateConceptStore(concepts);
 	}
 
@@ -86,10 +80,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements Injec
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
 		store.onAdd(centralRegistry::register).onRemove(centralRegistry::remove);
-	}
-
-	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
@@ -144,11 +134,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements Injec
 			}
 		});
 	}
-
-	private void decorateImportStore(IdentifiableStore<Import> store) {
-		// Intentionally left blank
-	}
-
 
 	public void addImport(Import imp) {
 		imports.add(imp);

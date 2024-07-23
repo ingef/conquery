@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
@@ -40,7 +39,7 @@ public abstract class Namespace extends IdResolveContext {
 	@ToString.Include
 	private final NamespaceStorage storage;
 
-	private final ExecutionManager executionManager;
+	private final ExecutionManager<?> executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;

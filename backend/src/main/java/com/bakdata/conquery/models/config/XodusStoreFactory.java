@@ -5,43 +5,25 @@ import static com.bakdata.conquery.io.storage.StoreMappings.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
-import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
-import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
-import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.storage.*;
+import com.bakdata.conquery.io.storage.xodus.stores.*;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
@@ -64,18 +46,8 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
-import jakarta.validation.Valid;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import jetbrains.exodus.env.Environment;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.With;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -191,12 +163,12 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath, getValidator()), NAMESPACE_STORES);
+		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
 	public Collection<WorkerStorage> discoverWorkerStorages() {
-		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
+		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, storePath), WORKER_STORES);
 	}
 
 

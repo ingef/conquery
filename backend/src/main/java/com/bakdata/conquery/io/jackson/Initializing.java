@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 
 /**
  * Interface for class instances that need initialization after deserialization and value injection.
- *
  * Let the class implement this interface and annotate the class with:
  * <pre>
  *  {@code

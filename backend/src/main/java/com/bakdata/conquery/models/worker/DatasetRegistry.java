@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -55,9 +54,9 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 	private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, Validator validator) throws IOException {
+	public N createNamespace(Dataset dataset) throws IOException {
 		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
 		datasetStorage.openStores(persistenceMapper);

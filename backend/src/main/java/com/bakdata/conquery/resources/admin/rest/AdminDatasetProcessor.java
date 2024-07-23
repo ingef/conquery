@@ -2,22 +2,19 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -35,12 +32,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +65,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
+		return datasetRegistry.createNamespace(dataset).getDataset();
 	}
 
 	/**
