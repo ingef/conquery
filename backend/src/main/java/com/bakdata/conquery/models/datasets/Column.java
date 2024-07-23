@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +25,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-@JsonDeserialize(converter = Column.Initializer.class)
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable, Initializing<Column> {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -51,7 +48,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * mean a large processing overhead.
 	 */
 	@JsonIgnore
-	private int position = -1;
+	private int position = UNKNOWN_POSITION;
 
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
@@ -85,12 +82,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		return config.createTrieSearch(isGenerateSuffixes());
 	}
 
-	@Override
-	public Column init() {
+	public void init() {
 		position = ArrayUtils.indexOf(getTable().getColumns(), this);
-		return this;
 	}
 
-	static class Initializer extends Initializing.Converter<Column> {
-	}
 }

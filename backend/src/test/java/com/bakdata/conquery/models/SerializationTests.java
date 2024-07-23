@@ -266,6 +266,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		registry.register(table);
 		registry.register(column);
 
+		table.init();
+
 		SerializationTestUtil
 				.forType(Table.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
