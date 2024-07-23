@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -39,7 +40,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
-	 * If unset {@link ...SqlConnectorConfig#primaryColumn} is assumed.
+	 * If unset {@link DatabaseConfig#getPrimaryColumn()} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
