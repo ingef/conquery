@@ -68,12 +68,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		return new ResultType.StringT(mapper);
 	}
 
-	public void loadMapping() {
-		if (mapping != null) {
-			mapping.init();
-		}
-	}
-
 	private String applyMapping(Object intern) {
 
 		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());

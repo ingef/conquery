@@ -32,6 +32,8 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
+		injectables.add(storage);
+
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
@@ -39,6 +41,7 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.forEach(i -> i.injectInto(persistenceMapper));
 		injectables.forEach(i -> i.injectInto(communicationMapper));
 		injectables.forEach(i -> i.injectInto(preprocessMapper));
+
 
 		// Open and load the stores
 		storage.openStores(persistenceMapper);

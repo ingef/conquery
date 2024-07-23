@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -21,7 +23,7 @@ import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NamespaceStorage extends NamespacedStorage {
+public class NamespaceStorage extends NamespacedStorage implements Injectable {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
 	protected IdentifiableStore<SearchIndex> searchIndexes;
@@ -179,5 +181,11 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public void removePreviewConfig() {
 		preview.remove();
+	}
+
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(NamespaceStorage.class, this);
 	}
 }

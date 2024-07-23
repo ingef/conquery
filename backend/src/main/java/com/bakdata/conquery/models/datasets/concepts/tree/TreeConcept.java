@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -21,8 +22,13 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
+import com.google.common.base.Throwables;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -33,7 +39,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
+@JsonDeserialize(converter = TreeConcept.TreeConceptInitializer.class)
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing<TreeConcept> {
 
 	@JsonIgnore
 	@Getter
@@ -90,21 +97,22 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}
 
-	@Override
-	public void initElements() throws ConfigurationException, JSONException {
-		super.initElements();
+	public TreeConcept init() {
 		setLocalId(0);
 		localIdMap.add(this);
 
-		final List<ConceptTreeChild> openList = new ArrayList<>();
-		openList.addAll(getChildren());
+		final List<ConceptTreeChild> openList = new ArrayList<>(getChildren());
 
 		for (ConceptTreeConnector con : getConnectors()) {
 			if (con.getCondition() == null) {
 				continue;
 			}
 
-			con.getCondition().init(this);
+			try {
+				con.getCondition().init(this);
+			} catch (ConceptConfigurationException e) {
+				throw new RuntimeException("Unable to init condition", e);
+			}
 		}
 
 		for (int i = 0; i < openList.size(); i++) {
@@ -117,13 +125,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 				ctc.init();
 
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
 		}
+
+		return this;
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
@@ -236,4 +245,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return node.getLabel() + " - " + node.getDescription();
 
 	}
+
+	public static class TreeConceptInitializer extends Initializing.Converter<TreeConcept> {}
 }

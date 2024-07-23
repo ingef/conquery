@@ -2,6 +2,8 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -19,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(of = "worker")
-public class WorkerStorage extends NamespacedStorage {
+public class WorkerStorage extends NamespacedStorage implements Injectable {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> buckets;
@@ -128,5 +130,10 @@ public class WorkerStorage extends NamespacedStorage {
 	public void removeConcept(ConceptId id) {
 		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(WorkerStorage.class, this);
 	}
 }

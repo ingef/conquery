@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -293,9 +294,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		Dataset dataset = createDataset(registry);
 
 		TreeConcept concept = createConcept(registry, dataset);
+		concept.init();
 
 		SerializationTestUtil
-				.forType(TreeConcept.class)
+				.forType(Concept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(concept);
