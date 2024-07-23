@@ -8,9 +8,14 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -23,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -48,7 +52,11 @@ public class SerializationTestUtil<T> {
 					ThreadLocal.class,
 					User.ShiroUserAdapter.class,
 					Validator.class,
-					WeakReference.class
+					WeakReference.class,
+					NamespacedStorage.class,
+					WorkerStorage.class,
+					NamespaceStorage.class,
+					MetaStorage.class
 			};
 
 	private final JavaType type;
@@ -146,6 +154,7 @@ public class SerializationTestUtil<T> {
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
+				.usingOverriddenEquals()
 				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
 
 		// Apply assertion customizations

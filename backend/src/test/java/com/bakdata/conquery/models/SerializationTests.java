@@ -266,6 +266,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		registry.register(table);
 		registry.register(column);
 
+		table.setStorage(getNamespaceStorage());
 		table.init();
 
 		SerializationTestUtil
@@ -550,7 +551,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 	@Test
-	public void serialize() throws IOException, JSONException {
+	public void cBlock() throws IOException, JSONException {
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		final Dataset dataset = new Dataset();

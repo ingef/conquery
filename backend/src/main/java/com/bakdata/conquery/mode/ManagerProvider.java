@@ -40,7 +40,7 @@ public interface ManagerProvider {
 				namespaceHandler,
 				indexService
 		);
-		MetaStorage storage = new MetaStorage(config.getStorage(), datasetRegistry);
+		MetaStorage storage = new MetaStorage(config.getStorage());
 		datasetRegistry.setMetaStorage(storage);
 		return datasetRegistry;
 	}

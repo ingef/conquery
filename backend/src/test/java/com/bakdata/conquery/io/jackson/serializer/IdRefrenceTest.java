@@ -41,7 +41,7 @@ public class IdRefrenceTest {
 
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, null, null, null, null);
 
-		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
 
 		metaStorage.openStores(null);
 		datasetRegistry.setMetaStorage(metaStorage);
