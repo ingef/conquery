@@ -88,7 +88,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements Injec
 	private void decorateTableStore(IdentifiableStore<Table> store) {
 		store.onAdd(table -> {
 				 for (Column column : table.getColumns()) {
-					 column.init();
 					 getCentralRegistry().register(column);
 				 }
 			 })
