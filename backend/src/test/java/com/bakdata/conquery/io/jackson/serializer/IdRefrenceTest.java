@@ -13,14 +13,18 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.extentions.MetaStorageExtension;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class IdRefrenceTest {
+
+	@RegisterExtension
+	private final static MetaStorageExtension META_STORAGE_EXTENSION = new MetaStorageExtension();
 
 	@Test
 	public void testListReferences() throws IOException {
@@ -35,10 +39,7 @@ public class IdRefrenceTest {
 		registry.register(dataset);
 		registry.register(table);
 
-		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
-
-		metaStorage.openStores(null);
-
+		MetaStorage metaStorage = META_STORAGE_EXTENSION.getMetaStorage();
 
 		User user = new User("usermail", "userlabel", metaStorage);
 		metaStorage.addUser(user);
