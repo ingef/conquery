@@ -92,12 +92,10 @@ public class GroovyIndexedTest {
 		indexedConcept = conceptReader.readValue(node);
 
 		indexedConcept.setDataset(dataset);
-		indexedConcept.initElements();
 
 		oldConcept = conceptReader.readValue(node);
 
 		oldConcept.setDataset(dataset);
-		oldConcept.initElements();
 	}
 
 

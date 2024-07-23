@@ -34,6 +34,7 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.add(indexService);
 		injectables.add(storage);
 
+
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
