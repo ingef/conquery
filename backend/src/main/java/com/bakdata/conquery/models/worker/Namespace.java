@@ -108,12 +108,6 @@ public abstract class Namespace extends IdResolveContext {
 		return storage.getCentralRegistry();
 	}
 
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException();
-	}
-
-
 	/**
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
 	 */

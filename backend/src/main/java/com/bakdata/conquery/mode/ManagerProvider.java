@@ -2,7 +2,6 @@ package com.bakdata.conquery.mode;
 
 import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -40,8 +39,6 @@ public interface ManagerProvider {
 				namespaceHandler,
 				indexService
 		);
-		MetaStorage storage = new MetaStorage(config.getStorage(), datasetRegistry);
-		datasetRegistry.setMetaStorage(storage);
 		return datasetRegistry;
 	}
 

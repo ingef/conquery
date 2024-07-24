@@ -119,11 +119,6 @@ public class Workers extends IdResolveContext {
 		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
 	}
 
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return null; // Workers simply have no MetaRegistry.
-	}
-
 	public void removeWorkerFor(DatasetId dataset) {
 		final Worker worker = dataset2Worker.get(dataset);
 

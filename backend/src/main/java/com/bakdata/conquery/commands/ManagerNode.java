@@ -113,7 +113,7 @@ public class ManagerNode implements Managed {
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController = new AuthorizationController(getStorage(), config, environment, admin);
+		authController = new AuthorizationController(getMetaStorage(), config, environment, admin);
 		environment.lifecycle().manage(authController);
 
 		// Register default components for the admin interface
@@ -145,14 +145,14 @@ public class ManagerNode implements Managed {
 	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
-				new QueryCleanupTask(getStorage(), Duration.of(
+				new QueryCleanupTask(getMetaStorage(), Duration.of(
 						config.getQueries().getOldQueriesTime().getQuantity(),
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 
-		environment.admin().addTask(new PermissionCleanupTask(getStorage()));
+		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getStorage()));
+		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
 
 		final ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
@@ -164,7 +164,7 @@ public class ManagerNode implements Managed {
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(getStorage()).to(MetaStorage.class);
+				bind(getMetaStorage()).to(MetaStorage.class);
 				bind(getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
@@ -203,7 +203,7 @@ public class ManagerNode implements Managed {
 		injectableValues.add(Validator.class, getValidator());
 
 		getDatasetRegistry().injectInto(objectMapper);
-		getStorage().injectInto(objectMapper);
+		getMetaStorage().injectInto(objectMapper);
 		getConfig().injectInto(objectMapper);
 	}
 
@@ -219,10 +219,10 @@ public class ManagerNode implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
+		getMetaStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
 		log.info("Loading MetaStorage");
-		getStorage().loadData();
-		log.info("MetaStorage loaded {}", getStorage());
+		getMetaStorage().loadData();
+		log.info("MetaStorage loaded {}", getMetaStorage());
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -236,7 +236,7 @@ public class ManagerNode implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage);
+				registry.createNamespace(namespaceStorage, getMetaStorage());
 			});
 		}
 
@@ -262,16 +262,16 @@ public class ManagerNode implements Managed {
 				provider.close();
 			}
 			catch (Exception e) {
-				log.error(provider + " could not be closed", e);
+				log.error("{} could not be closed", provider, e);
 			}
 
 		}
 
 		try {
-			getStorage().close();
+			getMetaStorage().close();
 		}
 		catch (Exception e) {
-			log.error("{} could not be closed", getStorage(), e);
+			log.error("{} could not be closed", getMetaStorage(), e);
 		}
 
 	}

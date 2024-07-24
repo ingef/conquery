@@ -8,21 +8,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SingletonNamespaceCollection extends IdResolveContext {
 
-	public SingletonNamespaceCollection(CentralRegistry registry) {
-		this(registry, null);
-	}
-
 	@NonNull
 	private final CentralRegistry registry;
-	private final CentralRegistry metaRegistry;
 
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return registry;
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return metaRegistry;
 	}
 }
