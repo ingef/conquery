@@ -3,6 +3,8 @@ package com.bakdata.conquery.io;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -18,7 +20,6 @@ import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -41,16 +42,15 @@ public abstract class AbstractSerializationTest {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
-		datasetRegistry.setMetaStorage(metaStorage);
-		creator.init(datasetRegistry);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		creator.init(datasetRegistry, metaStorage);
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);
 		when(managerNode.getConfig()).thenReturn(config);
 		when(managerNode.getValidator()).thenReturn(validator);
 		doReturn(datasetRegistry).when(managerNode).getDatasetRegistry();
-		when(managerNode.getStorage()).thenReturn(metaStorage);
+		when(managerNode.getMetaStorage()).thenReturn(metaStorage);
 		when(managerNode.getInternalObjectMapperCreator()).thenReturn(creator);
 
 		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();

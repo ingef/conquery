@@ -27,9 +27,9 @@ public class InternalObjectMapperCreator {
 	private DatasetRegistry<? extends Namespace> datasetRegistry = null;
 	private MetaStorage storage = null;
 
-	public void init(DatasetRegistry<? extends Namespace> datasetRegistry) {
+	public void init(DatasetRegistry<? extends Namespace> datasetRegistry, MetaStorage storage) {
 		this.datasetRegistry = datasetRegistry;
-		this.storage = datasetRegistry.getMetaStorage();
+		this.storage = storage;
 	}
 
 	public ObjectMapper createInternalObjectMapper(@Nullable Class<? extends View> viewClass) {
