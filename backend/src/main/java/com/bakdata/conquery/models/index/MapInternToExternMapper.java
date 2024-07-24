@@ -13,13 +13,16 @@ import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMappe
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -28,10 +31,12 @@ import org.jetbrains.annotations.TestOnly;
 
 @Slf4j
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
-@RequiredArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
-@Getter
+@Data
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+@AllArgsConstructor
+@Builder
+@ToString(onlyExplicitlyIncluded = true)
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper {
 
 
@@ -51,20 +56,19 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@ToString.Include
 	@NotEmpty
-	private final String name;
+	private String name;
 	@ToString.Include
 	@NotNull
-	private final URI csv;
+	private URI csv;
 	@ToString.Include
 	@NotEmpty
-	private final String internalColumn;
+	private String internalColumn;
 	@ToString.Include
 	@NotEmpty
-	private final String externalTemplate;
+	private String externalTemplate;
 
 	@ToString.Include
-	@JsonProperty
-	private final boolean allowMultiples;
+	private boolean allowMultiples;
 
 
 	//Manager only

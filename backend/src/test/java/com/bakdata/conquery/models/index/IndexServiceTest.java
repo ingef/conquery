@@ -58,29 +58,33 @@ public class IndexServiceTest {
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
 
-		final MapInternToExternMapper mapper = new MapInternToExternMapper(
-				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-				"internal",
-				"{{external}}",
-				false
-		);
+		final MapInternToExternMapper mapper = MapInternToExternMapper.builder()
+																	  .name("test1")
+																	  .csv(new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"))
+																	  .internalColumn("internal")
+																	  .externalTemplate("{{external}}")
+																	  .allowMultiples(false)
+																	  .build();
 
-		final MapInternToExternMapper mapperUrlAbsolute = new MapInternToExternMapper(
-				"testUrlAbsolute",
-				new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
-				"internal",
-				"{{external}}",
-				false
-		);
+		final MapInternToExternMapper mapperUrlAbsolute = MapInternToExternMapper.builder()
+																				 .name("testUrlAbsolute")
+																				 .csv(new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())))
+																				 .internalColumn("internal")
+																				 .externalTemplate("{{external}}")
+																				 .allowMultiples(false)
+																				 .build();
 
-		final MapInternToExternMapper mapperUrlRelative = new MapInternToExternMapper(
-				"testUrlRelative",
-				new URI("./mapping.csv"),
-				"internal",
-				"{{external}}",
-				false
-		);
+
+
+		final MapInternToExternMapper mapperUrlRelative = MapInternToExternMapper.builder()
+																				 .name("testUrlRelative")
+																				 .csv(new URI("./mapping.csv"))
+																				 .internalColumn("internal")
+																				 .externalTemplate("{{external}}")
+																				 .allowMultiples(false)
+																				 .build();
+
+
 
 
 		injectComponents(mapper, indexService, CONFIG);
@@ -121,13 +125,15 @@ public class IndexServiceTest {
 	void testEvictOnMapper()
 			throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
 		log.info("Test evicting of mapping on mapper");
-		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
-				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-				"internal",
-				"{{external}}",
-				false
-		);
+		final MapInternToExternMapper mapInternToExternMapper = MapInternToExternMapper.builder()
+																					   .name("test1")
+																					   .csv(new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"))
+																					   .internalColumn("internal")
+																					   .externalTemplate("{{external}}")
+																					   .allowMultiples(false)
+																					   .build();
+
+
 
 		injectComponents(mapInternToExternMapper, indexService, CONFIG);
 		mapInternToExternMapper.init();
