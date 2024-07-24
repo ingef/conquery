@@ -2,6 +2,7 @@ package com.bakdata.conquery.mode;
 
 import jakarta.validation.Validator;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -22,8 +23,8 @@ public interface ManagerProvider {
 		return new JobManager(JOB_MANAGER_NAME, config.isFailOnError());
 	}
 
-	static InternalObjectMapperCreator newInternalObjectMapperCreator(ConqueryConfig config, Validator validator) {
-		return new InternalObjectMapperCreator(config, validator);
+	static InternalObjectMapperCreator newInternalObjectMapperCreator(ConqueryConfig config, MetaStorage metaStorage, Validator validator) {
+		return new InternalObjectMapperCreator(config, metaStorage, validator);
 	}
 
 	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
@@ -32,14 +33,13 @@ public interface ManagerProvider {
 			InternalObjectMapperCreator creator
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
-		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
+		return new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),
 				config,
 				creator,
 				namespaceHandler,
 				indexService
 		);
-		return datasetRegistry;
 	}
 
 }

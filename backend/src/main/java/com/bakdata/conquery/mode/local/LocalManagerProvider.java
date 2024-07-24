@@ -33,12 +33,12 @@ public class LocalManagerProvider implements ManagerProvider {
 
 	public DelegateManager<LocalNamespace> provideManager(ConqueryConfig config, Environment environment) {
 
-		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
+		final MetaStorage storage = new MetaStorage(config.getStorage());
+		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, storage, environment.getValidator());
 		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, dialectFactory);
 		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
-		final MetaStorage storage = new MetaStorage(config.getStorage());
 
-		creator.init(datasetRegistry, storage);
+		creator.init(datasetRegistry);
 
 		return new DelegateManager<>(
 				config,
