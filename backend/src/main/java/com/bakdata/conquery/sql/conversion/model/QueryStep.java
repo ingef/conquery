@@ -42,6 +42,10 @@ public class QueryStep {
 	@Builder.Default
 	boolean unionAll = true;
 	/**
+	 * Determines if the select should be distinct.
+	 */
+	boolean selectDistinct;
+	/**
 	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
 	 */
 	@Singular

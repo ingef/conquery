@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -79,6 +80,8 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction);
 
+	ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter);
+
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
 	/**
@@ -92,13 +95,13 @@ public interface SqlFunctionProvider {
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
 
 	/**
-	 * @param predecessor The predeceasing step containing an aggregated validity date.
+	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
+	 * @param nested      The {@link ColumnDateRange} you want to unnest.
+	 * @param cteName     The CTE name of the returned {@link QueryStep}.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
-
-	Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields);
+	QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
@@ -139,6 +142,17 @@ public interface SqlFunctionProvider {
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
+
+	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
+		return DSL.field(
+				"{0}({1}, {2} {3})",
+				String.class,
+				DSL.keyword("string_agg"),
+				stringField,
+				delimiter,
+				DSL.orderBy(orderByFields)
+		);
+	}
 
 	default Field<String> concat(List<Field<String>> fields) {
 		String concatenated = fields.stream()
