@@ -14,7 +14,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 
 public class IdRefrenceTest {
@@ -58,10 +61,19 @@ public class IdRefrenceTest {
 				.readerFor(ListHolder.class)
 				.readValue(json);
 
-		assertThat(holder.users().get(0)).isSameAs(user);
-		assertThat(holder.tables().get(0)).isSameAs(table);
+		assertThat(holder.getUsers().get(0)).isSameAs(user);
+		assertThat(holder.getTables().get(0)).isSameAs(table);
 	}
 
-	public record ListHolder(@NsIdRefCollection List<Table> tables, @MetaIdRefCollection List<User> users) {
+	/**
+	 * @implNote this needs to be a class, because jackson ignores NsIdRefCollection on records
+	 */
+	@Getter
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class ListHolder {
+		@NsIdRefCollection
+		private final List<Table> tables;
+		@MetaIdRefCollection
+		private final List<User> users;
 	}
 }
