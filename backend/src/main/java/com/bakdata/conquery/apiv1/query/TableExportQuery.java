@@ -233,7 +233,7 @@ public class TableExportQuery extends Query {
 			final ResultType<?> resultType =
 					desc.getMapping() == null
 					? ResultType.StringT.INSTANCE
-					: desc.getMapping().createMappedType();
+					: desc.getMapping().createMappedType(false);
 
 			final Set<SemanticType> semantics = new HashSet<>();
 

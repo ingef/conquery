@@ -101,10 +101,15 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	}
 
 	@Override
-	public ResultType<?> createMappedType() {
+	public ResultType<?> createMappedType(boolean listT) {
 
 		if (allowMultiples) {
-			return new ResultType.MappedListStringT(this::externalValue);
+			if(listT){
+				return new ResultType.MappedListMultiStringT(this::externalValue);
+			}
+			else {
+				return new ResultType.MappedMultiStringT(this::externalValue);
+			}
 		}
 
 		return new ResultType.StringT((value, ignored) -> externalValue((String) value).get(0));

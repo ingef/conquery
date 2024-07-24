@@ -49,11 +49,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType<?> getResultType() {
-		if (mapping == null) {
-			return ResultType.resolveResultType(getColumn().getType());
+		if(getMapping() == null){
+			return ResultType.StringT.INSTANCE;
 		}
 
-		return mapping.createMappedType();
+		return mapping.createMappedType(false);
 	}
 
 	public void loadMapping() {

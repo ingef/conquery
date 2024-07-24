@@ -16,7 +16,7 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	boolean initialized();
 
-	ResultType<?> createMappedType();
+	ResultType<?> createMappedType(boolean list);
 
 	void setDataset(Dataset dataset);
 
