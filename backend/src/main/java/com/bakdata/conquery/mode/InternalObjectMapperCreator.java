@@ -23,13 +23,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InternalObjectMapperCreator {
 	private final ConqueryConfig config;
+	private final MetaStorage storage;
 	private final Validator validator;
 	private DatasetRegistry<? extends Namespace> datasetRegistry = null;
-	private MetaStorage storage = null;
 
-	public void init(DatasetRegistry<? extends Namespace> datasetRegistry, MetaStorage storage) {
+	public void init(DatasetRegistry<? extends Namespace> datasetRegistry) {
 		this.datasetRegistry = datasetRegistry;
-		this.storage = storage;
 	}
 
 	public ObjectMapper createInternalObjectMapper(@Nullable Class<? extends View> viewClass) {

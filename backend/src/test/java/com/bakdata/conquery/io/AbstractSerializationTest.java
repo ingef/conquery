@@ -38,12 +38,12 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
-		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
-		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
-		creator.init(datasetRegistry, metaStorage);
+		datasetRegistry = new DatasetRegistry<>(0, config, creator, clusterNamespaceHandler, indexService);
+		creator.init(datasetRegistry);
 
 		// Prepare manager node internal mapper
 		final ManagerNode managerNode = mock(ManagerNode.class);
