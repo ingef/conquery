@@ -33,19 +33,13 @@ public interface ManagerProvider {
 			InternalObjectMapperCreator creator
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
-		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
+		return new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),
 				config,
 				creator,
 				namespaceHandler,
 				indexService
 		);
-		return datasetRegistry;
-	}
-
-	static MetaStorage createMetaStorage(StoreFactory storeFactory) {
-		return new MetaStorage(storeFactory);
-
 	}
 
 }

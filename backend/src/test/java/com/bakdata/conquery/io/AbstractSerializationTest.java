@@ -43,7 +43,8 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
-		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
@@ -56,7 +57,7 @@ public abstract class AbstractSerializationTest {
 		when(managerNode.getConfig()).thenReturn(config);
 		when(managerNode.getValidator()).thenReturn(validator);
 		doReturn(datasetRegistry).when(managerNode).getDatasetRegistry();
-		when(managerNode.getStorage()).thenReturn(metaStorage);
+		when(managerNode.getMetaStorage()).thenReturn(metaStorage);
 		when(managerNode.getInternalObjectMapperCreator()).thenReturn(creator);
 
 		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();

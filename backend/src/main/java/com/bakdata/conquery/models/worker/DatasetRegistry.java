@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -34,7 +35,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,9 +51,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
     private final InternalObjectMapperCreator internalObjectMapperCreator;
 
-    @Getter
-    @Setter
-    private MetaStorage metaStorage;
+
 
     private final NamespaceHandler<N> namespaceHandler;
 
@@ -61,10 +59,11 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
 	public N createNamespace(Dataset dataset, Validator validator, MetaStorage metaStorage, MetricRegistry metricRegistry) throws IOException {
         // Prepare empty storage
-        NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+        NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
-        datasetStorage.openStores(persistenceMapper, metricRegistry);
+        // Each store injects its own IdResolveCtx so each needs its own mapper
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper, metricRegistry)));
         dataset.setNsIdResolver(datasetStorage);
         datasetStorage.updateDataset(dataset);
         EntityIdMap idMapping = new EntityIdMap();

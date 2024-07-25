@@ -3,6 +3,11 @@ package com.bakdata.conquery.util.support;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;

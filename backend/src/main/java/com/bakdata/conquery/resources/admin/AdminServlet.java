@@ -69,7 +69,7 @@ public class AdminServlet {
 		adminProcessor = new AdminProcessor(
 				manager,
 				manager.getConfig(),
-				manager.getStorage(),
+				manager.getMetaStorage(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
@@ -82,6 +82,7 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
+				manager.getMetaStorage(),
 				manager.getJobManager(),
 				manager.getImportHandler(),
 				manager.getStorageListener(),
@@ -92,7 +93,7 @@ public class AdminServlet {
 						@Override
 						protected void configure() {
 							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							bind(manager.getStorage()).to(MetaStorage.class);
+							bind(manager.getMetaStorage()).to(MetaStorage.class);
 							bind(manager.getValidator()).to(Validator.class);
 							bind(manager.getJobManager()).to(JobManager.class);
 							bind(manager.getConfig()).to(ConqueryConfig.class);
@@ -116,7 +117,7 @@ public class AdminServlet {
 							  bind(adminProcessor).to(AdminProcessor.class);
 							  bindAsContract(UIProcessor.class);
 							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							  bind(manager.getStorage()).to(MetaStorage.class);
+							  bind(manager.getMetaStorage()).to(MetaStorage.class);
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })

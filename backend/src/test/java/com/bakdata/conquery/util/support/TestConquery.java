@@ -1,5 +1,19 @@
 package com.bakdata.conquery.util.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -158,7 +172,7 @@ public class TestConquery {
 			}
 			openSupports.clear();
 		}
-		this.getStandaloneCommand().getManagerNode().getStorage().clear();
+		this.getStandaloneCommand().getManagerNode().getMetaStorage().clear();
 		waitUntilWorkDone();
 	}
 
@@ -203,7 +217,7 @@ public class TestConquery {
 		// Because Shiro works with a static Security manager
 		getStandaloneCommand().getManagerNode().getAuthController().registerStaticSecurityManager();
 
-		final MetaStorage storage = standaloneCommand.getManagerNode().getStorage();
+		final MetaStorage storage = standaloneCommand.getManagerNode().getMetaStorage();
 		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
 		storage.updateUser(testUser);
 
@@ -274,7 +288,7 @@ public class TestConquery {
 		boolean busy;
 		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
 		busy |= standaloneCommand.getManagerNode()
-								 .getStorage()
+				.getMetaStorage()
 								 .getAllExecutions()
 								 .map(ManagedExecution::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);

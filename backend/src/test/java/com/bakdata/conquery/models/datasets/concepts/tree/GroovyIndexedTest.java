@@ -21,9 +21,12 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -89,15 +92,13 @@ public class GroovyIndexedTest {
 		storage.addTable(table);
 
 		// Prepare Serdes injections
-		final Validator validator = Validators.newValidator();
-		final ObjectReader conceptReader = new Injectable(){
-			@Override
-			public MutableInjectableValues inject(MutableInjectableValues values) {
-				return values.add(Validator.class, validator);
-			}
-		}.injectInto(mapper).readerFor(Concept.class);
+		ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		((Injectable) values -> values.add(Validator.class, Validators.newValidator())).injectInto(mapper);
+		new SingletonNamespaceCollection(registry).injectInto(mapper);
+		dataset.injectInto(mapper);
+		final ObjectReader conceptReader = mapper.readerFor(Concept.class);
 
-		// load tree twice to to avoid references
+		// load tree twice to avoid references
 		indexedConcept = conceptReader.readValue(node);
 
 		indexedConcept.setDataset(dataset.getId());

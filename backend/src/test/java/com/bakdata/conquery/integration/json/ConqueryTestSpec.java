@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -100,15 +99,14 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedType, null, usePlaceholderResolvers);
 	}
 
-	public static <T> T parseSubTree(
-			TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation,
-			boolean usePlaceholderResolvers
-	) throws IOException {
-		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
-
-		support.getConfig().injectInto(mapper);
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException {
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		support.getDataset().injectInto(mapper);
+		support.getNamespace().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
+		support.getConfig().injectInto(mapper);
+		mapper.addHandler(new DatasetPlaceHolderFiller(support));
+
 		if (usePlaceholderResolvers) {
 			PlaceHolderNsIdResolver.INSTANCE.injectInto(mapper);
 			PlaceholderMetaStorage.INSTANCE.injectInto(mapper);
@@ -117,7 +115,6 @@ public abstract class ConqueryTestSpec {
 			support.getMetaStorage().injectInto(mapper);
 			support.getNamespace().getStorage().injectInto(mapper);
 		}
-
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {
@@ -130,11 +127,14 @@ public abstract class ConqueryTestSpec {
 
 	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
 			throws IOException {
-		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		support.getDataset().injectInto(mapper);
+		support.getNamespace().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
+		support.getConfig().injectInto(mapper);
+		mapper.addHandler(new DatasetPlaceHolderFiller(support));
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
-		support.getNamespace().getDataset().injectInto(mapper);
 		PlaceHolderNsIdResolver.INSTANCE.injectInto(mapper);
 		PlaceholderMetaStorage.INSTANCE.injectInto(mapper);
 

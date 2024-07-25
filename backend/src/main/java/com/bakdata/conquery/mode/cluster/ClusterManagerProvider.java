@@ -20,6 +20,8 @@ public class ClusterManagerProvider implements ManagerProvider {
 
 	public ClusterManager provideManager(ConqueryConfig config, Environment environment) {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
+		final MetaStorage storage = new MetaStorage(config.getStorage());
+		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, storage, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config);
 		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
@@ -36,7 +38,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 
 		final DelegateManager<DistributedNamespace>
 				delegate =
-				new DelegateManager<>(config, environment, datasetRegistry, metaStorage, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
+				new DelegateManager<>(config, environment, datasetRegistry, storage, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
 
 		environment.healthChecks().register("cluster", new ClusterHealthCheck(clusterState));
 

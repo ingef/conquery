@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,7 +38,7 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected Store<String, Integer> entity2Bucket;
 
-	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
