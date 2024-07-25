@@ -59,7 +59,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		// we will do a union distinct on all Connector tables
 		List<? extends Connector> connectors;
-		if (only1ConnectorSelected(selectContext.getTables())) {
+		if (isSingleConnector(selectContext.getTables())) {
 			// we union the Connector table with itself if there is only 1 Connector
 			Connector connector = selectContext.getTables().getConnectorTables().get(0).getConnector();
 			connectors = List.of(connector, connector);
@@ -96,7 +96,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 								.build();
 	}
 
-	private static boolean only1ConnectorSelected(ConceptSqlTables tables) {
+	private static boolean isSingleConnector(ConceptSqlTables tables) {
 		return tables.getConnectorTables().size() == 1;
 	}
 
