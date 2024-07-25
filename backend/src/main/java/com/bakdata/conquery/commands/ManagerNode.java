@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
- * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
+ * Central node of Conquery. Hosts the frontend, api, metadata and takes care of query distribution to
  * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
  * forward queries or results to statistic backends. Finally, it collects the results of queries for access over the api.
  */
