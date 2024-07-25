@@ -87,7 +87,7 @@ public class IndexService implements Injectable {
 				}
 			}
 			catch (IOException ioException) {
-				log.warn("Failed to open `{}`", key.getCsv(), ioException);
+				log.warn("Failed to open `{}`: {} (enable TRACE for exception)", key.getCsv(), ioException, (Exception) (log.isTraceEnabled() ? ioException : null));
 				throw ioException;
 			}
 

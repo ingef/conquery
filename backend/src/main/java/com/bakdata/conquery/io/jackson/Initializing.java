@@ -20,7 +20,8 @@ public interface Initializing<T extends Initializing<T>> {
 
 		@Override
 		public T convert(T value) {
-			return value.init();
+			value.init();
+			return value;
 		}
 	}
 }
