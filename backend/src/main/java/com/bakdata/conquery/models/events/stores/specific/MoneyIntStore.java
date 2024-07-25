@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
@@ -60,5 +61,9 @@ public class MoneyIntStore implements MoneyStore {
 	@Override
 	public final boolean has(int event) {
 		return numberType.has(event);
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 }

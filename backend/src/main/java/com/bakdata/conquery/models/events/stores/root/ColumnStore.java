@@ -31,9 +31,7 @@ public interface ColumnStore {
 	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
 	 */
 	@JsonBackReference
-	default void setParent(Bucket bucket) {
-
-	}
+	void setParent(Bucket bucket);
 
 
 	/**
@@ -91,13 +89,6 @@ public interface ColumnStore {
 	 */
 	@JsonIgnore
 	int getLines();
-
-	/**
-	 * Bytes required to store auxilary data.
-	 */
-	default long estimateTypeSizeBytes() {
-		return 0;
-	}
 
 	/**
 	 * Create an empty store that's only a description of the transformation.
