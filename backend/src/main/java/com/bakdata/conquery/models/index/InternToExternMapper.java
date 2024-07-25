@@ -12,6 +12,8 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	boolean initialized();
 
+	InternToExternMapper init();
+
 	String external(String internalValue);
 
 	@Override

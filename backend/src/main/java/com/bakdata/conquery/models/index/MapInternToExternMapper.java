@@ -114,6 +114,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		if(!initialized()){
 			return internalValue;
 		}
+
 		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
 			return internalValue;
 		}

@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
-
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.Valid;
 import lombok.Getter;
 
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
@@ -66,6 +65,12 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return ResultType.resolveResultType(getColumn().getType());
 		}
 		return new ResultType.StringT(mapper);
+	}
+
+	public void loadMapping() {
+		if (mapping != null) {
+			mapping.init();
+		}
 	}
 
 	private String applyMapping(Object intern) {
