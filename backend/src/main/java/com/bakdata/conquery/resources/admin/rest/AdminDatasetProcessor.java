@@ -11,6 +11,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -50,6 +51,7 @@ public class AdminDatasetProcessor {
 	private final ConqueryConfig config;
 	private final Validator validator;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
+	private final MetaStorage metaStorage;
 	private final JobManager jobManager;
 	private final ImportHandler importHandler;
 	private final StorageListener storageListener;
@@ -65,7 +67,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset).getDataset();
+		return datasetRegistry.createNamespace(dataset, metaStorage).getDataset();
 	}
 
 	/**

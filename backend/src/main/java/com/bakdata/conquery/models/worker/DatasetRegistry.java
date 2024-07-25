@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -29,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,30 +46,27 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 	private final InternalObjectMapperCreator internalObjectMapperCreator;
 
-	@Getter
-	@Setter
-	private MetaStorage metaStorage;
-
 	private final NamespaceHandler<N> namespaceHandler;
 
 	private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset) throws IOException {
+	public N createNamespace(Dataset dataset, MetaStorage metaStorage) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
-		datasetStorage.openStores(persistenceMapper);
+		// Each store injects its own IdResolveCtx so each needs its own mapper
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
 		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 		datasetStorage.setPreviewConfig(new PreviewConfig());
 		datasetStorage.close();
 
-		return createNamespace(datasetStorage);
+		return createNamespace(datasetStorage, metaStorage);
 	}
 
-	public N createNamespace(NamespaceStorage datasetStorage) {
+	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage) {
 		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
 		add(namespace);
 		return namespace;
@@ -87,7 +84,6 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		N removed = datasets.remove(id);
 
 		if (removed != null) {
-			metaStorage.getCentralRegistry().remove(removed.getDataset());
 			namespaceHandler.removeNamespace(id, removed);
 			removed.remove();
 		}
@@ -101,12 +97,6 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return metaStorage.getCentralRegistry();
-	}
-
 
 	public List<Dataset> getAllDatasets() {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());

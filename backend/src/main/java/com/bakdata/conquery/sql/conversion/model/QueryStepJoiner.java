@@ -108,7 +108,8 @@ public class QueryStepJoiner {
 
 			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
 
-			joinedQuery = joinType.join(joinedQuery, rightPartQS, joinConditions);
+			Table<Record> rightPartTable = DSL.table(DSL.name(rightPartQS.getCteName()));
+			joinedQuery = joinType.join(joinedQuery, rightPartTable, joinConditions);
 		}
 
 		return joinedQuery;
@@ -170,11 +171,7 @@ public class QueryStepJoiner {
 
 	@FunctionalInterface
 	private interface JoinType {
-		TableOnConditionStep<Record> join(
-				Table<Record> leftPartQueryBase,
-				QueryStep rightPartQS,
-				List<Condition> joinConditions
-		);
+		TableOnConditionStep<Record> join(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions);
 	}
 
 }

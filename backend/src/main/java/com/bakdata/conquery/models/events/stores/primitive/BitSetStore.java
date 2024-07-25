@@ -6,6 +6,7 @@ import java.util.BitSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.BitSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -81,6 +82,9 @@ public class BitSetStore implements BooleanStore {
 		return new BitSetStore(out, outNulls, length);
 	}
 
+	public void setParent(Bucket bucket) {
+		// not used
+	}
 
 	@Override
 	public boolean has(int event) {
