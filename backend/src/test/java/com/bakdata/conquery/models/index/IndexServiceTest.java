@@ -94,6 +94,8 @@ public class IndexServiceTest {
 
 		// Wait for future
 		mapper.getInt2ext().get();
+		mapperUrlAbsolute.getInt2ext().get();
+		mapperUrlRelative.getInt2ext().get();
 
 		assertThat(mapper.external("int1")).as("Internal Value").isEqualTo("hello");
 		assertThat(mapper.external("int2")).as("Internal Value").isEqualTo("int2");
@@ -160,7 +162,7 @@ public class IndexServiceTest {
 	}
 
 	@Test
-	void testFailedLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, ExecutionException, InterruptedException {
+	void testFailedLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
 		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/not_existing_mapping.csv"),

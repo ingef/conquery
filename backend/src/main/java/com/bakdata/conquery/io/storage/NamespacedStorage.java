@@ -57,6 +57,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements Injec
 	public void openStores(ObjectMapper objectMapper) {
 		// Before we start to parse the stores we need to replace the injected value for the IdResolveContext (from DatasetRegistry to this centralRegistry)
 		new SingletonNamespaceCollection(centralRegistry).injectInto(objectMapper);
+		this.injectInto(objectMapper);
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);

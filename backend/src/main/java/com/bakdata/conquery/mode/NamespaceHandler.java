@@ -33,6 +33,7 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
+		injectables.add(storage);
 
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
