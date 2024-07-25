@@ -3,17 +3,14 @@ package com.bakdata.conquery.integration.json;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.function.Consumer;
+
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -56,17 +53,7 @@ public abstract class ConqueryTestSpec {
 	SqlSpec sqlSpec;
 
 	// default IdColumnConfig for SQL mode
-	private IdColumnConfig idColumns = new IdColumnConfig(
-			"entities",
-			List.of(
-					ColumnConfig.builder()
-								.name("ID")
-								.field("pid")
-								.primaryId(true)
-								.label(Map.of(Locale.ROOT, "result"))
-								.build()
-			)
-	);
+	private IdColumnConfig idColumns = null;
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
