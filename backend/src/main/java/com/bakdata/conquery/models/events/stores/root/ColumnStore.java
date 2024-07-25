@@ -106,6 +106,7 @@ public interface ColumnStore {
 	 */
 	<T extends ColumnStore> T select(int[] starts, int[] lengths);
 
+	@JsonIgnore
 	void setNull(int event);
 
 
