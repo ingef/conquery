@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class NameGenerator {
 		return ensureValidLength(cteStep.cteName(nodeLabel));
 	}
 
-	public String selectName(Labeled<?> selectOrFilter) {
+	public String selectName(Named<?> selectOrFilter) {
 		int selectCount = this.selectCountMap.merge(selectOrFilter.getName(), 1, Integer::sum);
 		String name = lowerAndReplaceWhitespace(selectOrFilter.getName());
 		return ensureValidLength("%s-%d".formatted(name, selectCount));
@@ -57,10 +58,17 @@ public class NameGenerator {
 		return ensureValidLength("concept_%s-%d".formatted(conceptLabel, ++conceptCount));
 	}
 
-	public String joinedNodeName(LogicalOperation logicalOperation) {
+	public String conceptConnectorName(CQConcept concept, Connector connector) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(Locale.ENGLISH));
+		String connectorLabel = lowerAndReplaceWhitespace(connector.getName());
+		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
+	}
+
+	public String joinedNodeName(ConqueryJoinType logicalOperation) {
 		return switch (logicalOperation) {
-			case AND -> "AND-%d".formatted(++andCount);
-			case OR -> "OR-%d".formatted(++orCount);
+			case INNER_JOIN -> "AND-%d".formatted(++andCount);
+			case OUTER_JOIN -> "OR-%d".formatted(++orCount);
+			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
 		};
 	}
 

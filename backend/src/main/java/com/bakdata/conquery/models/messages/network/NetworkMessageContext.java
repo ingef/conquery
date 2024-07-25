@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.messages.network;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;

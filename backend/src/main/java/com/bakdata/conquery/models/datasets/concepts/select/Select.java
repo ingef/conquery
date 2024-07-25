@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
 import java.util.List;
-import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -18,9 +17,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,14 +54,16 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	/**
 	 * When set, the Frontend will preselect the Select for the User.
 	 */
-	@Setter @Getter @JsonProperty("default")
+	@Setter
+	@Getter
+	@JsonProperty("default")
 	private boolean isDefault = false;
 
 	@JsonIgnore
 	public abstract List<Column> getRequiredColumns();
 
-	@JsonIgnore @Getter(lazy=true)
-	private final ResultType resultType = createAggregator().getResultType();
+	@JsonIgnore
+	public abstract ResultType<?> getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -102,7 +101,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public boolean isForConnectorsTable() {
 		boolean valid = true;
 
-		if(holder instanceof Concept){
+		if (holder instanceof Concept) {
 			return getRequiredColumns().isEmpty();
 		}
 
@@ -114,7 +113,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
+																																				   .getId());
 
 			valid = false;
 		}
@@ -123,13 +123,13 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	@JsonIgnore
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
+	public <S extends Select> SelectConverter<S> createConverter() {
+		throw new UnsupportedOperationException("No converter implemented for Select %s".formatted(getClass()));
 	}
 
 	@JsonIgnore
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		return ConceptCteStep.MANDATORY_STEPS;
+	public boolean isEventDateSelect() {
+		return false;
 	}
 
 }

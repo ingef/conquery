@@ -3,14 +3,14 @@ package com.bakdata.conquery.models.auth.basic;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.auth.PasswordHashCredential;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
@@ -19,7 +19,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
-import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
+import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
@@ -28,16 +28,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MoreCollectors;
+import com.password4j.HashingFunction;
+import com.password4j.Password;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.CredentialsException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.util.Destroyable;
 
@@ -57,7 +61,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
-	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
+	// Get the path for the storage here, so it is set as soon the first class is instantiated (in the ManagerNode)
 	// In the DistributedStandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
 	private final File storageDir;
 
@@ -67,7 +71,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	@JsonIgnore
 	private Environment passwordEnvironment;
 	@JsonIgnore
-	private Store<UserId, PasswordHasher.HashedEntry> passwordStore;
+	private Store<UserId, HashEntry> passwordStore;
 
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
@@ -75,11 +79,14 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	private final Validator validator;
 	private final ObjectMapper mapper;
 
+	private final HashingFunction defaultHashingFunction;
+
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction) {
 		this.validator = validator;
 		this.mapper = mapper;
+		this.defaultHashingFunction = defaultHashingFunction;
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storeName = storeName;
 		this.storageDir = storageDir;
@@ -106,7 +113,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						validator,
 						mapper,
 						UserId.class,
-						PasswordHasher.HashedEntry.class,
+						HashEntry.class,
 						false,
 						true,
 						null, Executors.newSingleThreadExecutor()
@@ -126,66 +133,78 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	//////////////////// FOR USERNAME/PASSWORD
 
-	public String createAccessToken(String username, char[] password) {
-		// Check the password which is afterwards cleared
-		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
-			throw new AuthenticationException("Provided username or password was not valid.");
+	public String createAccessToken(String username, String password) {
+		if (username.isEmpty()) {
+			throw new IncorrectCredentialsException("Username was empty");
 		}
-		// The username is in this case the email
-		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
+		if (password.isEmpty()) {
+			throw new IncorrectCredentialsException("Password was empty");
+		}
+		final UserId userId = new UserId(username);
+		HashEntry hashedEntry = passwordStore.get(userId);
+		if (hashedEntry == null) {
+			throw new CredentialsException("No password hash was found for user: " + username);
+		}
+
+		final String hash = hashedEntry.getHash();
+		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
+			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
+		}
+
+		return centralTokenRealm.createTokenForUser(userId, validDuration);
 	}
 
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
 	 */
-	private static HashedEntry passwordToHashedEntry(PasswordCredential credential) {
-		return PasswordHasher.generateHashedEntry(credential.getPassword());
-	}
+	private HashEntry toHashEntry(CredentialType credential) {
 
-	/**
-	 * Checks the provided credentials for the realm-compatible
-	 * {@link PasswordCredential}. However only one credential of this type is
-	 * allowed to be provided.
-	 *
-	 * @param credentials
-	 *            A list of possible credentials.
-	 * @return The password credential.
-	 */
-	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
-		if(credentials == null) {
-			return Optional.empty();
+
+		if (credential instanceof PasswordCredential passwordCredential) {
+			return new HashEntry(Password.hash(passwordCredential.password())
+										 .with(defaultHashingFunction)
+										 .getResult());
 		}
-		return credentials.stream()
-			.filter(PasswordCredential.class::isInstance)
-			.map(PasswordCredential.class::cast)
-			.collect(MoreCollectors.toOptional());
+		else if (credential instanceof PasswordHashCredential passwordHashCredential) {
+			return new HashEntry(passwordHashCredential.hash());
+		}
+
+		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());
 	}
 
 	//////////////////// USER MANAGEMENT ////////////////////
 
 	@Override
-	public boolean addUser(User user, List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (optPassword.isEmpty()) {
-			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
-			return false;
+	public boolean addUser(@NonNull User user, @NonNull CredentialType credential) {
+
+		try {
+			final HashEntry hashEntry = toHashEntry(credential);
+			passwordStore.add(user.getId(), hashEntry);
+			return true;
 		}
-		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
-		passwordStore.add(user.getId(), passwordByteIt);
-		return true;
+		catch (IllegalArgumentException e) {
+			log.warn("Unable to add user '{}'", user.getId(), e);
+		}
+		return false;
 	}
 
 	@Override
-	public boolean updateUser(User user, List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (optPassword.isEmpty()) {
-			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
+	public boolean updateUser(User user, CredentialType credential) {
+
+		if (credential == null) {
+			log.warn("Skipping user '{}' because no credential was provided", user.getId());
 			return false;
 		}
-		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
 
-		passwordStore.update(user.getId(), passwordByteIt);
-		return true;
+		try {
+			final HashEntry hashEntry = toHashEntry(credential);
+			passwordStore.update(user.getId(), hashEntry);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			log.warn("Unable to update user '{}'", user.getId(), e);
+		}
+		return false;
 
 	}
 

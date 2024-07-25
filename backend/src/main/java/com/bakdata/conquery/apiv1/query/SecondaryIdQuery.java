@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.CheckForNull;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -26,12 +23,14 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +65,9 @@ public class SecondaryIdQuery extends Query {
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
+		final ConceptQueryPlan queryPlan = query.createQueryPlan(context.withSelectedSecondaryId(secondaryId));
 
-		return new SecondaryIdQueryPlan(query, context, secondaryId, withSecondaryId, withoutSecondaryId, query.createQueryPlan(context.withSelectedSecondaryId(secondaryId)));
+		return new SecondaryIdQueryPlan(query, context, secondaryId, withSecondaryId, withoutSecondaryId, queryPlan, context.getSecondaryIdSubPlanRetention());
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class SecondaryIdQuery extends Query {
 
 			for (CQTable connector : concept.getTables()) {
 				final Table table = connector.getConnector().getTable();
-				final Column secondaryIdColumn = findSecondaryIdColumn(table);
+				final Column secondaryIdColumn = table.findSecondaryIdColumn(secondaryId);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryId()) {
 					withSecondaryId.add(secondaryIdColumn);
@@ -123,23 +123,6 @@ public class SecondaryIdQuery extends Query {
 		if (withSecondaryId.isEmpty()) {
 			throw new ConqueryError.NoSecondaryIdSelectedError();
 		}
-	}
-
-	/**
-	 * selects the right column for the given secondaryId from a table
-	 */
-	@CheckForNull
-	private Column findSecondaryIdColumn(Table table) {
-
-		for (Column col : table.getColumns()) {
-			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
-				continue;
-			}
-
-			return col;
-		}
-
-		return null;
 	}
 
 	@Override

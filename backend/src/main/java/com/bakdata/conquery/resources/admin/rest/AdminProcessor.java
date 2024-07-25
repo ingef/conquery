@@ -12,8 +12,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.validation.Validator;
-
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -38,6 +37,7 @@ import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +53,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 @RequiredArgsConstructor
 public class AdminProcessor {
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -294,6 +295,7 @@ public class AdminProcessor {
 		final CompilerConfiguration config = new CompilerConfiguration();
 		final GroovyShell groovy = new GroovyShell(config);
 
+		groovy.setProperty("managerNode", getManagerNode());
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
 		groovy.setProperty("config", getConfig());

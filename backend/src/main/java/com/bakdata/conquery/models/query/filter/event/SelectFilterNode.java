@@ -1,14 +1,13 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Objects;
 import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,7 +21,6 @@ import org.apache.logging.log4j.util.Strings;
 public class SelectFilterNode extends EventFilterNode<String> {
 
 	private final boolean empty;
-	private int selectedId = -1;
 	@NotNull
 	@Getter
 	@Setter
@@ -38,7 +36,6 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		// You can skip the block if the id is -1
-		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
 	}
 
 	@Override
@@ -49,19 +46,17 @@ public class SelectFilterNode extends EventFilterNode<String> {
 			return true;
 		}
 
-		if (selectedId == -1 || !has) {
-			return false;
-		}
 
-		final int value = bucket.getString(event, getColumn());
+		final String value = bucket.getString(event, getColumn());
 
-		return value == selectedId;
+		return Objects.equals(value, filterValue);
 	}
 
-	@Override
-	public boolean isOfInterest(Bucket bucket) {
-		return empty || ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
-	}
+	//TODO
+//	@Override
+//	public boolean isOfInterest(Bucket bucket) {
+//		return empty || ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
+//	}
 
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {

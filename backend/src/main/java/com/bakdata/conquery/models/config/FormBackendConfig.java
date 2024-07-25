@@ -6,24 +6,22 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.ws.rs.client.Client;
-
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
+import com.bakdata.conquery.apiv1.frontend.VersionContainer;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
 import com.bakdata.conquery.io.external.form.ExternalFormMixin;
+import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
 import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProvider;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigInformation;
+import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,6 +29,11 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableCollection;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.client.Client;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,11 +68,13 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	@NotEmpty
 	private String healthCheckPath = "health";
 
+	@NotEmpty
+	private String versionPath = "version";
+
 	@NotNull
 	private URL conqueryApiUrl;
 
 	@Valid
-	@NotNull
 	private AuthenticationClientFilterProvider authentication;
 
 	@JsonIgnore
@@ -97,7 +102,32 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		managerNode.getEnvironment().healthChecks().register(getId(), externalApi.createHealthCheck());
 
 		// Register form configuration provider
-		managerNode.getFormScanner().registerFrontendFormConfigProvider(this::registerFormConfigs);
+		log.info("Registering frontend form config provider for '{}'", getId());
+		managerNode.getFormScanner().registerFrontendFormConfigProvider(new FormConfigProvider(getId(), this::registerFormConfigs));
+	}
+
+	/**
+	 * Retrieves the version information from the form backend and writes it to the {@link VersionInfo}
+	 */
+	private void updateVersion(ExternalFormBackendApi externalApi) {
+
+		try {
+			final FormBackendVersion versionInfo = externalApi.getVersion();
+			final VersionContainer
+					oldVersion =
+					VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
+			if (!versionInfo.version().equals(oldVersion.version())) {
+				log.info("Form Backend '{}' versionInfo update: {} -> {}", getId(), oldVersion, versionInfo);
+			}
+		}
+		catch (Exception e) {
+			log.warn("Unable to retrieve version from form backend '{}'. Enable trace logging for more info", getId(), (Exception) (log.isTraceEnabled()
+																																	? e
+																																	: null));
+
+			VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), null, null));
+		}
+
 	}
 
 
@@ -106,7 +136,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	}
 
 	public ExternalFormBackendApi createApi() {
-		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath,  healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
+		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath, healthCheckPath, versionPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
 	}
 
 	public boolean supportsFormType(String formType) {
@@ -123,7 +153,8 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	private void registerFormConfigs(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigs) {
 		final Set<String> supportedFormTypes = new HashSet<>();
 
-		for (ObjectNode formConfig : createApi().getFormConfigs()) {
+		final ExternalFormBackendApi api = createApi();
+		for (ObjectNode formConfig : api.getFormConfigs()) {
 			final String subType = formConfig.get("type").asText();
 			final String formType = createSubTypedId(subType);
 
@@ -136,6 +167,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		}
 
 		this.supportedFormTypes = supportedFormTypes;
+
+		// Update version
+		updateVersion(createApi());
 	}
 
 	/**

@@ -4,28 +4,22 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 
-public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
-
-	private boolean hit = false;
+public abstract non-sealed class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	public EventFilterNode(FILTER_VALUE filterValue) {
 		super(filterValue);
 	}
 
+	//TODO rename to acceptEvent?
 	public abstract boolean checkEvent(Bucket bucket, int event);
 
 	@Override
-	public final void acceptEvent(Bucket bucket, int event) {
-		hit = true;
-	}
-
-	public final boolean isContained() {
-		return hit;
+	public final boolean acceptEvent(Bucket bucket, int event) {
+		throw new IllegalStateException("May not be called.");
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
-		hit = false;
 	}
 
 

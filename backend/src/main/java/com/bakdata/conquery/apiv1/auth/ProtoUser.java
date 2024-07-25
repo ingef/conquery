@@ -1,36 +1,37 @@
 package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory class to create configured initial users.
-
  */
 @Getter
 @Builder
+@Slf4j
 public class ProtoUser {
 
-	private String label;
 	@NotEmpty
 	private final String name;
-
+	private final Set<String> roles;
+	private String label;
 	/**
 	 * String permissions in the form of
 	 * {@link org.apache.shiro.authz.permission.WildcardPermission}, that the user
@@ -45,19 +46,36 @@ public class ProtoUser {
 	 * {@link UserManageable}, such as {@link LocalAuthenticationRealm}).
 	 */
 	@Builder.Default
-	@NotNull
 	@Valid
-	private List<CredentialType> credentials = Collections.emptyList();
+	private CredentialType credential = null;
 
 	public User createOrOverwriteUser(@NonNull MetaStorage storage) {
 		if (label == null) {
 			label = name;
 		}
-		User user = new User(name, label, storage);
+
+		final User user = new User(name, label, storage);
 		storage.updateUser(user);
+
+		if (roles != null){
+			for (String roleId : roles) {
+				final Role role = storage.getRole(new RoleId(roleId));
+
+				if(role == null){
+					log.warn("Unknown Role[{}] for {}", roleId, this);
+					continue;
+				}
+
+				user.addRole(role);
+			}
+		}
+
+
 		for (String sPermission : permissions) {
 			user.addPermission(new WildcardPermission(sPermission));
 		}
+
+
 		return user;
 	}
 

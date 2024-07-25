@@ -4,21 +4,22 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.client.Client;
-
-import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.ws.rs.client.Client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,17 +46,17 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	private transient AuthzClient authClient;
 
-	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
 
 		// Register task to retrieve the idp client api, so the realm can be used, when the idp service is available.
-		if (managerNode.getEnvironment().admin() != null) {
-			managerNode.getEnvironment().admin().addTask(new Task("keycloak-update-authz-client") {
+		if (environment.admin() != null) {
+			environment.admin().addTask(new Task("keycloak-update-authz-client") {
 
 				@Override
 				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
@@ -66,10 +67,10 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 		}
 
 		// Setup keycloak api
-		final Client client = new JerseyClientBuilder(managerNode.getEnvironment()).build("keycloak-api");
+		final Client client = new JerseyClientBuilder(environment).build("keycloak-api");
 		final KeycloakApi keycloakApi = new KeycloakApi(this, client);
 
-		return new IntrospectionDelegatingRealm(managerNode.getStorage(), this, keycloakApi);
+		return new IntrospectionDelegatingRealm(authorizationController.getStorage(), this, keycloakApi);
 	}
 
 

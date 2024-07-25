@@ -12,6 +12,7 @@ import { saveAs } from "file-saver";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import tw from "tailwind-styled-components";
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -30,46 +31,17 @@ const Row = styled("div")`
   margin-bottom: 15px;
 `;
 
-const Grow = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const HorizontalScrollContainer = styled("div")`
-  overflow-x: auto;
-  width: 100%;
-`;
-const Table = styled("table")`
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  text-align: left;
-  width: 100%;
-  padding: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-  table-layout: fixed;
-`;
-
-const Td = styled("td")`
-  font-size: ${({ theme }) => theme.font.xs};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 150px;
+const Td = tw("td")`
+  text-xs
+  text-ellipsis
+  overflow-hidden
+  whitespace-nowrap
+  min-w-[150px]
 `;
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
   vertical-align: top;
   width: 150px;
-`;
-
-const FileName = styled("code")`
-  display: block;
-  margin: 0 15px 0 0;
-`;
-
-const BoldFileName = styled(FileName)`
-  margin-bottom: 3px;
-  font-weight: 700;
 `;
 
 const Padded = styled("span")`
@@ -276,15 +248,15 @@ const CSVColumnPicker: FC<PropsT> = ({
   return (
     <div>
       <Row>
-        <Grow>
-          <div>
-            <BoldFileName>{file.name}</BoldFileName>
-            <FileName>{csv.length} Zeilen</FileName>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col text-sm">
+            <code className="font-bold">{file.name}</code>
+            <code>{csv.length} Zeilen</code>
           </div>
           <WithTooltip text={t("common.clear")}>
             <IconButton frame icon={faTrash} onClick={onReset} />
           </WithTooltip>
-        </Grow>
+        </div>
         {csv.length > 0 && (
           <SxInputSelect
             label={t("csvColumnPicker.delimiter")}
@@ -299,66 +271,68 @@ const CSVColumnPicker: FC<PropsT> = ({
           />
         )}
       </Row>
-      <HorizontalScrollContainer>
-        <Table>
-          <thead>
-            {csvLoading && (
-              <tr>
-                <th>{t("csvColumnPicker.loading")}</th>
-              </tr>
-            )}
-            {csv.length > 0 &&
-              csv.slice(0, 1).map((row, j) => (
-                <tr key={j}>
-                  {row.map((cell, i) => (
-                    <Th key={cell + i}>
-                      <InputSelect
-                        smallMenu
-                        options={SELECT_OPTIONS}
-                        value={
-                          SELECT_OPTIONS.find(
-                            (o) => o.value === csvHeader[i],
-                          ) || SELECT_OPTIONS[0]
-                        }
-                        onChange={(value) => {
-                          if (value) {
-                            setCSVHeader([
-                              ...csvHeader.slice(0, i),
-                              value.value as UploadColumnType,
-                              ...csvHeader.slice(i + 1),
-                            ]);
-                          }
-                        }}
-                      />
-                      <SxPadded>{cell}</SxPadded>
-                    </Th>
-                  ))}
+      <div className="overflow-hidden rounded py-3 px-2 border w-full">
+        <div className="overflow-x-auto">
+          <table className="table-fixed [&_td]:px-1 [&_th]:px-1">
+            <thead>
+              {csvLoading && (
+                <tr>
+                  <th>{t("csvColumnPicker.loading")}</th>
                 </tr>
-              ))}
-          </thead>
-          <tbody>
-            {csv.length > 0 &&
-              csv.slice(1, 6).map((row, j) => (
-                <tr key={j}>
-                  {row.map((cell, i) => (
-                    <Td key={cell + i}>
-                      <Padded>{cell}</Padded>
+              )}
+              {csv.length > 0 &&
+                csv.slice(0, 1).map((row, j) => (
+                  <tr key={j}>
+                    {row.map((cell, i) => (
+                      <Th key={cell + i}>
+                        <InputSelect
+                          smallMenu
+                          options={SELECT_OPTIONS}
+                          value={
+                            SELECT_OPTIONS.find(
+                              (o) => o.value === csvHeader[i],
+                            ) || SELECT_OPTIONS[0]
+                          }
+                          onChange={(value) => {
+                            if (value) {
+                              setCSVHeader([
+                                ...csvHeader.slice(0, i),
+                                value.value as UploadColumnType,
+                                ...csvHeader.slice(i + 1),
+                              ]);
+                            }
+                          }}
+                        />
+                        <SxPadded>{cell}</SxPadded>
+                      </Th>
+                    ))}
+                  </tr>
+                ))}
+            </thead>
+            <tbody>
+              {csv.length > 0 &&
+                csv.slice(1, 6).map((row, j) => (
+                  <tr key={j}>
+                    {row.map((cell, i) => (
+                      <Td key={cell + i}>
+                        <Padded>{cell}</Padded>
+                      </Td>
+                    ))}
+                  </tr>
+                ))}
+              {csv.length > 6 && (
+                <tr>
+                  {new Array(csv[0].length).fill(null).map((_, j) => (
+                    <Td key={j}>
+                      <Padded>...</Padded>
                     </Td>
                   ))}
                 </tr>
-              ))}
-            {csv.length > 6 && (
-              <tr>
-                {new Array(csv[0].length).fill(null).map((_, j) => (
-                  <Td key={j}>
-                    <Padded>...</Padded>
-                  </Td>
-                ))}
-              </tr>
-            )}
-          </tbody>
-        </Table>
-      </HorizontalScrollContainer>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {uploadResult && (
         <PartialUploadResults>
           <Msg>

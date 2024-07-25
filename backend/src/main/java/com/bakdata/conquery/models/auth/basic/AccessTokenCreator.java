@@ -7,6 +7,6 @@ public interface AccessTokenCreator {
 	 *
 	 * @return A valid access token that authenticates the user that provided the credentials
 	 */
-	String createAccessToken(String username, char[] password);
+	String createAccessToken(String username, String password);
 
 }

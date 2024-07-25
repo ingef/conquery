@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,6 @@ import { useSelector } from "react-redux";
 
 import type {
   EntityInfo,
-  HistorySources,
   ResultUrlWithLabel,
   SelectOptionT,
   TimeStratifiedInfo,
@@ -25,10 +24,15 @@ import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
-import Timeline from "./Timeline";
+import { Timeline } from "./Timeline";
 import VisibilityControl from "./VisibilityControl";
 import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
+import SearchControl from "./timeline-search/SearchControl";
+import { TimelineSearchProvider } from "./timeline-search/timelineSearchState";
+import { useEntityStatus } from "./useEntityStatus";
+import { useOpenCloseInteraction } from "./useOpenCloseInteraction";
+import { useSourcesControl } from "./useSourcesControl";
 
 const FullScreen = styled("div")`
   position: fixed;
@@ -93,10 +97,6 @@ const Flex = styled("div")`
 const SxSourcesControl = styled(SourcesControl)`
   flex-shrink: 0;
   width: 450px;
-`;
-
-const SxTimeline = styled(Timeline)`
-  margin: 10px 0 0;
 `;
 
 export interface EntityIdsStatus {
@@ -179,277 +179,96 @@ export const History = () => {
     useOpenCloseInteraction();
 
   return (
-    <FullScreen>
-      <PanelGroup units="pixels" direction="horizontal">
-        <Panel minSize={400} defaultSize={400} maxSize={800}>
-          <SxNavigation
-            blurred={blurred}
-            entityIds={entityIds}
-            entityIdsStatus={entityIdsStatus}
-            currentEntityId={currentEntityId}
-            currentEntityIndex={currentEntityIndex}
-            entityStatusOptions={entityStatusOptions}
-            setEntityStatusOptions={setEntityStatusOptions}
-            onLoadFromFile={onLoadFromFile}
-            onResetHistory={onResetEntityStatus}
-          />
-        </Panel>
-        <ResizeHandle />
-        <Panel minSize={500}>
-          <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
-            <Main>
-              <Header>
-                <Controls>
-                  <SxSourcesControl
-                    options={options}
-                    sourcesFilter={sourcesFilter}
-                    setSourcesFilter={setSourcesFilter}
-                  />
-                </Controls>
-                {currentEntityId && (
-                  <EntityHeader
-                    blurred={blurred}
-                    currentEntityIndex={currentEntityIndex}
-                    currentEntityId={currentEntityId}
-                    status={currentEntityStatus}
-                    setStatus={setCurrentEntityStatus}
-                    entityStatusOptions={entityStatusOptions}
-                  />
-                )}
-              </Header>
-              <Flex>
-                <Sidebar>
-                  <VisibilityControl
-                    blurred={blurred}
-                    toggleBlurred={toggleBlurred}
-                  />
-                  {showAdvancedControls && (
-                    <DetailControl
-                      detailLevel={detailLevel}
-                      setDetailLevel={setDetailLevel}
+    <TimelineSearchProvider>
+      <FullScreen>
+        <PanelGroup units="pixels" direction="horizontal">
+          <Panel minSize={400} defaultSize={400} maxSize={800}>
+            <SxNavigation
+              blurred={blurred}
+              entityIds={entityIds}
+              entityIdsStatus={entityIdsStatus}
+              currentEntityId={currentEntityId}
+              currentEntityIndex={currentEntityIndex}
+              entityStatusOptions={entityStatusOptions}
+              setEntityStatusOptions={setEntityStatusOptions}
+              onLoadFromFile={onLoadFromFile}
+              onResetHistory={onResetEntityStatus}
+            />
+          </Panel>
+          <ResizeHandle />
+          <Panel minSize={500}>
+            <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
+              <Main>
+                <Header>
+                  <Controls>
+                    <SxSourcesControl
+                      options={options}
+                      sourcesFilter={sourcesFilter}
+                      setSourcesFilter={setSourcesFilter}
+                    />
+                  </Controls>
+                  {currentEntityId && (
+                    <EntityHeader
+                      blurred={blurred}
+                      currentEntityIndex={currentEntityIndex}
+                      currentEntityId={currentEntityId}
+                      status={currentEntityStatus}
+                      setStatus={setCurrentEntityStatus}
+                      entityStatusOptions={entityStatusOptions}
                     />
                   )}
-                  <InteractionControl
-                    onCloseAll={closeAll}
-                    onOpenAll={openAll}
-                  />
-                  <ContentControl
-                    value={contentFilter}
-                    onChange={setContentFilter}
-                  />
-                  <SidebarBottom>
-                    {resultUrls.length > 0 && (
-                      <DownloadResultsDropdownButton
-                        tiny
-                        resultUrls={resultUrls}
-                        tooltip={t("history.downloadEntityData")}
+                </Header>
+                <Flex>
+                  <Sidebar>
+                    <SearchControl />
+                    <VisibilityControl
+                      blurred={blurred}
+                      toggleBlurred={toggleBlurred}
+                    />
+                    {showAdvancedControls && (
+                      <DetailControl
+                        detailLevel={detailLevel}
+                        setDetailLevel={setDetailLevel}
                       />
                     )}
-                  </SidebarBottom>
-                </Sidebar>
-                <SxTimeline
-                  blurred={blurred}
-                  detailLevel={detailLevel}
-                  sources={sourcesSet}
-                  contentFilter={contentFilter}
-                  currentEntityInfos={currentEntityInfos}
-                  currentEntityTimeStratifiedInfos={
-                    currentEntityTimeStratifiedInfos
-                  }
-                  getIsOpen={getIsOpen}
-                  toggleOpenYear={toggleOpenYear}
-                  toggleOpenQuarter={toggleOpenQuarter}
-                />
-              </Flex>
-            </Main>
-          </ErrorBoundary>
-        </Panel>
-      </PanelGroup>
-    </FullScreen>
+                    <InteractionControl
+                      onCloseAll={closeAll}
+                      onOpenAll={openAll}
+                    />
+                    <ContentControl
+                      value={contentFilter}
+                      onChange={setContentFilter}
+                    />
+                    <SidebarBottom>
+                      {resultUrls.length > 0 && (
+                        <DownloadResultsDropdownButton
+                          tiny
+                          resultUrls={resultUrls}
+                          tooltip={t("history.downloadEntityData")}
+                        />
+                      )}
+                    </SidebarBottom>
+                  </Sidebar>
+                  <Timeline
+                    className="mt-[10px]"
+                    blurred={blurred}
+                    detailLevel={detailLevel}
+                    sources={sourcesSet}
+                    contentFilter={contentFilter}
+                    currentEntityInfos={currentEntityInfos}
+                    currentEntityTimeStratifiedInfos={
+                      currentEntityTimeStratifiedInfos
+                    }
+                    getIsOpen={getIsOpen}
+                    toggleOpenYear={toggleOpenYear}
+                    toggleOpenQuarter={toggleOpenQuarter}
+                  />
+                </Flex>
+              </Main>
+            </ErrorBoundary>
+          </Panel>
+        </PanelGroup>
+      </FullScreen>
+    </TimelineSearchProvider>
   );
-};
-
-export const useDefaultStatusOptions = () => {
-  const { t } = useTranslation();
-
-  return useMemo(
-    () => [
-      {
-        label: t("history.options.check"),
-        value: t("history.options.check") as string,
-      },
-      {
-        label: t("history.options.noCheck"),
-        value: t("history.options.noCheck") as string,
-      },
-    ],
-    [t],
-  );
-};
-
-const useEntityStatus = ({
-  currentEntityId,
-}: {
-  currentEntityId: string | null;
-}) => {
-  const defaultStatusOptions = useDefaultStatusOptions();
-  const [entityStatusOptions, setEntityStatusOptions] =
-    useState<SelectOptionT[]>(defaultStatusOptions);
-
-  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
-  const setCurrentEntityStatus = useCallback(
-    (value: SelectOptionT[]) => {
-      if (!currentEntityId) return;
-
-      setEntityIdsStatus((curr) => ({
-        ...curr,
-        [currentEntityId]: value,
-      }));
-    },
-    [currentEntityId],
-  );
-  const currentEntityStatus = useMemo(
-    () => (currentEntityId ? entityIdsStatus[currentEntityId] || [] : []),
-    [currentEntityId, entityIdsStatus],
-  );
-
-  return {
-    entityStatusOptions,
-    setEntityStatusOptions,
-    entityIdsStatus,
-    setEntityIdsStatus,
-    currentEntityStatus,
-    setCurrentEntityStatus,
-  };
-};
-
-const useSourcesControl = () => {
-  const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
-
-  const sources = useSelector<StateT, HistorySources>(
-    (state) => state.entityHistory.defaultParams.sources,
-  );
-  const allSourcesOptions = useMemo(
-    () =>
-      sources.all.map((s) => ({
-        label: s.label,
-        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
-      })),
-    [sources.all],
-  );
-  const defaultSourcesOptions = useMemo(
-    () =>
-      sources.default.map((s) => ({
-        label: s.label,
-        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
-      })),
-    [sources.default],
-  );
-
-  // TODO: Figure out whether we still need the current entity unique sources
-  //
-  // const currentEntityUniqueSources = useSelector<StateT, string[]>(
-  //   (state) => state.entityHistory.currentEntityUniqueSources,
-  // );
-  // const currentEntitySourcesOptions = useMemo(
-  //   () =>
-  //     currentEntityUniqueSources.map((s) => ({
-  //       label: s,
-  //       value: s,
-  //     })),
-  //   [currentEntityUniqueSources],
-  // );
-
-  const sourcesSet = useMemo(
-    () => new Set(sourcesFilter.map((o) => o.value as string)),
-    [sourcesFilter],
-  );
-
-  useEffect(
-    function takeDefaultIfEmpty() {
-      setSourcesFilter((curr) =>
-        curr.length === 0 ? defaultSourcesOptions : curr,
-      );
-    },
-    [defaultSourcesOptions],
-  );
-
-  return {
-    options: allSourcesOptions,
-    sourcesSet,
-    sourcesFilter,
-    setSourcesFilter,
-  };
-};
-
-const useOpenCloseInteraction = () => {
-  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
-  const isOpenRef = useRef(isOpen);
-  isOpenRef.current = isOpen;
-
-  const toId = useCallback(
-    (year: number, quarter?: number) => `${year}-${quarter}`,
-    [],
-  );
-
-  const getIsOpen = useCallback(
-    (year: number, quarter?: number) => {
-      if (quarter) {
-        return isOpen[toId(year, quarter)];
-      } else {
-        return [1, 2, 3, 4].every((q) => isOpen[toId(year, q)]);
-      }
-    },
-    [isOpen, toId],
-  );
-
-  const toggleOpenYear = useCallback(
-    (year: number) => {
-      const quarters = [1, 2, 3, 4].map((quarter) => toId(year, quarter));
-      const wasOpen = quarters.some((quarter) => isOpenRef.current[quarter]);
-
-      setIsOpen((prev) => ({
-        ...prev,
-        ...Object.fromEntries(quarters.map((quarter) => [quarter, !wasOpen])),
-      }));
-    },
-    [toId],
-  );
-
-  const toggleOpenQuarter = useCallback(
-    (year: number, quarter: number) => {
-      const id = toId(year, quarter);
-
-      setIsOpen((prev) => ({ ...prev, [id]: !prev[id] }));
-    },
-    [toId],
-  );
-
-  const closeAll = useCallback(() => {
-    setIsOpen({});
-  }, []);
-
-  const openAll = useCallback(() => {
-    const lastYearsToUse = 20;
-    const currYear = new Date().getFullYear();
-    const years = [...Array(lastYearsToUse).keys()].map((i) => currYear - i);
-
-    const newIsOpen: Record<string, boolean> = {};
-
-    for (const year of years) {
-      for (const quarter of [1, 2, 3, 4]) {
-        newIsOpen[toId(year, quarter)] = true;
-      }
-    }
-
-    setIsOpen(newIsOpen);
-  }, [toId]);
-
-  return {
-    getIsOpen,
-    toggleOpenYear,
-    toggleOpenQuarter,
-    closeAll,
-    openAll,
-  };
 };

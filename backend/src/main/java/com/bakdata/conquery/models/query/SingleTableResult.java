@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -17,13 +18,13 @@ import com.google.common.base.Preconditions;
 
 public interface SingleTableResult {
 
-	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, Namespace namespace, ConqueryConfig config) {
+	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
 		Preconditions.checkArgument(isInitialized, "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, namespace, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
@@ -44,9 +45,16 @@ public interface SingleTableResult {
 	@JsonIgnore
 	List<ResultInfo> getResultInfos();
 
-	Stream<EntityResult> streamResults();
+	/**
+	 * @param limit Optionally limits how many lines are emitted.
+	 */
+	Stream<EntityResult> streamResults(OptionalLong limit);
 
 	@JsonIgnore
 	long resultRowCount();
+
+	@JsonIgnore
+	Namespace getNamespace();
+
 
 }

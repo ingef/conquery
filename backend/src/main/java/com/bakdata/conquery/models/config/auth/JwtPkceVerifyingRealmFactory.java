@@ -14,25 +14,14 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.RequestHelper;
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -52,10 +41,25 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -131,6 +135,9 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	@JsonIgnore
 	public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
 
+	@JsonIgnore
+	private Client httpClient;
+
 
 	@ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
 	@JsonIgnore
@@ -146,26 +153,28 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			@NonNull Map<String, PublicKey> signingKeys,
 			@NonNull URI authorizationEndpoint,
 			@NonNull URI tokenEndpoint,
+			@NonNull URI logoutEndpoint,
 			@NotEmpty String issuer) {
 	}
 
-	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
-		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
+	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
+		final List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
 		for (String additionalTokenCheck : additionalTokenChecks) {
 			additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
 		}
 
-		idpConfigurationSupplier = getIdpOptionsSupplier(manager.getClient());
-		authCookieCreator = manager.getConfig().getAuthentication()::createAuthCookie;
 
-		// Add login schema for admin end
-		final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemAuthzCode);
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemRefreshToken);
-		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
+		idpConfigurationSupplier = getIdpOptionsSupplier(environment, config);
+		authCookieCreator = config.getAuthentication()::createAuthCookie;
 
-        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, manager.getStorage(), tokenLeeway);
+		// Add login schema for admin UI
+		final DropwizardResourceConfig jerseyAdminUi = authorizationController.getAdminServlet().getJerseyConfigUI();
+		RedirectingAuthFilter.registerLoginInitiator(jerseyAdminUi, this::initiateLogin, "jwt-initiator");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
+		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
+
+		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway, environment.getValidator());
 	}
 
 	@Data
@@ -173,15 +182,21 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		List<JWK> keys;
 	}
 
-	private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(final Client client) {
+	private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(Environment environment, ConqueryConfig config) {
 
 		return () -> {
 			if (idpConfiguration == null) {
 				synchronized (this) {
 					// check again since we are now in an exclusive section
 					if (idpConfiguration == null) {
+
+
+						Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
+																				.build(this.getClass().getSimpleName());
 						// retrieve the configuration and cache it
-						idpConfiguration = retrieveIdpConfiguration(client);
+						idpConfiguration = retrieveIdpConfiguration(httpClient);
+
+						httpClient.close();
 					}
 				}
 			}
@@ -219,6 +234,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		String issuer = response.get("issuer").asText();
 		URI authorizationEndpoint = URI.create(response.get("authorization_endpoint").asText());
 		URI tokenEndpoint = URI.create(response.get("token_endpoint").asText());
+		URI logoutEndpoint = URI.create(response.get("end_session_endpoint").asText());
 
 		URI jwksUri = URI.create(response.get("jwks_uri").asText());
 
@@ -251,7 +267,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 																																.map(JWK::getKeyId).toList());
 		}
 
-		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, issuer);
+		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, logoutEndpoint, issuer);
 	}
 
 
@@ -263,7 +279,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return JWKParser.create().parse(jwkString).toPublicKey();
 	}
 
-	public static abstract class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
+	public abstract static class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
 
 		private final static GroovyShell SHELL;
 
@@ -291,6 +307,28 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			setBinding(binding);
 
 			return run();
+		}
+	}
+
+	@RequiredArgsConstructor
+	private static class LoginInitiator implements RedirectingAuthFilter.LoginInitiator {
+		private final Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
+		private final String client;
+
+		@Override
+		public URI apply(ContainerRequestContext request) {
+			final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+			if (idpConfigurationOpt.isEmpty()) {
+				log.warn("Unable to initiate authentication, because idp configuration is not available.");
+				return null;
+			}
+			JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+			return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
+							 .queryParam("response_type", "code")
+							 .queryParam("client_id", client)
+							 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+							 .queryParam("scope", "openid")
+							 .queryParam("state", UUID.randomUUID()).build();
 		}
 	}
 

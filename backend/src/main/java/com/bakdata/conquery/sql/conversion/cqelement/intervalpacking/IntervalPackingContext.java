@@ -3,37 +3,36 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.sql.conversion.Context;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Value;
-import org.jooq.Field;
 
 @Value
 @Builder
 public class IntervalPackingContext implements Context {
 
+	SqlIdColumns ids;
+
 	/**
-	 * A unique CTE label which will be suffixed with the interval packing CTE names.
+	 * The daterange that will be aggregated.
 	 */
-	String nodeLabel;
-
-	Field<Object> primaryColumn;
-
-	ColumnDateRange validityDate;
+	ColumnDateRange daterange;
 
 	/**
 	 * An optional predecessor of the first interval packing CTE.
 	 */
+	@Nullable
 	QueryStep predecessor;
 
-	SqlTables<IntervalPackingCteStep> intervalPackingTables;
+	SqlTables tables;
 
 	/**
 	 * The selects you want to carry through all interval packing steps. They won't get touched besides qualifying.
@@ -41,11 +40,7 @@ public class IntervalPackingContext implements Context {
 	@Builder.Default
 	List<SqlSelect> carryThroughSelects = Collections.emptyList();
 
-	NameGenerator nameGenerator;
-
-	@CheckForNull
-	public QueryStep getPredecessor() {
-		return predecessor;
-	}
+	@Nullable
+	ConversionContext conversionContext;
 
 }

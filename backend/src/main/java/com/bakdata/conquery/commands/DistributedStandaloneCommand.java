@@ -4,11 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
@@ -17,15 +13,16 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.cli.ServerCommand;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 @Slf4j
 @Getter
-public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> implements StandaloneCommand {
+public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> implements StandaloneCommand {
 
 	private final Conquery conquery;
 	private ClusterManager manager;
@@ -83,7 +80,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 						.setNameFormat("ShardNode Storage Loader %d")
 						.setUncaughtExceptionHandler((t, e) -> {
 							ConqueryMDC.setLocation(t.getName());
-							log.error(t.getName() + " failed to init storage of ShardNode", e);
+							log.error("{} failed to init storage of ShardNode", t.getName(), e);
 						})
 						.build()
 		);
@@ -120,6 +117,7 @@ public class DistributedStandaloneCommand extends io.dropwizard.cli.ServerComman
 		for (Future<ShardNode> f : tasks) {
 			try {
 				f.get();
+
 			}
 			catch (ExecutionException e) {
 				log.error("during ShardNodes creation", e);

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -54,7 +53,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		Preconditions.checkNotNull(authUser, "User storage was not created");
 		Preconditions.checkNotNull(authRole, "Role storage was not created");
 		Preconditions.checkNotNull(authGroup, "Group storage was not created");
@@ -96,53 +95,15 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		executions.remove(id);
 	}
 
-	public void addUser(User user) {
-		authUser.add(user);
-	}
-
-	public User getUser(UserId userId) {
-		return authUser.get(userId);
-	}
-
-	public Collection<User> getAllUsers() {
-		return authUser.getAll();
-	}
-
-	public void removeUser(UserId userId) {
-		log.info("Remove User = {}", userId);
-		authUser.remove(userId);
-	}
-
-	public void addRole(Role role) {
-		authRole.add(role);
-	}
-
-	public Role getRole(RoleId roleId) {
-		return authRole.get(roleId);
-	}
-
-	public Collection<Role> getAllRoles() {
-		return authRole.getAll();
-	}
-
-	public void removeRole(RoleId roleId) {
-		authRole.remove(roleId);
-	}
-
-	public void updateUser(User user) {
-		authUser.update(user);
-	}
-
-	public void updateRole(Role role) {
-		authRole.update(role);
-	}
-
 	public void addGroup(Group group) {
+		log.info("Adding group = {}", group.getId());
 		authGroup.add(group);
 	}
 
-	public Group getGroup(GroupId id) {
-		return authGroup.get(id);
+	public Group getGroup(GroupId groupId) {
+		final Group group = authGroup.get(groupId);
+		log.trace("Requested group '{}' got: {}", groupId, group);
+		return group;
 	}
 
 	public Collection<Group> getAllGroups() {
@@ -150,11 +111,62 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public void removeGroup(GroupId id) {
+		log.info("Removing group = {}", id);
 		authGroup.remove(id);
 	}
 
 	public void updateGroup(Group group) {
+		log.info("Updating group = {}", group.getId());
 		authGroup.update(group);
+	}
+
+	public void addUser(User user) {
+		log.info("Adding user = {}", user.getId());
+		authUser.add(user);
+	}
+
+	public User getUser(UserId userId) {
+		final User user = authUser.get(userId);
+		log.trace("Requested user '{}' got: {}", userId, user);
+		return user;
+	}
+
+	public Collection<User> getAllUsers() {
+		return authUser.getAll();
+	}
+
+	public void removeUser(UserId userId) {
+		log.info("Removing user = {}", userId);
+		authUser.remove(userId);
+	}
+
+	public void updateUser(User user) {
+		log.info("Updating user = {}", user.getId());
+		authUser.update(user);
+	}
+
+	public void addRole(Role role) {
+		authRole.add(role);
+	}
+
+	public Role getRole(RoleId roleId) {
+		final Role role = authRole.get(roleId);
+		log.trace("Requested role '{}' got: {}", roleId, role);
+		return role;
+	}
+
+	public Collection<Role> getAllRoles() {
+		return authRole.getAll();
+	}
+
+	public void removeRole(RoleId roleId) {
+		log.info("Removing role = {}", roleId);
+		authRole.remove(roleId);
+	}
+
+	public void updateRole(Role role) {
+		log.info("Updating role = {}", role.getId());
+		authRole.update(role);
 	}
 
 	public FormConfig getFormConfig(FormConfigId id) {

@@ -3,12 +3,7 @@ package com.bakdata.conquery.io.storage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -19,11 +14,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -52,20 +44,15 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	@Getter
 	private final StoreFactory storageFactory;
 
-	@Getter
-	private final Validator validator;
-
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Table> tables;
-	protected IdentifiableStore<Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(StoreFactory storageFactory, String pathName, Validator validator) {
+	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
-		this.validator = validator;
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
@@ -74,21 +61,19 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
 		tables = storageFactory.createTableStore(centralRegistry, pathName, objectMapper);
-		dictionaries = storageFactory.createDictionaryStore(centralRegistry, pathName, objectMapper);
 		imports = storageFactory.createImportStore(centralRegistry, pathName, objectMapper);
 		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
 		decorateSecondaryIdDescriptionStore(secondaryIds);
-		decorateDictionaryStore(dictionaries);
 		decorateTableStore(tables);
 		decorateImportStore(imports);
 		decorateConceptStore(concepts);
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
-		return ImmutableList.of(dataset, secondaryIds, tables, dictionaries, imports, concepts);
+	public ImmutableList<ManagedStore> getStores() {
+		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
 	}
 
 	@Override
@@ -105,20 +90,18 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		// Nothing to decorate
 	}
 
-	private void decorateDictionaryStore(IdentifiableStore<Dictionary> store) {
-		// Nothing to decorate
-	}
-
 	private void decorateTableStore(IdentifiableStore<Table> store) {
 		store.onAdd(table -> {
-			for (Column c : table.getColumns()) {
-				getCentralRegistry().register(c);
-			}
-		}).onRemove(table -> {
-			for (Column c : table.getColumns()) {
-				getCentralRegistry().remove(c);
-			}
-		});
+				 for (Column column : table.getColumns()) {
+					 column.init();
+					 getCentralRegistry().register(column);
+				 }
+			 })
+			 .onRemove(table -> {
+				 for (Column c : table.getColumns()) {
+					 getCentralRegistry().remove(c);
+				 }
+			 });
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
@@ -131,13 +114,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 			concept.setDataset(dataset.get());
 
 			concept.initElements();
-
-			if (log.isTraceEnabled()) {
-				// Validating concepts is quite slow, so we only validate when requested.
-				final Set<ConstraintViolation<Concept<?>>> violations = validator.validate(concept);
-
-				ValidatorHelper.failOnError(log, violations);
-			}
 
 			concept.getSelects().forEach(centralRegistry::register);
 			for (Connector connector : concept.getConnectors()) {
@@ -169,18 +145,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 
 	private void decorateImportStore(IdentifiableStore<Import> store) {
 		// Intentionally left blank
-	}
-
-	public Dictionary getDictionary(DictionaryId id) {
-		return dictionaries.get(id);
-	}
-
-	public void updateDictionary(Dictionary dict) {
-		dictionaries.update(dict);
-	}
-
-	public void removeDictionary(DictionaryId id) {
-		dictionaries.remove(id);
 	}
 
 

@@ -27,8 +27,6 @@
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
-  <!-- Javascript -->
-  <script><#include "scripts/dataset.js" /></script>
 
   <!-- Dataset page -->
   <@breadcrumbs.breadcrumbs
@@ -40,8 +38,8 @@
       <@infoCard.infoCard
         class="d-inline-flex"
         title="Dataset ${c.ds.label}"
-        labels=["ID", "Label", "Dictionaries", "Size", "IdMapping"]
-        values=[c.ds.id, label, layout.si(c.dictionariesSize)+"B", layout.si(c.size)+"B", idMapping]
+        labels=["ID", "Label", "Size", "IdMapping"]
+        values=[c.ds.id, label, layout.si(c.size)+"B", idMapping]
       />
       <!-- File Upload -->
       <div class="card d-inline-flex mx-3">
@@ -51,7 +49,7 @@
             <select
               class="custom-select"
               data-test-id="upload-select"
-              onchange="updateDatasetUploadForm(this)"
+              onchange="updateDatasetUploadForm(this, '${c.ds.id}')"
               required
             >
               <option value="mapping" selected>Mapping JSON</option>

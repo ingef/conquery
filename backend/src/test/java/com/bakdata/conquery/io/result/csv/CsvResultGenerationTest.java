@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public class CsvResultGenerationTest {
 				Locale.GERMAN,
 				null,
 				CONFIG,
-				(cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 				(selectInfo) -> selectInfo.getSelect().getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -56,7 +57,7 @@ public class CsvResultGenerationTest {
 		StringWriter writer = new StringWriter();
 
 		CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults());
+		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()));
 
 		String computed = writer.toString();
 

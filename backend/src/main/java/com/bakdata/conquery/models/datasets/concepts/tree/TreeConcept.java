@@ -7,22 +7,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -63,10 +63,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private List<UniversalSelect> selects = new ArrayList<>();
 
 	@JsonIgnore
-	@Getter
-	@Setter
-	private TreeChildPrefixIndex childIndex;
-	@JsonIgnore
 	private final Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
@@ -97,11 +93,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public void initElements() throws ConfigurationException, JSONException {
 		super.initElements();
-		this.setLocalId(0);
+		setLocalId(0);
 		localIdMap.add(this);
 
-		List<ConceptTreeChild> openList = new ArrayList<>();
-		openList.addAll(this.getChildren());
+		final List<ConceptTreeChild> openList = new ArrayList<>();
+		openList.addAll(getChildren());
 
 		for (ConceptTreeConnector con : getConnectors()) {
 			if (con.getCondition() == null) {
@@ -112,7 +108,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 
 		for (int i = 0; i < openList.size(); i++) {
-			ConceptTreeChild ctc = openList.get(i);
+			final ConceptTreeChild ctc = openList.get(i);
 
 			try {
 				ctc.setLocalId(localIdMap.size());
@@ -123,7 +119,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + this.getLabel(), e);
+				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
@@ -131,19 +127,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		if (this.getChildIndex() != null) {
-			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue);
-
-			if (best != null) {
-				return findMostSpecificChild(stringValue, rowMap, best, best.getChildren());
-			}
-		}
-
-		return findMostSpecificChild(stringValue, rowMap, null, this.getChildren());
+		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
 	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
+
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;
 			boolean failed = false;
@@ -161,17 +150,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 				match = n;
 
-				if (n.getChildIndex() == null) {
-					continue;
-				}
-
-				final ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
-
-				if (specificChild == null) {
-					continue;
-				}
-
-				match = specificChild;
 			}
 
 			if (failed) {
@@ -207,8 +185,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return nChildren = 1 + (int) getAllChildren().count();
 	}
 
-	public void initializeIdCache(StringStore type, Import importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
+	public void initializeIdCache(Import importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this));
 	}
 
 	public void removeImportCache(Import imp) {
@@ -223,11 +201,39 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @return the element matching the most specific local id in the array
 	 */
 	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
-		int mostSpecific = ids[ids.length - 1];
+		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
 
 	public ConceptTreeNode<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
+	}
+
+	/**
+	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
+	 * <p>
+	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
+	 */
+	public String printConceptLocalId(Object rawValue, PrintSettings printSettings) {
+
+		if (rawValue == null) {
+			return null;
+		}
+
+		final int localId = (int) rawValue;
+
+		final ConceptTreeNode<?> node = getElementByLocalId(localId);
+
+		if (!printSettings.isPrettyPrint()) {
+			return node.getId().toString();
+		}
+
+		if (node.getDescription() == null) {
+			return node.getLabel();
+		}
+
+		return node.getLabel() + " - " + node.getDescription();
+
 	}
 }

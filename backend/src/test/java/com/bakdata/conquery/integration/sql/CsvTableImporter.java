@@ -1,9 +1,6 @@
 package com.bakdata.conquery.integration.sql;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -20,11 +17,9 @@ import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
@@ -48,14 +43,14 @@ public class CsvTableImporter {
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
 	private final TestSqlDialect testSqlDialect;
-	private final SqlConnectorConfig sqlConnectorConfig;
+	private final DatabaseConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, SqlConnectorConfig sqlConnectorConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
 		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();
 		this.testSqlDialect = testSqlDialect;
-		this.sqlConnectorConfig = sqlConnectorConfig;
+		this.databaseConfig = databaseConfig;
 	}
 
 	/**
@@ -77,16 +72,6 @@ public class CsvTableImporter {
 				insertValuesIntoTable(table, columns, content, statement);
 			}
 		});
-	}
-
-	public List<EntityResult> readExpectedEntities(Path csv) throws IOException {
-		List<String[]> rawEntities = this.csvReader.parseAll(Files.newInputStream(csv));
-		List<EntityResult> results = new ArrayList<>(rawEntities.size());
-		for (int i = 0; i < rawEntities.size(); i++) {
-			String[] row = rawEntities.get(i);
-			results.add(new SqlEntityResult(i + 1, row[0], Arrays.copyOfRange(row, 1, row.length)));
-		}
-		return results;
 	}
 
 	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
@@ -136,7 +121,7 @@ public class CsvTableImporter {
 		};
 
 		// Set all columns except 'pid' to nullable, important for ClickHouse compatibility
-		if (!requiredColumn.getName().equals(sqlConnectorConfig.getPrimaryColumn())) {
+		if (!requiredColumn.getName().equals(databaseConfig.getPrimaryColumn())) {
 			dataType = dataType.nullable(true);
 		}
 

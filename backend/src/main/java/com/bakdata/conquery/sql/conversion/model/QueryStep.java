@@ -3,7 +3,9 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.Collections;
 import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -20,7 +22,8 @@ public class QueryStep {
 
 	String cteName;
 	Selects selects;
-	TableLike<Record> fromTable;
+	@Singular
+	List<TableLike<? extends Record>> fromTables;
 	@Builder.Default
 	List<Condition> conditions = Collections.emptyList();
 	/**
@@ -34,13 +37,45 @@ public class QueryStep {
 	@Builder.Default
 	List<QueryStep> union = Collections.emptyList();
 	/**
-	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
+	 * Determines if this steps union steps should be unioned using a UNION ALL. Default is true.
 	 */
 	@Builder.Default
-	List<QueryStep> predecessors = Collections.emptyList();
+	boolean unionAll = true;
+	/**
+	 * Determines if the select should be distinct.
+	 */
+	boolean selectDistinct;
+	/**
+	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
+	 */
+	@Singular
+	List<QueryStep> predecessors;
+
+	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
+		return createUnionStep(unionSteps, cteName, predecessors, true);
+	}
+
+	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
+		return createUnionStep(unionSteps, cteName, predecessors, false);
+	}
+
+	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll) {
+		return unionSteps.get(0)
+						 .toBuilder()
+						 .cteName(cteName)
+						 .union(unionSteps.subList(1, unionSteps.size()))
+						 .unionAll(unionAll)
+						 .predecessors(predecessors)
+						 .build();
+	}
 
 	public static TableLike<Record> toTableLike(String fromTableName) {
 		return DSL.table(DSL.name(fromTableName));
+	}
+
+	public QueryStep addSqlSelect(SqlSelect sqlSelect) {
+		Selects withAdditionalSelect = this.selects.toBuilder().sqlSelect(sqlSelect).build();
+		return this.toBuilder().selects(withAdditionalSelect).build();
 	}
 
 	/**

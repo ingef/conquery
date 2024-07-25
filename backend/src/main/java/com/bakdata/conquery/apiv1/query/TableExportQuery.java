@@ -15,10 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -32,14 +28,10 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -55,6 +47,9 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -290,7 +285,7 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
 				if (!isRawConceptValues()) {
-					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+					resultType = new ResultType.StringT(concept::printConceptLocalId);
 				}
 			}
 			else {
@@ -302,40 +297,6 @@ public class TableExportQuery extends Query {
 		}
 
 		return List.of(infos);
-	}
-
-	/**
-	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 * <p>
-	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
-	 */
-	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
-
-		if (rawValue == null) {
-			return null;
-		}
-
-		if (!(concept instanceof TreeConcept)) {
-			return Objects.toString(rawValue);
-		}
-
-		final TreeConcept tree = (TreeConcept) concept;
-
-		final int localId = (int) rawValue;
-
-		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
-
-		if (!printSettings.isPrettyPrint()) {
-			return node.getId().toString();
-		}
-
-		if (node.getDescription() == null) {
-			return node.getName();
-		}
-
-		return node.getName() + " - " + node.getDescription();
-
 	}
 
 	@Override

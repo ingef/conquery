@@ -1,39 +1,39 @@
+
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.CteStep;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@RequiredArgsConstructor
+@Getter
+@AllArgsConstructor
 public enum ConceptCteStep implements CteStep {
 
+	// connector
 	PREPROCESSING("preprocessing", null),
 	EVENT_FILTER("event_filter", PREPROCESSING),
 	AGGREGATION_SELECT("group_select", EVENT_FILTER),
-	JOIN_PREDECESSORS("join_predecessors", AGGREGATION_SELECT),
-	AGGREGATION_FILTER("group_filter", JOIN_PREDECESSORS),
-	FINAL("", AGGREGATION_FILTER);
+	JOIN_BRANCHES("join_branches", AGGREGATION_SELECT),
+	AGGREGATION_FILTER("group_filter", JOIN_BRANCHES),
 
-	public static final Set<ConceptCteStep> MANDATORY_STEPS = Set.of(ConceptCteStep.PREPROCESSING, ConceptCteStep.AGGREGATION_SELECT, ConceptCteStep.FINAL);
+	// interval packing selects
+	UNNEST_DATE("unnested", null),
+	INTERVAL_PACKING_SELECTS("interval_packing_selects", null),
+
+	// universal selects / final step
+	UNIVERSAL_SELECTS("universal_selects", null);
+
+	public static final Set<CteStep> MANDATORY_STEPS = Set.of(
+			PREPROCESSING,
+			EVENT_FILTER,
+			AGGREGATION_SELECT,
+			JOIN_BRANCHES,
+			AGGREGATION_FILTER
+	);
 
 	private final String suffix;
-	private final ConceptCteStep predecessor;
-
-	public static Set<ConceptCteStep> withOptionalSteps(ConceptCteStep... conceptCteStep) {
-		HashSet<ConceptCteStep> steps = new HashSet<>(MANDATORY_STEPS);
-		steps.addAll(Set.of(conceptCteStep));
-		return steps;
-	}
-
-	@Override
-	public String cteName(String conceptLabel) {
-		return "%s-%s".formatted(conceptLabel, this.suffix);
-	}
-
-	public ConceptCteStep predecessor() {
-		return this.predecessor;
-	}
+	private final CteStep predecessor;
 
 }

@@ -14,15 +14,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -41,7 +39,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -81,9 +80,9 @@ public class CQExternal extends CQElement {
 	/**
 	 * Maps from Entity to the computed time-frame.
 	 */
-	@Getter(AccessLevel.PRIVATE)
+	@Getter
 	@JsonView(View.InternalCommunication.class)
-	private Map<Integer, CDateSet> valuesResolved;
+	private Map<String, CDateSet> valuesResolved;
 
 	@Getter(AccessLevel.PRIVATE)
 	@JsonView(View.InternalCommunication.class)
@@ -98,12 +97,16 @@ public class CQExternal extends CQElement {
 	 */
 	@Getter(AccessLevel.PRIVATE)
 	@JsonView(View.InternalCommunication.class)
-	private Map<Integer, Map<String, List<String>>> extra;
+	private Map<String, Map<String, List<String>>> extra;
 
 	public CQExternal(List<String> format, @NotEmpty String[][] values, boolean onlySingles) {
 		this.format = format;
 		this.values = values;
 		this.onlySingles = onlySingles;
+	}
+
+	public boolean containsDates() {
+		return format.stream().anyMatch(DateFormat.NAMES::contains);
 	}
 
 	@Override
@@ -127,20 +130,25 @@ public class CQExternal extends CQElement {
 
 	}
 
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+
+	}
+
 	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
-		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
-																 .collect(Collectors.toMap(
-																		 Map.Entry::getKey,
-																		 entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
-																										 .filter(headerToValue -> !headerToValue.getValue()
-																																				.isEmpty())
-																										 .collect(Collectors.toMap(
-																												 Map.Entry::getKey,
-																												 headerToValue -> headerToValue.getValue()
-																																			   .get(0)
-																										 ))
-																 ));
+		final Map<String, Map<String, String>> extraFlat = extra.entrySet().stream()
+																.collect(Collectors.toMap(
+																		Map.Entry::getKey,
+																		entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
+																										.filter(headerToValue -> !headerToValue.getValue()
+																																			   .isEmpty())
+																										.collect(Collectors.toMap(
+																												Map.Entry::getKey,
+																												headerToValue -> headerToValue.getValue()
+																																			  .get(0)
+																										))
+																));
 
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
@@ -180,10 +188,10 @@ public class CQExternal extends CQElement {
 	private static CDateSet[] readDates(String[][] values, List<String> format, DateReader dateReader) {
 		final CDateSet[] out = new CDateSet[values.length];
 
-		List<DateFormat> dateFormats = format.stream()
-											 .map(CQExternal::resolveDateFormat)
-											 // Don't use Stream#toList to preserve null-values
-											 .collect(Collectors.toList());
+		final List<DateFormat> dateFormats = format.stream()
+												   .map(CQExternal::resolveDateFormat)
+												   // Don't use Stream#toList to preserve null-values
+												   .collect(Collectors.toList());
 
 
 		/*
@@ -241,7 +249,8 @@ public class CQExternal extends CQElement {
 								context.getNamespace().getStorage().getIdMapping(),
 								context.getConfig().getIdColumns(),
 								context.getConfig().getLocale().getDateReader(),
-								onlySingles
+								onlySingles,
+								context.getConfig().getSqlConnectorConfig().isEnabled()
 				);
 
 		if (resolved.getResolved().isEmpty()) {
@@ -272,13 +281,13 @@ public class CQExternal extends CQElement {
 	public static class ResolveStatistic {
 
 		@JsonIgnore
-		private final Map<Integer, CDateSet> resolved;
+		private final Map<String, CDateSet> resolved;
 
 		/**
 		 * Entity -> Column -> Values
 		 */
 		@JsonIgnore
-		private final Map<Integer, Map<String, List<String>>> extra;
+		private final Map<String, Map<String, List<String>>> extra;
 
 		private final List<String[]> unreadableDate;
 		private final List<String[]> unresolvedId;
@@ -288,8 +297,8 @@ public class CQExternal extends CQElement {
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
-	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles) {
-		final Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, IdColumnConfig idColumnConfig, @NotNull DateReader dateReader, boolean onlySingles, boolean isInSqlMode) {
+		final Map<String, CDateSet> resolved = new HashMap<>();
 
 		final List<String[]> unresolvedDate = new ArrayList<>();
 		final List<String[]> unresolvedId = new ArrayList<>();
@@ -309,7 +318,7 @@ public class CQExternal extends CQElement {
 		}
 
 		// Entity -> Column -> Values
-		final Map<Integer, Map<String, List<String>>> extraDataByEntity = new HashMap<>();
+		final Map<String, Map<String, List<String>>> extraDataByEntity = new HashMap<>();
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
@@ -321,9 +330,12 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			int resolvedId = tryResolveId(row, readers, mapping);
+			// TODO proper implementation of EntityIdMap#resolve for SQL mode
+			String resolvedId = isInSqlMode
+								? String.valueOf(row[0])
+								: tryResolveId(row, readers, mapping);
 
-			if (resolvedId == -1) {
+			if (resolvedId == null) {
 				unresolvedId.add(row);
 				continue;
 			}
@@ -360,8 +372,8 @@ public class CQExternal extends CQElement {
 	 * Try to extract a {@link com.bakdata.conquery.models.identifiable.mapping.EntityIdMap.ExternalId} from the row,
 	 * then try to map it to an internal {@link com.bakdata.conquery.models.query.entity.Entity}
 	 */
-	private static int tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
-		int resolvedId = -1;
+	private static String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
+		String resolvedId = null;
 
 		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
 			final EntityIdMap.ExternalId externalId = reader.apply(row);
@@ -370,14 +382,14 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			int innerResolved = mapping.resolve(externalId);
+			String innerResolved = mapping.resolve(externalId);
 
-			if (innerResolved == -1) {
+			if (innerResolved == null) {
 				continue;
 			}
 
 			// Only if all resolvable ids agree on the same entity, do we return the id.
-			if (resolvedId != -1 && innerResolved != resolvedId) {
+			if (resolvedId != null && !innerResolved.equals(resolvedId)) {
 				log.error("`{}` maps to different Entities", (Object) row);
 				continue;
 			}

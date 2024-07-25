@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
@@ -127,6 +127,6 @@ public class FullExportForm extends Form implements InternalForm {
 
 	@Override
 	public ManagedInternalForm<FullExportForm> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
 	}
 }

@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
 
@@ -32,7 +31,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
 		}
@@ -43,8 +42,4 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.resolveResultType(column.getType()));
-	}
 }

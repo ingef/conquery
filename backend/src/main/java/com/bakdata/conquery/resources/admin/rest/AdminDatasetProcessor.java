@@ -9,13 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -39,10 +32,15 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -314,23 +312,12 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
-	 * Issues all Shards to do an UpdateMatchingStats.
-	 *
-	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
+	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
 	 */
-	public void updateMatchingStats(Dataset dataset) {
+	public void postprocessNamespace(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
-		ns.getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and FilterSearch",
-				() -> {
-
-
-					storageListener.onUpdateMatchingStats(dataset);
-					ns.getFilterSearch().updateSearch();
-					ns.updateInternToExternMappings();
-				}
-		));
+		ns.postprocessData();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {

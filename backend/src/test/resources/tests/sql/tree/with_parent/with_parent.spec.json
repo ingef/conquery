@@ -1,0 +1,99 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "Tree concept resolving a deep child and it's parents",
+  "expectedCsv": "tests/sql/tree/with_parent/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree.test_child1.test_child2"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.test_column",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_column",
+        "column": "test_table.test_column",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      },
+      "children": [
+        {
+          "label": "test_child1",
+          "condition": {
+            "type": "AND",
+            "conditions": [
+              {
+                "type": "EQUAL",
+                "values": [
+                  "A1"
+                ]
+              },
+              {
+                "type": "NOT",
+                "condition": {
+                  "type": "EQUAL",
+                  "values": [
+                    "B2"
+                  ]
+                }
+              }
+            ]
+          },
+          "children": [
+            {
+              "label": "test_child2",
+              "condition": {
+                "type": "PRESENT",
+                "column": "present_column"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/tree/with_parent/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          },
+          {
+            "name": "present_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

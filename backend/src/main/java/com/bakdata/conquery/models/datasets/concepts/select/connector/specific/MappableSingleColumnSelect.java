@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
@@ -18,6 +17,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
 import lombok.Getter;
 
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
@@ -61,12 +61,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public ResultType getResultType() {
+	public ResultType<?> getResultType() {
 		if (mapping == null) {
-			return super.getResultType();
+			return ResultType.resolveResultType(getColumn().getType());
 		}
 		return new ResultType.StringT(mapper);
-
 	}
 
 	public void loadMapping() {
@@ -76,6 +75,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	private String applyMapping(Object intern) {
+
 		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
 	}
 }

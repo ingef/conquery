@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -14,8 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -23,7 +20,6 @@ import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -56,6 +52,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -107,9 +105,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ExecutionState state = ExecutionState.NEW;
+
+	//TODO FK: This is only locked/unlocked, there should be better primitives for that.
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient CountDownLatch execution;
+	private transient CountDownLatch executingLock;
+
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime startTime;
@@ -173,10 +174,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			this.namespace = namespace;
 			this.config = config;
 
+			doInitExecutable();
+
 			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
 			containsDates = containsDates(getSubmitted());
 
-			doInitExecutable();
 			initialized = true;
 		}
 	}
@@ -195,7 +197,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	protected void fail(ConqueryErrorInfo error) {
+	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -203,7 +205,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
-			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
+			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
 		finish(ExecutionState.FAILED);
@@ -217,13 +219,20 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			namespace.getExecutionManager().clearQueryResults(this);
 
-			execution = new CountDownLatch(1);
+			resetLock();
 		}
 	}
 
-	protected void finish(ExecutionState executionState) {
+	private void resetLock() {
+		executingLock = new CountDownLatch(1);
+	}
+
+	private void clearLock() {
+		executingLock.countDown();
+	}
+
+	public void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
@@ -231,10 +240,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
 			progress = null;
+
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			execution.countDown();
+			clearLock();
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if (getState() == ExecutionState.DONE) {
@@ -242,15 +252,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 		}
 
-
-		log.info(
-				"{} {} {} within {}",
-				getState(),
-				queryId,
-				this.getClass().getSimpleName(),
-				getExecutionTime()
-		);
+		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
 	}
+
+
 
 	@JsonIgnore
 	public Duration getExecutionTime() {
@@ -264,7 +269,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (getState() != ExecutionState.RUNNING) {
 			return getState();
 		}
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		Uninterruptibles.awaitUninterruptibly(executingLock, time, unit);
 
 		return getState();
 	}
@@ -339,7 +344,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
-		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
@@ -372,12 +377,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
 						.anyMatch(visitable -> {
+
 							if (visitable instanceof CQConcept cqConcept) {
 								return !cqConcept.isExcludeFromTimeAggregation();
 							}
 
 							if (visitable instanceof CQExternal external) {
-								return Arrays.stream(DateFormat.values()).anyMatch(external.getFormat()::contains);
+								return external.containsDates();
 							}
 
 							return false;

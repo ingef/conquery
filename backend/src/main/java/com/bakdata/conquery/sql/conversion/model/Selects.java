@@ -11,15 +11,16 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 @Value
 @Builder(toBuilder = true)
 public class Selects {
 
-	Field<Object> primaryColumn;
+	SqlIdColumns ids;
 	@Builder.Default
 	Optional<ColumnDateRange> validityDate = Optional.empty();
+	@Builder.Default
+	Optional<ColumnDateRange> stratificationDate = Optional.empty();
 	@Singular
 	List<SqlSelect> sqlSelects;
 
@@ -36,18 +37,19 @@ public class Selects {
 	}
 
 	public Selects qualify(String qualifier) {
-		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
-		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
-													.map(sqlSelect -> sqlSelect.createAliasedReference(qualifier))
-													.distinct()
-													.collect(Collectors.toList());
+		SqlIdColumns ids = this.ids.qualify(qualifier);
+		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()
-										.primaryColumn(qualifiedPrimaryColumn)
+										.ids(ids)
 										.sqlSelects(sqlSelects);
 
 		if (this.validityDate.isPresent()) {
 			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
+		}
+
+		if (this.stratificationDate.isPresent()) {
+			builder = builder.stratificationDate(this.stratificationDate.map(_validityDate -> _validityDate.qualify(qualifier)));
 		}
 
 		return builder.build();
@@ -55,18 +57,21 @@ public class Selects {
 
 	public List<Field<?>> all() {
 		return Stream.of(
-							 Stream.of(this.primaryColumn),
+							 this.ids.toFields().stream(),
+							 this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.sqlSelects.stream().map(SqlSelect::select)
+							 this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
 					 )
 					 .flatMap(Function.identity())
 					 .map(select -> (Field<?>) select)
+					 .distinct()
 					 .collect(Collectors.toList());
 	}
 
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
-							  .map(SqlSelect::select)
+							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
+							  .distinct()
 							  .collect(Collectors.toList());
 	}
 

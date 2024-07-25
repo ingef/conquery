@@ -16,19 +16,12 @@ public class PostgreSqlDialect implements SqlDialect {
 	private final IntervalPacker postgresqlIntervalPacker;
 	private final SqlDateAggregator postgresqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
-	private final DSLContext dslContext;
 
-	public PostgreSqlDialect(DSLContext dslContext) {
-		this.dslContext = dslContext;
+	public PostgreSqlDialect() {
 		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
 		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
 		this.postgresqlDateAggregator = new PostgreSqlDateAggregator(this.postgresqlFunctionProvider);
 		this.defaultNotationParser = new DefaultSqlCDateSetParser();
-	}
-
-	@Override
-	public DSLContext getDSLContext() {
-		return this.dslContext;
 	}
 
 	@Override
@@ -37,13 +30,13 @@ public class PostgreSqlDialect implements SqlDialect {
 	}
 
 	@Override
-	public boolean requiresAggregationInFinalStep() {
-		return false;
+	public boolean supportsSingleColumnRanges() {
+		return true;
 	}
 
 	@Override
-	public List<NodeConverter<? extends Visitable>> getNodeConverters() {
-		return getDefaultNodeConverters();
+	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
+		return getDefaultNodeConverters(dslContext);
 	}
 
 	@Override

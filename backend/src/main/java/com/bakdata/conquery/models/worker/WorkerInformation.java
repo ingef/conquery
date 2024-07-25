@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -13,6 +10,8 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

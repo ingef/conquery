@@ -133,6 +133,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "version": "Version",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
@@ -169,7 +170,9 @@
     "missingLabel": "Unknown",
     "import": "Import",
     "openFileDialog": "Select file",
-    "shortcut": "Key"
+    "shortcut": "Key",
+    "true": "True",
+    "false": "False"
   },
   "tooltip": {
     "headline": "Info",
@@ -393,6 +396,7 @@
   },
   "preview": {
     "preview": "Preview",
+    "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
     "previewSubline": "Preview of the first {{count}} lines",
@@ -401,7 +405,14 @@
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
-    "span": "Date span"
+    "span": "Date span",
+    "loadingError": "An error occurred while loading the preview.",
+    "dateError": "Date unknown",
+    "name": "Name",
+    "value": "Value",
+    "densityPlot": "Density Plot",
+    "chartYLabel": "Count",
+    "idLabel": "{{primaryIdLabel}} and {{secondaryIdLabel}}"
   },
   "login": {
     "headline": "Queries and Analyses",
@@ -461,6 +472,9 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "search": "Search",
+    "matches_one": "Match",
+    "matches_other": "Matches",
     "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
@@ -468,7 +482,8 @@
       "description": "Exploring individual events chronologically.",
       "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
       "descriptionWithoutId": "Select an ID from the list on the left side",
-      "descriptionWithId": "Couldn't find any data for this ID."
+      "descriptionWithId": "Couldn't find any data for this ID.",
+      "descriptionWithSearchTerm": "Couldn't find any data for the search term '<strong>{{ searchTerm }}</strong>'."
     },
     "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",

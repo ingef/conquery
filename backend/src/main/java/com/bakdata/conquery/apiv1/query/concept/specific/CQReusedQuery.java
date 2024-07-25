@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -26,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -74,14 +74,11 @@ public class CQReusedQuery extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query = ((ManagedQuery) context.getStorage().getExecution(queryId));
-
-		if(query == null){
+		query = (ManagedQuery) context.getStorage().getExecution(queryId);
+		if (query == null) {
 			throw new ConqueryError.ExecutionCreationResolveError(queryId);
 		}
-
 		resolvedQuery = query.getQuery();
-
 		// Yey recursion, because the query might consist of another CQReusedQuery or CQExternal
 		resolvedQuery.resolve(context);
 	}

@@ -2,16 +2,16 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Condition;
@@ -51,12 +51,12 @@ public class PrefixRangeCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), context.getConnectorColumn().getName()), String.class);
-		String pattern = buildSqlRegexPattern();
+		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new WhereConditionWrapper(regexCondition, ConditionType.PREPROCESSING);
 	}
 
-	private String buildSqlRegexPattern() {
+	private String buildSqlRegexPattern(SqlFunctionProvider functionProvider) {
 		StringBuilder builder = new StringBuilder();
 		char[] minChars = min.toCharArray();
 		char[] maxChars = max.toCharArray();
@@ -70,6 +70,6 @@ public class PrefixRangeCondition implements CTCondition {
 				builder.append(minChar);
 			}
 		}
-		return builder.append(ANY_CHAR_REGEX).toString();
+		return builder.append(functionProvider.getAnyCharRegex()).toString();
 	}
 }

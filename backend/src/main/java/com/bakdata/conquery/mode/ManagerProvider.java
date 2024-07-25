@@ -1,6 +1,6 @@
 package com.bakdata.conquery.mode;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Provider for {@link Manager}.
@@ -27,9 +27,11 @@ public interface ManagerProvider {
 		return new InternalObjectMapperCreator(config, validator);
 	}
 
-	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(NamespaceHandler<N> namespaceHandler, ConqueryConfig config,
-																		  InternalObjectMapperCreator creator) {
-
+	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
+			NamespaceHandler<N> namespaceHandler,
+			ConqueryConfig config,
+			InternalObjectMapperCreator creator
+	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
 		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),

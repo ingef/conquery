@@ -32,15 +32,17 @@ const Statuses = styled("div")`
   gap: 2px;
   margin-left: auto;
 `;
+
 const EntityStatus = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
   background-color: white;
-  padding: 1px 4px;
+  padding: 0px 4px;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
 `;
+
 const TheEntityId = styled("div")<{ active?: boolean }>`
   font-weight: 700;
   flex-shrink: 0;

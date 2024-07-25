@@ -1,30 +1,47 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Map;
+
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Builder
+@Jacksonized
 @NoArgsConstructor
 @AllArgsConstructor
 public class SqlConnectorConfig {
 
-	boolean enabled;
-
-	private Dialect dialect;
+	private boolean enabled;
 
 	/**
 	 * Determines if generated SQL should be formatted.
 	 */
 	private boolean withPrettyPrinting;
 
-	private String databaseUsername;
+	/**
+	 * Keys must match the name of existing {@link Dataset}s.
+	 */
+	private Map<String, @Valid DatabaseConfig> databaseConfigs;
 
-	private String databasePassword;
+	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
+		return databaseConfigs.get(dataset.getName());
+	}
 
-	private String jdbcConnectionUrl;
+	@JsonIgnore
+	@ValidationMethod(message = "At lease 1 DatabaseConfig has to be present if SqlConnector config is enabled")
+	public boolean isValidSqlConnectorConfig() {
+		if (!enabled) {
+			return true;
+		}
+		return databaseConfigs != null && !databaseConfigs.isEmpty();
+	}
 
-	private String primaryColumn = "pid";
 }

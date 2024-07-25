@@ -1,38 +1,37 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
 import lombok.EqualsAndHashCode;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+/**
+ * Wrapper for a {@link Field}.
+ */
 @EqualsAndHashCode
-public class FieldWrapper<T> implements SqlSelect {
+public class FieldWrapper<T> implements SingleColumnSqlSelect {
 
 	private final Field<T> field;
-	private final String columnName;
+	@EqualsAndHashCode.Exclude
+	private final List<String> requiredColumns;
 
 	/**
-	 * Wrapper for a {@link Field}.
-	 * <p>
-	 * {@link FieldWrapper#columnName()} will return the given column name of the given field.
-	 *
-	 * @param field      The field to wrap, e.g. {@code DSL.sum(DSL.field(DSL.name("foo", "bar"))).as("foo_bar")};
-	 * @param columnName The "root" column name of the wrapped field, e.g. "bar"
+	 * @param field           The field to wrap, e.g. {@code DSL.sum(DSL.field(DSL.name("foo", "bar"))).as("foo_bar")};
+	 * @param requiredColumns All columns this {@link FieldWrapper} requires in the previous CTE/table to be present.
 	 */
-	public FieldWrapper(Field<T> field, String columnName) {
+	public FieldWrapper(Field<T> field, String... requiredColumns) {
 		this.field = field;
-		this.columnName = columnName;
+		this.requiredColumns = List.of(requiredColumns);
 	}
 
 	/**
-	 * Wrapper for a {@link Field}.
-	 * <p>
-	 * {@link FieldWrapper#columnName()} will return the alias of the given field.
-	 *
-	 * @param field @param field The field to wrap, e.g. {@code DSL.field(DSL.name("fizz", "buzz"))).as("fizz_buzz")};
+	 * @param field @param field The field to wrap, e.g. {@code DSL.field(DSL.name("fizz", "buzz"))).as("fizz_buzz")}; The column for
+	 * {@link FieldWrapper#requiredColumns()} will be taken from the alias of the wrapped field.
 	 */
 	public FieldWrapper(Field<T> field) {
 		this.field = field;
-		this.columnName = field.getName();
+		this.requiredColumns = List.of(field.getName());
 	}
 
 	@Override
@@ -46,12 +45,12 @@ public class FieldWrapper<T> implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return this.columnName;
+	public List<String> requiredColumns() {
+		return this.requiredColumns;
 	}
 
 	@Override
-	public ExtractingSqlSelect<T> createAliasedReference(String qualifier) {
+	public ExtractingSqlSelect<T> qualify(String qualifier) {
 		Field<T> aliased = aliased();
 		return new ExtractingSqlSelect<>(
 				qualifier,

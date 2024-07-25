@@ -1,18 +1,14 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import java.util.Arrays;
 import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,70 +19,54 @@ import org.apache.logging.log4j.util.Strings;
  */
 
 @ToString(callSuper = true, of = "column")
-public class MultiSelectFilterNode extends EventFilterNode<String[]> {
+public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 
 	@NotNull
 	@Getter
 	@Setter
 	private Column column;
 
-	private final boolean empty;
+	private boolean empty;
+	
 
-	private IntSet selectedValues;
-	private QueryExecutionContext context;
-
-	public MultiSelectFilterNode(Column column, String[] filterValue) {
+	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
 		super(filterValue);
 		this.column = column;
-		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
+		empty = filterValue.stream().anyMatch(Strings::isEmpty);
 	}
-
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		this.context = context;
-		selectedValues = null;
-	}
-
-	@Override
-	public void setFilterValue(String[] strings) {
-		selectedValues = null;
-		super.setFilterValue(strings);
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedValues = context.getIdsFor(column, bucket, filterValue);
 	}
-
-
-
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
-		if(selectedValues == null){
-			throw new IllegalStateException("No selected values  were set.");
-		}
 
 		if (!bucket.has(event, getColumn())) {
 			return empty;
 		}
 
-		final int stringId = bucket.getString(event, getColumn());
+		final String stringToken = bucket.getString(event, getColumn());
 
-		return selectedValues.contains(stringId);
+		return getFilterValue().contains(stringToken);
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		for (String selected : getFilterValue()) {
-			if(((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1) {
-				return true;
-			}
-		}
+		//TODO
+//		for (String selected : getFilterValue()) {
+//			StringStore stringStore = (StringStore) bucket.getStores()[getColumn().getPosition()];
+//			if(stringStore.getId(selected) != -1) {
+//				return true;
+//			}
+//		}
 
-		return false;
+		return true;
 	}
 
 	@Override

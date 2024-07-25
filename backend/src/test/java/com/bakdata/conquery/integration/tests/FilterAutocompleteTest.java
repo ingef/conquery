@@ -10,10 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -33,6 +30,10 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,11 +45,94 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			"aab,lbl-2,ov-2",
 			"aaa,lbl-3 & lbl-4,ov-4",
 			"baaa,lbl-5,ov-5",
-			"b,lbl-6,ov-6"
+			"b,lbl-6,ov-6",
+			"female,female-label,female-option",
+			"male,male-label,male-option"
 	};
 
 	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
+
+	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
+		final SelectFilter<?> filter = setupSearch(conquery);
+
+		final Concept<?> concept = filter.getConnector().getConcept();
+
+		final URI autocompleteUri =
+				HierarchyHelper.hierarchicalPath(
+									   conquery.defaultApiURIBuilder(),
+									   FilterResource.class, "autocompleteTextFilter"
+							   )
+							   .buildFromMap(
+									   Map.of(
+											   DATASET, conquery.getDataset().getId(),
+											   CONCEPT, concept.getId(),
+											   TABLE, filter.getConnector().getTable().getId(),
+											   FILTER, filter.getId()
+									   )
+							   );
+
+		final Invocation.Builder autocompleteRequestBuilder = conquery.getClient().target(autocompleteUri)
+																	  .request(MediaType.APPLICATION_JSON_TYPE);
+		// Data starting with a is in reference csv
+		{
+			try (final Response fromCsvResponse = autocompleteRequestBuilder.post(Entity.entity(new FilterResource.AutocompleteRequest(
+					Optional.of("a"),
+					OptionalInt.empty(),
+					OptionalInt.empty()
+			), MediaType.APPLICATION_JSON_TYPE))) {
+
+				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+
+				// "aaa" occurs after "aab" due to it consisting only of duplicate entries.
+				// The empty string results from `No V*a*lue` and `..Def*au*lt..`
+
+				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
+						.containsExactly("a", "aab", "aaa", "male", "" /* `No V*a*lue` :^) */, "female", "baaa");
+
+			}
+		}
+
+
+		// Data starting with f  is in column values
+		{
+			try (final Response fromCsvResponse = autocompleteRequestBuilder
+					.post(Entity.entity(new FilterResource.AutocompleteRequest(
+							Optional.of("f"),
+							OptionalInt.empty(),
+							OptionalInt.empty()
+					), MediaType.APPLICATION_JSON_TYPE))) {
+
+				final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+
+				//check the resolved values
+				assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
+						.containsExactly("f", "female", "fm", "");
+			}
+		}
+
+
+		// Data starting with a is in reference csv
+		{
+			try (final Response fromCsvResponse = autocompleteRequestBuilder
+					.post(Entity.entity(new FilterResource.AutocompleteRequest(
+							Optional.of(""),
+							OptionalInt.empty(),
+							OptionalInt.empty()
+					), MediaType.APPLICATION_JSON_TYPE))) {
+
+				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
+				// This is probably the insertion order
+				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
+						.containsExactlyInAnyOrder("", "aaa", "a", "aab", "b", "baaa", "female", "male", "f", "fm", "m", "mf");
+			}
+		}
+	}
+
+	private static SelectFilter<?> setupSearch(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
 				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
@@ -85,7 +169,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		conquery.getClient().target(matchingStatsUri)
@@ -95,67 +179,6 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		conquery.waitUntilWorkDone();
 
-		final URI autocompleteUri =
-				HierarchyHelper.hierarchicalPath(
-									   conquery.defaultApiURIBuilder(),
-									   FilterResource.class, "autocompleteTextFilter"
-							   )
-							   .buildFromMap(
-									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
-											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getTable().getId(),
-											   FILTER, filter.getId()
-									   )
-							   );
-
-		// Data starting with a is in reference csv
-		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of("a"),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
-
-			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("a", "aaa", "aab", "baaa", "" /* `No V*a*lue` :^) */);
-		}
-
-
-		// Data starting with f  is in column values
-		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of("f"),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
-
-			final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-
-			//check the resolved values
-			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-					.containsExactly("", "f", "fm");
-		}
-
-
-		// Data starting with a is in reference csv
-		{
-			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
-															 Optional.of(""),
-															 OptionalInt.empty(),
-															 OptionalInt.empty()
-													 ), MediaType.APPLICATION_JSON_TYPE));
-
-			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-					.containsExactly("", "aaa", "a", "baaa", "aab", "b", "f", "fm", "m", "mf");
-		}
+		return filter;
 	}
 }

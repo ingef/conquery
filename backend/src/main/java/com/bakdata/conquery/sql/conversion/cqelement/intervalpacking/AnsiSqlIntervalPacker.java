@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -21,108 +21,123 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor
 public class AnsiSqlIntervalPacker implements IntervalPacker {
 
-	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
-		QueryStep previousEndStep = createPreviousEndStep(context);
-		QueryStep rangeIndexStep = createRangeIndexStep(previousEndStep, context);
-		QueryStep intervalCompleteStep = createIntervalCompleteStep(rangeIndexStep, context);
+	@Override
+	public QueryStep aggregateAsValidityDate(IntervalPackingContext context) {
+		return aggregateDate(context, AggregationMode.VALIDITY_DATE);
+	}
+
+	@Override
+	public QueryStep aggregateAsArbitrarySelect(IntervalPackingContext context) {
+		return aggregateDate(context, AggregationMode.ARBITRARY_SELECT);
+	}
+
+	private QueryStep aggregateDate(IntervalPackingContext context, AggregationMode aggregationMode) {
+		QueryStep previousEndStep = createPreviousEndStep(context, aggregationMode);
+		QueryStep rangeIndexStep = createRangeIndexStep(previousEndStep, context, aggregationMode);
+		QueryStep intervalCompleteStep = createIntervalCompleteStep(rangeIndexStep, context, aggregationMode);
 		return intervalCompleteStep;
 	}
 
-	private QueryStep createPreviousEndStep(IntervalPackingContext context) {
+	private QueryStep createPreviousEndStep(IntervalPackingContext context, AggregationMode aggregationMode) {
 
-		String sourceTableName = context.getIntervalPackingTables().getRootTable();
-		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
-		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
+		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.PREVIOUS_END);
+		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
+		ColumnDateRange daterange = context.getDaterange().qualify(sourceTableName);
 
-		Field<Date> previousEnd = DSL.max(validityDate.getEnd())
-									 .over(DSL.partitionBy(primaryColumn)
-											  .orderBy(validityDate.getStart(), validityDate.getEnd())
+		Field<Date> previousEnd = DSL.max(daterange.getEnd())
+									 .over(DSL.partitionBy(ids.toFields())
+											  .orderBy(daterange.getStart(), daterange.getEnd())
 											  .rowsBetweenUnboundedPreceding()
 											  .andPreceding(1))
 									 .as(IntervalPacker.PREVIOUS_END_FIELD_NAME);
 
 		List<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
-		qualifiedSelects.add(new FieldWrapper<>(previousEnd));
+		qualifiedSelects.add(new FieldWrapper<>(previousEnd, daterange.getStart().getName(), daterange.getEnd().getName()));
 
-		Selects previousEndSelects = Selects.builder()
-											.primaryColumn(primaryColumn)
-											.validityDate(Optional.of(validityDate))
-											.sqlSelects(qualifiedSelects)
-											.build();
+		Selects previousEndSelects = buildSelects(ids, daterange, qualifiedSelects, aggregationMode);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
-						.predecessors(context.getPredecessor() == null ? Collections.emptyList() : List.of(context.getPredecessor()))
+						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
 
-	private QueryStep createRangeIndexStep(QueryStep previousEndStep, IntervalPackingContext context) {
+	private QueryStep createRangeIndexStep(QueryStep previousEndStep, IntervalPackingContext context, AggregationMode aggregationMode) {
 
 		String previousEndCteName = previousEndStep.getCteName();
 		Selects previousEndSelects = previousEndStep.getQualifiedSelects();
-		Field<Object> primaryColumn = previousEndSelects.getPrimaryColumn();
-		ColumnDateRange validityDate = previousEndSelects.getValidityDate().get();
+		SqlIdColumns ids = previousEndSelects.getIds();
+		ColumnDateRange daterange = context.getDaterange().qualify(previousEndCteName);
 		Field<Date> previousEnd = DSL.field(DSL.name(previousEndCteName, IntervalPacker.PREVIOUS_END_FIELD_NAME), Date.class);
 
 		Field<BigDecimal> rangeIndex =
 				DSL.sum(
-						   DSL.when(validityDate.getStart().greaterThan(previousEnd), DSL.val(1))
+						   DSL.when(daterange.getStart().greaterThan(previousEnd), DSL.val(1))
 							  .otherwise(DSL.inline(null, Integer.class)))
-				   .over(DSL.partitionBy(primaryColumn)
-							.orderBy(validityDate.getStart(), validityDate.getEnd())
+				   .over(DSL.partitionBy(ids.toFields())
+							.orderBy(daterange.getStart(), daterange.getEnd())
 							.rowsUnboundedPreceding())
 				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);
 
 		List<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName));
 		qualifiedSelects.add(new FieldWrapper<>(rangeIndex));
 
-		Selects rangeIndexSelects = Selects.builder()
-										   .primaryColumn(primaryColumn)
-										   .validityDate(Optional.of(validityDate))
-										   .sqlSelects(qualifiedSelects)
-										   .build();
+		Selects rangeIndexSelects = buildSelects(ids, daterange, qualifiedSelects, aggregationMode);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
 						.selects(rangeIndexSelects)
 						.fromTable(QueryStep.toTableLike(previousEndCteName))
 						.predecessors(List.of(previousEndStep))
 						.build();
 	}
 
-	private QueryStep createIntervalCompleteStep(QueryStep rangeIndexStep, IntervalPackingContext context) {
+	private QueryStep createIntervalCompleteStep(QueryStep rangeIndexStep, IntervalPackingContext context, AggregationMode aggregationMode) {
 
 		String rangeIndexCteName = rangeIndexStep.getCteName();
 		Selects rangeIndexSelects = rangeIndexStep.getQualifiedSelects();
-		Field<Object> primaryColumn = rangeIndexSelects.getPrimaryColumn();
-		ColumnDateRange validityDate = rangeIndexSelects.getValidityDate().get();
+		SqlIdColumns ids = rangeIndexSelects.getIds();
+		ColumnDateRange daterange = context.getDaterange().qualify(rangeIndexCteName);
 
-		Field<Date> rangeStart = DSL.min(validityDate.getStart()).as(IntervalPacker.RANGE_START_MIN_FIELD_NAME);
-		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(IntervalPacker.RANGE_END_MAX_FIELD_NAME);
+		Field<Date> rangeStart = DSL.min(daterange.getStart()).as(daterange.getStart().getName());
+		Field<Date> rangeEnd = DSL.max(daterange.getEnd()).as(daterange.getEnd().getName());
+		ColumnDateRange minMax = ColumnDateRange.of(rangeStart, rangeEnd);
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
 		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
-		Selects intervalCompleteSelects = Selects.builder()
-												 .primaryColumn(primaryColumn)
-												 .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
-												 .sqlSelects(qualifiedSelects)
-												 .build();
+		Selects intervalCompleteSelects = buildSelects(ids, minMax, qualifiedSelects, aggregationMode);
 
 		// we group range start and end by range index
 		List<Field<?>> groupBySelects = new ArrayList<>();
-		groupBySelects.add(primaryColumn);
+		groupBySelects.addAll(ids.toFields());
 		groupBySelects.add(rangeIndex);
-		qualifiedSelects.stream().map(SqlSelect::select).forEach(groupBySelects::add);
+		qualifiedSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream()).forEach(groupBySelects::add);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
+						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
 						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))
 						.groupBy(groupBySelects)
 						.build();
+	}
+
+	private static Selects buildSelects(
+			SqlIdColumns ids,
+			ColumnDateRange daterange,
+			List<SqlSelect> carryThroughSelects,
+			AggregationMode aggregationMode
+	) {
+		Selects.SelectsBuilder builder = Selects.builder()
+												.ids(ids);
+		switch (aggregationMode) {
+			case VALIDITY_DATE -> builder.validityDate(Optional.of(daterange));
+			case ARBITRARY_SELECT -> builder.sqlSelect(daterange);
+		}
+
+		return builder.sqlSelects(carryThroughSelects).build();
 	}
 
 }

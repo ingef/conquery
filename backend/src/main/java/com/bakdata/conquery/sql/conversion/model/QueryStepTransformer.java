@@ -8,6 +8,8 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
+import org.jooq.SelectHavingStep;
+import org.jooq.SelectSelectStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -25,16 +27,23 @@ public class QueryStepTransformer {
 	 * Converts a given {@link QueryStep} into an executable SELECT statement.
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep) {
+
 		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep))
 															   .select(queryStep.getSelects().all())
-															   .from(queryStep.getFromTable())
+															   .from(queryStep.getFromTables())
 															   .where(queryStep.getConditions());
+
+		// grouping
+		SelectHavingStep<Record> grouped = queryBase;
 		if (queryStep.isGroupBy()) {
-			return queryBase.groupBy(queryStep.getGroupBy());
+			grouped = queryBase.groupBy(queryStep.getGroupBy());
 		}
-		else {
-			return queryBase;
+
+		// union
+		if (!queryStep.isUnion()) {
+			return grouped;
 		}
+		return union(queryStep, grouped);
 	}
 
 	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep) {
@@ -56,27 +65,38 @@ public class QueryStepTransformer {
 	}
 
 	private CommonTableExpression<Record> toCte(QueryStep queryStep) {
+		Select<Record> selectStep = toSelectStep(queryStep);
+		return DSL.name(queryStep.getCteName()).as(selectStep);
+	}
 
-		Select<Record> selectStep = this.dslContext
-				.select(queryStep.getSelects().all())
-				.from(queryStep.getFromTable())
-				.where(queryStep.getConditions());
+	private Select<Record> toSelectStep(QueryStep queryStep) {
+
+		SelectSelectStep<Record> selectClause;
+		if (queryStep.isSelectDistinct()) {
+			selectClause = dslContext.selectDistinct(queryStep.getSelects().all());
+		}
+		else {
+			selectClause = dslContext.select(queryStep.getSelects().all());
+		}
+
+		Select<Record> selectStep = selectClause.from(queryStep.getFromTables()).where(queryStep.getConditions());
 
 		if (queryStep.isGroupBy()) {
 			selectStep = ((SelectConditionStep<Record>) selectStep).groupBy(queryStep.getGroupBy());
 		}
 
 		if (queryStep.isUnion()) {
-			for (QueryStep unionStep : queryStep.getUnion()) {
-				// we only use the union as part of the date aggregation process - the entries of the UNION tables are all unique
-				// thus we can use a UNION ALL because it's way faster than UNION
-				selectStep = selectStep.unionAll(
-						this.dslContext.select(unionStep.getSelects().all()).from(unionStep.getFromTable())
-				);
-			}
+			selectStep = union(queryStep, selectStep);
 		}
 
-		return DSL.name(queryStep.getCteName()).as(selectStep);
+		return selectStep;
+	}
+
+	private Select<Record> union(QueryStep queryStep, Select<Record> base) {
+		for (QueryStep unionStep : queryStep.getUnion()) {
+			base = queryStep.isUnionAll() ? base.unionAll(toSelectStep(unionStep)) : base.union(toSelectStep(unionStep));
+		}
+		return base;
 	}
 
 }

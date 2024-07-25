@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.config;
 
 import java.net.InetAddress;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.util.Duration;
 import io.dropwizard.validation.PortRange;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +24,8 @@ public class ClusterConfig extends Configuration {
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
+
+	private Duration idleTimeOut =  Duration.minutes(5);
 
 	/**
 	 * Amount of backpressure before jobs can volunteer to block to send messages to their shards.

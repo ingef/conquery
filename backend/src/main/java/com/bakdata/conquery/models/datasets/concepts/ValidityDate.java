@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId> {
+public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
 
 	@NsIdRef
 	@Nullable
@@ -104,33 +103,6 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
-	public boolean isExclusiveValidityDates() {
-		if (column == null) {
-			return startColumn != null && endColumn != null;
-		}
-		return startColumn == null && endColumn == null;
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Both columns of a two-column validity date have to be of type DATE.")
-	public boolean isValidTwoColumnValidityDates() {
-		if (startColumn == null || endColumn == null) {
-			return true;
-		}
-		return startColumn.getType() == MajorTypeId.DATE && endColumn.getType() == MajorTypeId.DATE;
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Column is not of type DATE or DATE_RANGE.")
-	public boolean isValidValidityDatesSingleColumn() {
-		if (column == null) {
-			return true;
-		}
-		return column.getType().isDateCompatible();
 	}
 
 	@JsonIgnore

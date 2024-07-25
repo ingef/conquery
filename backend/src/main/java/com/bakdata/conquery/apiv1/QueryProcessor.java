@@ -2,33 +2,25 @@ package com.bakdata.conquery.apiv1;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -56,9 +48,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -66,6 +56,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -82,11 +73,8 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.statistics.ColumnStatsCollector;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -95,8 +83,12 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,30 +104,10 @@ public class QueryProcessor {
 	private MetaStorage storage;
 	@Inject
 	private ConqueryConfig config;
+	@Inject
+	private Validator validator;
 
-	private static CDateSet extractValidityDate(ResultType dateType, Object dateValue) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return CDateSet.create(CDateRange.fromList((List<? extends Number>) dateValue));
 
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return CDateSet.create(CDateRange.exactly((Integer) dateValue));
-		}
-
-		if (dateType instanceof ResultType.ListT listT) {
-			final CDateSet out = CDateSet.createEmpty();
-
-			for (Object date : ((List<?>) dateValue)) {
-				out.addAll(extractValidityDate(listT.getElementType(), date));
-			}
-
-			// since they are ordered, we can be sure this is always the correct span
-			return out;
-		}
-
-		throw new IllegalStateException("Unexpected date Type %s".formatted(dateType));
-	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
@@ -322,14 +294,15 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic
-				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
-						.getStorage()
-						.getIdMapping(), config.getIdColumns(), config.getLocale()
-																	  .getDateReader(), upload.isOneRowPerEntity()
-
-				);
+		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+				upload.getValues(),
+				upload.getFormat(),
+				namespace.getStorage().getIdMapping(),
+				config.getIdColumns(),
+				config.getLocale().getDateReader(),
+				upload.isOneRowPerEntity(),
+				true
+		);
 
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
@@ -369,6 +342,9 @@ public class QueryProcessor {
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
 		final EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
+
+		// Validate our own form because we provide it directly to the processor, which does not validate.
+		ValidatorHelper.failOnError(log, validator.validate(form));
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
@@ -550,9 +526,8 @@ public class QueryProcessor {
 
 		final List<ColumnConfig> ids = config.getIdColumns()
 											 .getIds().stream()
-											 // We're only interested in returning printable AND resolvable ids
+											 // We're only interested in returning printable ids
 											 .filter(ColumnConfig::isPrint)
-											 .filter(ColumnConfig::isResolvable)
 											 .collect(Collectors.toList());
 
 
@@ -566,7 +541,7 @@ public class QueryProcessor {
 		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
 
 		// For each included entity emit a Map of { Id-Name -> Id-Value }
-		return result.streamResults()
+		return result.streamResults(OptionalLong.empty())
 					 .map(printer::createId)
 					 .map(entityPrintId -> {
 						 final Map<String, String> out = new HashMap<>();
@@ -585,76 +560,27 @@ public class QueryProcessor {
 					 .filter(Predicate.not(Map::isEmpty));
 	}
 
-	public ResultStatistics getResultStatistics(ManagedQuery managedQuery) {
-		final Query query = managedQuery.getQuery();
-		final List<ResultInfo> resultInfos = query.getResultInfos();
+	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
-		final RandomGenerator random = new Random();
-		final int requiredSamples = config.getFrontend().getVisualisationSamples();
+		final Optional<ResultInfo>
+				dateInfo =
+				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+
+		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
+
+		final Locale locale = I18n.LOCALE.get();
+		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
+		decimalFormat.setMaximumFractionDigits(2);
+
+		final NumberFormat integerFormat = NumberFormat.getNumberInstance(locale);
 
 
-		final int totalSamples = managedQuery.getLastResultCount().intValue();
-
-		//We collect about $requiredSamples values as samples for visualisation, while streaming the values.
-		// Note that nextInt produces values > 0 and < totalSamples. This is equivalent to `P(k) = $requiredSamples/$totalSamples` but terser.
-		final BooleanSupplier samplePicker;
-
-		if (totalSamples <= requiredSamples) {
-			samplePicker = () -> true;
-		}
-		else {
-			samplePicker = () -> random.nextInt(totalSamples) < requiredSamples;
-		}
-
-		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
-		final ResultType dateType = resultInfos.get(0).getType();
-
-		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
+		final PrintSettings printSettings =
+				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
-
-		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer))
-																	  .collect(Collectors.toList());
-
-		final IntSet entities = new IntOpenHashSet();
-		final AtomicInteger lines = new AtomicInteger();
-
-		final AtomicReference<CDateRange> span = new AtomicReference<>(null);
-
-
-		managedQuery.streamResults()
-					.peek(result -> entities.add(result.getEntityId()))
-					.map(EntityResult::listResultLines)
-					.flatMap(List::stream)
-					.forEach(line -> {
-
-						if (hasValidityDates) {
-							final CDateSet dateSet = extractValidityDate(dateType, line[0]);
-							span.getAndAccumulate(dateSet.span(), (old, incoming) -> incoming.spanClosed(old));
-						}
-
-						lines.incrementAndGet();
-
-						for (int col = 0; col < line.length; col++) {
-							final ColumnStatsCollector collector = statsCollectors.get(col);
-							if (collector == null) {
-								continue;
-							}
-
-							collector.consume(line[col]);
-						}
-					});
-
-		return new ResultStatistics(
-				entities.size(),
-				lines.get(),
-				statsCollectors.stream()
-							   .filter(Objects::nonNull) // Not all columns produces stats
-							   .map(ColumnStatsCollector::describe)
-							   .toList(),
-				span.get().toSimpleRange()
-		);
+		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
 	}
 
 }

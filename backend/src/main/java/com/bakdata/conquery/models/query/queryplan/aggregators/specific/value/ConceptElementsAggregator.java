@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -14,7 +13,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -25,7 +23,6 @@ import lombok.ToString;
 public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	private final IntSet entries = new IntOpenHashSet();
-	private final TreeConcept concept;
 
 	private Column column;
 	private Entity entity;
@@ -36,7 +33,6 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	public ConceptElementsAggregator(TreeConcept concept) {
 		super();
-		this.concept = concept;
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
 								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
@@ -72,7 +68,7 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, column)) {
 			return;
 		}
@@ -87,8 +83,4 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 	}
 
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(new ResultType.StringT((val, settings) -> TableExportQuery.printValue(concept, val, settings)));
-	}
 }

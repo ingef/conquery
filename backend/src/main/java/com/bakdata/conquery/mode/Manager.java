@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * A manager provides the implementations that differ by running mode.

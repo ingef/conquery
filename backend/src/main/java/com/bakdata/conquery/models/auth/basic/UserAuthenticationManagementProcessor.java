@@ -27,7 +27,7 @@ public class UserAuthenticationManagementProcessor {
 			return false;
 		}
 		log.trace("Added the user {} to the authorization storage", id);
-		if(AuthorizationHelper.registerForAuthentication(realm, user, pUser.getCredentials(), false)) {
+		if (AuthorizationHelper.registerForAuthentication(realm, user, pUser.getCredential(), false)) {
 			log.trace("Added the user {} to the realm {}", id, realm.getName());
 			return true;
 		}
@@ -37,7 +37,7 @@ public class UserAuthenticationManagementProcessor {
 
 	public boolean updateUser(ProtoUser pUser) {
 		final User user = pUser.createOrOverwriteUser(storage);
-		AuthorizationHelper.registerForAuthentication(realm, user,pUser.getCredentials(),false);
+		AuthorizationHelper.registerForAuthentication(realm, user, pUser.getCredential(), false);
 		return true;
 	}
 

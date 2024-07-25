@@ -1,0 +1,76 @@
+{
+  "label": "COUNT_QUARTERS on date range",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/filter/count_quarters/date_range/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "count"
+          ],
+          "type": "CONCEPT",
+          "label": "count",
+          "tables": [
+            {
+              "id": "count.count_connector",
+              "filters": {
+                "filter": "count.count_connector.count_quarters_filter",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 2,
+                  "max": 3
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "count",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "count_connector",
+          "table": "table1",
+          "filters": {
+            "name": "count_quarters_filter",
+            "type": "COUNT_QUARTERS",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/count_quarters/date_range/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

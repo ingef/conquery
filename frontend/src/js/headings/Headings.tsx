@@ -1,16 +1,5 @@
-import styled from "@emotion/styled";
+import tw from "tailwind-styled-components";
 
-export const Heading3 = styled("h3")`
-  line-height: 1.3;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.md};
-  color: ${({ theme }) => theme.col.black};
-`;
+export const Heading3 = tw("h3")`text-lg font-normal text-gray-800`;
 
-export const Heading4 = styled("h4")`
-  line-height: 1.2;
-  font-weight: 400;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.gray};
-  text-transform: uppercase;
-`;
+export const Heading4 = tw("h4")`text-sm font-normal text-gray-500 uppercase`;

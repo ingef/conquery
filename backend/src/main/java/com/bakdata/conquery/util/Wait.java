@@ -3,9 +3,8 @@ package com.bakdata.conquery.util;
 import java.time.Duration;
 import java.util.function.BooleanSupplier;
 
-import javax.validation.constraints.NotNull;
-
 import com.google.common.util.concurrent.Uninterruptibles;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder

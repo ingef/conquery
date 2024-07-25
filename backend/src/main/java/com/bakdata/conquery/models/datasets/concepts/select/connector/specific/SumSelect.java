@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -25,14 +22,13 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.SumDistinctSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SumSqlAggregator;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -115,6 +111,10 @@ public class SumSelect extends Select {
 		return out;
 	}
 
+	@Override
+	public ResultType<?> getResultType() {
+		return ResultType.resolveResultType(getColumn().getType());
+	}
 
 	@ValidationMethod(message = "Column is not of Summable Type.")
 	@JsonIgnore
@@ -129,19 +129,7 @@ public class SumSelect extends Select {
 	}
 
 	@Override
-	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
-		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return SumDistinctSqlAggregator.create(this, selectContext).getSqlSelects();
-		}
-		return SumSqlAggregator.create(this, selectContext).getSqlSelects();
+	public SelectConverter<SumSelect> createConverter() {
+		return new SumSqlAggregator<>();
 	}
-
-	@Override
-	public Set<ConceptCteStep> getRequiredSqlSteps() {
-		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return ConceptCteStep.withOptionalSteps(ConceptCteStep.JOIN_PREDECESSORS);
-		}
-		return ConceptCteStep.MANDATORY_STEPS;
-	}
-
 }
