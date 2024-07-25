@@ -11,13 +11,9 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -34,8 +30,6 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final StoreFactory storageFactory;
 
-	@Getter
-	protected final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
@@ -47,8 +41,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
 		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta", mapper);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta", mapper);
+		executions = storageFactory.createExecutionsStore(centralRegistry, "meta", mapper);
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, "meta", mapper);
 
 	}
 
@@ -195,5 +189,9 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(MetaStorage.class, this);
+	}
+
+	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
+		return (MetaStorage) ctxt.findInjectableValue(MetaStorage.class.getName(), null, null);
 	}
 }

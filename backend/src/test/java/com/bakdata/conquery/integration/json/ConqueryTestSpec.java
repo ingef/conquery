@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ColumnConfig;
@@ -24,7 +22,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestSupport;
@@ -107,16 +104,12 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
-						.injectIntoNew(
-								om.addHandler(new DatasetPlaceHolderFiller(support))
-						)
-		);
-		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
-		injectableValues.add(ConqueryConfig.class, support.getConfig());
-		injectableValues.add(MetaStorage.class, support.getMetaStorage());
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		support.getDataset().injectInto(mapper);
+		support.getNamespace().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
+		support.getConfig().injectInto(mapper);
+		mapper.addHandler(new DatasetPlaceHolderFiller(support));
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 
@@ -130,13 +123,12 @@ public abstract class ConqueryTestSpec {
 
 	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
 			throws IOException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectInto(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-						om.addHandler(new DatasetPlaceHolderFiller(support))
-				)
-		);
-		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		support.getDataset().injectInto(mapper);
+		support.getNamespace().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
+		support.getConfig().injectInto(mapper);
+		mapper.addHandler(new DatasetPlaceHolderFiller(support));
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 
