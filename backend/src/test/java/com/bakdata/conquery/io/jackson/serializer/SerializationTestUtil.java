@@ -8,6 +8,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -23,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -116,7 +116,7 @@ public class SerializationTestUtil<T> {
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 
 		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
+			mapper = new SingletonNamespaceCollection(registry).injectInto(mapper);
 		}
 		for (Injectable injectable : injectables) {
 			mapper = injectable.injectInto(mapper);
