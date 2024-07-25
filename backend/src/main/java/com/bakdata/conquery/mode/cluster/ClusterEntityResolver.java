@@ -16,6 +16,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import jakarta.validation.constraints.NotEmpty;
@@ -42,7 +43,7 @@ public class ClusterEntityResolver implements EntityResolver {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = EntityResolverUtil.readExtras(values, format);
 
-		final List<Function<String[], EntityIdMap.ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
+		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
 
 		// We will not be able to resolve anything...
 		if (readers.isEmpty()) {

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.util.DateReader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,14 +105,14 @@ public class EntityResolverUtil {
 	}
 
 	/**
-	 * Try to extract a {@link com.bakdata.conquery.models.identifiable.mapping.EntityIdMap.ExternalId} from the row,
+	 * Try to extract a {@link ExternalId} from the row,
 	 * then try to map it to an internal {@link com.bakdata.conquery.models.query.entity.Entity}
 	 */
-	public static String tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
+	public static String tryResolveId(String[] row, List<Function<String[], ExternalId>> readers, EntityIdMap mapping) {
 		String resolvedId = null;
 
-		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
-			final EntityIdMap.ExternalId externalId = reader.apply(row);
+		for (Function<String[], ExternalId> reader : readers) {
+			final ExternalId externalId = reader.apply(row);
 
 			if (externalId == null) {
 				continue;

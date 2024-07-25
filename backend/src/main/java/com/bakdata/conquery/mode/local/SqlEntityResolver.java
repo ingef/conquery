@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -71,7 +72,7 @@ public class SqlEntityResolver implements EntityResolver {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = EntityResolverUtil.readExtras(values, format);
 
-		final List<Function<String[], EntityIdMap.ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
+		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
 
 		// We will not be able to resolve anything...
 		if (readers.isEmpty()) {
@@ -143,7 +144,7 @@ public class SqlEntityResolver implements EntityResolver {
 	 * <p>
 	 * For each ID, that had a matching reader, it will return an entry in the map with row number -> IdResolveInfo.
 	 */
-	private Map<Integer, IdResolveInfo> resolveIds(String[][] values, List<Function<String[], EntityIdMap.ExternalId>> readers) {
+	private Map<Integer, IdResolveInfo> resolveIds(String[][] values, List<Function<String[], ExternalId>> readers) {
 
 		CommonTableExpression<?> unresolvedCte = createUnresolvedCte(values, readers);
 
@@ -168,7 +169,7 @@ public class SqlEntityResolver implements EntityResolver {
 							   ));
 	}
 
-	private CommonTableExpression<?> createUnresolvedCte(String[][] values, List<Function<String[], EntityIdMap.ExternalId>> readers) {
+	private CommonTableExpression<?> createUnresolvedCte(String[][] values, List<Function<String[], ExternalId>> readers) {
 
 		List<Select<Record2<Integer, String>>> selects = new ArrayList<>(values.length);
 		for (int i = 1; i < values.length; i++) {
@@ -176,8 +177,8 @@ public class SqlEntityResolver implements EntityResolver {
 			final String[] row = values[i];
 
 			String resolvedId = null;
-			for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
-				final EntityIdMap.ExternalId externalId = reader.apply(row);
+			for (Function<String[], ExternalId> reader : readers) {
+				final ExternalId externalId = reader.apply(row);
 				resolvedId = externalId.getId();
 			}
 
