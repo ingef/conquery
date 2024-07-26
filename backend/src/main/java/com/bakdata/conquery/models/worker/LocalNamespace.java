@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.index.IndexService;
@@ -37,9 +38,10 @@ public class LocalNamespace extends Namespace {
 			JobManager jobManager,
 			FilterSearch filterSearch,
 			IndexService indexService,
+			SqlEntityResolver sqlEntityResolver,
 			List<Injectable> injectables
 	) {
-		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
+		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, sqlEntityResolver, injectables);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
 	}
@@ -55,7 +57,8 @@ public class LocalNamespace extends Namespace {
 			try {
 				final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
 				getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
-			}catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("Problem collecting column values for {}", column, e);
 			}
 		}

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -79,6 +80,8 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction);
 
+	ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter);
+
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
 	/**
@@ -92,11 +95,13 @@ public interface SqlFunctionProvider {
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
 
 	/**
-	 * @param predecessor The predeceasing step containing an aggregated validity date.
+	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
+	 * @param nested      The {@link ColumnDateRange} you want to unnest.
+	 * @param cteName     The CTE name of the returned {@link QueryStep}.
 	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
-	QueryStep unnestValidityDate(QueryStep predecessor, String cteName);
+	QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName);
 
 	/**
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
@@ -181,34 +186,16 @@ public interface SqlFunctionProvider {
 		return column.in(values);
 	}
 
-	default TableOnConditionStep<Record> innerJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.innerJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> fullOuterJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> fullOuterJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.fullOuterJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> leftJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.leftJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> leftJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.leftJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default Field<Date> toDateField(String dateExpression) {

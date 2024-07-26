@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,18 +35,18 @@ import org.apache.commons.lang3.StringUtils;
 @JsonIgnoreProperties(value = {"resolvable"}) // for backwards compatibility
 public class ColumnConfig {
 
-	public EntityIdMap.ExternalId read(String value) {
+	public ExternalId read(String value) {
 		if (Strings.isNullOrEmpty(value)) {
 			return null;
 		}
 
 		if (getLength() == -1 || getPad() == null) {
-			return new EntityIdMap.ExternalId(getName(), value);
+			return new ExternalId(getName(), value);
 		}
 
 		String padded = StringUtils.leftPad(value, getLength(), getPad());
 
-		return new EntityIdMap.ExternalId(getName(), padded);
+		return new ExternalId(getName(), padded);
 
 	}
 
