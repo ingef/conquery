@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.extentions;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.Getter;
@@ -14,7 +15,7 @@ public class NamespaceStorageExtension implements BeforeAllCallback, BeforeEachC
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
-		storage.openStores(null);
+		storage.openStores(Jackson.MAPPER);
 	}
 
 	@Override

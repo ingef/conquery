@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.extentions;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.Getter;
@@ -17,7 +18,7 @@ public class MetaStorageExtension implements BeforeAllCallback, BeforeEachCallba
 
 	@Override
 	public void beforeAll(ExtensionContext extensionContext) throws Exception {
-		metaStorage.openStores(null);
+		metaStorage.openStores(Jackson.MAPPER);
 	}
 
 	@Override
