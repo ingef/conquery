@@ -37,9 +37,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	public void openStores(ObjectMapper mapper) {
-		// this.centralRegistry is not directly injected into the om. However, it is accessible in a complicated way:
-		// DatasetRegistry is injected as IdResolveContext -> IdResolveContext is a Fallback for CentralRegistry.get ->
-		// which exposes the "Meta Registry"
+
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
 		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
 		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);
