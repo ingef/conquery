@@ -12,7 +12,6 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -22,10 +21,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.extentions.NamespaceStorageExtension;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +29,7 @@ import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,6 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j @Execution(ExecutionMode.SAME_THREAD)
 public class GroovyIndexedTest {
 
+	@RegisterExtension
 	public static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 
 	public static final int SEED = 500;
@@ -75,6 +73,7 @@ public class GroovyIndexedTest {
 
 		table.setName("the_table");
 		Dataset dataset = new Dataset();
+		dataset.setNsIdResolver(storage);
 
 		dataset.setName("the_dataset");
 		dataset.injectInto(mapper);
@@ -93,9 +92,8 @@ public class GroovyIndexedTest {
 		storage.addTable(table);
 
 		// Prepare Serdes injections
-		ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		((Injectable) values -> values.add(Validator.class, Validators.newValidator())).injectInto(mapper);
-		new SingletonNamespaceCollection(registry).injectInto(mapper);
+		storage.injectInto(mapper);
 		dataset.injectInto(mapper);
 		final ObjectReader conceptReader = mapper.readerFor(Concept.class);
 

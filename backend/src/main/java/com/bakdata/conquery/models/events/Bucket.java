@@ -110,7 +110,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public ColumnStore getStore(@NotNull Column column) {
-		int columnPosition = getImp().getTable().resolve().getColumnPosition(column);
+		int columnPosition = column.getPosition();
 		return stores[columnPosition];
 	}
 

@@ -13,18 +13,27 @@ import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import lombok.ToString;
 
 /**
  * A meta storage that can be injected in to deserialization on a shard node.
  * A shard node can then deserialize MetaIds, but resolving them throws an error.
  */
+@ToString(onlyExplicitlyIncluded = true, callSuper = false)
 public class PlaceholderMetaStorage extends MetaStorage {
 
-	public final static PlaceholderMetaStorage INSTANCE = new PlaceholderMetaStorage();
+	@ToString.Include
+	public final String label;
+
+	// Two instances to better distinguish origin during debugging
+	public final static PlaceholderMetaStorage DEFAULT_INSTANCE = new PlaceholderMetaStorage("default-instance");
+	public final static PlaceholderMetaStorage TEST_INSTANCE = new PlaceholderMetaStorage("test-instance");
+
 	public static final String ERROR_MSG = "Cannot be used in this environment. The real metastore exists only on the manager node.";
 
-	private PlaceholderMetaStorage() {
+	private PlaceholderMetaStorage(String label) {
 		super(null);
+		this.label = label;
 	}
 
 	@Override

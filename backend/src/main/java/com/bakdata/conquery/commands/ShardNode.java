@@ -178,7 +178,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
-		PlaceholderMetaStorage.INSTANCE.injectInto(objectMapper);
+		PlaceholderMetaStorage.DEFAULT_INSTANCE.injectInto(objectMapper);
 
 
 		// Set serialization config

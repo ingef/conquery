@@ -4,13 +4,20 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString(onlyExplicitlyIncluded = true)
 public class PlaceHolderNsIdResolver implements NsIdResolver {
 
-	public final static PlaceHolderNsIdResolver INSTANCE = new PlaceHolderNsIdResolver();
+	public final static PlaceHolderNsIdResolver DEFAULT_INSTANCE = new PlaceHolderNsIdResolver("default-instance");
+	public final static PlaceHolderNsIdResolver TEST_INSTANCE = new PlaceHolderNsIdResolver("test-instance");
+
 	public static final String ERROR_MSG = "Cannot be used in this environment. This id '%s' cannot be resolved on this node.";
+
+	@ToString.Include
+	private final String label;
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {

@@ -214,15 +214,19 @@ public class ManagerNode implements Managed {
 	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass, getConfig(), getDatasetRegistry(), getStorage());
+		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass, getConfig(), getDatasetRegistry(), getMetaStorage());
 	}
 
 	private void openMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class, getStorage(), getDatasetRegistry(), getConfig());
-		log.info("Loading MetaStorage");
-		getMetaStorage().loadData();
-		log.info("MetaStorage loaded {}", getMetaStorage());
+		getMetaStorage().openStores(
+				getInternalObjectMapperCreator().createInternalObjectMapper(
+						View.Persistence.Manager.class,
+						getMetaStorage(),
+						getDatasetRegistry(),
+						getConfig()
+				),
+				getEnvironment().metrics());
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -236,7 +240,7 @@ public class ManagerNode implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage());
+				registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment().metrics());
 			});
 		}
 

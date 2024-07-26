@@ -5,8 +5,6 @@ import java.util.Set;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
-import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -47,9 +45,6 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 		table.setDataset(this.getId());
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);
 
-		// We could use the resolvers of this dataset, but actually this table's id should never be resolved
-		table.setNsIdResolver(PlaceHolderNsIdResolver.INSTANCE);
-		table.setMetaStorage(PlaceholderMetaStorage.INSTANCE);
 		return table;
 	}
 

@@ -48,6 +48,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -130,15 +131,15 @@ public class StoredQueriesProcessorTest {
 		new AuthorizationController(STORAGE, CONFIG, new Environment(StoredQueriesProcessorTest.class.getSimpleName()), null);
 
 		MetricRegistry metricRegistry = new MetricRegistry();
-		DistributedNamespace namespace0 = datasetRegistry.createNamespace(DATASET_0, VALIDATOR, STORAGE, metricRegistry);
-		DistributedNamespace namespace1 = datasetRegistry.createNamespace(DATASET_1, VALIDATOR, STORAGE, metricRegistry);
+		DistributedNamespace namespace0 = datasetRegistry.createNamespace(DATASET_0, STORAGE, metricRegistry);
+		DistributedNamespace namespace1 = datasetRegistry.createNamespace(DATASET_1, STORAGE, metricRegistry);
 
 		NamespaceStorage namespaceStorage0 = namespace0.getStorage();
 		NamespaceStorage namespaceStorage1 = namespace1.getStorage();
 
 		EntityIdMap entityIdMap = new EntityIdMap();
 		String idColumnName = CONFIG.getIdColumns().getIds().get(0).getName();
-		entityIdMap.addInputMapping("0", new EntityIdMap.ExternalId(idColumnName, "0"));
+		entityIdMap.addInputMapping("0", new ExternalId(idColumnName, "0"));
 		namespaceStorage0.updateIdMapping(entityIdMap);
 
 		Concept<?> CONCEPT_0 = SerialisationObjectsUtil.createConcept(DATASET_0, namespaceStorage0);

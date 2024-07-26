@@ -15,16 +15,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.DefaultWriteRequest;
 import org.apache.mina.core.write.NothingWrittenException;
 import org.apache.mina.core.write.WriteRequest;
-import org.apache.mina.filter.codec.AbstractProtocolDecoderOutput;
-import org.apache.mina.filter.codec.AbstractProtocolEncoderOutput;
-import org.apache.mina.filter.codec.ProtocolCodecFactory;
-import org.apache.mina.filter.codec.ProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolDecoderException;
-import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.apache.mina.filter.codec.ProtocolEncoder;
-import org.apache.mina.filter.codec.ProtocolEncoderException;
-import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-import org.apache.mina.filter.codec.RecoverableProtocolDecoderException;
+import org.apache.mina.filter.codec.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -251,10 +242,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 				if (!(e instanceof RecoverableProtocolDecoderException) || (in.position() == oldPos)) {
 					break;
 				}
-			}
-			catch (OutOfMemoryError e) {
-				LOGGER.warn("Encountered out of memory. Trying to recover by backing off and retry allocation.", e);
-				Thread.sleep(2000);
 			}
 		}
 	}

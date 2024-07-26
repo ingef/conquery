@@ -4,6 +4,8 @@ package com.bakdata.conquery.models.index;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -55,7 +57,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@Setter(onMethod_ = @TestOnly)
 	private NamespaceStorage storage;
 
-	@JsonIgnore
+	@Setter
 	@NotNull
 	private DatasetId dataset;
 
@@ -79,8 +81,17 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	private CompletableFuture<MapIndex> int2ext = null;
 
 
-	@Override
 	public synchronized MapInternToExternMapper init() {
+		try {
+			MapInternToExternMapper mapInternToExternMapper = asyncInit();
+			mapInternToExternMapper.getInt2ext().get();
+			return mapInternToExternMapper;
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public synchronized MapInternToExternMapper asyncInit() {
 
 		if (mapIndex == null && config == null) {
 			log.trace("Injections were null. Skipping init, because class was deserialized by a test object mapper");
@@ -93,6 +104,10 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
 
 		MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
+
+		if (int2ext != null && !int2ext.isDone()) {
+			log.trace("Mapping request in progress. No issuing a new one for {}", key);
+		}
 
 		int2ext = CompletableFuture.supplyAsync(() -> mapIndex.getIndex(key)).whenComplete((m, e) -> {
 			if (e != null) {
@@ -111,17 +126,9 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
-		if(!initialized()){
-			return internalValue;
-		}
-
-		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
-			return internalValue;
-		}
-
 		try {
-			return int2ext.get().getOrDefault(internalValue, internalValue);
-		} catch (InterruptedException | ExecutionException e) {
+			return int2ext.get(2, TimeUnit.SECONDS).getOrDefault(internalValue, internalValue);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			// Should never be reached
 			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, (Exception) (log.isTraceEnabled() ? e : null));
 			return internalValue;
@@ -133,5 +140,11 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		return new InternToExternMapperId(getDataset(), getName());
 	}
 
-	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {}
+	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {
+		@Override
+		public MapInternToExternMapper convert(MapInternToExternMapper value) {
+
+			return value.asyncInit();
+		}
+	}
 }

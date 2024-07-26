@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.time.Duration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
@@ -42,9 +43,6 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -52,18 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import java.io.File;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Represents the test instance of Conquery.
@@ -309,7 +295,7 @@ public class TestConquery {
 	}
 
 	public MetaStorage getMetaStorage() {
-		return getStandaloneCommand().getManagerNode().getStorage();
+		return getStandaloneCommand().getManagerNode().getMetaStorage();
 	}
 
 	public DatasetRegistry getDatasetRegistry() {

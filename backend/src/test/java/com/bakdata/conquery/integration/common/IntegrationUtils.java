@@ -42,8 +42,8 @@ public class IntegrationUtils {
 	 */
 	public static ObjectReader getTestSpecReader() {
 		final MutableInjectableValues values = new MutableInjectableValues();
-		PlaceholderMetaStorage.INSTANCE.inject(values);
-		PlaceHolderNsIdResolver.INSTANCE.inject(values);
+		PlaceholderMetaStorage.TEST_INSTANCE.inject(values);
+		PlaceHolderNsIdResolver.TEST_INSTANCE.inject(values);
 
 		return Jackson.MAPPER.copy()
 							 .setInjectableValues(values)

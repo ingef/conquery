@@ -3,6 +3,7 @@ package com.bakdata.conquery.util.extentions;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import lombok.Getter;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -15,7 +16,7 @@ public class WorkerStorageExtension implements BeforeAllCallback, BeforeEachCall
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
-		storage.openStores(Jackson.MAPPER);
+		storage.openStores(Jackson.MAPPER, new MetricRegistry());
 	}
 
 	@Override

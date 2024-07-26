@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -35,7 +36,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +96,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept.setLabel(CONCEPT_LABEL);
 
 		concept.setDataset(new DatasetId(support.getDataset().getId().getName()));
-		concept.setNsIdResolver(PlaceHolderNsIdResolver.INSTANCE);
+		concept.setNsIdResolver(PlaceHolderNsIdResolver.TEST_INSTANCE);
 
 		rawConnector.put("name", "connector");
 		rawConnector.put(TABLE_NAME, TABLE_NAME);

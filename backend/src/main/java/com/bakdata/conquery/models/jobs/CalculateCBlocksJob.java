@@ -105,7 +105,6 @@ public class CalculateCBlocksJob extends Job {
 				CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize(), storage);
 
 				bucketManager.addCalculatedCBlock(cBlock);
-				storage.addCBlock(cBlock);
 			}
 			catch (Exception e) {
 				throw new RuntimeException(

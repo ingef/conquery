@@ -24,7 +24,7 @@ public class DelegateManager<N extends Namespace> implements Manager {
 	ConqueryConfig config;
 	Environment environment;
 	DatasetRegistry<N> datasetRegistry;
-	MetaStorage storage;
+	MetaStorage metaStorage;
 	ImportHandler importHandler;
 	StorageListener storageListener;
 	Supplier<Collection<ShardNodeInformation>> nodeProvider;

@@ -41,7 +41,7 @@ public class ColumnStoreSerializationTests {
 	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(CompoundDateRangeStore.class);
 
-	private static final NamespaceStorage STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), "ColumnStoreSerializationTests", null);
+	private static final NamespaceStorage STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), "ColumnStoreSerializationTests");
 
 	private static ObjectMapper shardInternalMapper;
 

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -13,7 +12,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
 import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
-import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -67,7 +65,7 @@ public abstract class ConqueryTestSpec {
 
 		final IdColumnConfig idColumnConfig = idColumns != null ? idColumns : config.getIdColumns();
 		return config.withIdColumns(idColumnConfig)
-					 .withStorage(new NonPersistentStoreFactory());
+				.withStorage(new NonPersistentStoreFactory());
 	}
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
@@ -93,7 +91,7 @@ public abstract class ConqueryTestSpec {
 			boolean usePlaceholderResolvers
 	) throws IOException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory()
-														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, usePlaceholderResolvers);
+				.constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, usePlaceholderResolvers);
 	}
 
 	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean usePlaceholderResolvers)
@@ -101,19 +99,18 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedType, null, usePlaceholderResolvers);
 	}
 
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation, boolean usePlaceholderResolvers) throws IOException {
+
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		support.getDataset().injectInto(mapper);
-		support.getNamespace().injectInto(mapper);
 		support.getMetaStorage().injectInto(mapper);
 		support.getConfig().injectInto(mapper);
 		mapper.addHandler(new DatasetPlaceHolderFiller(support));
 
 		if (usePlaceholderResolvers) {
-			PlaceHolderNsIdResolver.INSTANCE.injectInto(mapper);
-			PlaceholderMetaStorage.INSTANCE.injectInto(mapper);
-		}
-		else {
+			PlaceHolderNsIdResolver.TEST_INSTANCE.injectInto(mapper);
+			PlaceholderMetaStorage.TEST_INSTANCE.injectInto(mapper);
+		} else {
 			support.getMetaStorage().injectInto(mapper);
 			support.getNamespace().getStorage().injectInto(mapper);
 		}
@@ -131,14 +128,13 @@ public abstract class ConqueryTestSpec {
 			throws IOException {
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		support.getDataset().injectInto(mapper);
-		support.getNamespace().injectInto(mapper);
 		support.getMetaStorage().injectInto(mapper);
 		support.getConfig().injectInto(mapper);
 		mapper.addHandler(new DatasetPlaceHolderFiller(support));
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
-		PlaceHolderNsIdResolver.INSTANCE.injectInto(mapper);
-		PlaceholderMetaStorage.INSTANCE.injectInto(mapper);
+		PlaceHolderNsIdResolver.TEST_INSTANCE.injectInto(mapper);
+		PlaceholderMetaStorage.TEST_INSTANCE.injectInto(mapper);
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 
@@ -147,18 +143,15 @@ public abstract class ConqueryTestSpec {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
-					}
-					catch (Exception e2) {
+					} catch (Exception e2) {
 						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
-				}
-				else {
+				} else {
 					throw e;
 				}
 			}

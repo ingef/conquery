@@ -17,8 +17,6 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.util.StdConverter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -96,8 +93,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	public TreeConcept init() {
-		setLocalId(0);
-		localIdMap.add(this);
 
 		final List<ConceptTreeChild> openList = new ArrayList<>(getChildren());
 
@@ -112,6 +107,10 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 				throw new RuntimeException("Unable to init condition", e);
 			}
 		}
+
+		localIdMap.clear();
+		setLocalId(0);
+		localIdMap.add(this);
 
 		for (int i = 0; i < openList.size(); i++) {
 			final ConceptTreeChild ctc = openList.get(i);

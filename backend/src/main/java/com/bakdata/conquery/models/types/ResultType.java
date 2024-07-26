@@ -18,11 +18,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -320,6 +316,9 @@ public abstract class ResultType<T> {
 		@NonNull
 		private final ResultType<T> elementType;
 
+		private final boolean flat = false;
+		private final boolean distict = false;
+
 		@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 		public ListT(@NonNull ResultType<T> elementType) {
 			this.elementType = elementType;
@@ -331,6 +330,11 @@ public abstract class ResultType<T> {
 			if (!(f instanceof List)) {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
+
+			if (flat && elementType instanceof ListT) {
+
+			}
+
 			// Not sure if this escaping is enough
 			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
 			final StringJoiner joiner = listFormat.createListJoiner();

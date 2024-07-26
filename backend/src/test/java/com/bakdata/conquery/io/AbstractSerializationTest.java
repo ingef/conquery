@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.extentions.MetaStorageExtension;
 import com.bakdata.conquery.util.extentions.NamespaceStorageExtension;
 import com.bakdata.conquery.util.extentions.WorkerStorageExtension;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
@@ -51,7 +50,7 @@ public abstract class AbstractSerializationTest {
 	@BeforeEach
 	public void before() {
 		MetaStorage metaStorage = META_STORAGE_EXTENSION.getMetaStorage();
-		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
+		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config);
 		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);

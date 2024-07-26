@@ -38,6 +38,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	// TODO: 10.01.2020 fk: register imports here?
 
+	@JsonIgnore
 	private DatasetId dataset;
 
 	@JsonIgnore
@@ -45,7 +46,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@NotNull
 	@Setter(onMethod_ = @TestOnly)
 	@EqualsAndHashCode.Exclude
-	private NamespacedStorage storage;
+	private NamespacedStorage namespacedStorage;
 
 	@NotNull
 	@Valid
@@ -123,6 +124,8 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	@Override
 	public Table init() {
+
+		dataset = namespacedStorage.getDataset().getId();
 		Arrays.stream(columns).forEach(Column::init);
 		return this;
 	}

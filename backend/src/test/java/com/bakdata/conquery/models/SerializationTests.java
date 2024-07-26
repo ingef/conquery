@@ -227,7 +227,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		workerStorage.addImport(imp);
 		workerStorage.addBucket(bucket);
 
-
 		final Validator validator = Validators.newValidator();
 
 		SerializationTestUtil
@@ -264,7 +263,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		namespaceStorage.addTable(table);
 
-		table.setStorage(getNamespaceStorage());
+		table.setNsIdResolver(getNamespaceStorage());
 		table.init();
 
 		SerializationTestUtil
@@ -281,7 +280,6 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final Dataset dataset = createDataset(namespaceStorage, workerStorage);
 		TreeConcept concept = createConcept(dataset, namespaceStorage, workerStorage);
-		concept.init();
 
 		SerializationTestUtil
 				.forType(Concept.class)

@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -57,13 +56,13 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, NsIdReso
 
     private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, Validator validator, MetaStorage metaStorage, MetricRegistry metricRegistry) throws IOException {
+	public N createNamespace(Dataset dataset, MetaStorage metaStorage, MetricRegistry metricRegistry) throws IOException {
         // Prepare empty storage
         NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
         final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 
         // Each store injects its own IdResolveCtx so each needs its own mapper
-		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper, metricRegistry)));
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper), metricRegistry);
         dataset.setNsIdResolver(datasetStorage);
         datasetStorage.updateDataset(dataset);
         EntityIdMap idMapping = new EntityIdMap();

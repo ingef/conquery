@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.identifiable;
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NsIdResolver;
+import com.bakdata.conquery.io.storage.PlaceHolderNsIdResolver;
+import com.bakdata.conquery.io.storage.PlaceholderMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,12 +23,12 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
-	private transient MetaStorage metaStorage;
+	private transient MetaStorage metaStorage = PlaceholderMetaStorage.DEFAULT_INSTANCE;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@JsonIgnore
-	private transient NsIdResolver nsIdResolver;
+	private transient NsIdResolver nsIdResolver = PlaceHolderNsIdResolver.DEFAULT_INSTANCE;
 
 	@ToString.Include
 	@JsonIgnore

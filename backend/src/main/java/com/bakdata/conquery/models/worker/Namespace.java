@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
@@ -25,11 +24,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Getter

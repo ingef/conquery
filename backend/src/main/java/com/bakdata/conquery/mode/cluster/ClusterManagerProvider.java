@@ -21,12 +21,10 @@ public class ClusterManagerProvider implements ManagerProvider {
 	public ClusterManager provideManager(ConqueryConfig config, Environment environment) {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
 		final MetaStorage storage = new MetaStorage(config.getStorage());
-		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, storage, environment.getValidator());
+		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config);
-		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
-		final MetaStorage metaStorage = ManagerProvider.createMetaStorage(config.getStorage());
 
 		final ClusterConnectionManager connectionManager =
 				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, creator, clusterState);

@@ -82,11 +82,9 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
-				manager.getMetaStorage(),
 				manager.getJobManager(),
 				manager.getImportHandler(),
-				manager.getStorageListener(),
-				manager.getStorage()
+				manager.getStorageListener()
 		);
 
 		jerseyConfig.register(new AbstractBinder() {

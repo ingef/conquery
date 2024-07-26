@@ -70,15 +70,15 @@ public class BucketManager {
 		final IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
-		storage.getAllBuckets().forEach(bucket -> {
-			log.trace("Processing bucket {}", bucket.getId());
-			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
-				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
+		storage.getAllBucketIds().forEach(bucketId -> {
+			log.trace("Processing bucket {}", bucketId);
+			if (!assignedBucketNumbers.contains(bucketId.getBucket())) {
+				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucketId);
 			}
-			registerBucket(bucket, entity2Bucket, tableBuckets);
+			registerBucket(bucketId, entity2Bucket, tableBuckets);
 		});
 
-		storage.getAllCBlocks().forEach(cBlock ->
+		storage.getAllCBlockIds().forEach(cBlock ->
 												registerCBlock(cBlock, connectorCBlocks)
 		);
 
@@ -88,31 +88,32 @@ public class BucketManager {
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Object2IntMap<String> entity2Bucket, Map<TableId, Int2ObjectMap<List<BucketId>>> tableBuckets) {
+	private static void registerBucket(BucketId bucketId, Object2IntMap<String> entity2Bucket, Map<TableId, Int2ObjectMap<List<BucketId>>> tableBuckets) {
+		Bucket bucket = bucketId.resolve();
 		for (String entity : bucket.entities()) {
 
 			if (entity2Bucket.containsKey(entity)) {
 				// This is an unrecoverable state, but should not happen in practice. Just a precaution.
-				assert entity2Bucket.getInt(entity) == bucket.getBucket();
+				assert entity2Bucket.getInt(entity) == bucketId.getBucket();
 				continue;
 			}
 
-			entity2Bucket.put(entity, bucket.getBucket());
+			entity2Bucket.put(entity, bucketId.getBucket());
 		}
 
 		tableBuckets
-				.computeIfAbsent(bucket.getTable().getId(), id -> new Int2ObjectAVLTreeMap<>())
-				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
-				.add(bucket.getId());
+				.computeIfAbsent(bucketId.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucketId.getBucket(), n -> new ArrayList<>())
+				.add(bucketId);
 	}
 
 	/**
 	 * Assert validity of operation, and create index for CBlocks.
 	 */
-	private static void registerCBlock(CBlock cBlock, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorCBlocks) {
-		connectorCBlocks.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
-						.computeIfAbsent(cBlock.getBucket().getBucket(), bucketId -> new HashMap<>(3))
-						.put(cBlock.getBucket(), cBlock.getId());
+	private static void registerCBlock(CBlockId cBlockId, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorCBlocks) {
+		connectorCBlocks.computeIfAbsent(cBlockId.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+						.computeIfAbsent(cBlockId.getBucket().getBucket(), bucketId -> new HashMap<>(3))
+						.put(cBlockId.getBucket(), cBlockId);
 	}
 
 
@@ -151,12 +152,13 @@ public class BucketManager {
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
-		registerCBlock(cBlock, connectorToCblocks);
+		storage.addCBlock(cBlock);
+		registerCBlock(cBlock.getId(), connectorToCblocks);
 	}
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket, entity2Bucket, tableToBuckets);
+		registerBucket(bucket.getId(), entity2Bucket, tableToBuckets);
 
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 

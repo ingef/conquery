@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -71,6 +70,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 
 		storage.openStores(persistenceMapper, metricRegistry);
+
+		storage.injectInto(communicationMapper);
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);

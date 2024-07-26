@@ -161,7 +161,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().stream().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		final Concept<?> concept = namespaceStorage.getAllConcepts().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
