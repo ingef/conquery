@@ -55,7 +55,6 @@ import org.jooq.impl.SQLDataType;
  * <p>
  * {@link FlagFilter} conversion filters events if not at least 1 of the flag columns has a true value for the corresponding entry.
  * <p>
- * TODO adjust
  *
  * <pre>
  * {@code
@@ -63,8 +62,11 @@ import org.jooq.impl.SQLDataType;
  * 		select "pid"
  * 		from "preprocessing"
  * 		where (
- * 			"preprocessing"."b" = true
- * 			or "preprocessing"."c" = true
+ * 			-- non-selected flags are explicitly excluded
+ * 			"preprocessing"."a" = false and (
+ * 				"preprocessing"."b" = true
+ *   			or "preprocessing"."c" = true
+ * 			)
  * 		)
  * )
  * }
