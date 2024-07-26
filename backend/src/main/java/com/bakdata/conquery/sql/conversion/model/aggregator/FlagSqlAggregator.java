@@ -54,6 +54,8 @@ import org.jooq.impl.SQLDataType;
  * <hr>
  * <p>
  * {@link FlagFilter} conversion filters events if not at least 1 of the flag columns has a true value for the corresponding entry.
+ * <p>
+ * TODO adjust
  *
  * <pre>
  * {@code
@@ -144,23 +146,35 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 
 	@Override
 	public SqlFilters convertToSqlFilter(FlagFilter flagFilter, FilterContext<Set<String>> filterContext) {
-		SqlTables connectorTables = filterContext.getTables();
-		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
 
-		List<ExtractingSqlSelect<Boolean>> rootSelects = getRequiredColumns(flagFilter.getFlags(), filterContext.getValue())
-				.stream()
-				.map(Column::getName)
-				.map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
-				.collect(Collectors.toList());
+		List<Map.Entry<String, Column>> includedFlags = new ArrayList<>();
+		List<Map.Entry<String, Column>> excludedFlags = new ArrayList<>();
+
+		flagFilter.getFlags()
+				  .entrySet()
+				  .forEach(entry -> {
+					  String flag = entry.getKey();
+					  if (filterContext.getValue().contains(flag)) {
+						  includedFlags.add(entry);
+					  }
+					  else {
+						  excludedFlags.add(entry);
+					  }
+				  });
+
+		SqlTables connectorTables = filterContext.getTables();
+		List<ExtractingSqlSelect<Boolean>> includedRootSelects = createFilterRootSelects(includedFlags, connectorTables);
+		List<ExtractingSqlSelect<Boolean>> excludedRootSelects = createFilterRootSelects(excludedFlags, connectorTables);
 
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
-														 .preprocessingSelects(rootSelects)
+														 .preprocessingSelects(includedRootSelects)
+														 .preprocessingSelects(excludedRootSelects)
 														 .build();
 
-		List<Field<Boolean>> flagFields = rootSelects.stream()
-													 .map(sqlSelect -> sqlSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select())
-													 .toList();
-		FlagCondition flagCondition = new FlagCondition(flagFields);
+		List<Field<Boolean>> qualifiedIncludedFlags = qualifyFilterRootSelects(includedRootSelects, connectorTables);
+		List<Field<Boolean>> qualifiedExcludedFlags = qualifyFilterRootSelects(excludedRootSelects, connectorTables);
+
+		FlagCondition flagCondition = new FlagCondition(qualifiedIncludedFlags, qualifiedExcludedFlags);
 		WhereClauses whereClauses = WhereClauses.builder()
 												.eventFilter(flagCondition)
 												.build();
@@ -168,24 +182,40 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		return new SqlFilters(selects, whereClauses);
 	}
 
-	/**
-	 * @return Columns names of a given flags map that match the selected flags of the filter value.
-	 */
-	private static List<Column> getRequiredColumns(Map<String, Column> flags, Set<String> selectedFlags) {
-		return selectedFlags.stream()
-							.map(flags::get)
-							.toList();
+	private static List<ExtractingSqlSelect<Boolean>> createFilterRootSelects(final List<Map.Entry<String, Column>> flags, final SqlTables connectorTables) {
+		return flags.stream()
+					.map(Map.Entry::getValue)
+					.map(Column::getName)
+					.map(columnName -> new ExtractingSqlSelect<>(connectorTables.getRootTable(), columnName, Boolean.class))
+					.collect(Collectors.toList());
+	}
+
+	private static List<Field<Boolean>> qualifyFilterRootSelects(final List<ExtractingSqlSelect<Boolean>> rootSelectFlags, final SqlTables connectorTables) {
+		return rootSelectFlags.stream()
+							  .map(sqlSelect -> sqlSelect.qualify(connectorTables.cteName(ConceptCteStep.PREPROCESSING)).select())
+							  .toList();
 	}
 
 	@Override
 	public Condition convertForTableExport(FlagFilter filter, FilterContext<Set<String>> filterContext) {
 
-		List<Field<Boolean>> flagFields = getRequiredColumns(filter.getFlags(), filterContext.getValue())
-				.stream()
-				.map(column -> DSL.field(DSL.name(column.getTable().getName(), column.getName()), Boolean.class))
-				.toList();
+		List<Field<Boolean>> includedFlags = new ArrayList<>();
+		List<Field<Boolean>> excludedFlags = new ArrayList<>();
 
-		return new FlagCondition(flagFields).condition();
+		filter.getFlags().forEach((flag, column) -> {
+			if (filterContext.getValue().contains(flag)) {
+				includedFlags.add(toBooleanField(column));
+			}
+			else {
+				excludedFlags.add(toBooleanField(column));
+			}
+		});
+
+		return new FlagCondition(includedFlags, excludedFlags).condition();
+	}
+
+	private static Field<Boolean> toBooleanField(final Column column) {
+		return DSL.field(DSL.name(column.getTable().getName(), column.getName()), Boolean.class);
 	}
 
 }

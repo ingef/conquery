@@ -1,0 +1,8 @@
+pid,a,b,c
+1,true,true,true
+1,false,false,false
+2,true,false,false
+3,false,true,true
+4,,true,true
+5,false,true,false
+6,false,false,true
