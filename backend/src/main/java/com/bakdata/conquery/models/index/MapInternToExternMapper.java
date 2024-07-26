@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -53,7 +55,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@Setter(onMethod_ = @TestOnly)
 	private NamespaceStorage storage;
 
-	@Setter
+	@JsonIgnore
 	@NotNull
 	private DatasetId dataset;
 
@@ -74,7 +76,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
-	private MapIndex int2ext = null;
+	private CompletableFuture<MapIndex> int2ext = null;
 
 
 	@Override
@@ -91,18 +93,20 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
 
 		MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
-		try {
-			int2ext = mapIndex.getIndex(key);
-		} catch (Exception e) {
-			log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));
-		}
+
+		int2ext = CompletableFuture.supplyAsync(() -> mapIndex.getIndex(key)).whenComplete((m, e) -> {
+			if (e != null) {
+				log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));
+			}
+		});
+
 		return this;
 	}
 
 
 	@Override
 	public boolean initialized() {
-		return int2ext != null;
+		return int2ext != null && int2ext.isDone();
 	}
 
 	@Override
@@ -111,7 +115,17 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 			return internalValue;
 		}
 
-		return int2ext.getOrDefault(internalValue, internalValue);
+		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
+			return internalValue;
+		}
+
+		try {
+			return int2ext.get().getOrDefault(internalValue, internalValue);
+		} catch (InterruptedException | ExecutionException e) {
+			// Should never be reached
+			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, (Exception) (log.isTraceEnabled() ? e : null));
+			return internalValue;
+		}
 	}
 
 	@Override

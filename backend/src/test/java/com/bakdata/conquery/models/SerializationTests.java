@@ -25,8 +25,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -235,12 +233,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(Bucket.class)
 				.objectMappers(getShardInternalMapper())
-				.injectables(new Injectable() {
-					@Override
-					public MutableInjectableValues inject(MutableInjectableValues values) {
-						return values.add(Validator.class, validator);
-					}
-				})
+				.injectables(values -> values.add(Validator.class, validator))
 				.test(bucket);
 
 	}
@@ -271,6 +264,9 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		namespaceStorage.addTable(table);
 
+		table.setStorage(getNamespaceStorage());
+		table.init();
+
 		SerializationTestUtil
 				.forType(Table.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
@@ -285,6 +281,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final Dataset dataset = createDataset(namespaceStorage, workerStorage);
 		TreeConcept concept = createConcept(dataset, namespaceStorage, workerStorage);
+		concept.init();
 
 		SerializationTestUtil
 				.forType(Concept.class)

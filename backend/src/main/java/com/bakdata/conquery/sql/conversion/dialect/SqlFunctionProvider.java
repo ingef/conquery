@@ -186,34 +186,16 @@ public interface SqlFunctionProvider {
 		return column.in(values);
 	}
 
-	default TableOnConditionStep<Record> innerJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.innerJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> fullOuterJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> fullOuterJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.fullOuterJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> leftJoin(
-			Table<Record> leftPartQueryBase,
-			QueryStep rightPartQS,
-			List<Condition> joinConditions
-	) {
-		return leftPartQueryBase
-				.leftJoin(DSL.name(rightPartQS.getCteName()))
-				.on(joinConditions.toArray(Condition[]::new));
+	default TableOnConditionStep<Record> leftJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+		return leftPart.leftJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default Field<Date> toDateField(String dateExpression) {

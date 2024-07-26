@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.caffeine.MetricsStatsCounter;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -71,9 +70,7 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 		concepts = storageFactory.createConceptStore(pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
-		decorateSecondaryIdDescriptionStore(secondaryIds);
 		decorateTableStore(tables);
-		decorateImportStore(imports);
 		decorateConceptStore(concepts);
 
 
@@ -95,10 +92,6 @@ public abstract class NamespacedStorage extends ConqueryStorage implements NsIdR
 	}
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-	}
-
-	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {

@@ -18,7 +18,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -57,6 +56,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		if (mapper != null) {
 			this.injectInto(mapper);
 		}
+
 		authUser = storageFactory.createUserStore("meta", mapper);
 		authRole = storageFactory.createRoleStore("meta", mapper);
 		authGroup = storageFactory.createGroupStore("meta", mapper);

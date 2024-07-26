@@ -39,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
-	private static final long serialVersionUID = 1L;
 
 	@Nullable
 	@JsonAlias("validityDatesTooltip")
@@ -131,10 +130,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Override
 	public DatasetId getDataset() {
 		return getConcept().getDataset();
-	}
-
-	public void init() {
-		getSelects().forEach(Select::init);
 	}
 
 	public Filter<?> getFilterByName(String name) {

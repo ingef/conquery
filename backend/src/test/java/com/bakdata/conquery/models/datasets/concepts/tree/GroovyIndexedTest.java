@@ -21,10 +21,9 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.extentions.NamespaceStorageExtension;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +41,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j @Execution(ExecutionMode.SAME_THREAD)
 public class GroovyIndexedTest {
+
+	public static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 
 	public static final int SEED = 500;
 
@@ -68,8 +69,8 @@ public class GroovyIndexedTest {
 		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
 
 		// load concept tree from json
-		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest", null);
-		storage.openStores(mapper, new MetricRegistry());
+		final NamespaceStorage storage = NAMESPACE_STORAGE_EXTENSION.getStorage();
+
 		Table table = new Table();
 
 		table.setName("the_table");
@@ -102,12 +103,10 @@ public class GroovyIndexedTest {
 		indexedConcept = conceptReader.readValue(node);
 
 		indexedConcept.setDataset(dataset.getId());
-		indexedConcept.initElements();
 
 		oldConcept = conceptReader.readValue(node);
 
 		oldConcept.setDataset(dataset.getId());
-		oldConcept.initElements();
 	}
 
 

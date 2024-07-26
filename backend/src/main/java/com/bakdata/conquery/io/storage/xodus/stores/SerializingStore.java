@@ -447,7 +447,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	/**
-	 * Deserializes the gives serial value (either a key or a value of an store entry) to a concrete object. If that fails the entry-value is dumped if configured so to a file using the entry-key for the filename.
+	 * Deserializes the given serial value (either a key or a value of a store entry) to a concrete object. If that fails the entry-value is dumped if configured so to a file using the entry-key for the filename.
 	 *
 	 * @param <TYPE>                  The deserialized object type.
 	 * @param serial                  The to be deserialized object (key or value of an entry)
@@ -463,7 +463,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		catch (Exception e) {
 			// With trace also print the stacktrace
-			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), log.isTraceEnabled() ? e : null);
+			log.warn(onFailWarnMsgFmt + "(enable TRACE for exception logging)", onFailKeyStringSupplier.get(), log.isTraceEnabled() ? e : null);
 
 			if (shouldDumpUnreadables()) {
 				dumpToFile(onFailOrigValue.getBytesUnsafe(), onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);

@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -28,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.TreeConceptInitializer.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing<TreeConcept> {
 
 	@JsonIgnore
 	@Getter
@@ -95,9 +95,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}
 
-	@Override
-	public void initElements() throws ConfigurationException, JSONException {
-		super.initElements();
+	public TreeConcept init() {
 		setLocalId(0);
 		localIdMap.add(this);
 
@@ -108,7 +106,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 				continue;
 			}
 
-			con.getCondition().init(this);
+			try {
+				con.getCondition().init(this);
+			} catch (ConceptConfigurationException e) {
+				throw new RuntimeException("Unable to init condition", e);
+			}
 		}
 
 		for (int i = 0; i < openList.size(); i++) {
@@ -121,26 +123,28 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 				ctc.init();
 
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
 		}
+
+		return this;
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
+		return findMostSpecificChild(stringValue, rowMap, getChildren());
 	}
 
 	private ConceptTreeChild findMostSpecificChild(
 			String stringValue,
 			CalculatedValue<Map<String, Object>> rowMap,
-			ConceptTreeChild best,
+
 			List<ConceptTreeChild> currentList
 	)
 			throws ConceptConfigurationException {
+		ConceptTreeChild best = null;
 
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;
@@ -209,7 +213,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(int[] ids) {
 		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
@@ -268,19 +272,5 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return null;
 	}
 
-	// TODO move to Initializing.Converter
-	public static class TreeConceptInitializer extends StdConverter<TreeConcept, TreeConcept> {
-		@Override
-		public TreeConcept convert(TreeConcept value) {
-			log.trace("Initializing {}", value);
-			try {
-				value.initElements();
-				return value;
-
-			}
-			catch (ConfigurationException | JSONException e) {
-				throw new RuntimeException("Failed to initialize: " + value, e);
-			}
-		}
-	}
+	public static class TreeConceptInitializer extends Initializing.Converter<TreeConcept> {}
 }

@@ -3,11 +3,9 @@ package com.bakdata.conquery.io.storage;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -27,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NamespaceStorage extends NamespacedStorage {
+public class NamespaceStorage extends NamespacedStorage implements Injectable {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
 	protected IdentifiableStore<SearchIndex> searchIndexes;

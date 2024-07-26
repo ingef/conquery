@@ -12,7 +12,10 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -47,7 +50,10 @@ public class SerializationTestUtil<T> {
 					User.ShiroUserAdapter.class,
 					Validator.class,
 					WeakReference.class,
-					NamespaceStorage.class
+					NamespacedStorage.class,
+					WorkerStorage.class,
+					NamespaceStorage.class,
+					MetaStorage.class
 			};
 
 	private final JavaType type;
@@ -150,8 +156,7 @@ public class SerializationTestUtil<T> {
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
 				.usingOverriddenEquals()
-				.ignoringFieldsOfTypes(TYPES_TO_IGNORE)
-				.ignoringFields("metaStorage", "nsIdResolver");
+				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
 
 		// Apply assertion customizations
 		ass = assertCustomizer.apply(ass);

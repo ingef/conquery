@@ -184,7 +184,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public Collection<WorkerStorage> discoverWorkerStorages() {
-		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
+		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, storePath), WORKER_STORES);
 	}
 
 

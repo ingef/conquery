@@ -33,6 +33,7 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService, MetricRegistry metricRegistry) {
 		ArrayList<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
+		injectables.add(storage);
 
 		injectables.add(storage);
 

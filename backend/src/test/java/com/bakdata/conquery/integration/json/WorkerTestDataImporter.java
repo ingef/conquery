@@ -72,8 +72,6 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 	}
 
-
-
 	@Override
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));

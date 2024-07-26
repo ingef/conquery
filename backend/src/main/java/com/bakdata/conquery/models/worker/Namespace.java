@@ -1,5 +1,12 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
@@ -46,6 +53,8 @@ public abstract class Namespace {
 
 	private final IndexService indexService;
 
+	private final EntityResolver entityResolver;
+
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
@@ -56,16 +65,14 @@ public abstract class Namespace {
 	public void close() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
 		try {
 			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
 	}
@@ -73,8 +80,7 @@ public abstract class Namespace {
 	public void remove() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
@@ -88,15 +94,15 @@ public abstract class Namespace {
 
 	public void updateInternToExternMappings() {
 		storage.getAllConcepts()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(con -> con.getSelects().stream())
-			   .filter(MappableSingleColumnSelect.class::isInstance)
-			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+				.flatMap(c -> c.getConnectors().stream())
+				.flatMap(con -> con.getSelects().stream())
+				.filter(MappableSingleColumnSelect.class::isInstance)
+				.map(MappableSingleColumnSelect.class::cast)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
 		storage.getSecondaryIds()
-			   .filter(desc -> desc.getMapping() != null)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
+				.filter(desc -> desc.getMapping() != null)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
 	}
 
 	public void clearIndexCache() {
@@ -139,9 +145,9 @@ public abstract class Namespace {
 		getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+					updateInternToExternMappings();
 					updateMatchingStats();
 					updateFilterSearch();
-					updateInternToExternMappings();
 				}
 		));
 

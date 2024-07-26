@@ -274,7 +274,7 @@ public class DefaultColumnNameTest {
 			}
 
 			concept.setChildren(children);
-			concept.initElements();
+			concept.init();
 
 			return concept;
 		}

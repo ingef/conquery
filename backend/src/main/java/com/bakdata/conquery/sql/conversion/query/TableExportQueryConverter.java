@@ -201,8 +201,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getResolvedTable().getName()));
+		Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
 		List<Condition> joinOnIds = ids.join(convertedPrerequisite.getQualifiedSelects().getIds());
-		return functionProvider.innerJoin(connectorTable, convertedPrerequisite, joinOnIds);
+		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinOnIds);
 	}
 
 }

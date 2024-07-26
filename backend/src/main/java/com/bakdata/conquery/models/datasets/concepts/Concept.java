@@ -82,11 +82,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 		return null;
 	}
 
-	public void initElements() throws ConfigurationException, JSONException {
-		getSelects().forEach(Select::init);
-		getConnectors().forEach(CONNECTOR::init);
-	}
-
 	@Override
 	@JsonIgnore
 	public Concept<?> getConcept() {

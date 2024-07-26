@@ -96,7 +96,7 @@ public class Workers implements NsIdResolver {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, metricRegistry);
 
 		addWorker(worker);
 

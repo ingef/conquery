@@ -4,6 +4,8 @@ import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.events.Bucket;
@@ -22,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(of = "worker")
-public class WorkerStorage extends NamespacedStorage {
+public class WorkerStorage extends NamespacedStorage implements Injectable {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> buckets;
@@ -30,7 +32,7 @@ public class WorkerStorage extends NamespacedStorage {
 
 	private WorkerInformation cachedWorker;
 
-	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
+	public WorkerStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
@@ -41,10 +43,6 @@ public class WorkerStorage extends NamespacedStorage {
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);
 		cBlocks = getStorageFactory().createCBlockStore(getPathName(), objectMapper);
-
-		decorateWorkerStore(worker);
-		decorateBucketStore(buckets);
-		decorateCBlockStore(cBlocks);
 	}
 
 	@Override
@@ -62,20 +60,6 @@ public class WorkerStorage extends NamespacedStorage {
 		);
 	}
 
-
-	private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
-		// Nothing to decorate
-	}
-
-	// CBlocks
 
 	public void addCBlock(CBlock cBlock) {
 		log.debug("Adding CBlock[{}]", cBlock.getId());

@@ -22,11 +22,7 @@ public class CQYesConverter implements NodeConverter<CQYes> {
 	@Override
 	public ConversionContext convert(CQYes cqYes, ConversionContext context) {
 
-		ColumnConfig primaryColumnConfig = context.getIdColumns().getIds().stream()
-												  .filter(ColumnConfig::isPrimaryId)
-												  .findFirst()
-												  .orElseThrow(() -> new IllegalStateException("SQL mode requires a primary key column in IdColumnConfig"));
-
+		ColumnConfig primaryColumnConfig = context.getIdColumns().findPrimaryIdColumn();
 		Field<Object> primaryColumn = DSL.field(DSL.name(primaryColumnConfig.getField()));
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 
