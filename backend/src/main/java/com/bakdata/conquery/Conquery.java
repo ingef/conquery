@@ -80,18 +80,6 @@ public class Conquery extends Application<ConqueryConfig> {
 			}
 		});
 
-		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
-			@Override
-			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				ConfiguredBundle.super.run(configuration, environment);
-			}
-
-			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-				ConfiguredBundle.super.initialize(bootstrap);
-			}
-		});
-
 		bootstrap.addBundle(new PrometheusBundle());
 	}
 
