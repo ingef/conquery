@@ -7,15 +7,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.mina.*;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -37,14 +34,13 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
@@ -61,9 +57,11 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 @Getter
-public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
+public class ShardNode implements ConfiguredBundle<ConqueryConfig>, IoHandler, Managed {
 
 	public static final String DEFAULT_NAME = "shard-node";
+
+	private final String name;
 
 	private NioSocketConnector connector;
 	private ConnectFuture future;
@@ -82,12 +80,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	public ShardNode(String name) {
-		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");
+		this.name = name;
 	}
 
 
 	@Override
-	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	public void run(ConqueryConfig config, Environment environment) throws Exception {
 		this.environment = environment;
 		this.config = config;
 

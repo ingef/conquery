@@ -104,7 +104,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
 				}
 
-				sc.run(environment, namespace, clone);
+				sc.run(clone, environment);
 				return sc;
 			}));
 		}
