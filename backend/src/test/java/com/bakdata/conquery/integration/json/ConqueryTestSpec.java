@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -51,8 +52,8 @@ public abstract class ConqueryTestSpec {
 	@Nullable
 	SqlSpec sqlSpec;
 
-	@Nullable
-	private IdColumnConfig idColumns;
+	// default IdColumnConfig for SQL mode
+	private IdColumnConfig idColumns = null;
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
