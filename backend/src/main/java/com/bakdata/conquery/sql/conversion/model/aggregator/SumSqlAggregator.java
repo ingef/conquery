@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -96,7 +95,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	private static final String SUM_DISTINCT_SUFFIX = "sum_distinct";
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
 		Column sumColumn = sumSelect.getColumn();
 		Column subtractColumn = sumSelect.getSubtractColumn();

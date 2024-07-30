@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -9,7 +8,7 @@ import org.jooq.Field;
 public class RandomValueSelectConverter implements SelectConverter<RandomValueSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(RandomValueSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(RandomValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		ConnectorSqlTables tables = selectContext.getTables();
 
