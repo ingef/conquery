@@ -1,12 +1,9 @@
 package com.bakdata.conquery.sql.conversion.query;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
@@ -28,7 +25,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -50,9 +46,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	@Override
 	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
 
+
 		QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
 		Map<Column, Integer> positions = tableExportQuery.getPositions();
 		CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
+
+		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
 														  .flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
@@ -61,7 +60,8 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 																  dateRestriction,
 																  convertedPrerequisite,
 																  positions,
-																  context
+																  context,
+																  totalColumns
 														  )))
 														  .toList();
 
@@ -108,25 +108,30 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			CDateRange dateRestriction,
 			QueryStep convertedPrerequisite,
 			Map<Column, Integer> positions,
-			ConversionContext context
+			ConversionContext context, int totalColumns
 	) {
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, dateRestriction, context);
 
-		List<Field<?>> exportColumns = new ArrayList<>();
-		exportColumns.add(createSourceInfoSelect(cqTable));
+		Field<?>[] exportColumns = new Field[totalColumns];
 
-		positions.entrySet().stream()
-				 .sorted(Comparator.comparingInt(Map.Entry::getValue))
-				 .map(entry -> createColumnSelect(cqTable, entry))
-				 .forEach(exportColumns::add);
+		exportColumns[0] = createSourceInfoSelect(cqTable);
+
+		for (int index = 1; index < exportColumns.length; index++) {
+			exportColumns[index] = DSL.inline(null, Object.class).as("col-%d".formatted(index)); //TODO richtiger name?
+		}
+
+		for (Column column : cqTable.getConnector().getTable().getColumns()) {
+			int position = positions.get(column);
+			exportColumns[position] = createColumnSelect(column, position);
+		}
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
 								 .validityDate(validityDate)
-								 .sqlSelects(exportColumns.stream().map(FieldWrapper::new).collect(Collectors.toList()))
+								 .sqlSelects(Arrays.stream(exportColumns).map(FieldWrapper::new).toList())
 								 .build();
 
 		List<Condition> filters = cqTable.getFilters().stream().map(filterValue -> filterValue.convertForTableExport(ids, context)).toList();
@@ -156,39 +161,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
-	private static Field<?> createColumnSelect(CQTable table, Map.Entry<Column, Integer> entry) {
+	private static Field<?> createColumnSelect(Column column, Integer position) {
+		String columnName = "%s-%s".formatted(column.getName(), position);
 
-		Column column = entry.getKey();
-		Integer columnPosition = entry.getValue();
-		String columnName = "%s-%s".formatted(column.getName(), columnPosition);
-
-		if (!isColumnOfTable(column, table)) {
-			return DSL.inline(null, Object.class).as(columnName);
-		}
 		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
 				  .as(columnName);
-	}
-
-	private static boolean isColumnOfTable(Column column, CQTable table) {
-		return columnIsConnectorColumn(column, table)
-			   || columnIsSecondaryIdOfConnectorTable(column, table)
-			   || columnIsConnectorTableColumn(column, table);
-	}
-
-	private static boolean columnIsConnectorTableColumn(Column column, CQTable table) {
-		return matchesTableColumnOn(table, tableColumn -> tableColumn == column);
-	}
-
-	private static boolean columnIsSecondaryIdOfConnectorTable(Column column, CQTable table) {
-		return column.getSecondaryId() != null && matchesTableColumnOn(table, tableColumn -> tableColumn.getSecondaryId() == column.getSecondaryId());
-	}
-
-	private static boolean matchesTableColumnOn(CQTable table, Predicate<Column> condition) {
-		return Arrays.stream(table.getConnector().getTable().getColumns()).anyMatch(condition);
-	}
-
-	private static boolean columnIsConnectorColumn(Column column, CQTable table) {
-		return table.getConnector().getColumn() != null && table.getConnector().getColumn() == column;
 	}
 
 	private static Table<Record> joinConnectorTableWithPrerequisite(
