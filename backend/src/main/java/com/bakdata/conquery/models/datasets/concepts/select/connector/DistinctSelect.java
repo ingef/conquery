@@ -28,8 +28,12 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(super.getResultType());
+	public ResultType<?> getResultType() {
+		if(getMapping() == null){
+			return new ResultType.ListT<>(ResultType.resolveResultType(getColumn().getType()));
+		}
+
+		return getMapping().createMappedType(true);
 	}
 
 	@Override

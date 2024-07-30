@@ -11,11 +11,13 @@ import lombok.ToString;
 public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	private final String externalTemplate;
+	private final boolean allowMultiple;
 
 
-	public MapIndexKey(URI csv, String internalColumn, String externalTemplate) {
+	public MapIndexKey(URI csv, String internalColumn, String externalTemplate, boolean allowMultiple) {
 		super(csv, internalColumn);
 		this.externalTemplate = externalTemplate;
+		this.allowMultiple = allowMultiple;
 	}
 
 	@Override
@@ -25,7 +27,7 @@ public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	@Override
 	public MapIndex createIndex(String defaultEmptyLabel) {
-		return new MapIndex(externalTemplate);
+		return new MapIndex(externalTemplate, allowMultiple);
 	}
 
 }

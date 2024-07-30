@@ -5,9 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
@@ -19,6 +22,7 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -235,6 +239,101 @@ public abstract class ResultType<T> {
 		@Override
 		public List<List<Integer>> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getDateRangeList(resultSet, columnIndex);
+		}
+	}
+
+	@Data
+	public static class MappedMultiStringT extends ResultType<List<String>> {
+
+		private final Function<String, List<String>> mapping;
+
+		@Override
+		public String typeInfo() {
+			return "LIST[STRING]";
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+
+			final List<String> mappedResult = mapping.apply(((String) f));
+
+			// Not sure if this escaping is enough
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			final StringJoiner joiner = listFormat.createListJoiner();
+
+			for (String obj : mappedResult) {
+				joiner.add(listFormat.escapeListElement(obj));
+			}
+
+			return joiner.toString();
+		}
+
+		@Override
+		public List<String> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+
+			final String result = resultSetProcessor.getString(resultSet, columnIndex);
+
+			if (result == null) {
+				return null;
+			}
+
+			return mapping.apply(result);
+		}
+
+		@Override
+		protected List<List<String>> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return null; //TODO
+		}
+	}
+
+	@Data
+	public static class MappedListMultiStringT extends ResultType<List<String>> {
+
+		private final Function<String, List<String>> mapping;
+
+		@Override
+		public String typeInfo() {
+			return "LIST[STRING]";
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			final StringJoiner joiner = listFormat.createListJoiner();
+
+			final Set<String> barrier = new HashSet<>();
+
+			for (String string : ((List<String>) f)) {
+
+				final List<String> mappedResult = mapping.apply(string);
+
+				for (String obj : mappedResult) {
+					if (!barrier.add(obj)) {
+						continue;
+					}
+
+					joiner.add(listFormat.escapeListElement(obj));
+				}
+			}
+
+			return joiner.toString();
+		}
+
+		@Override
+		public List<String> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+
+			final String result = resultSetProcessor.getString(resultSet, columnIndex);
+
+			if (result == null) {
+				return null;
+			}
+
+			return mapping.apply(result);
+		}
+
+		@Override
+		protected List<List<String>> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return null; //TODO
 		}
 	}
 

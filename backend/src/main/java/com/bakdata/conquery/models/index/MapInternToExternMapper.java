@@ -2,23 +2,27 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URI;
-
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -27,11 +31,13 @@ import org.jetbrains.annotations.TestOnly;
 
 @Slf4j
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
-@RequiredArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
-@Getter
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId> {
+@Data
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+@AllArgsConstructor
+@Builder
+@ToString(onlyExplicitlyIncluded = true)
+public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper {
 
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
@@ -50,31 +56,34 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@ToString.Include
 	@NotEmpty
-	private final String name;
+	private String name;
 	@ToString.Include
 	@NotNull
-	private final URI csv;
+	private URI csv;
 	@ToString.Include
 	@NotEmpty
-	private final String internalColumn;
+	private String internalColumn;
 	@ToString.Include
 	@NotEmpty
-	private final String externalTemplate;
+	private String externalTemplate;
+
+	@ToString.Include
+	private boolean allowMultiples;
 
 
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
-	private MapIndex int2ext = null;
+	private MapIndex int2ext;
 
 
 	@Override
 	public synchronized void init() {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
-		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
+		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
 
-		int2ext = mapIndex.getIndex(new MapIndexKey(resolvedURI, internalColumn, externalTemplate));
+		int2ext = mapIndex.getIndex(new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiples));
 	}
 
 
@@ -83,13 +92,27 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		return int2ext != null;
 	}
 
-	@Override
-	public String external(String internalValue) {
+	public List<String> externalValue(String internalValue) {
 		if(!initialized()){
-			return internalValue;
+			return List.of(internalValue);
 		}
 
-		return int2ext.getOrDefault(internalValue, internalValue);
+		return int2ext.get(internalValue, internalValue);
+	}
+
+	@Override
+	public ResultType<?> createMappedType(boolean listT) {
+
+		if (allowMultiples) {
+			if(listT){
+				return new ResultType.MappedListMultiStringT(this::externalValue);
+			}
+			else {
+				return new ResultType.MappedMultiStringT(this::externalValue);
+			}
+		}
+
+		return new ResultType.StringT((value, ignored) -> externalValue((String) value).get(0));
 	}
 
 	@Override
