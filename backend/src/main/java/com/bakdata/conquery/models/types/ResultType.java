@@ -18,7 +18,11 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
