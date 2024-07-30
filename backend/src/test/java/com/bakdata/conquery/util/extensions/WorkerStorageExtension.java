@@ -1,4 +1,4 @@
-package com.bakdata.conquery.util.extentions;
+package com.bakdata.conquery.util.extensions;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.WorkerStorage;
