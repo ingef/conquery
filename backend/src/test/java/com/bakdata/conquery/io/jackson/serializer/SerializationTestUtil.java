@@ -101,11 +101,16 @@ public class SerializationTestUtil<T> {
 		}
 
 		for (ObjectMapper objectMapper : objectMappers) {
-			test(
-					value,
-					expected,
-					objectMapper
-			);
+			try {
+				test(
+						value,
+						expected,
+						objectMapper
+				);
+			} catch (Exception e) {
+				Class<?> activeView = objectMapper.getSerializationConfig().getActiveView();
+				throw new IllegalStateException("Serdes failed with object mapper using view '" + activeView + "'", e);
+			}
 		}
 	}
 

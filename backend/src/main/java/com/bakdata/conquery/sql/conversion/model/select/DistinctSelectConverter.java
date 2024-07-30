@@ -6,7 +6,6 @@ import static org.jooq.impl.DSL.name;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -64,7 +63,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	}
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
 		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
 
@@ -84,7 +83,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	}
 
 	private static QueryStep createAggregationCte(
-			SelectContext<Connector, ConnectorSqlTables> selectContext,
+			SelectContext<ConnectorSqlTables> selectContext,
 			FieldWrapper<Object> preprocessingSelect,
 			QueryStep distinctSelectCte,
 			String alias
@@ -113,7 +112,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	private static QueryStep createDistinctSelectCte(
 			FieldWrapper<Object> preprocessingSelect,
 			String alias,
-			SelectContext<Connector, ConnectorSqlTables> selectContext
+			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		// values to aggregate must be event-filtered first
 		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
