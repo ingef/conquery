@@ -19,9 +19,11 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString
 public class NamespaceStorage extends NamespacedStorage implements Injectable {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
@@ -43,11 +45,6 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
-	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
-		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
-	}
-
-
 	@Override
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
@@ -60,7 +57,6 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
-		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 

@@ -20,10 +20,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.TestOnly;
@@ -35,6 +32,7 @@ import org.jetbrains.annotations.TestOnly;
 @FieldNameConstants
 @Getter
 @JsonDeserialize(converter = MapInternToExternMapper.Initializer.class )
+@EqualsAndHashCode(callSuper = true)
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId>, Initializing<MapInternToExternMapper> {
 
 
@@ -42,17 +40,22 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
 	private IndexService mapIndex;
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
 	private ConqueryConfig config;
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
 	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
 	private NamespaceStorage storage;
 
 	@JsonIgnore
@@ -76,6 +79,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
+	@EqualsAndHashCode.Exclude
 	private CompletableFuture<MapIndex> int2ext = null;
 
 
