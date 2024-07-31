@@ -12,7 +12,11 @@ import jakarta.validation.Validator;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.mina.*;
+import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
+import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
+import com.bakdata.conquery.io.mina.ChunkReader;
+import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -341,7 +345,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig>, IoHandler, M
 
 				future.cancel();
 				// Sleep thirty seconds then retry.
-				TimeUnit.SECONDS.sleep(30);
+				TimeUnit.SECONDS.sleep(config.getCluster().getConnectRetryTimeout().toSeconds());
 
 			}
 			catch (RuntimeIoException e) {
