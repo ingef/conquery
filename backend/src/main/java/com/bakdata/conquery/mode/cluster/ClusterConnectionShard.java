@@ -53,8 +53,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	private final JobManager jobManager;
 	private final Supplier<ObjectMapper> communicationMapperSupplier;
 
-	private final ScheduledExecutorService scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
-
+	private ScheduledExecutorService scheduler;
 	private NioSocketConnector connector;
 	private ConnectFuture future;
 	private NetworkMessageContext.ShardNodeNetworkContext context;
@@ -272,6 +271,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void start() throws Exception {
+		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
 		// Connect async as the manager might not be up jet or is started by a test in succession
 		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
 
@@ -282,5 +282,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	@Override
 	public void stop() throws Exception {
 		disconnectFromCluster();
+		scheduler.shutdown();
 	}
 }
