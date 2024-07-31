@@ -67,14 +67,13 @@ public class IntegrationTests {
 	@Getter
 	private final File workDir;
 	@Getter
-	public ConqueryConfig config;
+	public final ConqueryConfig config  = new ConqueryConfig();
 
 	@SneakyThrows(IOException.class)
 	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
 		this.defaultTestRoot = defaultTestRoot;
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
-		this.config = new ConqueryConfig();
 		ConfigOverride.configurePathsAndLogging(this.config, this.workDir);
 	}
 
