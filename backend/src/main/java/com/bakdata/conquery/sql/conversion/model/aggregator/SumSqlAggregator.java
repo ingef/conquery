@@ -171,7 +171,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column column = filter.getColumn();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
+		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
+		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 
 		Column subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
@@ -180,7 +181,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		String subtractColumnName = subtractColumn.getName();
 		String subtractTableName = subtractColumn.getTable().getName();
-		Field<Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), Number.class);
+		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
 		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 
