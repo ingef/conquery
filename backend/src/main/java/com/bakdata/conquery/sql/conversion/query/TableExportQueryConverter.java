@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
@@ -113,7 +114,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
-		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, dateRestriction, context);
+		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
 		List<Field<?>> exportColumns = new ArrayList<>();
 		exportColumns.add(createSourceInfoSelect(cqTable));
@@ -130,7 +131,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 								 .build();
 
 		List<Condition> filters = cqTable.getFilters().stream().map(filterValue -> filterValue.convertForTableExport(ids, context)).toList();
-		Table<Record> joinedTable = joinConnectorTableWithPrerequisite(cqTable, ids, convertedPrerequisite, context);
+		Table<Record> joinedTable = joinConnectorTableWithPrerequisite(cqTable, ids, convertedPrerequisite, dateRestriction, context);
 
 		return QueryStep.builder()
 						.cteName(conceptConnectorName)
@@ -140,12 +141,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 						.build();
 	}
 
-	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, CDateRange dateRestriction, ConversionContext context) {
+	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, ConversionContext context) {
 		if (table.findValidityDate() == null) {
 			return Optional.of(ColumnDateRange.empty());
 		}
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate(), dateRestriction);
+		ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
 		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
 		Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
@@ -195,13 +196,20 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			CQTable cqTable,
 			SqlIdColumns ids,
 			QueryStep convertedPrerequisite,
+			CDateRange dateRestriction,
 			ConversionContext context
 	) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().getTable().getName()));
 		Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
-		List<Condition> joinOnIds = ids.join(convertedPrerequisite.getQualifiedSelects().getIds());
-		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinOnIds);
+
+		ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
+		List<Condition> joinConditions = Stream.concat(
+				ids.join(convertedPrerequisite.getQualifiedSelects().getIds()).stream(),
+				Stream.of(functionProvider.dateRestriction(functionProvider.forCDateRange(dateRestriction), validityDate))
+		).toList();
+
+		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);
 	}
 
 }
