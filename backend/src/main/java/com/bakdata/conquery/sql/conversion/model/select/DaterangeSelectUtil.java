@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -45,7 +44,7 @@ class DaterangeSelectUtil {
 	public static <S extends DaterangeSelectOrFilter & Named<?>> ConnectorSqlSelects createConnectorSqlSelects(
 			S select,
 			AggregationFunction aggregationFunction,
-			SelectContext<Connector, ConnectorSqlTables> context
+			SelectContext<ConnectorSqlTables> context
 	) {
 		String alias = context.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = context.getTables();
@@ -95,7 +94,7 @@ class DaterangeSelectUtil {
 		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 
-	private static SqlTables createTables(String alias, SelectContext<Connector, ConnectorSqlTables> context) {
+	private static SqlTables createTables(String alias, SelectContext<ConnectorSqlTables> context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
 		String eventFilterCteName = context.getTables().cteName(EVENT_FILTER);
 		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getSqlDialect()));
@@ -110,7 +109,7 @@ class DaterangeSelectUtil {
 		return new SqlTables(eventFilterCteName, cteNameMap, predecessorMapping);
 	}
 
-	private static QueryStep applyIntervalPacking(ColumnDateRange daterange, SqlTables dateUnionTables, SelectContext<?, ?> context) {
+	private static QueryStep applyIntervalPacking(ColumnDateRange daterange, SqlTables dateUnionTables, SelectContext<?> context) {
 
 		String eventFilterCteName = context.getTables().cteName(EVENT_FILTER);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()

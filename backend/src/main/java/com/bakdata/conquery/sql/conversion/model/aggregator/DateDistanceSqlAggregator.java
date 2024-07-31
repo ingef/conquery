@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -36,7 +35,7 @@ import org.jooq.impl.DSL;
 public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSelect>, FilterConverter<DateDistanceFilter, Range.LongRange> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		Column column = select.getColumn();
 		String alias = selectContext.getNameGenerator().selectName(select);
