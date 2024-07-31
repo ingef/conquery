@@ -34,7 +34,16 @@
           "id": "geschlecht.geschlecht",
           "dateColumn": {
             "value": "geschlecht.geschlecht.erster_tag"
-          }
+          },
+          "filters": [
+            {
+              "filter": "geschlecht.geschlecht.sum",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 10
+              }
+            }
+          ]
         }
       }
     ],
