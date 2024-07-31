@@ -93,7 +93,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
-		log.warn("Session idle {}.", status);
+		log.trace("Session idle {}.", status);
 	}
 
 	@Override
@@ -217,7 +217,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 				() -> {
 					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
 					if (elapsed.compareTo(timeout) > 0) {
-						log.warn("No message sent or received since {}", elapsed);
+						log.trace("No message sent or received since {}", elapsed);
 					}
 				},
 				timeout.toSeconds(), timeout.toSeconds() / 2, TimeUnit.SECONDS
