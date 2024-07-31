@@ -1,8 +1,6 @@
 package com.bakdata.conquery.sql.conversion.query;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +27,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -116,18 +113,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
-		List<Field<?>> exportColumns = new ArrayList<>();
-		exportColumns.add(createSourceInfoSelect(cqTable));
-
-		positions.entrySet().stream()
-				 .sorted(Comparator.comparingInt(Map.Entry::getValue))
-				 .map(entry -> createColumnSelect(cqTable, entry))
-				 .forEach(exportColumns::add);
-
+		List<FieldWrapper<?>> exportColumns = createExportColumns(cqTable, positions);
 		Selects selects = Selects.builder()
 								 .ids(ids)
 								 .validityDate(validityDate)
-								 .sqlSelects(exportColumns.stream().map(FieldWrapper::new).collect(Collectors.toList()))
+								 .sqlSelects(exportColumns)
 								 .build();
 
 		List<Condition> filters = cqTable.getFilters().stream().map(filterValue -> filterValue.convertForTableExport(ids, context)).toList();
@@ -152,44 +142,45 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
 	}
 
+	private static List<FieldWrapper<?>> createExportColumns(CQTable cqTable, Map<Column, Integer> positions) {
+
+		Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
+		for (Column column : cqTable.getConnector().getTable().getColumns()) {
+			// e.g. date column(s) are handled separately and not part of positions
+			if (!positions.containsKey(column)) {
+				continue;
+			}
+			int position = positions.get(column) - 1;
+			exportColumns[position] = createColumnSelect(column, position);
+		}
+
+		return Arrays.stream(exportColumns).map(FieldWrapper::new).collect(Collectors.toList());
+	}
+
+	private static Field<?>[] createPlaceholders(Map<Column, Integer> positions, CQTable cqTable) {
+
+		Field<?>[] exportColumns = new Field[positions.size() + 1];
+		exportColumns[0] = createSourceInfoSelect(cqTable);
+
+		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
+		positions.forEach((column, position) -> {
+			int shifted = position - 1;
+			Field<?> columnSelect = DSL.inline(null, Object.class).as("%s-%d".formatted(column.getName(), shifted));
+			exportColumns[shifted] = columnSelect;
+		});
+
+		return exportColumns;
+	}
+
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
 		String tableName = cqTable.getConnector().getTable().getName();
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
-	private static Field<?> createColumnSelect(CQTable table, Map.Entry<Column, Integer> entry) {
-
-		Column column = entry.getKey();
-		Integer columnPosition = entry.getValue();
-		String columnName = "%s-%s".formatted(column.getName(), columnPosition);
-
-		if (!isColumnOfTable(column, table)) {
-			return DSL.inline(null, Object.class).as(columnName);
-		}
+	private static Field<?> createColumnSelect(Column column, Integer position) {
+		String columnName = "%s-%s".formatted(column.getName(), position);
 		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
 				  .as(columnName);
-	}
-
-	private static boolean isColumnOfTable(Column column, CQTable table) {
-		return columnIsConnectorColumn(column, table)
-			   || columnIsSecondaryIdOfConnectorTable(column, table)
-			   || columnIsConnectorTableColumn(column, table);
-	}
-
-	private static boolean columnIsConnectorTableColumn(Column column, CQTable table) {
-		return matchesTableColumnOn(table, tableColumn -> tableColumn == column);
-	}
-
-	private static boolean columnIsSecondaryIdOfConnectorTable(Column column, CQTable table) {
-		return column.getSecondaryId() != null && matchesTableColumnOn(table, tableColumn -> tableColumn.getSecondaryId() == column.getSecondaryId());
-	}
-
-	private static boolean matchesTableColumnOn(CQTable table, Predicate<Column> condition) {
-		return Arrays.stream(table.getConnector().getTable().getColumns()).anyMatch(condition);
-	}
-
-	private static boolean columnIsConnectorColumn(Column column, CQTable table) {
-		return table.getConnector().getColumn() != null && table.getConnector().getColumn() == column;
 	}
 
 	private static Table<Record> joinConnectorTableWithPrerequisite(
