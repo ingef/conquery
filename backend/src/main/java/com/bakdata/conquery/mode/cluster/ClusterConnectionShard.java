@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
@@ -60,14 +60,12 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		setLocation(session);
 		log.debug("Session created.");
 	}
 
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
 		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
@@ -88,7 +86,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionClosed(IoSession session) {
-		setLocation(session);
 		log.info("Disconnected from ManagerNode.");
 
 		scheduler.schedule(this::connectToCluster, 2, TimeUnit.SECONDS);
@@ -96,20 +93,17 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
-		setLocation(session);
 		log.warn("Session idle {}.", status);
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		setLocation(session);
 		log.error("Exception caught", cause);
 	}
 
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		setLocation(session);
 		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
@@ -130,14 +124,12 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void messageSent(IoSession session, Object message) {
-		setLocation(session);
 		log.trace("Message sent: {}", message);
 	}
 
 
 	@Override
 	public void inputClosed(IoSession session) {
-		setLocation(session);
 		log.info("Input closed.");
 		session.closeNow();
 		scheduler.schedule(this::disconnectFromCluster, 0, TimeUnit.SECONDS);
@@ -146,16 +138,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void event(IoSession session, FilterEvent event) throws Exception {
-		setLocation(session);
 		log.trace("Event handled: {}", event);
 	}
-
-
-	private static void setLocation(IoSession session) {
-		final String loc = session.getLocalAddress().toString();
-		ConqueryMDC.setLocation(loc);
-	}
-
 
 	private void connectToCluster() {
 		InetSocketAddress address = new InetSocketAddress(
@@ -220,6 +204,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		NioSocketConnector connector = new NioSocketConnector();
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
+		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
@@ -230,8 +215,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	private static void scheduleIdleLogger(ScheduledExecutorService scheduler, IoSession session, Duration timeout) {
 		scheduler.scheduleAtFixedRate(
 				() -> {
-					setLocation(session);
-
 					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
 					if (elapsed.compareTo(timeout) > 0) {
 						log.warn("No message sent or received since {}", elapsed);
