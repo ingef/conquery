@@ -32,29 +32,12 @@ public abstract class ColumnStatsCollector {
 		final String name = uniqueNamer.getUniqueName(info);
 		final String label = info.defaultColumnName(printSettings);
 
-		if (type instanceof ResultType.NumericT || type instanceof ResultType.MoneyT || type instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit(), config.getVisualisationPercentiles().lowerEndpoint(), config.getVisualisationPercentiles().upperEndpoint());
-		}
-
-
-		if (type instanceof ResultType.StringT stringT) {
-			return new StringColumnStatsCollector(name, label, info.getDescription(), stringT, printSettings, config.getVisualisationsHistogramLimit());
-		}
-
-		if (type instanceof ResultType.BooleanT) {
-			return new BooleanColumnStatsCollector(name, label, info.getDescription(), printSettings);
-		}
-
-		if (type instanceof ResultType.DateT) {
-			return new DateColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
-		}
-
-		if (type instanceof ResultType.DateRangeT) {
-			return new DateColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
-		}
-
-
-		throw new IllegalArgumentException("Don't know how to describe column of type %s".formatted(type));
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> new BooleanColumnStatsCollector(name, label, info.getDescription(), printSettings);
+			case INTEGER, MONEY, NUMERIC -> new NumberColumnStatsCollector<>(name, label, info.getDescription(), type, printSettings, config.getVisualisationsHistogramLimit(), config.getVisualisationPercentiles().lowerEndpoint(), config.getVisualisationPercentiles().upperEndpoint());
+			case DATE, DATE_RANGE -> new DateColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+			case STRING -> new StringColumnStatsCollector(name, label, info.getDescription(), info.getPrinter(), printSettings, config.getVisualisationsHistogramLimit()); //TODO mapping
+		};
 	}
 
 	public abstract void consume(@Nullable Object value);

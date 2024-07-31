@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -38,6 +37,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -173,55 +173,19 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			return null;
 		}
 
-		if (type instanceof ResultType.StringT stringT) {
-
-			// StringT may have a mapping that translates values
-			final String string = stringT.printNullable(printSettings, value);
-
-			if (string.isBlank()) {
-				return null;
-			}
-
-			return new TextNode(string);
-		}
-
-		if (type instanceof ResultType.DateT) {
-			// TODO this sidesteps issues with Jackson not localizing LocalDates when printing.
-			//  The proper approach would be to return LocalDates and configure Jackson/DateFormatter to request-scope localization.
-			// TODO is this actually a sneaky frontend-issue? Considering the other values are additionally rendered in the frontend?
-			return new TextNode(ResultType.DateT.INSTANCE.print(printSettings, value));
-		}
-
-		if (type instanceof ResultType.DateRangeT) {
-			//TODO this is not yet properly localised, we will need to fix this either in FE/BE
-			final List<Integer> values = (List<Integer>) value;
-			return CDateRange.fromList(values);
-		}
-
-		if (type instanceof ResultType.IntegerT) {
-			return new IntNode((Integer) value);
-		}
-
-		if (type instanceof ResultType.BooleanT) {
-			return BooleanNode.valueOf((Boolean) value);
-		}
-
-		if (type instanceof ResultType.MoneyT) {
-			return new BigDecimal(((Number) value).longValue()).movePointLeft(printSettings.getCurrency().getDefaultFractionDigits());
-		}
-
-		if (type instanceof ResultType.NumericT) {
-			return DecimalNode.valueOf((BigDecimal) value);
-		}
-
-
-
-
-		if (type instanceof ResultType.ListT listT) {
+		if (type instanceof ResultType.ListT<?> listT) {
 			return ((List<?>) value).stream().map(entry -> renderValue(entry, listT.getElementType(), printSettings)).collect(Collectors.toList());
 		}
 
-		throw new IllegalArgumentException(String.format("Don't know how to handle %s", type));
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> BooleanNode.valueOf((Boolean) value);
+			case INTEGER -> new IntNode((Integer) value);
+			case NUMERIC -> DecimalNode.valueOf((BigDecimal) value);
+			case DATE -> new TextNode(ResultPrinters.printDate(printSettings, value));
+			case DATE_RANGE -> new TextNode(ResultPrinters.printDateRange(printSettings, value));
+			case STRING -> new TextNode(value.toString()); //TODO mapping
+			case MONEY -> ResultType.Primitive.MONEY.readIntermediateValue(printSettings, value);
+		};
 	}
 
 	/**

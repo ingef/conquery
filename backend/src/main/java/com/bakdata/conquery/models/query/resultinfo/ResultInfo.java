@@ -4,10 +4,9 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class ResultInfo {
 
-	private ClassToInstanceMap<Object> appendices = MutableClassToInstanceMap.create();
-
 	public abstract String userColumnName(PrintSettings printSettings);
 
 	/**
@@ -33,16 +30,15 @@ public abstract class ResultInfo {
 	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
-	public abstract ResultType<?> getType();
+	public abstract ResultType getType();
 
 	@ToString.Include
 	public abstract Set<SemanticType> getSemantics();
 
 	public abstract String getDescription();
 
-	public <T> void addAppendix(Class<T> cl, T obj) {
-		appendices.putInstance(cl, obj);
-	}
+	public abstract ResultPrinters.Printer getPrinter();
+
 
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
 		return ColumnDescriptor.builder()
@@ -52,5 +48,17 @@ public abstract class ResultInfo {
 							   .semantics(getSemantics())
 							   .description(getDescription())
 							   .build();
+	}
+
+	public final String printNullable(PrintSettings printSettings, Object f) {
+		if(f == null){
+			return "";
+		}
+
+		return print(printSettings, f);
+	}
+
+	protected String print(PrintSettings printSettings, Object f) {
+		return getPrinter().print(printSettings, f);
 	}
 }

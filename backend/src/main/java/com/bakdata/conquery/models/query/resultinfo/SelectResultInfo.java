@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.google.common.collect.ImmutableSet;
@@ -29,8 +30,12 @@ public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final Set<SemanticType> additionalSemantics;
 
+	//TODO move to ResultInfo so that Dates and ID printers can use this.
+	@Getter
+	private final ResultPrinters.Printer printer;
+
 	public SelectResultInfo(Select select, CQConcept cqConcept) {
-		this(select, cqConcept, Collections.emptySet());
+		this(select, cqConcept, Collections.emptySet(), select.createPrinter());
 	}
 
 	@Override
@@ -84,7 +89,7 @@ public class SelectResultInfo extends ResultInfo {
 	public String defaultColumnName(PrintSettings printSettings) {
 
 		StringBuilder sb = new StringBuilder();
-		String cqLabel = getCqConcept().defaultLabel(printSettings.getLocale());
+		String cqLabel = getCqConcept().defaultLabel(printSettings);
 		final String selectLabel = select.getColumnName();
 
 		if (selectLabel.equals(cqLabel)) {
@@ -107,4 +112,5 @@ public class SelectResultInfo extends ResultInfo {
 	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
+
 }

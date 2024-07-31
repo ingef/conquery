@@ -5,7 +5,7 @@ import java.util.Map;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import lombok.Getter;
 
 @Getter
@@ -37,8 +37,8 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 		return new HistogramColumnDescription(
 				getName(), getLabel(), getDescription(),
 				List.of(
-						new HistogramColumnDescription.Entry(ResultType.BooleanT.INSTANCE.print(getPrintSettings(), true), trues),
-						new HistogramColumnDescription.Entry(ResultType.BooleanT.INSTANCE.print(getPrintSettings(), false), falses)
+						new HistogramColumnDescription.Entry(ResultPrinters.printBoolean(getPrintSettings(), true), trues),
+						new HistogramColumnDescription.Entry(ResultPrinters.printBoolean(getPrintSettings(), false), falses)
 				),
 				Map.of(
 						C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),

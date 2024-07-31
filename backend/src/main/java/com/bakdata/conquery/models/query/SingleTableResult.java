@@ -32,7 +32,7 @@ public interface SingleTableResult {
 		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.StringT.getINSTANCE().typeInfo())
+												   .type(ResultType.Primitive.STRING.typeInfo())
 												   .semantics(header.getSemantics())
 												   .build());
 		}

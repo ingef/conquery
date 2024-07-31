@@ -35,15 +35,11 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	}
 
 	private static Function<Object, CDateRange> getDateExtractor(ResultType dateType) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return dateValue -> CDateRange.exactly((Integer) dateValue);
-		}
-
-		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
+		return switch (((ResultType.Primitive) dateType)) {
+			case DATE -> dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
+			case DATE_RANGE -> dateValue -> CDateRange.exactly((Integer) dateValue);
+			default -> throw new IllegalStateException("Unexpected type %s".formatted(dateType));
+		};
 	}
 
 	@Override

@@ -5,14 +5,13 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
-@ToString
+@Data
 @EqualsAndHashCode(callSuper = true)
 public class ColumnResultInfo extends ResultInfo {
 
@@ -20,12 +19,15 @@ public class ColumnResultInfo extends ResultInfo {
 	private final ResultType type;
 	private final String description;
 	private final Set<SemanticType> semantics;
+	private final ResultPrinters.Printer printer;
 
-	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics) {
+
+	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics, ResultPrinters.Printer printer, String description) {
 		this.column = column;
 		this.type = type;
-		this.description = column.getDescription();
+		this.description = description;
 		this.semantics = semantics;
+		this.printer = printer;
 	}
 
 	@Override

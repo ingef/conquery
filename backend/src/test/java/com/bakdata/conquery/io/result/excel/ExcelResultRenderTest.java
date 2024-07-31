@@ -161,16 +161,16 @@ public class ExcelResultRenderTest {
 	}
 
 	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
-		String printVal = info.getType().printNullable(settings, val);
+		String printVal = info.printNullable(settings, val);
 
-		if (info.getType().equals(ResultType.BooleanT.INSTANCE)) {
+		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
 			/**
 			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
 			 */
 			printVal = (Boolean) val ? "TRUE" : "FALSE";
 		}
 
-		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
+		if (info.getType().equals(ResultType.Primitive.MONEY)) {
 			printVal = printVal + " €";
 		}
 		valueJoiner.add(printVal);

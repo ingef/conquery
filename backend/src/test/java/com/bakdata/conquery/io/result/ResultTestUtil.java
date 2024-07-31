@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -35,22 +36,23 @@ public class ResultTestUtil {
 	@NotNull
 	public static List<ResultType> getResultTypes() {
 		return List.of(
-				ResultType.BooleanT.INSTANCE,
-				ResultType.IntegerT.INSTANCE,
-				ResultType.NumericT.INSTANCE,
-				ResultType.DateT.INSTANCE,
-				ResultType.DateRangeT.INSTANCE,
-				ResultType.StringT.INSTANCE,
-				ResultType.MoneyT.INSTANCE,
-				new ResultType.ListT(ResultType.BooleanT.INSTANCE),
-				new ResultType.ListT(ResultType.DateRangeT.INSTANCE),
-				new ResultType.ListT(ResultType.StringT.INSTANCE)
+				ResultType.Primitive.BOOLEAN,
+				ResultType.Primitive.INTEGER,
+				ResultType.Primitive.NUMERIC,
+				ResultType.Primitive.DATE,
+				ResultType.Primitive.DATE_RANGE,
+				ResultType.Primitive.STRING,
+				ResultType.Primitive.MONEY,
+				new ResultType.ListT(ResultType.Primitive.BOOLEAN),
+				new ResultType.ListT(ResultType.Primitive.DATE_RANGE),
+				new ResultType.ListT(ResultType.Primitive.STRING)
 		);
 	}
 
 
 	public static List<ResultInfo> ID_FIELDS = Stream.of("id1", "id2")
-													 .map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), "", Set.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
+													 .map(name -> new SimpleResultInfo(name, ResultType.Primitive.STRING, "", Set.of(new SemanticType.IdT("ID")), ResultPrinters::printString))
+													 .collect(Collectors.toList());
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {

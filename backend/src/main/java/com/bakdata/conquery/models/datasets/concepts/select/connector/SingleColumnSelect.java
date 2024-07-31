@@ -51,7 +51,7 @@ public abstract class SingleColumnSelect extends Select {
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
 		if(categorical){
-			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), createPrinter());
 		}
 
 		return new SelectResultInfo(this, cqConcept);

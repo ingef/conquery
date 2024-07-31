@@ -227,8 +227,8 @@ public class CQExternal extends CQElement {
 			String column = headers[col];
 
 			resultInfos.add(new SimpleResultInfo(column, onlySingles ?
-														 ResultType.StringT.INSTANCE :
-														 new ResultType.ListT(ResultType.StringT.INSTANCE)));
+														 ResultType.Primitive.STRING :
+														 new ResultType.ListT(ResultType.Primitive.STRING)));
 		}
 
 		return resultInfos;

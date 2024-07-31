@@ -66,7 +66,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	 * <p>
 	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */
-	public abstract String printConceptLocalId(Object rawValue, PrintSettings printSettings);
+	public abstract String printConceptLocalId(PrintSettings printSettings, Object rawValue);
 
 	public List<Select> getDefaultSelects() {
 		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());

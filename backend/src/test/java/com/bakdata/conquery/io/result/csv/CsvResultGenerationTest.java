@@ -89,7 +89,7 @@ public class CsvResultGenerationTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							final String printVal = info.getType().printNullable(settings, val);
+							final String printVal = info.printNullable(settings, val);
 							valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter()))? "\""+printVal+"\"": printVal);
 						}
 

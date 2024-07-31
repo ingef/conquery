@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,6 +10,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -38,16 +38,16 @@ public abstract class CQElement implements Visitable {
 	@Getter
 	private String label;
 
-	public String getUserOrDefaultLabel(Locale locale) {
+	public String getUserOrDefaultLabel(PrintSettings printSettings) {
 		// Prefer the user label
 		if (label != null) {
 			return label;
 		}
-		return defaultLabel(locale);
+		return defaultLabel(printSettings);
 	}
 
 	@NotNull
-	public String defaultLabel(Locale locale) {
+	public String defaultLabel(PrintSettings printSettings) {
 		// Fallback to CPSType#id() implementation is provided or class name
 		final CPSType type = getClass().getAnnotation(CPSType.class);
 		if (type != null) {

@@ -67,7 +67,7 @@ public class FlagSelect extends Select {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
+	public ResultType getResultType() {
+		return new ResultType.ListT<>(ResultType.Primitive.STRING);
 	}
 }

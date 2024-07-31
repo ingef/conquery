@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
@@ -38,27 +38,32 @@ import lombok.RequiredArgsConstructor;
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
 	@NonNull
-	private final Function<Locale, String> localizedLabelProvider;
+	private final Function<PrintSettings, String> localizedLabelProvider;
 	@NonNull
-	private final Function<Locale, String> localizedDefaultLabelProvider;
+	private final Function<PrintSettings, String> localizedDefaultLabelProvider;
 	@Getter
 	private final ResultType type;
 
 	@Getter
+	private final ResultPrinters.Printer printer;
+
+	@Getter
 	private final Set<SemanticType> semantics;
 
-	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type, Set<SemanticType> semantics) {
-		this(localizedLabelProvider, localizedLabelProvider, type, semantics);
+
+
+	public LocalizedDefaultResultInfo(Function<PrintSettings, String> localizedLabelProvider, ResultType type, Set<SemanticType> semantics) {
+		this(localizedLabelProvider, localizedLabelProvider, type, ResultPrinters.defaultPrinter(type), semantics);
 	}
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {
-		return localizedLabelProvider.apply(printSettings.getLocale());
+		return localizedLabelProvider.apply(printSettings);
 	}
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
-		return localizedDefaultLabelProvider.apply(printSettings.getLocale());
+		return localizedDefaultLabelProvider.apply(printSettings);
 	}
 
 	@Override
@@ -66,12 +71,14 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 		return ""; // TODO what do? Localize description as well?
 	}
 
-	@Override
-	public String toString() {
-		return "LocalizedDefaultResultInfo{" +
-			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
-			   ", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
-			   ", type=" + type +
-			   '}';
-	}
+
+
+	//	TODO @Override
+//	public String toString() {
+//		return "LocalizedDefaultResultInfo{" +
+//			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
+//			   ", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
+//			   ", type=" + type +
+//			   '}';
+//	}
 }

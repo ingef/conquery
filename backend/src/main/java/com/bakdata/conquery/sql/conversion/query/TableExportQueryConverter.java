@@ -112,7 +112,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	) {
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
+		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, dateRestriction, context);
 
 		List<Field<?>> exportColumns = new ArrayList<>();

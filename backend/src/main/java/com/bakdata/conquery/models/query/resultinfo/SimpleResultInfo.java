@@ -4,16 +4,15 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
+@Data
 @AllArgsConstructor
-@ToString
 @EqualsAndHashCode(callSuper = true)
 public class SimpleResultInfo extends ResultInfo {
 
@@ -21,9 +20,10 @@ public class SimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 	private final String description;
 	private final Set<SemanticType> semantics;
+	private final ResultPrinters.Printer printer;
 
 	public SimpleResultInfo(String name, ResultType type) {
-		this(name, type, null, Collections.emptySet());
+		this(name, type, null, Collections.emptySet(), ResultPrinters.defaultPrinter(type));
 	}
 
 	@Override

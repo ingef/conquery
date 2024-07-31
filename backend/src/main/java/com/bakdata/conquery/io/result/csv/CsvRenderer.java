@@ -47,7 +47,7 @@ public class CsvRenderer {
 		writer.addValues((Object[]) entity.getExternalId());
 		try {
 			for (int i = 0; i < infos.size(); i++) {
-				writer.addValue(infos.get(i).getType().printNullable(cfg, value[i]));
+				writer.addValue(infos.get(i).printNullable(cfg, value[i]));
 			}
 		}
 		catch (Exception e) {

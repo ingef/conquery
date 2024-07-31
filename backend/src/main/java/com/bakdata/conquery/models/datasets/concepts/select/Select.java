@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -63,7 +64,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public abstract List<Column> getRequiredColumns();
 
 	@JsonIgnore
-	public abstract ResultType<?> getResultType();
+	public abstract ResultType getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -132,4 +133,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return false;
 	}
 
+	public ResultPrinters.Printer createPrinter() {
+		return ResultPrinters.defaultPrinter(getResultType());
+	}
 }

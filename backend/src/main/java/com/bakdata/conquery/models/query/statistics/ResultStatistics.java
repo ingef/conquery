@@ -136,16 +136,16 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 	}
 
 	public static BiConsumer<Object, Consumer<CDateRange>> validityDateExtractor(ResultType dateType) {
-		if (dateType instanceof ResultType.DateRangeT) {
+		if (dateType.equals(ResultType.Primitive.DATE_RANGE)) {
 			return (obj, con) -> con.accept(CDateRange.fromList((List<? extends Number>) obj));
 		}
 
 
-		if (dateType instanceof ResultType.DateT) {
+		if (dateType.equals(ResultType.Primitive.DATE)) {
 			return (obj, con) -> con.accept(CDateRange.exactly((Integer) obj));
 		}
 
-		if (dateType instanceof ResultType.ListT listT) {
+		if (dateType instanceof ResultType.ListT<?> listT) {
 			final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(listT.getElementType());
 			return (obj, con) -> ((List<?>) obj).forEach(date -> extractor.accept(date, con));
 		}

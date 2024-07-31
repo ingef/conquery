@@ -293,7 +293,7 @@ public class DefaultColumnNameTest {
 			}
 
 			@Override
-			public ResultType<?> getResultType() {
+			public ResultType getResultType() {
 				return null;
 			}
 
