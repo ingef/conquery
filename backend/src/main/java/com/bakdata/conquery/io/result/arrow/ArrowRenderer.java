@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
@@ -238,23 +239,21 @@ public class ArrowRenderer {
 			final int pos = vecI - vectorOffset;
 			final FieldVector vector = root.getVector(vecI);
 			final ResultInfo resultInfo = resultInfos.get(pos);
-			builder[pos] =
-					generateVectorFiller(pos, vector, settings, resultInfo);
+			builder[pos] = generateVectorFiller(pos, vector, settings, resultInfo.getPrinter());
 
 		}
         return builder;
 
     }
 
-	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultInfo resultInfo) {
-		//TODO When Pattern-matching lands, clean this up. (Think Java 12?)
-		if (vector instanceof IntVector) {
-			return intVectorFiller((IntVector) vector, (line) -> (Integer) line[pos]);
+	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultPrinters.Printer printer) {
+		if (vector instanceof IntVector intVector) {
+			return intVectorFiller(intVector, (line) -> (Integer) line[pos]);
 		}
 
-		if (vector instanceof VarCharVector) {
+		if (vector instanceof VarCharVector varCharVector) {
 			return varCharVectorFiller(
-					(VarCharVector) vector,
+					varCharVector,
 					(line) -> {
 						// This is a bit clunky at the moment, since this lambda is executed for each textual value
 						// in the result, but it should be okay for now. This code moves as soon shards deliver themselves
@@ -264,32 +263,34 @@ public class ArrowRenderer {
 							// If there is no value, we don't want to have it displayed as an empty string (see next if)
 							return null;
 						}
-						return resultInfo.printNullable(line[pos], settings);
+						// We reference the printer directly,
+						return printer.print(line[pos], settings);
 					});
         }
 
-        if (vector instanceof BitVector) {
-            return bitVectorFiller((BitVector) vector, (line) -> (Boolean) line[pos]);
+        if (vector instanceof BitVector bitVector) {
+            return bitVectorFiller(bitVector, (line) -> (Boolean) line[pos]);
         }
 
-        if (vector instanceof Float4Vector) {
-            return float4VectorFiller((Float4Vector) vector, (line) -> (Number) line[pos]);
+        if (vector instanceof Float4Vector float4Vector) {
+            return float4VectorFiller(float4Vector, (line) -> (Number) line[pos]);
         }
 
-        if (vector instanceof Float8Vector) {
-            return float8VectorFiller((Float8Vector) vector, (line) -> (Number) line[pos]);
+        if (vector instanceof Float8Vector float8Vector) {
+            return float8VectorFiller(float8Vector, (line) -> (Number) line[pos]);
         }
 
-        if (vector instanceof DateDayVector) {
-            return dateDayVectorFiller((DateDayVector) vector, (line) -> (Number) line[pos]);
+        if (vector instanceof DateDayVector dateDayVector) {
+            return dateDayVectorFiller(dateDayVector, (line) -> (Number) line[pos]);
         }
 
         if (vector instanceof StructVector structVector) {
 
 			List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
+
             for (int i = 0; i < nestedVectors.size(); i++) {
-				nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, resultInfo);
+				nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, printer);
             }
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
@@ -299,7 +300,7 @@ public class ArrowRenderer {
 			ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-			return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, resultInfo), (line) -> (List<?>) line[pos]);
+			return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, ((ResultPrinters.ListPrinter) printer).elementPrinter()), (line) -> (List<?>) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);

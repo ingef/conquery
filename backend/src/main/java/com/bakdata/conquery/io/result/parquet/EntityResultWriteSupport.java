@@ -225,20 +225,19 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings) {
 		final List<ColumnConsumer> consumers = new ArrayList<>();
 		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(getForResultType(idHeader.getType(), idHeader, printSettings));
+			consumers.add(getForResultType(idHeader.getType(), idHeader.getPrinter(), printSettings));
 		}
 
 		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(getForResultType(resultInfo.getType(), resultInfo, printSettings));
+			consumers.add(getForResultType(resultInfo.getType(), resultInfo.getPrinter(), printSettings));
 		}
 		return consumers;
 	}
 
-	private static ColumnConsumer getForResultType(ResultType resultType, ResultInfo resultInfo, PrintSettings printSettings) {
+	private static ColumnConsumer getForResultType(ResultType resultType, ResultPrinters.Printer printer, PrintSettings printSettings) {
 
 		if (resultType instanceof ResultType.ListT<?> listT) {
-			//TODO ensure that this works with recursion and mappings
-			return new ListTColumnConsumer(getForResultType(listT.getElementType(), resultInfo, printSettings), printSettings);
+			return new ListTColumnConsumer(getForResultType(listT.getElementType(), ((ResultPrinters.ListPrinter) printer).elementPrinter(), printSettings), printSettings);
 		}
 
 		return switch (((ResultType.Primitive) resultType)) {
@@ -246,7 +245,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			case INTEGER, DATE, MONEY -> new IntegerTColumnConsumer();
 			case NUMERIC -> new NumericTColumnConsumer();
 			case DATE_RANGE -> new DateRangeTColumnConsumer();
-			case STRING -> new StringTColumnConsumer(resultInfo.getPrinter(), printSettings);
+			case STRING -> new StringTColumnConsumer(printer, printSettings);
 		};
 	}
 }

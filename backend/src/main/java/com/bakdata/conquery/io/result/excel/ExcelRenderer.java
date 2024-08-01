@@ -52,8 +52,8 @@ public class ExcelRenderer {
 //	);
 
 	public TypeWriter writer(ResultType type) {
-		if(!(type instanceof ResultType.ListT<?>)){
-			//TODO this does not seem right
+		if(!(type instanceof ResultType.Primitive)){
+			//Excel cannot handle complex types so we just toString them.
 			return ExcelRenderer::writeStringCell;
 		}
 
