@@ -1,0 +1,5 @@
+result,dates,flags flags_selects
+3,{},"{B,C}"
+4,{},"{B,C}"
+5,{},{B}
+6,{},{C}
