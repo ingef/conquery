@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -143,7 +144,7 @@ const TimebasedCondition = ({
 
   return (
     <Root>
-      {removable && <StyledIconButton icon="times" onClick={onRemove} />}
+      {removable && <StyledIconButton icon={faTimes} onClick={onRemove} />}
       <NodesContainer>
         <HorizontalLine />
         <Nodes>

@@ -11,12 +11,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
@@ -28,10 +29,10 @@ import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
-import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -43,32 +44,30 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jetbrains.exodus.env.Environment;
-import jetbrains.exodus.env.Environments;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -88,7 +87,6 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
-
 	/**
 	 * The store names are created by hand here because the abstraction of {@link BigStore}
 	 * creates two stores. Defining the expected stores like this, does not require a lot or complicated logic.
@@ -97,8 +95,6 @@ public class XodusStoreFactory implements StoreFactory {
 			DATASET.storeInfo().getName(),
 			SECONDARY_IDS.storeInfo().getName(),
 			TABLES.storeInfo().getName(),
-			DICTIONARIES.storeInfo().getName() + BigStore.META,
-			DICTIONARIES.storeInfo().getName() + BigStore.DATA,
 			IMPORTS.storeInfo().getName(),
 			CONCEPTS.storeInfo().getName()
 	);
@@ -110,8 +106,8 @@ public class XodusStoreFactory implements StoreFactory {
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
-					PRIMARY_DICTIONARY.storeInfo().getName(),
-					ENTITY_PREVIEW.storeInfo().getName()
+					ENTITY_PREVIEW.storeInfo().getName(),
+					ENTITY_TO_BUCKET.storeInfo().getName()
 			)
 	);
 	public static final Set<String> WORKER_STORES = Sets.union(
@@ -130,33 +126,62 @@ public class XodusStoreFactory implements StoreFactory {
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
 
-	private boolean useWeakDictionaryCaching = false;
+	@JsonIgnore
+	private EnvironmentRegistry registry = new EnvironmentRegistry();
+
+	/**
+	 * Number of threads reading from XoduStore.
+	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
+	 */
+	@Min(1)
+	private int readerWorkers = Runtime.getRuntime().availableProcessors();
+
+	/**
+	 * How many slots of buffering to use before the IO thread is put to sleep.
+	 */
+	@Min(1)
+	private int bufferPerWorker = 20;
+
+	@JsonIgnore
+	private ExecutorService readerExecutorService;
+
+	public ExecutorService getReaderExecutorService() {
+		if (readerExecutorService == null){
+			readerExecutorService = new ThreadPoolExecutor(
+					1, getReaderWorkers(),
+					5, TimeUnit.MINUTES,
+					new ArrayBlockingQueue<>(getReaderWorkers() * getBufferPerWorker()),
+					new ThreadPoolExecutor.CallerRunsPolicy()
+			);
+		}
+
+		return readerExecutorService;
+	}
+
+	private boolean useWeakDictionaryCaching;
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
 
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
 	 */
-	private boolean removeUnreadableFromStore = false;
+	private boolean removeUnreadableFromStore;
 
 	/**
 	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
 	 */
 	@Nullable
-	private File unreadableDataDumpDirectory = null;
+	private File unreadableDataDumpDirectory;
 
 	/**
 	 * If set, an environment will not be loaded if it misses a required store.
 	 * If not set, the environment is loaded and the application needs to create the store.
 	 * This is useful if a new version introduces a new store, but will also alter the environment upon reading.
 	 */
-	private boolean loadEnvironmentWithMissingStores = false;
+	private boolean loadEnvironmentWithMissingStores;
 
 	@JsonIgnore
 	private transient Validator validator;
-
-	@JsonIgnore
-	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
 	@JsonIgnore
 	private final transient Multimap<Environment, XodusStore>
@@ -165,7 +190,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath, getValidator()), NAMESPACE_STORES);
+		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
@@ -175,13 +200,13 @@ public class XodusStoreFactory implements StoreFactory {
 
 
 	private <T extends NamespacedStorage> List<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
-		File baseDir = getDirectory().toFile();
+		final File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		List<T> storages = new ArrayList<>();
+		final List<T> storages = new ArrayList<>();
 
 		for (File directory : Objects.requireNonNull(baseDir.listFiles((file, name) -> file.isDirectory() && name.startsWith(prefix)))) {
 
@@ -189,12 +214,14 @@ public class XodusStoreFactory implements StoreFactory {
 
 			ConqueryMDC.setLocation(directory.toString());
 
-			if (!environmentHasStores(directory, storesToTest)) {
-				log.warn("No valid WorkerStorage found in {}", directory);
-				continue;
+			try (Environment environment = registry.findOrCreateEnvironment(directory, xodus)) {
+				if (!environmentHasStores(environment, storesToTest)) {
+					log.warn("No valid {}storage found in {}", prefix, directory);
+					continue;
+				}
 			}
 
-			T namespacedStorage = creator.apply(name);
+			final T namespacedStorage = creator.apply(name);
 
 			storages.add(namespacedStorage);
 		}
@@ -202,9 +229,8 @@ public class XodusStoreFactory implements StoreFactory {
 		return storages;
 	}
 
-	private boolean environmentHasStores(File pathName, Set<String> storesToTest) {
-		Environment env = findEnvironment(pathName);
-		boolean exists = env.computeInTransaction(t -> {
+	private boolean environmentHasStores(Environment env, Set<String> storesToTest) {
+		return env.computeInTransaction(t -> {
 			final List<String> allStoreNames = env.getAllStoreNames(t);
 			final boolean complete = new HashSet<>(allStoreNames).containsAll(storesToTest);
 			if (complete) {
@@ -222,10 +248,6 @@ public class XodusStoreFactory implements StoreFactory {
 
 			return loadEnvironmentWithMissingStores;
 		});
-		if (!exists) {
-			closeEnvironment(env);
-		}
-		return exists;
 	}
 
 	@Override
@@ -235,74 +257,52 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, centralRegistry.injectIntoNew(objectMapper)));
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, objectMapper));
+	}
+
+	@Override
+	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
 	}
 
 	@Override
 	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		final Environment environment = findEnvironment(pathName);
-
-		final BigStore<Id<Dictionary>, Dictionary> bigStore;
-
-		synchronized (openStoresInEnv) {
-			bigStore =
-					new BigStore<>(
-							this,
-							validator,
-							environment,
-							DICTIONARIES.storeInfo(),
-							this::closeStore,
-							this::removeStore,
-							centralRegistry.injectIntoNew(objectMapper)
-					);
-			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
-			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-		}
-
-		if (useWeakDictionaryCaching) {
-			return StoreMappings.identifiableCachedStore(new WeakCachedStore<>(bigStore, getWeakCacheDuration()), centralRegistry);
-		}
-		return StoreMappings.identifiable(StoreMappings.cached(bigStore), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, objectMapper), centralRegistry);
 	}
 
 	@Override
@@ -316,7 +316,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper);
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper, getReaderExecutorService());
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
@@ -331,17 +331,17 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, centralRegistry.injectIntoNew(objectMapper)));
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS, datasetRegistry.injectInto(centralRegistry.injectIntoNew(objectMapper))), centralRegistry);
+	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS, objectMapper), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG, datasetRegistry.injectInto(centralRegistry.injectIntoNew(objectMapper))), centralRegistry);
+	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG, objectMapper), centralRegistry);
 	}
 
 	@Override
@@ -358,11 +358,6 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, PRIMARY_DICTIONARY, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
 	private File resolveSubDir(String... subdirs) {
@@ -384,26 +379,21 @@ public class XodusStoreFactory implements StoreFactory {
 		return getDirectory().resolve(pathName).toFile();
 	}
 
-	private Environment findEnvironment(@NonNull File path) {
-		synchronized (activeEnvironments) {
-			try {
-				return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(path, getXodus().createConfig()));
-			}
-			catch (Exception e) {
-				throw new IllegalStateException("Unable to open environment: " + path, e);
-			}
-		}
-	}
+
 
 	private Environment findEnvironment(String pathName) {
-		File path = getStorageDir(pathName);
-		return findEnvironment(path);
+		final File path = getStorageDir(pathName);
+		return registry.findOrCreateEnvironment(path, getXodus());
+	}
+
+	private Environment findEnvironment(File path) {
+		return registry.findOrCreateEnvironment(path, getXodus());
 	}
 
 	private void closeStore(XodusStore store) {
-		Environment env = store.getEnvironment();
+		final Environment env = store.getEnvironment();
 		synchronized (openStoresInEnv) {
-			Collection<XodusStore> stores = openStoresInEnv.get(env);
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 			stores.remove(store);
 			log.info("Closed XodusStore: {}", store);
 
@@ -413,23 +403,13 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
 
-		closeEnvironment(env);
-	}
-
-	private void closeEnvironment(Environment env) {
-		synchronized (activeEnvironments) {
-
-			if (activeEnvironments.remove(activeEnvironments.inverse().get(env)) == null) {
-				return;
-			}
-			env.close();
-		}
+		env.close();
 	}
 
 	private void removeStore(XodusStore store) {
-		Environment env = store.getEnvironment();
+		final Environment env = store.getEnvironment();
 		synchronized (openStoresInEnv){
-			Collection<XodusStore> stores = openStoresInEnv.get(env);
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 
 			stores.remove(store);
 
@@ -450,7 +430,7 @@ public class XodusStoreFactory implements StoreFactory {
 			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);
 		}
 
-		closeEnvironment(env);
+		env.close();
 
 		try {
 			FileUtil.deleteRecursive(Path.of(env.getLocation()));
@@ -467,9 +447,11 @@ public class XodusStoreFactory implements StoreFactory {
 			if(openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))){
 				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
 			}
-			final XodusStore store =
-					new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+
+			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+
 			openStoresInEnv.put(environment, store);
+
 			return new CachedStore<>(
 					new SerializingStore<>(
 							store,
@@ -477,9 +459,10 @@ public class XodusStoreFactory implements StoreFactory {
 							objectMapper,
 							storeInfo.getKeyType(),
 							storeInfo.getValueType(),
-							this.isValidateOnWrite(),
-							this.isRemoveUnreadableFromStore(),
-							this.getUnreadableDataDumpDirectory()
+							isValidateOnWrite(),
+							isRemoveUnreadableFromStore(),
+							getUnreadableDataDumpDirectory(),
+							getReaderExecutorService()
 					));
 		}
 	}

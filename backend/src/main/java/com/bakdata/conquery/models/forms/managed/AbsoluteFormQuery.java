@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -26,11 +23,23 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
 @CPSType(id = "ABSOLUTE_FORM_QUERY", base = QueryDescription.class)
 public class AbsoluteFormQuery extends Query {
+
+	/**
+	 * Index of the column, where the Resolutions name will be placed.
+	 */
+	public static final int RESOLUTION_INDEX = 0;
+
+	/**
+	 * Indef of the column, where the time periods will be placed.
+	 */
+	public static final int TIME_INDEX = 2;
 
 	/**
 	 * see {@linkplain this#getResultInfos()}.

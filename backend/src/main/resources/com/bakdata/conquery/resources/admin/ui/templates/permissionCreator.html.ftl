@@ -99,11 +99,9 @@
 		
 		permission = [domain, abilityJoin, instances].join(":")
 		console.log("Sending Permission: " + permission);
-		await fetch('/admin/permissions/${ownerId}',
+		await rest('/admin/permissions/${ownerId}',
 			{
 				method: 'post',
-				credentials: 'same-origin',
-				headers: {'Content-Type': 'application/json'},
 				body: permission
 			});
 		location.reload();

@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { FC, useState, useEffect, memo, ReactNode } from "react";
+import { FC, ReactNode, memo, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
@@ -11,13 +11,12 @@ import { DNDType } from "../common/constants/dndTypes";
 import { Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 import Dropzone from "../ui-components/Dropzone";
 
 import { setExternalForm } from "./actions";
-import type { Form, FormField } from "./config-types";
+import type { Field, Form, FormField, Tabs } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-import { collectAllFormFields } from "./helper";
+import { collectAllFormFields, getUniqueFieldname } from "./helper";
 import { selectActiveFormType, selectFormConfig } from "./stateSelectors";
 import type { DragItemFormConfig } from "./types";
 
@@ -116,6 +115,7 @@ const FormConfigLoader: FC<Props> = ({
       if (!formConfig || !formConfigToLoadNext) return;
 
       const entries = Object.entries(formConfigToLoadNext.values);
+      const formFields = collectAllFormFields(formConfig.fields);
 
       for (const [fieldname, value] of entries) {
         // --------------------------
@@ -123,8 +123,10 @@ const FormConfigLoader: FC<Props> = ({
         // because we changed the SELECT values:
         // from string, e.g. 'next'
         // to SelectValueT, e.g. { value: 'next', label: 'Next' }
-        const field = collectAllFormFields(formConfig.fields).find(
-          (f) => f.type !== "GROUP" && f.name === fieldname,
+        const field = formFields.find(
+          (f): f is Field | Tabs =>
+            f.type !== "GROUP" &&
+            f.name === getUniqueFieldname(formConfig.type, fieldname),
         );
 
         if (!field) continue;
@@ -135,7 +137,7 @@ const FormConfigLoader: FC<Props> = ({
         });
         // --------------------------
 
-        setValue(fieldname, fieldValue, {
+        setValue(field.name, fieldValue, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
@@ -148,7 +150,7 @@ const FormConfigLoader: FC<Props> = ({
           message: t("formConfig.loadSuccess", {
             label: formConfigToLoadNext.label,
           }),
-          type: SnackMessageType.SUCCESS,
+          type: "success",
         }),
       );
     },
@@ -176,7 +178,7 @@ const FormConfigLoader: FC<Props> = ({
       dispatch(
         setMessage({
           message: t("formConfig.loadError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }

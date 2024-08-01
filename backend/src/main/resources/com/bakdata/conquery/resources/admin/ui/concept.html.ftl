@@ -1,54 +1,66 @@
 <#import "templates/template.html.ftl" as layout>
+<#import "templates/breadcrumbs.html.ftl" as breadcrumbs>
+<#import "templates/infoCard.html.ftl" as infoCard>
+<#import "templates/accordion.html.ftl" as accordion>
+<#import "templates/table.html.ftl" as table>
+
 <@layout.layout>
-	<@layout.kid k="ID" v=c.id/>
-	<@layout.kv k="Label" v=c.label/>
-	<@layout.kv k="Type" v=c.class.simpleName/>
-	<@layout.kv k="Structure Parent" v=c.structureParent/>
-	<@layout.kv k="Elements" v=c.countElements()?string.number/>
-	<@layout.kc k="Selects">
-			<ul>
-			<#list c.selects?sort_by("name") as select>
-				<li>
-					<@layout.kid k="ID" v=select.id/>
-					<@layout.kv k="Label" v=select.label/>
-					<@layout.kv k="Type" v=select.class.simpleName/>
-					<@layout.kv k="Description" v=select.description/>
-				</li>
-			</#list>
-			</ul>
-		</@layout.kc>
-	<@layout.kc k="Connectors">
-	<#list c.connectors as connector>
-		<@layout.kid k="ID" v=connector.id/>
-		<@layout.kv k="Label" v=connector.label/>
-		<@layout.kv k="Validity Dates" v=connector.validityDates?join(', ')/>
-		<@layout.kc k="Table">
-		<a href="/admin-ui/datasets/${c.dataset.id}/tables/${connector.table.id}">${connector.table.name}</a>
-        </@layout.kc>
-		<@layout.kc k="Filters">
-			<ul>
-			<#list connector.collectAllFilters()?sort_by("name") as filter>
-				<li>
-					<@layout.kid k="ID" v=filter.id/>
-					<@layout.kv k="Label" v=filter.label/>
-					<@layout.kv k="Type" v=filter.class.simpleName/>
-					<@layout.kv k="Columns" v=filter.requiredColumns?sort_by("name")?join(', ')/>
-				</li>
-			</#list>
-			</ul>
-		</@layout.kc>
-		<@layout.kc k="Selects">
-			<ul>
-			<#list connector.selects?sort_by("name") as select>
-				<li>
-					<@layout.kid k="ID" v=select.id/>
-					<@layout.kv k="Label" v=select.label/>
-					<@layout.kv k="Type" v=select.class.simpleName/>
-					<@layout.kv k="Columns" v=select.requiredColumns?sort_by("name")?join(', ')/>
-				</li>
-			</#list>
-			</ul>
-		</@layout.kc>
-	</#list>
-	</@layout.kc>
+  <@breadcrumbs.breadcrumbs
+    labels=["Datasets", c.dataset.label, "Concepts", c.label]
+    links=[
+      "/admin-ui/datasets",
+      "/admin-ui/datasets/${c.dataset.id}",
+      "/admin-ui/datasets/${c.dataset.id}#Concepts"
+    ]
+  />
+  <@infoCard.infoCard
+    class="d-inline-flex"
+    title="Concept ${c.label}"
+    labels=["ID", "Label", "Type", "Structure Parent", "Elements"]
+    values=[c.id, c.label, c.class.simpleName, c.structureParent!"", c.countElements()?string.number]
+  />
+
+  <@accordion.accordionGroup class="mt-3">
+    <@accordion.accordion summary="Selects" infoText="${c.selects?size} entries">
+      <#assign idHeader = "id" />
+      <#assign labelHeader = "label" />
+      <#assign simpleNameHeader = "simpleName" />
+      <#assign descriptionHeader = "description" />
+      <@table.table
+        columns=[idHeader, labelHeader, simpleNameHeader, descriptionHeader]
+        items=c.selects
+          ?sort_by("name")
+          ?map( x ->
+            {
+              "${idHeader}": x.id,
+              "name": x.name,
+              "${labelHeader}": x.label,
+              "${simpleNameHeader}": x.class.simpleName,
+              "${descriptionHeader}": x.description!""
+            }
+          )
+      />
+    </@accordion.accordion>
+    <@accordion.accordion summary="Connectors" infoText="${c.connectors?size} entries">
+      <#assign idHeader = "id" />
+      <#assign labelHeader = "label" />
+      <#assign simpleNameHeader = "simpleName" />
+      <#assign descriptionHeader = "description" />
+      <@table.table
+        columns=[idHeader, labelHeader, simpleNameHeader, descriptionHeader]
+        items=c.connectors
+          ?sort_by("name")
+          ?map( x ->
+            {
+              "${idHeader}": x.id,
+              "name": x.name,
+              "${labelHeader}": x.label,
+              "${simpleNameHeader}": x.class.simpleName,
+              "${descriptionHeader}": x.description!""
+            }
+          )
+        link="/admin-ui/datasets/${c.dataset.id}/connectors/"
+      />
+    </@accordion.accordion>
+  </@accordion.accordionGroup>
 </@layout.layout>

@@ -2,7 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 
-import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -31,8 +30,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset.getId(), testJson);
-		final QueryProcessor processor = new QueryProcessor(conquery.getDatasetRegistry(), storage, conquery.getConfig());
+		final QueryTest test = JsonIntegrationTest.readJson(dataset.getId(), testJson);
 		final User user  = new User("testUser", "testUserLabel", storage);
 
 		// Manually import data, so we can do our own work.

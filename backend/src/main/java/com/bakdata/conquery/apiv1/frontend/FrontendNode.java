@@ -3,8 +3,8 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.time.LocalDate;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;
@@ -32,4 +32,5 @@ public class FrontendNode {
 	private boolean codeListResolvable;
 	private List<FrontendSelect> selects;
 	private long matchingEntities;
+	private boolean excludeFromTimeAggregation;
 }

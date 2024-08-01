@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -20,7 +20,6 @@ import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -124,7 +123,7 @@ public class LocaleConfig {
 			// We strip start and end
 			value = value.substring(getStart().length(), value.length() - getEnd().length()).trim();
 
-			final CDateSet out = CDateSet.create();
+			final CDateSet out = CDateSet.createEmpty();
 
 			// After stripping start and end, the trimmed string is empty
 			if(value.isEmpty()){

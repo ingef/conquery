@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.tests;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -9,10 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -21,9 +17,9 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -48,11 +44,18 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
 public class ReusedQueryTest implements ProgrammaticIntegrationTest {
+
+	@Override
+	public Set<StandaloneSupport.Mode> forModes() {
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
+	}
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -68,25 +71,19 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
-		{
-			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+		TestDataImporter testImporter = conquery.getTestImporter();
 
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
-
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
-			conquery.waitUntilWorkDone();
-		}
+		testImporter.importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+		testImporter.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
+		testImporter.importConcepts(conquery, test.getRawConcepts());
+		testImporter.importTableContents(conquery, test.getContent().getTables());
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+		final long expectedSize = 3L;
+
+		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		assertThat(id).isNotNull();
 
@@ -111,9 +108,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 								   ));
 
 			final FullExecutionStatus status = conquery.getClient().target(reexecuteUri)
-																	.request(MediaType.APPLICATION_JSON)
-																	.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
-																	.readEntity(FullExecutionStatus.class);
+													   .request(MediaType.APPLICATION_JSON)
+													   .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
+													   .readEntity(FullExecutionStatus.class);
 
 			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
 
@@ -126,7 +123,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused.setSecondaryId(query.getSecondaryId());
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, reused, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Reuse in SecondaryId, but do exclude
@@ -170,7 +167,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused1.setSecondaryId(query.getSecondaryId());
 
-			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 			final ManagedQuery execution1 = (ManagedQuery) metaStorage.getExecution(reused1Id);
 			{
 				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
@@ -180,7 +177,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				final ManagedExecutionId
 						reused2Id =
-						IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+						IntegrationUtils.assertQueryResult(conquery, reused2, expectedSize, ExecutionState.DONE, conquery.getTestUser(), 201);
 				final ManagedQuery execution2 = (ManagedQuery) metaStorage.getExecution(reused2Id);
 
 				assertThat(reused2Id)
@@ -227,7 +224,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 						execution.createPermission(Set.of(Ability.READ))
 				));
 
-				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, shareHolder, 201);
+				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, expectedSize, ExecutionState.DONE, shareHolder, 201);
 
 				ManagedExecution copy = metaStorage.getExecution(copyId);
 
@@ -243,4 +240,5 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			}
 		}
 	}
+
 }

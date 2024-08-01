@@ -1,0 +1,66 @@
+{
+  "label": "Date restriction query without validity date",
+  "description": "If a date restriction is active, but there is no validity date defined to apply the date restriction on, the date restriction filter should not be applied.",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/date_restriction/date_restriction_no_validity_date/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2022-01-01",
+            "max": "2022-12-31"
+          },
+          "child": {
+            "ids": [
+              "geschlecht_select"
+            ],
+            "type": "CONCEPT",
+            "label": "Geschlecht SELECT",
+            "tables": [
+              {
+                "id": "geschlecht_select.geschlecht_connector"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1"
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/date_restriction/date_restriction_no_validity_date/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

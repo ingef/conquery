@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -13,7 +14,9 @@ const Container = styled("div")<{ active?: boolean }>`
   padding: 0px 5px;
   font-size: ${({ theme }) => theme.font.sm};
   color: ${({ theme }) => theme.col.black};
-  box-shadow: 0.5px 0.5px 1px 0 rgb(0 0 0 / 20%), inset 0 0 0 1px #ccc;
+  box-shadow:
+    0.5px 0.5px 1px 0 rgb(0 0 0 / 20%),
+    inset 0 0 0 1px #ccc;
 
   /* to style react-markdown */
   p {
@@ -30,23 +33,23 @@ const SelectedItem = forwardRef<
   {
     active?: boolean;
     disabled?: boolean;
-    option: SelectOptionT;
+    item: SelectOptionT;
     index: number;
     getSelectedItemProps: (props: {
       selectedItem: SelectOptionT;
       index: number;
-    }) => any;
+    }) => object;
     removeSelectedItem: (item: SelectOptionT) => void;
   }
 >(
   (
-    { index, option, disabled, removeSelectedItem, getSelectedItemProps },
+    { index, item, disabled, removeSelectedItem, getSelectedItemProps },
     ref,
   ) => {
-    const label = option.selectedLabel || option.label || option.value;
+    const label = item.selectedLabel || item.label || item.value;
 
     const selectedItemProps = getSelectedItemProps({
-      selectedItem: option,
+      selectedItem: item,
       index,
     });
 
@@ -54,9 +57,12 @@ const SelectedItem = forwardRef<
       <Container ref={ref} {...selectedItemProps}>
         <ReactMarkdown>{String(label)}</ReactMarkdown>
         <SxIconButton
-          icon="times"
+          icon={faTimes}
           disabled={disabled}
-          onClick={() => removeSelectedItem(option)}
+          onClick={(e) => {
+            e.stopPropagation(); // otherwise the click handler on the Container overrides this
+            removeSelectedItem(item);
+          }}
         />
       </Container>
     );

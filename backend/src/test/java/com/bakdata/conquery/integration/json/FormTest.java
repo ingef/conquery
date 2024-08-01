@@ -1,7 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -11,11 +9,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -85,31 +84,9 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-		importSecondaryIds(support, content.getSecondaryIds());
-		support.waitUntilWorkDone();
-
-		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
-		support.waitUntilWorkDone();
-		log.info("{} IMPORT TABLES", getLabel());
-
-		importConcepts(support, rawConcepts);
-		support.waitUntilWorkDone();
-		log.info("{} IMPORT CONCEPTS", getLabel());
-
-		LoadingUtil.importTableContents(support, content.getTables());
-		support.waitUntilWorkDone();
-
-		importIdMapping(support, content);
-		support.waitUntilWorkDone();
-
-		log.info("{} IMPORT TABLE CONTENTS", getLabel());
-		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
-
-		support.waitUntilWorkDone();
-
+		support.getTestImporter().importFormTestData(support, this);
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
-
 	}
 
 	@Override
@@ -187,7 +164,7 @@ public class FormTest extends ConqueryTestSpec {
 					resultInfos,
 					managed.getValue()
 						   .stream()
-						   .flatMap(ManagedQuery::streamResults)
+						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty()))
 			);
 
 			writer.close();
@@ -220,7 +197,7 @@ public class FormTest extends ConqueryTestSpec {
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
-					managedForm.streamResults()
+					managedForm.streamResults(OptionalLong.empty())
 			);
 			writer.close();
 

@@ -1,20 +1,17 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.time.LocalDate;
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
+import java.util.Set;
 import java.util.function.Consumer;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -23,9 +20,9 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
-import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
-import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -43,31 +40,17 @@ public class CQDateRestriction extends CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
+		QPNode childQueryPlan = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
 
-		//insert behind every ValidityDateNode
-		Queue<QPNode> openList = new ArrayDeque<>();
+		return new DateRestrictingNode(
+				CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+				childQueryPlan
+		);
+	}
 
-		openList.add(childAgg);
-
-		while (!openList.isEmpty()) {
-			QPNode current = openList.poll();
-			if (current instanceof ValidityDateNode validityDateNode) {
-
-				validityDateNode.setChild(new DateRestrictingNode(
-						CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-						validityDateNode.getChild()
-				));
-			}
-			else if (current instanceof NegatingNode) {
-				//we can't push date restrictions past negations
-			}
-			else {
-				openList.addAll(current.getChildren());
-			}
-		}
-
-		return childAgg;
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		child.collectRequiredQueries(requiredQueries);
 	}
 
 	@Override
@@ -88,7 +71,7 @@ public class CQDateRestriction extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		final CDateSet restriction = CDateSet.create();
+		final CDateSet restriction = CDateSet.createEmpty();
 		restriction.maskedAdd(CDateRange.of(dateRange), context.getDateRestriction());
 
 		return getChild().collectRequiredEntities(context.withDateRestriction(restriction));

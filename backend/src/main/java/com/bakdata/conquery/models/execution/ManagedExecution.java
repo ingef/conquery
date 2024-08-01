@@ -13,13 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -47,11 +47,15 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -66,6 +70,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@EqualsAndHashCode(callSuper = false)
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -88,34 +93,52 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
+	// Most queries contain dates, and this retroactively creates a saner default than false for old queries.
+	@JsonProperty(defaultValue = "true")
+	private boolean containsDates;
+
 	@JsonAlias("machineGenerated")
 	private boolean system;
 
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ExecutionState state = ExecutionState.NEW;
+
+	//TODO FK: This is only locked/unlocked, there should be better primitives for that.
 	@JsonIgnore
-	private transient CountDownLatch execution;
+	@EqualsAndHashCode.Exclude
+	private transient CountDownLatch executingLock;
+
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime startTime;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime finishTime;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient Float progress;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient Namespace namespace;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
+
 
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
 	@NotNull
+	@EqualsAndHashCode.Exclude
 	private final MetaStorage storage;
 
 	protected ManagedExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
@@ -152,6 +175,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			this.config = config;
 
 			doInitExecutable();
+
+			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
+			containsDates = containsDates(getSubmitted());
+
 			initialized = true;
 		}
 	}
@@ -170,7 +197,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	protected void fail(ConqueryErrorInfo error) {
+	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -178,7 +205,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
-			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
+			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
 		finish(ExecutionState.FAILED);
@@ -192,24 +219,32 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			namespace.getExecutionManager().clearQueryResults(this);
 
-			execution = new CountDownLatch(1);
+			resetLock();
 		}
 	}
 
-	protected void finish(ExecutionState executionState) {
+	private void resetLock() {
+		executingLock = new CountDownLatch(1);
+	}
+
+	private void clearLock() {
+		executingLock.countDown();
+	}
+
+	public void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
-			log.error("Query[{}] was never run.", getId());
+			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
 
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
 			progress = null;
+
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
-			execution.countDown();
+			clearLock();
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if (getState() == ExecutionState.DONE) {
@@ -217,15 +252,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 		}
 
-
-		log.info(
-				"{} {} {} within {}",
-				getState(),
-				queryId,
-				this.getClass().getSimpleName(),
-				getExecutionTime()
-		);
+		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
 	}
+
+
 
 	@JsonIgnore
 	public Duration getExecutionTime() {
@@ -239,7 +269,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (getState() != ExecutionState.RUNNING) {
 			return getState();
 		}
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		Uninterruptibles.awaitUninterruptibly(executingLock, time, unit);
 
 		return getState();
 	}
@@ -256,6 +286,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setStartTime(startTime);
 		status.setFinishTime(finishTime);
 		status.setStatus(getState());
+		status.setContainsDates(containsDates);
+
 		if (owner != null) {
 			status.setOwner(owner.getId());
 			status.setOwnerName(owner.getLabel());
@@ -279,6 +311,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public FullExecutionStatus buildStatusFull(Subject subject) {
 
 		initExecutable(namespace, config);
+
 		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusFull(status, subject);
 
@@ -311,7 +344,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
-		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
@@ -334,6 +367,30 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
+
+		status.setCanExpand(canSubjectExpand(subject, query));
+
+
+		status.setQuery(canSubjectExpand(subject, query) ? getSubmitted() : null);
+	}
+
+	private static boolean containsDates(QueryDescription query) {
+		return Visitable.stream(query)
+						.anyMatch(visitable -> {
+
+							if (visitable instanceof CQConcept cqConcept) {
+								return !cqConcept.isExcludeFromTimeAggregation();
+							}
+
+							if (visitable instanceof CQExternal external) {
+								return external.containsDates();
+							}
+
+							return false;
+						});
+	}
+
+	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 
@@ -345,9 +402,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 														   .collect(Collectors.toSet());
 
 		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-
-		status.setCanExpand(canExpand);
-		status.setQuery(canExpand ? getSubmitted() : null);
+		return canExpand;
 	}
 
 	@JsonIgnore
@@ -363,9 +418,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	public String getLabelWithoutAutoLabelSuffix() {
-		int idx;
+		final int idx;
 		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
-
 			return label.substring(0, idx);
 		}
 		return label;
@@ -389,8 +443,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void reset() {
-		setState(ExecutionState.NEW);
+		// This avoids endless loops with already reset queries
+		if(getState().equals(ExecutionState.NEW)){
+			return;
+		}
 
-		namespace.getExecutionManager().clearQueryResults(this);
+		setState(ExecutionState.NEW);
 	}
+
+	public abstract void cancel();
 }

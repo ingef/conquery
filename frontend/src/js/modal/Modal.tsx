@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { useRef, ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import FaIcon from "../icon/FaIcon";
+import { Heading3 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
@@ -42,12 +42,6 @@ const TopRow = styled("div")`
   align-items: flex-start;
 `;
 
-const Headline = styled("h3")`
-  margin: 0 10px 15px 0;
-  font-size: ${({ theme }) => theme.font.md};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-
 const Subtitle = styled(`p`)`
   margin: -15px 0 20px;
   max-width: 600px;
@@ -73,8 +67,7 @@ const ModalContent = ({
   );
 };
 
-// A modal with three ways to close it
-// - a button
+// A modal with two ways to close it
 // - click outside
 // - press esc
 const Modal = ({
@@ -83,7 +76,6 @@ const Modal = ({
   headline,
   subtitle,
   doneButton,
-  closeIcon,
   scrollable,
   onClose,
 }: {
@@ -92,7 +84,6 @@ const Modal = ({
   headline?: ReactNode;
   subtitle?: ReactNode;
   doneButton?: boolean;
-  closeIcon?: boolean;
   scrollable?: boolean;
   onClose: () => void;
 }) => {
@@ -104,14 +95,7 @@ const Modal = ({
     <Root className={className}>
       <ModalContent onClose={onClose} scrollable={scrollable}>
         <TopRow>
-          <Headline>{headline}</Headline>
-          {closeIcon && (
-            <WithTooltip text={t("common.closeEsc")}>
-              <TransparentButton small onClick={onClose}>
-                <FaIcon icon="times" />
-              </TransparentButton>
-            </WithTooltip>
-          )}
+          <Heading3>{headline}</Heading3>
           {doneButton && (
             <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>

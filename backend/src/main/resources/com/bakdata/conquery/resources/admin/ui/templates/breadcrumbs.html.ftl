@@ -1,4 +1,4 @@
-<#macro breadcrumbs labels links class="">
+<#macro breadcrumbs labels links=[] class="">
   <nav aria-label="breadcrumb" class="${class}">
     <ol class="breadcrumb">
       <#list labels as label>

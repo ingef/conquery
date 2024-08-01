@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +21,7 @@ const ConceptTreesLoading = () => {
 
   return (
     <Container>
-      <StyledFaIcon icon="spinner" />
+      <StyledFaIcon icon={faSpinner} />
       <span>{t("conceptTreeList.loading")}</span>
     </Container>
   );

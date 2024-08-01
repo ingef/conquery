@@ -6,6 +6,6 @@
   "author": "Kai Rollmann <kai.rollmann@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "cypress": "^9.6.1"
+    "cypress": "^13.5.0"
   }
 }

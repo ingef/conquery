@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -27,6 +23,9 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

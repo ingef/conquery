@@ -26,6 +26,7 @@ public class SelectResultInfo extends ResultInfo {
 	private final CQConcept cqConcept;
 
 	@Getter(AccessLevel.PACKAGE)
+	@NonNull
 	private final Set<SemanticType> additionalSemantics;
 
 	public SelectResultInfo(Select select, CQConcept cqConcept) {

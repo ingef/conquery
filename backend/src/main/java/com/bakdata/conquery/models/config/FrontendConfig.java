@@ -4,32 +4,46 @@ import java.net.URI;
 import java.net.URL;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
-import groovy.transform.ToString;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Range;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 
-@ToString
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
 @With
+@Data
 public class FrontendConfig {
 	@Valid
 	@NotNull
 	private CurrencyConfig currency = new CurrencyConfig();
 
+	/**
+	 * Years to include in entity preview.
+	 */
+	@Min(0)
+	private int observationPeriodYears = 6;
+
+	/**
+	 * Limit to number of histogram entries.
+	 * Note, that zero and out of bounds values are tracked in separate bins, so you can have three additional bins.
+	 */
+	@Min(0)
+	private int visualisationsHistogramLimit = 10;
+
+	private Range<Integer> visualisationPercentiles = Range.closed(15, 85);
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
 	 * as the base url for forms that specify a relative url. Internally {@link URI#resolve(URI)}
@@ -52,15 +66,36 @@ public class FrontendConfig {
 	 */
 	@Nullable
 	private URL manualUrl;
-
 	@Nullable
 	@Email
 	private String contactEmail;
+	/**
+	 * If true, users are always allowed to add custom values into SelectFilter input fields.
+	 */
+	private boolean alwaysAllowCreateValue = false;
 
+	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
+	@JsonIgnore
+	public boolean isValidPercentiles() {
+		if(!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()){
+			return false;
+		}
+
+		if (visualisationPercentiles.lowerEndpoint() < 0) {
+			return false;
+		}
+
+		if (visualisationPercentiles.upperEndpoint() > 100) {
+			return false;
+		}
+
+		return true;
+	}
 
 	@Data
 	public static class CurrencyConfig {
-		private String prefix = "€";
+		@JsonAlias("prefix")
+		private String unit = "€";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";
 		private int decimalScale = 2;

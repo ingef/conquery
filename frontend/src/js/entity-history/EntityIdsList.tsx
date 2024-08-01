@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import ReactList from "react-list";
+
+import FaIcon from "../icon/FaIcon";
 
 import type { EntityIdsStatus } from "./History";
 import { useUpdateHistorySession } from "./actions";
@@ -29,15 +32,17 @@ const Statuses = styled("div")`
   gap: 2px;
   margin-left: auto;
 `;
+
 const EntityStatus = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
   background-color: white;
-  padding: 1px 4px;
+  padding: 0px 4px;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
 `;
+
 const TheEntityId = styled("div")<{ active?: boolean }>`
   font-weight: 700;
   flex-shrink: 0;
@@ -54,19 +59,31 @@ const Gray = styled("span")`
   color: ${({ theme }) => theme.col.gray};
 `;
 
-interface Props {
-  currentEntityId: EntityId | null;
-  entityIds: EntityId[];
-  updateHistorySession: ReturnType<typeof useUpdateHistorySession>;
-  entityIdsStatus: EntityIdsStatus;
-}
+const SxFaIcon = styled(FaIcon)`
+  margin: 3px 6px;
+`;
+
+const Blurred = styled("span")<{ blurred?: boolean }>`
+  ${({ blurred }) => blurred && "filter: blur(6px);"}
+`;
 
 export const EntityIdsList = ({
+  blurred,
   currentEntityId,
   entityIds,
   entityIdsStatus,
   updateHistorySession,
-}: Props) => {
+  loadingId,
+}: {
+  blurred?: boolean;
+  currentEntityId: EntityId | null;
+  entityIds: EntityId[];
+  updateHistorySession: ReturnType<
+    typeof useUpdateHistorySession
+  >["updateHistorySession"];
+  entityIdsStatus: EntityIdsStatus;
+  loadingId?: string;
+}) => {
   const numberWidth = useMemo(() => {
     const magnitude = Math.ceil(Math.log(entityIds.length) / Math.log(10));
 
@@ -85,8 +102,10 @@ export const EntityIdsList = ({
       >
         <Number style={{ width: numberWidth }}>#{index + 1}</Number>
         <TheEntityId>
-          {entityId.id} <Gray>({entityId.kind})</Gray>
+          <Blurred blurred={blurred}>{entityId.id}</Blurred>{" "}
+          <Gray>({entityId.kind})</Gray>
         </TheEntityId>
+        {loadingId === entityId.id && <SxFaIcon icon={faSpinner} />}
         <Statuses>
           {entityIdsStatus[entityId.id] &&
             entityIdsStatus[entityId.id].map((val) => (

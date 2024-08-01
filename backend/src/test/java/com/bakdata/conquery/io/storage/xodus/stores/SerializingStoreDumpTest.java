@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-
-import javax.validation.Validator;
+import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -23,6 +22,7 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +72,7 @@ public class SerializingStoreDumpTest {
 				storeId.getValueType(),
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory()
+				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
 		);
 	}
 

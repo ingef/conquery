@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -39,7 +38,7 @@ public class CountAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		// When no column is set, count all events (supposedly someone else is filtering for us)
 		// When column is set, count only the events where column has entries
 		if (column == null || bucket.has(event, column)) {
@@ -50,11 +49,6 @@ public class CountAggregator extends ColumnAggregator<Long> {
 	@Override
 	public Long createAggregationResult() {
 		return count > 0 ? count : null;
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
 	}
 
 	@Override

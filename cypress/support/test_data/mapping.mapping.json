@@ -1,0 +1,7 @@
+{
+  "csv": "file:./cypress/support/test_data/mapping_data.csv",
+  "externalTemplate": "{{external}}",
+  "internalColumn": "internal",
+  "name": "example_mapping",
+  "type": "CSV_MAP"
+}

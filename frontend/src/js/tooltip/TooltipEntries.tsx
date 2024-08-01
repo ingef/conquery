@@ -1,18 +1,20 @@
 import styled from "@emotion/styled";
+import {
+  faArrowsLeftRightToLine,
+  faHashtag,
+  faMicroscope,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
+import { HTMLAttributes } from "react";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
-const Root = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 12px;
-  align-items: center;
-`;
+const Root = styled("div")``;
 
 const Date = styled("p")`
   margin: 0;
@@ -70,15 +72,16 @@ const Suffix = styled("span")`
   margin-left: 5px;
 `;
 
-interface Props {
+interface Props extends HTMLAttributes<HTMLDivElement> {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
+  idLabel?: string;
 }
 
 const TooltipEntries = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange } = props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -99,8 +102,17 @@ const TooltipEntries = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <Root>
-      <StyledFaIcon icon="hashtag" />
+    <Root {...props}>
+      {idLabel && (
+        <>
+          <StyledFaIcon icon={faMicroscope} />
+          <Info>
+            <Date>{idLabel}</Date>
+            <Text zero={isZero}>{t("queryEditor.secondaryId")}</Text>
+          </Info>
+        </>
+      )}
+      <StyledFaIcon icon={faHashtag} />
       <Info>
         <Number zero={isZero}>
           {exists(matchingEntries) ? (
@@ -118,7 +130,7 @@ const TooltipEntries = (props: Props) => {
           )}
         </Text>
       </Info>
-      <StyledFaIcon icon="user" />
+      <StyledFaIcon icon={faUser} />
       <Info>
         <Number zero={isZeroEntities}>
           {exists(matchingEntities) ? (
@@ -136,7 +148,7 @@ const TooltipEntries = (props: Props) => {
           )}
         </Text>
       </Info>
-      <StyledFaIcon icon="arrows-left-right-to-line" />
+      <StyledFaIcon icon={faArrowsLeftRightToLine} />
       <Info>
         <Date>
           {fromDate}

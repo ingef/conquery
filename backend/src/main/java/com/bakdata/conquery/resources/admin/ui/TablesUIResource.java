@@ -1,24 +1,26 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.*;
+
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
@@ -34,13 +36,15 @@ public class TablesUIResource {
 	private Dataset dataset;
 	@PathParam(TABLE)
 	private Table table;
+	@Context
+	private ContainerRequestContext requestContext;
 
 
 	@GET
 	public View getTableView() {
 		return new UIView<>(
 				"table.html.ftl",
-				uiProcessor.getUIContext(),
+				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				uiProcessor.getTableStatistics(table)
 		);
 	}
@@ -51,7 +55,7 @@ public class TablesUIResource {
 
 		return new UIView<>(
 				"import.html.ftl",
-				uiProcessor.getUIContext(),
+				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				uiProcessor.getImportStatistics(imp)
 		);
 	}

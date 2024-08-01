@@ -3,6 +3,9 @@ import "@emotion/react";
 
 import type { ConceptIdT, ConceptT } from "./js/api/types";
 
+declare const __BUILD_GIT_DESCRIBE__: string;
+declare const __BUILD_TIMESTAMP__: string;
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: "development" | "production";
@@ -31,6 +34,12 @@ declare module "@emotion/react" {
       green: string;
       orange: string;
       palette: string[];
+      fileTypes: {
+        csv: string;
+        pdf: string;
+        zip: string;
+        xlsx: string;
+      };
     };
     img: {
       logo: string;

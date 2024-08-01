@@ -20,12 +20,8 @@ const Container = styled("div")<StyleProps>`
       background-color: ${theme.col.blueGrayVeryLight};
     `};
 
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      opacity: 0.5;
-      cursor: not-allowed;
-    `};
+  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 
   /* to style react-markdown */
   p {
@@ -47,7 +43,7 @@ const SelectListOption = forwardRef<HTMLDivElement, Props>(
     const label = option.label || String(option.value);
 
     return (
-      <Container disabled={option.disabled} {...props} ref={ref}>
+      <Container {...props} disabled={option.disabled} ref={ref}>
         {option.displayLabel ? (
           option.displayLabel
         ) : (

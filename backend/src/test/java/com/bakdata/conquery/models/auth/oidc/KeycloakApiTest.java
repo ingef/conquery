@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakGroup;

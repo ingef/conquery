@@ -12,9 +12,11 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+@EqualsAndHashCode(callSuper = true)
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> implements NamespacedIdentifiable<ID> {
 
 	@Getter
@@ -38,12 +40,12 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
 		throw new UnsupportedOperationException("The concept "+this+" has no children. Was looking for "+conceptTreeChildId);
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s[%s]", this.getClass().getSimpleName(), getLabel());
 	}
-	
+
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 

@@ -5,11 +5,11 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	private Bucket selectedBucket;
 	private int date;
 
-	private Column validityDateColumn;
+	private ValidityDate validityDateColumn;
 
 	public LastValueAggregator(Column column) {
 		super(column);
@@ -45,7 +45,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
@@ -60,14 +60,14 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			}
 			return;			
 		}
-		
-		if(! bucket.has(event, validityDateColumn)) {
-			// TODO this might be an IllegalState
+
+		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
+
+		if (dateRange == null){
 			return;
 		}
 
-
-		int next = bucket.getAsDateRange(event, validityDateColumn).getMaxValue();
+		int next = dateRange.getMaxValue();
 
 		if (next > date) {
 			date = next;
@@ -88,8 +88,4 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.resolveResultType(getColumn().getType());
-	}
 }

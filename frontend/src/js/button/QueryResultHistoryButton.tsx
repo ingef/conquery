@@ -1,12 +1,13 @@
 import styled from "@emotion/styled";
+import { faListUl, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openHistory, useNewHistorySession } from "../entity-history/actions";
 
+import { ColumnDescription } from "../api/types";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
@@ -14,13 +15,15 @@ const SxIconButton = styled(IconButton)`
   height: 35px;
 `;
 
-interface PropsT {
+export const QueryResultHistoryButton = ({
+  url,
+  label,
+  columns,
+}: {
   columns: ColumnDescription[];
   label: string;
   url: string;
-}
-
-export const QueryResultHistoryButton = ({ url, label, columns }: PropsT) => {
+}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
@@ -32,7 +35,7 @@ export const QueryResultHistoryButton = ({ url, label, columns }: PropsT) => {
 
   return (
     <SxIconButton
-      icon={isLoading ? "spinner" : "list-ul"}
+      icon={isLoading ? faSpinner : faListUl}
       frame
       onClick={async () => {
         await newHistorySession(getAuthorizedUrl(url), columns, label);

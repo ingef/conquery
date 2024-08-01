@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "openapi.yaml"
+      - "backend/src/main/resources/com/bakdata/conquery/external/openapi-form-backend.yaml"
       - ".github/workflows/lint_openapi.yaml"
 jobs:
   lint:
@@ -11,5 +12,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: "Lint OpenApi spec"
+      - name: "Lint OpenApi spec for /api"
         run: vacuum lint --details ./openapi.yaml
+      - name: "Lint OpenApi spec for external form backends"
+        run: vacuum lint --details ./backend/src/main/resources/com/bakdata/conquery/external/openapi-form-backend.yaml

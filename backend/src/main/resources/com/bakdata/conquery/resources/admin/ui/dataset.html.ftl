@@ -11,36 +11,22 @@
 <#assign columnsConcepts=["id", "label", "actions"]>
 <#assign columnsSecondaryIds=["id", "label"]>
 
-<#macro deleteMappersButton id>
-	 <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+<#macro deleteButton id contentPath testId="">
+	 <a href="" onclick="event.preventDefault(); restOptionalForce('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/datasets/${c.ds.id}/${contentPath}/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});" data-test-id="${testId}">
+    <i class="fas fa-trash-alt text-danger"></i>
+  </a>
 </#macro>
-
-<#macro deleteSearchIndiciesButton id>
-	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-</#macro>
-
-<#macro deleteTablesButton id>
-	<a href="" data-test-id="delete-btn-table-${id}" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-</#macro>
-
-<#macro deleteConceptsButton id>
-    <a href="" data-test-id="delete-btn-concept-${id}" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-</#macro>
+<#macro deleteMappersButton id><@deleteButton id="${id}" contentPath="internToExtern" /></#macro>
+<#macro deleteSearchIndiciesButton id><@deleteButton id="${id}" contentPath="searchIndex" /></#macro>
+<#macro deleteTablesButton id><@deleteButton id="${id}" contentPath="tables" testId="delete-btn-table-${id}" /></#macro>
+<#macro deleteConceptsButton id><@deleteButton id="${id}" contentPath="concepts" testId="delete-btn-concept-${id}" /></#macro>
 
 <#macro label>
   <@editableText.editableText text="${c.ds.label}" onChange="(label) => rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: label}).then(function(res){if(res.ok)location.reload();})" />
 </#macro>
-<#macro labelold>
-  <form method="post" enctype="multipart/form-data">
-    <input id="newDatasetLabel" data-test-id="dataset-label-input" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
-    <input type="submit" data-test-id="dataset-label-btn" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
-  </form>
-</#macro>
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
-  <!-- Javascript -->
-  <script><#include "scripts/dataset.js" /></script>
 
   <!-- Dataset page -->
   <@breadcrumbs.breadcrumbs
@@ -52,8 +38,8 @@
       <@infoCard.infoCard
         class="d-inline-flex"
         title="Dataset ${c.ds.label}"
-        labels=["ID", "Label", "Dictionaries", "Size", "IdMapping"]
-        values=[c.ds.id, label, layout.si(c.dictionariesSize)+"B", layout.si(c.size)+"B", idMapping]
+        labels=["ID", "Label", "Size", "IdMapping"]
+        values=[c.ds.id, label, layout.si(c.size)+"B", idMapping]
       />
       <!-- File Upload -->
       <div class="card d-inline-flex mx-3">
@@ -63,7 +49,7 @@
             <select
               class="custom-select"
               data-test-id="upload-select"
-              onchange="updateDatasetUploadForm(this)"
+              onchange="updateDatasetUploadForm(this, '${c.ds.id}')"
               required
             >
               <option value="mapping" selected>Mapping JSON</option>
@@ -86,11 +72,12 @@
       </div>
     </div>
     <!-- Dataset Actions -->
-    <div class="d-flex flex-column" style="gap: 0.5rem;">
+    <div class="d-flex flex-column" style="flex-basis: 15rem; gap: 0.5rem;">
       <button 
         type="button"
         class="btn btn-secondary"
         onclick="rest('/admin/datasets/${c.ds.id}/update-matching-stats',{method: 'post'})"
+        data-cy="update-matching-stats"
       >
         Update Matching Stats
       </button>

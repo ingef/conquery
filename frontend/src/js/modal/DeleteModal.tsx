@@ -30,7 +30,7 @@ interface PropsType {
   headline: ReactNode;
   description?: ReactNode;
   onClose: () => void;
-  onDelete: () => Promise<any>;
+  onDelete: () => Promise<unknown>;
 }
 
 const DeleteModal = ({

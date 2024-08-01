@@ -61,6 +61,41 @@
         "validations": ["NOT_EMPTY"]
       },
       {
+        "name": "theDisclosure",
+        "type": "DISCLOSURE_LIST",
+        "label": {
+          "de": "Datenschutz"
+        },
+        "creatable": true,
+        "tooltip": {
+          "de": "Der Datenschutz ist ein wichtiges Thema, deshalb musst du hier zustimmen."
+        },
+        "fields": [
+          {
+            "type": "HEADLINE",
+            "label": {
+              "de": "Datenschutztext"
+            }
+          },
+          {
+            "type": "CHECKBOX",
+            "name": "disclosureCheckbox",
+            "label": {
+              "de": "Ich habe den Datenschutztext gelesen und bin einverstanden."
+            }
+          },
+          {
+            "type": "NUMBER",
+            "name": "timesIlike",
+            "label": {
+              "de": "Gefällt mir SO sehr"
+            },
+            "defaultValue": 1,
+            "min": 1
+          }
+        ]
+      },
+      {
         "name": "timeMode",
         "type": "TABS",
         "defaultValue": "ABSOLUTE",

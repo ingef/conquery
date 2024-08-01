@@ -24,12 +24,10 @@ const uploadConcepts = (
 ) => {
   switch (action.type) {
     case getType(initUploadConceptListModal):
-      const { filename, rows } = action.payload;
-
       return {
         ...state,
-        filename: stripFilename(filename),
-        fileRows: rows,
+        filename: stripFilename(action.payload.filename),
+        fileRows: action.payload.rows,
         resolved: null,
       };
     case getType(resetUploadConceptListModal):

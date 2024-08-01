@@ -1,10 +1,9 @@
 # Conquery
 *fast & efficient analysis*
 
-[![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
-![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
-[![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
-
+[![Last Release](https://img.shields.io/github/release-date/ingef/conquery.svg?logo=github)](https://github.com/ingef/conquery/releases/latest)
+![Code Size](https://img.shields.io/github/languages/code-size/ingef/conquery.svg)
+[![License](https://img.shields.io/github/license/ingef/conquery.svg)](https://github.com/ingef/conquery/blob/develop/LICENSE)
 
 ![conquery Screenshot](images/screenshot-v4.png)
 
@@ -17,7 +16,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 ## Requirements
 - Maven 3 (optional for building)
 - Java JDK 11
-- Node.js 18 + Yarn
+- Node.js 18
 - curl (to import the test data)
 
 
@@ -32,27 +31,50 @@ Check the README in `/frontend` for details.
 ### Frontend + Backend
 
 #### Steps
+
 To test frontend and backend together you can start the setup that is used for end-to-end tests.
 
 First build the backend using `conquery/scripts/build_backend_version.sh` or download a JAR from
-the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
+the [release page](https://github.com/ingef/conquery/releases) and place it in `conquery/executable/target/`.
 
 Build the frontend by running:
 
 ```bash
 cd frontend
 cp .env.example .env
-yarn
-yarn build
+npm install
+npm run build
 ```
 
-You can then run `conquery/scripts/run_e2e_all.sh` to start frontend and backend, and also load the test data required by cypress end-to-end test or you can run `conquery/scripts/run_e2e_backend.sh` and `conquery/scripts/run_e2e_frontend.sh` separately without loading any data.
+You can then run `conquery/scripts/run_e2e_all.sh` to start frontend and backend, and also load the test data required
+by cypress end-to-end test or you can run `conquery/scripts/run_e2e_backend.sh`
+and `conquery/scripts/run_e2e_frontend.sh` separately without loading any data.
 
 After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
 
 The frontend is accessible at http://localhost:8000 as the default "superuser" implicitly. Since the backend uses a
 development authentication, you can switch users by passing another users "UserId" as the access token in the query
 string when accessing the frontend, e.g.: http://localhost:8000/?access_token=user.user2.
+
+## Configuration
+
+The configuration options for the backend are based on Java classes which reside
+under [this package](https://github.com/ingef/conquery/tree/develop/backend/src/main/java/com/bakdata/conquery/models/config)
+.
+Usually you provide configuration with in a JSON file that is referenced by the start command:
+
+```bash
+java -jar conquery.jar standalone config.json
+```
+
+This `config.json` represents
+configuration [root class](https://github.com/ingef/conquery/blob/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java)
+.
+
+We continuously improve and extend the documentation on these classes and will provide dedicated articles on specific
+configurations, such as:
+
+- [Configure Authentication with OAuth2/OpenId Connect](./docs/authentication.md)
 
 ## Development
 
@@ -65,13 +87,15 @@ To run the end-to-end test locally:
 1. Make sure you installed all [requirements](#requirements)
 2. From the repo root folder run  `conquery/scripts/run_e2e_all.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears
-4. To install cypress and it's dependencies, run `yarn` from an other terminal in the `conquery/` folder
-5. Then run `yarn cypress open` to start cypress
+4. To install cypress and it's dependencies, run `npm install` from an other terminal in the `conquery/` folder
+5. Then run `npx cypress open` to start cypress
 6. Then chose a test suite and start it.
 
-For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).
+For further informations on this and other tests, please refer to the
+corresponding [CI configuration](https://github.com/ingef/conquery/tree/develop/.github/workflows).
 
 ### Data Integration
+
 To make you own data (in form of CSVs) availiable to conquery some steps are necessary:
 
 1. Describe your data table structure with meta data, by generating Import- and Table-JSONs.
@@ -81,10 +105,16 @@ To make you own data (in form of CSVs) availiable to conquery some steps are nec
 
 To get a better impression of the single steps, take a look at the [Tutorials](./tutorial/mimic_iii_demo/README.md)
 
+### Custom Forms
+
+It is possible to extend the analytic capabilities by adding custom forms.
+Custom forms provide an easy way for a user to perform standardized analyses.
+For more informations, take a look at the [guide](./docs/custom_forms.md)
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in
+cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
 
 [<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;

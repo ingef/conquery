@@ -250,7 +250,7 @@ const mergeTables = (
 // Look for tables in the already savedConcept. If they were not included in the
 // respective query concept, exclude them.
 // Also, apply all necessary filters
-const mergeFromSavedConceptIntoNode = (
+export const mergeFromSavedConceptIntoNode = (
   node: QueryConceptNodeT,
   {
     tables,

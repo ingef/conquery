@@ -24,6 +24,6 @@ public class RemoveShardNode extends MessageToManagerNode {
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeNetworkContext context) throws Exception {
 		log.info("ShardNode {} unregistered.", context.getRemoteAddress());
-		context.getNamespaces().getShardNodes().remove(context.getRemoteAddress());
+		context.getClusterState().getShardNodes().remove(context.getRemoteAddress());
 	}
 }

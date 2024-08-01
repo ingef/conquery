@@ -3,15 +3,15 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -29,10 +29,11 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendPermission;
@@ -41,6 +42,8 @@ import com.bakdata.conquery.resources.admin.ui.model.FrontendUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.google.common.cache.CacheStats;
+import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +60,7 @@ public class UIProcessor {
 	@Getter
 	private final AdminProcessor adminProcessor;
 
-	public DatasetRegistry getDatasetRegistry() {
+	public DatasetRegistry<? extends Namespace> getDatasetRegistry() {
 		return adminProcessor.getDatasetRegistry();
 	}
 
@@ -65,19 +68,34 @@ public class UIProcessor {
 		return adminProcessor.getStorage();
 	}
 
-	public UIContext getUIContext() {
-		return new UIContext(getDatasetRegistry());
+	public UIContext getUIContext(String csrfToken) {
+		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return getAdminProcessor().getLoadedIndexes();
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return adminProcessor.getIndexServiceStatistics();
 	}
 
 	public FrontendAuthOverview getAuthOverview() {
 		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
-			Set<Role> effectiveRoles = user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toSet());
-			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream().map(getStorage()::getRole).sorted().collect(Collectors.toList())));
+			Set<Role> effectiveRoles = user.getRoles().stream()
+										   .map(getStorage()::getRole)
+										   // Filter role_ids that might not map TODO how do we handle those
+										   .filter(Predicate.not(Objects::isNull))
+										   .collect(Collectors.toCollection(HashSet::new));
+			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream()
+														   .map(getStorage()::getRole)
+														   // Filter role_ids that might not map TODO how do we handle those
+														   .filter(Predicate.not(Objects::isNull))
+														   .sorted().toList()));
 			overview.add(FrontendAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
-
 		return FrontendAuthOverview.builder().overview(overview).build();
 	}
 
@@ -178,13 +196,6 @@ public class UIProcessor {
 		return new TableStatistics(
 				table,
 				entries,
-				//total size of dictionaries
-				imports.stream()
-					   .flatMap(imp -> imp.getDictionaries().stream())
-					   .filter(Objects::nonNull)
-					   .map(storage::getDictionary)
-					   .mapToLong(Dictionary::estimateMemoryConsumption)
-					   .sum(),
 				//total size of entries
 				imports.stream()
 					   .mapToLong(Import::estimateMemoryConsumption)

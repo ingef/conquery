@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "TABLE_EXPORT Test",
+  "label": "RAW_TABLE_EXPORT Test",
   "expectedCsv": "tests/query/TABLE_EXPORT/raw_expected.csv",
   "query": {
     "type": "TABLE_EXPORT",

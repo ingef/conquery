@@ -1,0 +1,63 @@
+{
+  "type": "FORM_TEST",
+  "label": "ABS-EXPORT-FORM with multiple features and AND connector",
+  "expectedCsv": {
+    "results": "tests/sql/form/ABSOLUT/MULTIPLE_FEATURES/expected_and_connector.csv"
+  },
+  "form": {
+    "type": "EXPORT_FORM",
+    "queryGroup": "00000000-0000-0000-0000-000000000001",
+    "resolution": "QUARTERS",
+    "alsoCreateCoarserSubdivisions": true,
+    "features": [
+      {
+        "type": "AND",
+        "children": [
+          {
+            "ids": [
+              "alter"
+            ],
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "alter.alter",
+                "filters": []
+              }
+            ]
+          },
+          {
+            "ids": [
+              "geschlecht"
+            ],
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "geschlecht.geschlecht",
+                "filters": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "timeMode": {
+      "value": "ABSOLUTE",
+      "dateRange": {
+        "min": "2012-01-16",
+        "max": "2012-12-17"
+      }
+    }
+  },
+  "concepts": [
+    "/shared/alter.concept.json",
+    "/shared/geschlecht.concept.json"
+  ],
+  "content": {
+    "tables": [
+      "/shared/vers_stamm.table.json"
+    ],
+    "previousQueryResults": [
+      "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"
+    ]
+  }
+}

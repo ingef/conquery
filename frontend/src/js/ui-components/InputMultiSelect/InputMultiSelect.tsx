@@ -1,10 +1,16 @@
 import styled from "@emotion/styled";
+import {
+  faChevronDown,
+  faSpinner,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { useCombobox, useMultipleSelection } from "downshift";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -33,7 +39,6 @@ import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
 import { useFilteredOptions } from "./useFilteredOptions";
 import { useLoadMoreInitially } from "./useLoadMoreInitially";
 import { useResolvableSelect } from "./useResolvableSelect";
-import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
@@ -90,16 +95,18 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
+  const { t } = useTranslation();
+
   useResolvableSelect({
     defaultValue,
     onResolve,
   });
 
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
-  const [inputValue, setInputValue] = useState("");
-  const { t } = useTranslation();
 
-  const [syncingState, setSyncingState] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     getSelectedItemProps,
@@ -112,9 +119,9 @@ const InputMultiSelect = ({
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
     initialSelectedItems: defaultValue || [],
-    onSelectedItemsChange: (changes) => {
+    selectedItems: value,
+    onStateChange: (changes) => {
       if (changes.selectedItems) {
-        setSyncingState(true);
         onChange(changes.selectedItems);
       }
     },
@@ -126,7 +133,7 @@ const InputMultiSelect = ({
         onLoadMore(inputValue, { shouldReset: true });
       }
     },
-    200,
+    350,
     [inputValue],
   );
 
@@ -145,7 +152,6 @@ const InputMultiSelect = ({
     getLabelProps,
     getMenuProps,
     getInputProps,
-    getComboboxProps,
     getItemProps,
     highlightedIndex,
     setHighlightedIndex,
@@ -162,28 +168,35 @@ const InputMultiSelect = ({
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
+          // Support disabled items
           if (changes.selectedItem?.disabled) {
             return state;
           }
 
+          /* eslint-disable no-case-declarations */
+          // Make sure we're staying around the index of the item that was just selected
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
               ? state.highlightedIndex - 1
               : state.highlightedIndex;
 
+          // Determine the right item to be "chosen", supporting "creatable" items
           const hasChosenCreatableItem =
             creatable && state.highlightedIndex === 0 && inputValue.length > 0;
 
-          // The item that will be "chosen"
           const selectedItem = hasChosenCreatableItem
             ? { value: inputValue, label: inputValue }
             : changes.selectedItem;
 
-          if (
-            selectedItem &&
-            !selectedItems.find((item) => selectedItem.value === item.value)
-          ) {
+          const hasItemHighlighted = state.highlightedIndex > -1;
+          const isNotSelectedYet =
+            !!selectedItem &&
+            !selectedItems.find((item) => selectedItem.value === item.value);
+          /* eslint-enable no-case-declarations */
+
+          if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
+            inputRef.current?.select();
           }
 
           return {
@@ -236,20 +249,9 @@ const InputMultiSelect = ({
   const { ref: inputPropsRef, ...inputProps } = getInputProps(
     getDropdownProps({ autoFocus }),
   );
-  const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
-
-  useSyncWithValueFromAbove({
-    value,
-    selectedItems,
-    setSelectedItems,
-    syncingState,
-    setSyncingState,
-  });
 
   const clearStaleSearch = () => {
     if (!isOpen) {
@@ -283,20 +285,14 @@ const InputMultiSelect = ({
         }
       }}
     >
-      <Control
-        {...comboboxProps}
-        disabled={disabled}
-        ref={(instance) => {
-          comboboxRef(instance);
-        }}
-      >
+      <Control disabled={disabled}>
         <ItemsInputContainer>
-          {selectedItems.map((option, index) => {
+          {selectedItems.map((item, index) => {
             return (
               <SelectedItem
-                key={`${option.value}${index}`}
+                key={`${item.value}${index}`}
                 index={index}
-                option={option}
+                item={item}
                 active={index === activeIndex}
                 disabled={disabled}
                 getSelectedItemProps={getSelectedItemProps}
@@ -307,11 +303,6 @@ const InputMultiSelect = ({
           <Input
             type="text"
             value={inputValue}
-            onFocus={() => {
-              if (inputRef.current) {
-                inputRef.current.select();
-              }
-            }}
             {...inputProps}
             ref={(instance) => {
               inputRef.current = instance;
@@ -329,23 +320,18 @@ const InputMultiSelect = ({
                 : t("inputSelect.placeholder")
             }
             onClick={(e) => {
-              if (inputProps.onClick) {
-                inputProps.onClick(e);
-              }
-              toggleMenu();
+              inputProps.onClick?.(e);
             }}
             onChange={(e) => {
-              if (inputProps.onChange) {
-                inputProps.onChange(e);
-              }
+              inputProps.onChange?.(e);
               setInputValue(e.target.value);
             }}
           />
         </ItemsInputContainer>
-        {loading && <SxFaIcon icon="spinner" />}
+        {loading && <SxFaIcon icon={faSpinner} />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
-            icon="times"
+            icon={faTimes}
             disabled={disabled}
             onClick={() => {
               setInputValue("");
@@ -357,7 +343,7 @@ const InputMultiSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon="chevron-down"
+          icon={faChevronDown}
           {...getToggleButtonProps()}
         />
       </Control>
@@ -383,7 +369,11 @@ const InputMultiSelect = ({
                     ...selectedItems,
                     ...optionsWithoutCreatable,
                   ]);
-                  setInputValue("");
+                  setTimeout(() => {
+                    // To let the above state change propagage
+                    // before triggering another "load more" request
+                    setInputValue("");
+                  }, 100);
                 }
               }}
             />
@@ -430,7 +420,12 @@ const InputMultiSelect = ({
       {!hasTooManyValues && !onResolve && Select}
       {!hasTooManyValues && !!onResolve && (
         <DropzoneWithFileInput
-          onDrop={() => {}}
+          onDrop={async (item) => {
+            if (item.files) {
+              const rows = await getFileRows(item.files[0]);
+              onResolve(rows);
+            }
+          }}
           disableClick
           tight
           importButtonOutside

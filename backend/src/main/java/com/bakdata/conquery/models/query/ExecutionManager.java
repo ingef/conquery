@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -14,64 +13,92 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor
+@Data
 @Slf4j
-public class ExecutionManager {
+public abstract class ExecutionManager<R extends ExecutionManager.Result> {
+
+	public interface Result {
+		Stream<EntityResult> streamQueryResults();
+	}
 
 	private final MetaStorage storage;
 
-	private final Cache<ManagedExecution, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
-																								   .softValues()
-																								   .removalListener(this::executionRemoved)
-																								   .build();
+	private final Cache<ManagedExecutionId, R> executionResults =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecution, List<?>> removalNotification) {
-
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, R> removalNotification) {
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
 		}
 
-		final ManagedExecution execution = removalNotification.getKey();
+		final ManagedExecutionId executionId = removalNotification.getKey();
 
-		log.warn("Evicted Results for Query[{}] (Reason: {})", execution.getId(), removalNotification.getCause());
+		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
 
-		execution.reset();
+		final ManagedExecution execution = getExecution(executionId);
+
+		// The query might already be deleted
+		if (execution != null) {
+			execution.reset();
+		}
 	}
 
 
-	public ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
-		final ManagedExecution execution = createExecution(namespace, query, user, submittedDataset, system);
+	public ManagedExecution getExecution(ManagedExecutionId execution) {
+		return storage.getExecution(execution);
+	}
+
+	protected R getResult(ManagedExecution execution, Callable<R> defaultProvider) throws ExecutionException {
+		return executionResults.get(execution.getId(), defaultProvider);
+	}
+
+	protected void addResult(ManagedExecution execution, R result) {
+		executionResults.put(execution.getId(), result);
+	}
+
+	public final  ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
+		final ManagedExecution execution = createExecution(query, user, submittedDataset, system);
 		execute(namespace, execution, config);
 
 		return execution;
 	}
 
-	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		// Initialize the query / create subqueries
+
+	public final  void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
+
+		clearQueryResults(execution);
+
 		try {
 			execution.initExecutable(namespace, config);
 		}
 		catch (Exception e) {
-			log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
+			if (e instanceof ConqueryError) {
+				log.warn("Failed to initialize Query[{}]", execution.getId(), e);
+			}
+			else {
+				log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			}
 
-			//TODO we don't want to store completely faulty queries but is that right like this?
 			storage.removeExecution(execution.getId());
 			throw e;
 		}
@@ -80,22 +107,22 @@ public class ExecutionManager {
 
 		execution.start();
 
-
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
-			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
-			namespace.sendToAll(internalExecution.createExecutionMessage());
+			doExecute(namespace, internalExecution);
 		}
 	}
 
-	public ManagedExecution createExecution(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		return createQuery(namespace, query, UUID.randomUUID(), user, submittedDataset, system);
+	protected abstract void doExecute(Namespace namespace, InternalExecution<?> execution);
+
+	// Visible for testing
+	public final ManagedExecution createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
+		return createQuery(query, UUID.randomUUID(), user, submittedDataset, system);
 	}
 
-
-	public ManagedExecution createQuery(Namespace namespace, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
+	public final ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, storage);
 		managed.setSystem(system);
@@ -107,59 +134,18 @@ public class ExecutionManager {
 		return managed;
 	}
 
+	public abstract void cancelQuery(final Dataset dataset, final ManagedExecution query);
 
-	/**
-	 * Receive part of query result and store into query.
-	 *
-	 * @param result
-	 */
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
-
-
-		final E query = (E) storage.getExecution(result.getQueryId());
-
-		if (query.getState() != ExecutionState.RUNNING) {
-			return;
-		}
-
-		query.addResult(result);
-
-		// State changed to DONE or FAILED
-		if (query.getState() != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
-
-			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
-			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
-			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(query.getExecutionTime().toMillis());
-		}
-	}
-
-
-	/**
-	 * Register another result for the execution.
-	 */
-	@SneakyThrows(ExecutionException.class) // can only occur if ArrayList::new fails which is unlikely and would have other problems also
-	public void addQueryResult(ManagedExecution execution, List<EntityResult> queryResults) {
-		// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-		executionResults.get(execution, ArrayList::new)
-						.add(queryResults);
-	}
-
-	/**
-	 * Discard the query's results.
-	 */
 	public void clearQueryResults(ManagedExecution execution) {
-		executionResults.invalidate(execution);
+		executionResults.invalidate(execution.getId());
 	}
 
-	/**
-	 * Stream the results of the query, if available.
-	 */
 	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
-		final List<List<EntityResult>> resultParts = executionResults.getIfPresent(execution);
+		final R resultParts = executionResults.getIfPresent(execution.getId());
 
 		return resultParts == null
 			   ? Stream.empty()
-			   : resultParts.stream().flatMap(List::stream);
+			   : resultParts.streamQueryResults();
+
 	}
 }

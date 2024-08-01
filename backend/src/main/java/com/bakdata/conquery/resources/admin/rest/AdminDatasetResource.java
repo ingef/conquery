@@ -2,32 +2,13 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -43,9 +24,29 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.FileUtil;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -141,7 +142,7 @@ public class AdminDatasetResource {
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
 	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
-		processor.updateImport(namespace, new GZIPInputStream(importStream));
+		processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@PUT
@@ -158,9 +159,10 @@ public class AdminDatasetResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream) throws IOException {
-		log.info("Importing from file upload");
-		processor.addImport(namespace, new GZIPInputStream(importStream));
+	@SneakyThrows
+	public void uploadImport(@NotNull InputStream importStream) {
+		log.debug("Importing from file upload");
+		processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
 	@POST
@@ -178,8 +180,8 @@ public class AdminDatasetResource {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(Concept concept) {
-		processor.addConcept(namespace.getDataset(), concept);
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
+		processor.addConcept(namespace.getDataset(), concept, force);
 	}
 
 	@PUT
@@ -240,11 +242,15 @@ public class AdminDatasetResource {
 		processor.deleteDataset(dataset);
 	}
 
+	/**
+	 * @param dataset the namespace to postprocess
+	 * @implNote The path mapping is historical named. Renaming the path requires some coordination.
+	 */
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
-		processor.updateMatchingStats(dataset);
+	public void postprocessNamespace(@PathParam(DATASET) Dataset dataset) {
+		processor.postprocessNamespace(dataset);
 	}
 
 	@POST

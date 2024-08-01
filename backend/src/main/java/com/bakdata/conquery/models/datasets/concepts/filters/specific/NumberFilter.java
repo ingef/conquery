@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -15,6 +16,8 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
 
 	@Override
-	public void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final String type = switch (getColumn().getType()) {
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
@@ -51,5 +54,10 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 
 			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		};
+	}
+
+	@Override
+	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
+		return new NumberFilterConverter<>();
 	}
 }

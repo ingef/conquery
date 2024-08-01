@@ -1,0 +1,215 @@
+{
+  "label": "Simple OR query for 3 different concepts",
+  "expectedCsv": "tests/sql/or/different_concept/expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "OR",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "label": "vs",
+          "ids": [
+            "number"
+          ],
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": -1,
+                    "max": 0
+                  }
+                }
+              ],
+              "selects": [
+                "number.number_connector.value"
+              ]
+            }
+          ]
+        },
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "mf"
+                  ]
+                }
+              ],
+              "selects": [
+                "geschlecht_select.geschlecht_connector.geschlecht"
+              ]
+            }
+          ]
+        },
+        {
+          "ids": [
+            "language_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Language SELECT",
+          "tables": [
+            {
+              "id": "language_select.language_connector",
+              "filters": [
+                {
+                  "filter": "language_select.language_connector.language",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "fr"
+                  ]
+                }
+              ],
+              "selects": [
+                "language_select.language_connector.language"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          },
+          "selects": {
+            "name": "value",
+            "column": "table1.value",
+            "type": "FIRST"
+          }
+        }
+      ]
+    },
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table2.geschlecht",
+            "type": "SELECT"
+          },
+          "selects": {
+            "name": "geschlecht",
+            "column": "table2.geschlecht",
+            "type": "FIRST"
+          }
+        }
+      ]
+    },
+    {
+      "label": "language_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "language_connector",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "label": "language",
+            "description": "Sprache",
+            "column": "table2.language",
+            "type": "SELECT"
+          },
+          "selects": {
+            "name": "language",
+            "column": "table2.language",
+            "type": "FIRST"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/or/different_concept/content_1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/or/different_concept/content_2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          },
+          {
+            "name": "language",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

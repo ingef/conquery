@@ -6,24 +6,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.StoreMappings;
-import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.*;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -33,7 +25,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +35,6 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Boolean, Dataset>> datasetStores = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<SecondaryIdDescription>, SecondaryIdDescription>> secondaryIdDescriptionStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Table>, Table>> tableStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<Id<Dictionary>, Dictionary>> dictionaryStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Concept<?>>, Concept<?>>> conceptStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Import>, Import>> importStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<CBlock>, CBlock>> cBlockStore = new ConcurrentHashMap<>();
@@ -64,7 +54,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<User>, User>> userStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Role>, Role>> roleStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Group>, Group>> groupStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<Boolean, Dictionary>> primaryDictionaryStoreStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<String, Integer>> entity2Bucket = new ConcurrentHashMap<>();
 
 
 	@Override
@@ -104,13 +94,13 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(tableStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.cached(entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(dictionaryStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(tableStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
 	@Override
@@ -154,12 +144,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(executionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(formConfigStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
@@ -178,16 +168,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 		return StoreMappings.identifiable(groupStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
-	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(primaryDictionaryStoreStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
-	}
-
 	/**
 	 * @implNote intended for Unit-tests
 	 */
 	public MetaStorage createMetaStorage() {
-		final MetaStorage metaStorage = new MetaStorage(this, null);
+		final MetaStorage metaStorage = new MetaStorage(this);
 		metaStorage.openStores(null);
 		return metaStorage;
 	}

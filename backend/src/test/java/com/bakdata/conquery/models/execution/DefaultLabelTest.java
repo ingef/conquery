@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,7 @@ public class DefaultLabelTest {
 
 	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
-	private static final Namespace NAMESPACE = Mockito.mock(Namespace.class);
+	private static final Namespace NAMESPACE = Mockito.mock(LocalNamespace.class);
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final User user = new User("user","user", STORAGE);
 

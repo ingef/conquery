@@ -1,6 +1,6 @@
 import type {
-  SelectOptionT,
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
 import { compose } from "../../common/helpers/commonHelper";
@@ -12,14 +12,14 @@ import {
 import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
-import { resetSelects } from "../../model/select";
+import { SelectConfig, resetSelects } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
-  TableWithFilterValueT,
   FilterWithValueType,
   SelectedSelectorT,
+  TableWithFilterValueT,
 } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
@@ -46,6 +46,12 @@ export const addValue = (
   value: FormConceptGroupT[],
   newValue: FormConceptGroupT,
 ) => [...value, newValue];
+
+export const insertValue = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  newValue: FormConceptGroupT,
+) => [...value.slice(0, valueIdx), newValue, ...value.slice(valueIdx)];
 
 export const removeValue = (value: FormConceptGroupT[], valueIdx: number) => {
   return [...value.slice(0, valueIdx), ...value.slice(valueIdx + 1)];
@@ -272,6 +278,7 @@ export const addConceptsFromFile = (
   resolvedConcepts: string[],
 
   tableConfig: TableConfig,
+  selectConfig: SelectConfig,
   defaults: ConceptListDefaultsType,
   isValidConcept: ((item: FormConceptNodeT) => boolean) | undefined,
 
@@ -295,7 +302,12 @@ export const addConceptsFromFile = (
 
   if (!queryElement) return value;
 
-  const concept = initializeConcept(queryElement, defaults, tableConfig);
+  const concept = initializeConcept(
+    queryElement,
+    defaults,
+    tableConfig,
+    selectConfig,
+  );
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
 
@@ -319,6 +331,7 @@ export const initializeConcept = (
   item: FormConceptNodeT,
   defaults: ConceptListDefaultsType,
   tableConfig: TableConfig,
+  selectConfig: SelectConfig,
 ) => {
   if (!item) return item;
 
@@ -330,8 +343,8 @@ export const initializeConcept = (
     ...item,
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
-    tables: resetTables(item.tables, { useDefaults: true }),
-    selects: resetSelects(item.selects, { useDefaults: true }),
+    tables: resetTables(item.tables, { useDefaults: true, selectConfig }),
+    selects: resetSelects(item.selects, { useDefaults: true, selectConfig }),
   });
 };
 
@@ -394,9 +407,10 @@ export const setFilterValue = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  filterValue: any,
+  filterValue: unknown,
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    // @ts-ignore TODO: maybe use generic types here
     value: filterValue,
   });
 };

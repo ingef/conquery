@@ -6,8 +6,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -23,11 +21,14 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
+@EqualsAndHashCode
 public abstract class CQElement implements Visitable {
 
 	/**
@@ -35,7 +36,7 @@ public abstract class CQElement implements Visitable {
 	 */
 	@Setter
 	@Getter
-	private String label = null;
+	private String label;
 
 	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
@@ -48,11 +49,11 @@ public abstract class CQElement implements Visitable {
 	@NotNull
 	public String defaultLabel(Locale locale) {
 		// Fallback to CPSType#id() implementation is provided or class name
-		CPSType type = this.getClass().getAnnotation(CPSType.class);
+		final CPSType type = getClass().getAnnotation(CPSType.class);
 		if (type != null) {
 			return type.id();
 		}
-		return this.getClass().getSimpleName();
+		return getClass().getSimpleName();
 	}
 
 	/**
@@ -68,14 +69,13 @@ public abstract class CQElement implements Visitable {
 
 	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	public Set<ManagedExecutionId> collectRequiredQueries() {
-		Set<ManagedExecutionId> set = new HashSet<>();
-		this.collectRequiredQueries(set);
+	public final Set<ManagedExecutionId> collectRequiredQueries() {
+		final Set<ManagedExecutionId> set = new HashSet<>();
+		collectRequiredQueries(set);
 		return set;
 	}
 
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
-	}
+	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) ;
 
 	@JsonIgnore
 	public abstract List<ResultInfo> getResultInfos();
@@ -85,6 +85,6 @@ public abstract class CQElement implements Visitable {
 	}
 
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
+		return new RequiredEntities(context.getBucketManager().getEntities());
 	}
 }

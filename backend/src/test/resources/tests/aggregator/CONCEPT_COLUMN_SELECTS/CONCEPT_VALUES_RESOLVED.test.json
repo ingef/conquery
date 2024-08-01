@@ -6,7 +6,7 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "CONCEPT",
-      "selects" : [
+      "selects": [
         "tree.select"
       ],
       "ids": [
@@ -28,9 +28,9 @@
       "type": "TREE",
       "selects": [
         {
-          "type" : "CONCEPT_VALUES",
-          "name" : "select",
-          "asIds" : true
+          "type": "CONCEPT_VALUES",
+          "name": "select",
+          "asIds": true
         }
       ],
       "connectors": [

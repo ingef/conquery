@@ -1,4 +1,6 @@
 import styled from "@emotion/styled";
+import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
+import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import Highlighter from "react-highlight-words";
 
@@ -74,7 +76,7 @@ const Folder: FC<Props> = ({
       className={className}
       title={folder}
     >
-      <SxFaIcon icon="folder" regular={special} active />
+      <SxFaIcon icon={special ? faFolderRegular : faFolder} active />
       {exists(resultCount) && <ResultCount>{resultCount}</ResultCount>}
       <Text>
         {!empty && resultWords.length > 0 ? (

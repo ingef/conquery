@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -44,6 +44,7 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -73,8 +74,8 @@ public class LoadingUtil {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
-			ManagedExecution managed = support.getNamespace().getExecutionManager()
-											  .createQuery(support.getNamespace(), query, queryId, user, support.getNamespace().getDataset(), false);
+			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
+			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -88,10 +89,8 @@ public class LoadingUtil {
 			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution managed =
-					support.getNamespace()
-						   .getExecutionManager()
-						   .createQuery(support.getNamespace(), query, queryId, user, support.getNamespace().getDataset(), false);
+			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
+			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -376,7 +375,7 @@ public class LoadingUtil {
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
 
 		final Response post = support.getClient().target(matchingStatsUri)

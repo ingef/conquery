@@ -1,17 +1,17 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Objects;
 import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.logging.log4j.util.Strings;
 
 
 /**
@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString(callSuper = true, of = "column")
 public class SelectFilterNode extends EventFilterNode<String> {
 
-	private int selectedId = -1;
+	private final boolean empty;
 	@NotNull
 	@Getter
 	@Setter
@@ -29,29 +29,34 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	public SelectFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;
+
+		empty = Strings.isEmpty(filterValue);
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		//you can then also skip the block if the id is -1
-		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
+		// You can skip the block if the id is -1
 	}
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
-		if (selectedId == -1 || !bucket.has(event, getColumn())) {
-			return false;
+		final boolean has = bucket.has(event, getColumn());
+
+		if(empty && !has){
+			return true;
 		}
 
-		int value = bucket.getString(event, getColumn());
 
-		return value == selectedId;
+		final String value = bucket.getString(event, getColumn());
+
+		return Objects.equals(value, filterValue);
 	}
 
-	@Override
-	public boolean isOfInterest(Bucket bucket) {
-		return ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
-	}
+	//TODO
+//	@Override
+//	public boolean isOfInterest(Bucket bucket) {
+//		return empty || ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
+//	}
 
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {

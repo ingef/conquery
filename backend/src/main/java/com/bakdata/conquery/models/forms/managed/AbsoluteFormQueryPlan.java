@@ -11,8 +11,10 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Getter @RequiredArgsConstructor
+@ToString
 public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan query;

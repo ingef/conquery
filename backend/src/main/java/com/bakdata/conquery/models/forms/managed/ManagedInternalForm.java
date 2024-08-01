@@ -2,16 +2,18 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
@@ -34,6 +36,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
@@ -41,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
 
 
@@ -49,10 +53,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	 * This is required by forms that have multiple results (CSVs) as output.
 	 */
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private Map<String, ManagedQuery> subQueries;
 
 	/**
-	 * Subqueries that are send to the workers.
+	 * Subqueries that are sent to the workers.
 	 */
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
@@ -66,10 +71,15 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		super(form, user, submittedDataset, storage);
 	}
 
+	@Nullable
+	public ManagedQuery getSubQuery(ManagedExecutionId subQueryId) {
+		return flatSubQueries.get(subQueryId);
+	}
+
 	@Override
 	public void doInitExecutable() {
 		// Convert sub queries to sub executions
-		getSubmittedForm().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
@@ -78,10 +88,10 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@NotNull
 	private Map<String, ManagedQuery> createSubExecutions() {
-		return getSubmittedForm().createSubQueries()
-								 .entrySet()
-								 .stream().collect(Collectors.toMap(
-						e -> e.getKey(),
+		return getSubmitted().createSubQueries()
+							 .entrySet()
+							 .stream().collect(Collectors.toMap(
+						Map.Entry::getKey,
 						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
 
 				));
@@ -98,14 +108,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		return subQueries.values().iterator().next().generateColumnDescriptions();
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
 	}
 
 
-	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
@@ -120,7 +128,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			return;
 		}
 		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
-		status.setColumnDescriptions(subQuery.generateColumnDescriptions());
+		status.setColumnDescriptions(subQuery.generateColumnDescriptions(isInitialized(), getConfig()));
+	}
+
+	@Override
+	public void cancel() {
+		subQueries.values().forEach(ManagedQuery::cancel);
 	}
 
 	@Override
@@ -133,12 +146,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public Stream<EntityResult> streamResults() {
+	public Stream<EntityResult> streamResults(OptionalLong limit) {
 		if (subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().streamResults();
+		return subQueries.values().iterator().next().streamResults(limit);
 	}
 
 	@Override
@@ -156,46 +169,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
-	/**
-	 * Distribute the result to a sub query.
-	 */
-	@Override
-	public void addResult(FormShardResult result) {
-		if (result.getError().isPresent()) {
-			fail(result.getError().get());
-			return;
-		}
 
-		ManagedExecutionId subQueryId = result.getSubQueryId();
-
-		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
-		subQuery.addResult(result);
-
-		switch (subQuery.getState()) {
-			case DONE -> {
-				if (allSubQueriesDone()) {
-					finish(ExecutionState.DONE);
-				}
-			}
-			// Fail the whole execution if a subquery fails
-			case FAILED -> {
-				fail(
-						result.getError().orElseThrow(
-								() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
-						)
-				);
-			}
-
-			default -> {
-			}
-		}
-
-	}
-
-
-	private boolean allSubQueriesDone() {
+	public boolean allSubQueriesDone() {
 		synchronized (this) {
 			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}
 	}
+
 }

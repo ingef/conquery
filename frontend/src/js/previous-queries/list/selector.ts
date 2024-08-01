@@ -8,6 +8,13 @@ import type { ProjectItemsFilterStateT } from "../filter/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
+const queryHasOwner = (query: PreviousQueryT, searchTerm: string) => {
+  return (
+    !!query.ownerName &&
+    query.ownerName.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+  );
+};
+
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
     !!query.tags &&
@@ -66,7 +73,8 @@ export const queryMatchesSearch = (
     !exists(searchTerm) ||
     queryHasId(query, searchTerm) ||
     queryHasLabel(query, searchTerm) ||
-    queryHasTag(query, searchTerm)
+    queryHasTag(query, searchTerm) ||
+    queryHasOwner(query, searchTerm)
   );
 };
 

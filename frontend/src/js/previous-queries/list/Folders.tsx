@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -219,7 +220,7 @@ const Folders: FC<Props> = ({ className }) => {
       )}
       <Row ref={parentRef}>
         <AddFolderIconButton
-          icon="plus"
+          icon={faPlus}
           frame
           tight
           onClick={() => setShowAddFolderModal(true)}
@@ -290,7 +291,7 @@ const Folders: FC<Props> = ({ className }) => {
                   />
                   <WithTooltip text={t("common.delete")}>
                     <SxIconButton
-                      icon="times"
+                      icon={faTimes}
                       onClick={(e) => {
                         setFolderToDelete(folder);
                         e.stopPropagation();

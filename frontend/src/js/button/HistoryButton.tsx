@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faListUl } from "@fortawesome/free-solid-svg-icons";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -22,7 +23,7 @@ export const HistoryButton = () => {
   }, [dispatch]);
 
   return (
-    <Button icon="list-ul" frame onClick={onClick}>
+    <Button icon={faListUl} frame onClick={onClick}>
       {t("history.history")}
     </Button>
   );

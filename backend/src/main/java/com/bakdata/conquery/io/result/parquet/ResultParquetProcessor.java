@@ -1,14 +1,9 @@
 package com.bakdata.conquery.io.result.parquet;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_PARQUET;
 
 import java.util.Locale;
-
-import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import java.util.OptionalLong;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -21,9 +16,14 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,13 +35,13 @@ public class ResultParquetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
 
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
@@ -68,12 +68,12 @@ public class ResultParquetProcessor {
 					config.getIdColumns().getIdResultInfos(),
 					singleTableResult.getResultInfos(),
 					settings,
-					singleTableResult.streamResults()
+					singleTableResult.streamResults(limit)
 			);
 
 		};
 
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), FILE_EXTENTION_PARQUET, PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET), PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 }
