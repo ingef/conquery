@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Preconditions;
+import lombok.ToString;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,19 +41,12 @@ public class ResultPrinters {
 		return new BigDecimal(value.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
 	}
 
-	public String printDate(PrintSettings cfg, Object f) {
-		if (!(f instanceof Number)) {
-			throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
-		}
-		final Number number = (Number) f;
-		return cfg.getDateFormatter().format(CDate.toLocalDate(number.intValue()));
-	}
-
 	@FunctionalInterface
 	public interface Printer {
 		String print(Object f, PrintSettings cfg);
 	}
 
+	@ToString()
 	public static class StringPrinter implements Printer {
 		@Override
 		public String print(Object f, PrintSettings cfg) {
@@ -60,6 +54,8 @@ public class ResultPrinters {
 		}
 	}
 
+
+	@ToString()
 	public static class IntegerPrinter implements Printer {
 		@Override
 		public String print(Object f, PrintSettings cfg) {
@@ -71,18 +67,20 @@ public class ResultPrinters {
 		}
 	}
 
+	@ToString()
 	public static class NumericPrinter implements Printer {
 
 		@Override
 		public String print(Object f, PrintSettings cfg) {
 			if (cfg.isPrettyPrint()) {
-				return cfg.getDecimalFormat().format(((Number) f).longValue());
+				return cfg.getDecimalFormat().format(f);
 			}
 
 			return f.toString();
 		}
 	}
 
+	@ToString()
 	public static class MoneyPrinter implements Printer {
 
 		@Override
@@ -97,6 +95,7 @@ public class ResultPrinters {
 		}
 	}
 
+	@ToString()
 	public static class DatePrinter implements Printer {
 		@Override
 		public String print(Object f, PrintSettings cfg) {
@@ -107,6 +106,7 @@ public class ResultPrinters {
 		}
 	}
 
+	@ToString()
 	public static class DateRangePrinter implements Printer {
 
 		private final DatePrinter datePrinter = new DatePrinter();
@@ -135,6 +135,8 @@ public class ResultPrinters {
 			return minString + cfg.getDateRangeSeparator() + maxString;
 		}
 	}
+
+	@ToString()
 
 	public static class BooleanPrinter implements Printer {
 		private String trueVal = null;
@@ -165,6 +167,7 @@ public class ResultPrinters {
 			return mapper.external(((String) f));
 		}
 	}
+
 
 	public record ListPrinter(Printer printerImpl) implements Printer {
 

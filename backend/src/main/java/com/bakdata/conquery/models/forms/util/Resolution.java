@@ -10,6 +10,7 @@ import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +31,6 @@ public enum Resolution {
 	COMPLETE(null) {
 		@Override
 		public String toString(Locale locale) {
-
 			return C10N.get(DateContextResolutionC10n.class, locale).complete();
 		}
 
@@ -148,20 +148,24 @@ public enum Resolution {
 		}
 		thisAndCoarser.add(this);
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
-
 	}
 
-	public static String localizeValue(Object value, PrintSettings cfg) {
-		if (value instanceof Resolution) {
-			return ((Resolution) value).toString(cfg.getLocale());
-		}
-		try {
-			// If the object was parsed as a simple string, try to convert it to a
-			// DateContextMode to get Internationalization
-			return Resolution.valueOf(value.toString()).toString(cfg.getLocale());
-		}
-		catch (Exception e) {
-			throw new IllegalArgumentException(value + " is not a valid resolution.", e);
+	public static class LocalizingPrinter implements ResultPrinters.Printer{
+
+		@Override
+		public String print(Object f, PrintSettings cfg) {
+			if (f instanceof Resolution) {
+				return ((Resolution) f).toString(cfg.getLocale());
+			}
+			try {
+				// If the object was parsed as a simple string, try to convert it to a
+				// DateContextMode to get Internationalization
+				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
+			}
 		}
 	}
+
 }

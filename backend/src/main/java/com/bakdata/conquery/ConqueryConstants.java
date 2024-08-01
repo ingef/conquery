@@ -3,6 +3,7 @@ package com.bakdata.conquery;
 import java.util.Collections;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
@@ -31,26 +32,35 @@ public class ConqueryConstants {
 
 	// Form related constants
 	public static final String SINGLE_RESULT_TABLE_NAME = "results";
-	public static final ResultInfo CONTEXT_INDEX_INFO = LocalizedDefaultResultInfo.builder()
-																				  .type(ResultType.Primitive.INTEGER)
-																				  .semantics(Collections.emptySet())
-																				  .localizedDefaultLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class)
-																														 .index())
-																				  .localizedLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class)
-																												  .index())
-																				  .printer(Resolution::localizeValue)
-																				  .build();
+	public static final ResultInfo CONTEXT_INDEX_INFO =
+			LocalizedDefaultResultInfo.builder()
+									  .type(ResultType.Primitive.INTEGER)
+									  .semantics(Collections.emptySet())
+									  .localizedDefaultLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).index())
+									  .localizedLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).index())
+									  .build();
 
 	public static final ResultInfo DATE_RANGE_INFO =
 			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).dateRange(), ResultType.Primitive.DATE_RANGE, Set.of());
 	public static final ResultInfo RESOLUTION_INFO =
-			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).resolution(), ResultType.Primitive.STRING, Set.of(new SemanticType.ResolutionT()));
+			LocalizedDefaultResultInfo.builder()
+									  .type(ResultType.Primitive.STRING)
+									  .semantics(Collections.emptySet())
+									  .localizedDefaultLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).resolution())
+									  .localizedLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).resolution())
+									  .printer(new Resolution.LocalizingPrinter())
+									  .build();
 	public static final ResultInfo EVENT_DATE_INFO =
 			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).eventDate(), ResultType.Primitive.DATE, Set.of());
 
-	public static final ResultInfo
-			OBSERVATION_SCOPE_INFO =
-			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).observationScope(), ResultType.Primitive.STRING, Set.of());
+	public static final ResultInfo OBSERVATION_SCOPE_INFO =
+			LocalizedDefaultResultInfo.builder()
+									  .type(ResultType.Primitive.STRING)
+									  .semantics(Collections.emptySet())
+									  .localizedDefaultLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).observationScope())
+									  .localizedLabelProvider((l) -> l.getLocalized(ResultHeadersC10n.class).observationScope())
+									  .printer(new FeatureGroup.LocalizingPrinter())
+									  .build();
 
 	/**
 	 * Drawn from random.org

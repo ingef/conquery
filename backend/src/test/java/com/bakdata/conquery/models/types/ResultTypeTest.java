@@ -77,7 +77,7 @@ public class ResultTypeTest {
 			Arguments.of(PLAIN, info(ResultType.Primitive.NUMERIC), 0.2, "0.2"),
 			Arguments.of(PLAIN, info(ResultType.Primitive.NUMERIC), new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
 			Arguments.of(PLAIN, info(ResultType.Primitive.STRING), "test", "test"),
-			Arguments.of(PLAIN, ConqueryConstants.RESOLUTION_INFO, Resolution.COMPLETE.name(), "COMPLETE"),
+			Arguments.of(PLAIN, info(ResultType.Primitive.STRING), Resolution.COMPLETE.name(), "COMPLETE"), // TODO fk: is supposed not to test the mapping?
 			Arguments.of(PLAIN, info(ResultType.Primitive.STRING), ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}
