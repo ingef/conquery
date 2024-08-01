@@ -51,9 +51,9 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	private final ConqueryConfig config;
 	private final Environment environment;
 	private final Workers workers;
-	private final JobManager jobManager;
 	private final Supplier<ObjectMapper> communicationMapperSupplier;
 
+	private JobManager jobManager;
 	private ScheduledExecutorService scheduler;
 	private NioSocketConnector connector;
 	private ConnectFuture future;
@@ -260,6 +260,10 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void start() throws Exception {
+
+
+		jobManager = new JobManager(environment.getName(), config.isFailOnError());
+
 		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
 		// Connect async as the manager might not be up jet or is started by a test in succession
 		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
@@ -268,10 +272,15 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	}
 
+	public boolean isBusy() {
+		return jobManager.isSlowWorkerBusy();
+	}
+
 	@Override
 	public void stop() throws Exception {
 		// close scheduler before disconnect to avoid scheduled reconnects
 		scheduler.shutdown();
 		disconnectFromCluster();
+		jobManager.close();
 	}
 }

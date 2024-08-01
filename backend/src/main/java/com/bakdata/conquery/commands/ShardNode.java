@@ -13,8 +13,6 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.cluster.ClusterConnectionShard;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -23,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
-import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +33,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-public class ShardNode implements ConfiguredBundle<ConqueryConfig>, Managed {
+public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 	public static final String DEFAULT_NAME = "shard-node";
 
 	private final String name;
-	private JobManager jobManager;
 	@Setter
 	private Workers workers;
 	private ClusterConnectionShard clusterConnection;
@@ -56,9 +53,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig>, Managed {
 
 	@Override
 	public void run(ConqueryConfig config, Environment environment) throws Exception {
-
-		jobManager = new JobManager(getName(), config.isFailOnError());
-		environment.lifecycle().manage(this);
+		LifecycleEnvironment lifecycle = environment.lifecycle();
 
 		workers = new Workers(
 				config.getQueries().getExecutionPool(),
@@ -68,11 +63,13 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig>, Managed {
 				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 
+		lifecycle.manage(workers);
+
 
 		clusterConnection =
-				new ClusterConnectionShard(config, environment, workers, jobManager, () -> createInternalObjectMapper(View.InternalCommunication.class, config, environment.getValidator()));
+				new ClusterConnectionShard(config, environment, workers, () -> createInternalObjectMapper(View.InternalCommunication.class, config, environment.getValidator()));
 
-		environment.lifecycle().manage(clusterConnection);
+		lifecycle.manage(clusterConnection);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
 
@@ -137,23 +134,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig>, Managed {
 		return objectMapper;
 	}
 
-	@Override
-	public void start() throws Exception {
-		for (Worker value : workers.getWorkers().values()) {
-			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
-		}
-
-
-	}
-
-	@Override
-	public void stop() throws Exception {
-		getJobManager().close();
-
-		workers.stop();
-	}
-
 	public boolean isBusy() {
-		return getJobManager().isSlowWorkerBusy() || workers.isBusy();
+		return clusterConnection.isBusy() || workers.isBusy();
 	}
 }
