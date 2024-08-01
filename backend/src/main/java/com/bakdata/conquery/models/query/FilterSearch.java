@@ -13,6 +13,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -91,12 +92,19 @@ public class FilterSearch {
 
 
 	/**
-	 * Adds new values to a search. If there is no search yet for the searchable, it is created.
+	 * Adds new values to a search. If there is no search for the searchable yet, it is created.
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
 	public void registerValues(Searchable searchable, Collection<String> values) {
-		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig));
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
+			try {
+				return searchable.createTrieSearch(indexConfig);
+			}
+			catch (IndexCreationException e) {
+				throw new IllegalStateException(e);
+			}
+		});
 
 		synchronized (search) {
 			values.stream()

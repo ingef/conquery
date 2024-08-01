@@ -102,7 +102,14 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 		MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
 
-		int2ext = CompletableFuture.supplyAsync(() -> mapIndex.getIndex(key)).whenComplete((m, e) -> {
+		int2ext = CompletableFuture.supplyAsync(() -> {
+			try {
+				return mapIndex.getIndex(key);
+			}
+			catch (IndexCreationException e) {
+				throw new IllegalStateException(e);
+			}
+		}).whenComplete((m, e) -> {
 			if (e != null) {
 				log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));
 			}
@@ -120,10 +127,12 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@Override
 	public String external(String internalValue) {
 		if(!initialized()){
+			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
 			return internalValue;
 		}
 
 		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
+			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
 			return internalValue;
 		}
 
