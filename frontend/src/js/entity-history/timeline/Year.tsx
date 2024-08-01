@@ -5,14 +5,16 @@ import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
+  TimeStratifiedInfo,
 } from "../../api/types";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets, EventsByQuarterWithGroups } from "../Timeline";
+import { ColumnBuckets } from "./util/useColumnInformation";
 
-import Quarter from "./Quarter";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
+import { Quarter } from "./Quarter";
 import YearHead from "./YearHead";
+import { EventsByQuarterWithGroups } from "./util/findEventGroups";
 
 const YearGroup = styled("div")`
   display: flex;
@@ -21,7 +23,6 @@ const YearGroup = styled("div")`
 `;
 
 const Year = ({
-  datasetId,
   year,
   getIsOpen,
   toggleOpenYear,
@@ -30,11 +31,13 @@ const Year = ({
   detailLevel,
   contentFilter,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
+  timeStratifiedInfos,
 }: {
-  datasetId: DatasetT["id"];
   year: number;
   getIsOpen: (year: number, quarter?: number) => boolean;
   toggleOpenYear: (year: number) => void;
@@ -46,8 +49,13 @@ const Year = ({
   currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
+  timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const isYearOpen = getIsOpen(year);
+  const { searchTerm } = useTimelineSearch();
+
+  const isYearOpen = !!searchTerm || getIsOpen(year);
   const totalEvents = quarterwiseData.reduce(
     (all, data) =>
       all + data.groupedEvents.reduce((s, evts) => s + evts.length, 0),
@@ -61,6 +69,7 @@ const Year = ({
         year={year}
         totalEvents={totalEvents}
         onClick={() => toggleOpenYear(year)}
+        timeStratifiedInfos={timeStratifiedInfos}
       />
       <YearGroup key={year}>
         {quarterwiseData.map(({ quarter, groupedEvents, differences }) => {
@@ -68,13 +77,12 @@ const Year = ({
             (s, evts) => s + evts.length,
             0,
           );
-          const isQuarterOpen = getIsOpen(year, quarter);
+          const isQuarterOpen = !!searchTerm || getIsOpen(year, quarter);
 
           return (
             <Quarter
               key={quarter}
               isOpen={isYearOpen || isQuarterOpen}
-              datasetId={datasetId}
               totalEventsPerQuarter={totalEventsPerQuarter}
               detailLevel={detailLevel}
               quarter={quarter}
@@ -84,6 +92,8 @@ const Year = ({
               differences={differences}
               contentFilter={contentFilter}
               columns={columns}
+              dateColumn={dateColumn}
+              sourceColumn={sourceColumn}
               columnBuckets={columnBuckets}
               currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}

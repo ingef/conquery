@@ -1,6 +1,10 @@
 import { getType } from "typesafe-actions";
 
-import type { QueryIdT, UserGroupIdT } from "../../api/types";
+import type {
+  QueryIdT,
+  ResultUrlWithLabel,
+  UserGroupIdT,
+} from "../../api/types";
 import { Action } from "../../app/actions";
 
 import {
@@ -17,7 +21,7 @@ import {
 
 export interface BaseFormConfigT {
   formType: string;
-  values: Record<string, any>;
+  values: Record<string, unknown>;
   label: string;
 }
 
@@ -42,13 +46,14 @@ export interface PreviousQueryT {
   own: boolean;
   ownerName: string;
   system?: boolean;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   shared: boolean;
   isPristineLabel?: boolean;
   canExpand?: boolean;
   groups?: UserGroupIdT[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   secondaryId?: string | null;
+  containsDates: boolean;
 }
 
 export interface PreviousQueriesStateT {
@@ -159,6 +164,24 @@ const deleteFormConfig = (
   };
 };
 
+const removeLocalFolder = (
+  state: PreviousQueriesStateT,
+  { folderName }: { folderName: string },
+) => {
+  const { localFolders } = state;
+  const idx = localFolders.findIndex((f) => f === folderName);
+
+  return idx === -1
+    ? state
+    : {
+        ...state,
+        localFolders: [
+          ...localFolders.slice(0, idx),
+          ...localFolders.slice(idx + 1),
+        ],
+      };
+};
+
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
   action: Action,
@@ -201,17 +224,7 @@ const previousQueriesReducer = (
         localFolders: [...state.localFolders, action.payload.folderName],
       };
     case getType(removeFolder):
-      const idx = state.localFolders.indexOf(action.payload.folderName);
-
-      if (idx === -1) return state;
-
-      return {
-        ...state,
-        localFolders: [
-          ...state.localFolders.slice(0, idx),
-          ...state.localFolders.slice(idx + 1),
-        ],
-      };
+      return removeLocalFolder(state, action.payload);
     default:
       return state;
   }

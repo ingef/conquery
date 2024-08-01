@@ -1,8 +1,10 @@
 import styled from "@emotion/styled";
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 const Concept = styled("div")`
@@ -40,19 +42,20 @@ const SxIconButton = styled(IconButton)`
 `;
 
 interface Props {
-  node: ConceptT | null;
   conceptId: ConceptIdT;
+  root: ConceptT;
   canRemoveConcepts?: boolean;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
 }
 
 const ConceptEntry = ({
-  node,
   conceptId,
+  root,
   canRemoveConcepts,
   onRemoveConcept,
 }: Props) => {
   const { t } = useTranslation();
+  const node = getConceptById(conceptId);
 
   const ConceptEntryRoot = (
     <Concept>
@@ -74,15 +77,14 @@ const ConceptEntry = ({
         <SxIconButton
           onClick={() => onRemoveConcept(conceptId)}
           tiny
-          regular
-          icon="trash-alt"
+          icon={faTrashCan}
         />
       )}
     </Concept>
   );
 
-  return node ? (
-    <AdditionalInfoHoverable node={node}>
+  return node && root ? (
+    <AdditionalInfoHoverable node={node} root={root}>
       {ConceptEntryRoot}
     </AdditionalInfoHoverable>
   ) : (

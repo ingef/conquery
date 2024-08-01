@@ -1,14 +1,18 @@
 package com.bakdata.conquery.models.index;
 
+import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
+@ToString
 public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Index<FrontendValueIndexKey> {
 
 
@@ -22,20 +26,23 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 	 * @see FilterTemplate#getOptionValue()
 	 */
 	private final String optionValueTemplate;
+	private final String defaultEmptyLabel;
 
-	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate) {
+	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel1) {
 		super(suffixCutoff, split);
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
+		this.defaultEmptyLabel = defaultEmptyLabel1;
 	}
 
 	@Override
 	public void put(String internalValue, Map<String, String> templateToConcrete) {
-		FrontendValue feValue = new FrontendValue(
+		final FrontendValue feValue = new FrontendValue(
 				internalValue,
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)
 		);
+
 		addItem(feValue, FilterSearch.extractKeywords(feValue));
 	}
 
@@ -52,6 +59,22 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
+
+		StopWatch timer = StopWatch.createStarted();
+
+		// If no empty label was provided by the mapping, we insert the configured default-label
+		if (findExact(List.of(""), 1).isEmpty()) {
+			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
+		}
+
+		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
+
+		timer.reset();
+		log.trace("START-FV-FIN SHRINKING");
+
 		shrinkToFit();
+
+		log.trace("DONE-FV-FIN SHRINKING in {}", timer);
+
 	}
 }

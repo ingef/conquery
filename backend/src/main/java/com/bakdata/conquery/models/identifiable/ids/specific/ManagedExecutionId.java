@@ -5,16 +5,16 @@ import java.util.UUID;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-@EqualsAndHashCode(callSuper = false)
-public class ManagedExecutionId extends Id<ManagedExecution<?>> {
+@EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
+public class ManagedExecutionId extends Id<ManagedExecution> {
 
 	private final DatasetId dataset;
 	private final UUID execution;

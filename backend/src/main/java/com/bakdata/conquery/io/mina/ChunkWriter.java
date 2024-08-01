@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.bakdata.conquery.util.SoftPool;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 
 	@Getter
 	@Setter
-	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private int bufferSize = Ints.checkedCast(DataSize.megabytes(2).toBytes());
 	private final SoftPool<IoBuffer> bufferPool = new SoftPool<>(() -> IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
@@ -59,8 +59,8 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 
 		private void finishBuffer(boolean end) {
 			buffer.flip();
-			if (buffer.remaining() - HEADER_SIZE == 0) {
-				throw new IllegalStateException();
+			if (buffer.remaining() < HEADER_SIZE) {
+				throw new IllegalStateException("Buffer of size %s is too small for header of length %s".formatted(buffer.remaining(), HEADER_SIZE));
 			}
 			buffer.put(0, end ? LAST_MESSAGE : CONTINUED_MESSAGE);
 			buffer.putInt(Byte.BYTES, buffer.remaining() - HEADER_SIZE);

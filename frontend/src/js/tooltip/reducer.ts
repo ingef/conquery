@@ -1,3 +1,4 @@
+import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { ActionType, getType } from "typesafe-actions";
 
 import type { DateRangeT } from "../api/types";
@@ -15,13 +16,16 @@ type InfoType = {
 };
 
 export type AdditionalInfosType = {
-  label: string | null;
+  label?: string;
   description?: string;
-  isFolder: boolean;
   matchingEntries: number | null;
   matchingEntities: number | null;
   dateRange?: DateRangeT;
   infos?: InfoType[];
+  isStructNode?: boolean;
+  icon?: IconDefinition;
+  rootIcon?: IconDefinition;
+  rootLabel?: string;
 };
 
 export type TooltipStateT = {
@@ -31,13 +35,8 @@ export type TooltipStateT = {
 };
 
 const additionalInfosInitialState: AdditionalInfosType = {
-  label: null,
-  description: undefined,
-  isFolder: false,
   matchingEntries: null,
   matchingEntities: null,
-  dateRange: undefined,
-  infos: undefined,
 };
 
 const initialState: TooltipStateT = {

@@ -1,9 +1,12 @@
 package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -19,6 +22,12 @@ public class FrontendPreviewConfig {
 	@JsonProperty("default")
 	private final Collection<Labelled> defaultConnectors;
 
+	@NsIdRefCollection
+	private final List<Filter<?>> searchFilters;
+
+	/**
+	 * Search concept needs to be parent of searchFilters, so frontend can resolve the filters.
+	 */
 	@NsIdRef
 	private final Concept<?> searchConcept;
 }

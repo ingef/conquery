@@ -142,7 +142,35 @@
 						},
 						"required": [
 							"type",
-							"items"
+							"prefixes"
+						]
+					}
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": [
+								"EQUAL"
+							]
+						},
+						"values": {
+							"oneOf": [
+								{
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								},
+								{
+									"type": "string"
+								}
+							]
+						},
+						"required": [
+							"type",
+							"values"
 						]
 					}
 				}

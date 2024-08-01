@@ -64,6 +64,7 @@ export type StateT = {
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
+  editorV2QueryRunner: QueryRunnerStateT;
   queryEditor: {
     query: StandardQueryStateT;
     selectedSecondaryId: SelectedSecondaryIdStateT;
@@ -101,6 +102,7 @@ const buildAppReducer = () => {
     preview,
     user,
     entityHistory,
+    editorV2QueryRunner: createQueryRunnerReducer("editorV2"),
     queryEditor: combineReducers({
       query: queryReducer,
       selectedSecondaryId: selectedSecondaryIdsReducer,

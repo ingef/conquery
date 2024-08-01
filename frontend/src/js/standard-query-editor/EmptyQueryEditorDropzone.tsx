@@ -1,4 +1,11 @@
 import styled from "@emotion/styled";
+import { faFile } from "@fortawesome/free-regular-svg-icons";
+import {
+  faArrowRight,
+  faDiagramProject,
+  faFolder,
+  faMinus,
+} from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -23,9 +30,6 @@ const ArrowRight = styled(FaIcon)`
   grid-area: arrow;
 `;
 const Headline = styled("h2")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.huge};
-  line-height: 1.3;
   grid-area: headline;
 `;
 const Grid = styled("div")`
@@ -59,29 +63,31 @@ export const EmptyQueryEditorDropzone = memo(() => {
 
   return (
     <TextInitial>
-      <Headline>{t("dropzone.explanation")}</Headline>
-      <ArrowRight icon="arrow-right" />
+      <Headline className="text-2xl leading-tight font-bold">
+        {t("dropzone.explanation")}
+      </Headline>
+      <ArrowRight icon={faArrowRight} />
       <Description>
         <p>{t("dropzone.dropIntoThisArea")}</p>
         <Grid>
           <Row>
             <IconInABox>
-              <FaIcon icon="folder" active />
+              <FaIcon icon={faFolder} active />
             </IconInABox>
             <IconInABox>
-              <FaIcon icon="minus" active />
+              <FaIcon icon={faMinus} active />
             </IconInABox>
           </Row>
           {t("dropzone.aConcept")}
           <Row>
             <IconInABox>
-              <FaIcon icon="diagram-project" active />
+              <FaIcon icon={faDiagramProject} active />
             </IconInABox>
           </Row>
           {t("dropzone.aQuery")}
           <Row>
             <IconInABox>
-              <FaIcon icon="file" regular active />
+              <FaIcon icon={faFile} active />
             </IconInABox>
           </Row>
           {t("dropzone.aConceptList")}

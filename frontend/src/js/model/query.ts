@@ -2,7 +2,6 @@ import { exists } from "../common/helpers/exists";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
   PreviousQueryQueryNodeType,
-  QueryGroupType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import { TIMEBASED_OPERATOR_TYPES } from "../timebased-query-editor/reducer";
@@ -42,16 +41,4 @@ export function isQueryExpandable(node: StandardQueryNodeT) {
 
 export function validateQueryLength(query: StandardQueryStateT) {
   return query.length > 0;
-}
-
-function elementHasValidDates(element: StandardQueryNodeT) {
-  return !element.excludeTimestamps;
-}
-
-function groupHasValidDates(group: QueryGroupType) {
-  return !group.exclude && group.elements.some(elementHasValidDates);
-}
-
-export function validateQueryDates(query: StandardQueryStateT) {
-  return !query || query.length === 0 || query.some(groupHasValidDates);
 }

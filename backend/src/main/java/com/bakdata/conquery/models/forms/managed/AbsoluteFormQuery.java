@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -26,29 +23,48 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id = "ABSOLUTE_FORM_QUERY", base = QueryDescription.class)
 public class AbsoluteFormQuery extends Query {
+
+	/**
+	 * Index of the column, where the Resolutions name will be placed.
+	 */
+	public static final int RESOLUTION_INDEX = 0;
+
+	/**
+	 * Indef of the column, where the time periods will be placed.
+	 */
+	public static final int TIME_INDEX = 2;
 
 	/**
 	 * see {@linkplain this#getResultInfos()}.
 	 */
 	public static final int FEATURES_OFFSET = 3;
 
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final Query query;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final Range<LocalDate> dateRange;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final ArrayConceptQuery features;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
+	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
+		this.query = query;
+		this.dateRange = dateRange;
+		this.features = features;
+		this.resolutionsAndAlignmentMap = resolutionsAndAlignmentMap;
+	}
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);

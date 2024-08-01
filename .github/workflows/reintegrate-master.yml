@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  bump-test:
+  reintegrate-master:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:

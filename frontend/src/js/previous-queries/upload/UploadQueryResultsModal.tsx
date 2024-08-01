@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -62,7 +63,6 @@ const UploadQueryResultsModal: FC<PropsT> = ({
   return (
     <Modal
       onClose={onClose}
-      closeIcon
       scrollable
       headline={
         <>
@@ -77,7 +77,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
       <Root>
         {fullUploadSuccess ? (
           <Success>
-            <StyledFaIcon icon="check-circle" />
+            <StyledFaIcon icon={faCheckCircle} />
             <SuccessMsg>
               {t("uploadQueryResultsModal.uploadSucceeded", {
                 count: uploadResult?.resolved || 0,

@@ -6,14 +6,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -23,6 +18,9 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,10 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
 public class ArrayConceptQuery extends Query {
 
-	@NotEmpty @Valid
+	@NotEmpty
+	@Valid
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 
 	@NotNull
@@ -60,21 +59,21 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
-		if(queries == null) {
+		if (queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
 		}
 		this.childQueries = queries;
 		this.dateAggregationMode = dateAggregationMode;
 	}
 
-	public ArrayConceptQuery( List<ConceptQuery> queries) {
+	public ArrayConceptQuery(List<ConceptQuery> queries) {
 		this(queries, DateAggregationMode.NONE);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
 		resolvedDateAggregationMode = dateAggregationMode;
-		if(context.getDateAggregationMode() != null) {
+		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}

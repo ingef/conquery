@@ -1,12 +1,22 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
+import java.util.Collections;
+import java.util.Set;
+
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptElementsAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -25,11 +35,22 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		if(isAsIds()){
+		if (isAsIds()) {
 			return new ConceptElementsAggregator(((TreeConcept) getHolder().findConcept()));
 		}
 
 		return new ConceptValuesAggregator(((TreeConcept) getHolder().findConcept()));
+	}
+
+	@Override
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+		Set<SemanticType> additionalSemantics = Collections.emptySet();
+
+		if (isAsIds()) {
+			additionalSemantics = Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept()));
+		}
+
+		return new SelectResultInfo(this, cqConcept, additionalSemantics);
 	}
 
 	@JsonIgnore
@@ -38,6 +59,18 @@ public class ConceptColumnSelect extends UniversalSelect {
 		return getHolder().findConcept() instanceof TreeConcept;
 	}
 
+	@Override
+	public ResultType<?> getResultType() {
+		if (isAsIds()) {
+			final Concept<?> concept = getHolder().findConcept();
+			return new ResultType.ListT<>(new ResultType.StringT(concept::printConceptLocalId));
+		}
 
+		return new ResultType.ListT<>(ResultType.StringT.INSTANCE);
+	}
 
+	@Override
+	public SelectConverter<ConceptColumnSelect> createConverter() {
+		return new ConceptColumnSelectConverter();
+	}
 }

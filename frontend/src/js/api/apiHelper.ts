@@ -6,16 +6,17 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
+import { EditorV2Query, Tree } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-  TableWithFilterValueT,
-  SelectedSelectorT,
-  SelectedDateColumnT,
-  StandardQueryNodeT,
   DragItemConceptTreeNode,
   FilterWithValueType,
+  SelectedDateColumnT,
+  SelectedSelectorT,
+  StandardQueryNodeT,
+  TableWithFilterValueT,
 } from "../standard-query-editor/types";
 import type {
   ValidatedTimebasedConditionT,
@@ -26,7 +27,7 @@ import { ConceptIdT, DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): {} | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":
@@ -112,6 +113,11 @@ const createSecondaryIdQuery = <T>(root: T, secondaryId: string) => ({
 const createConceptQuery = <T>(root: T) => ({
   type: "CONCEPT_QUERY" as const,
   root,
+});
+
+const createOr = <T>(children: T) => ({
+  type: "OR" as const,
+  children,
 });
 
 const createAnd = <T>(children: T) => ({
@@ -204,11 +210,98 @@ const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
     ),
   );
 
+const transformTreeToApi = (tree: Tree): unknown => {
+  let dateRestriction;
+  if (tree.dates?.restriction) {
+    dateRestriction = createDateRestriction(tree.dates.restriction, null);
+  }
+
+  let negation;
+  if (tree.negation) {
+    negation = createNegation(null);
+  }
+
+  let node;
+  if (!tree.children) {
+    if (!tree.data) {
+      throw new Error(
+        "Tree has no children and no data, this shouldn't happen.",
+      );
+    }
+
+    node = createQueryConcept(tree.data);
+  } else {
+    switch (tree.children.connection) {
+      case "and":
+        node = createAnd(tree.children.items.map(transformTreeToApi));
+        break;
+      case "or":
+        node = createOr(tree.children.items.map(transformTreeToApi));
+        break;
+      case "time":
+        node = {
+          type: "BEFORE", // SHOULD BE: tree.children.operator,
+          days: {
+            min: tree.children.interval
+              ? tree.children.interval.min === null
+                ? 1
+                : tree.children.interval.max
+              : undefined,
+            max: tree.children.interval
+              ? tree.children.interval.max === null
+                ? undefined
+                : tree.children.interval.max
+              : undefined,
+          },
+          // TODO: improve this to be more flexible with the "preceding" and "index" keys
+          // based on the operator, which would be "before" | "after" | "while"
+          preceding: {
+            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[0],
+            child: transformTreeToApi(tree.children.items[0]),
+          },
+          index: {
+            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[1]
+            child: transformTreeToApi(tree.children.items[1]),
+          },
+        };
+        break;
+    }
+  }
+
+  if (dateRestriction && negation) {
+    return {
+      ...dateRestriction,
+      child: {
+        ...negation,
+        child: node,
+      },
+    };
+  } else if (dateRestriction) {
+    return {
+      ...dateRestriction,
+      child: node,
+    };
+  } else if (negation) {
+    return {
+      ...negation,
+      child: node,
+    };
+  } else {
+    return node;
+  }
+};
+
+const transformEditorV2QueryToApi = (query: EditorV2Query) => {
+  if (!query.tree) return null;
+
+  return createConceptQuery(transformTreeToApi(query.tree));
+};
+
 // The query state already contains the query.
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
-  query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
+  query: StandardQueryStateT | ValidatedTimebasedQueryStateT | EditorV2Query,
   options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
@@ -221,6 +314,8 @@ export const transformQueryToApi = (
         query as StandardQueryStateT,
         options.selectedSecondaryId,
       );
+    case "editorV2":
+      return transformEditorV2QueryToApi(query as EditorV2Query);
     default:
       return null;
   }

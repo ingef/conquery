@@ -17,22 +17,28 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
+@EqualsAndHashCode(callSuper = true)
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
-	@JsonBackReference @Getter @Setter
+	@EqualsAndHashCode.Exclude
+	@JsonBackReference
+	@Getter
+	@Setter
 	private SelectHolder<?> holder;
 
 	@JsonIgnore
@@ -41,20 +47,23 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return getHolder().findConcept().getDataset();
 	}
 
-	@Setter @Getter
+	@Setter
+	@Getter
 	private String description;
 
 	/**
 	 * When set, the Frontend will preselect the Select for the User.
 	 */
-	@Setter @Getter @JsonProperty("default")
+	@Setter
+	@Getter
+	@JsonProperty("default")
 	private boolean isDefault = false;
 
 	@JsonIgnore
 	public abstract List<Column> getRequiredColumns();
 
-	@JsonIgnore @Getter(lazy=true)
-	private final ResultType resultType = createAggregator().getResultType();
+	@JsonIgnore
+	public abstract ResultType<?> getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -92,7 +101,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public boolean isForConnectorsTable() {
 		boolean valid = true;
 
-		if(holder instanceof Concept){
+		if (holder instanceof Concept) {
 			return getRequiredColumns().isEmpty();
 		}
 
@@ -104,11 +113,23 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
+																																				   .getId());
 
 			valid = false;
 		}
 
 		return valid;
 	}
+
+	@JsonIgnore
+	public <S extends Select> SelectConverter<S> createConverter() {
+		throw new UnsupportedOperationException("No converter implemented for Select %s".formatted(getClass()));
+	}
+
+	@JsonIgnore
+	public boolean isEventDateSelect() {
+		return false;
+	}
+
 }

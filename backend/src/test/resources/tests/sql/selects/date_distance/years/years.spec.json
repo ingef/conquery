@@ -1,0 +1,71 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "DATE_DISTANCE select with timeUnit YEARS",
+  "expectedCsv": "tests/sql/selects/date_distance/years/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids":[
+            "geschlecht_select"
+          ],
+          "type":"CONCEPT",
+          "label":"Geschlecht SELECT",
+          "tables":[
+            {
+              "id":"geschlecht_select.geschlecht_connector",
+              "selects": [
+                "geschlecht_select.geschlecht_connector.date_distance_years"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts":[
+    {
+      "label":"geschlecht_select",
+      "type":"TREE",
+      "connectors":[
+        {
+          "label":"geschlecht_connector",
+          "table":"table1",
+          "selects": [
+            {
+              "column": "table1.datum",
+              "default": true,
+              "label": "date_distance_years",
+              "name": "date_distance_years",
+              "timeUnit": "YEARS",
+              "type": "DATE_DISTANCE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content":{
+    "tables":[
+      {
+        "csv":"tests/sql/selects/date_distance/years/content.csv",
+        "name":"table1",
+        "primaryColumn":{
+          "name":"pid",
+          "type":"STRING"
+        },
+        "columns":[
+          {
+            "name":"datum",
+            "type":"DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

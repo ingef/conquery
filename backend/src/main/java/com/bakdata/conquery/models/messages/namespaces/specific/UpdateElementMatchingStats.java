@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final Map<ConceptElement<?>, MatchingStats.Entry> values;
 
 	@Override
-	public void react(Namespace context) throws Exception {
+	public void react(DistributedNamespace context) throws Exception {
 		for (Entry<ConceptElement<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
 				final ConceptElement<?> target = entry.getKey();

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faBook } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -11,7 +12,7 @@ const Root = styled("div")`
 `;
 
 const Description = styled("p")`
-  margin: 0;
+  margin: 0 10px;
   font-size: ${({ theme }) => theme.font.md};
 `;
 
@@ -33,7 +34,7 @@ const FormHeader = ({ className, description, manualUrl }: Props) => {
       <Description>{description}</Description>
       {manualUrl && (
         <a href={manualUrl} target="_blank" rel="noreferrer">
-          <SxIconButton frame icon="book">
+          <SxIconButton frame icon={faBook}>
             {t("externalForms.manualButton")}
           </SxIconButton>
         </a>

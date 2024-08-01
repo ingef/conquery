@@ -43,7 +43,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	@JsonCreator
-	public User(String name, String label) {
+	protected User(String name, String label) {
 		this(name, label, null);
 	}
 
@@ -97,7 +97,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	protected void updateStorage() {
+	public void updateStorage() {
 		storage.updateUser(this);
 	}
 
@@ -154,6 +154,13 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		shiroUserAdapter.getAuthenticationInfo().set(info);
 	}
 
+
+	@JsonIgnore
+	@Override
+	public ConqueryAuthenticationInfo getAuthenticationInfo() {
+		return shiroUserAdapter.getAuthenticationInfo().get();
+	}
+
 	@Override
 	@JsonIgnore
 	public User getUser() {
@@ -169,7 +176,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 		@Getter
 		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
-				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
+				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
 
 		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {

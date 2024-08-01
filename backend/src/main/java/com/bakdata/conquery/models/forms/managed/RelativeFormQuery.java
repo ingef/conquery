@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -27,12 +23,15 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RelativeFormQuery extends Query {
 	@NotNull @Valid
 	private final Query query;
@@ -50,19 +49,21 @@ public class RelativeFormQuery extends Query {
 	private final CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
-	
+
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context),
-			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		return new RelativeFormQueryPlan(
+				query.createQueryPlan(context),
+				// At the moment we do not use the dates of feature and outcome query
+				features.createQueryPlan(context),
+				indexSelector, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap
+		);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -18,28 +19,32 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
  * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
- *
+ * <p>
  * The selected flags are logically or-ed.
  */
+@Getter
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
-public class FlagFilter extends Filter<String[]> {
+public class FlagFilter extends Filter<Set<String>> {
 
 	@NsIdRefCollection
 	private final Map<String, Column> flags;
 
 	@Override
-	protected void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
+	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setType(FrontendFilterType.Fields.MULTI_SELECT);
 
 		f.setOptions(flags.keySet().stream().map(key -> new FrontendValue(key, key)).toList());
@@ -51,13 +56,12 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String[] labels) {
-		final Column[] columns = new Column[labels.length];
+	public FilterNode<?> createFilterNode(Set<String> labels) {
 
-		final Set<String> missing = new HashSet<>(labels.length);
+		final Set<String> missing = new HashSet<>(labels.size());
+		final List<Column> columns = new ArrayList<>();
 
-		for (int index = 0; index < labels.length; index++) {
-			final String label = labels[index];
+		for (String label : labels) {
 			final Column column = flags.get(label);
 
 			// Column is not defined with us.
@@ -65,14 +69,14 @@ public class FlagFilter extends Filter<String[]> {
 				missing.add(label);
 			}
 
-			columns[index] = column;
+			columns.add(column);
 		}
 
-		if(!missing.isEmpty()){
+		if (!missing.isEmpty()) {
 			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
-		return new FlagColumnsFilterNode(columns);
+		return new FlagColumnsFilterNode(columns.toArray(Column[]::new));
 	}
 
 	@JsonIgnore
@@ -85,5 +89,10 @@ public class FlagFilter extends Filter<String[]> {
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
 		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+	}
+
+	@Override
+	public FilterConverter<FlagFilter, Set<String>> createConverter() {
+		return new FlagSqlAggregator();
 	}
 }

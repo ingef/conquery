@@ -34,7 +34,7 @@
       "min": "2000-01-01",
       "max": "2020-12-31"
     },
-    "rawConceptValues" : false,
+    "rawConceptValues": false,
     "query": {
       "type": "CONCEPT_QUERY",
       "root": {

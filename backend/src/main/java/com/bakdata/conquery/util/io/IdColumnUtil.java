@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -23,8 +23,8 @@ public class IdColumnUtil {
 	/**
 	 * If a column contains an ID, create a reader for that ID.
 	 */
-	public static List<Function<String[], EntityIdMap.ExternalId>> getIdReaders(List<String> format, Map<String, ColumnConfig> idMappers) {
-		List<Function<String[], EntityIdMap.ExternalId>> out = new ArrayList<>(format.size());
+	public static List<Function<String[], ExternalId>> getIdReaders(List<String> format, Map<String, ColumnConfig> idMappers) {
+		List<Function<String[], ExternalId>> out = new ArrayList<>(format.size());
 
 		for (int index = 0; index < format.size(); index++) {
 			final ColumnConfig mapper = idMappers.get(format.get(index));
@@ -44,16 +44,17 @@ public class IdColumnUtil {
 	/**
 	 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 	 */
-	public static IdPrinter getIdPrinter(Subject owner, ManagedExecution<?> execution, Namespace namespace, List<ColumnConfig> ids) {
+	public static IdPrinter getIdPrinter(Subject owner, ManagedExecution execution, Namespace namespace, List<ColumnConfig> ids) {
 		final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 		final int pos = IntStream.range(0, ids.size())
-								 .filter(idx -> ids.get(idx).isFillAnon())
+								 .filter(idx -> ids.get(idx).isPrimaryId())
 								 .findFirst()
 								 .orElseThrow();
 
 		if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
-			return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping(), size, pos);
+			// todo(tm): The integration of ids in the sql connector needs to be properly managed
+			return new FullIdPrinter(namespace.getStorage().getIdMapping(), size, pos);
 		}
 
 

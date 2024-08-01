@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +34,8 @@ public class UniqueNamer {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(ResultInfo info) {
-		@NonNull String label = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
+		@NonNull
+		String label = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
 		// lookup if prefix is needed and computed it if necessary
 		String uniqueName = label;
 		synchronized (ocurrenceCounter) {

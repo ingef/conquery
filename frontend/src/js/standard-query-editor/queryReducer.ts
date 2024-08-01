@@ -4,7 +4,10 @@ import type { ConceptIdT, SelectOptionT } from "../api/types";
 import { Action } from "../app/actions";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
+import {
+  getConceptById,
+  getConceptsByIdsWithTablesAndSelects,
+} from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
 import { mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
@@ -20,35 +23,35 @@ import { acceptUploadedConceptsOrFilter } from "../query-upload-concept-list-mod
 import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
-  dropAndNode,
-  dropOrNode,
-  resetTable,
+  addConceptToNode,
   clearQuery,
   deleteGroup,
   deleteNode,
-  toggleTable,
-  updateNodeLabel,
-  setFilterValue,
-  toggleExcludeGroup,
-  loadSavedQuery,
-  toggleTimestamps,
-  toggleSecondaryIdExclude,
-  resetAllSettings,
-  addConceptToNode,
-  removeConceptFromNode,
-  switchFilterMode,
-  setDateColumn,
-  setSelects,
-  setTableSelects,
+  dropAndNode,
+  dropOrNode,
   expandPreviousQuery,
   loadFilterSuggestionsSuccess,
+  loadSavedQuery,
+  removeConceptFromNode,
+  resetAllSettings,
+  resetTable,
+  setDateColumn,
+  setFilterValue,
+  setSelects,
+  setTableSelects,
+  switchFilterMode,
+  toggleExcludeGroup,
+  toggleSecondaryIdExclude,
+  toggleTable,
+  toggleTimestamps,
+  updateNodeLabel,
 } from "./actions";
 import type {
-  StandardQueryNodeT,
-  QueryGroupType,
   DragItemConceptTreeNode,
-  FilterWithValueType,
   DragItemQuery,
+  FilterWithValueType,
+  QueryGroupType,
+  StandardQueryNodeT,
   TableWithFilterValueT,
 } from "./types";
 
@@ -311,7 +314,12 @@ const setNodeFilterValue = (
   state: StandardQueryStateT,
   payload: ActionType<typeof setFilterValue>["payload"],
 ) => {
-  return setNodeFilterProperties(state, payload, { value: payload.value });
+  return setNodeFilterProperties(
+    state,
+    payload,
+    // @ts-ignore TODO: maybe use generic types here
+    { value: payload.value },
+  );
 };
 
 const setNodeTableSelects = (
@@ -702,8 +710,13 @@ const onRemoveConceptFromNode = (
 
   if (!nodeIsConceptQueryNode(node)) return state;
 
+  const newIds = node.ids.filter((id) => id !== conceptId);
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter((id) => id !== conceptId),
+    ids: newIds,
+    description:
+      newIds.length === 1
+        ? getConceptById(newIds[0])?.description
+        : node.description,
   });
 };
 

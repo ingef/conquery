@@ -2,7 +2,7 @@
 
 ## Technologies
 
-- create-react-app
+- vite
 - typescript
 - react / redux
 - simple express.js server for a mock api
@@ -53,14 +53,13 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 16
-- `yarn`
+- `node` >= 18
 
 **Install and start**
 
 ```bash
-yarn
-yarn start
+npm
+npm run dev
 ```
 
 Adjust your local `.env` file as necessary to apply environment variables during development
@@ -68,7 +67,7 @@ Adjust your local `.env` file as necessary to apply environment variables during
 **Mock API**
 
 ```bash
-$ yarn server
+$ npm run server
 ```
 
 **Login**
@@ -78,7 +77,7 @@ When queried for login:
 - **Username**: `test`
 - **Password**: `test`
 
-This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/develop/frontend/mock-api/index.js).
+This is documented in [the mock-API](https://github.com/ingef/conquery/blob/develop/frontend/mock-api/index.js).
 
 **Code formatting**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
@@ -88,7 +87,7 @@ We recommend you configure your editor to auto-format on save. If you're using V
 
 You could also invoke prettier on the command line:
 ```
-yarn prettier --write /path/to/file
+npm run prettier --write /path/to/file
 ```
 
 ## Glossary
@@ -124,12 +123,14 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### Styles
 
-- Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
+- Currently, we're mostly using Emotion for theming and styles.
+- The plan is to slowly migrate to [Tailwind CSS](https://tailwindcss.com/) and [tailwind-styled-components](https://github.com/MathiasGilson/Tailwind-Styled-Component).
+- New styles should be written using tailwind.
+- Reasoning: Theming with Emotion is verbose, Emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone). But the main reason for migrating to tailwind, of course, is that tailwind means a lot less boilerplate code. It also allows for more consistent styling and offers a great dev UX.
 
 ### State
 
 - We're using [typesafe-actions](https://github.com/piotrwitek/typesafe-actions) for redux actions.
-- We're moving away from redux-thunk (replaced mostly by hooks)
 - We've migrated from `redux-form` to `react-hook-form` recently.
 
 ### Browser support

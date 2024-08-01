@@ -14,8 +14,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -33,8 +31,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.worker.LocalNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,8 +44,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class DefaultColumnNameTest {
-	private static final DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY, new ConqueryConfig(), null);
+	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
+	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
@@ -162,7 +163,7 @@ public class DefaultColumnNameTest {
 				throw new IllegalStateException("Expected the id " + concept.getId() + " but got " + id);
 			}
 			return concept;
-		}).when(DATASET_REGISTRY).resolve(any());
+		}).when(NAMESPACE).resolve(any());
 
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
@@ -289,6 +290,11 @@ public class DefaultColumnNameTest {
 				setName("TestSelectName");
 				setLabel("TestSelectLabel");
 				setHolder(holder);
+			}
+
+			@Override
+			public ResultType<?> getResultType() {
+				return null;
 			}
 
 			@Override

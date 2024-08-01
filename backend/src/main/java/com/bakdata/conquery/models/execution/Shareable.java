@@ -31,42 +31,41 @@ public interface  Shareable extends Authorized {
 	 */
 	void setShared(boolean shared);
 
-	default <ID extends Id<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
-			MetaStorage storage,
-			Subject subject) {
+	default <ID extends Id<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(MetaStorage storage, Subject subject) {
 		if (!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
 		}
+
 		return (patch) -> {
-			if (patch != null && patch.getGroups() != null) {
-				S shareable = (S) this;
-				// Collect groups that do not have access to this instance and remove their probable permission
-				for (Group group1 : storage.getAllGroups()) {
-					if (patch.getGroups().contains(group1.getId())) {
-						continue;
-					}
-
-					log.trace("User {} unshares instance {} ({}) from owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), group1);
-
-					group1.removePermission(shareable.createPermission(AbilitySets.SHAREHOLDER));
-				}
-
-
-				if(!patch.getGroups().isEmpty()) {
-					// Resolve the provided groups
-					Set<Group> groups = patch.getGroups().stream().map(storage::getGroup).collect(Collectors.toSet());
-
-					for(Group group : groups) {
-						ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
-						group.addPermission(sharePermission);
-
-						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
-					}
-				}
-
-				this.setShared(!patch.getGroups().isEmpty());
+			if (patch == null || patch.getGroups() == null) {
+				return;
 			}
+
+			final S shareable = (S) this;
+			// Collect groups that do not have access to this instance and remove their probable permission
+			for (Group group : storage.getAllGroups()) {
+				if (patch.getGroups().contains(group.getId())) {
+					continue;
+				}
+
+				log.trace("User {} unshares instance {} ({}) from owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), group);
+
+				group.removePermission(shareable.createPermission(AbilitySets.SHAREHOLDER));
+			}
+
+
+			// Resolve the provided groups
+			final Set<Group> groups = patch.getGroups().stream().map(storage::getGroup).collect(Collectors.toSet());
+
+			for(Group group : groups) {
+				final ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
+				group.addPermission(sharePermission);
+
+				log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
+			}
+
+			setShared(!patch.getGroups().isEmpty());
 		};
 		
 	}

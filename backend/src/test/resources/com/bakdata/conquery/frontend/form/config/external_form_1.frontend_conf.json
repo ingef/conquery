@@ -1,0 +1,19 @@
+{
+	"title": {
+		"en": "External Form",
+		"de": "External Form"
+	},
+	"type": "SOME_EXTERNAL_FORM",
+	"fields": [
+		{
+			"label": {
+				"en": "Cohort",
+				"de": "Kohorte"
+			},
+			"style": {
+				"size": "h1"
+			},
+			"type": "HEADLINE"
+		}
+	]
+}

@@ -28,9 +28,9 @@ public class CDateSet {
 
 	private final NavigableMap<Integer, CDateRange> rangesByLowerBound;
 	private transient Set<CDateRange> asRanges;
-	private transient Set<CDateRange> asDescendingSetOfRanges;
+	private transient Set<CDateRange> asDescendingSetOfRanges; // TODO remove?
 
-	public static CDateSet create() {
+	public static CDateSet createEmpty() {
 		return new CDateSet(new TreeMap<>());
 	}
 
@@ -42,19 +42,19 @@ public class CDateSet {
 	}
 
 	public static CDateSet create(CDateSet rangeSet) {
-		CDateSet result = create();
+		CDateSet result = createEmpty();
 		result.addAll(rangeSet);
 		return result;
 	}
 	
 	public static CDateSet create(CDateRange range) {
-		CDateSet result = create();
+		CDateSet result = createEmpty();
 		result.add(range);
 		return result;
 	}
 
 	public static CDateSet create(Iterable<CDateRange> ranges) {
-		CDateSet result = create();
+		CDateSet result = createEmpty();
 		result.addAll(ranges);
 		return result;
 	}

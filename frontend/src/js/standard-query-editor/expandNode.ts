@@ -95,7 +95,7 @@ const mergeMultiSelectFilter = ({
       };
     }): MultiSelectFilterWithValueType | BigMultiSelectFilterWithValueType => {
   const fixedFilterType = {
-    type: savedFilter.type as typeof matchingFilter["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+    type: savedFilter.type as (typeof matchingFilter)["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
   };
 
   const basicFilter = {
@@ -250,7 +250,7 @@ const mergeTables = (
 // Look for tables in the already savedConcept. If they were not included in the
 // respective query concept, exclude them.
 // Also, apply all necessary filters
-const mergeFromSavedConceptIntoNode = (
+export const mergeFromSavedConceptIntoNode = (
   node: QueryConceptNodeT,
   {
     tables,

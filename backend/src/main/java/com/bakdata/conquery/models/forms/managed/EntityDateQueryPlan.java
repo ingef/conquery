@@ -17,11 +17,13 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
  */
 @RequiredArgsConstructor
+@ToString
 public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 

@@ -28,7 +28,7 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
         if (p.currentToken() == JsonToken.START_ARRAY) {
             int[][] ints = p.readValueAs(int[][].class);
 
-            CDateSet set = CDateSet.create();
+            CDateSet set = CDateSet.createEmpty();
             for (int i = 0; i < ints.length; i++) {
                 set.add(CDateRange.of(ints[i][0], ints[i][1]));
             }

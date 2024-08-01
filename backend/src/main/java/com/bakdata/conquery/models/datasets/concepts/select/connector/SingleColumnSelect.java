@@ -4,8 +4,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
@@ -13,10 +11,10 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -59,11 +57,6 @@ public abstract class SingleColumnSelect extends Select {
 		return new SelectResultInfo(this, cqConcept);
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return super.getResultType();
-	}
-
 	@Nullable
 	@Override
 	public List<Column> getRequiredColumns() {
@@ -74,7 +67,7 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Column does not match required Type.")
 	public boolean isValidColumnType() {
 
-		if (getAcceptedColumnTypes().contains(this.getColumn().getType())) {
+		if (getAcceptedColumnTypes().contains(getColumn().getType())) {
 			return true;
 		}
 

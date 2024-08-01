@@ -8,10 +8,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -25,6 +21,9 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResu
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -43,7 +42,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		test.importRequiredData(conquery);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		conquery.getClient().target(matchingStatsUri)
@@ -76,8 +75,8 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		ResolvedConceptsResult resolved = response.readEntity(ResolvedConceptsResult.class);
 		//check the resolved values
 		assertThat(resolved).isNotNull();
-		assertThat(resolved.getResolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
-		assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+		assertThat(resolved.resolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
+		assertThat(resolved.unknownCodes()).containsExactlyInAnyOrder("unknown");
 
 	}
 }

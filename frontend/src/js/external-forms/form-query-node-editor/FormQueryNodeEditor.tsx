@@ -30,7 +30,7 @@ interface PropsT {
   onSetFilterValue: (
     tableIdx: number,
     filterIdx: number,
-    filterValue: any,
+    filterValue: unknown,
   ) => void;
   onSwitchFilterMode: (
     tableIdx: number,

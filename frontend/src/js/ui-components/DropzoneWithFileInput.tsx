@@ -1,11 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { faFileImport } from "@fortawesome/free-solid-svg-icons";
 import {
-  useRef,
+  ReactElement,
   ReactNode,
   Ref,
   forwardRef,
-  ReactElement,
+  useRef,
   useState,
 } from "react";
 import { DropTargetMonitor } from "react-dnd";
@@ -69,7 +70,7 @@ interface PropsT<DroppableObject> {
 
   showImportButton?: boolean;
   importButtonOutside?: boolean;
-  onImportLines?: (lines: string[]) => void;
+  onImportLines?: (lines: string[], filename?: string) => void;
   importPlaceholder?: string;
   importDescription?: string;
 }
@@ -110,8 +111,8 @@ const DropzoneWithFileInput = <
 
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  function onSubmitImport(lines: string[]) {
-    onImportLines?.(lines);
+  function onSubmitImport(lines: string[], filename?: string) {
+    onImportLines?.(lines, filename);
   }
 
   function onOpenFileDialog() {
@@ -160,7 +161,7 @@ const DropzoneWithFileInput = <
               outside={importButtonOutside}
               onClick={() => setImportModalOpen(true)}
             >
-              <SxFaIcon icon="file-import" gray />
+              <SxFaIcon icon={faFileImport} gray />
               {t("common.import")}
             </SxSelectFileButton>
           )}

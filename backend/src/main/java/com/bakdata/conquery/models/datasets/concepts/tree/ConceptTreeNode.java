@@ -22,8 +22,8 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	ConceptTreeNode getParent();
 	void setLocalId(int size);
 
-	TreeChildPrefixIndex getChildIndex();
-	void setChildIndex(TreeChildPrefixIndex childIndex);
-	
 	MatchingStats getMatchingStats();
+
+	String getDescription();
+	String getLabel();
 }

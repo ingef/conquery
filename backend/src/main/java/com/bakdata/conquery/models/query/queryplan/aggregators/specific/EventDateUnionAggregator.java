@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -24,8 +24,8 @@ import lombok.ToString;
 public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	private final Set<Table> requiredTables;
-	private Column validityDateColumn;
-	private CDateSet set = CDateSet.create();
+	private ValidityDate validityDateColumn;
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
 
 	@Override
@@ -41,10 +41,7 @@ public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = ctx.getValidityDateColumn();
-		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
-			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
-		}
-		
+
 		dateRestriction = ctx.getDateRestriction();
 		super.nextTable(ctx, currentTable);
 	}
@@ -55,21 +52,19 @@ public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if(validityDateColumn == null) {
 			set.addAll(dateRestriction);
 			return;
 		}
 
-		if (!bucket.has(event, validityDateColumn)) {
+		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
+
+		if (dateRange == null){
 			return;
 		}
-		set.maskedAdd(bucket.getAsDateRange(event, validityDateColumn), dateRestriction);
-	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
+		set.maskedAdd(dateRange, dateRestriction);
 	}
 
 }

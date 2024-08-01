@@ -26,6 +26,11 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 	@View.ApiManagerPersistence
 	private InternToExternMapper mapping;
 
+	/**
+	 * If true, SecondaryId will not be displayed to the user or listed in APIs.
+	 */
+	private boolean hidden = false;
+
 	@Override
 	public SecondaryIdDescriptionId createId() {
 		return new SecondaryIdDescriptionId(dataset.getId(), getName());

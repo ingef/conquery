@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,8 +13,8 @@ import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -23,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -106,7 +106,7 @@ public class AuthorizationHelper {
 	/**
 	 * Calculates the abilities on all datasets a subject has based on its permissions.
 	 */
-	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry datasetRegistry) {
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry<? extends Namespace> datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
 
@@ -128,7 +128,7 @@ public class AuthorizationHelper {
 	}
 
 
-	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
+	public static boolean registerForAuthentication(UserManageable userManager, User user, CredentialType credentials, boolean override) {
 		if(override) {
 			return userManager.updateUser(user, credentials);
 		}

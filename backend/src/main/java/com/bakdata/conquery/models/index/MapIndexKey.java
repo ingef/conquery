@@ -1,18 +1,19 @@
 package com.bakdata.conquery.models.index;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
-@ToString
+@ToString(callSuper = true)
 public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	private final String externalTemplate;
 
-	public MapIndexKey(URL csv, String internalColumn, String externalTemplate) {
+
+	public MapIndexKey(URI csv, String internalColumn, String externalTemplate) {
 		super(csv, internalColumn);
 		this.externalTemplate = externalTemplate;
 	}
@@ -23,7 +24,7 @@ public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 	}
 
 	@Override
-	public MapIndex createIndex() {
+	public MapIndex createIndex(String defaultEmptyLabel) {
 		return new MapIndex(externalTemplate);
 	}
 

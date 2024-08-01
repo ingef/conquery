@@ -40,22 +40,19 @@
 	<script type="application/javascript">
 		function addRole() {
 			event.preventDefault();
-			fetch(
+			rest(
 				'${adminPathBase}/${c.owner.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/' + document.getElementById('role_id').value,
 				{
 					method: 'post',
-					credentials: 'same-origin',
-					headers: { 'Content-Type': 'application/json' }
 				}).then(function () { location.reload() });
 		}
 
 		function removeRole(path) {
 			event.preventDefault();
-			fetch(
+			rest(
 				path,
 				{
 					method: 'delete',
-					credentials: 'same-origin'
 				})
 				.then(function () { location.reload(); });
 		}

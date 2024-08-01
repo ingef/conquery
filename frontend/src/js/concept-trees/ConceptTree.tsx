@@ -1,8 +1,12 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import {
+  faEllipsisH,
+  faRedo,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 
@@ -31,18 +35,7 @@ const Spinner = styled("span")`
   margin-right: 6px;
 `;
 
-interface PropsT {
-  tree: ConceptT | null;
-  conceptId: ConceptIdT;
-  label: string;
-  depth: number;
-  loading?: boolean;
-  error?: string;
-  search: SearchT;
-  onLoadTree: (conceptId: ConceptIdT) => void;
-}
-
-const ConceptTree: FC<PropsT> = ({
+const ConceptTree = ({
   depth,
   loading,
   label,
@@ -51,6 +44,15 @@ const ConceptTree: FC<PropsT> = ({
   conceptId,
   search,
   onLoadTree,
+}: {
+  tree?: ConceptT;
+  conceptId: ConceptIdT;
+  label: string;
+  depth: number;
+  loading?: boolean;
+  error?: string;
+  search: SearchT;
+  onLoadTree: (conceptId: ConceptIdT) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -58,7 +60,7 @@ const ConceptTree: FC<PropsT> = ({
     return (
       <LoadingTree style={{ paddingLeft: 24 + depth * 15 }}>
         <Spinner>
-          <FaIcon icon="spinner" />
+          <FaIcon icon={faSpinner} />
         </Spinner>
         <span>{label}</span>
       </LoadingTree>
@@ -66,7 +68,7 @@ const ConceptTree: FC<PropsT> = ({
   else if (error)
     return (
       <ErrorMessage style={{ paddingLeft: 12 + depth * 15 }}>
-        <ReloadButton red icon="redo" onClick={() => onLoadTree(conceptId)} />
+        <ReloadButton red icon={faRedo} onClick={() => onLoadTree(conceptId)} />
         {t("conceptTreeList.error", { tree: label })}
       </ErrorMessage>
     );
@@ -80,7 +82,15 @@ const ConceptTree: FC<PropsT> = ({
         search={search}
       />
     );
-  else return <ConceptTreeNodeText disabled label={label} depth={depth} />;
+  else
+    return (
+      <ConceptTreeNodeText
+        disabled
+        icon={faEllipsisH}
+        label={label}
+        depth={depth}
+      />
+    );
 };
 
 export default ConceptTree;

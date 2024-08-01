@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -48,7 +49,7 @@ const StyledBasicButton = styled(BasicButton)`
 `;
 
 function getIcon(loading: boolean, running: boolean) {
-  return loading ? "spinner" : running ? "stop" : "play";
+  return loading ? faSpinner : running ? faStop : faPlay;
 }
 
 interface Props {

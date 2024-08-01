@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
 public abstract class Id<TYPE> {
+
+	/**
+	 * Holds the cached escaped value.
+	 *
+	 * @implNote needs to be initialized. Otherwise SerializationTests fail, because assertj checks ignored types.
+	 */
+	@JsonIgnore
+	private WeakReference<String> escapedId = new WeakReference<>(null);
 
 	@Override
 	public abstract boolean equals(Object obj);
@@ -23,7 +32,18 @@ public abstract class Id<TYPE> {
 
 	@Override
 	@JsonValue
-	public String toString() {
+	public final String toString() {
+		final String escaped = escapedId.get();
+		if (escaped != null) {
+			return escaped;
+		}
+
+		String escapedIdString = escapedIdString();
+		escapedId = new WeakReference<>(escapedIdString);
+		return escapedIdString;
+	}
+
+	private String escapedIdString() {
 		List<Object> components = getComponents();
 		components.replaceAll(o -> ConqueryEscape.escape(Objects.toString(o)));
 		return IdUtil.JOINER.join(components);

@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 
-import type { PermissionsT, GetMeResponseT, DatasetT } from "../api/types";
+import type { DatasetT, GetMeResponseT, PermissionsT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 interface ContextT {
@@ -57,6 +57,18 @@ function canDo(
 //     { datasetId }
 //   );
 // }
+
+export function canViewEntityPreview(state: StateT) {
+  return canDo(state, (permissions, datasetId) => {
+    return permissions[datasetId].canViewEntityPreview === true;
+  });
+}
+
+export function canViewQueryPreview(state: StateT) {
+  return canDo(state, (permissions, datasetId) => {
+    return permissions[datasetId].canViewQueryPreview === true;
+  });
+}
 
 export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {

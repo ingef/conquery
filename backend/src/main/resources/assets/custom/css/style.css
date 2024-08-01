@@ -1,0 +1,15 @@
+.headed-table tr th,
+.headed-table tr td {
+    padding-right:15px;
+    vertical-align:top;
+}
+
+ul {
+    padding-left:0;
+    list-style:"\2023" inside;
+}
+
+h3 {
+    padding-bottom:10px;
+    padding-top:20px;
+}

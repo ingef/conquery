@@ -5,16 +5,15 @@ import java.util.Date;
 import java.util.Random;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.util.Duration;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -28,7 +27,7 @@ public class JWTokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
-	
+
 	private static final Random RANDOM_GEN = new SecureRandom();
 	private static final int TOKEN_SECRET_LENGTH = 32;
 
@@ -44,53 +43,12 @@ public class JWTokenHandler {
 	}
 
 	/**
-	 * Tries to extract a JWT form a request according to <a href=
-	 * "https://tools.ietf.org/html/rfc6750">https://tools.ietf.org/html/rfc6750</a>.
-	 * 
-	 * @param request
-	 * @return
-	 */
-	@Nullable
-	public static AuthenticationToken extractToken(ContainerRequestContext request) {
-		String token = null;
-		String tokenHeader = extractTokenFromHeader(request);
-		String tokenQuery = extractTokenFromQuery(request);
-		if (tokenHeader == null && tokenQuery == null) {
-			// No token could be parsed
-			return null;
-		}
-		else if (tokenHeader != null && tokenQuery != null) {
-			log.warn(
-				"There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
-			return null;
-		}
-		else if (tokenHeader != null) {
-			log.trace("Extraced the request header token");
-			token = tokenHeader;
-		}
-		else {
-			log.trace("Extraced the query string token");
-			token = tokenQuery;
-		}
-
-		try {
-			JWT.decode(token);
-			return new BearerToken(token);
-
-		}
-		catch (JWTDecodeException e) {
-			return null;
-		}
-	}
-
-	/**
 	 * Code obtained from the Dropwizard project {@link OAuthCredentialAuthFilter}.
-	 * 
+	 * <p>
 	 * Parses a value of the `Authorization` header in the form of `Bearer
 	 * a892bf3e284da9bb40648ab10`.
 	 *
-	 * @param header
-	 *            the value of the `Authorization` header
+	 * @param header the value of the `Authorization` header
 	 * @return a token
 	 */
 	@Nullable
@@ -125,11 +83,53 @@ public class JWTokenHandler {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Generate a random secret.
 	 */
 	public static String generateTokenSecret() {
 		return RandomStringUtils.random(TOKEN_SECRET_LENGTH, 0, 0, false, false, null, RANDOM_GEN);
+	}
+
+	/**
+	 * Tries to extract a JWT form a request according to <a href=
+	 * "https://tools.ietf.org/html/rfc6750">https://tools.ietf.org/html/rfc6750</a>.
+	 *
+	 * @param request
+	 * @return
+	 */
+	public static class JWTokenExtractor implements AuthFilter.TokenExtractor {
+
+		@Override
+		public AuthenticationToken apply(ContainerRequestContext request) {
+			String token = null;
+			String tokenHeader = extractTokenFromHeader(request);
+			String tokenQuery = extractTokenFromQuery(request);
+			if (tokenHeader == null && tokenQuery == null) {
+				// No token could be parsed
+				return null;
+			}
+			else if (tokenHeader != null && tokenQuery != null) {
+				log.warn("There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
+				return null;
+			}
+			else if (tokenHeader != null) {
+				log.trace("Extracted the request header token");
+				token = tokenHeader;
+			}
+			else {
+				log.trace("Extracted the query string token");
+				token = tokenQuery;
+			}
+
+			try {
+				JWT.decode(token);
+				return new BearerToken(token);
+
+			}
+			catch (JWTDecodeException e) {
+				return null;
+			}
+		}
 	}
 }

@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,21 +60,21 @@ public class ExcelResultRenderTest {
 				Locale.GERMAN,
 				null,
 				CONFIG,
-				(cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 				(selectInfo) -> selectInfo.getSelect().getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null) {
+		ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
-						.map(ResultTestUtil.TypedSelectDummy::new)
-						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList());
+									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(select -> new SelectResultInfo(select, new CQConcept()))
+									   .collect(Collectors.toList());
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults() {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
 			}
 		};
@@ -86,7 +87,8 @@ public class ExcelResultRenderTest {
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,
 				mquery,
-				output);
+				output, OptionalLong.empty()
+		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

@@ -2,19 +2,13 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.OptionalInt;
 
-import javax.validation.Validator;
-
-import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -23,7 +17,6 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,35 +26,13 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected IdentifiableStore<SearchIndex> searchIndexes;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
-
 	protected SingletonStore<PreviewConfig> preview;
-
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected SingletonStore<Dictionary> primaryDictionary;
+	protected CachedStore<String, Integer> entity2Bucket;
 
-	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
-		super(storageFactory, pathName, validator);
-	}
-
-	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(getPrimaryDictionaryRaw(), EncodedStringStore.Encoding.UTF8);
-	}
-
-	@NonNull
-	public Dictionary getPrimaryDictionaryRaw() {
-		final Dictionary dictionary = primaryDictionary.get();
-
-		if (dictionary == null) {
-			log.trace("No prior PrimaryDictionary, creating one");
-			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
-
-			primaryDictionary.update(newPrimary);
-
-			return newPrimary;
-		}
-
-		return dictionary;
+	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
+		super(storageFactory, pathName);
 	}
 
 
@@ -84,15 +55,15 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(
 				dataset,
 
@@ -101,7 +72,6 @@ public class NamespaceStorage extends NamespacedStorage {
 
 				secondaryIds,
 				tables,
-				dictionaries,
 				imports,
 
 				// Concepts depend on internToExternMappers
@@ -111,7 +81,7 @@ public class NamespaceStorage extends NamespacedStorage {
 				idMapping,
 				structure,
 				workerToBuckets,
-				primaryDictionary
+				entity2Bucket
 		);
 	}
 
@@ -123,10 +93,6 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 
-	public void updatePrimaryDictionary(Dictionary dictionary) {
-		primaryDictionary.update(dictionary);
-	}
-
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
@@ -137,6 +103,28 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
+	}
+
+	public int getNumberOfEntities() {
+		return entity2Bucket.count();
+	}
+
+	public OptionalInt getEntityBucket(String entity) {
+		final Integer bucket = entity2Bucket.get(entity);
+
+		if(bucket == null){
+			return OptionalInt.empty();
+		}
+
+		return OptionalInt.of(bucket);
+	}
+
+	public int assignEntityBucket(String entity, int bucketSize) {
+		final int bucket = (int) Math.ceil((1d + getNumberOfEntities()) / (double) bucketSize);
+
+		entity2Bucket.add(entity, bucket);
+
+		return bucket;
 	}
 
 

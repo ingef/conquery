@@ -1,12 +1,12 @@
 import { ReactKeycloakProvider } from "@react-keycloak-fork/web";
-import { FC, useContext } from "react";
+import { ReactNode, useContext } from "react";
 
 import keycloak from "../../keycloak";
 import { isIDPEnabled } from "../environment";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
-const KeycloakProvider: FC = ({ children }) => {
+const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   const { setAuthToken } = useContext(AuthTokenContext);
 
   return (

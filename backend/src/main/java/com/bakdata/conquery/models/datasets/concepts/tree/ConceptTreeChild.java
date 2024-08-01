@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -14,6 +12,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +21,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference //@Valid
+
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -32,6 +33,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonBackReference
 	@Getter
 	@Setter
+	@EqualsAndHashCode.Exclude
 	private ConceptTreeNode<?> parent;
 	@JsonIgnore
 	@Getter
@@ -42,10 +44,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Setter
 	private CTCondition condition = null;
 
-	@JsonIgnore
-	@Getter
-	@Setter
-	private TreeChildPrefixIndex childIndex;
 
 	@Override
 	public void clearMatchingStats() {

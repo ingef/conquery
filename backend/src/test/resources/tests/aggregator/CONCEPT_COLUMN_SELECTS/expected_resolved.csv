@@ -1,5 +1,5 @@
 result,dates,tree select
-1,{2012-01-01/2012-01-02},"{tree.test_child2,tree.test_child1}"
-2,{2010-07-15/2010-07-15},{tree.test_child2}
-3,{2013-11-10/2013-11-10},{tree.test_child1}
-4,{2012-11-11/2012-11-11},{tree.test_child2}
+1,{2012-01-01/2012-01-02},"{CONCEPT_VALUES$20$28Resolved$29$20Test.tree.test_child2,CONCEPT_VALUES$20$28Resolved$29$20Test.tree.test_child1}"
+2,{2010-07-15/2010-07-15},{CONCEPT_VALUES$20$28Resolved$29$20Test.tree.test_child2}
+3,{2013-11-10/2013-11-10},{CONCEPT_VALUES$20$28Resolved$29$20Test.tree.test_child1}
+4,{2012-11-11/2012-11-11},{CONCEPT_VALUES$20$28Resolved$29$20Test.tree.test_child2}

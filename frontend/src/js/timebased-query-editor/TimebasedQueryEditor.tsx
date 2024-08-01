@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -9,14 +10,14 @@ import type { DragItemQuery } from "../standard-query-editor/types";
 import TimebasedCondition from "./TimebasedCondition";
 import {
   addTimebasedCondition,
-  removeTimebasedCondition,
-  setTimebasedConditionOperator,
   dropTimebasedNode,
-  setTimebasedNodeTimestamp,
+  removeTimebasedCondition,
   removeTimebasedNode,
-  setTimebasedConditionMinDays,
   setTimebasedConditionMaxDays,
+  setTimebasedConditionMinDays,
   setTimebasedConditionMinDaysOrNoEvent,
+  setTimebasedConditionOperator,
+  setTimebasedNodeTimestamp,
 } from "./actions";
 import type {
   TimebasedOperatorType,
@@ -126,7 +127,7 @@ const TimebasedQueryEditor = () => {
           <Connector>{t("common.and")}</Connector>
         </div>
       ))}
-      <AddBtn icon="plus" onClick={onAddTimebasedCondition}>
+      <AddBtn icon={faPlus} onClick={onAddTimebasedCondition}>
         {t("timebasedQueryEditor.addCondition")}
       </AddBtn>
     </Root>

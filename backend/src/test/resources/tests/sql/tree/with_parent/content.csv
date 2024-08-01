@@ -1,0 +1,5 @@
+pid,datum,test_column,present_column
+1,2012-01-01,"A1",is_set
+2,2010-07-15,"B2",is_set
+3,2013-11-10,"A1",
+4,2012-11-11,"B2",
