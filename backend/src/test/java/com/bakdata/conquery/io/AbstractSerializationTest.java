@@ -60,12 +60,7 @@ public abstract class AbstractSerializationTest {
 		metaStorage.loadData();
 
 		// Prepare shard node internal mapper
-		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(config);
-		when(shardNode.getValidator()).thenReturn(validator);
-
-		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
-		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		shardInternalMapper = ShardNode.createInternalObjectMapper(View.Persistence.Shard.class, config, validator);
 
 		// Prepare api response mapper
 		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));

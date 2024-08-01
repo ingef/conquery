@@ -112,7 +112,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig>, Managed {
 	 *
 	 * @return a preconfigured binary object mapper
 	 */
-	private static ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass, ConqueryConfig config, Validator validator) {
+	public static ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass, ConqueryConfig config, Validator validator) {
 		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
