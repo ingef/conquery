@@ -44,7 +44,7 @@ public class IdColumnConfig {
 	/**
 	 * Relevant in SQL-Mode, used as AllIdsTable for CQExternal and CQYes.
 	 */
-	private String table;
+	private String table = "entities";
 
 	/**
 	 * List of resolvable and printable ids.
@@ -56,7 +56,7 @@ public class IdColumnConfig {
 	private List<ColumnConfig> ids = List.of(
 			ColumnConfig.builder()
 						.name("ID")
-						.field("result")
+						.field("pid")
 						.label(Map.of(Locale.ROOT, "result"))
 						.primaryId(true)
 						.print(true)

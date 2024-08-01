@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -10,19 +11,21 @@ import lombok.Data;
 @Data
 public class ClusterHealthCheck extends HealthCheck {
 
+	public static final String HEALTHY_MESSAGE_FMT = "All %d known shards are connected.";
 	private final ClusterState clusterState;
 
 	@Override
 	protected Result check() throws Exception {
 
+		Collection<ShardNodeInformation> knownShards = clusterState.getShardNodes().values();
 		final List<String> disconnectedWorkers =
-				clusterState.getShardNodes().values().stream()
-							.filter(Predicate.not(ShardNodeInformation::isConnected))
-							.map(ShardNodeInformation::toString)
-							.toList();
+				knownShards.stream()
+						   .filter(Predicate.not(ShardNodeInformation::isConnected))
+						   .map(ShardNodeInformation::toString)
+						   .toList();
 
 		if (disconnectedWorkers.isEmpty()){
-			return Result.healthy("All known shards are connected.");
+			return Result.healthy(HEALTHY_MESSAGE_FMT, knownShards.size());
 		}
 
 		return Result.unhealthy("The shard(s) %s are no longer connected.".formatted(String.join(",", disconnectedWorkers)));

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -65,5 +66,9 @@ public class DoubleArrayStore implements RealStore {
 	@Override
 	public double getReal(int event) {
 		return values[event];
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 }

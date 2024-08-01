@@ -1,8 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -13,7 +11,7 @@ import com.google.common.base.Preconditions;
 public class EventDateUnionSelectConverter implements SelectConverter<EventDateUnionSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(EventDateUnionSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(EventDateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		FieldWrapper<String> stringAggregation = createEventDateUnionAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
@@ -25,7 +23,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 	}
 
 	@Override
-	public ConceptSqlSelects conceptSelect(EventDateUnionSelect select, SelectContext<TreeConcept, ConceptSqlTables> selectContext) {
+	public ConceptSqlSelects conceptSelect(EventDateUnionSelect select, SelectContext<ConceptSqlTables> selectContext) {
 
 		FieldWrapper<String> stringAggregation = createEventDateUnionAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
@@ -36,7 +34,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 								.build();
 	}
 
-	private static FieldWrapper<String> createEventDateUnionAggregation(EventDateUnionSelect select, SelectContext<?, ?> selectContext) {
+	private static FieldWrapper<String> createEventDateUnionAggregation(EventDateUnionSelect select, SelectContext<?> selectContext) {
 
 		Preconditions.checkArgument(selectContext.getValidityDate().isPresent(), "Can't convert an EventDateUnionSelect without a validity date being present");
 		ColumnDateRange validityDate = selectContext.getValidityDate().get();

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.*;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -19,7 +20,8 @@ public class ClusterManagerProvider implements ManagerProvider {
 
 	public ClusterManager provideManager(ConqueryConfig config, Environment environment) {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
-		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
+		final MetaStorage storage = new MetaStorage(config.getStorage());
+		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, storage, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
 		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
@@ -35,7 +37,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 
 		final DelegateManager<DistributedNamespace>
 				delegate =
-				new DelegateManager<>(config, environment, datasetRegistry, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
+				new DelegateManager<>(config, environment, datasetRegistry, storage, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
 
 		environment.healthChecks().register("cluster", new ClusterHealthCheck(clusterState));
 
