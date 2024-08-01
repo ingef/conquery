@@ -113,7 +113,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
-		List<FieldWrapper<?>> exportColumns = createExportColumns(cqTable, positions);
+		List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
 		Selects selects = Selects.builder()
 								 .ids(ids)
 								 .validityDate(validityDate)
@@ -142,7 +142,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
 	}
 
-	private static List<FieldWrapper<?>> createExportColumns(CQTable cqTable, Map<Column, Integer> positions) {
+	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<Column, Integer> positions) {
 
 		Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
 		for (Column column : cqTable.getConnector().getTable().getColumns()) {
@@ -177,7 +177,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
-	private static Field<?> createColumnSelect(Column column, Integer position) {
+	private static Field<?> createColumnSelect(Column column, int position) {
 		String columnName = "%s-%s".formatted(column.getName(), position);
 		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
 				  .as(columnName);

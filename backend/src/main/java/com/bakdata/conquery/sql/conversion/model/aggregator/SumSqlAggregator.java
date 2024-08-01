@@ -171,7 +171,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column column = filter.getColumn();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
 		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 
 		Column subtractColumn = filter.getSubtractColumn();
@@ -187,7 +187,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
@@ -229,7 +229,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
