@@ -128,7 +128,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final String printValue = getPrinter().print(printSettings, o);
+			final String printValue = getPrinter().print(o, printSettings);
 			recordConsumer.addBinary(Binary.fromString(printValue));
 		}
 	}
@@ -246,7 +246,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			case INTEGER, DATE, MONEY -> new IntegerTColumnConsumer();
 			case NUMERIC -> new NumericTColumnConsumer();
 			case DATE_RANGE -> new DateRangeTColumnConsumer();
-			case STRING -> new StringTColumnConsumer(resultInfo::printNullable, printSettings);
+			case STRING -> new StringTColumnConsumer(resultInfo.getPrinter(), printSettings);
 		};
 	}
 }

@@ -264,7 +264,7 @@ public class ArrowRenderer {
 							// If there is no value, we don't want to have it displayed as an empty string (see next if)
 							return null;
 						}
-						return resultInfo.printNullable(settings, line[pos]);
+						return resultInfo.printNullable(line[pos], settings);
 					});
         }
 

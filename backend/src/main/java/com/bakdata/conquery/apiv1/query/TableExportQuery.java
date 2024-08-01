@@ -273,7 +273,7 @@ public class TableExportQuery extends Query {
 
 				if (!isRawConceptValues()) {
 					resultType = ResultType.Primitive.STRING;
-					printer = concept::printConceptLocalId;
+					printer = (rawValue, printSettings) -> concept.printConceptLocalId(printSettings, rawValue);
 				}
 			}
 			else {

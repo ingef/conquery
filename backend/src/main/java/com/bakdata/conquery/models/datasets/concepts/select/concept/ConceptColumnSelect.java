@@ -45,10 +45,10 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public ResultPrinters.Printer createPrinter() {
 		if (isAsIds()) {
-			return getHolder().findConcept()::printConceptLocalId;
+			return (rawValue, printSettings) -> getHolder().findConcept().printConceptLocalId(printSettings, rawValue);
 		}
 
-		return ResultPrinters::printString;
+		return new ResultPrinters.StringPrinter();
 	}
 
 	@Override

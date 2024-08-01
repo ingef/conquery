@@ -37,7 +37,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter();
 		}
 
-		return (value, cfg) -> applyMapping(value);
+		return (cfg, value) -> applyMapping(value);
 	}
 
 	public MappableSingleColumnSelect(Column column,

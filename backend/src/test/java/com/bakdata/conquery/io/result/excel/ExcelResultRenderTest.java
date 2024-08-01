@@ -161,7 +161,7 @@ public class ExcelResultRenderTest {
 	}
 
 	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
-		String printVal = info.printNullable(settings, val);
+		String printVal = info.printNullable(val, settings);
 
 		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
 			/**

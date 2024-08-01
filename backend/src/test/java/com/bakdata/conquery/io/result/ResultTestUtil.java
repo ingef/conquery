@@ -51,7 +51,7 @@ public class ResultTestUtil {
 
 
 	public static List<ResultInfo> ID_FIELDS = Stream.of("id1", "id2")
-													 .map(name -> new SimpleResultInfo(name, ResultType.Primitive.STRING, "", Set.of(new SemanticType.IdT("ID")), ResultPrinters::printString))
+													 .map(name -> new SimpleResultInfo(name, ResultType.Primitive.STRING, "", Set.of(new SemanticType.IdT("ID")), new ResultPrinters.StringPrinter()))
 													 .collect(Collectors.toList());
 
 	@NotNull

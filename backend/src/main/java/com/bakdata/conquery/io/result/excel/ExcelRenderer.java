@@ -317,8 +317,7 @@ public class ExcelRenderer {
 	private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
 		cell.setCellValue(
 				info.printNullable(
-						settings,
-						value
+						value, settings
 				));
 	}
 
@@ -331,7 +330,7 @@ public class ExcelRenderer {
 			cell.setCellValue(aBoolean);
 			return;
 		}
-		cell.setCellValue(info.printNullable(settings, value));
+		cell.setCellValue(info.printNullable(value, settings));
 	}
 
 	private static void writeDateCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {

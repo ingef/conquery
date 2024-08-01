@@ -50,7 +50,7 @@ public abstract class ResultInfo {
 							   .build();
 	}
 
-	public final String printNullable(PrintSettings printSettings, Object f) {
+	public final String printNullable(Object f, PrintSettings printSettings) {
 		if(f == null){
 			return "";
 		}
@@ -59,6 +59,6 @@ public abstract class ResultInfo {
 	}
 
 	protected String print(PrintSettings printSettings, Object f) {
-		return getPrinter().print(printSettings, f);
+		return getPrinter().print(f, printSettings);
 	}
 }

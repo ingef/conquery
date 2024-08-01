@@ -21,7 +21,7 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	private final ResultPrinters.Printer printer;
 
 	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId) {
-		this(secondaryId,ResultType.Primitive.STRING, Set.of(new SemanticType.SecondaryIdT(secondaryId)), secondaryId.getMapping() == null ? ResultPrinters::printString : new ResultPrinters.MappedPrinter(secondaryId.getMapping()));
+		this(secondaryId,ResultType.Primitive.STRING, Set.of(new SemanticType.SecondaryIdT(secondaryId)), secondaryId.getMapping() == null ? new ResultPrinters.StringPrinter(): new ResultPrinters.MappedPrinter(secondaryId.getMapping()));
 	}
 
 	@Override

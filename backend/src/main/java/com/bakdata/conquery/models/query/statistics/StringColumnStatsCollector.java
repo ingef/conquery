@@ -38,7 +38,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 		}
 
 		// In case there's a mapping, we need to map the value
-		final String printed = printer.print(getPrintSettings(), value);
+		final String printed = printer.print(value, getPrintSettings());
 		frequencies.addValue(printed);
 	}
 

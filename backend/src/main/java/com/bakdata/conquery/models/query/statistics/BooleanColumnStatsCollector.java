@@ -34,11 +34,13 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 
 	@Override
 	public ResultColumnStatistics describe() {
+		final ResultPrinters.BooleanPrinter printer = new ResultPrinters.BooleanPrinter();
+
 		return new HistogramColumnDescription(
 				getName(), getLabel(), getDescription(),
 				List.of(
-						new HistogramColumnDescription.Entry(ResultPrinters.printBoolean(getPrintSettings(), true), trues),
-						new HistogramColumnDescription.Entry(ResultPrinters.printBoolean(getPrintSettings(), false), falses)
+						new HistogramColumnDescription.Entry(printer.print(true, getPrintSettings()), trues),
+						new HistogramColumnDescription.Entry(printer.print(false, getPrintSettings()), falses)
 				),
 				Map.of(
 						C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),
