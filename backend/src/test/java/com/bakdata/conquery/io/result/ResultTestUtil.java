@@ -15,9 +15,9 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -51,7 +51,7 @@ public class ResultTestUtil {
 
 
 	public static List<ResultInfo> ID_FIELDS = Stream.of("id1", "id2")
-													 .map(name -> new SimpleResultInfo(name, ResultType.Primitive.STRING, "", Set.of(new SemanticType.IdT("ID")), new ResultPrinters.StringPrinter()))
+													 .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", Set.of(new SemanticType.IdT("ID")), new ResultPrinters.StringPrinter()))
 													 .collect(Collectors.toList());
 
 	@NotNull

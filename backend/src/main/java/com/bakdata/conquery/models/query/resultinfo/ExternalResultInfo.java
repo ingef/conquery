@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SimpleResultInfo extends ResultInfo {
+public class ExternalResultInfo extends ResultInfo {
 
 	private final String name;
 	private final ResultType type;
@@ -22,7 +22,7 @@ public class SimpleResultInfo extends ResultInfo {
 	private final Set<SemanticType> semantics;
 	private final ResultPrinters.Printer printer;
 
-	public SimpleResultInfo(String name, ResultType type) {
+	public ExternalResultInfo(String name, ResultType type) {
 		this(name, type, null, Collections.emptySet(), ResultPrinters.defaultPrinter(type));
 	}
 

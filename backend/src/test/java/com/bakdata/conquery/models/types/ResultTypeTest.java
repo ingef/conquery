@@ -16,8 +16,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +41,7 @@ public class ResultTypeTest {
 	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null);
 
 	public static ResultInfo info(ResultType type) {
-		return new SimpleResultInfo("col", type);
+		return new ExternalResultInfo("col", type);
 	}
 
 	@SuppressWarnings("unused")

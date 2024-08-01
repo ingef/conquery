@@ -27,8 +27,8 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
+import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -226,9 +226,9 @@ public class CQExternal extends CQElement {
 
 			String column = headers[col];
 
-			resultInfos.add(new SimpleResultInfo(column, onlySingles ?
-														 ResultType.Primitive.STRING :
-														 new ResultType.ListT(ResultType.Primitive.STRING)));
+			resultInfos.add(new ExternalResultInfo(column, onlySingles ?
+														   ResultType.Primitive.STRING :
+														   new ResultType.ListT(ResultType.Primitive.STRING)));
 		}
 
 		return resultInfos;

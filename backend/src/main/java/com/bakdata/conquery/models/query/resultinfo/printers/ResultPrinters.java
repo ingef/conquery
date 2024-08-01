@@ -36,6 +36,23 @@ public class ResultPrinters {
 		};
 	}
 
+	public BigDecimal readMoney(PrintSettings cfg, Number value) {
+		return new BigDecimal(value.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
+	}
+
+	public String printDate(PrintSettings cfg, Object f) {
+		if (!(f instanceof Number)) {
+			throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
+		}
+		final Number number = (Number) f;
+		return cfg.getDateFormatter().format(CDate.toLocalDate(number.intValue()));
+	}
+
+	@FunctionalInterface
+	public interface Printer {
+		String print(Object f, PrintSettings cfg);
+	}
+
 	public static class StringPrinter implements Printer {
 		@Override
 		public String print(Object f, PrintSettings cfg) {
@@ -66,7 +83,6 @@ public class ResultPrinters {
 		}
 	}
 
-
 	public static class MoneyPrinter implements Printer {
 
 		@Override
@@ -81,19 +97,11 @@ public class ResultPrinters {
 		}
 	}
 
-
-
-	public BigDecimal readMoney(PrintSettings cfg, Number value) {
-		return new BigDecimal(value.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
-	}
-
-
 	public static class DatePrinter implements Printer {
 		@Override
 		public String print(Object f, PrintSettings cfg) {
-			if (!(f instanceof Number)) {
-				throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
-			}
+			Preconditions.checkArgument(f instanceof Number, "Expected an Number but got an '%s' with the value: %s".formatted(f.getClass().getName(), f));
+
 			final Number number = (Number) f;
 			return cfg.getDateFormatter().format(CDate.toLocalDate(number.intValue()));
 		}
@@ -126,20 +134,6 @@ public class ResultPrinters {
 
 			return minString + cfg.getDateRangeSeparator() + maxString;
 		}
-	}
-
-
-	public String printDate(PrintSettings cfg, Object f) {
-		if (!(f instanceof Number)) {
-			throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
-		}
-		final Number number = (Number) f;
-		return cfg.getDateFormatter().format(CDate.toLocalDate(number.intValue()));
-	}
-
-	@FunctionalInterface
-	public interface Printer {
-		String print(Object f, PrintSettings cfg);
 	}
 
 	public static class BooleanPrinter implements Printer {
