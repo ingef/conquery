@@ -172,11 +172,4 @@ public class EntityIdMap {
 		}
 	}
 
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class ExternalId {
-		private final String type;
-		private final String id;
-	}
-
 }
