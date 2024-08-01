@@ -1,6 +1,7 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -88,7 +89,12 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	public void sessionClosed(IoSession session) {
 		log.info("Disconnected from ManagerNode.");
 
-		scheduler.schedule(this::connectToCluster, 2, TimeUnit.SECONDS);
+		try {
+			scheduler.schedule(this::connectToCluster, 2, TimeUnit.SECONDS);
+		}
+		catch (RejectedExecutionException e) {
+			log.trace("Scheduler rejected execution (probably in shutdown). Skipping reconnect attempt", e);
+		}
 	}
 
 	@Override
@@ -264,7 +270,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void stop() throws Exception {
-		disconnectFromCluster();
+		// close scheduler before disconnect to avoid scheduled reconnects
 		scheduler.shutdown();
+		disconnectFromCluster();
 	}
 }
