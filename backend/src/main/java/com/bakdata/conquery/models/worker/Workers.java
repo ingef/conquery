@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import jakarta.validation.Validator;
 
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -25,7 +26,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * {@link com.bakdata.conquery.commands.ShardNode} container of {@link Worker}.
+ * {@link ShardNode} container of {@link Worker}.
  *
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
