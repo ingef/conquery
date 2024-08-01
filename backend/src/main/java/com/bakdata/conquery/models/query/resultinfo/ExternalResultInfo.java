@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.types.SemanticType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
@@ -22,7 +23,7 @@ public class ExternalResultInfo extends ResultInfo {
 	private final Set<SemanticType> semantics;
 	private final ResultPrinters.Printer printer;
 
-	public ExternalResultInfo(String name, ResultType type) {
+	public ExternalResultInfo(String name, @NonNull ResultType type) {
 		this(name, type, null, Collections.emptySet(), ResultPrinters.defaultPrinter(type));
 	}
 
