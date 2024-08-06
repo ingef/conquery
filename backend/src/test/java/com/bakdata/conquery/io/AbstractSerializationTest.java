@@ -48,7 +48,10 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		SharedMetricRegistries.setDefault(AbstractSerializationTest.class.getSimpleName());
+		// Some components need the shared registry, and it might have been set already by another test
+		if (SharedMetricRegistries.tryGetDefault() == null) {
+			SharedMetricRegistries.setDefault(AbstractSerializationTest.class.getSimpleName());
+		}
 	}
 
 
