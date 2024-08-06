@@ -11,6 +11,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.IdColumnConfig;
