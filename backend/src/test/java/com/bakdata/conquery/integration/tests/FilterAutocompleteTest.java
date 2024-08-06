@@ -17,6 +17,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -151,7 +152,8 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
-		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
+		final Concept<?> concept = namespaceStorage.getAllConcepts().stream().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 

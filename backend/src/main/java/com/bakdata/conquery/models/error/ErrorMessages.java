@@ -58,5 +58,5 @@ public interface ErrorMessages {
 
 	@En("Something went wrong while querying the database: ${0}.")
 	@De("Etwas ist beim Anfragen des Servers fehlgeschlagen: ${0}.")
-	String sqlError(Exception error);
+	String sqlError(Throwable error);
 }

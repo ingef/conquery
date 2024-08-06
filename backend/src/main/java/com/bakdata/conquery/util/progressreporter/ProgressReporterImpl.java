@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.progressreporter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -10,11 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProgressReporterImpl implements ProgressReporter {
 
+	public long getMax() {
+		return max.get();
+	}
 
-	@Getter(onMethod_ = @Override)
-	private long max = 1;
-	private long innerProgress = 0;
-	private long reservedForChildren = 0;
+	private final AtomicLong max = new AtomicLong(1);
+	private final AtomicLong innerProgress = new AtomicLong(0);
+	private final AtomicLong reservedForChildren = new AtomicLong(0);
 	private final List<ProgressReporterImpl> children = new ArrayList<>();
 
 	@Getter
@@ -53,7 +56,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	}
 	
 	public long getAbsoluteProgress() {
-		long absoluteProgress = innerProgress;
+		long absoluteProgress = innerProgress.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteProgress += child.getAbsoluteProgress();
@@ -63,7 +66,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	}
 	
 	public long getAbsoluteMax() {
-		long absoluteMax = max;
+		long absoluteMax = max.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteMax += child.getAbsoluteMax();
@@ -78,7 +81,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 			throw new IllegalStateException("You need to start the Progress Reporter before you can add subjobs");
 		}
 
-		reservedForChildren += steps;
+		reservedForChildren.addAndGet(steps);
 
 		ProgressReporterImpl childPr = new ProgressReporterImpl();
 		childPr.start();
@@ -98,12 +101,12 @@ public class ProgressReporterImpl implements ProgressReporter {
 			log.warn("Progress reporter was not started");
 			return;
 		}
-		if (innerProgress + steps > max) {
+		if (innerProgress.get() + steps > max.get()) {
 			log.warn("Progress({}) + ChildProgressReserve({}) + Steps({}) is bigger than the maximum Progress({}). There might be to many reports in the code.", innerProgress, reservedForChildren, steps, max);
 			return;
 		}
 
-		innerProgress += steps;
+		innerProgress.addAndGet(steps);
 	}
 
 	@Override
@@ -114,12 +117,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 			return;
 		}
 
-		if (this.max > max) {
-			log.warn("Max cannot be decreased.");
-			return;
-		}
-
-		this.max = max;
+		this.max.set(max);
 	}
 
 	@Override
@@ -138,7 +136,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 			log.trace("Done was called before all steps were been reported. There might be missing reporting steps in the code.");
 		}
 
-		innerProgress = max - reservedForChildren;
+		innerProgress.set(max.get() - reservedForChildren.get());
 	}
 	
 

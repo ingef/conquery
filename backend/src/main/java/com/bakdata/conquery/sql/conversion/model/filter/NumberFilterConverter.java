@@ -26,7 +26,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Column column = filter.getColumn();
 		ConnectorSqlTables tables = filterContext.getTables();
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(column.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
 		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();

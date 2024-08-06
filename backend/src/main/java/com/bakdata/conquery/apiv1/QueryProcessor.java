@@ -39,6 +39,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -106,7 +107,6 @@ public class QueryProcessor {
 	private ConqueryConfig config;
 	@Inject
 	private Validator validator;
-
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
@@ -294,14 +294,13 @@ public class QueryProcessor {
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(
+		final EntityResolver.ResolveStatistic statistic = namespace.getEntityResolver().resolveEntities(
 				upload.getValues(),
 				upload.getFormat(),
 				namespace.getStorage().getIdMapping(),
 				config.getIdColumns(),
 				config.getLocale().getDateReader(),
-				upload.isOneRowPerEntity(),
-				true
+				upload.isOneRowPerEntity()
 		);
 
 		// Resolving nothing is a problem thus we fail.
@@ -526,9 +525,8 @@ public class QueryProcessor {
 
 		final List<ColumnConfig> ids = config.getIdColumns()
 											 .getIds().stream()
-											 // We're only interested in returning printable AND resolvable ids
+											 // We're only interested in returning printable ids
 											 .filter(ColumnConfig::isPrint)
-											 .filter(ColumnConfig::isResolvable)
 											 .collect(Collectors.toList());
 
 

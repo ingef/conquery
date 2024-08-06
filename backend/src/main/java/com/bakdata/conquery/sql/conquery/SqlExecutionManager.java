@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -80,7 +81,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									runningExecutions.remove(managedQuery.getId());
 								})
 								.exceptionally(e -> {
-									managedQuery.finish(ExecutionState.FAILED);
+									managedQuery.fail(new ConqueryError.SqlError(e));
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});

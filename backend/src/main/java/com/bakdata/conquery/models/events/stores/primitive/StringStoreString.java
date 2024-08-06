@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -94,6 +95,10 @@ public class StringStoreString implements StringStore {
 	@Override
 	public Stream<String> streamValues() {
 		return Arrays.stream(values).filter(Objects::nonNull);
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 
 }

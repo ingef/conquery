@@ -26,7 +26,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 	private final Conquery conquery;
 	private ClusterManager manager;
-	private ManagerNode managerNode = new ManagerNode();
+	private final ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 
 	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
@@ -104,7 +104,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
 				}
 
-				sc.run(environment, namespace, clone);
+				sc.run(clone, environment);
 				return sc;
 			}));
 		}

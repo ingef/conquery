@@ -25,16 +25,23 @@
       }
     ],
     "table": "vers_stamm",
-    "filters": {
-      "type": "SELECT",
-      "name": "geschlecht",
-      "label": "Geschlecht",
-      "column": "vers_stamm.geschlecht",
-      "labels": {
-        "1": "Weiblich",
-        "2": "Männlich"
+    "filters": [
+      {
+        "type": "SELECT",
+        "name": "geschlecht",
+        "label": "Geschlecht",
+        "column": "vers_stamm.geschlecht",
+        "labels": {
+          "1": "Weiblich",
+          "2": "Männlich"
+        }
+      },
+      {
+        "type": "SUM",
+        "name": "sum",
+        "column": "vers_stamm.value"
       }
-    },
+    ],
     "selects": [
       {
         "type": "FIRST",

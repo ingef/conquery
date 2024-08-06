@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -23,8 +23,8 @@ public class IdColumnUtil {
 	/**
 	 * If a column contains an ID, create a reader for that ID.
 	 */
-	public static List<Function<String[], EntityIdMap.ExternalId>> getIdReaders(List<String> format, Map<String, ColumnConfig> idMappers) {
-		List<Function<String[], EntityIdMap.ExternalId>> out = new ArrayList<>(format.size());
+	public static List<Function<String[], ExternalId>> getIdReaders(List<String> format, Map<String, ColumnConfig> idMappers) {
+		List<Function<String[], ExternalId>> out = new ArrayList<>(format.size());
 
 		for (int index = 0; index < format.size(); index++) {
 			final ColumnConfig mapper = idMappers.get(format.get(index));
@@ -48,7 +48,7 @@ public class IdColumnUtil {
 		final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 		final int pos = IntStream.range(0, ids.size())
-								 .filter(idx -> ids.get(idx).isFillAnon())
+								 .filter(idx -> ids.get(idx).isPrimaryId())
 								 .findFirst()
 								 .orElseThrow();
 

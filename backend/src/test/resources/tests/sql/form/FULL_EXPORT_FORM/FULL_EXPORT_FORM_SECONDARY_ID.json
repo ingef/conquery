@@ -6,6 +6,10 @@
   },
   "form": {
     "type": "FULL_EXPORT_FORM",
+    "dateRange": {
+      "min": "2012-01-01",
+      "max": "2012-03-03"
+    },
     "tables": [
       {
         "type": "CONCEPT",
@@ -30,7 +34,16 @@
           "id": "geschlecht.geschlecht",
           "dateColumn": {
             "value": "geschlecht.geschlecht.erster_tag"
-          }
+          },
+          "filters": [
+            {
+              "filter": "geschlecht.geschlecht.sum",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 10
+              }
+            }
+          ]
         }
       }
     ],

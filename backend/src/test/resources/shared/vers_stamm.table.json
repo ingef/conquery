@@ -21,6 +21,10 @@
     {
       "name": "geschlecht",
       "type": "STRING"
+    },
+    {
+      "name": "value",
+      "type": "INTEGER"
     }
   ]
 }

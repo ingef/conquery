@@ -205,7 +205,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
-			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
+			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
 		finish(ExecutionState.FAILED);

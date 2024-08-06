@@ -1,5 +1,4 @@
-result,dates,source,secondary,table column,vers_stamm date_end,vers_stamm geburtsdatum,vers_stamm geschlecht
-1,{2012-03-01/2012-03-01},table,1,A,,,
-1,{2012-03-02/2012-03-02},table,1,A,,,
-1,{2012-03-04/2012-03-04},table,2,A,,,
-1,{2012-01-01/2012-01-01},vers_stamm,,,2012-12-31,1957-01-01,1
+result,dates,source,secondary,table column,vers_stamm date_end,vers_stamm geburtsdatum,vers_stamm geschlecht,vers_stamm value
+1,{2012-03-01/2012-03-01},table,1,A,,,,
+1,{2012-03-02/2012-03-02},table,1,A,,,,
+1,{2012-01-01/2012-01-01},vers_stamm,,,2012-12-31,1957-01-01,1,12

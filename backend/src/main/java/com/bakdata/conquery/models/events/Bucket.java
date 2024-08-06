@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -26,12 +27,14 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -50,16 +53,16 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
+
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
 	private final int bucket;
 
-	@Min(0)
-	private final int numberOfEvents;
+	@ToString.Include
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
@@ -74,9 +77,25 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	 */
 	private final Object2IntMap<String> ends;
 
+	private final int numberOfEvents;
+
 	@NsIdRef
 	private final Import imp;
 
+	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
+		return Arrays.stream(table.getColumns())
+					 .map(Column::getName)
+					 .map(stores::get)
+					 .map(Objects::requireNonNull)
+					 .toArray(ColumnStore[]::new);
+	}
+
+	public static Bucket fromPreprocessed(Table table, PreprocessedData container, Import imp) {
+		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
+		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
+
+		return new Bucket(container.getBucketId(), storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()),numberOfEvents, imp);
+	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match the length of some stores.")

@@ -54,6 +54,7 @@ public class PreviewConfig {
 	 * @implSpec the order of selects is the order of the output fields.
 	 */
 	@Valid
+	@NotNull
 	private List<InfoCardSelect> infoCardSelects = List.of();
 
 	@Valid
@@ -62,11 +63,13 @@ public class PreviewConfig {
 	/**
 	 * Columns that should not be displayed to users in entity preview.
 	 */
+	@NotNull
 	private Set<ColumnId> hidden = Collections.emptySet();
 
 	/**
 	 * SecondaryIds where the columns should be grouped together.
 	 */
+	@NotNull
 	private Set<SecondaryIdDescriptionId> grouping = Collections.emptySet();
 
 	/**
@@ -74,11 +77,13 @@ public class PreviewConfig {
 	 *
 	 * @implNote This is purely for the frontend, the backend can theoretically be queried for all Connectors.
 	 */
+	@NotNull
 	private Set<ConnectorId> allConnectors = Collections.emptySet();
 
 	/**
 	 * Connectors that shall be selected by default by the frontend.
 	 */
+	@NotNull
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
 	/**
@@ -88,6 +93,7 @@ public class PreviewConfig {
 	 * <p>
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
+	@NotNull
 	private Set<FilterId> searchFilters = Collections.emptySet();
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -186,24 +192,19 @@ public class PreviewConfig {
 	}
 
 	public List<Filter<?>> resolveSearchFilters() {
-		if (searchFilters == null) {
-			return Collections.emptyList();
-		}
-
-		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+		return getSearchFilters().stream()
+							.map(filterId -> getDatasetRegistry().findRegistry(filterId.getDataset()).getOptional(filterId))
 							.flatMap(Optional::stream)
 							.toList();
 	}
 
 	public Concept<?> resolveSearchConcept() {
-		if (searchFilters == null) {
+		if (getSearchFilters().isEmpty()) {
 			return null;
 		}
 
-
-		return searchFilters.stream()
-							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+		return getSearchFilters().stream()
+							.map(filterId -> getDatasetRegistry().findRegistry(filterId.getDataset()).getOptional(filterId))
 							.flatMap(Optional::stream)
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()

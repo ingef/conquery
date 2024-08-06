@@ -114,9 +114,13 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// To perform the update, the old concept will be deleted first and the new concept will be added. That means the deletion of concept is also covered here
 		{
 			log.info("Executing  update");
+
 			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL);
 			conquery.waitUntilWorkDone();
+
 			log.info("Update executed");
+
+
 		}
 
 

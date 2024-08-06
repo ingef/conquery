@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuartersFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -34,7 +33,7 @@ import org.jooq.impl.DSL;
 public class CountQuartersSqlAggregator implements SelectConverter<CountQuartersSelect>, FilterConverter<CountQuartersFilter, Range.LongRange>, SqlAggregator {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(CountQuartersSelect countQuartersSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(CountQuartersSelect countQuartersSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
 		String alias = selectContext.getNameGenerator().selectName(countQuartersSelect);
 		ConnectorSqlTables tables = selectContext.getTables();

@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
-  "label": "CONCEPT_VALUES Test",
-  "expectedCsv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/expected_raw.csv",
+  "label": "CONCEPT_VALUES Test with 2 connectors",
+  "expectedCsv": "tests/sql/selects/concept_values/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -75,7 +75,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/content.csv",
+        "csv": "tests/sql/selects/concept_values/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
@@ -93,7 +93,7 @@
         ]
       },
       {
-        "csv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/content2.csv",
+        "csv": "tests/sql/selects/concept_values/content2.csv",
         "name": "table2",
         "primaryColumn": {
           "name": "pid",

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.mode.cluster.ClusterEntityResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -36,7 +37,6 @@ public class DistributedNamespace extends Namespace {
 	private final WorkerHandler workerHandler;
 	private final DistributedExecutionManager executionManager;
 
-
 	public DistributedNamespace(
 			ObjectMapper preprocessMapper,
 			ObjectMapper communicationMapper,
@@ -45,26 +45,21 @@ public class DistributedNamespace extends Namespace {
 			JobManager jobManager,
 			FilterSearch filterSearch,
 			IndexService indexService,
+			ClusterEntityResolver clusterEntityResolver,
 			List<Injectable> injectables,
 			WorkerHandler workerHandler
 	) {
-		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
+		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, clusterEntityResolver, injectables);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
 	}
 
-	public int getBucket(String entity, int bucketSize) {
-		final NamespaceStorage storage = getStorage();
-		return storage.getEntityBucket(entity)
-					  .orElseGet(() -> storage.assignEntityBucket(entity, bucketSize));
-	}
-
 	@Override
 	void updateMatchingStats() {
-		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
-													.stream()
-													.filter(concept -> concept.getMatchingStats() == null)
-													.collect(Collectors.toSet());
+		final Collection<Concept<?>> concepts = getStorage().getAllConcepts()
+															.stream()
+															.filter(concept -> concept.getMatchingStats() == null)
+															.collect(Collectors.toSet());
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 	}
 

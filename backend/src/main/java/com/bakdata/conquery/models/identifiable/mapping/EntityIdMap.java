@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Mapping from uploaded {@link ExternalId} for resolving in {@link com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal}, and also for printing with {@link EntityPrintId}.
- *
  */
 @Getter
 @EqualsAndHashCode
@@ -67,15 +66,11 @@ public class EntityIdMap {
 				final String otherId = record.getString(columnConfig.getField());
 
 				// Collect printable parts into id
-				if(columnConfig.isPrint()) {
+				if (columnConfig.isPrint()) {
 					idParts.add(otherId);
 				}
 
 				if (otherId == null) {
-					continue;
-				}
-
-				if (!columnConfig.isResolvable()) {
 					continue;
 				}
 
@@ -141,7 +136,7 @@ public class EntityIdMap {
 
 	/**
 	 * Resolve external ID to Entity Id.
-	 *
+	 * <p>
 	 * Return -1 when not resolved.
 	 */
 	public String resolve(ExternalId key) {
@@ -152,7 +147,7 @@ public class EntityIdMap {
 		}
 
 		// Maybe we can find them directly in the dictionary?
-		if (storage.getEntityBucket(key.getId()).isPresent()) {
+		if (storage.containsEntity(key.getId())) {
 			return key.getId();
 		}
 
@@ -175,13 +170,6 @@ public class EntityIdMap {
 		if (prior != null && prior.equals(csvEntityId)) {
 			log.warn("Duplicate mapping  for {} to {} and {}", externalEntityId, csvEntityId, prior);
 		}
-	}
-
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class ExternalId {
-		private final String type;
-		private final String id;
 	}
 
 }

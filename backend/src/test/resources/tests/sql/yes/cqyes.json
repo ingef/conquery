@@ -1,0 +1,31 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CQYES Test",
+  "expectedCsv": "tests/sql/yes/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "YES"
+    }
+  },
+  "concepts": [
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/yes/no-op.csv",
+        "name": "no-op",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -8,7 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
 
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -18,14 +20,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * {@link com.bakdata.conquery.commands.ShardNode} container of {@link Worker}.
+ * {@link ShardNode} container of {@link Worker}.
  *
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
@@ -117,11 +118,6 @@ public class Workers extends IdResolveContext {
 		}
 
 		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
-	}
-
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		return null; // Workers simply have no MetaRegistry.
 	}
 
 	public void removeWorkerFor(DatasetId dataset) {

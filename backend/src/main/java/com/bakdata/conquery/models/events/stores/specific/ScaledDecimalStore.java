@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
@@ -74,5 +75,9 @@ public class ScaledDecimalStore implements DecimalStore {
 	@Override
 	public boolean has(int event) {
 		return subType.has(event);
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 }

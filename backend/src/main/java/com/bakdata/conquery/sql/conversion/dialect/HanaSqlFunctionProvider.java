@@ -9,6 +9,7 @@ import java.util.Objects;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -128,6 +129,15 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
+		String tableName = daterangeSelectOrFilter.getTable().getName();
+		if (daterangeSelectOrFilter.getEndColumn() != null) {
+			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn(), daterangeSelectOrFilter.getEndColumn());
+		}
+		return ofStartAndEnd(tableName, daterangeSelectOrFilter.getColumn(), daterangeSelectOrFilter.getColumn());
+	}
+
+	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(
 									  DSL.min(columnDateRange.getStart()),
@@ -150,21 +160,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public QueryStep unnestValidityDate(QueryStep predecessor, String cteName) {
+	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
 		// HANA does not support single column datemultiranges
 		return predecessor;
-	}
-
-	@Override
-	public Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
-		return DSL.field(
-				"{0}({1}, {2} {3})",
-				String.class,
-				DSL.keyword("STRING_AGG"),
-				stringField,
-				delimiter,
-				DSL.orderBy(orderByFields)
-		);
 	}
 
 	@Override
@@ -329,6 +327,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			startColumn = validityDate.getStartColumn();
 			endColumn = validityDate.getEndColumn();
 		}
+
+		return ofStartAndEnd(tableName, startColumn, endColumn);
+	}
+
+	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
 		Field<Date> rangeStart = DSL.coalesce(
 				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),

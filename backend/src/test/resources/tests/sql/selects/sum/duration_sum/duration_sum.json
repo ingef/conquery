@@ -45,13 +45,10 @@
       "connectors": {
         "name": "connector",
         "column": "table.column",
-        "validityDates": {
-          "name": "datum",
-          "column": "table.datum"
-        },
         "selects": {
-          "type": "EVENT_DURATION_SUM",
-          "name": "event_duration_sum"
+          "type": "DURATION_SUM",
+          "name": "event_duration_sum",
+          "column": "table.datum"
         }
       },
       "children": [

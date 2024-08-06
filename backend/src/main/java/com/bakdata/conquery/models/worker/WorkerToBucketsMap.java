@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.google.common.collect.ImmutableSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,23 +20,23 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WorkerToBucketsMap {
-    private Map<WorkerId, Set<BucketId>> map = new ConcurrentHashMap<>();
+	private Map<WorkerId, Set<BucketId>> map = new ConcurrentHashMap<>();
 
-    public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
-        // Don't modify the underlying map here
-        Set<BucketId> buckets = map.get(workerId);
-        if (buckets != null) {
+	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
+		// Don't modify the underlying map here
+		Set<BucketId> buckets = map.get(workerId);
+		if (buckets != null) {
 			// Don't allow modification
 			return Collections.unmodifiableSet(buckets);
 		}
-        return Collections.emptySet();
-    }
+		return Collections.emptySet();
+	}
 
-    public void addBucketForWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
-        map.computeIfAbsent(id, k -> new HashSet<>()).addAll(bucketIds);
-    }
+	public void addBucketForWorker(@NonNull WorkerId id, @NonNull BucketId bucketId) {
+		map.computeIfAbsent(id, k -> new HashSet<>()).add(bucketId);
+	}
 
-    public void removeBucketsOfImport(@NonNull ImportId importId) {
-        map.values().forEach(set -> set.removeIf(bucketId -> bucketId.getImp().equals(importId)));
-    }
+	public void removeBucketsOfImport(@NonNull ImportId importId) {
+		map.values().forEach(set -> set.removeIf(bucketId -> bucketId.getImp().equals(importId)));
+	}
 }

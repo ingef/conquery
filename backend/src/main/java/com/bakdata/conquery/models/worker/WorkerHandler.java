@@ -103,24 +103,24 @@ public class WorkerHandler {
 		sendUpdatedWorkerInformation();
 	}
 
-	private synchronized void sendUpdatedWorkerInformation() {
+	public synchronized void sendUpdatedWorkerInformation() {
 		for (WorkerInformation w : workers.values()) {
 			w.send(new UpdateWorkerBucket(w));
 		}
 	}
 
-	public synchronized void addBucketsToWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
+	public synchronized void registerBucketForWorker(@NonNull WorkerId id, @NonNull BucketId bucketId) {
 		// Ensure that add and remove are not executed at the same time.
 		// We don't make assumptions about the underlying implementation regarding thread safety
 		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+
 		if (workerBuckets == null) {
 			workerBuckets = createWorkerBucketsMap();
 		}
-		workerBuckets.addBucketForWorker(id, bucketIds);
+
+		workerBuckets.addBucketForWorker(id, bucketId);
 
 		storage.setWorkerToBucketsMap(workerBuckets);
-
-		sendUpdatedWorkerInformation();
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
@@ -138,11 +138,12 @@ public class WorkerHandler {
 	}
 
 	/**
+	 * @return
 	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for
 	 * dedicated Workers, or entity weightings)
 	 */
 
-	public synchronized void addResponsibility(int bucket) {
+	public synchronized WorkerInformation addResponsibility(int bucket) {
 		final WorkerInformation smallest = workers
 				.stream()
 				.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
@@ -153,6 +154,8 @@ public class WorkerHandler {
 		bucket2WorkerMap.put(bucket, smallest);
 
 		smallest.getIncludedBuckets().add(bucket);
+
+		return smallest;
 	}
 
 	public void register(ShardNodeInformation node, WorkerInformation info) {
@@ -190,6 +193,19 @@ public class WorkerHandler {
 			return Collections.emptySet();
 		}
 		return workerBuckets.getBucketsForWorker(workerId);
+	}
+
+	public synchronized WorkerInformation assignResponsibleWorker(BucketId bucket) {
+
+		WorkerInformation responsibleWorkerForBucket = getResponsibleWorkerForBucket(bucket.getBucket());
+
+		if (responsibleWorkerForBucket == null) {
+			responsibleWorkerForBucket = addResponsibility(bucket.getBucket());
+		}
+
+		registerBucketForWorker(responsibleWorkerForBucket.getId(), bucket);
+
+		return responsibleWorkerForBucket;
 	}
 
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {

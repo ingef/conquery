@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -32,6 +33,7 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
+
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
@@ -40,8 +42,9 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.forEach(i -> i.injectInto(communicationMapper));
 		injectables.forEach(i -> i.injectInto(preprocessMapper));
 
-		// Open and load the stores
-		storage.openStores(persistenceMapper);
+
+		// Each store needs its own mapper because each injects its own registry
+		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
 		storage.loadData();
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());

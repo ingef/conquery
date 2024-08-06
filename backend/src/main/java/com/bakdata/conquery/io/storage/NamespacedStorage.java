@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -56,7 +57,8 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
-
+		// Before we start to parse the stores we need to replace the injected value for the IdResolveContext (from DatasetRegistry to this centralRegistry)
+		new SingletonNamespaceCollection(centralRegistry).injectInto(objectMapper);
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);

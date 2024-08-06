@@ -16,10 +16,12 @@
         {
           "id": "concept.connector",
           "selects": [
+            "concept.connector.exists",
             "concept.connector.event-date",
             "concept.connector.event_duration_sum",
             "concept.connector.first_value",
-            "concept.connector.sum_distinct"
+            "concept.connector.sum_distinct",
+            "concept.connector.distinct_select"
           ],
           "filters": [
             {
@@ -84,6 +86,10 @@
           ],
           "selects": [
             {
+              "type": "EXISTS",
+              "name": "exists"
+            },
+            {
               "type": "EVENT_DATE_UNION",
               "name": "event-date"
             },
@@ -95,6 +101,11 @@
               "label": "first_value",
               "column": "table.value",
               "type": "FIRST"
+            },
+            {
+              "label": "distinct_select",
+              "column": "table.value",
+              "type": "DISTINCT"
             },
             {
               "name": "sum_distinct",

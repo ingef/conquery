@@ -26,4 +26,14 @@ public interface ResultSetProcessor {
 	List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException;
 
 	List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException;
+
+	List<Boolean> getBooleanList(ResultSet resultSet, int columnIndex) throws SQLException;
+
+	List<Integer> getIntegerList(ResultSet resultSet, int columnIndex) throws SQLException;
+
+	List<Double> getDoubleList(ResultSet resultSet, int columnIndex) throws SQLException;
+
+	List<BigDecimal> getMoneyList(ResultSet resultSet, int columnIndex) throws SQLException;
+
+	List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException;
 }

@@ -63,8 +63,8 @@ public class QueryStepJoiner {
 
 		DateAggregationDates dateAggregationDates = DateAggregationDates.forSteps(queriesToJoin);
 		if (dateAggregationAction == DateAggregationAction.BLOCK || dateAggregationDates.dateAggregationImpossible()) {
-			// for forms, date aggregation is allways blocked // TODO check if this is really correct
-			Optional<ColumnDateRange> stratificationDate = queriesToJoin.get(0).getQualifiedSelects().getStratificationDate();
+			// for forms, date aggregation is allways blocked, but dates need to be coalesced in case we do a fulll outer join
+			Optional<ColumnDateRange> stratificationDate = coalesceStratificationDates(queriesToJoin);
 			joinedStep = buildJoinedStep(ids, mergedSelects, Optional.empty(), stratificationDate, joinedStepBuilder);
 		}
 		// if there is only 1 child node containing a validity date, we just keep it as overall validity date for the joined node
@@ -108,7 +108,8 @@ public class QueryStepJoiner {
 
 			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
 
-			joinedQuery = joinType.join(joinedQuery, rightPartQS, joinConditions);
+			Table<Record> rightPartTable = DSL.table(DSL.name(rightPartQS.getCteName()));
+			joinedQuery = joinType.join(joinedQuery, rightPartTable, joinConditions);
 		}
 
 		return joinedQuery;
@@ -168,13 +169,18 @@ public class QueryStepJoiner {
 		);
 	}
 
+	private static Optional<ColumnDateRange> coalesceStratificationDates(List<QueryStep> queriesToJoin) {
+		return queriesToJoin.stream()
+							.map(QueryStep::getQualifiedSelects)
+							.map(Selects::getStratificationDate)
+							.filter(Optional::isPresent)
+							.map(Optional::get)
+							.reduce(ColumnDateRange::coalesce);
+	}
+
 	@FunctionalInterface
 	private interface JoinType {
-		TableOnConditionStep<Record> join(
-				Table<Record> leftPartQueryBase,
-				QueryStep rightPartQS,
-				List<Condition> joinConditions
-		);
+		TableOnConditionStep<Record> join(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions);
 	}
 
 }

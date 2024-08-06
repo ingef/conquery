@@ -49,6 +49,10 @@ public enum EmptyStore implements
 
 	}
 
+	public void setParent(Bucket bucket) {
+		// not used
+	}
+
 	@Override
 	public Object createScriptValue(int event) {
 		return null;

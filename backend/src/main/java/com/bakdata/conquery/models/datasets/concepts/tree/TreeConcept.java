@@ -126,11 +126,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 	}
 
-	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
+	private ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptElement best, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
 
 		while (currentList != null && !currentList.isEmpty()) {

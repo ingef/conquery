@@ -4,18 +4,14 @@ import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
@@ -42,7 +38,7 @@ public class MetaIdReferenceDeserializer<ID extends Id<T>, T extends Identifiabl
 		ID id = ctxt.readValue(parser, idClass);
 
 		try {
-			final CentralRegistry centralRegistry = CentralRegistry.get(ctxt);
+			final CentralRegistry centralRegistry = MetaStorage.get(ctxt).getCentralRegistry();
 
 			// Not all Components have registries, we leave it up to the validator to be angry.
 			if (centralRegistry == null) {

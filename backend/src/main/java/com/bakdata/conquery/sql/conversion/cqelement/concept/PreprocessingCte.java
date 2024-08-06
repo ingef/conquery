@@ -56,9 +56,10 @@ class PreprocessingCte extends ConnectorCte {
 			List<Condition> conditions,
 			CQTableContext tableContext
 	) {
-		QueryStep stratificationTable = tableContext.getConversionContext().getStratificationTable();
+		QueryStep stratificationTableCte = tableContext.getConversionContext().getStratificationTable();
+		Table<Record> stratificationTable = DSL.table(DSL.name(stratificationTableCte.getCteName()));
 
-		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
+		Selects stratificationSelects = stratificationTableCte.getQualifiedSelects();
 		SqlIdColumns stratificationIds = stratificationSelects.getIds();
 		SqlIdColumns rootTableIds = tableContext.getIds();
 		List<Condition> idConditions = stratificationIds.join(rootTableIds);

@@ -23,8 +23,8 @@ public interface ManagerProvider {
 		return new JobManager(JOB_MANAGER_NAME, config.isFailOnError());
 	}
 
-	static InternalObjectMapperCreator newInternalObjectMapperCreator(ConqueryConfig config, Validator validator) {
-		return new InternalObjectMapperCreator(config, validator);
+	static InternalObjectMapperCreator newInternalObjectMapperCreator(ConqueryConfig config, MetaStorage metaStorage, Validator validator) {
+		return new InternalObjectMapperCreator(config, metaStorage, validator);
 	}
 
 	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
@@ -33,16 +33,13 @@ public interface ManagerProvider {
 			InternalObjectMapperCreator creator
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
-		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
+		return new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),
 				config,
 				creator,
 				namespaceHandler,
 				indexService
 		);
-		MetaStorage storage = new MetaStorage(config.getStorage(), datasetRegistry);
-		datasetRegistry.setMetaStorage(storage);
-		return datasetRegistry;
 	}
 
 }

@@ -24,6 +24,7 @@ public class DelegateManager<N extends Namespace> implements Manager {
 	ConqueryConfig config;
 	Environment environment;
 	DatasetRegistry<N> datasetRegistry;
+	MetaStorage storage;
 	ImportHandler importHandler;
 	StorageListener storageListener;
 	Supplier<Collection<ShardNodeInformation>> nodeProvider;
@@ -42,7 +43,7 @@ public class DelegateManager<N extends Namespace> implements Manager {
 	}
 
 	@Override
-	public MetaStorage getStorage() {
-		return datasetRegistry.getMetaStorage();
+	public MetaStorage getMetaStorage() {
+		return storage;
 	}
 }

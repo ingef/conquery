@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -89,6 +90,7 @@ public class CompoundDateRangeStore implements DateRangeStore {
 	}
 
 	@Override
+	@JsonBackReference
 	public void setParent(@NonNull Bucket bucket) {
 		parent = bucket;
 	}

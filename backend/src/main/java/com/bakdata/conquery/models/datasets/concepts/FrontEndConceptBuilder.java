@@ -1,10 +1,23 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.frontend.*;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.apiv1.frontend.FrontendNode;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
+import com.bakdata.conquery.apiv1.frontend.FrontendSelect;
+import com.bakdata.conquery.apiv1.frontend.FrontendTable;
+import com.bakdata.conquery.apiv1.frontend.FrontendValidityDate;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -159,7 +172,7 @@ public class FrontEndConceptBuilder {
 							 .id(select.getId())
 							 .label(select.getLabel())
 							 .description(select.getDescription())
-							 .resultType(select.getResultType())
+							 .resultType(select.getResultType().typeInfo())
 							 .isDefault(select.isDefault())
 							 .build();
 	}

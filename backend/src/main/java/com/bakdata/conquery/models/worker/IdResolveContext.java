@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.dropwizard.jackson.Jackson;
@@ -36,8 +35,6 @@ public abstract class IdResolveContext implements Injectable {
 	}
 
 	public abstract CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException;
-	@JsonIgnore
-	public abstract CentralRegistry getMetaRegistry();
 
 	public <ID extends Id<T> & NamespacedId, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);
