@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -16,6 +15,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.parallel.Execution;
@@ -109,8 +110,8 @@ public class GroovyIndexedTest {
 	public void basic(String key, CalculatedValue<Map<String, Object>> rowMap) throws JSONException {
 		log.trace("Searching for {}", key);
 
-		ConceptTreeChild idxResult = indexedConcept.findMostSpecificChild(key, rowMap);
-		ConceptTreeChild oldResult = oldConcept.findMostSpecificChild(key, rowMap);
+		ConceptElement idxResult = indexedConcept.findMostSpecificChild(key, rowMap);
+		ConceptElement oldResult = oldConcept.findMostSpecificChild(key, rowMap);
 
 		assertThat(oldResult.getId()).describedAs("%s hierarchical name", key).isEqualTo(idxResult.getId());
 	}

@@ -128,13 +128,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return this;
 	}
 
-	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		return findMostSpecificChild(stringValue, rowMap, getChildren());
+	public ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, List<ConceptTreeChild> currentList)
+	private ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptElement best, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
-		ConceptTreeChild best = null;
 
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;

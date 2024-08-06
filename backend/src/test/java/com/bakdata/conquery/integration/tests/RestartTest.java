@@ -148,6 +148,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
+		storage = support.getMetaStorage();
+
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
 			assertThat(userStored).isEqualTo(user);

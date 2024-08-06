@@ -1,8 +1,8 @@
 {
   "type": "FORM_TEST",
-  "label": "ABS-EXPORT-FORM with multiple features and AND connector",
+  "label": "ABS-EXPORT-FORM with multiple features and OR connector",
   "expectedCsv": {
-    "results": "tests/sql/form/ABSOLUT/MULTIPLE_FEATURES/expected_and_connector.csv"
+    "results": "tests/sql/form/ABSOLUT/MULTIPLE_FEATURES/expected_or_connector.csv"
   },
   "form": {
     "type": "EXPORT_FORM",
@@ -11,7 +11,7 @@
     "alsoCreateCoarserSubdivisions": true,
     "features": [
       {
-        "type": "AND",
+        "type": "OR",
         "children": [
           {
             "type": "CONCEPT",
@@ -23,8 +23,7 @@
                   "filter": "abc-concept.connector2.value",
                   "type": "MULTI_SELECT",
                   "value": [
-                    "A",
-                    "B"
+                    "A"
                   ]
                 }
               ]

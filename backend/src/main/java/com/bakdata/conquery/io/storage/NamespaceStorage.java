@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.OptionalInt;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -107,22 +106,13 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		return entity2Bucket.count();
 	}
 
-	public OptionalInt getEntityBucket(String entity) {
-		final Integer bucket = entity2Bucket.get(entity);
 
-		if(bucket == null){
-			return OptionalInt.empty();
-		}
-
-		return OptionalInt.of(bucket);
+	public boolean containsEntity(String entity) {
+		return entity2Bucket.get(entity) != null;
 	}
 
-	public int assignEntityBucket(String entity, int bucketSize) {
-		final int bucket = (int) Math.ceil((1d + getNumberOfEntities()) / (double) bucketSize);
-
-		entity2Bucket.add(entity, bucket);
-
-		return bucket;
+	public void registerEntity(String entity, int bucket) {
+		entity2Bucket.update(entity, bucket);
 	}
 
 

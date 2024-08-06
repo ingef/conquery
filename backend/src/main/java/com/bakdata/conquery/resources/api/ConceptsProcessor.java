@@ -26,9 +26,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -294,7 +294,7 @@ public class ConceptsProcessor {
 
 		for (String conceptCode : conceptCodes) {
 			try {
-				final ConceptTreeChild child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				final ConceptElement<?> child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
 
 				if (child != null) {
 					resolvedCodes.add(child.getId());
