@@ -11,11 +11,9 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -99,7 +97,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> validityDate = predecessorSelects.getValidityDate();
 		SqlIdColumns ids = predecessorSelects.getIds();
 
-		SelectContext<TreeConcept, ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
+		SelectContext<ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
 													 .map(select -> select.createConverter().conceptSelect(select, selectContext))
 													 .toList();
@@ -153,7 +151,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		getDateRestriction(conversionContext, tablesValidityDate).ifPresent(allSqlFiltersForTable::add);
 
 		// convert selects
-		SelectContext<Connector, ConnectorSqlTables> selectContext = SelectContext.create(cqTable, ids, tablesValidityDate, connectorTables, conversionContext);
+		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(cqTable, ids, tablesValidityDate, connectorTables, conversionContext);
 		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
@@ -277,7 +275,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		));
 	}
 
-	private static ConnectorSqlSelects createConceptColumnConnectorSqlSelects(CQConcept cqConcept, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	private static ConnectorSqlSelects createConceptColumnConnectorSqlSelects(CQConcept cqConcept, SelectContext<ConnectorSqlTables> selectContext) {
 		return cqConcept.getSelects().stream()
 						.filter(select -> select instanceof ConceptColumnSelect)
 						.findFirst()

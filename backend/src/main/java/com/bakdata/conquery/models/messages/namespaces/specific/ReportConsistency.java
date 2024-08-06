@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -13,16 +14,12 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Compares the the ids of imports and buckets of a {@link com.bakdata.conquery.models.worker.Worker} with the those
- * the {@link com.bakdata.conquery.commands.ManagerNode} assumed the Worker to have and reports an error if there are
+ * the {@link ManagerNode} assumed the Worker to have and reports an error if there are
  * inconsistencies.
  */
 @CPSType(id="REPORT_CONSISTENCY", base= NamespacedMessage.class)

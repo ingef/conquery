@@ -54,6 +54,7 @@ class TablePath {
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptConnectorLabel, context.getNameGenerator());
 
 		return new ConnectorSqlTables(
+				cqTable.getConnector(),
 				conceptConnectorLabel,
 				tableInfo.getRootTable(),
 				cteNameMap,
@@ -70,11 +71,9 @@ class TablePath {
 		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
 
 		return new ConceptSqlTables(
-				conceptName,
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking(),
 				connectorSqlTables
 		);
 	}
