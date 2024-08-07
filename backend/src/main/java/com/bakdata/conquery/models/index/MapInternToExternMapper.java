@@ -37,7 +37,7 @@ import org.jetbrains.annotations.TestOnly;
 @Getter
 @JsonDeserialize(converter = MapInternToExternMapper.Initializer.class )
 @EqualsAndHashCode(callSuper = true)
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId>, Initializing<MapInternToExternMapper> {
+public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId>, Initializing {
 
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
@@ -88,11 +88,11 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 
 	@Override
-	public synchronized MapInternToExternMapper init() {
+	public synchronized void init() {
 
 		if (mapIndex == null && config == null) {
 			log.trace("Injections were null. Skipping init, because class was deserialized by a test object mapper");
-			return this;
+			return;
 		}
 
 		dataset = storage.getDataset();
@@ -114,8 +114,6 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 				log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));
 			}
 		});
-
-		return this;
 	}
 
 

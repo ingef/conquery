@@ -12,7 +12,7 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	boolean initialized();
 
-	InternToExternMapper init();
+	void init();
 
 	String external(String internalValue);
 
