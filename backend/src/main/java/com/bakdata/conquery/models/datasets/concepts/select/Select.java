@@ -33,13 +33,13 @@ import org.jetbrains.annotations.NotNull;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
+@Getter
+@Setter
 @EqualsAndHashCode(callSuper = true)
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
 	@EqualsAndHashCode.Exclude
 	@JsonBackReference
-	@Getter
-	@Setter
 	private SelectHolder<?> holder;
 
 	@JsonIgnore
@@ -48,15 +48,11 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return getHolder().findConcept().getDataset();
 	}
 
-	@Setter
-	@Getter
 	private String description;
 
 	/**
 	 * When set, the Frontend will preselect the Select for the User.
 	 */
-	@Setter
-	@Getter
 	@JsonProperty("default")
 	private boolean isDefault = false;
 
@@ -74,9 +70,6 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			return new ConnectorSelectId(((Connector) holder).getId(), getName());
 		}
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
-	}
-
-	public void init() {
 	}
 
 	@NotNull

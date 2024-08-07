@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.Set;
-
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {

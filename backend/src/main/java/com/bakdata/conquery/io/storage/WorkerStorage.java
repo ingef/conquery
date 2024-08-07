@@ -2,6 +2,8 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -13,19 +15,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import jakarta.validation.Validator;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(of = "worker")
-public class WorkerStorage extends NamespacedStorage {
+public class WorkerStorage extends NamespacedStorage implements Injectable {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> buckets;
 	private IdentifiableStore<CBlock> cBlocks;
 
-	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
+	public WorkerStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
@@ -36,10 +37,6 @@ public class WorkerStorage extends NamespacedStorage {
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(centralRegistry, getPathName(), objectMapper);
 		cBlocks = getStorageFactory().createCBlockStore(centralRegistry, getPathName(), objectMapper);
-
-		decorateWorkerStore(worker);
-		decorateBucketStore(buckets);
-		decorateCBlockStore(cBlocks);
 	}
 
 	@Override
@@ -58,21 +55,8 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 
-	private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
-		// Nothing to decorate
-	}
-
-
 	public void addCBlock(CBlock cBlock) {
-		log.debug("Adding CBlock[{}]", cBlock.getId());
+		log.trace("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
 	}
 
@@ -81,7 +65,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void removeCBlock(CBlockId id) {
-		log.debug("Removing CBlock[{}]", id);
+		log.trace("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
 	}
 
@@ -90,7 +74,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void addBucket(Bucket bucket) {
-		log.debug("Adding Bucket[{}]", bucket.getId());
+		log.trace("Adding Bucket[{}]", bucket.getId());
 		buckets.add(bucket);
 	}
 
@@ -99,7 +83,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	public void removeBucket(BucketId id) {
-		log.debug("Removing Bucket[{}]", id);
+		log.trace("Removing Bucket[{}]", id);
 		buckets.remove(id);
 	}
 
@@ -128,5 +112,10 @@ public class WorkerStorage extends NamespacedStorage {
 	public void removeConcept(ConceptId id) {
 		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(WorkerStorage.class, this);
 	}
 }
