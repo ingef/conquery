@@ -12,6 +12,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -22,15 +23,20 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.extensions.WorkerStorageExtension;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Getter
 public abstract class AbstractSerializationTest {
+
+	@RegisterExtension
+	private static final WorkerStorageExtension WORKER_STORAGE_EXTENSION = new WorkerStorageExtension();
 
 	private final Validator validator = Validators.newValidator();
 	private final ConqueryConfig config = new ConqueryConfig() {{
@@ -39,6 +45,7 @@ public abstract class AbstractSerializationTest {
 	private DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private Namespace namespace;
 	private MetaStorage metaStorage;
+	private WorkerStorage workerStorage;
 
 
 	private ObjectMapper managerMetaInternalMapper;
@@ -57,7 +64,7 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() throws IOException {
-
+		workerStorage = WORKER_STORAGE_EXTENSION.getStorage();
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
@@ -66,6 +73,7 @@ public abstract class AbstractSerializationTest {
 		creator.init(datasetRegistry);
 
 		namespace = datasetRegistry.createNamespace(new Dataset("serialization_test"), metaStorage);
+		workerStorage.updateDataset(namespace.getDataset());
 
 		// Prepare manager meta internal mapper
 		managerMetaInternalMapper = creator.createInternalObjectMapper(View.Persistence.Manager.class);
@@ -83,6 +91,7 @@ public abstract class AbstractSerializationTest {
 
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		getWorkerStorage().injectInto(shardInternalMapper);
 
 		// Prepare api mapper with a Namespace injected (usually done by PathParamInjector)
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);

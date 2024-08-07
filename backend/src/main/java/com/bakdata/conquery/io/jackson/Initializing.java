@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  *  @JsonDeserialize(converter = Initializing.Converter.class )
  *  }
  * </pre>
- * @param <T>
+ * @param <T> the class to be initialized
+ *
+ * @implNote cannot be used on classes with a back reference. In this case make the reference managing class
+ * initializable and let it initialize its children.
  */
 public interface Initializing<T extends Initializing<T>> {
 

@@ -8,7 +8,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
@@ -270,9 +277,12 @@ public class SerializationTests extends AbstractSerializationTest {
 		registry.register(table);
 		registry.register(column);
 
+		table.setStorage(getNamespace().getStorage());
+		table.init();
+
 		SerializationTestUtil
 				.forType(Table.class)
-				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getNamespaceInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(table);
 	}
@@ -552,7 +562,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 	@Test
-	public void serialize() throws IOException, JSONException {
+	public void cBlock() throws IOException, JSONException {
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		final Dataset dataset = new Dataset();

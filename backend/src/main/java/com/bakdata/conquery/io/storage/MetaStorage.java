@@ -37,6 +37,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	public void openStores(ObjectMapper mapper) {
+
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
 		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
 		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);

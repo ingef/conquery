@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -14,14 +15,12 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
 
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 
 	private final Set<Object> entries = new HashSet<>();
-	private final TreeConcept concept;
 
 	private Column column;
 
@@ -29,7 +28,6 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 
 	public ConceptValuesAggregator(TreeConcept concept) {
 		super();
-		this.concept = concept;
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
 								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
@@ -68,7 +66,11 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 
 	@Override
 	public Set<Object> createAggregationResult() {
-		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
+		if (entries.isEmpty()) {
+			return null;
+		}
+		// sort by natural order so we have a stable result
+		return new TreeSet<>(entries);
 	}
 
 

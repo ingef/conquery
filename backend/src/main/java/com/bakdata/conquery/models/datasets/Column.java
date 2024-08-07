@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets;
 
 import javax.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -13,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,8 +43,12 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
 
+	/**
+	 * @implNote the position is not stored in the {@link Table} as a mapping because the frequent map lookups could
+	 * mean a large processing overhead.
+	 */
 	@JsonIgnore
-	private int position = -1;
+	private int position = UNKNOWN_POSITION;
 
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
@@ -81,4 +85,5 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	public void init() {
 		position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	}
+
 }

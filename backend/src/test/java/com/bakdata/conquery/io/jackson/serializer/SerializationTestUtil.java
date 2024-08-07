@@ -16,6 +16,10 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -52,6 +56,11 @@ public class SerializationTestUtil<T> {
 					ThreadLocal.class,
 					User.ShiroUserAdapter.class,
 					Validator.class,
+					WeakReference.class,
+					NamespacedStorage.class,
+					WorkerStorage.class,
+					NamespaceStorage.class,
+					MetaStorage.class,
 					WeakReference.class,
 					CompletableFuture.class
 			};

@@ -4,30 +4,45 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
 @Slf4j
-public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId> {
+@JsonDeserialize(converter = Table.Initializer.class)
+@EqualsAndHashCode(callSuper = true)
+public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId>, Initializing<Table> {
 
 	// TODO: 10.01.2020 fk: register imports here?
+
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
+	private NamespacedStorage storage;
 
 	@NsIdRef
 	private Dataset dataset;
@@ -37,7 +52,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
-	 * If unset {@link ...SqlConnectorConfig#primaryColumn} is assumed.
+	 * If unset {@link DatabaseConfig#getPrimaryColumn()} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
@@ -104,4 +119,15 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		return null;
 	}
 
+	@Override
+	public Table init() {
+		if (dataset == null) {
+			dataset = storage.getDataset();
+		}
+		Arrays.stream(columns).forEach(Column::init);
+		return this;
+	}
+
+	static class Initializer extends Initializing.Converter<Table> {
+	}
 }
