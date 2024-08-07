@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.events.stores.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -63,12 +60,8 @@ public class ColumnStoreSerializationTests {
 
 
 		// Prepare shard node internal mapper
-		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(new ConqueryConfig());
-		when(shardNode.getValidator()).thenReturn(Validators.newValidator());
 
-		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
-		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		shardInternalMapper = ShardNode.createInternalObjectMapper(View.Persistence.Shard.class, new ConqueryConfig(), Validators.newValidator());
 	}
 
 	@Test

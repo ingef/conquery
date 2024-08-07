@@ -18,8 +18,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -31,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
-public class Workers extends IdResolveContext {
+public class Workers extends IdResolveContext implements Managed {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -152,6 +154,15 @@ public class Workers extends IdResolveContext {
 		return false;
 	}
 
+	@Override
+	public void start() throws Exception {
+
+		for (Worker value : getWorkers().values()) {
+			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
+		}
+	}
+
+	@Override
 	public void stop() {
 		jobsThreadPool.shutdown();
 		for (Worker w : workers.values()) {
