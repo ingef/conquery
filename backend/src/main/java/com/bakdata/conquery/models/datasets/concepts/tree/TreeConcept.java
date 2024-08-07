@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.TreeConceptInitializer.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing<TreeConcept> {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing {
 
 	@JsonIgnore
 	@Getter
@@ -90,7 +90,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}
 
-	public TreeConcept init() {
+	public void init() {
 		setLocalId(0);
 		localIdMap.add(this);
 
@@ -124,8 +124,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 			openList.addAll((openList.get(i)).getChildren());
 		}
-
-		return this;
 	}
 
 	public ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {

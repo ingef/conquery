@@ -11,12 +11,14 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  *  }
  * </pre>
  * @param <T>
+ * @implNote Every class that inherits from an initializing class needs to define its own Converter.
+ * Otherwise, the class is parsed as the super class, and its overrides are not called.
  */
-public interface Initializing<T extends Initializing<T>> {
+public interface Initializing {
 
-	T init();
+	void init();
 
-	class Converter<T extends Initializing<T>> extends StdConverter<T, T> {
+	class Converter<T extends Initializing> extends StdConverter<T, T> {
 
 		@Override
 		public T convert(T value) {
