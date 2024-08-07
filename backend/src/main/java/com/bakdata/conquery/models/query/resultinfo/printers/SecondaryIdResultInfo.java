@@ -9,19 +9,24 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
-@RequiredArgsConstructor
+@Getter
+@ToString
 public class SecondaryIdResultInfo extends ResultInfo {
 	private final SecondaryIdDescription secondaryId;
 	private final ResultType type;
-	private final Set<SemanticType> semantics;
 	private final ResultPrinters.Printer printer;
 
+
 	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId) {
-		this(secondaryId,ResultType.Primitive.STRING, Set.of(new SemanticType.SecondaryIdT(secondaryId)), secondaryId.getMapping() == null ? new ResultPrinters.StringPrinter(): new ResultPrinters.MappedPrinter(secondaryId.getMapping()));
+		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)));
+		this.secondaryId = secondaryId;
+		type = ResultType.Primitive.STRING;
+		printer = secondaryId.getMapping() == null
+					   ? new ResultPrinters.StringPrinter()
+					   : new ResultPrinters.MappedPrinter(secondaryId.getMapping());
 	}
 
 	@Override

@@ -6,13 +6,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 public sealed interface ResultType permits ResultType.Primitive, ResultType.ListT {
 
@@ -101,11 +99,6 @@ public sealed interface ResultType permits ResultType.Primitive, ResultType.List
 				return resultSetProcessor.getMoney(resultSet, columnIndex);
 			}
 
-			@NotNull
-			public BigDecimal readIntermediateValue(PrintSettings cfg, Number f) {
-				return new BigDecimal(f.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
-			}
-
 			@Override
 			public List<BigDecimal> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getMoneyList(resultSet, columnIndex);
@@ -122,9 +115,6 @@ public sealed interface ResultType permits ResultType.Primitive, ResultType.List
 			return name();
 		}
 
-		public <T> T readIntermediateValue(PrintSettings cfg, Object f) {
-			return (T) f;
-		}
 
 	}
 

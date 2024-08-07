@@ -11,7 +11,9 @@ import lombok.Getter;
 @Getter
 public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 
-	private int trues, falses, missing;
+	private int trues = 0;
+	private int falses = 0;
+	private int missing = 0;
 
 	public BooleanColumnStatsCollector(String name, String label, String description, PrintSettings printSettings) {
 		super(name, label, description, printSettings);

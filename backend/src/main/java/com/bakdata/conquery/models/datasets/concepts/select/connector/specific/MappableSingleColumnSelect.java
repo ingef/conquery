@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -31,35 +30,35 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	private final InternToExternMapper mapping;
 
 
-	@Override
-	public ResultPrinters.Printer createPrinter() {
-		if(mapping ==  null) {
-			return super.createPrinter();
-		}
-
-		return (cfg, value) -> applyMapping(value);
-	}
-
-	public MappableSingleColumnSelect(Column column,
-									  @Nullable InternToExternMapper mapping) {
+	public MappableSingleColumnSelect(Column column, @Nullable InternToExternMapper mapping) {
 		super(column);
 		this.mapping = mapping;
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
-
-		final Set<SemanticType> semantics = new HashSet<>();
-
-		if (isCategorical()) {
-			semantics.add(new SemanticType.CategoricalT());
+	public ResultPrinters.Printer createPrinter() {
+		if (mapping == null) {
+			return super.createPrinter();
 		}
 
-		return new SelectResultInfo(this, cqConcept, semantics, createPrinter());
+		return new ResultPrinters.MappedPrinter(getMapping());
+	}
+
+	@Override
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+
+		if (!isCategorical()) {
+			return new SelectResultInfo(this, cqConcept);
+		}
+
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 	}
 
 	@Override
 	public ResultType getResultType() {
+		if(mapping == null){
+			return ResultType.resolveResultType(getColumn().getType());
+		}
 		return ResultType.Primitive.STRING;
 	}
 
@@ -67,10 +66,5 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		if (mapping != null) {
 			mapping.init();
 		}
-	}
-
-	private String applyMapping(Object intern) {
-
-		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
 	}
 }

@@ -184,7 +184,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			case DATE -> new TextNode(new ResultPrinters.DatePrinter().print(value, printSettings)); //TODO bind printers in outer loop
 			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter().print(value,  printSettings)); //TODO bind printers in outer loop
 			case STRING -> new TextNode(value.toString()); //TODO mapping
-			case MONEY -> ResultType.Primitive.MONEY.readIntermediateValue(printSettings, value);
+			case MONEY -> ResultPrinters.readMoney(printSettings, ((Number) value));
 		};
 	}
 

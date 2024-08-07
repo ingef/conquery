@@ -73,7 +73,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 final ResultInfo info = resultInfos.get(col);
 							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, conqueryConfig.getFrontend());
+									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info), info.getDescription(), info.getType(), info.getPrinter(), printSettings, conqueryConfig.getFrontend());
 
 							 log.trace("BEGIN stats collection for {}", info);
 

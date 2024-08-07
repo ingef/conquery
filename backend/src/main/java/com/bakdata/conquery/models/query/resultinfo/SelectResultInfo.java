@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -10,45 +9,38 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.google.common.collect.ImmutableSet;
-import lombok.AccessLevel;
+import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@RequiredArgsConstructor
 public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final Select select;
 	@NonNull
 	private final CQConcept cqConcept;
 
-	@Getter(AccessLevel.PACKAGE)
-	@NonNull
-	private final Set<SemanticType> additionalSemantics;
-
-	//TODO move to ResultInfo so that Dates and ID printers can use this.
-	@Getter
-	private final ResultPrinters.Printer printer;
+	public SelectResultInfo(Select select, CQConcept cqConcept, Set<SemanticType> semantics) {
+		super(Sets.union(semantics, Set.of(new SemanticType.SelectResultT(select))));
+		this.select = select;
+		this.cqConcept = cqConcept;
+	}
 
 	public SelectResultInfo(Select select, CQConcept cqConcept) {
-		this(select, cqConcept, Collections.emptySet(), select.createPrinter());
+		this(select, cqConcept, Set.of());
 	}
 
-	@Override
-	public Set<SemanticType> getSemantics() {
-		return ImmutableSet.<SemanticType>builder()
-						   .addAll(additionalSemantics)
-						   .add(new SemanticType.SelectResultT(select))
-						   .build();
-	}
 
 	@Override
 	public String getDescription() {
 		return select.getDescription();
+	}
+
+	@Override
+	public ResultPrinters.Printer getPrinter() {
+		return select.createPrinter();
 	}
 
 	@Override
@@ -80,9 +72,7 @@ public class SelectResultInfo extends ResultInfo {
 			return null;
 		}
 
-		return label
-			   + " "
-			   + select.getColumnName();
+		return label + " " + select.getColumnName();
 	}
 
 	@Override

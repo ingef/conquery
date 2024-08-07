@@ -11,6 +11,7 @@ import java.util.Map;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.Range;
 import lombok.Getter;
@@ -49,33 +50,20 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		this.lowerPercentile = lowerPercentile;
 	}
 
-	private NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
-		if (ResultType.Primitive.MONEY.equals(getType())) {
-			return ((DecimalFormat) printSettings.getCurrencyFormat().clone());
-		}
-		else if (ResultType.Primitive.INTEGER.equals(getType())) {
-			return ((NumberFormat) printSettings.getIntegerFormat().clone());
-		}
-		else {
-			return ((NumberFormat) printSettings.getDecimalFormat().clone());
-		}
+	private static NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
+		return switch (((ResultType.Primitive) type)) {
+			case INTEGER -> ((NumberFormat) printSettings.getIntegerFormat().clone());
+			case MONEY -> ((DecimalFormat) printSettings.getCurrencyFormat().clone());
+			default -> ((NumberFormat) printSettings.getDecimalFormat().clone());
+		};
 	}
 
 	private Comparator<TYPE> selectComparator(ResultType resultType) {
-		// The java type system was not made to handle the silliness, sorry.
-		if (ResultType.Primitive.INTEGER.equals(getType())) {
-			return Comparator.comparingInt(Number::intValue);
-		}
-
-		if (ResultType.Primitive.NUMERIC.equals(getType())) {
-			return Comparator.comparingDouble(Number::doubleValue);
-		}
-
-		if (ResultType.Primitive.MONEY.equals(getType())) {
-			return Comparator.comparingDouble(Number::doubleValue);
-		}
-
-		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
+		return switch (((ResultType.Primitive) type)) {
+			case INTEGER -> Comparator.comparingInt(Number::intValue);
+			case MONEY, NUMERIC -> Comparator.comparingDouble(Number::doubleValue);
+			default -> throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
+		};
 	}
 
 	/**
@@ -112,13 +100,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		Number number = (Number) value;
 
-		// TODO this feels like a pretty borked abstraction
 		if (ResultType.Primitive.MONEY.equals(getType())) {
-			number = ResultType.Primitive.MONEY.readIntermediateValue(getPrintSettings(), number);
+			number = ResultPrinters.readMoney(getPrintSettings(), number);
 		}
 
 		statistics.addValue(number.doubleValue());
-
 	}
 
 	@Override

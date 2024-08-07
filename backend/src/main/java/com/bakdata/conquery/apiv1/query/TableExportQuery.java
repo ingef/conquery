@@ -253,8 +253,7 @@ public class TableExportQuery extends Query {
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
-				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
-																		.add(new SemanticType.ColumnT(column));
+				infos[secondaryIdPositions.get(column.getSecondaryId())].addSemantic(new SemanticType.ColumnT(column));
 				continue;
 			}
 

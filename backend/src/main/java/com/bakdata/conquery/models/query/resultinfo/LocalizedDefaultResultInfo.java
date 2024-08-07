@@ -1,18 +1,19 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+
+import javax.annotation.CheckForNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
@@ -34,8 +35,6 @@ import lombok.RequiredArgsConstructor;
  *  }
  * </pre>
  */
-@RequiredArgsConstructor
-@Builder
 @EqualsAndHashCode(callSuper = true)
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
@@ -49,14 +48,14 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Getter
 	private final ResultPrinters.Printer printer;
 
-	@Getter
-	private final Set<SemanticType> semantics;
-
-
-
-	public LocalizedDefaultResultInfo(Function<PrintSettings, String> localizedLabelProvider, ResultType type, Set<SemanticType> semantics) {
-		this(localizedLabelProvider, localizedLabelProvider, type, ResultPrinters.defaultPrinter(type), semantics);
+	public LocalizedDefaultResultInfo(@NonNull Function<PrintSettings, String> localizedLabelProvider, @CheckForNull Function<PrintSettings, String> localizedDefaultLabelProvider, ResultType type, @CheckForNull ResultPrinters.Printer printer, Set<SemanticType> semantics) {
+		super(semantics);
+		this.localizedLabelProvider = localizedLabelProvider;
+		this.localizedDefaultLabelProvider = Objects.requireNonNullElse(localizedDefaultLabelProvider, localizedLabelProvider);
+		this.type = type;
+		this.printer = Objects.requireNonNullElse(printer, ResultPrinters.defaultPrinter(type));
 	}
+
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {

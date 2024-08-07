@@ -228,7 +228,7 @@ public class CQExternal extends CQElement {
 
 			resultInfos.add(new ExternalResultInfo(column, onlySingles ?
 														   ResultType.Primitive.STRING :
-														   new ResultType.ListT(ResultType.Primitive.STRING)));
+														   new ResultType.ListT<>(ResultType.Primitive.STRING)));
 		}
 
 		return resultInfos;
