@@ -106,6 +106,53 @@ public class DistributedCommandsTest {
 		assertThat(healthCheck.get("cluster").getMessage()).isEqualTo(String.format(ClusterHealthCheck.HEALTHY_MESSAGE_FMT, 1));
 	}
 
+	@Test
+	@Order(2)
+	void shardReconnect() throws Exception {
+		Client client = MANAGER.client();
+
+		// Shutdown shard
+		SHARD.after();
+
+		Thread.sleep(2 * CONNECT_RETRY_TIMEOUT.toMilliseconds());
+
+
+		// Check cluster is unhealthy
+		Response response = client.target(
+										  String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort()))
+								  .request()
+								  .get();
+
+		assertThat(response.getStatus()).isEqualTo(500);
+
+		Map<String, GenericHealthCheckResult> healthCheck = response.readEntity(new GenericType<>() {
+		});
+
+		assertThat(healthCheck).containsKey("cluster");
+		assertThat(healthCheck.get("cluster").healthy).isFalse();
+
+		// Restart shard
+		SHARD.before();
+
+
+		response = client.target(
+								 String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort()))
+						 .request()
+						 .get();
+
+		assertThat(response.getStatus()).isEqualTo(200);
+
+		healthCheck = response.readEntity(new GenericType<>() {
+		});
+
+		assertThat(healthCheck).containsKey("cluster");
+		assertThat(healthCheck.get("cluster").healthy).isTrue();
+	}
+
+	/**
+	 * Just a container to parse necessary information as {@link com.codahale.metrics.health.HealthCheck.Result}
+	 * gives no useful binding to Jackson (missing getters and constructors, private members).
+	 */
 	@Data
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class GenericHealthCheckResult {
