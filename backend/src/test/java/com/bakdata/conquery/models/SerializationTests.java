@@ -282,7 +282,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Table.class)
-				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getNamespaceInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(table);
 	}
