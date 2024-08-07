@@ -3,6 +3,9 @@ package com.bakdata.conquery.models.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -15,9 +18,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,44 +30,65 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-
+@Data
+@ToString(onlyExplicitlyIncluded = true)
 public class CalculateCBlocksJob extends Job {
 
-	private final List<CalculationInformation> infos = new ArrayList<>();
+	private final List<CalculationInformationProcessor> tasks = new ArrayList<>();
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
 	private final ExecutorService executorService;
 
+	@ToString.Include
 	@Override
 	public String getLabel() {
-		return "Calculate CBlocks[" + infos.size() + "]";
+		return "Calculate CBlocks[" + tasks.size() + "]";
 	}
 
 	public void addCBlock(Bucket bucket, ConceptTreeConnector connector) {
-		infos.add(new CalculationInformation(connector, bucket));
+		tasks.add(createInformationProcessor(connector, bucket));
+	}
+
+	private CalculationInformationProcessor createInformationProcessor(ConceptTreeConnector connector, Bucket bucket) {
+		return new CalculationInformationProcessor(connector, bucket, bucketManager, storage);
 	}
 
 	@Override
 	public void execute() throws Exception {
-		if (infos.isEmpty()) {
+		if (tasks.isEmpty()) {
 			return;
 		}
 
-		getProgressReporter().setMax(infos.size());
+		log.info("BEGIN calculate CBlocks for {} entries.", tasks.size());
 
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(this.executorService);
+		getProgressReporter().setMax(tasks.size());
 
-		final List<? extends ListenableFuture<?>> futures = infos.stream()
-																 .map(this::createInformationProcessor)
-																 .map(executorService::submit)
-																 .peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
-																 .collect(Collectors.toList());
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(getExecutorService());
 
-		Futures.allAsList(futures).get();
-	}
+		final List<? extends ListenableFuture<?>> futures =
+				tasks.stream()
+					 .map(executorService::submit)
+					 .peek(fut -> fut.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
+					 .collect(Collectors.toList());
 
-	private CalculationInformationProcessor createInformationProcessor(CalculationInformation info) {
-		return new CalculationInformationProcessor(info, bucketManager, storage);
+
+		final ListenableFuture<?> all = Futures.allAsList(futures);
+
+		while (!all.isDone()) {
+			try {
+				all.get(1, TimeUnit.MINUTES);
+			}
+			catch (TimeoutException exception) {
+				log.debug("submitted={}, pool={}", tasks.size(), getExecutorService());
+
+				if (log.isTraceEnabled() && getExecutorService() instanceof ThreadPoolExecutor) {
+					log.trace("Waiting for {}", ((ThreadPoolExecutor) getExecutorService()).getQueue());
+				}
+			}
+		}
+
+		log.debug("DONE CalculateCBlocks for {} entries.", tasks.size());
+
 	}
 
 	private void incrementProgressReporter() {
@@ -72,51 +96,44 @@ public class CalculateCBlocksJob extends Job {
 	}
 
 	public boolean isEmpty() {
-		return infos.isEmpty();
+		return tasks.isEmpty();
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	@Setter
-	private static class CalculationInformation {
+
+	@Data
+	@ToString(onlyExplicitlyIncluded = true)
+	private static class CalculationInformationProcessor implements Runnable {
 		private final ConceptTreeConnector connector;
 		private final Bucket bucket;
 
-		public CBlockId getCBlockId() {
-			return new CBlockId(getBucket().getId(), getConnector().getId());
-		}
-	}
-
-
-	@RequiredArgsConstructor
-	private static class CalculationInformationProcessor implements Runnable {
-		private final CalculationInformation info;
 		private final BucketManager bucketManager;
 		private final WorkerStorage storage;
 
 		@Override
 		public void run() {
 			try {
-				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
+				if (bucketManager.hasCBlock(getCBlockId())) {
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", getCBlockId());
 					return;
 				}
 
-				CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+				log.trace("BEGIN calculating CBlock for {}", getCBlockId());
+
+				final CBlock cBlock = CBlock.createCBlock(getConnector(), getBucket(), bucketManager.getEntityBucketSize());
+
+				log.trace("DONE calculating CBlock for {}", getCBlockId());
 
 				bucketManager.addCalculatedCBlock(cBlock);
 				storage.addCBlock(cBlock);
 			}
 			catch (Exception e) {
-				throw new RuntimeException(
-						String.format(
-								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s)",
-								info.getCBlockId(),
-								info.getConnector()
-						),
-						e
-				);
+				throw new RuntimeException("Exception in CalculateCBlocksJob %s".formatted(getCBlockId()), e);
 			}
+		}
+
+		@ToString.Include
+		public CBlockId getCBlockId() {
+			return new CBlockId(getBucket().getId(), getConnector().getId());
 		}
 
 	}

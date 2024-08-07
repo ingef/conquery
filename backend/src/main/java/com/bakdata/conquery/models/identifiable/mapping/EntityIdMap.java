@@ -147,7 +147,7 @@ public class EntityIdMap {
 		}
 
 		// Maybe we can find them directly in the dictionary?
-		if (storage.getEntityBucket(key.getId()).isPresent()) {
+		if (storage.containsEntity(key.getId())) {
 			return key.getId();
 		}
 

@@ -6,6 +6,10 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import jakarta.validation.Validator;
@@ -56,14 +60,16 @@ public class SerializationTestUtil<T> {
 					NamespacedStorage.class,
 					WorkerStorage.class,
 					NamespaceStorage.class,
-					MetaStorage.class
+					MetaStorage.class,
+					WeakReference.class,
+					CompletableFuture.class
 			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
 	@Setter
 	private CentralRegistry registry;
-	private ObjectMapper[] objectMappers;
+	private List<ObjectMapper> objectMappers = Collections.emptyList();
 	@NonNull
 	private Injectable[] injectables = {};
 
@@ -84,7 +90,7 @@ public class SerializationTestUtil<T> {
 	}
 
 	public SerializationTestUtil<T> objectMappers(ObjectMapper... objectMappers) {
-		this.objectMappers = objectMappers;
+		this.objectMappers = Arrays.asList(objectMappers);
 		return this;
 	}
 
@@ -104,16 +110,21 @@ public class SerializationTestUtil<T> {
 	}
 
 	public void test(T value, T expected) throws JSONException, IOException {
-		if (objectMappers == null || objectMappers.length == 0) {
+		if (objectMappers.isEmpty()) {
 			fail("No objectmappers were set");
 		}
 
 		for (ObjectMapper objectMapper : objectMappers) {
-			test(
-					value,
-					expected,
-					objectMapper
-			);
+			try {
+				test(
+						value,
+						expected,
+						objectMapper
+				);
+			} catch (Exception e) {
+				Class<?> activeView = objectMapper.getSerializationConfig().getActiveView();
+				throw new IllegalStateException("Serdes failed with object mapper using view '" + activeView + "'", e);
+			}
 		}
 	}
 
@@ -147,7 +158,7 @@ public class SerializationTestUtil<T> {
 		}
 
 		// Preliminary check that ids of identifiables are equal
-		if (value instanceof IdentifiableImpl identifiableValue) {
+		if (value instanceof IdentifiableImpl<?> identifiableValue) {
 			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -73,7 +72,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	private static final Param<Integer> NUMERIC_TRUE_VAL = DSL.val(1);
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getSqlDialect().getFunctionProvider();
 		SqlTables connectorTables = selectContext.getTables();

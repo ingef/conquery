@@ -39,9 +39,11 @@ public interface NamespaceHandler<N extends Namespace> {
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+		injectables.forEach(i -> {
+			i.injectInto(persistenceMapper);
+			i.injectInto(communicationMapper);
+			i.injectInto(preprocessMapper);
+		});
 
 
 		// Each store needs its own mapper because each injects its own registry

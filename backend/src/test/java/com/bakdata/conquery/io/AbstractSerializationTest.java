@@ -1,8 +1,10 @@
 package com.bakdata.conquery.io;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -10,65 +12,69 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.util.extensions.MetaStorageExtension;
-import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
-import com.bakdata.conquery.util.extensions.WorkerStorageExtension;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Getter
 public abstract class AbstractSerializationTest {
 
-	@RegisterExtension
-	private static final MetaStorageExtension META_STORAGE_EXTENSION = new MetaStorageExtension();
-	@RegisterExtension
-	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
-	@RegisterExtension
-	private static final WorkerStorageExtension WORKER_STORAGE_EXTENSION = new WorkerStorageExtension();
-
 	private final Validator validator = Validators.newValidator();
-	private final ConqueryConfig config = new ConqueryConfig();
+	private final ConqueryConfig config = new ConqueryConfig() {{
+		this.setStorage(new NonPersistentStoreFactory());
+	}};
 	private DatasetRegistry<DistributedNamespace> datasetRegistry;
+	private Namespace namespace;
+	private MetaStorage metaStorage;
 
-	private ObjectMapper managerInternalMapper;
+
+	private ObjectMapper managerMetaInternalMapper;
+	private ObjectMapper namespaceInternalMapper;
 	private ObjectMapper shardInternalMapper;
 	private ObjectMapper apiMapper;
 
+	@BeforeAll
+	public static void beforeAll() {
+		// Some components need the shared registry, and it might have been set already by another test
+		if (SharedMetricRegistries.tryGetDefault() == null) {
+			SharedMetricRegistries.setDefault(AbstractSerializationTest.class.getSimpleName());
+		}
+	}
+
 
 	@BeforeEach
-	public void before() {
-		MetaStorage metaStorage = META_STORAGE_EXTENSION.getMetaStorage();
+	public void before() throws IOException {
+
+		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
 		datasetRegistry = new DatasetRegistry<>(0, config, creator, clusterNamespaceHandler, indexService);
 		creator.init(datasetRegistry);
 
-		// Prepare manager node internal mapper
-		final ManagerNode managerNode = mock(ManagerNode.class);
-		when(managerNode.getConfig()).thenReturn(config);
-		when(managerNode.getValidator()).thenReturn(validator);
-		doReturn(datasetRegistry).when(managerNode).getDatasetRegistry();
-		when(managerNode.getMetaStorage()).thenReturn(metaStorage);
-		when(managerNode.getInternalObjectMapperCreator()).thenReturn(creator);
+		namespace = datasetRegistry.createNamespace(new Dataset("serialization_test"), metaStorage);
 
-		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();
-		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);
-
-		metaStorage.openStores(managerInternalMapper);
+		// Prepare manager meta internal mapper
+		managerMetaInternalMapper = creator.createInternalObjectMapper(View.Persistence.Manager.class);
+		metaStorage.openStores(managerMetaInternalMapper);
 		metaStorage.loadData();
+
+		// Prepare namespace internal mapper
+		namespaceInternalMapper = creator.createInternalObjectMapper(View.Persistence.Manager.class);
+		namespace.getInjectables().forEach(injectable -> injectable.injectInto(namespaceInternalMapper));
 
 		// Prepare shard node internal mapper
 		final ShardNode shardNode = mock(ShardNode.class);
@@ -78,30 +84,9 @@ public abstract class AbstractSerializationTest {
 		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
 		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
 
-		// Prepare api response mapper
-		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
+		// Prepare api mapper with a Namespace injected (usually done by PathParamInjector)
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		managerNode.customizeApiObjectMapper(apiMapper);
-
-		// These api injections are usually done by the PathParamInjector/Manager
-		getNamespaceStorage().injectInto(apiMapper);
-		getMetaStorage().injectInto(apiMapper);
-
-		// These internal injections are usually done by the namespace/worker
-		getNamespaceStorage().injectInto(managerInternalMapper);
-		getWorkerStorage().injectInto(shardInternalMapper);
-
-	}
-
-	protected MetaStorage getMetaStorage() {
-		return META_STORAGE_EXTENSION.getMetaStorage();
-	}
-
-	protected NamespaceStorage getNamespaceStorage() {
-		return NAMESPACE_STORAGE_EXTENSION.getStorage();
-	}
-
-	protected WorkerStorage getWorkerStorage() {
-		return WORKER_STORAGE_EXTENSION.getStorage();
+		ManagerNode.customizeApiObjectMapper(apiMapper, datasetRegistry, metaStorage, config, validator);
+		namespace.getInjectables().forEach(i -> i.injectInto(apiMapper));
 	}
 }

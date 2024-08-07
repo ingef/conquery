@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.OptionalInt;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -19,9 +18,11 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString
 public class NamespaceStorage extends NamespacedStorage implements Injectable {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
@@ -43,11 +44,6 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
-	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
-		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
-	}
-
-
 	@Override
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
@@ -60,7 +56,6 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
-		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
@@ -111,22 +106,13 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		return entity2Bucket.count();
 	}
 
-	public OptionalInt getEntityBucket(String entity) {
-		final Integer bucket = entity2Bucket.get(entity);
 
-		if(bucket == null){
-			return OptionalInt.empty();
-		}
-
-		return OptionalInt.of(bucket);
+	public boolean containsEntity(String entity) {
+		return entity2Bucket.get(entity) != null;
 	}
 
-	public int assignEntityBucket(String entity, int bucketSize) {
-		final int bucket = (int) Math.ceil((1d + getNumberOfEntities()) / (double) bucketSize);
-
-		entity2Bucket.add(entity, bucket);
-
-		return bucket;
+	public void registerEntity(String entity, int bucket) {
+		entity2Bucket.update(entity, bucket);
 	}
 
 

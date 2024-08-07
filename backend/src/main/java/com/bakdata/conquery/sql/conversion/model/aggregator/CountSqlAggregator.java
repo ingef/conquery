@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -36,7 +35,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 	}
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		CountType countType = CountType.fromBoolean(countSelect.isDistinct());

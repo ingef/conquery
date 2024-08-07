@@ -4,9 +4,18 @@ import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
@@ -67,6 +76,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -103,7 +114,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Dataset.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper())
 				.test(dataset);
 	}
 
@@ -113,7 +124,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
-				.objectMappers(getManagerInternalMapper())
+				.objectMappers(getManagerMetaInternalMapper())
 				.test(credential);
 	}
 
@@ -123,7 +134,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Role.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 				.test(mandator);
 	}
 
@@ -143,7 +154,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(User.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(user);
 	}
@@ -166,7 +177,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Group.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 				.test(group);
 	}
 
@@ -212,7 +223,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		Bucket bucket = new Bucket(0, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4),4, imp);
 
 		compoundStore.setParent(bucket);
 
@@ -232,7 +243,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Bucket.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper())
 				.registry(registry)
 				.injectables(values -> values.add(Validator.class, validator))
 				.test(bucket);
@@ -266,12 +277,12 @@ public class SerializationTests extends AbstractSerializationTest {
 		registry.register(table);
 		registry.register(column);
 
-		table.setStorage(getNamespaceStorage());
+		table.setStorage(getNamespace().getStorage());
 		table.init();
 
 		SerializationTestUtil
 				.forType(Table.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(table);
 	}
@@ -287,7 +298,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Concept.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(concept);
 	}
@@ -296,7 +307,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
 		SerializationTestUtil.forType(EntityIdMap.class)
-							 .objectMappers(getManagerInternalMapper())
+							 .objectMappers(getManagerMetaInternalMapper())
 							 .test(IdMapSerialisationTest.createTestPersistentMap());
 
 	}
@@ -319,7 +330,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(formConfig);
 	}
@@ -342,7 +353,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 							 .registry(registry)
 							 .test(execution);
 	}
@@ -360,7 +371,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final ExportForm exportForm = createExportForm(registry, dataset);
 
 		SerializationTestUtil.forType(QueryDescription.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 							 .registry(registry)
 							 .checkHashCode()
 							 .test(exportForm);
@@ -381,7 +392,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 							 .registry(registry)
 							 .test(execution);
 	}
@@ -405,7 +416,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final ExternalExecution execution = new ExternalExecution(form, user, dataset, getMetaStorage());
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper())
+							 .objectMappers(getManagerMetaInternalMapper())
 							 .registry(centralRegistry)
 							 .test(execution);
 
@@ -443,7 +454,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(CQConcept.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(cqConcept);
 	}
@@ -457,7 +468,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -467,7 +478,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -479,13 +490,13 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", getMetaStorage());
+		User user = new User("name", "label", getMetaStorage());
 
 		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
 																				  .userName(user.getLabel())
@@ -496,7 +507,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(MeProcessor.FrontendMeInformation.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getApiMapper())
 				.test(info);
 	}
 
@@ -544,7 +555,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(AbsoluteFormQuery.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerMetaInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(centralRegistry)
 				.test(query);
 	}
@@ -574,7 +585,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		final Bucket bucket = new Bucket(0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(),0, imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
@@ -600,25 +611,25 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(new TypeReference<BiMap<String, String>>() {
 				})
-				.objectMappers(getApiMapper(), getManagerInternalMapper())
+				.objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 				.test(map);
 	}
 
 	@Test
 	public void testNonStrictNumbers() throws JSONException, IOException {
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NaN, null);
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper()).test(Double.NaN, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NEGATIVE_INFINITY, null);
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper()).test(Double.NEGATIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper()).test(Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper()).test(Double.MIN_VALUE);
 		SerializationTestUtil
 				.forType(EntityResult.class)
-				.objectMappers(getApiMapper(), getManagerInternalMapper())
+				.objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 				.test(
 						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
@@ -661,21 +672,21 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(new TypeReference<Range<Integer>>() {
 				})
-				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
+				.objectMappers(getApiMapper(), getManagerMetaInternalMapper(), getShardInternalMapper())
 				.test(range);
 	}
 
 	@Test
 	public void locale() throws JSONException, IOException {
 		SerializationTestUtil.forType(Locale.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 							 .test(Locale.GERMANY);
 	}
 
 	@Test
 	public void localeArray() throws JSONException, IOException {
 		SerializationTestUtil.forType(Locale[].class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
 	}
 
@@ -698,7 +709,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
 		SerializationTestUtil.forType(QueryDescription.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 							 .test(externalForm);
 	}
 
@@ -733,7 +744,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
 		ExternalForm externalForm2 = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString2);
 		SerializationTestUtil.forType(QueryDescription[].class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 							 .test(new QueryDescription[]{externalForm, externalForm2});
 	}
 
@@ -780,7 +791,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
 							 })
-							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerMetaInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(empty);
 
@@ -796,7 +807,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		map.put("two", 2);
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
 							 })
-							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerMetaInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 
@@ -820,7 +831,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				}}
 		};
 		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
-							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerMetaInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 
@@ -831,8 +842,29 @@ public class SerializationTests extends AbstractSerializationTest {
 		final FormBackendVersion version = new FormBackendVersion("3.45.45-g85ut85u43t8", ZonedDateTime.parse("2007-12-03T10:15:30+00:00"));
 
 		SerializationTestUtil.forType(FormBackendVersion.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getManagerMetaInternalMapper())
 							 .test(version);
 	}
 
+
+	@Test
+	public void mapInternToExternMapper() throws JSONException, IOException, URISyntaxException {
+		final MapInternToExternMapper mapper = new MapInternToExternMapper(
+				"test1",
+				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				"internal",
+				"{{external}}"
+		);
+
+		mapper.setStorage(getNamespace().getStorage());
+		mapper.setConfig(getConfig());
+		mapper.setMapIndex(getNamespace().getIndexService());
+
+
+		mapper.init();
+
+		SerializationTestUtil.forType(InternToExternMapper.class)
+				.objectMappers(getApiMapper(), getNamespaceInternalMapper())
+				.test(mapper);
+	}
 }

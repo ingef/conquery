@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Stopwatch;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -102,8 +103,12 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 		}
 
 		synchronized (jobManagerSync) {
-			log.trace("Have to wait for free JobQueue");
+			final Stopwatch waiting = Stopwatch.createStarted();
+			log.trace("Shard {}, have to wait for free JobQueue (backpressure={})", session, backpressure);
+
 			jobManagerSync.wait();
+
+			log.debug("Shard {}, Waited {} for free JobQueue", session, waiting.stop());
 		}
 	}
 }
