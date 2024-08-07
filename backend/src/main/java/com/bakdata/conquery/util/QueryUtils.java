@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -68,12 +67,12 @@ public class QueryUtils {
 		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
 	}
 
-	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
-			return elements.stream().map(elt -> elt.getUserOrDefaultLabel(locale)).collect(Collectors.joining(delimiter));
+	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, PrintSettings printSettings) {
+			return elements.stream().map(elt -> elt.getUserOrDefaultLabel(printSettings)).collect(Collectors.joining(delimiter));
 	}
 
-	public static String createTotalDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
-		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter));
+	public static String createTotalDefaultMultiLabel(List<CQElement> elements, String delimiter, PrintSettings printSettings) {
+		return elements.stream().map(elt -> elt.defaultLabel(printSettings)).collect(Collectors.joining(delimiter));
 	}
 
 	/**
@@ -274,7 +273,8 @@ public class QueryUtils {
 
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
-		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+		String label = cqConcept.getUserOrDefaultLabel(cfg);
+
 		if (label == null) {
 			label = cqConcept.getConcept().getLabel();
 		}

@@ -2,18 +2,14 @@ package com.bakdata.conquery.models.forms.export;
 
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.concept.specific.ResultInfoDecorator;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
-import com.google.common.collect.ImmutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -42,20 +38,5 @@ public class RelExportGenerator {
 				resolutionsAndAlignments
 		);
 	}
-	
-	/**
-	 * Wraps the feature/outcome query with the corresponding info, if it is a feature or outcome
-	 * do generate a ColumnDescriptor later on.
-	 */
-	private static ArrayConceptQuery setInfos(ArrayConceptQuery arrayQuery, FeatureGroup group) {
-		for(ConceptQuery childQueries : arrayQuery.getChildQueries()) {
-			
-			 ResultInfoDecorator decorator = new ResultInfoDecorator(
-				ImmutableClassToInstanceMap.of(FeatureGroup.class, group),
-				childQueries.getRoot()
-			);
-			childQueries.setRoot(decorator);
-		}
-		return arrayQuery;
-	}
+
 }

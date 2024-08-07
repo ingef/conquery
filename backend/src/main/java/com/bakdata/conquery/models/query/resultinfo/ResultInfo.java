@@ -1,16 +1,18 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
+import com.google.common.collect.ImmutableSet;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +21,23 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString
 @EqualsAndHashCode
-@RequiredArgsConstructor
 @Slf4j
 public abstract class ResultInfo {
 
-	private ClassToInstanceMap<Object> appendices = MutableClassToInstanceMap.create();
+	@ToString.Include
+	private final Set<SemanticType> semantics = new HashSet<>();
+
+	protected ResultInfo(Collection<SemanticType> semantics) {
+		this.semantics.addAll(semantics);
+	}
+
+	public final void addSemantic(SemanticType... incoming) {
+		semantics.addAll(Arrays.asList(incoming));
+	}
+
+	public Set<SemanticType> getSemantics() {
+		return ImmutableSet.copyOf(semantics);
+	}
 
 	public abstract String userColumnName(PrintSettings printSettings);
 
@@ -33,16 +47,12 @@ public abstract class ResultInfo {
 	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
-	public abstract ResultType<?> getType();
-
-	@ToString.Include
-	public abstract Set<SemanticType> getSemantics();
+	public abstract ResultType getType();
 
 	public abstract String getDescription();
 
-	public <T> void addAppendix(Class<T> cl, T obj) {
-		appendices.putInstance(cl, obj);
-	}
+	public abstract ResultPrinters.Printer getPrinter();
+
 
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
 		return ColumnDescriptor.builder()
@@ -52,5 +62,17 @@ public abstract class ResultInfo {
 							   .semantics(getSemantics())
 							   .description(getDescription())
 							   .build();
+	}
+
+	public final String printNullable(Object f, PrintSettings printSettings) {
+		if(f == null){
+			return "";
+		}
+
+		return print(printSettings, f);
+	}
+
+	protected String print(PrintSettings printSettings, Object f) {
+		return getPrinter().print(f, printSettings);
 	}
 }

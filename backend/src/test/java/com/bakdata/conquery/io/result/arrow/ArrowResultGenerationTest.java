@@ -205,7 +205,7 @@ public class ArrowResultGenerationTest {
         if (obj == null) {
             return "null";
         }
-        if (type.equals(ResultType.DateRangeT.INSTANCE)) {
+        if (type.equals(ResultType.Primitive.DATE_RANGE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
             StringBuilder sb = new StringBuilder();

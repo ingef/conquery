@@ -293,8 +293,8 @@ public class DefaultColumnNameTest {
 			}
 
 			@Override
-			public ResultType<?> getResultType() {
-				return null;
+			public ResultType getResultType() {
+				return ResultType.Primitive.STRING;
 			}
 
 			@Override

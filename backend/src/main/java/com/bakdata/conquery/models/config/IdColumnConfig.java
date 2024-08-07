@@ -139,7 +139,8 @@ public class IdColumnConfig {
 							  );
 						  },
 						  locale -> col.getField(),
-						  ResultType.StringT.getINSTANCE(),
+						  ResultType.Primitive.STRING,
+						  null, //TODO we can now hook our anonymizers into this
 						  Set.of(new SemanticType.IdT(col.getName()))
 				  ))
 				  .collect(Collectors.toUnmodifiableList());

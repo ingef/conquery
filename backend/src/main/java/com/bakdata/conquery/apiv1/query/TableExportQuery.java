@@ -41,7 +41,8 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -229,22 +230,7 @@ public class TableExportQuery extends Query {
 			final SecondaryIdDescription desc = e.getKey();
 			final Integer pos = e.getValue();
 
-			// If mapping is available, values are mapped
-			final ResultType.StringT resultType =
-					desc.getMapping() != null
-					? new ResultType.StringT((internal, printSettings) -> {
-						if (internal == null) {
-							return null;
-						}
-						return desc.getMapping().external((String) internal);
-					})
-					: ResultType.StringT.INSTANCE;
-
-			final Set<SemanticType> semantics = new HashSet<>();
-
-			semantics.add(new SemanticType.SecondaryIdT(desc));
-
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
+			infos[pos] = new SecondaryIdResultInfo(desc);
 		}
 
 
@@ -267,14 +253,14 @@ public class TableExportQuery extends Query {
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
-				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
-																		.add(new SemanticType.ColumnT(column));
+				infos[secondaryIdPositions.get(column.getSecondaryId())].addSemantic(new SemanticType.ColumnT(column));
 				continue;
 			}
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
+			ResultPrinters.Printer printer = ResultPrinters.defaultPrinter(resultType);
 
 			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
@@ -285,7 +271,8 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
 				if (!isRawConceptValues()) {
-					resultType = new ResultType.StringT(concept::printConceptLocalId);
+					resultType = ResultType.Primitive.STRING;
+					printer = (rawValue, printSettings) -> concept.printConceptLocalId(printSettings, rawValue);
 				}
 			}
 			else {
@@ -293,7 +280,7 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.ColumnT(column));
 			}
 
-			infos[position] = new ColumnResultInfo(column, resultType, semantics);
+			infos[position] = new ColumnResultInfo(column, resultType, semantics, printer, column.getDescription());
 		}
 
 		return List.of(infos);

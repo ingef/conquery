@@ -41,7 +41,7 @@ public class EventDurationSumSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 }

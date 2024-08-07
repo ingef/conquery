@@ -3,18 +3,17 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -27,6 +26,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -116,25 +116,25 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		}
 
 		if (createExists()) {
-			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE, Set.of()));
+			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.Primitive.BOOLEAN, new ResultPrinters.BooleanPrinter(), Set.of()));
 		}
 
 		return resultInfos;
 	}
 
 	@Override
-	public String getUserOrDefaultLabel(Locale locale) {
+	public String getUserOrDefaultLabel(PrintSettings printSettings) {
 		// Prefer the user label
 		if (getLabel() != null) {
 			return getLabel();
 		}
-		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
+		return QueryUtils.createDefaultMultiLabel(children, " " + printSettings.getLocalized(CQElementC10n.class).and() + " ", printSettings);
 	}
 
 	@Override
-	public String defaultLabel(Locale locale) {
+	public String defaultLabel(PrintSettings printSettings) {
 		// This forces the default label on children even if there was a user label
-		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + printSettings.getLocalized(CQElementC10n.class).and() + " ", printSettings);
 	}
 
 	@Override

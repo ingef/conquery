@@ -50,6 +50,7 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
+
 	public SumSelect(Column column) {
 		this(column, null);
 	}
@@ -66,6 +67,7 @@ public class SumSelect extends Select {
 		}
 		return getAggregator();
 	}
+
 
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
@@ -112,7 +114,12 @@ public class SumSelect extends Select {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
+	public SelectConverter<SumSelect> createConverter() {
+		return new SumSqlAggregator<>();
+	}
+
+	@Override
+	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());
 	}
 
@@ -128,8 +135,5 @@ public class SumSelect extends Select {
 		return getSubtractColumn() == null || getSubtractColumn().getType().equals(getColumn().getType());
 	}
 
-	@Override
-	public SelectConverter<SumSelect> createConverter() {
-		return new SumSqlAggregator<>();
-	}
+
 }

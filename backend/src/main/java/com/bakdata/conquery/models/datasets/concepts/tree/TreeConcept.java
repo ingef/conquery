@@ -215,7 +215,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
 	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */
-	public String printConceptLocalId(Object rawValue, PrintSettings printSettings) {
+	public String printConceptLocalId(PrintSettings printSettings, Object rawValue) {
 
 		if (rawValue == null) {
 			return null;

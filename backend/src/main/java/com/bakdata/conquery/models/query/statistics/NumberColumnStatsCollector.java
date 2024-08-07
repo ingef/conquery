@@ -11,6 +11,7 @@ import java.util.Map;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.Range;
 import lombok.Getter;
@@ -49,33 +50,20 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		this.lowerPercentile = lowerPercentile;
 	}
 
-	private NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
-		if (type instanceof ResultType.MoneyT) {
-			return ((DecimalFormat) printSettings.getCurrencyFormat().clone());
-		}
-		else if (type instanceof ResultType.IntegerT) {
-			return ((NumberFormat) printSettings.getIntegerFormat().clone());
-		}
-		else {
-			return ((NumberFormat) printSettings.getDecimalFormat().clone());
-		}
+	private static NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
+		return switch (((ResultType.Primitive) type)) {
+			case INTEGER -> ((NumberFormat) printSettings.getIntegerFormat().clone());
+			case MONEY -> ((DecimalFormat) printSettings.getCurrencyFormat().clone());
+			default -> ((NumberFormat) printSettings.getDecimalFormat().clone());
+		};
 	}
 
 	private Comparator<TYPE> selectComparator(ResultType resultType) {
-		// The java type system was not made to handle the silliness, sorry.
-		if (resultType instanceof ResultType.IntegerT) {
-			return Comparator.comparingInt(Number::intValue);
-		}
-
-		if (resultType instanceof ResultType.NumericT) {
-			return Comparator.comparingDouble(Number::doubleValue);
-		}
-
-		if (resultType instanceof ResultType.MoneyT) {
-			return Comparator.comparingDouble(Number::doubleValue);
-		}
-
-		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
+		return switch (((ResultType.Primitive) type)) {
+			case INTEGER -> Comparator.comparingInt(Number::intValue);
+			case MONEY, NUMERIC -> Comparator.comparingDouble(Number::doubleValue);
+			default -> throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
+		};
 	}
 
 	/**
@@ -112,13 +100,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		Number number = (Number) value;
 
-		// TODO this feels like a pretty borked abstraction
-		if (getType() instanceof ResultType.MoneyT moneyT) {
-			number = moneyT.readIntermediateValue(getPrintSettings(), number);
+		if (ResultType.Primitive.MONEY.equals(getType())) {
+			number = ResultPrinters.readMoney(getPrintSettings(), number);
 		}
 
 		statistics.addValue(number.doubleValue());
-
 	}
 
 	@Override
@@ -150,7 +136,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		return histogram.nodes()
 						.stream()
 						.map(bin -> {
-							final String binLabel = bin.createLabel(this::printValue, getType() instanceof ResultType.IntegerT);
+							final String binLabel = bin.createLabel(this::printValue, ResultType.Primitive.INTEGER.equals(getType()));
 
 							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
 						})
@@ -169,7 +155,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		out.put(labels.max(), printValue(getStatistics().getMax()));
 
 		// mean is always a decimal number, therefore integer needs special handling
-		if(getType() instanceof ResultType.IntegerT){
+		if(ResultType.Primitive.INTEGER.equals(getType())){
 			out.put(labels.mean(), getPrintSettings().getDecimalFormat().format(getStatistics().getMean()));
 		}
 		else {

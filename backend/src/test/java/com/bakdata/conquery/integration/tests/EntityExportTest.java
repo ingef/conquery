@@ -180,14 +180,14 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				new EntityPreviewStatus.Info(
 						"Age",
 						9,
-						ResultType.IntegerT.INSTANCE.typeInfo(),
+						ResultType.Primitive.INTEGER.typeInfo(),
 						null,
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
 						List.of("A1", "B2"),
-						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
+						new ResultType.ListT(ResultType.Primitive.STRING).typeInfo(),
 						null,
 						Set.of(
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(valuesSelectId))

@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.M
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -35,5 +36,14 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	@Override
 	public SelectConverter<DistinctSelect> createConverter() {
 		return new DistinctSelectConverter();
+	}
+
+	@Override
+	public ResultPrinters.Printer createPrinter() {
+		if(getMapping() == null){
+			return super.createPrinter();
+		}
+
+		return new ResultPrinters.ListPrinter(new ResultPrinters.MappedPrinter(getMapping()));
 	}
 }

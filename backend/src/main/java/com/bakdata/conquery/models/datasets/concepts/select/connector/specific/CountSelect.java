@@ -68,7 +68,8 @@ public class CountSelect extends Select {
 
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
+
 }

@@ -26,9 +26,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -129,7 +127,7 @@ public class SecondaryIdQuery extends Query {
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(new SimpleResultInfo(secondaryId.getLabel(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
+		resultInfos.add(new SecondaryIdResultInfo(secondaryId));
 
 		resultInfos.addAll(query.getResultInfos());
 

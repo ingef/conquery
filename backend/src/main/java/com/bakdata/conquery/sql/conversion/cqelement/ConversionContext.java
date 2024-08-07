@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -30,6 +31,8 @@ public class ConversionContext implements Context {
 	IdColumnConfig idColumns;
 
 	DatabaseConfig config;
+
+	PrintSettings sqlPrintSettings;
 
 	NodeConversions nodeConversions;
 

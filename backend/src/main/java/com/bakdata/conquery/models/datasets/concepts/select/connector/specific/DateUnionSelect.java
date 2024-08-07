@@ -52,8 +52,8 @@ public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return new ResultType.ListT<>(ResultType.DateRangeT.INSTANCE);
+	public ResultType getResultType() {
+		return new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 	}
 
 	@Override

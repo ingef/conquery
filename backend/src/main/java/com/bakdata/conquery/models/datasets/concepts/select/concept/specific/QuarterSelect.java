@@ -29,7 +29,7 @@ public class QuarterSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.StringT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.STRING;
 	}
 }
