@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -43,7 +44,7 @@ import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.google.common.cache.CacheStats;
-import jakarta.inject.Inject;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,8 @@ public class UIProcessor {
 	@Getter
 	private final AdminProcessor adminProcessor;
 
+	private final Environment environment;
+
 	public DatasetRegistry<? extends Namespace> getDatasetRegistry() {
 		return adminProcessor.getDatasetRegistry();
 	}
@@ -69,7 +72,10 @@ public class UIProcessor {
 	}
 
 	public UIContext getUIContext(String csrfToken) {
-		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
+		String adminContextPath = environment.getAdminContext().getContextPath();
+		// If the context is just the root, we omit the slash as our path are absolute
+		adminContextPath = adminContextPath.equals("/")? "" : adminContextPath;
+		return new UIContext(adminProcessor.getNodeProvider(), csrfToken, adminContextPath);
 	}
 
 	public Set<IndexKey<?>> getLoadedIndexes() {

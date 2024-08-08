@@ -25,7 +25,7 @@ function toForceURL(url) {
 
 async function rest(url, options) {
 	var res = await fetch(
-		url,
+		`${adminContextPath}${url}`,
 		{
 			method: 'get',
 			credentials: 'same-origin',

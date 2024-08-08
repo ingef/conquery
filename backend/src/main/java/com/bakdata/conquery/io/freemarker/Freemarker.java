@@ -36,6 +36,7 @@ public class Freemarker {
 			.put(LOG_TEMPLATE_EXCEPTIONS_KEY_CAMEL_CASE, Boolean.FALSE.toString())
 			.put(NUMBER_FORMAT_KEY_CAMEL_CASE, "computer")
 			.put(LOCALE_KEY, "")
+			.put(OUTPUT_ENCODING_KEY, "utf-8")
 			.build();
 	}
 }
