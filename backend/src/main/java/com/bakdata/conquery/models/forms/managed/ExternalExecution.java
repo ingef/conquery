@@ -95,7 +95,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
 
-			executionManager.addResult(this, new ExternalResultImpl(new CountDownLatch(0), api, formBackendConfig, serviceUser));
+			executionManager.addResult(this, new ExternalResultImpl(new CountDownLatch(0), api, serviceUser));
 
 			externalTaskId = externalTaskState.getId();
 

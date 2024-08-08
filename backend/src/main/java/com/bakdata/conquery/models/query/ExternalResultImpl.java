@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
 import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
@@ -23,8 +22,6 @@ public class ExternalResultImpl implements ExternalResult {
 
 	@Getter
 	private final ExternalFormBackendApi api;
-
-	private final FormBackendConfig formBackendConfig;
 
 	@Getter
 	private final User serviceUser;
