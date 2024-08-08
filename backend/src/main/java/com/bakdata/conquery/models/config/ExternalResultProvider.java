@@ -2,16 +2,15 @@ package com.bakdata.conquery.models.config;
 
 import java.util.Collection;
 import java.util.Collections;
-
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.result.ExternalResult;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.Getter;
@@ -28,7 +27,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 	@Override
 	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
-		if (!(exec instanceof ExternalResult)) {
+		if (!(exec instanceof ExternalExecution)) {
 			return Collections.emptyList();
 		}
 
@@ -36,7 +35,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return ((ExternalResult) exec).getResultAssets().map(assetBuilder -> assetBuilder.apply(uriBuilder.clone())).toList();
+		return ((ExternalExecution) exec).getResultAssets().map(assetBuilder -> assetBuilder.apply(uriBuilder.clone())).toList();
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 
@@ -61,11 +60,9 @@ public class TestConquery {
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private Set<StandaloneSupport> openSupports = new HashSet<>();
+	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
-
-	private AtomicBoolean started = new AtomicBoolean(false);
 
 	/**
 	 * Returns the extension context used by the beforeAll-callback.
@@ -117,7 +114,7 @@ public class TestConquery {
 
 
 		// define server
-		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
+		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
 			if (config.getSqlConnectorConfig().isEnabled()) {
 				standaloneCommand = new SqlStandaloneCommand((Conquery) app);
 			}
@@ -131,12 +128,12 @@ public class TestConquery {
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
+				.withProperty(ClientProperties.CONNECT_TIMEOUT, 100000)
+				.withProperty(ClientProperties.READ_TIMEOUT, 100000)
 				.build("test client");
 	}
 
-	public void afterAll() throws Exception {
+	public void afterAll() {
 		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);

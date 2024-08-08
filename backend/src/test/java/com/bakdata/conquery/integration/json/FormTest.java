@@ -11,21 +11,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.csv.CsvRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -101,10 +97,10 @@ public class FormTest extends ConqueryTestSpec {
 		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) support
 				.getNamespace()
 				.getExecutionManager()
-				.runQuery(namespace, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
+				.runQuery(namespace, form, support.getTestUser(), support.getConfig(), false);
 
-		managedForm.awaitDone(10, TimeUnit.MINUTES);
-		if (managedForm.getState() != ExecutionState.DONE) {
+		ExecutionState executionState = namespace.getExecutionManager().awaitDone(managedForm, 10, TimeUnit.MINUTES);
+		if (executionState != ExecutionState.DONE) {
 			if (managedForm.getState() == ExecutionState.FAILED) {
 				fail(getLabel() + " Query failed");
 			}
@@ -185,7 +181,7 @@ public class FormTest extends ConqueryTestSpec {
 	 *
 	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
 	 */
-	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 
 
@@ -211,25 +207,6 @@ public class FormTest extends ConqueryTestSpec {
 		}
 
 
-	}
-
-	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
-		if (rawConcepts == null) {
-			return;
-		}
-
-		Dataset dataset = support.getDataset();
-
-		List<Concept<?>> concepts = parseSubTreeList(
-				support,
-				rawConcepts,
-				Concept.class,
-				c -> c.setDataset(support.getDataset())
-		);
-
-		for (Concept<?> concept : concepts) {
-			LoadingUtil.uploadConcept(support, dataset, concept);
-		}
 	}
 
 

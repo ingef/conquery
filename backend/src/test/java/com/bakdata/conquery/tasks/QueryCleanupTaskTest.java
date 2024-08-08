@@ -1,6 +1,7 @@
 package com.bakdata.conquery.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -34,7 +36,7 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 

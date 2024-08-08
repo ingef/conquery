@@ -8,7 +8,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
@@ -316,7 +323,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)

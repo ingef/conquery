@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -48,10 +52,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +74,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -89,7 +89,7 @@ public class LoadingUtil {
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -247,7 +247,7 @@ public class LoadingUtil {
 	}
 
 
-	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws IOException {
 		return ConqueryTestSpec.parseSubTreeList(
 				support,
 				rawConcepts,

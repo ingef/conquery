@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionResult(columnNames, resultTable);
+			return new SqlExecutionResult(columnNames, resultTable, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {

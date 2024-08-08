@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.excel;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,10 +17,13 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -65,7 +69,7 @@ public class ExcelResultRenderTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
+		ManagedQuery mquery = new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ExcelResultRenderTest.class.getSimpleName()), null) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
@@ -111,7 +115,6 @@ public class ExcelResultRenderTest {
 		XSSFSheet sheet = workbook.getSheetAt(0);
 
 		List<String> computed = new ArrayList<>();
-		int i = 0;
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
 			DataFormatter formatter = new DataFormatter(settings.getLocale());
@@ -127,7 +130,6 @@ public class ExcelResultRenderTest {
 				sj.add(formatted);
 			}
 			computed.add(sj.toString());
-			i++;
 		}
 		return computed;
 	}
@@ -164,9 +166,7 @@ public class ExcelResultRenderTest {
 		String printVal = info.getType().printNullable(settings, val);
 
 		if (info.getType().equals(ResultType.BooleanT.INSTANCE)) {
-			/**
-			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
-			 */
+			// Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
 			printVal = (Boolean) val ? "TRUE" : "FALSE";
 		}
 

@@ -2,8 +2,7 @@ package com.bakdata.conquery.api.form.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.net.URL;
 import java.time.ZoneId;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
@@ -20,6 +18,7 @@ import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -52,15 +51,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.validation.Validators;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.mockito.Mockito;
 
 
 /**
@@ -70,17 +68,15 @@ import org.mockito.Mockito;
 @TestInstance(Lifecycle.PER_CLASS)
 public class FormConfigTest {
 
-	private ConqueryConfig config = new ConqueryConfig();
+	private final ConqueryConfig config = new ConqueryConfig();
 
 	private MetaStorage storage;
-	private DatasetRegistry namespacesMock;
 
 	private FormConfigProcessor processor;
-	private AuthorizationController controller;
 	private Validator validator = Validators.newValidatorFactory().getValidator();
 
-	private Dataset dataset = new Dataset("test");
-	private Dataset dataset1 = new Dataset("test1");
+	private final Dataset dataset = new Dataset("test");
+	private final Dataset dataset1 = new Dataset("test1");
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
@@ -94,7 +90,7 @@ public class FormConfigTest {
 		datasetId1 = dataset1.getId();
 
 		// Mock DatasetRegistry for translation
-		namespacesMock = Mockito.mock(DatasetRegistry.class);
+		DatasetRegistry<?> namespacesMock = mock(DatasetRegistry.class);
 
 		doAnswer(invocation -> {
 			throw new UnsupportedOperationException("Not yet implemented");
@@ -102,7 +98,7 @@ public class FormConfigTest {
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
-			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
+			Namespace namespaceMock = mock(LocalNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}
@@ -123,14 +119,18 @@ public class FormConfigTest {
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues())
 				.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);
-		controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
+		AuthorizationController controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
 		controller.start();
 	}
 
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset, null);
+
+		user = new User("test", "test", storage);
+		storage.addUser(user);
+
+		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), user, dataset, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();
@@ -138,10 +138,6 @@ public class FormConfigTest {
 		form.setTimeMode(mode);
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
-
-
-		user = new User("test", "test", storage);
-		storage.addUser(user);
 	}
 
 	@AfterEach
@@ -161,7 +157,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset, formConfig);
 
-		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset));
+		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset.getId()));
 	}
 
 	@Test
@@ -171,7 +167,7 @@ public class FormConfigTest {
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
@@ -193,7 +189,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 		formConfig.setOwner(user);
 		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
@@ -337,7 +333,7 @@ public class FormConfigTest {
 
 		// CHECK PART 1
 		FormConfig patchedFormExpected = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		patchedFormExpected.setDataset(dataset);
+		patchedFormExpected.setDataset(dataset.getId());
 		patchedFormExpected.setFormId(config.getFormId());
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
