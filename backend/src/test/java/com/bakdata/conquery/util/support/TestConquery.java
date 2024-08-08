@@ -43,7 +43,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Represents the test instance of Conquery.
@@ -64,13 +63,6 @@ public class TestConquery {
 	@Getter
 	private Client client;
 
-	/**
-	 * Returns the extension context used by the beforeAll-callback.
-	 *
-	 * @return The context.
-	 */
-	@Getter
-	private ExtensionContext beforeAllContext;
 	// Initial user which is set before each test from the config.
 	private User testUser;
 
@@ -139,7 +131,7 @@ public class TestConquery {
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
-	public void afterEach() throws Exception {
+	public void afterEach() {
 		synchronized (openSupports) {
 			for (StandaloneSupport openSupport : openSupports) {
 				removeSupportDataset(openSupport);
