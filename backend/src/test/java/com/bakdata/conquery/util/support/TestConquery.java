@@ -128,8 +128,8 @@ public class TestConquery {
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-				.withProperty(ClientProperties.CONNECT_TIMEOUT, 100000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 100000)
+				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
+				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 				.build("test client");
 	}
 
