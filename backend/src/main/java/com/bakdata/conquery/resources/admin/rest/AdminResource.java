@@ -9,18 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
-
-import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -32,6 +20,19 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
+import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -108,13 +109,14 @@ public class AdminResource {
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
+						  Namespace namespace = processor.getDatasetRegistry().get(t.getDataset().getId());
 						  try {
-							  return t.buildStatusFull(currentUser);
+							  return t.buildStatusFull(currentUser, namespace);
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status
 							  final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
-							  t.setStatusBase(currentUser, fullExecutionStatus);
+							  t.setStatusBase(currentUser, fullExecutionStatus, namespace);
 							  fullExecutionStatus.setStatus(ExecutionState.FAILED);
 							  fullExecutionStatus.setError(e);
 							  return fullExecutionStatus;

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.OptionalLong;
@@ -7,8 +9,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -69,7 +74,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, null, null, null) {
+		return new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ResultTestUtil.class.getSimpleName()), null) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()

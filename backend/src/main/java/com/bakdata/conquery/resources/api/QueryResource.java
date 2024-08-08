@@ -4,19 +4,6 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.util.concurrent.TimeUnit;
-
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.MetaDataPatch;
-import com.bakdata.conquery.apiv1.QueryProcessor;
-import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
-import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.PATCH;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.BadRequestException;
@@ -31,6 +18,19 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.QueryProcessor;
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.SingleTableResult;
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.PATCH;
 import lombok.RequiredArgsConstructor;
 
 @Path("queries")
@@ -52,7 +52,7 @@ public class QueryResource {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
-		query.awaitDone(1, TimeUnit.SECONDS);
+		processor.awaitDone(query, 1, TimeUnit.SECONDS);
 
 		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
 	}
@@ -68,7 +68,7 @@ public class QueryResource {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
-		if(query.awaitDone(1, TimeUnit.SECONDS) != ExecutionState.DONE){
+		if (processor.awaitDone(query, 1, TimeUnit.SECONDS) != ExecutionState.DONE) {
 			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import org.jetbrains.annotations.TestOnly;
 
 @CPSType(id = "EXECUTION", base = StringPermissionBuilder.class)
 public class ExecutionPermission extends StringPermissionBuilder {
@@ -43,7 +44,7 @@ public class ExecutionPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	@Deprecated
+	@TestOnly
 	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

@@ -12,12 +12,12 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.DatabindContext;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
 @CPSType(id = "MANAGED_FORM", base = ManagedExecution.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
 	/**
@@ -43,10 +44,6 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	 */
 	@Getter
 	private Form submittedForm;
-
-	protected ManagedForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
 
 	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage) {
 		super(owner, submittedDataset, storage);
@@ -66,9 +63,9 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 														 .tags(this.getTags())
 														 .values(getSubmittedForm().getValues()).build();
 
-				final FormConfig formConfig = build.intern(getOwner(), getDataset());
+				final FormConfig formConfig = build.intern(getOwner(), getDataset().getId());
 
-				getStorage().addFormConfig(formConfig);
+				getMetaStorage().addFormConfig(formConfig);
 			}
 		}
 	}

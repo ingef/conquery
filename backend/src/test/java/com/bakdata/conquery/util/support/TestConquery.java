@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 
@@ -44,7 +43,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Represents the test instance of Conquery.
@@ -61,19 +59,10 @@ public class TestConquery {
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private Set<StandaloneSupport> openSupports = new HashSet<>();
+	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
 
-	private AtomicBoolean started = new AtomicBoolean(false);
-
-	/**
-	 * Returns the extension context used by the beforeAll-callback.
-	 *
-	 * @return The context.
-	 */
-	@Getter
-	private ExtensionContext beforeAllContext;
 	// Initial user which is set before each test from the config.
 	private User testUser;
 
@@ -117,7 +106,7 @@ public class TestConquery {
 
 
 		// define server
-		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
+		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
 			if (config.getSqlConnectorConfig().isEnabled()) {
 				standaloneCommand = new SqlStandaloneCommand((Conquery) app);
 			}
@@ -136,13 +125,13 @@ public class TestConquery {
 				.build("test client");
 	}
 
-	public void afterAll() throws Exception {
+	public void afterAll() {
 		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
-	public void afterEach() throws Exception {
+	public void afterEach() {
 		synchronized (openSupports) {
 			for (StandaloneSupport openSupport : openSupports) {
 				removeSupportDataset(openSupport);
