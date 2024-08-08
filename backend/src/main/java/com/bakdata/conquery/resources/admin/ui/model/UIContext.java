@@ -26,6 +26,9 @@ public class UIContext {
 	@Getter
 	public final String csrfToken;
 
+	@Getter
+	public final String adminContextPath;
+
 	public Map<SocketAddress, ShardNodeInformation> getShardNodes() {
 		return shardNodeSupplier.get().stream().collect(Collectors.toMap(
 				ShardNodeInformation::getRemoteAddress,

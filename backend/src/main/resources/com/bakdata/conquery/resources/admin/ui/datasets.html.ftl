@@ -27,7 +27,7 @@
 
 			<div id="all_datasets" class="mt-1">
 				<h3>All Datasets</h3>
-				<@table.table columns=columns items=c?sort_by("name") link="/admin-ui/datasets/" deleteButton=deleteDatasetButton cypressId="datasets"/>
+				<@table.table columns=columns items=c?sort_by("name") link="${ctx.adminContextPath?url_path}/admin-ui/datasets/" deleteButton=deleteDatasetButton cypressId="datasets"/>
 			</div>
 
 		</div>
