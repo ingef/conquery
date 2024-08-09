@@ -24,6 +24,10 @@ public class DslContextFactory {
 
 		if (healthCheckRegistry != null) {
 			hikariConfig.setHealthCheckRegistry(healthCheckRegistry);
+			if (connectorConfig.getConnectivityCheckTimeout() != null) {
+				long connectivityTimeoutMs = connectorConfig.getConnectivityCheckTimeout().toMilliseconds();
+				hikariConfig.addHealthCheckProperty("connectivityCheckTimeoutMs", Long.toString(connectivityTimeoutMs));
+			}
 		}
 
 		HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
