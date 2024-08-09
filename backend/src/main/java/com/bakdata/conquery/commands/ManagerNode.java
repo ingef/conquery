@@ -241,7 +241,7 @@ public class ManagerNode implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage());
+				registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
 			});
 		}
 

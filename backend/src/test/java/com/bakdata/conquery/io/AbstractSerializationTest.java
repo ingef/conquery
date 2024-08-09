@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,7 +66,7 @@ public abstract class AbstractSerializationTest {
 		datasetRegistry = new DatasetRegistry<>(0, config, creator, clusterNamespaceHandler, indexService);
 		creator.init(datasetRegistry);
 
-		namespace = datasetRegistry.createNamespace(new Dataset("serialization_test"), metaStorage);
+		namespace = datasetRegistry.createNamespace(new Dataset("serialization_test"), metaStorage, new Environment(this.getClass().getSimpleName()));
 
 		// Prepare manager meta internal mapper
 		managerMetaInternalMapper = creator.createInternalObjectMapper(View.Persistence.Manager.class);

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerHandler;
+import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 	private final InternalObjectMapperCreator mapperCreator;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService, Environment environment) {
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);

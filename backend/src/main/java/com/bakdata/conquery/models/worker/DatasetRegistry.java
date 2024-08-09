@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 	private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, MetaStorage metaStorage) throws IOException {
+	public N createNamespace(Dataset dataset, MetaStorage metaStorage, Environment environment) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
@@ -63,11 +64,11 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		datasetStorage.setPreviewConfig(new PreviewConfig());
 		datasetStorage.close();
 
-		return createNamespace(datasetStorage, metaStorage);
+		return createNamespace(datasetStorage, metaStorage, environment);
 	}
 
-	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage) {
-		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
+	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, Environment environment) {
+		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService, environment);
 		add(namespace);
 		return namespace;
 	}
