@@ -177,7 +177,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.databasePassword(hanaContainer.getPassword())
 												.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig);
+			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig, null);
 		}
 
 	}
@@ -202,7 +202,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.databasePassword(PASSWORD)
 												.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
+			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig, null);
 		}
 
 	}
