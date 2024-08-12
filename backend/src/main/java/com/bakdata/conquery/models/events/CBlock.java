@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
@@ -164,7 +165,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				final ConceptTreeChild child = cache == null
+				final ConceptElement<?> child = cache == null
 											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
 											   : cache.findMostSpecificChild(stringValue, rowMap);
 

@@ -1,5 +1,17 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +45,10 @@ public class PreprocessedHeader {
 	 * Number of rows in the Preprocessed file.
 	 */
 	private long rows;
+	private long numberOfEntities;
+
+	//TODO use Set<Integer> to track actually included buckets,to split phase bucket assignment.
+	private int numberOfBuckets;
 
 	/**
 	 * The specific columns and their associated MajorType for validation.
@@ -43,5 +59,61 @@ public class PreprocessedHeader {
 	 * A hash to check if any of the underlying files for generating this CQPP has changed.
 	 */
 	private int validityHash;
+
+	public Import createImportDescription(Table table, Map<String, ColumnStore> stores) {
+		final Import imp = new Import(table);
+
+		imp.setName(getName());
+		imp.setNumberOfEntries(getRows());
+		imp.setNumberOfEntities(getNumberOfEntities());
+
+		final ImportColumn[] importColumns = new ImportColumn[columns.length];
+
+		for (int i = 0; i < columns.length; i++) {
+			final ColumnStore store = stores.get(columns[i].getName());
+
+			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), numberOfBuckets * store.estimateMemoryConsumptionBytes());
+
+			col.setName(columns[i].getName());
+
+			importColumns[i] = col;
+		}
+
+		imp.setColumns(importColumns);
+
+		return imp;
+	}
+
+
+	/**
+	 * Verify that the supplied table matches the preprocessed' data in shape.
+	 *
+	 * @return
+	 */
+	public List<String> assertMatch(Table table) {
+		final List<String> errors = new ArrayList<>();
+
+		if (table.getColumns().length != getColumns().length) {
+			errors.add("Import column count=`%d` does not match table column count=`%d`".formatted(getColumns().length, table.getColumns().length));
+		}
+
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+
+		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
+			final Column column = table.getColumns()[i];
+
+			if (!typesByName.containsKey(column.getName())) {
+				errors.add("Column[%s] is missing.".formatted(column.getName()));
+				continue;
+			}
+
+			if (!typesByName.get(column.getName()).equals(column.getType())) {
+				errors.add("Column[%s] Types do not match %s != %s".formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
+			}
+		}
+
+		return errors;
+	}
+
 
 }

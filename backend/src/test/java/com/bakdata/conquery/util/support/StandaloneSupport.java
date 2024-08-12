@@ -4,6 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -23,11 +28,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientRequestContext;
-import jakarta.ws.rs.client.ClientRequestFilter;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -73,8 +73,10 @@ public class StandaloneSupport implements TestSupport {
 				Map.of(
 						"in", tmpDir,
 						"out", tmpDir,
-						"desc", descriptions
-
+						"desc", descriptions,
+						"buckets", 10,
+						"strict", true,
+						"fast-fail", true
 				)
 		);
 
@@ -94,7 +96,7 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManagerNode().getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getMetaStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {

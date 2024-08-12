@@ -37,6 +37,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
 				namespaceData.getIndexService(),
+				new ClusterEntityResolver(),
 				namespaceData.getInjectables(),
 				workerHandler
 		);
