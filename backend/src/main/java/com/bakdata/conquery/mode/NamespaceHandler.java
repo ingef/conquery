@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Handler of namespaces in a ConQuery instance.
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService);
+	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService, Environment environment);
 
 	void removeNamespace(DatasetId id, N namespace);
 
