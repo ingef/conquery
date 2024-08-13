@@ -22,10 +22,18 @@ jobs:
       - name: Create pull-request
         run: >
           gh pr create
+          -l automated
           -a awildturtok,thoniTUB
           -r awildturtok,thoniTUB
           -B develop
           --title "Reintegrate Main"
           --head $REINTEGRATE_BRANCH_NAME
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Modify pull request
+        run: >
+          gh pr merge
+          --auto
+          --delete-branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
