@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import java.util.List;
+import jakarta.validation.constraints.Min;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.Min;
 
 /**
  * @implNote This class is tightly coupled with {@link FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
@@ -19,7 +18,7 @@ public interface Searchable {
 	/**
 	 * All available {@link FrontendValue}s for searching in a {@link TrieSearch}.
 	 */
-	TrieSearch<FrontendValue> createTrieSearch(IndexConfig config);
+	TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) throws IndexCreationException;
 
 	/**
 	 * Parameter used in the construction of {@link com.bakdata.conquery.util.search.TrieSearch}, defining the shortest suffix to create.

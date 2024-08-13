@@ -33,14 +33,17 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(indexService);
+		injectables.add(storage);
 
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+		injectables.forEach(i -> {
+			i.injectInto(persistenceMapper);
+			i.injectInto(communicationMapper);
+			i.injectInto(preprocessMapper);
+		});
 
 
 		// Each store needs its own mapper because each injects its own registry

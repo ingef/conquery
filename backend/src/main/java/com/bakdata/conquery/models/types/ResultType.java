@@ -299,7 +299,7 @@ public abstract class ResultType<T> {
 
 		@Override
 		public String typeInfo() {
-			return "MONEY";
+			return MajorTypeId.MONEY.name();
 		}
 
 		@Override
