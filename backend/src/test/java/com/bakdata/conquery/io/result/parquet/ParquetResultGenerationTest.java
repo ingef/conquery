@@ -51,7 +51,7 @@ public class ParquetResultGenerationTest {
 
 	@Test
 	void generateSchema() {
-		List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
 													   .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
 		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, UNIQUE_NAMER);

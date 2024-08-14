@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -33,41 +35,19 @@ import org.jetbrains.annotations.Nullable;
 public class ResultTestUtil {
 
 
-	@NotNull
-	public static List<ResultType> getResultTypes() {
-		return List.of(
-				ResultType.Primitive.BOOLEAN,
-				ResultType.Primitive.INTEGER,
-				ResultType.Primitive.NUMERIC,
-				ResultType.Primitive.DATE,
-				ResultType.Primitive.DATE_RANGE,
-				ResultType.Primitive.STRING,
-				ResultType.Primitive.MONEY,
-				new ResultType.ListT(ResultType.Primitive.BOOLEAN),
-				new ResultType.ListT(ResultType.Primitive.DATE_RANGE),
-				new ResultType.ListT(ResultType.Primitive.STRING)
-		);
+	private static TreeConcept concept;
+
+	static {
+		concept = new TreeConcept();
+		concept.setName("concept");
+		concept.setDataset(new Dataset("dataset"));
 	}
 
-
-	public static List<ResultInfo> ID_FIELDS = Stream.of("id1", "id2")
-													 .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", new ResultPrinters.StringPrinter(), Set.of(new SemanticType.IdT("ID"))))
-													 .collect(Collectors.toList());
-
-	@NotNull
-	public static List<EntityResult> getTestEntityResults() {
-		return List.of(
-				new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
-				new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null,  null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
-				new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null,  null, null, null, List.of(false, false), null, null}),
-				new MultilineEntityResult("3", List.of(
-						new Object[]{Boolean.FALSE, null,null, null, null, null,  null, List.of(false), null, null},
-						new Object[]{Boolean.TRUE, null, null, null, null,  null, null, null, null, null},
-						new Object[]{Boolean.TRUE, null, null, null,  null, null, 4, List.of(true, false, true, false), null, null}
-				)));
-	}
-
-
+	public static List<ResultInfo>
+			ID_FIELDS =
+			Stream.of("id1", "id2")
+				  .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", new ResultPrinters.StringPrinter(), Set.of(new SemanticType.IdT("ID"))))
+				  .collect(Collectors.toList());
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
@@ -75,7 +55,7 @@ public class ResultTestUtil {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
-									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(resultType -> new TypedSelectDummy(resultType))
 									   .map(select -> new SelectResultInfo(select, new CQConcept()))
 									   .collect(Collectors.toList());
 			}
@@ -87,13 +67,24 @@ public class ResultTestUtil {
 		};
 	}
 
+	@NotNull
+	public static List<ResultType> getResultTypes() {
+		return List.of(ResultType.Primitive.BOOLEAN, ResultType.Primitive.INTEGER, ResultType.Primitive.NUMERIC, ResultType.Primitive.DATE, ResultType.Primitive.DATE_RANGE, ResultType.Primitive.STRING, ResultType.Primitive.MONEY, new ResultType.ListT(ResultType.Primitive.BOOLEAN), new ResultType.ListT(ResultType.Primitive.DATE_RANGE), new ResultType.ListT(ResultType.Primitive.STRING));
+	}
+
+	@NotNull
+	public static List<EntityResult> getTestEntityResults() {
+		return List.of(new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}), new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}), new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}), new MultilineEntityResult("3", List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, 4, List.of(true, false, true, false), null, null})));
+	}
+
 	public static class TypedSelectDummy extends Select {
 
 		@Getter
 		private final ResultType resultType;
 
 		public TypedSelectDummy(ResultType resultType) {
-			this.setLabel(resultType.toString());
+			setLabel(resultType.toString());
+			setHolder(concept);
 			this.resultType = resultType;
 		}
 

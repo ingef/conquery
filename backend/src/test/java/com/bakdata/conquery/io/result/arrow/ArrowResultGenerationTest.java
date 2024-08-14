@@ -58,6 +58,7 @@ public class ArrowResultGenerationTest {
 			UNIQUE_NAMER =
 			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
 
+
     @Test
     void generateFieldsIdMapping() {
 
@@ -72,7 +73,9 @@ public class ArrowResultGenerationTest {
 
     @Test
     void generateFieldsValue() {
-        List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
+
+
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(resultType -> new TypedSelectDummy(resultType))
                 .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
 		List<Field> fields = generateFields(
