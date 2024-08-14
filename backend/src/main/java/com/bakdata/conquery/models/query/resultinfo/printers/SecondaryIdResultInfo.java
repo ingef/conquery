@@ -36,7 +36,7 @@ public class SecondaryIdResultInfo extends ResultInfo {
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {
-		return secondaryId.getName();
+		return secondaryId.getLabel();
 	}
 
 	@Override

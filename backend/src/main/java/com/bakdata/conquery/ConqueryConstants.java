@@ -36,7 +36,7 @@ public class ConqueryConstants {
 
 
 	public static final ResultInfo DATE_RANGE_INFO =
-			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).dates(),null, ResultType.Primitive.DATE_RANGE,null, Set.of());
+			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).dateRange(),null, ResultType.Primitive.DATE_RANGE,null, Set.of());
 
 	public static final ResultInfo RESOLUTION_INFO =
 			new LocalizedDefaultResultInfo((l) -> l.getLocalized(ResultHeadersC10n.class).resolution(),null, ResultType.Primitive.STRING,new Resolution.LocalizingPrinter(), Set.of());
