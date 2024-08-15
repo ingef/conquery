@@ -88,7 +88,7 @@ public class Workers extends IdResolveContext implements Managed {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
 
 		addWorker(worker);
 

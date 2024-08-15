@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockserver.model.HttpRequest.request;
 
 import java.io.IOException;
@@ -8,9 +9,13 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.SneakyThrows;
@@ -29,6 +34,7 @@ import org.mockserver.model.MediaType;
 @Slf4j
 public class IndexServiceTest {
 
+	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
@@ -37,6 +43,9 @@ public class IndexServiceTest {
 	@BeforeAll
 	@SneakyThrows
 	public static void beforeAll() {
+		NAMESPACE_STORAGE.openStores(Jackson.MAPPER);
+
+		NAMESPACE_STORAGE.updateDataset(DATASET);
 
 		CONFIG.getIndex().setBaseUrl(new URI(String.format("http://localhost:%d/", REF_SERVER.getPort())));
 
@@ -50,7 +59,7 @@ public class IndexServiceTest {
 
 	@Test
 	@Order(0)
-	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
+	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException, ExecutionException, InterruptedException {
 		log.info("Test loading of mapping");
 
 		try (InputStream inputStream = In.resource("/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv").asStream()) {
@@ -80,13 +89,18 @@ public class IndexServiceTest {
 		);
 
 
-		injectComponents(mapper, indexService, CONFIG);
-		injectComponents(mapperUrlAbsolute, indexService, CONFIG);
-		injectComponents(mapperUrlRelative, indexService, CONFIG);
+		injectComponents(mapper, indexService);
+		injectComponents(mapperUrlAbsolute, indexService);
+		injectComponents(mapperUrlRelative, indexService);
 
 		mapper.init();
 		mapperUrlAbsolute.init();
 		mapperUrlRelative.init();
+
+		// Wait for future
+		mapper.getInt2ext().get();
+		mapperUrlAbsolute.getInt2ext().get();
+		mapperUrlRelative.getInt2ext().get();
 
 		assertThat(mapper.external("int1")).as("Internal Value").isEqualTo("hello");
 		assertThat(mapper.external("int2")).as("Internal Value").isEqualTo("int2");
@@ -99,8 +113,10 @@ public class IndexServiceTest {
 
 	}
 
-	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService, ConqueryConfig config)
+	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
+
+		mapInternToExternMapper.setStorage(NAMESPACE_STORAGE);
 
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);
@@ -108,15 +124,14 @@ public class IndexServiceTest {
 
 		final Field configField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.config);
 		configField.setAccessible(true);
-		configField.set(mapInternToExternMapper, config);
+		configField.set(mapInternToExternMapper, IndexServiceTest.CONFIG);
 
-		mapInternToExternMapper.setDataset(DATASET);
 	}
 
 	@Test
 	@Order(2)
 	void testEvictOnMapper()
-			throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+			throws NoSuchFieldException, IllegalAccessException, URISyntaxException, ExecutionException, InterruptedException {
 		log.info("Test evicting of mapping on mapper");
 		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
 				"test1",
@@ -125,14 +140,17 @@ public class IndexServiceTest {
 				"{{external}}"
 		);
 
-		injectComponents(mapInternToExternMapper, indexService, CONFIG);
+		injectComponents(mapInternToExternMapper, indexService);
 		mapInternToExternMapper.init();
+
+		// Wait for future
+		mapInternToExternMapper.getInt2ext().get();
 
 		// Before eviction the result should be the same
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext().get();
 
 		indexService.evictCache();
 
@@ -141,11 +159,31 @@ public class IndexServiceTest {
 
 		mapInternToExternMapper.init();
 
-		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
 									  .isNotSameAs(mappingAfterEvict);
+	}
+
+	@Test
+	void testFailedLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
+				"test1",
+				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/not_existing_mapping.csv"),
+				"internal",
+				"{{external}}"
+		);
+
+		injectComponents(mapInternToExternMapper, indexService);
+		mapInternToExternMapper.init();
+
+		// Wait for future
+		assertThatThrownBy(() -> mapInternToExternMapper.getInt2ext().get()).as("Not existent CSV").hasCauseInstanceOf(IllegalStateException.class);
+
+
+		// Before eviction the result should be the same
+		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("int1");
 	}
 
 }

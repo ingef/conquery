@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.index;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ public class IndexService implements Injectable {
 	private final String emptyDefaultLabel;
 
 	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
+		@NotNull
 		@Override
 		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
 
@@ -85,10 +85,6 @@ public class IndexService implements Injectable {
 						);
 					}
 				}
-			}
-			catch (IOException ioException) {
-				log.warn("Failed to open `{}`", key.getCsv(), ioException);
-				throw ioException;
 			}
 
 			// Run finalizing operations on the index
@@ -150,13 +146,21 @@ public class IndexService implements Injectable {
 	}
 
 
+	/**
+	 * Returns an index mapping from the information in the given key.
+	 * If the index is not yet present, it is loaded.
+	 * @param key the key describing the requested index
+	 * @return the index mapping
+	 * @throws IndexCreationException if the index mapping could not be loaded.
+	 */
 	@SuppressWarnings("unchecked")
-	public <K extends IndexKey<I>, I extends Index<K>> I getIndex(K key) {
+	@NotNull
+	public <K extends IndexKey<I>, I extends Index<K>> I getIndex(@NotNull K key) throws IndexCreationException {
 		try {
 			return (I) mappings.get(key);
 		}
 		catch (ExecutionException e) {
-			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
+			throw new IndexCreationException(key, e);
 		}
 	}
 

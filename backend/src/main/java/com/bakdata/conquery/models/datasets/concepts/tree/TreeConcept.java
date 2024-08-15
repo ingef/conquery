@@ -6,25 +6,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +32,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
+@JsonDeserialize(converter = TreeConcept.TreeConceptInitializer.class)
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing {
 
 	@JsonIgnore
 	@Getter
@@ -90,21 +90,22 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}
 
-	@Override
-	public void initElements() throws ConfigurationException, JSONException {
-		super.initElements();
+	public void init() {
 		setLocalId(0);
 		localIdMap.add(this);
 
-		final List<ConceptTreeChild> openList = new ArrayList<>();
-		openList.addAll(getChildren());
+		final List<ConceptTreeChild> openList = new ArrayList<>(getChildren());
 
 		for (ConceptTreeConnector con : getConnectors()) {
 			if (con.getCondition() == null) {
 				continue;
 			}
 
-			con.getCondition().init(this);
+			try {
+				con.getCondition().init(this);
+			} catch (ConceptConfigurationException e) {
+				throw new RuntimeException("Unable to init condition", e);
+			}
 		}
 
 		for (int i = 0; i < openList.size(); i++) {
@@ -117,8 +118,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 				ctc.init();
 
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
 			}
 
@@ -126,11 +126,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 	}
 
-	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptTreeChild best, List<ConceptTreeChild> currentList)
+	private ConceptElement findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, ConceptElement best, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
 
 		while (currentList != null && !currentList.isEmpty()) {
@@ -200,7 +200,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(int[] ids) {
 		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
@@ -236,4 +236,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return node.getLabel() + " - " + node.getDescription();
 
 	}
+
+	public static class TreeConceptInitializer extends Initializing.Converter<TreeConcept> {}
 }

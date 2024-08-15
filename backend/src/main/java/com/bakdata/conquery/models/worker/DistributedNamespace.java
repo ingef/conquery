@@ -51,18 +51,12 @@ public class DistributedNamespace extends Namespace {
 		this.workerHandler = workerHandler;
 	}
 
-	public int getBucket(String entity, int bucketSize) {
-		final NamespaceStorage storage = getStorage();
-		return storage.getEntityBucket(entity)
-					  .orElseGet(() -> storage.assignEntityBucket(entity, bucketSize));
-	}
-
 	@Override
 	void updateMatchingStats() {
-		final Collection<Concept<?>> concepts = this.getStorage().getAllConcepts()
-													.stream()
-													.filter(concept -> concept.getMatchingStats() == null)
-													.collect(Collectors.toSet());
+		final Collection<Concept<?>> concepts = getStorage().getAllConcepts()
+															.stream()
+															.filter(concept -> concept.getMatchingStats() == null)
+															.collect(Collectors.toSet());
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 	}
 

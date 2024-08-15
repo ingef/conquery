@@ -6,7 +6,7 @@
 		<div class="form-group">
 			<label for="role_id">Role:</label>
 			<select class="form-control" id="role_id" name="role_id">
-				<#list c.availableRoles as role>
+				<#list c.availableRoles?sort_by("label") as role>
 					<option value="${role.id}">${role.label} - ${role.id}</option>
 				</#list>
 			</select>

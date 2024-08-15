@@ -24,6 +24,7 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -37,7 +38,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	private final SqlDialectFactory dialectFactory;
 
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<LocalNamespace> datasetRegistry) {
+	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<LocalNamespace> datasetRegistry, Environment environment) {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry);
 
@@ -45,7 +46,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
 		DatabaseConfig databaseConfig = sqlConnectorConfig.getDatabaseConfig(namespaceStorage.getDataset());
 
-		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
+		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig, environment.healthChecks());
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 

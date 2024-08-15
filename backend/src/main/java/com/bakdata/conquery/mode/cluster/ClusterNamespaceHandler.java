@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerHandler;
+import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -22,15 +23,15 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 	private final InternalMapperFactory internalMapperFactory;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, DatasetRegistry<DistributedNamespace> datasetRegistry) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, internalMapperFactory, datasetRegistry);
+	public DistributedNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<DistributedNamespace> datasetRegistry, Environment environment) {
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
-		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
-		clusterState.getWorkerHandlers().put(storage.getDataset().getId(), workerHandler);
+		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), namespaceStorage);
+		clusterState.getWorkerHandlers().put(namespaceStorage.getDataset().getId(), workerHandler);
 
 		DistributedNamespace distributedNamespace = new DistributedNamespace(
 				namespaceData.getPreprocessMapper(),
-				storage,
+				namespaceStorage,
 				executionManager,
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
@@ -40,7 +41,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 		);
 
 		for (ShardNodeInformation node : clusterState.getShardNodes().values()) {
-			node.send(new AddWorker(storage.getDataset()));
+			node.send(new AddWorker(namespaceStorage.getDataset()));
 		}
 		return distributedNamespace;
 	}

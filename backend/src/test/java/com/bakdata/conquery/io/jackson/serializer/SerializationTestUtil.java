@@ -6,6 +6,10 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import jakarta.validation.Validator;
@@ -48,14 +52,15 @@ public class SerializationTestUtil<T> {
 					ThreadLocal.class,
 					User.ShiroUserAdapter.class,
 					Validator.class,
-					WeakReference.class
+					WeakReference.class,
+					CompletableFuture.class
 			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
 	@Setter
 	private CentralRegistry registry;
-	private ObjectMapper[] objectMappers;
+	private List<ObjectMapper> objectMappers = Collections.emptyList();
 	@NonNull
 	private Injectable[] injectables = {};
 
@@ -76,7 +81,7 @@ public class SerializationTestUtil<T> {
 	}
 
 	public SerializationTestUtil<T> objectMappers(ObjectMapper... objectMappers) {
-		this.objectMappers = objectMappers;
+		this.objectMappers = Arrays.asList(objectMappers);
 		return this;
 	}
 
@@ -96,7 +101,7 @@ public class SerializationTestUtil<T> {
 	}
 
 	public void test(T value, T expected) throws JSONException, IOException {
-		if (objectMappers == null || objectMappers.length == 0) {
+		if (objectMappers.isEmpty()) {
 			fail("No objectmappers were set");
 		}
 
@@ -144,13 +149,14 @@ public class SerializationTestUtil<T> {
 		}
 
 		// Preliminary check that ids of identifiables are equal
-		if (value instanceof IdentifiableImpl identifiableValue) {
+		if (value instanceof IdentifiableImpl<?> identifiableValue) {
 			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
+				.usingOverriddenEquals()
 				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
 
 		// Apply assertion customizations

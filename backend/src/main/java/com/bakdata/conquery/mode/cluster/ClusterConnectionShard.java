@@ -60,7 +60,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		log.debug("Session created.");
+		log.debug("Session created: {}", session);
 	}
 
 

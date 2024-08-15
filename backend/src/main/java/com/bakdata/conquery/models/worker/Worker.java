@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -84,13 +83,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ExecutorService jobsExecutorService,
 			@NonNull StoreFactory config,
 			@NonNull String directory,
-			@NonNull Validator validator,
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
 			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
 
-		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
+		WorkerStorage workerStorage = new WorkerStorage(config, directory);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();

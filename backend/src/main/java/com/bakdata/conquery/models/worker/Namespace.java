@@ -57,16 +57,14 @@ public abstract class Namespace extends IdResolveContext {
 	public void close() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
 		try {
 			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
 	}
@@ -74,8 +72,7 @@ public abstract class Namespace extends IdResolveContext {
 	public void remove() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
@@ -91,19 +88,6 @@ public abstract class Namespace extends IdResolveContext {
 		return getStorage().getNumberOfEntities();
 	}
 
-	public void updateInternToExternMappings() {
-		storage.getAllConcepts().stream()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(con -> con.getSelects().stream())
-			   .filter(MappableSingleColumnSelect.class::isInstance)
-			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
-
-		storage.getSecondaryIds().stream()
-			   .filter(desc -> desc.getMapping() != null)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
-	}
-
 	public PreviewConfig getPreviewConfig() {
 		return getStorage().getPreviewConfig();
 	}
@@ -114,6 +98,19 @@ public abstract class Namespace extends IdResolveContext {
 			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
 		}
 		return storage.getCentralRegistry();
+	}
+
+	public void updateInternToExternMappings() {
+		storage.getAllConcepts().stream()
+				.flatMap(c -> c.getConnectors().stream())
+				.flatMap(con -> con.getSelects().stream())
+				.filter(MappableSingleColumnSelect.class::isInstance)
+				.map(MappableSingleColumnSelect.class::cast)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+
+		storage.getSecondaryIds().stream()
+				.filter(desc -> desc.getMapping() != null)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
 	}
 
 	/**
@@ -147,9 +144,9 @@ public abstract class Namespace extends IdResolveContext {
 		getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+					updateInternToExternMappings();
 					updateMatchingStats();
 					updateFilterSearch();
-					updateInternToExternMappings();
 				}
 		));
 

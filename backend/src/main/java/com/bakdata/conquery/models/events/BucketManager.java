@@ -124,7 +124,11 @@ public class BucketManager {
 	public void fullUpdate() {
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
-		for (Concept<?> c : storage.getAllConcepts()) {
+		final Collection<Concept<?>> allConcepts = storage.getAllConcepts();
+
+		log.info("BEGIN full update for {} concepts.", allConcepts.size());
+
+		for (Concept<?> c : allConcepts) {
 			if (!(c instanceof TreeConcept)) {
 				continue;
 			}
@@ -142,7 +146,7 @@ public class BucketManager {
 						continue;
 					}
 
-					log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+					log.trace("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
 					job.addCBlock(bucket, con);
 				}
 			}
@@ -365,6 +369,11 @@ public class BucketManager {
 				job.addCBlock(bucket, connector);
 			}
 		}
+
+		if(job.isEmpty()){
+			return;
+		}
+
 		jobManager.addSlowJob(job);
 	}
 

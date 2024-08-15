@@ -33,7 +33,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final ClusterConnectionManager connectionManager =
 				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, internalMapperFactory, clusterState);
 
-		final ImportHandler importHandler = new ClusterImportHandler(config, datasetRegistry);
+		final ImportHandler importHandler = new ClusterImportHandler(datasetRegistry);
 		final StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
 		final Supplier<Collection<ShardNodeInformation>> nodeProvider = () -> clusterState.getShardNodes().values();
 		final List<Task> adminTasks = List.of(new ReportConsistencyTask(clusterState));

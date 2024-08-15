@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Handler of namespaces in a ConQuery instance.
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry);
+	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);
 
 	void removeNamespace(DatasetId id, N namespace);
 
@@ -33,14 +34,17 @@ public interface NamespaceHandler<N extends Namespace> {
 	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(datasetRegistry);
+		injectables.add(storage);
 
 		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetRegistry);
 		ObjectMapper communicationMapper = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
 		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(datasetRegistry);
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+		injectables.forEach(i -> {
+			i.injectInto(persistenceMapper);
+			i.injectInto(communicationMapper);
+			i.injectInto(preprocessMapper);
+		});
 
 
 		// Each store needs its own mapper because each injects its own registry
