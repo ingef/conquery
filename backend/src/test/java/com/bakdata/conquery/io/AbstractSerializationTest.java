@@ -78,12 +78,7 @@ public abstract class AbstractSerializationTest {
 		namespace.getInjectables().forEach(injectable -> injectable.injectInto(namespaceInternalMapper));
 
 		// Prepare shard node internal mapper
-		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(config);
-		when(shardNode.getValidator()).thenReturn(validator);
-
-		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
-		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
+		shardInternalMapper = ShardNode.createInternalObjectMapper(View.Persistence.Shard.class, config, validator);
 
 		// Prepare api mapper with a Namespace injected (usually done by PathParamInjector)
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
