@@ -6,7 +6,7 @@
 		<div class="form-group">
 			<label for="group_id">Group:</label>
 			<select class="form-control" id="group_id" name="group_id">
-				<#list c.availableGroups as group>
+				<#list c.availableGroups?sort_by("label") as group>
 					<option value="${group.id}">${group.label} - ${group.id}</option>
 				</#list>
 			</select>

@@ -9,10 +9,12 @@ import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ import org.junit.jupiter.api.Test;
 public class FilterSearchTest {
 
 	@Test
-	public void totals() {
+	public void totals() throws IndexCreationException {
 		final IndexConfig indexConfig = new IndexConfig();
 		FilterSearch search = new FilterSearch(indexConfig);
 
@@ -53,9 +55,9 @@ public class FilterSearchTest {
 		));
 
 		// Register
-		filter.getSearchReferences().forEach(searchable -> {
+		for (Searchable searchable : filter.getSearchReferences()) {
 			search.addSearches(Map.of(searchable, searchable.createTrieSearch(indexConfig)));
-		});
+		}
 
 		search.registerValues(column, List.of(
 				"a",
@@ -69,7 +71,7 @@ public class FilterSearchTest {
 	}
 
 	@Test
-	public void totalsEmptyFiler() {
+	public void totalsEmptyFiler() throws IndexCreationException {
 		final IndexConfig indexConfig = new IndexConfig();
 		FilterSearch search = new FilterSearch(indexConfig);
 
@@ -96,9 +98,10 @@ public class FilterSearchTest {
 		filter.setConnector(connector);
 
 		// Register
-		filter.getSearchReferences().forEach(searchable -> {
+		for (Searchable searchable : filter.getSearchReferences()) {
 			search.addSearches(Map.of(searchable, searchable.createTrieSearch(indexConfig)));
-		});
+		}
+
 		search.shrinkSearch(column);
 
 		assertThat(search.getTotal(filter)).isEqualTo(0);

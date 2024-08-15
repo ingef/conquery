@@ -85,7 +85,7 @@ public class ManagerNode implements Managed {
 		this.manager = manager;
 
 		final ObjectMapper objectMapper = environment.getObjectMapper();
-		customizeApiObjectMapper(objectMapper);
+		customizeApiObjectMapper(objectMapper, getDatasetRegistry(), getMetaStorage(), config, validator);
 
 
 		// FormScanner needs to be instantiated before plugins are initialized
@@ -182,7 +182,12 @@ public class ManagerNode implements Managed {
 	 *
 	 * @param objectMapper to be configured (should be a JSON mapper)
 	 */
-	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
+	public static void customizeApiObjectMapper(
+			ObjectMapper objectMapper,
+			DatasetRegistry<?> datasetRegistry,
+			MetaStorage metaStorage,
+			ConqueryConfig config,
+			Validator validator) {
 
 		// Set serialization config
 		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
@@ -200,18 +205,18 @@ public class ManagerNode implements Managed {
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, getValidator());
+		injectableValues.add(Validator.class, validator);
 
-		getDatasetRegistry().injectInto(objectMapper);
-		getMetaStorage().injectInto(objectMapper);
-		getConfig().injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
+		metaStorage.injectInto(objectMapper);
+		config.injectInto(objectMapper);
 	}
 
 	/**
 	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables.
 	 *
 	 * @return a preconfigured binary object mapper
-	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
+	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper, DatasetRegistry, MetaStorage, ConqueryConfig, Validator)
 	 */
 	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
 		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
@@ -219,7 +224,7 @@ public class ManagerNode implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
+		getMetaStorage().openStores(createInternalObjectMapper(View.Persistence.Manager.class));
 		log.info("Loading MetaStorage");
 		getMetaStorage().loadData();
 		log.info("MetaStorage loaded {}", getMetaStorage());
@@ -236,7 +241,7 @@ public class ManagerNode implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage());
+				registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
 			});
 		}
 
