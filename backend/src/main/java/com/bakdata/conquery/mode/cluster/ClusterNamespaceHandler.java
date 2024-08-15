@@ -2,15 +2,14 @@ package com.bakdata.conquery.mode.cluster;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.NamespaceSetupData;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerHandler;
@@ -20,23 +19,21 @@ import lombok.RequiredArgsConstructor;
 public class ClusterNamespaceHandler implements NamespaceHandler<DistributedNamespace> {
 	private final ClusterState clusterState;
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, DatasetRegistry<DistributedNamespace> datasetRegistry) {
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, internalMapperFactory, datasetRegistry);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);
 		clusterState.getWorkerHandlers().put(storage.getDataset().getId(), workerHandler);
 
 		DistributedNamespace distributedNamespace = new DistributedNamespace(
 				namespaceData.getPreprocessMapper(),
-				namespaceData.getCommunicationMapper(),
 				storage,
 				executionManager,
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
-				namespaceData.getIndexService(),
 				new ClusterEntityResolver(),
 				namespaceData.getInjectables(),
 				workerHandler

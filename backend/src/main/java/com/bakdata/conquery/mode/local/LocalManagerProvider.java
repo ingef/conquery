@@ -7,9 +7,9 @@ import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.DelegateManager;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.NamespaceHandler;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
@@ -34,11 +34,10 @@ public class LocalManagerProvider implements ManagerProvider {
 	public DelegateManager<LocalNamespace> provideManager(ConqueryConfig config, Environment environment) {
 
 		final MetaStorage storage = new MetaStorage(config.getStorage());
-		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, storage, environment.getValidator());
-		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, dialectFactory);
-		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
+		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, dialectFactory);
+		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
 
-		creator.init(datasetRegistry);
 
 		return new DelegateManager<>(
 				config,
@@ -49,7 +48,7 @@ public class LocalManagerProvider implements ManagerProvider {
 				new LocalStorageListener(),
 				EMPTY_NODE_PROVIDER,
 				List.of(),
-				creator,
+				internalMapperFactory,
 				ManagerProvider.newJobManager(config)
 		);
 	}

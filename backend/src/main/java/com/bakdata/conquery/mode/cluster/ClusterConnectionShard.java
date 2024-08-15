@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -51,7 +50,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	private final ConqueryConfig config;
 	private final Environment environment;
 	private final Workers workers;
-	private final Supplier<ObjectMapper> communicationMapperSupplier;
+	private final InternalMapperFactory internalMapperFactory;
 
 	private JobManager jobManager;
 	private ScheduledExecutorService scheduler;
@@ -205,7 +204,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@NotNull
 	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
-		ObjectMapper om = communicationMapperSupplier.get();
+		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
 		NioSocketConnector connector = new NioSocketConnector();
 

@@ -1,22 +1,19 @@
 package com.bakdata.conquery.io;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import jakarta.validation.Validator;
 
-import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
@@ -38,34 +35,25 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
+		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, validator);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory());
-		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, metaStorage, validator);
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
-		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
-		datasetRegistry = new DatasetRegistry<>(0, config, creator, clusterNamespaceHandler, indexService);
-		creator.init(datasetRegistry);
+		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
+		datasetRegistry = new DatasetRegistry<>(0, config, internalMapperFactory, clusterNamespaceHandler, indexService);
 
 		// Prepare manager node internal mapper
-		final ManagerNode managerNode = mock(ManagerNode.class);
-		when(managerNode.getConfig()).thenReturn(config);
-		when(managerNode.getValidator()).thenReturn(validator);
-		doReturn(datasetRegistry).when(managerNode).getDatasetRegistry();
-		when(managerNode.getMetaStorage()).thenReturn(metaStorage);
-		when(managerNode.getInternalObjectMapperCreator()).thenReturn(creator);
-
-		when(managerNode.createInternalObjectMapper(any())).thenCallRealMethod();
-		managerInternalMapper = managerNode.createInternalObjectMapper(View.Persistence.Manager.class);
+		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
 
 		metaStorage.openStores(managerInternalMapper);
 		metaStorage.loadData();
 
 		// Prepare shard node internal mapper
-		shardInternalMapper = ShardNode.createInternalObjectMapper(View.Persistence.Shard.class, config, validator);
+		final Workers workers = mock(Workers.class);
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(workers);
 
 		// Prepare api response mapper
-		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		managerNode.customizeApiObjectMapper(apiMapper);
+		internalMapperFactory.customizeApiObjectMapper(apiMapper, datasetRegistry, metaStorage);
 	}
 
 

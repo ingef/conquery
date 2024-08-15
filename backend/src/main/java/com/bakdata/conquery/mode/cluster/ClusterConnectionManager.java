@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -12,7 +11,6 @@ import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -43,7 +41,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	private final JobManager jobManager;
 	private final Validator validator;
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator internalObjectMapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 	@Getter
 	private final ClusterState clusterState;
 
@@ -93,8 +91,8 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
 
-		ObjectMapper om = internalObjectMapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
-		config.configureObjectMapper(om);
+		ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
+
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);

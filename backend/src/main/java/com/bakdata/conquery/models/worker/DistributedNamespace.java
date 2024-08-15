@@ -12,7 +12,6 @@ import com.bakdata.conquery.mode.cluster.ClusterEntityResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -39,17 +38,15 @@ public class DistributedNamespace extends Namespace {
 
 	public DistributedNamespace(
 			ObjectMapper preprocessMapper,
-			ObjectMapper communicationMapper,
 			NamespaceStorage storage,
 			DistributedExecutionManager executionManager,
 			JobManager jobManager,
 			FilterSearch filterSearch,
-			IndexService indexService,
 			ClusterEntityResolver clusterEntityResolver,
 			List<Injectable> injectables,
 			WorkerHandler workerHandler
 	) {
-		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, clusterEntityResolver, injectables);
+		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, clusterEntityResolver, injectables);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
 	}

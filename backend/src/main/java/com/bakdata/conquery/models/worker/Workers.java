@@ -7,11 +7,11 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@link ShardNode} container of {@link Worker}.
- *
+ * <p>
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
@@ -47,22 +47,20 @@ public class Workers extends IdResolveContext implements Managed {
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
-	private final Supplier<ObjectMapper> persistenceMapperSupplier;
-	private final Supplier<ObjectMapper> communicationMapperSupplier;
+	private final InternalMapperFactory internalMapperFactory;
 
 	private final int entityBucketSize;
 
 	private final int secondaryIdSubPlanRetention;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize, int secondaryIdSubPlanRetention) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, InternalMapperFactory internalMapperFactory, int entityBucketSize, int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
-		this.persistenceMapperSupplier = persistenceMapperSupplier;
-		this.communicationMapperSupplier = communicationMapperSupplier;
+		this.internalMapperFactory = internalMapperFactory;
 		this.entityBucketSize = entityBucketSize;
 		this.secondaryIdSubPlanRetention = secondaryIdSubPlanRetention;
 
@@ -71,11 +69,8 @@ public class Workers extends IdResolveContext implements Managed {
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
 
-		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
-		injectInto(persistenceMapper);
-
-		final ObjectMapper communicationMapper = communicationMapperSupplier.get();
-		injectInto(communicationMapper);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
+		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(this);
 
 		final Worker worker =
 				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
@@ -87,11 +82,9 @@ public class Workers extends IdResolveContext implements Managed {
 
 	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
 
-		final ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
-		injectInto(persistenceMapper);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 
-		final ObjectMapper communicationMapper = communicationMapperSupplier.get();
-		injectInto(communicationMapper);
+		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(this);
 
 		final Worker
 				worker =

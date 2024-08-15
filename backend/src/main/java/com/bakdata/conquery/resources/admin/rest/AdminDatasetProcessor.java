@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.ImportHandler;
@@ -36,12 +42,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -203,8 +203,6 @@ public class AdminDatasetProcessor {
 			deleteConcept(concept);
 			log.info("Force deleted previous concept: {}", concept.getId());
 		}
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -366,8 +364,8 @@ public class AdminDatasetProcessor {
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
-	public void clearIndexCache(Namespace namespace) {
-		namespace.clearIndexCache();
+	public void clearIndexCache() {
+		datasetRegistry.resetIndexService();
 	}
 
 	public void addSearchIndex(Namespace namespace, SearchIndex searchIndex) {
