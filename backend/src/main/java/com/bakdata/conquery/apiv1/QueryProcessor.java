@@ -89,8 +89,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -385,21 +383,23 @@ public class QueryProcessor {
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
 		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
-		final ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
+		final List<QueryVisitor> visitors = new ArrayList<>();
 		query.addVisitors(visitors);
 
 		// Initialize checks that need to traverse the query tree
-		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
-		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
+		QueryUtils.OnlyReusingChecker onlyReusingChecker = new QueryUtils.OnlyReusingChecker();
+		visitors.add(onlyReusingChecker);
+		NamespacedIdentifiableCollector namespacedIdentifiableCollector = new NamespacedIdentifiableCollector();
+		visitors.add(namespacedIdentifiableCollector);
 
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(subject, storage).map(Group::getName).orElse("none");
-
-		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
+		ExecutionMetrics.QueryMetricsReporter queryMetricsReporter = new ExecutionMetrics.QueryMetricsReporter(primaryGroupName);
+		visitors.add(queryMetricsReporter);
 
 
 		// Chain all Consumers
 		Consumer<Visitable> consumerChain = QueryUtils.getNoOpEntryPoint();
-		for (QueryVisitor visitor : visitors.values()) {
+		for (QueryVisitor visitor : visitors) {
 			consumerChain = consumerChain.andThen(visitor);
 		}
 
@@ -410,11 +410,8 @@ public class QueryProcessor {
 		query.authorize(subject, dataset, visitors, storage);
 		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the Userish in methods
 
-		NamespacedIdentifiableCollector namespaceIdCollector = visitors.getInstance(NamespacedIdentifiableCollector.class);
-		if (namespaceIdCollector == null) {
-			throw new IllegalStateException("NamespacedIdentifiableCollector was not registered properly");
-		}
-		ExecutionMetrics.reportNamespacedIds(namespaceIdCollector.getIdentifiables(), primaryGroupName);
+
+		ExecutionMetrics.reportNamespacedIds(namespacedIdentifiableCollector.getIdentifiables(), primaryGroupName);
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
@@ -424,11 +421,7 @@ public class QueryProcessor {
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			QueryUtils.OnlyReusingChecker reusedChecker = visitors.getInstance(QueryUtils.OnlyReusingChecker.class);
-			if (reusedChecker == null) {
-				throw new IllegalStateException("OnlyReusingChecker was not registered properly");
-			}
-			final Optional<ManagedExecutionId> executionId = reusedChecker.getOnlyReused();
+			final Optional<ManagedExecutionId> executionId = onlyReusingChecker.getOnlyReused();
 
 			final Optional<ManagedExecution>
 					execution =

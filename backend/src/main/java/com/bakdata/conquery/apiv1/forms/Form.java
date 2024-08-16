@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.forms;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ClassToInstanceMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -41,7 +41,7 @@ public abstract class Form implements QueryDescription {
 
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(Subject subject, Dataset submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.super.authorize(subject, submittedDataset, visitors, storage);
 		// Check if subject is allowed to create this form
 		final FormType formType = FormScanner.resolveFormType(getFormType());
