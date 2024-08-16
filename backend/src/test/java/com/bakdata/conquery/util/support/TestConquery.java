@@ -1,6 +1,6 @@
 package com.bakdata.conquery.util.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -55,11 +54,11 @@ public class TestConquery {
 	private final File tmpDir;
 	private final ConqueryConfig config;
 	private final TestDataImporter testDataImporter;
+	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
 
@@ -117,6 +116,14 @@ public class TestConquery {
 		});
 		// start server
 		dropwizard.before();
+
+
+		if (!config.getSqlConnectorConfig().isEnabled()) {
+			// Wait for shards to be connected
+			ClusterManager manager = (ClusterManager) standaloneCommand.getManager();
+			ClusterState clusterState = manager.getConnectionManager().getClusterState();
+			await().atMost(10, TimeUnit.SECONDS).until(() -> clusterState.getShardNodes().size() == 2);
+		}
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
@@ -195,13 +202,9 @@ public class TestConquery {
 
 		ClusterManager manager = (ClusterManager) standaloneCommand.getManager();
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
-		assertThat(clusterState.getShardNodes()).hasSize(2);
 
-		Wait.builder()
-			.total(Duration.ofSeconds(5))
-			.stepTime(Duration.ofMillis(5))
-			.build()
-			.until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
+		await().atMost(10, TimeUnit.SECONDS)
+			   .until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
 
 		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
 	}
