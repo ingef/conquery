@@ -166,16 +166,22 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	@Override
 	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
-		if (getState().equals(executionState)) {
-			return;
-		}
-		User serviceUser = executionManager.getExternalResult(this.getId()).getServiceUser();
+		try {
+			if (getState().equals(executionState)) {
+				return;
+			}
+			User serviceUser = executionManager.getExternalResult(this.getId()).getServiceUser();
 
-		super.finish(executionState, executionManager);
+			super.finish(executionState, executionManager);
 
-		synchronized (this) {
-			AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
+			synchronized (this) {
+				AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
+			}
 		}
+		finally {
+			executionManager.clearLockExternalExecution(this.getId());
+		}
+
 	}
 
 	@JsonIgnore

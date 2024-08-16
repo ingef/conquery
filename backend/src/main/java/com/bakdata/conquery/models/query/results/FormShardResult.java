@@ -50,7 +50,7 @@ public class FormShardResult extends ShardResult {
 			);
 
 			// Signal to waiting threads that the form finished
-			executionManager.clearLock(formId);
+			executionManager.clearLockInternalExecution(formId);
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {
@@ -58,7 +58,7 @@ public class FormShardResult extends ShardResult {
 			managedInternalForm.finish(ExecutionState.DONE, executionManager);
 
 			// Signal to waiting threads that the form finished
-			executionManager.clearLock(formId);
+			executionManager.clearLockInternalExecution(formId);
 		}
 
 	}

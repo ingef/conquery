@@ -90,7 +90,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 		if (result.getError().isPresent()) {
 			execution.fail(result.getError().get(), this);
-			clearLock(execution.getId());
+			clearLockInternalExecution(execution.getId());
 		}
 		else {
 
@@ -103,7 +103,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 			// If all known workers have returned a result, the query is DONE.
 			if (finishedWorkers.equals(getWorkerHandler(execution).getAllWorkerIds())) {
 				execution.finish(ExecutionState.DONE, this);
-				clearLock(execution.getId());
+				clearLockInternalExecution(execution.getId());
 
 			}
 		}

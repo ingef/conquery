@@ -201,11 +201,16 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 
 	}
 
-	public void clearLock(ManagedExecutionId id) {
+	public void clearLockInternalExecution(ManagedExecutionId id) {
 		R result = Objects.requireNonNull(executionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
-		//TODO external execution
+	}
+
+	public void clearLockExternalExecution(ManagedExecutionId id) {
+		ExternalResult result = Objects.requireNonNull(externalExecutionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
+
+		result.getExecutingLock().countDown();
 	}
 
 	/**

@@ -54,7 +54,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 							 }).toArray(CompletableFuture[]::new))
 							 .thenRun(() -> {
 								 managedForm.finish(ExecutionState.DONE, this);
-								 clearLock(managedForm.getId());
+								 clearLockInternalExecution(managedForm.getId());
 							 });
 			return;
 		}
@@ -100,7 +100,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									runningExecutions.remove(id);
 
 									// Unlock waiting requests
-									clearLock(id);
+									clearLockInternalExecution(id);
 								})
 								.exceptionally(e -> {
 									managedQuery.fail(ConqueryError.asConqueryError(e), this);
