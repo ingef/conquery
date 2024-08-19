@@ -88,10 +88,9 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 			sc.run(clone, environment);
 		}
 
-		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Waiting for ShardNodes to start");
 
 		// starts the Jersey Server
+		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);

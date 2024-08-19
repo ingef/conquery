@@ -204,8 +204,6 @@ public class AdminDatasetProcessor {
 			deleteConcept(concept);
 			log.info("Force deleted previous concept: {}", concept.getId());
 		}
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -365,8 +363,8 @@ public class AdminDatasetProcessor {
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
-	public void clearIndexCache(Namespace namespace) {
-		namespace.clearIndexCache();
+	public void clearIndexCache() {
+		datasetRegistry.resetIndexService();
 	}
 
 	public void addSearchIndex(Namespace namespace, SearchIndex searchIndex) {

@@ -12,11 +12,10 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.NamespaceHandler;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -45,7 +44,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	@Getter
 	private final ConqueryConfig config;
 
-	private final InternalObjectMapperCreator internalObjectMapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 
 	private final NamespaceHandler<N> namespaceHandler;
 
@@ -54,7 +53,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	public N createNamespace(Dataset dataset, MetaStorage metaStorage, Environment environment) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(this);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
 		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
@@ -68,7 +67,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	}
 
 	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, Environment environment) {
-		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService, environment);
+		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, this, environment);
 		add(namespace);
 		return namespace;
 	}
@@ -130,7 +129,11 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		// Make this class also available under DatasetRegistry
-		return super.inject(values).add(DatasetRegistry.class, this);
+		super.inject(values).add(DatasetRegistry.class, this);
+
+		indexService.inject(values);
+
+		return values;
 	}
 
 	public void resetIndexService() {

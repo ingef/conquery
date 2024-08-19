@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -29,12 +30,8 @@ public class DelegateManager<N extends Namespace> implements Manager {
 	StorageListener storageListener;
 	Supplier<Collection<ShardNodeInformation>> nodeProvider;
 	List<Task> adminTasks;
-	InternalObjectMapperCreator internalObjectMapperCreator;
+	InternalMapperFactory internalMapperFactory;
 	JobManager jobManager;
-
-	@Override
-	public void start() throws Exception {
-	}
 
 	@Override
 	public void stop() throws Exception {

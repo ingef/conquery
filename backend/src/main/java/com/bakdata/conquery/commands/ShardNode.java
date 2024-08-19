@@ -5,20 +5,14 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.cluster.ClusterConnectionShard;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
@@ -55,19 +49,19 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 	public void run(ConqueryConfig config, Environment environment) throws Exception {
 		LifecycleEnvironment lifecycle = environment.lifecycle();
 
+
+		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
 		workers = new Workers(
 				config.getQueries().getExecutionPool(),
-				() -> createInternalObjectMapper(View.Persistence.Shard.class, config, environment.getValidator()),
-				() -> createInternalObjectMapper(View.InternalCommunication.class, config, environment.getValidator()),
+				internalMapperFactory,
 				config.getCluster().getEntityBucketSize(),
 				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 
 		lifecycle.manage(workers);
 
-
 		clusterConnection =
-				new ClusterConnectionShard(config, environment, workers, () -> createInternalObjectMapper(View.InternalCommunication.class, config, environment.getValidator()));
+				new ClusterConnectionShard(config, environment, workers, internalMapperFactory);
 
 		lifecycle.manage(clusterConnection);
 
@@ -102,37 +96,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		log.info("All Worker loaded: {}", workers.getWorkers().size());
 	}
 
-	/**
-	 * Pendant to {@link ManagerNode#createInternalObjectMapper(Class)}.
-	 * <p>
-	 * TODO May move to {@link ConqueryCommand}
-	 *
-	 * @return a preconfigured binary object mapper
-	 */
-	public static ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass, ConqueryConfig config, Validator validator) {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
-		final MutableInjectableValues injectableValues = new MutableInjectableValues();
-		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
-
-
-		// Set serialization config
-		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
-
-		serializationConfig = serializationConfig.withView(viewClass);
-
-		objectMapper.setConfig(serializationConfig);
-
-		// Set deserialization config
-		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
-
-		deserializationConfig = deserializationConfig.withView(viewClass);
-
-		objectMapper.setConfig(deserializationConfig);
-
-		return objectMapper;
-	}
 
 	public boolean isBusy() {
 		return clusterConnection.isBusy() || workers.isBusy();
