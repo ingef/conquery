@@ -181,8 +181,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			case BOOLEAN -> BooleanNode.valueOf((Boolean) value);
 			case INTEGER -> new IntNode((Integer) value);
 			case NUMERIC -> DecimalNode.valueOf((BigDecimal) value);
-			case DATE -> new TextNode(new ResultPrinters.DatePrinter().print(value, printSettings)); //TODO bind printers in outer loop
-			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter().print(value,  printSettings)); //TODO bind printers in outer loop
+			case DATE -> new TextNode(new ResultPrinters.DatePrinter(printSettings).print(value)); //TODO bind printers in outer loop
+			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter(printSettings).print(value)); //TODO bind printers in outer loop
 			case STRING -> new TextNode(value.toString()); //TODO mapping
 			case MONEY -> ResultPrinters.readMoney(printSettings, ((Number) value));
 		};
@@ -191,11 +191,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
 	 */
-	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
-		for (ResultInfo info : query.getResultInfos()) {
+		for (ResultInfo info : query.getResultInfos(printSettings)) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
@@ -263,14 +263,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos(printSettings).size(); index++) {
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos(printSettings).get(index);
 
 
 			final Object printed = renderValue(values[index], resultInfo.getType(), printSettings);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
+					resultInfo.userColumnName(),
 					printed,
 					resultInfo.getType().typeInfo(),
 					resultInfo.getDescription(),
@@ -300,13 +300,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(printSettings), select2desc, printSettings);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc, printSettings);
 
 
 			final EntityPreviewStatus.TimeStratifiedInfos
@@ -406,8 +406,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return getValuesQuery().getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+		return getValuesQuery().getResultInfos(printSettings);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -128,7 +129,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public String defaultLabel(PrintSettings printSettings) {
+	public String defaultLabel(Locale locale) {
 		if (elements.isEmpty()) {
 			return null;
 		}
@@ -285,16 +286,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
-			resultInfos.add(select.getResultInfo(this));
+			resultInfos.add(select.getResultInfo(this, settings));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				resultInfos.add(sel.getResultInfo(this));
+				resultInfos.add(sel.getResultInfo(this, settings));
 			}
 		}
 

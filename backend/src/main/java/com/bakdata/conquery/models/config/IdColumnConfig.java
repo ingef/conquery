@@ -12,8 +12,10 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -121,29 +123,21 @@ public class IdColumnConfig {
 	 * @return
 	 */
 	@JsonIgnore
-	public List<ResultInfo> getIdResultInfos() {
-		return ids.stream()
-				  .filter(ColumnConfig::isPrint)
-				  .map(col -> new LocalizedDefaultResultInfo(
-						  locale -> {
-							  final Map<Locale, String> label = col.getLabel();
-							  // Get the label for the locale,
-							  // fall back to any label if there is exactly one defined,
-							  // then fall back to the field name.
-							  return label.getOrDefault(
-									  locale,
-									  // fall backs
-									  label.size() == 1 ?
-									  label.values().stream().collect(MoreCollectors.onlyElement()) :
-									  col.getField()
-							  );
-						  },
-						  locale -> col.getField(),
-						  ResultType.Primitive.STRING,
-						  null, //TODO we can now hook our anonymizers into this
-						  Set.of(new SemanticType.IdT(col.getName()))
-				  ))
-				  .collect(Collectors.toUnmodifiableList());
+	public List<ResultInfo> getIdResultInfos(PrintSettings printSettings) {
+		return ids.stream().filter(ColumnConfig::isPrint).map(col -> {
+			final Map<Locale, String> labels = col.getLabel();
+			// Get the label for the locale,
+			// fall back to any label if there is exactly one defined,
+			// then fall back to the field name.
+			final String label = Objects.requireNonNullElse(labels.getOrDefault(
+					printSettings.getLocale(),
+					// fall backs
+					labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
+			), col.getField());
+
+			//TODO we can now hook our anonymizers into this
+			return new LocalizedDefaultResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings, ResultPrinters.defaultPrinter(ResultType.Primitive.STRING, printSettings));
+		}).collect(Collectors.toUnmodifiableList());
 	}
 
 

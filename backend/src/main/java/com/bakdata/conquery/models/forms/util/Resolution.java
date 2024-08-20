@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Resolution {
 	/**
-	 * For returning contexts with a single {@link CDateRange} for the entire
+	 * For returning contexts with a single {@link com.bakdata.conquery.models.common.daterange.CDateRange} for the entire
 	 * {@link FeatureGroup}.
 	 */
 	COMPLETE(null) {
@@ -41,7 +41,7 @@ public enum Resolution {
 	},
 
 	/**
-	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+	 * The {@link com.bakdata.conquery.models.common.daterange.CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * years.
 	 */
 
@@ -63,7 +63,7 @@ public enum Resolution {
 	},
 
 	/**
-	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+	 * The {@link com.bakdata.conquery.models.common.daterange.CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * quarters.
 	 */
 	QUARTERS(YEARS) {
@@ -83,7 +83,7 @@ public enum Resolution {
 	},
 
 	/**
-	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+	 * The {@link com.bakdata.conquery.models.common.daterange.CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * days.
 	 */
 	DAYS(QUARTERS) {
@@ -150,10 +150,13 @@ public enum Resolution {
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
 	}
 
+	@RequiredArgsConstructor
 	public static class LocalizingPrinter implements ResultPrinters.Printer{
 
+		private final PrintSettings cfg;
+
 		@Override
-		public String print(Object f, PrintSettings cfg) {
+		public String print(Object f) {
 			if (f instanceof Resolution) {
 				return ((Resolution) f).toString(cfg.getLocale());
 			}

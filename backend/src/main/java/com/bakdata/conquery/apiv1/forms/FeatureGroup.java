@@ -39,10 +39,12 @@ public enum FeatureGroup {
 
 	public abstract String toString(Locale locale);
 
+	@RequiredArgsConstructor
 	public static class LocalizingPrinter implements ResultPrinters.Printer {
+		private final PrintSettings cfg;
 
 		@Override
-		public String print(Object f, PrintSettings cfg) {
+		public String print(Object f) {
 			if (f instanceof Resolution) {
 				return ((Resolution) f).toString(cfg.getLocale());
 			}

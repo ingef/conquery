@@ -19,11 +19,11 @@ public class ExternalResultInfo extends ResultInfo {
 	private final String description;
 	private final ResultPrinters.Printer printer;
 
-	public ExternalResultInfo(String name, ResultType type) {
-		this(name, type, null, ResultPrinters.defaultPrinter(type), Collections.emptySet());
+	public ExternalResultInfo(String name, ResultType type, PrintSettings settings) {
+		this(name, type, null, ResultPrinters.defaultPrinter(type, settings), Collections.emptySet(), settings);
 	}
-	public ExternalResultInfo(String name, ResultType type, String description, ResultPrinters.Printer printer, Set<SemanticType> semantics) {
-		super(semantics);
+	public ExternalResultInfo(String name, ResultType type, String description, ResultPrinters.Printer printer, Set<SemanticType> semantics, PrintSettings settings) {
+		super(semantics, settings);
 		this.name = name;
 		this.type = type;
 		this.description = description;
@@ -32,12 +32,12 @@ public class ExternalResultInfo extends ResultInfo {
 
 
 	@Override
-	public String userColumnName(PrintSettings printSettings) {
+	public String userColumnName() {
 		return null;
 	}
 
 	@Override
-	public String defaultColumnName(PrintSettings printSettings) {
+	public String defaultColumnName() {
 		return name;
 	}
 }

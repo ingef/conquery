@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -38,16 +39,16 @@ public abstract class CQElement implements Visitable {
 	@Getter
 	private String label;
 
-	public String getUserOrDefaultLabel(PrintSettings printSettings) {
+	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
 		if (label != null) {
 			return label;
 		}
-		return defaultLabel(printSettings);
+		return defaultLabel(locale);
 	}
 
 	@NotNull
-	public String defaultLabel(PrintSettings printSettings) {
+	public String defaultLabel(Locale locale) {
 		// Fallback to CPSType#id() implementation is provided or class name
 		final CPSType type = getClass().getAnnotation(CPSType.class);
 		if (type != null) {
@@ -78,7 +79,7 @@ public abstract class CQElement implements Visitable {
 	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) ;
 
 	@JsonIgnore
-	public abstract List<ResultInfo> getResultInfos();
+	public abstract List<ResultInfo> getResultInfos(PrintSettings settings);
 
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.CheckForNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -14,6 +10,7 @@ import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
@@ -36,35 +33,36 @@ import lombok.NonNull;
  * </pre>
  */
 @EqualsAndHashCode(callSuper = true)
+@ToString
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
 	@NonNull
-	private final Function<PrintSettings, String> localizedLabelProvider;
+	private final String localizedLabel;
 	@NonNull
-	private final Function<PrintSettings, String> localizedDefaultLabelProvider;
+	private final String localizedDefaultLabel;
 	@Getter
 	private final ResultType type;
 
 	@Getter
 	private final ResultPrinters.Printer printer;
 
-	public LocalizedDefaultResultInfo(@NonNull Function<PrintSettings, String> localizedLabelProvider, @CheckForNull Function<PrintSettings, String> localizedDefaultLabelProvider, ResultType type, @CheckForNull ResultPrinters.Printer printer, Set<SemanticType> semantics) {
-		super(semantics);
-		this.localizedLabelProvider = localizedLabelProvider;
-		this.localizedDefaultLabelProvider = Objects.requireNonNullElse(localizedDefaultLabelProvider, localizedLabelProvider);
+	public LocalizedDefaultResultInfo(String label, String defaultLabel, ResultType type, Set<SemanticType> semantics, PrintSettings settings, ResultPrinters.Printer printer) {
+		super(semantics, settings);
+		this.localizedLabel = label;
+		this.localizedDefaultLabel = defaultLabel;
 		this.type = type;
-		this.printer = Objects.requireNonNullElse(printer, ResultPrinters.defaultPrinter(type));
+		this.printer = printer;
 	}
 
 
 	@Override
-	public String userColumnName(PrintSettings printSettings) {
-		return localizedLabelProvider.apply(printSettings);
+	public String userColumnName() {
+		return localizedLabel;
 	}
 
 	@Override
-	public String defaultColumnName(PrintSettings printSettings) {
-		return localizedDefaultLabelProvider.apply(printSettings);
+	public String defaultColumnName() {
+		return localizedDefaultLabel;
 	}
 
 	@Override
@@ -73,13 +71,4 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	}
 
 
-
-	//	TODO @Override
-//	public String toString() {
-//		return "LocalizedDefaultResultInfo{" +
-//			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
-//			   ", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
-//			   ", type=" + type +
-//			   '}';
-//	}
 }

@@ -128,7 +128,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final String printValue = getPrinter().print(o, printSettings);
+			final String printValue = getPrinter().print(o);
 			recordConsumer.addBinary(Binary.fromString(printValue));
 		}
 	}

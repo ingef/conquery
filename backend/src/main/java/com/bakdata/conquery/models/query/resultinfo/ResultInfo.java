@@ -24,10 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class ResultInfo {
 
+	private final PrintSettings settings;
+
 	@ToString.Include
 	private final Set<SemanticType> semantics = new HashSet<>();
 
-	protected ResultInfo(Collection<SemanticType> semantics) {
+	protected ResultInfo(Collection<SemanticType> semantics, PrintSettings settings) {
+		this.settings = settings;
 		this.semantics.addAll(semantics);
 	}
 
@@ -35,44 +38,43 @@ public abstract class ResultInfo {
 		semantics.addAll(Arrays.asList(incoming));
 	}
 
-	public Set<SemanticType> getSemantics() {
-		return ImmutableSet.copyOf(semantics);
-	}
+	public abstract String userColumnName();
 
-	public abstract String userColumnName(PrintSettings printSettings);
-
-	/**
-	 * Use default label schema which ignores user labels.
-	 */
-	public abstract String defaultColumnName(PrintSettings printSettings);
-
-	@ToString.Include
-	public abstract ResultType getType();
-
-	public abstract String getDescription();
-
-	public abstract ResultPrinters.Printer getPrinter();
-
-
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
+	public ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
 		return ColumnDescriptor.builder()
 							   .label(collector.getUniqueName(this))
-							   .defaultLabel(defaultColumnName(settings))
+							   .defaultLabel(defaultColumnName())
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
 							   .description(getDescription())
 							   .build();
 	}
 
-	public final String printNullable(Object f, PrintSettings printSettings) {
-		if(f == null){
+	/**
+	 * Use default label schema which ignores user labels.
+	 */
+	public abstract String defaultColumnName();
+
+	@ToString.Include
+	public abstract ResultType getType();
+
+	public Set<SemanticType> getSemantics() {
+		return ImmutableSet.copyOf(semantics);
+	}
+
+	public abstract String getDescription();
+
+	public final String printNullable(Object f) {
+		if (f == null) {
 			return "";
 		}
 
-		return print(printSettings, f);
+		return print(f);
 	}
 
-	protected String print(PrintSettings printSettings, Object f) {
-		return getPrinter().print(f, printSettings);
+	protected String print(Object f) {
+		return getPrinter().print(f);
 	}
+
+	public abstract ResultPrinters.Printer getPrinter();
 }

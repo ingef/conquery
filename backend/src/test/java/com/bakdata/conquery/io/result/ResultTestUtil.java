@@ -2,18 +2,21 @@ package com.bakdata.conquery.io.result;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -43,20 +46,24 @@ public class ResultTestUtil {
 		concept.setDataset(new Dataset("dataset"));
 	}
 
+	private static final PrintSettings
+			PRINT_SETTINGS =
+			new PrintSettings(false, Locale.ROOT, null, new ConqueryConfig(), null, (selectInfo) -> selectInfo.getSelect().getLabel());
+
 	public static List<ResultInfo>
 			ID_FIELDS =
 			Stream.of("id1", "id2")
-				  .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", new ResultPrinters.StringPrinter(), Set.of(new SemanticType.IdT("ID"))))
+				  .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", new ResultPrinters.StringPrinter(), Set.of(new SemanticType.IdT("ID")), PRINT_SETTINGS))
 				  .collect(Collectors.toList());
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
 		return new ManagedQuery(null, null, null, null) {
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(resultType -> new TypedSelectDummy(resultType))
-									   .map(select -> new SelectResultInfo(select, new CQConcept()))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), PRINT_SETTINGS))
 									   .collect(Collectors.toList());
 			}
 

@@ -70,7 +70,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		);
 		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
 
-		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
+		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos(context.getSqlPrintSettings())));
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	) {
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-    String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings());
+    String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings().getLocale());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
 		List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);

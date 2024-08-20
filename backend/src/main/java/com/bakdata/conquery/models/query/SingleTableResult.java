@@ -29,7 +29,7 @@ public interface SingleTableResult {
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
+		for (ResultInfo header : config.getIdColumns().getIdResultInfos(settings)) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
 												   .type(ResultType.Primitive.STRING.typeInfo())
@@ -38,12 +38,12 @@ public interface SingleTableResult {
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
+		getResultInfos(settings).forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	List<ResultInfo> getResultInfos();
+	List<ResultInfo> getResultInfos(PrintSettings printSettings);
 
 	/**
 	 * @param limit Optionally limits how many lines are emitted.

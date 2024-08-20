@@ -1,13 +1,13 @@
 package com.bakdata.conquery.sql.conversion.model;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.Named;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -53,13 +53,13 @@ public class NameGenerator {
 		return ensureValidLength("%s-%d".formatted(name, selectCount));
 	}
 
-	public String conceptName(CQConcept concept, PrintSettings printSettings) {
-		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(printSettings));
+	public String conceptName(CQConcept concept, Locale locale) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(locale));
 		return ensureValidLength("concept_%s-%d".formatted(conceptLabel, ++conceptCount));
 	}
 
-	public String conceptConnectorName(CQConcept concept, Connector connector, PrintSettings printSettings) {
-		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(printSettings));
+	public String conceptConnectorName(CQConcept concept, Connector connector, Locale locale) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(locale));
 		String connectorLabel = lowerAndReplaceWhitespace(connector.getName());
 		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
 	}

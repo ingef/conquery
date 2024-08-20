@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptElementsAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
@@ -42,21 +43,21 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter() {
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
 		if (isAsIds()) {
-			return new ResultPrinters.ListPrinter((rawValue, printSettings) -> getHolder().findConcept().printConceptLocalId(printSettings, rawValue));
+			return new ResultPrinters.ListPrinter((rawValue) -> getHolder().findConcept().printConceptLocalId(printSettings, rawValue), printSettings);
 		}
 
-		return new ResultPrinters.ListPrinter(new ResultPrinters.StringPrinter());
+		return new ResultPrinters.ListPrinter(new ResultPrinters.StringPrinter(), printSettings);
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
 		if (!isAsIds()) {
-			return new SelectResultInfo(this, cqConcept);
+			return new SelectResultInfo(this, cqConcept, settings);
 		}
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())));
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())), settings);
 	}
 
 	@JsonIgnore

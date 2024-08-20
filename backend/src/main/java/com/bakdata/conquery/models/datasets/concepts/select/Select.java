@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
@@ -85,8 +86,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + getLabel();
 	}
 
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
-		return new SelectResultInfo(this, cqConcept);
+	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
+		return new SelectResultInfo(this, cqConcept, settings);
 	}
 
 
@@ -126,7 +127,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return false;
 	}
 
-	public ResultPrinters.Printer createPrinter() {
-		return ResultPrinters.defaultPrinter(getResultType());
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+		return ResultPrinters.defaultPrinter(getResultType(), printSettings);
 	}
 }

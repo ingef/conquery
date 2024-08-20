@@ -4,12 +4,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.Function;
 
-import c10n.C10N;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
@@ -61,6 +58,10 @@ public class PrintSettings {
 
 	private final PrintIdMapper idMapper;
 
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper) {
+		this(prettyPrint, locale, namespace, config, idMapper, null);
+	}
+
 	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
 		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
 	}
@@ -88,15 +89,5 @@ public class PrintSettings {
 
 	}
 
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper) {
-		this(prettyPrint, locale, namespace, config, idMapper, null);
-	}
-
-	private final Map<Class, Object> C10nCache =  new HashMap<>();
-
-	public <T> T getLocalized(Class<T> clazz) {
-		C10N.get(clazz);
-		return (T) C10nCache.computeIfAbsent(clazz, (ignored) -> C10N.get(clazz, locale));
-	}
 
 }

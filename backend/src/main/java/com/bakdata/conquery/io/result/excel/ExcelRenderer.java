@@ -43,28 +43,20 @@ public class ExcelRenderer {
 
 	public static final int MAX_LINES = 1_048_576;
 
-//	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
-//			ResultType.DateT.class, ExcelRenderer::writeDateCell,
-//			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
-//			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-//			ResultType.NumericT.class, ExcelRenderer::writeNumericCell,
-//			ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell
-//	);
-
 	public TypeWriter writer(ResultType type) {
 		if(!(type instanceof ResultType.Primitive)){
 			//Excel cannot handle complex types so we just toString them.
-			return ExcelRenderer::writeStringCell;
+			return (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
 		}
 
 		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> ExcelRenderer::writeBooleanCell;
+			case BOOLEAN -> (info, cell, value, styles1, styles12) -> writeBooleanCell(info, value, styles1, styles12);
 			case INTEGER -> ExcelRenderer::writeIntegerCell;
 			case MONEY -> ExcelRenderer::writeMoneyCell;
 			case NUMERIC -> ExcelRenderer::writeNumericCell;
 			case DATE -> ExcelRenderer::writeDateCell;
-			case STRING -> ExcelRenderer::writeStringCell;
-			default -> ExcelRenderer::writeStringCell;
+			case STRING -> (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
+			default -> (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
 		};
 	}
 
@@ -89,11 +81,9 @@ public class ExcelRenderer {
 		void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
 	}
 
-	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
-			List<ResultInfo> idHeaders,
-			E exec,
-			OutputStream outputStream, OptionalLong limit) throws IOException {
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
+			throws IOException {
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos(printSettings);
 
 		setMetaData(exec);
 
@@ -314,10 +304,10 @@ public class ExcelRenderer {
 	}
 
 	// Type specific cell writers
-	private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
+	private static void writeStringCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
 		cell.setCellValue(
 				info.printNullable(
-						value, settings
+						value
 				));
 	}
 
@@ -325,12 +315,12 @@ public class ExcelRenderer {
 	 * This writer is only used on Columns with the result type {@link ResultType.Primitive#BOOLEAN}, not on complex types such as `LIST[BOOLEAN]`,
 	 * because MS Excel can only represent those as strings
 	 */
-	private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
+	private static void writeBooleanCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
 		if (value instanceof Boolean aBoolean) {
 			cell.setCellValue(aBoolean);
 			return;
 		}
-		cell.setCellValue(info.printNullable(value, settings));
+		cell.setCellValue(info.printNullable(value));
 	}
 
 	private static void writeDateCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {

@@ -49,24 +49,18 @@ public class ResultParquetProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				namespace,
-				config,
-				idPrinter::createId
-		);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId);
 
-		StreamingOutput out = output -> {
+		final StreamingOutput out = output -> {
 
 			final SingleTableResult singleTableResult = (SingleTableResult) exec;
 			ParquetRenderer.writeToStream(
 					output,
-					config.getIdColumns().getIdResultInfos(),
-					singleTableResult.getResultInfos(),
+					config.getIdColumns().getIdResultInfos(settings),
+					singleTableResult.getResultInfos(settings),
 					settings,
 					singleTableResult.streamResults(limit)
 			);

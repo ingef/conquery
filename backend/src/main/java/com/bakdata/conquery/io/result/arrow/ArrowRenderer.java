@@ -264,7 +264,7 @@ public class ArrowRenderer {
 							return null;
 						}
 						// We reference the printer directly,
-						return printer.print(line[pos], settings);
+						return printer.print(line[pos]);
 					});
         }
 

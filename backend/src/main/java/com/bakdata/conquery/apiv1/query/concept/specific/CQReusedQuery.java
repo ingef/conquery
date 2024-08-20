@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -92,8 +93,8 @@ public class CQReusedQuery extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return resolvedQuery.getReusableComponents().getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+		return resolvedQuery.getReusableComponents().getResultInfos(settings);
 	}
 
 	@Override

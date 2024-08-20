@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -49,13 +50,16 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final User testUser = standaloneSupport.getTestUser();
 
+
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
 		//check result info size
-		List<ResultInfo> resultInfos = executionResult.getResultInfos();
+		PrintSettings printSettings = new PrintSettings(true, Locale.ROOT, standaloneSupport.getNamespace(), standaloneSupport.getConfig(), null);
+
+		List<ResultInfo> resultInfos = executionResult.getResultInfos(printSettings);
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")

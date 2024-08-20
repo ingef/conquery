@@ -105,8 +105,8 @@ public class ResultArrowProcessor {
 
 
 		// Collect ResultInfos for id columns and result columns
-		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos(settings);
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos(settings);
 
 		StreamingOutput out = output -> {
 			try {

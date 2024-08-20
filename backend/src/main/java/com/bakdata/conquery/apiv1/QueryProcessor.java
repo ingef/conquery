@@ -560,13 +560,6 @@ public class QueryProcessor {
 	}
 
 	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
-		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
-
-		final Optional<ResultInfo>
-				dateInfo =
-				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
-
-		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
@@ -578,6 +571,14 @@ public class QueryProcessor {
 		final PrintSettings printSettings =
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
+
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos(printSettings);
+
+		final Optional<ResultInfo>
+				dateInfo =
+				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+
+		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
 	}

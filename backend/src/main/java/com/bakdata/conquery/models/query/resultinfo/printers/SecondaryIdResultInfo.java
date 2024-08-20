@@ -20,8 +20,8 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	private final ResultPrinters.Printer printer;
 
 
-	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId) {
-		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)));
+	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId, PrintSettings settings) {
+		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)), settings);
 		this.secondaryId = secondaryId;
 		type = ResultType.Primitive.STRING;
 		printer = secondaryId.getMapping() == null
@@ -35,19 +35,19 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String userColumnName(PrintSettings printSettings) {
+	public String userColumnName() {
 		return secondaryId.getLabel();
 	}
 
 	@Override
-	public String defaultColumnName(PrintSettings printSettings) {
+	public String defaultColumnName() {
 		return secondaryId.getLabel();
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
+	public ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
 		return ColumnDescriptor.builder()
-							   .label(defaultColumnName(settings))
+							   .label(defaultColumnName())
 							   .defaultLabel(secondaryId.getLabel())
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())

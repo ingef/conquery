@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
@@ -39,11 +40,11 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter() {
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
 		if(getMapping() == null){
-			return super.createPrinter();
+			return super.createPrinter(printSettings);
 		}
 
-		return new ResultPrinters.ListPrinter(new ResultPrinters.MappedPrinter(getMapping()));
+		return new ResultPrinters.ListPrinter(new ResultPrinters.MappedPrinter(getMapping()), printSettings);
 	}
 }

@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -35,8 +37,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @CPSType(id = "AND", base = CQElement.class)
+@ToString
 public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable {
 
 	@Getter
@@ -65,7 +69,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		Preconditions.checkNotNull(dateAction);
 
-		QPNode[] nodes = new QPNode[children.size()];
+		final QPNode[] nodes = new QPNode[children.size()];
 		for (int i = 0; i < nodes.length; i++) {
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
@@ -109,32 +113,35 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		List<ResultInfo> resultInfos = new ArrayList<>();
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 		for (CQElement c : children) {
-			resultInfos.addAll(c.getResultInfos());
+			resultInfos.addAll(c.getResultInfos(settings));
 		}
 
 		if (createExists()) {
-			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.Primitive.BOOLEAN, new ResultPrinters.BooleanPrinter(), Set.of()));
-		}
+			final ResultPrinters.BooleanPrinter printer = new ResultPrinters.BooleanPrinter(settings);
+			final String userOrDefaultLabel = getUserOrDefaultLabel(settings.getLocale());
+			final String defaultLabel = defaultLabel(settings.getLocale());
 
+			resultInfos.add(new LocalizedDefaultResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings, printer));
+		}
 		return resultInfos;
 	}
 
 	@Override
-	public String getUserOrDefaultLabel(PrintSettings printSettings) {
+	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
 		if (getLabel() != null) {
 			return getLabel();
 		}
-		return QueryUtils.createDefaultMultiLabel(children, " " + printSettings.getLocalized(CQElementC10n.class).and() + " ", printSettings);
+		return QueryUtils.createDefaultMultiLabel(children, " " + C10nCache.getLocalized(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override
-	public String defaultLabel(PrintSettings printSettings) {
+	public String defaultLabel(Locale locale) {
 		// This forces the default label on children even if there was a user label
-		return QueryUtils.createTotalDefaultMultiLabel(children, " " + printSettings.getLocalized(CQElementC10n.class).and() + " ", printSettings);
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10nCache.getLocalized(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override

@@ -45,16 +45,19 @@ import org.junit.jupiter.api.Test;
 public class ParquetResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	public static final UniqueNamer
-			UNIQUE_NAMER =
-			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
+	private static final PrintSettings
+			PRINT_SETTINGS =
+			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+
 
 	@Test
 	void generateSchema() {
-		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, UNIQUE_NAMER);
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), PRINT_SETTINGS)).collect(Collectors.toList());
+
+		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, uniqueNamer);
 
 		assertThat(messageType).isEqualTo(
 				Types.buildMessage()
@@ -115,7 +118,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(printSettings), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -137,7 +140,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos(), printSettings));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos(printSettings), printSettings));
 
 	}
 

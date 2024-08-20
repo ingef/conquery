@@ -23,8 +23,8 @@ public class ColumnResultInfo extends ResultInfo {
 	private final ResultPrinters.Printer printer;
 
 
-	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics, ResultPrinters.Printer printer, String description) {
-		super(semantics);
+	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics, ResultPrinters.Printer printer, String description, PrintSettings settings) {
+		super(semantics, settings);
 		this.column = column;
 		this.type = type;
 		this.description = description;
@@ -32,19 +32,19 @@ public class ColumnResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String userColumnName(PrintSettings printSettings) {
+	public String userColumnName() {
 		return null;
 	}
 
 	@Override
-	public String defaultColumnName(PrintSettings printSettings) {
+	public String defaultColumnName() {
 		return column.getTable().getLabel() + " " + column.getLabel();
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
+	public ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
 		return ColumnDescriptor.builder()
-							   .label(defaultColumnName(settings))
+							   .label(defaultColumnName())
 							   .defaultLabel(getColumn().getLabel())
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
