@@ -133,6 +133,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final int size = resultInfos.size();
 		final String[] columnNames = new String[size];
 
+		//TODO pull renderValue logic into outer loop, only use array as lookup
+
 		for (int index = 0; index < size; index++) {
 			final ResultInfo resultInfo = resultInfos.get(index);
 

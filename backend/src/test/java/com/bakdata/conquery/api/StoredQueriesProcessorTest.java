@@ -198,6 +198,7 @@ public class StoredQueriesProcessorTest {
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
@@ -217,6 +218,7 @@ public class StoredQueriesProcessorTest {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
