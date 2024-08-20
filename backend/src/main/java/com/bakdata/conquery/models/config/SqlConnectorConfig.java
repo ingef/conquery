@@ -13,6 +13,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
+/**
+ * Configuration for SQL databases to send dataset queries to.
+ * <p/>
+ * Multiple databases can be configured for different datasets.
+ *
+ * @implNote At the moment, dataset names are statically mapped to a database by the {@link SqlConnectorConfig#databaseConfigs}-map.
+ */
 @Data
 @Builder
 @Jacksonized
