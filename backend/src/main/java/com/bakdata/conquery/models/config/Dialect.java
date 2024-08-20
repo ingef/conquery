@@ -3,6 +3,11 @@ package com.bakdata.conquery.models.config;
 import lombok.Getter;
 import org.jooq.SQLDialect;
 
+/**
+ * The dialect sets SQL vendor specific query transformation rules.
+ * <p/>
+ * There is no fallback dialect, so the dialect must fit the targeted database.
+ */
 @Getter
 public enum Dialect {
 

@@ -13,8 +13,8 @@ public interface Introspection {
 	String getDescription();
 	String getExample();
 	File getFile();
-	
-	public static Introspection from(File root, ClassInfo cl) {
+
+	static Introspection from(File root, ClassInfo cl) {
 		File f = new File(root, "backend/src/main/java/"+cl.getName().replace('.', '/')+".java");
 		try {
 			if(cl.isInnerClass()) {
