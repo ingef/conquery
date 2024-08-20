@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.bakdata.conquery.handler.GroupHandler;
 import com.bakdata.conquery.handler.SimpleWriter;
 import com.bakdata.conquery.model.Group;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.StaticJavaParser;
 import com.github.powerlibraries.io.Out;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
@@ -17,10 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoDoc {
 
 	public static void main(String[] args) throws IOException {
+		configureJavaParser();
+
 		new AutoDoc().start(new File(args.length == 0 ? "./docs/" : args[0]));
 	}
 
-	private ScanResult scan;
+	private static void configureJavaParser() {
+		ParserConfiguration parserConfiguration = StaticJavaParser.getParserConfiguration();
+		parserConfiguration.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+	}
+
+	private final ScanResult scan;
 
 	public AutoDoc() {
 		scan = new ClassGraph()

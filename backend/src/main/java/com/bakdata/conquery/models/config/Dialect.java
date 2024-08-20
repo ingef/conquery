@@ -11,7 +11,13 @@ import org.jooq.SQLDialect;
 @Getter
 public enum Dialect {
 
+	/**
+	 * Dialect for PostgreSQL database
+	 */
 	POSTGRESQL(SQLDialect.POSTGRES, 63),
+	/**
+	 * Dialect for SAP HANA database
+	 */
 	HANA(SQLDialect.DEFAULT, 127);
 
 	private final SQLDialect jooqDialect;
