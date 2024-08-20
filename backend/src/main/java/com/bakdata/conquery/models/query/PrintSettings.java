@@ -86,7 +86,6 @@ public class PrintSettings {
 		this.currencyFormat = DecimalFormat.getCurrencyInstance(locale);
 		currencyFormat.setCurrency(currency);
 		currencyFormat.setMaximumFractionDigits(currency.getDefaultFractionDigits());
-
 	}
 
 

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -87,7 +88,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
-		return new SelectResultInfo(this, cqConcept, settings);
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 	}
 
 

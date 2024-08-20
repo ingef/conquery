@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
@@ -55,7 +56,7 @@ public class ParquetResultGenerationTest {
 		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
 		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept(), PRINT_SETTINGS)).collect(Collectors.toList());
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
 
 		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, uniqueNamer);
 

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -168,7 +169,7 @@ public class DefaultColumnNameTest {
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
-		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, SETTINGS);
+		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet(), SETTINGS);
 
 		assertThat(uniqNamer.getUniqueName(info)).isEqualTo(expectedColumnName);
 	}

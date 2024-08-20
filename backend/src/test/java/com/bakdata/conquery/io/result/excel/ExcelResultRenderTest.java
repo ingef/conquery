@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
@@ -69,7 +70,7 @@ public class ExcelResultRenderTest {
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), printSettings))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
 									   .collect(Collectors.toList());
 			}
 

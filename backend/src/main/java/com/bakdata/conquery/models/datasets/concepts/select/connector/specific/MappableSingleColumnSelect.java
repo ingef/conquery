@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -49,7 +50,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
 
 		if (!isCategorical()) {
-			return new SelectResultInfo(this, cqConcept, settings);
+			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);

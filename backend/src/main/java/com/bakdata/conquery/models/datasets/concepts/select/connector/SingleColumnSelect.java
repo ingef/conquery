@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +56,7 @@ public abstract class SingleColumnSelect extends Select {
 			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);
 		}
 
-		return new SelectResultInfo(this, cqConcept, settings);
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 	}
 
 	@Nullable

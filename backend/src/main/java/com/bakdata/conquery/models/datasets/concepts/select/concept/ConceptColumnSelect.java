@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -54,7 +55,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
 		if (!isAsIds()) {
-			return new SelectResultInfo(this, cqConcept, settings);
+			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())), settings);

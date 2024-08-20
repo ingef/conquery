@@ -28,10 +28,6 @@ public class SelectResultInfo extends ResultInfo {
 		this.cqConcept = cqConcept;
 	}
 
-	public SelectResultInfo(Select select, CQConcept cqConcept, PrintSettings settings) {
-		this(select, cqConcept, Set.of(), settings);
-	}
-
 
 	@Override
 	public String getDescription() {

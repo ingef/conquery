@@ -63,7 +63,7 @@ public class ResultTestUtil {
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(resultType -> new TypedSelectDummy(resultType))
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), PRINT_SETTINGS))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS))
 									   .collect(Collectors.toList());
 			}
 
