@@ -95,13 +95,7 @@ public class ResultArrowProcessor {
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				namespace,
-				config,
-				idPrinter::createId
-		);
+		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
 
 		// Collect ResultInfos for id columns and result columns

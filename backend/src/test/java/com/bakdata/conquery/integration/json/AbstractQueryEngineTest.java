@@ -57,7 +57,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
 		//check result info size
-		PrintSettings printSettings = new PrintSettings(true, Locale.ROOT, standaloneSupport.getNamespace(), standaloneSupport.getConfig(), null);
+		PrintSettings printSettings = new PrintSettings(true, Locale.ROOT, standaloneSupport.getNamespace(), standaloneSupport.getConfig(), null, null);
 
 		List<ResultInfo> resultInfos = executionResult.getResultInfos(printSettings);
 

@@ -190,7 +190,11 @@ public class ResultPrinters {
 		}
 	}
 
-	public record ListPrinter(Printer elementPrinter, PrintSettings cfg) implements Printer {
+	public record ListPrinter(Printer elementPrinter, PrintSettings cfg, LocaleConfig.ListFormat listFormat) implements Printer {
+
+		public ListPrinter(Printer elementPrinter, PrintSettings cfg){
+			this(elementPrinter, cfg, cfg.getListFormat());
+		}
 
 		@Override
 		public String print(Object f) {
@@ -198,7 +202,6 @@ public class ResultPrinters {
 			// Jackson deserializes collections as lists instead of an array, if the type is not given
 			Preconditions.checkArgument(f instanceof List, "Expected a List got %s (as String `%s` )".formatted(f.getClass().getName(), f));
 
-			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
 			final StringJoiner joiner = listFormat.createListJoiner();
 
 			for (Object obj : (List<?>) f) {

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class UniqueNameTest {
 	@Test
 	void testNameCollision() {
-		PrintSettings settings = new PrintSettings(true, Locale.ROOT, null, new ConqueryConfig(), null);
+		PrintSettings settings = new PrintSettings(true, Locale.ROOT, null, new ConqueryConfig(), null, null);
 		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
 
 		final ExternalResultInfo info1 = new ExternalResultInfo("test", ResultType.Primitive.STRING, settings);

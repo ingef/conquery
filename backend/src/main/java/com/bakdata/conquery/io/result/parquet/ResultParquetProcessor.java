@@ -52,7 +52,7 @@ public class ResultParquetProcessor {
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
 		final StreamingOutput out = output -> {
 

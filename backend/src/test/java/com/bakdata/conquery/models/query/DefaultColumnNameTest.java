@@ -46,7 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j
 public class DefaultColumnNameTest {
 	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
+	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null, null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =

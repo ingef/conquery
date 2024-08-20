@@ -13,14 +13,14 @@ import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.Namespace;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * @implNote eager cache everything here, this helps avoid mistakes when rendering values.
+ */
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PrintSettings {
 
 	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = NumberFormat::getNumberInstance;
@@ -57,10 +57,6 @@ public class PrintSettings {
 	private final LocaleConfig.ListFormat listFormat;
 
 	private final PrintIdMapper idMapper;
-
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper) {
-		this(prettyPrint, locale, namespace, config, idMapper, null);
-	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
 		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
