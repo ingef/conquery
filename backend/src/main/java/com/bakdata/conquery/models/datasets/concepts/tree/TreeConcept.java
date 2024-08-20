@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
@@ -18,11 +16,12 @@ import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -207,34 +206,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public ConceptTreeNode<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
-	}
-
-	/**
-	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 * <p>
-	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
-	 */
-	public String printConceptLocalId(PrintSettings printSettings, Object rawValue) {
-
-		if (rawValue == null) {
-			return null;
-		}
-
-		final int localId = (int) rawValue;
-
-		final ConceptTreeNode<?> node = getElementByLocalId(localId);
-
-		if (!printSettings.isPrettyPrint()) {
-			return node.getId().toString();
-		}
-
-		if (node.getDescription() == null) {
-			return node.getLabel();
-		}
-
-		return node.getLabel() + " - " + node.getDescription();
-
 	}
 
 	public static class TreeConceptInitializer extends Initializing.Converter<TreeConcept> {}

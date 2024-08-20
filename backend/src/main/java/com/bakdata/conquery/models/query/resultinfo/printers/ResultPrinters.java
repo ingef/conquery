@@ -10,13 +10,13 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Preconditions;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,8 +48,8 @@ public class ResultPrinters {
 		String print(Object f);
 	}
 
-	@ToString()
-	public static class StringPrinter implements Printer {
+
+	public record StringPrinter() implements Printer {
 		@Override
 		public String print(Object f) {
 			return Objects.toString(f);
@@ -57,10 +57,7 @@ public class ResultPrinters {
 	}
 
 
-	@ToString()
-	@RequiredArgsConstructor
-	public static class IntegerPrinter implements Printer {
-		private final PrintSettings cfg;
+	public record IntegerPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -72,10 +69,7 @@ public class ResultPrinters {
 		}
 	}
 
-	@ToString()
-	@RequiredArgsConstructor
-	public static class NumericPrinter implements Printer {
-		private final PrintSettings cfg;
+	public record NumericPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -87,10 +81,7 @@ public class ResultPrinters {
 		}
 	}
 
-	@ToString()
-	@RequiredArgsConstructor
-	public static class MoneyPrinter implements Printer {
-		private final PrintSettings cfg;
+	public record MoneyPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -104,10 +95,7 @@ public class ResultPrinters {
 		}
 	}
 
-	@ToString()
-	@RequiredArgsConstructor
-	public static class DatePrinter implements Printer {
-		private final PrintSettings cfg;
+	public record DatePrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -118,17 +106,12 @@ public class ResultPrinters {
 		}
 	}
 
-	@ToString()
 
-	public static class DateRangePrinter implements Printer {
-		private final DatePrinter datePrinter;
-		private final PrintSettings cfg;
+	public record DateRangePrinter(DatePrinter datePrinter, PrintSettings cfg) implements Printer {
 
-		public DateRangePrinter(PrintSettings printSettings){
-			datePrinter = new DatePrinter(printSettings);
-			cfg = printSettings;
+		public DateRangePrinter(PrintSettings printSettings) {
+			this(new DatePrinter(printSettings), printSettings);
 		}
-
 
 		@Override
 		public String print(Object f) {
@@ -155,23 +138,13 @@ public class ResultPrinters {
 		}
 	}
 
-	@ToString()
-	public static class BooleanPrinter implements Printer {
-		private final PrintSettings cfg;
-
-		private final String trueVal;
-		private final String falseVal;
+	public record BooleanPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer {
 
 		public BooleanPrinter(PrintSettings cfg) {
-			this.cfg = cfg;
-			if (!cfg.isPrettyPrint()) {
-				trueVal =  "1";
-				falseVal = "0";
-			}
-			else {
-				trueVal = C10nCache.getLocalized(Results.class, cfg.getLocale()).True();
-				falseVal = C10nCache.getLocalized(Results.class, cfg.getLocale()).False();
-			}
+			this(cfg, cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).True() : "1", cfg.isPrettyPrint()
+																												 ? C10nCache.getLocalized(Results.class, cfg.getLocale())
+																															.False()
+																												 : "0");
 		}
 
 		@Override
@@ -196,8 +169,24 @@ public class ResultPrinters {
 	public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer {
 
 		@Override
-		public String print(Object f) {
-			return concept.printConceptLocalId(cfg, f);
+		public String print(Object rawValue) {
+			if (rawValue == null) {
+				return null;
+			}
+
+			final int localId = (int) rawValue;
+
+			final ConceptTreeNode<?> node = ((TreeConcept) concept).getElementByLocalId(localId);
+
+			if (!cfg.isPrettyPrint()) {
+				return node.getId().toString();
+			}
+
+			if (node.getDescription() == null) {
+				return node.getLabel();
+			}
+
+			return node.getLabel() + " - " + node.getDescription();
 		}
 	}
 
