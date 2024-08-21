@@ -3,9 +3,9 @@ package com.bakdata.conquery.introspection;
 import java.io.File;
 import java.util.Arrays;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.nodeTypes.NodeWithMembers;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
@@ -67,11 +67,11 @@ public class AbstractNodeWithMemberIntrospection<VALUE extends NodeWithJavadoc<?
 			else {
 				continue;
 			}
-			if (decl instanceof ClassOrInterfaceDeclaration cType) {
-				return new ClassIntrospection(file, cType);
+			if (decl instanceof EnumDeclaration enumDeclaration) {
+				return new EnumIntrospection(file, enumDeclaration);
 			}
-			if (decl instanceof RecordDeclaration recordDeclaration) {
-				return new RecordIntrospection(file, recordDeclaration);
+			if (decl instanceof TypeDeclaration<?> cType) {
+				return new AbstractNodeWithMemberIntrospection<>(file, cType);
 			}
 		}
 		throw new IllegalStateException(value.getNameAsString() + " has no inner type " + simpleName);
