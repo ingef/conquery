@@ -26,6 +26,7 @@ public class ClusterConfig extends Configuration {
 	private int entityBucketSize = 1000;
 
 	private Duration idleTimeOut =  Duration.minutes(5);
+	private Duration heartbeatTimeout = Duration.minutes(1);
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**

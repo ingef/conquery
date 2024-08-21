@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.jobs;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -40,11 +39,15 @@ public class JobManagerStatus {
 		return jobs.size();
 	}
 
+	@JsonIgnore
+	public Duration getAge() {
+		return Duration.between(timestamp, LocalDateTime.now());
+	}
+
 	// Used in AdminUIResource/jobs
 	@JsonIgnore
 	public String getAgeString() {
-		final Duration duration = Duration.between(timestamp, LocalDateTime.now());
 
-		return DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+		return DurationFormatUtils.formatDurationWords(getAge().toMillis(), true, true);
 	}
 }
