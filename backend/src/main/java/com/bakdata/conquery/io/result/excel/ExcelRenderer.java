@@ -344,15 +344,13 @@ public class ExcelRenderer {
 	}
 
 	public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
+		final CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
 		if (currencyStyle == null) {
 			// Print as cents or what ever the minor currency unit is
-			cell.setCellValue(value.toString());
+			cell.setCellValue(((BigDecimal) value).movePointRight(settings.getCurrency().getDefaultFractionDigits()).intValue());
 			return;
 		}
 		cell.setCellStyle(currencyStyle);
-		cell.setCellValue(
-				new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
-		);
+		cell.setCellValue(((BigDecimal) value).doubleValue());
 	}
 }

@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.common;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
+import com.bakdata.conquery.models.config.FrontendConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.With;
-import lombok.experimental.Wither;
 
 @With
 @Getter
@@ -20,30 +21,25 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 	private final T min;
 	private final T max;
 
-	public Range(T min, T max){
+	public Range(T min, T max) {
 		this.min = min;
 		this.max = max;
 
-		if(!isOrdered()) {
+		if (!isOrdered()) {
 			throw new IllegalArgumentException(String.format("min '%s' is not less than max '%s'", min, max));
 		}
 	}
 
+	@ValidationMethod(message = "If a range is not open in one direction, min needs to be less or equal to max")
+	@JsonIgnore
+	public final boolean isOrdered() {
+		return isOpen() || min.compareTo(max) <= 0;
+	}
+
 	@Override
-	public String toString() {
-		if (isExactly()) {
-			return "[" + getMin() + "]";
-		}
-
-		if (isAtLeast()) {
-			return "[" + getMin() + ", +∞)";
-		}
-
-		if (isAtMost()) {
-			return "(-∞, " + getMax() + "]";
-		}
-
-		return "[" + getMin() + ", " + getMax() + "]";
+	@JsonIgnore
+	public boolean isOpen() {
+		return max == null || min == null;
 	}
 
 	public static <T extends Comparable<?>> Range<T> exactly(T exactly) {
@@ -68,6 +64,23 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 	}
 
 	@Override
+	public String toString() {
+		if (isExactly()) {
+			return "[" + getMin() + "]";
+		}
+
+		if (isAtLeast()) {
+			return "[" + getMin() + ", +∞)";
+		}
+
+		if (isAtMost()) {
+			return "(-∞, " + getMax() + "]";
+		}
+
+		return "[" + getMin() + ", " + getMax() + "]";
+	}
+
+	@Override
 	@JsonIgnore
 	public boolean isExactly() {
 		return min != null && max != null && min.compareTo(max) == 0;
@@ -83,18 +96,6 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 	@JsonIgnore
 	public boolean isAtMost() {
 		return max != null && min == null;
-	}
-
-	@Override
-	@JsonIgnore
-	public boolean isAll() {
-		return max == null && min == null;
-	}
-
-	@Override
-	@JsonIgnore
-	public boolean isOpen() {
-		return max == null || min == null;
 	}
 
 	@Override
@@ -126,12 +127,24 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		return contains(other.getMin()) && contains(other.getMax());
 	}
 
-	@ValidationMethod(message = "If a range is not open in one direction, min needs to be less or equal to max")
+	@Override
 	@JsonIgnore
-	public final boolean isOrdered() {
-		return isOpen() || min.compareTo(max) <= 0;
+	public boolean isAll() {
+		return max == null && min == null;
 	}
 
+	@Override
+	public boolean contains(T value) {
+		if (value == null) {
+			return false;
+		}
+
+		if (getMin() != null && value.compareTo(getMin()) < 0) {
+			return false;
+		}
+
+		return getMax() == null || value.compareTo(getMax()) <= 0;
+	}
 
 	@Override
 	public Range<T> span(@NonNull Range<T> other) {
@@ -148,28 +161,15 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		return out;
 	}
 
-	@Override
-	public boolean contains(T value) {
-		if(value == null) {
-			return false;
-		}
-
-		if (getMin() != null && value.compareTo(getMin()) < 0) {
-			return false;
-		}
-
-		return getMax() == null || value.compareTo(getMax()) <= 0;
-	}
-
 	public static class IntegerRange extends Range<Integer> {
 		public IntegerRange(Integer min, Integer max) {
 			super(min, max);
 		}
 
-		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.IntegerRange(
-				Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
-				Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null));
+		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig) {
+			return new Range.IntegerRange(Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null), Optional.ofNullable(orig.getMax())
+																														 .map(Number::intValue)
+																														 .orElse(null));
 		}
 
 		@Override
@@ -177,30 +177,30 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			return value != null && contains(value.intValue());
 		}
 
-		public boolean contains(Number value) {
-			return value != null && contains(value.intValue());
-		}
-
 		public boolean contains(int value) {
-			if(getMin() != null && value < getMin()) {
+			if (getMin() != null && value < getMin()) {
 				return false;
 			}
-			if(getMax() != null && value > getMax()) {
+			if (getMax() != null && value > getMax()) {
 				return false;
 			}
 			return true;
 		}
+
+		public boolean contains(Number value) {
+			return value != null && contains(value.intValue());
+		}
 	}
 
 	public static class LongRange extends Range<Long> {
-		public LongRange (Long min, Long max) {
+		public LongRange(Long min, Long max) {
 			super(min, max);
 		}
 
-		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.LongRange(
-				Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
-				Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null));
+		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig) {
+			return new Range.LongRange(Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null), Optional.ofNullable(orig.getMax())
+																													   .map(Number::longValue)
+																													   .orElse(null));
 		}
 
 		@Override
@@ -208,18 +208,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			return value != null && contains(value.longValue());
 		}
 
-		public boolean contains(Number value) {
-			return value != null && contains(value.longValue());
-		}
-
 		public boolean contains(long value) {
-			if(getMin() != null && value < getMin()) {
+			if (getMin() != null && value < getMin()) {
 				return false;
 			}
-			if(getMax() != null && value > getMax()) {
+			if (getMax() != null && value > getMax()) {
 				return false;
 			}
 			return true;
+		}
+
+		public boolean contains(Number value) {
+			return value != null && contains(value.longValue());
 		}
 	}
 
@@ -228,10 +228,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			super(min, max);
 		}
 
-		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.FloatRange(
-				Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
-				Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null));
+		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig) {
+			return new Range.FloatRange(Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null), Optional.ofNullable(orig.getMax())
+																														 .map(Number::floatValue)
+																														 .orElse(null));
 		}
 
 		@Override
@@ -239,21 +239,21 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			return value != null && contains(value.floatValue());
 		}
 
-		public boolean contains(Number value) {
-			return value != null && contains(value.floatValue());
-		}
-
 		public boolean contains(float value) {
-			if(getMin() != null && value < getMin()) {
+			if (getMin() != null && value < getMin()) {
 				return false;
 			}
-			if(getMax() != null && value > getMax()) {
+			if (getMax() != null && value > getMax()) {
 				return false;
 			}
-			if(Float.isNaN(value)) {
+			if (Float.isNaN(value)) {
 				return false;
 			}
 			return true;
+		}
+
+		public boolean contains(Number value) {
+			return value != null && contains(value.floatValue());
 		}
 	}
 
@@ -262,10 +262,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			super(min, max);
 		}
 
-		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.DoubleRange(
-				Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
-				Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null));
+		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig) {
+			return new Range.DoubleRange(Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null), Optional.ofNullable(orig.getMax())
+																														   .map(Number::doubleValue)
+																														   .orElse(null));
 		}
 
 		@Override
@@ -273,21 +273,40 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			return value != null && contains(value.doubleValue());
 		}
 
-		public boolean contains(Number value) {
-			return value != null && contains(value.doubleValue());
-		}
-
 		public boolean contains(double value) {
-			if(getMin() != null && value < getMin()) {
+			if (getMin() != null && value < getMin()) {
 				return false;
 			}
-			if(getMax() != null && value > getMax()) {
+			if (getMax() != null && value > getMax()) {
 				return false;
 			}
-			if(Double.isNaN(value)) {
+			if (Double.isNaN(value)) {
 				return false;
 			}
 			return true;
 		}
+
+		public boolean contains(Number value) {
+			return value != null && contains(value.doubleValue());
+		}
 	}
+
+	public static class MoneyRange extends Range<BigDecimal> {
+		public MoneyRange(BigDecimal min, BigDecimal max) {
+			super(min, max);
+		}
+
+		public static MoneyRange from(IRange<? extends Number, ?> orig, FrontendConfig.CurrencyConfig currency) {
+			BigDecimal mappedMin = Optional.ofNullable(orig.getMin())
+									  .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+									  .orElse(null);
+			BigDecimal mappedMax = Optional.ofNullable(orig.getMax())
+									  .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+									  .orElse(null);
+			return new Range.MoneyRange(mappedMin, mappedMax);
+		}
+
+
+	}
+
 }

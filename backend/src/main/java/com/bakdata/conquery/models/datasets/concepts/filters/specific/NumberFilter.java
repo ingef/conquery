@@ -18,6 +18,11 @@ import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
 public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
+
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@EqualsAndHashCode.Exclude
+	private ConqueryConfig config;
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -46,8 +57,8 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 
 	@Override
 	public FilterNode<?> createFilterNode(RANGE value) {
-		return switch (getColumn().getType()) {
-			case MONEY -> new MoneyFilterNode(getColumn(), (Range.LongRange) value);
+				return switch (getColumn().getType()) {
+			case MONEY -> new MoneyFilterNode(getColumn(), Range.MoneyRange.from(value, config.getFrontend().getCurrency()));
 			case INTEGER -> new IntegerFilterNode(getColumn(), (Range.LongRange) value);
 			case DECIMAL -> new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
 			case REAL -> new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));

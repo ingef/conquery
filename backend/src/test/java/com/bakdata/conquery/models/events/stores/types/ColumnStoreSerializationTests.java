@@ -88,7 +88,7 @@ public class ColumnStoreSerializationTests {
 
 		return Arrays.asList(
 				new ScaledDecimalStore(13, IntArrayStore.create(10)),
-				new MoneyIntStore(IntArrayStore.create(10)),
+				new MoneyIntStore(IntArrayStore.create(10), 2),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),

@@ -42,27 +42,23 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ExcelResultRenderTest {
 
-	static {
-		I18n.init();
-	}
-
-	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
+	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
 	private static final List<String> printIdFields = List.of("id1", "id2");
 
+	static {
+		I18n.init();
+	}
 
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
-		PrintSettings printSettings = new PrintSettings(
-				true,
-				Locale.GERMAN,
-				null,
-				CONFIG,
-				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel());
+		PrintSettings
+				printSettings =
+				new PrintSettings(true, Locale.GERMAN, null, CONFIG, (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()), (selectInfo) -> selectInfo.getSelect()
+																																								  .getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
@@ -83,13 +79,9 @@ public class ExcelResultRenderTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(),printSettings);
+		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
 
-		renderer.renderToStream(
-				ResultTestUtil.ID_FIELDS,
-				mquery,
-				output, OptionalLong.empty(), printSettings
-		);
+		renderer.renderToStream(ResultTestUtil.ID_FIELDS, mquery, output, OptionalLong.empty(), printSettings);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
@@ -137,26 +129,24 @@ public class ExcelResultRenderTest {
 	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
-		results.stream()
-				.map(EntityResult.class::cast)
-				.forEach(res -> {
+		results.stream().map(EntityResult.class::cast).forEach(res -> {
 
-					for (Object[] line : res.listResultLines()) {
-						StringJoiner valueJoiner = new StringJoiner("\t");
-						valueJoiner.add(String.valueOf(res.getEntityId()));
-						valueJoiner.add(String.valueOf(res.getEntityId()));
-						for (int lIdx = 0; lIdx < line.length; lIdx++) {
-							Object val = line[lIdx];
-							if(val == null) {
-								valueJoiner.add("null");
-								continue;
-							}
-							ResultInfo info = resultInfos.get(lIdx);
-							joinValue(valueJoiner, val, info);
-						}
-						expected.add(valueJoiner.toString());
+			for (Object[] line : res.listResultLines()) {
+				StringJoiner valueJoiner = new StringJoiner("\t");
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				for (int lIdx = 0; lIdx < line.length; lIdx++) {
+					Object val = line[lIdx];
+					if (val == null) {
+						valueJoiner.add("null");
+						continue;
 					}
-				});
+					ResultInfo info = resultInfos.get(lIdx);
+					joinValue(valueJoiner, val, info);
+				}
+				expected.add(valueJoiner.toString());
+			}
+		});
 
 		return expected;
 	}
@@ -172,7 +162,7 @@ public class ExcelResultRenderTest {
 		}
 
 		if (info.getType().equals(ResultType.Primitive.MONEY)) {
-			printVal = printVal + " €";
+			printVal += " €";
 		}
 		valueJoiner.add(printVal);
 	}

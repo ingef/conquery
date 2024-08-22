@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -39,10 +38,6 @@ public class ResultPrinters {
 			case STRING -> new StringPrinter();
 			case MONEY -> new MoneyPrinter(printSettings);
 		};
-	}
-
-	public BigDecimal readMoney(PrintSettings cfg, Number value) {
-		return new BigDecimal(value.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
 	}
 
 	public interface Printer {
@@ -86,8 +81,7 @@ public class ResultPrinters {
 		public String print(Object f) {
 
 			if (cfg.isPrettyPrint()) {
-
-				return cfg.getDecimalFormat().format(readMoney(cfg, (Number) f));
+				return cfg.getDecimalFormat().format(f);
 			}
 
 			return f.toString();

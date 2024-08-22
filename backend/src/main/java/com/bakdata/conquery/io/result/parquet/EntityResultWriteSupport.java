@@ -242,7 +242,8 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 		return switch (((ResultType.Primitive) resultType)) {
 			case BOOLEAN -> new BooleanTColumnConsumer();
-			case INTEGER, DATE, MONEY -> new IntegerTColumnConsumer();
+			case INTEGER, DATE -> new IntegerTColumnConsumer();
+			case MONEY -> new IntegerTColumnConsumer(); //TODO shift point left
 			case NUMERIC -> new NumericTColumnConsumer();
 			case DATE_RANGE -> new DateRangeTColumnConsumer();
 			case STRING -> new StringTColumnConsumer(printer, printSettings);
