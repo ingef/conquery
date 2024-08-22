@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
@@ -197,10 +198,11 @@ public class StoredQueriesProcessorTest {
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				// With method is mocked because the ExcelResultProvider needs some info to check dimensions,
 				// but actually resolving the query here requires much more setup
 				return Collections.emptyList();
@@ -216,10 +218,11 @@ public class StoredQueriesProcessorTest {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return Collections.emptyList();
 			}
 		};

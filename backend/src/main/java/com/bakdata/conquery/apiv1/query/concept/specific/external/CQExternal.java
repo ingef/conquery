@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -27,8 +28,8 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
+import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -214,7 +215,7 @@ public class CQExternal extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
 		if (extra == null) {
 			return Collections.emptyList();
 		}
@@ -224,11 +225,10 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			String column = headers[col];
+			final String column = headers[col];
 
-			resultInfos.add(new SimpleResultInfo(column, onlySingles ?
-														 ResultType.StringT.INSTANCE :
-														 new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(ResultType.Primitive.STRING);
+			resultInfos.add(new ExternalResultInfo(column, type, settings));
 		}
 
 		return resultInfos;

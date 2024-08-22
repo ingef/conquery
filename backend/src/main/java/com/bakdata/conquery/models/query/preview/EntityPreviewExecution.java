@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -38,6 +37,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -133,6 +133,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final int size = resultInfos.size();
 		final String[] columnNames = new String[size];
 
+		//TODO pull renderValue logic into outer loop, only use array as lookup
+
 		for (int index = 0; index < size; index++) {
 			final ResultInfo resultInfo = resultInfos.get(index);
 
@@ -173,65 +175,29 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			return null;
 		}
 
-		if (type instanceof ResultType.StringT stringT) {
-
-			// StringT may have a mapping that translates values
-			final String string = stringT.printNullable(printSettings, value);
-
-			if (string.isBlank()) {
-				return null;
-			}
-
-			return new TextNode(string);
-		}
-
-		if (type instanceof ResultType.DateT) {
-			// TODO this sidesteps issues with Jackson not localizing LocalDates when printing.
-			//  The proper approach would be to return LocalDates and configure Jackson/DateFormatter to request-scope localization.
-			// TODO is this actually a sneaky frontend-issue? Considering the other values are additionally rendered in the frontend?
-			return new TextNode(ResultType.DateT.INSTANCE.print(printSettings, value));
-		}
-
-		if (type instanceof ResultType.DateRangeT) {
-			//TODO this is not yet properly localised, we will need to fix this either in FE/BE
-			final List<Integer> values = (List<Integer>) value;
-			return CDateRange.fromList(values);
-		}
-
-		if (type instanceof ResultType.IntegerT) {
-			return new IntNode((Integer) value);
-		}
-
-		if (type instanceof ResultType.BooleanT) {
-			return BooleanNode.valueOf((Boolean) value);
-		}
-
-		if (type instanceof ResultType.MoneyT) {
-			return new BigDecimal(((Number) value).longValue()).movePointLeft(printSettings.getCurrency().getDefaultFractionDigits());
-		}
-
-		if (type instanceof ResultType.NumericT) {
-			return DecimalNode.valueOf((BigDecimal) value);
-		}
-
-
-
-
-		if (type instanceof ResultType.ListT listT) {
+		if (type instanceof ResultType.ListT<?> listT) {
 			return ((List<?>) value).stream().map(entry -> renderValue(entry, listT.getElementType(), printSettings)).collect(Collectors.toList());
 		}
 
-		throw new IllegalArgumentException(String.format("Don't know how to handle %s", type));
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> BooleanNode.valueOf((Boolean) value);
+			case INTEGER -> new IntNode((Integer) value);
+			case NUMERIC -> DecimalNode.valueOf((BigDecimal) value);
+			case DATE -> new TextNode(new ResultPrinters.DatePrinter(printSettings).print(value)); //TODO bind printers in outer loop
+			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter(printSettings).print(value)); //TODO bind printers in outer loop
+			case STRING -> new TextNode(value.toString()); //TODO mapping
+			case MONEY -> ResultPrinters.readMoney(printSettings, ((Number) value));
+		};
 	}
 
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
 	 */
-	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
-		for (ResultInfo info : query.getResultInfos()) {
+		for (ResultInfo info : query.getResultInfos(printSettings)) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
@@ -299,14 +265,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos(printSettings).size(); index++) {
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos(printSettings).get(index);
 
 
 			final Object printed = renderValue(values[index], resultInfo.getType(), printSettings);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
+					resultInfo.userColumnName(),
 					printed,
 					resultInfo.getType().typeInfo(),
 					resultInfo.getDescription(),
@@ -336,13 +302,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(printSettings), select2desc, printSettings);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc, printSettings);
 
 
 			final EntityPreviewStatus.TimeStratifiedInfos
@@ -442,8 +408,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return getValuesQuery().getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+		return getValuesQuery().getResultInfos(printSettings);
 	}
 
 	@Override

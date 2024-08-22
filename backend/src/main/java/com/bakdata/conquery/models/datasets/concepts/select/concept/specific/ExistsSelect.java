@@ -33,8 +33,8 @@ public class ExistsSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.BooleanT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.BOOLEAN;
 	}
 
 	private Set<Table> collectRequiredTables() {

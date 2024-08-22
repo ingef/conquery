@@ -275,6 +275,7 @@ public class QueryUtils {
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
 		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+
 		if (label == null) {
 			label = cqConcept.getConcept().getLabel();
 		}

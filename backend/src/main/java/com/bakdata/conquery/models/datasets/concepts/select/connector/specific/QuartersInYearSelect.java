@@ -35,7 +35,7 @@ public class QuartersInYearSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 }

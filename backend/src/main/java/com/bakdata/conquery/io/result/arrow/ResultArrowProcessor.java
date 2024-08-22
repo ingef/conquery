@@ -95,18 +95,12 @@ public class ResultArrowProcessor {
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				namespace,
-				config,
-				idPrinter::createId
-		);
+		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
 
 		// Collect ResultInfos for id columns and result columns
-		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos(settings);
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos(settings);
 
 		StreamingOutput out = output -> {
 			try {

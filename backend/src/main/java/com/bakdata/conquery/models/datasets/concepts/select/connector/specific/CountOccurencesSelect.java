@@ -48,6 +48,6 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+		return ResultType.Primitive.INTEGER;
 	}
 }

@@ -1,9 +1,14 @@
 package com.bakdata.conquery.sql.conversion;
 
+import java.util.Locale;
+
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
@@ -36,9 +41,10 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 		this.executionService = executionService;
 	}
 
-	public ConversionContext convert(QueryDescription queryDescription) {
+	public ConversionContext convert(QueryDescription queryDescription, Namespace namespace, ConqueryConfig conqueryConfig) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.idColumns(idColumns)
+														.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, namespace, conqueryConfig, null, null))
 														.config(config)
 														.nameGenerator(nameGenerator)
 														.nodeConversions(this)

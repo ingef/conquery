@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
@@ -66,10 +67,10 @@ public class ExcelResultRenderTest {
 		List<EntityResult> results = getTestEntityResults();
 
 		ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept()))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
 									   .collect(Collectors.toList());
 			}
 
@@ -87,7 +88,7 @@ public class ExcelResultRenderTest {
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,
 				mquery,
-				output, OptionalLong.empty()
+				output, OptionalLong.empty(), printSettings
 		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
@@ -96,7 +97,7 @@ public class ExcelResultRenderTest {
 		List<String> computed = readComputed(inputStream, printSettings);
 
 
-		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), printSettings);
+		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(printSettings));
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -133,7 +134,7 @@ public class ExcelResultRenderTest {
 	}
 
 
-	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream()
@@ -151,7 +152,7 @@ public class ExcelResultRenderTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							joinValue(settings, valueJoiner, val, info);
+							joinValue(valueJoiner, val, info);
 						}
 						expected.add(valueJoiner.toString());
 					}
@@ -160,17 +161,17 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
-		String printVal = info.getType().printNullable(settings, val);
+	private void joinValue(StringJoiner valueJoiner, Object val, ResultInfo info) {
+		String printVal = info.printNullable(val);
 
-		if (info.getType().equals(ResultType.BooleanT.INSTANCE)) {
+		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
 			/**
 			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
 			 */
 			printVal = (Boolean) val ? "TRUE" : "FALSE";
 		}
 
-		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
+		if (info.getType().equals(ResultType.Primitive.MONEY)) {
 			printVal = printVal + " €";
 		}
 		valueJoiner.add(printVal);

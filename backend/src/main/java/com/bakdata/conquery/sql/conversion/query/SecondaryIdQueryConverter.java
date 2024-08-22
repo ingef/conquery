@@ -22,7 +22,7 @@ public class SecondaryIdQueryConverter implements NodeConverter<SecondaryIdQuery
 		);
 
 		Preconditions.checkArgument(withConvertedQuery.getFinalQuery() != null, "The SecondaryIdQuery's query should be converted by now.");
-		SqlQuery secondaryIdSqlQuery = withConvertedQuery.getFinalQuery().overwriteResultInfos(query.getResultInfos());
+		SqlQuery secondaryIdSqlQuery = withConvertedQuery.getFinalQuery().overwriteResultInfos(query.getResultInfos(context.getSqlPrintSettings()));
 
 		return withConvertedQuery.withFinalQuery(secondaryIdSqlQuery);
 	}

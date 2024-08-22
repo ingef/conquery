@@ -7,21 +7,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +73,13 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
+
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), exec.getNamespace(), exec.getConfig(), null, null);
+
+		// Save id column count to later check if xlsx dimensions are feasible
+		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos(printSettings).size();
+
+		final int columnCount = singleExecution.getResultInfos(printSettings).size() + idColumnsCount;
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
 		if (columnCount > maxColumnCount) {
 
@@ -90,8 +97,6 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	@Override
 	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
 
-		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
 
 		// inject required services
 		environment.register(new AbstractBinder() {

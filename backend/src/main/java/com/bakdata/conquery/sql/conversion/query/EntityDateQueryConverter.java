@@ -39,7 +39,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 				FormType.ENTITY_DATE,
 				stratificationTable,
 				entityDateQuery.getFeatures(),
-				entityDateQuery.getResultInfos(),
+				entityDateQuery.getResultInfos(context.getSqlPrintSettings()),
 				context
 		);
 	}

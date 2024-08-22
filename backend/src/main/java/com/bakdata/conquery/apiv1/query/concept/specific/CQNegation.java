@@ -8,6 +8,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -66,8 +67,8 @@ public class CQNegation extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return child.getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+		return child.getResultInfos(settings);
 	}
 
 	@Override
