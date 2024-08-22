@@ -230,6 +230,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 		}
 
+
+
 		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
 	}
 

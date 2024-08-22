@@ -22,11 +22,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
+public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
@@ -74,6 +71,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
 		super.finish(executionState, executionManager);
+
+		// Signal to waiting threads that the form finished
+		executionManager.clearBarrierInternalExecution(this);
 	}
 
 
@@ -153,11 +153,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	protected String makeDefaultLabel(PrintSettings cfg) {
 		return QueryUtils.makeQueryLabel(query, cfg, getId());
-	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	@Override

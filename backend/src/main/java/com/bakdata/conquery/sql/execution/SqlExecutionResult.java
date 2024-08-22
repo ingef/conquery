@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Value;
 
 @Value
-public class SqlExecutionResult implements ExecutionManager.InternalResult {
+public class SqlExecutionResult implements ExecutionManager.InternalState {
 
 	List<String> columnNames;
 	List<EntityResult> table;

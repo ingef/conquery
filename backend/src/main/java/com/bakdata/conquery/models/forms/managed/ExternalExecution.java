@@ -14,7 +14,7 @@ import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
 import com.bakdata.conquery.io.external.form.ExternalTaskState;
-import com.bakdata.conquery.io.result.ExternalResult;
+import com.bakdata.conquery.io.result.ExternalState;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ExternalResultImpl;
+import com.bakdata.conquery.models.query.ExternalStateImpl;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import com.bakdata.conquery.util.AuthUtil;
@@ -95,7 +95,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
 
-			executionManager.addResult(this, new ExternalResultImpl(new CountDownLatch(0), api, serviceUser));
+			executionManager.addState(this.getId(), new ExternalStateImpl(new CountDownLatch(0), api, serviceUser));
 
 			externalTaskId = externalTaskState.getId();
 
@@ -120,7 +120,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			}
 			case FAILURE -> fail(formState.getError(), executionManager);
 			case SUCCESS -> {
-				List<Pair<ResultAsset, ExternalResult.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
+				List<Pair<ResultAsset, ExternalState.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
 				this.executionManager.getExternalResult(this.getId()).setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE, executionManager);
 			}
@@ -128,8 +128,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		}
 	}
 
-	private List<Pair<ResultAsset, ExternalResult.AssetBuilder>> registerResultAssets(ExternalTaskState response) {
-		final List<Pair<ResultAsset, ExternalResult.AssetBuilder>> assetMap = new ArrayList<>();
+	private List<Pair<ResultAsset, ExternalState.AssetBuilder>> registerResultAssets(ExternalTaskState response) {
+		final List<Pair<ResultAsset, ExternalState.AssetBuilder>> assetMap = new ArrayList<>();
 		response.getResults().forEach(asset -> assetMap.add(Pair.of(asset, createResultAssetBuilder(asset))));
 		return assetMap;
 	}
@@ -137,7 +137,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	/**
 	 * The {@link ResultAsset} is request-dependent, so we can prepare only builder here which takes an url builder.
 	 */
-	private ExternalResult.AssetBuilder createResultAssetBuilder(ResultAsset asset) {
+	private ExternalState.AssetBuilder createResultAssetBuilder(ResultAsset asset) {
 		return (uriBuilder) -> {
 			try {
 				final URI externalDownloadURL = ResultExternalResource.getDownloadURL(uriBuilder.clone(), this, asset.getAssetId());
@@ -179,13 +179,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			}
 		}
 		finally {
-			executionManager.clearLockExternalExecution(this.getId());
+			executionManager.clearBarrierExternalExecution(this.getId());
 		}
 
 	}
 
 	@JsonIgnore
-	public Stream<ExternalResult.AssetBuilder> getResultAssets() {
+	public Stream<ExternalState.AssetBuilder> getResultAssets() {
 		return executionManager.getExternalResult(this.getId()).getResultAssets();
 	}
 }

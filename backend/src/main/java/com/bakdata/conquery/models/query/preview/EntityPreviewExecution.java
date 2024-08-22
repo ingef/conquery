@@ -30,8 +30,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -72,8 +70,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
 		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
@@ -97,8 +93,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
 
@@ -430,13 +424,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
-	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet()
-														   .stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
 	@Override

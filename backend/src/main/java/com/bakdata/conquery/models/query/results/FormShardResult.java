@@ -25,8 +25,6 @@ public class FormShardResult extends ShardResult {
 
 	/**
 	 * Distribute the result to a sub query.
-	 *
-	 * @param executionManager
 	 */
 	@Override
 	public void addResult(DistributedExecutionManager executionManager) {
@@ -48,17 +46,10 @@ public class FormShardResult extends ShardResult {
 					),
 					executionManager
 			);
-
-			// Signal to waiting threads that the form finished
-			executionManager.clearLockInternalExecution(formId);
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {
-
 			managedInternalForm.finish(ExecutionState.DONE, executionManager);
-
-			// Signal to waiting threads that the form finished
-			executionManager.clearLockInternalExecution(formId);
 		}
 
 	}

@@ -36,9 +36,9 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	}
 
 	@Override
-	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
+	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
 
-		addResult(execution.getId(), new SqlExecutionResult());
+		addState(execution.getId(), new SqlExecutionResult());
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
@@ -48,14 +48,11 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
 			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> {
-								 addResult(managedQuery.getId(), new SqlExecutionResult());
+								 addState(managedQuery.getId(), new SqlExecutionResult());
 								 return executeAsync(managedQuery, this);
 
 							 }).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> {
-								 managedForm.finish(ExecutionState.DONE, this);
-								 clearLockInternalExecution(managedForm.getId());
-							 });
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, this));
 			return;
 		}
 
@@ -90,7 +87,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 										SqlExecutionResult
 												finishResult =
 												new SqlExecutionResult(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
-										addResult(id, finishResult);
+										addState(id, finishResult);
 									}
 									catch (ExecutionException e) {
 										throw new RuntimeException(e);
@@ -98,9 +95,6 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE, executionManager);
 									runningExecutions.remove(id);
-
-									// Unlock waiting requests
-									clearLockInternalExecution(id);
 								})
 								.exceptionally(e -> {
 									managedQuery.fail(ConqueryError.asConqueryError(e), this);

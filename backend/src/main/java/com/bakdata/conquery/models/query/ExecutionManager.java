@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.io.result.ExternalResult;
+import com.bakdata.conquery.io.result.ExternalState;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -32,30 +32,40 @@ import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Slf4j
-public abstract class ExecutionManager<R extends ExecutionManager.InternalResult> {
+public abstract class ExecutionManager<R extends ExecutionManager.InternalState> {
 
 	/**
-	 * TODO Result might not be the appropriate name any more, because we will put everything in this instance
-	 * belonging to an execution, which cannot/should not be serialized/cached in a store.
+	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
 	 */
-	public interface Result {
+	public interface State {
 
+		/**
+		 * Synchronization barrier for web requests.
+		 * Barrier is activated upon starting an execution so request can wait for execution completion.
+		 * When the execution is finished the barrier is removed.
+		 */
 		CountDownLatch getExecutingLock();
 	}
 
-	public interface InternalResult extends Result{
+	public interface InternalState extends State{
 		Stream<EntityResult> streamQueryResults();
 	}
 
 	private final MetaStorage storage;
 
-	private final Cache<ManagedExecutionId, R> executionResults =
+	/**
+	 * Cache for internal execution state.
+	 */
+	private final Cache<ManagedExecutionId, R> internalExecutionStates =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
 						.build();
 
-	private final Cache<ManagedExecutionId, ExternalResult> externalExecutionResults =
+	/**
+	 * Cache for external execution state.
+	 */
+	private final Cache<ManagedExecutionId, ExternalState> externalExecutionStates =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
@@ -64,7 +74,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, Result> removalNotification) {
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, State> removalNotification) {
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
@@ -88,22 +98,22 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 	}
 
 	protected R getResult(ManagedExecutionId id) throws ExecutionException {
-		return executionResults.getIfPresent(id);
+		return internalExecutionStates.getIfPresent(id);
 	}
 
-	public ExternalResult getExternalResult(ManagedExecutionId id) {
-		return externalExecutionResults.getIfPresent(id);
+	public ExternalState getExternalResult(ManagedExecutionId id) {
+		return externalExecutionStates.getIfPresent(id);
 	}
 
-	protected void addResult(ManagedExecutionId id, R result) {
-		executionResults.put(id, result);
+	protected void addState(ManagedExecutionId id, R result) {
+		internalExecutionStates.put(id, result);
 	}
 
 	/**
 	 * Is called upon start by the external execution
 	 */
-	public void addResult(ExternalExecution execution, ExternalResult result) {
-		externalExecutionResults.put(execution.getId(), result);
+	public void addState(ManagedExecutionId execution, ExternalState result) {
+		externalExecutionStates.put(execution, result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
@@ -143,8 +153,8 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
-			if (execution instanceof InternalExecution<?> internalExecution) {
-				doExecute((ManagedExecution & InternalExecution<?>) internalExecution);
+			if (execution instanceof InternalExecution internalExecution) {
+				doExecute((ManagedExecution & InternalExecution) internalExecution);
 			}
 		}
 		catch (Exception e) {
@@ -153,7 +163,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 		}
 	}
 
-	protected abstract <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution);
+	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
 
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, User user, Namespace namespace, boolean system) {
@@ -176,7 +186,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 	public final void cancelQuery(final ManagedExecution execution) {
 		if (execution instanceof ExternalExecution externalExecution) {
 			externalExecution.cancel();
-			externalExecutionResults.invalidate(execution.getId());
+			externalExecutionStates.invalidate(execution.getId());
 			return;
 		}
 
@@ -187,13 +197,15 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void clearQueryResults(ManagedExecution execution) {
-		executionResults.invalidate(execution.getId());
-
-		//TODO external execution
+		if (execution instanceof InternalExecution) {
+			internalExecutionStates.invalidate(execution.getId());
+			return;
+		}
+		externalExecutionStates.invalidate(execution.getId());
 	}
 
-	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
-		final R resultParts = executionResults.getIfPresent(execution.getId());
+	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
+		final R resultParts = internalExecutionStates.getIfPresent(execution.getId());
 
 		return resultParts == null
 			   ? Stream.empty()
@@ -201,14 +213,14 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 
 	}
 
-	public void clearLockInternalExecution(ManagedExecutionId id) {
-		R result = Objects.requireNonNull(executionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
+	public <E extends ManagedExecution & InternalExecution> void clearBarrierInternalExecution(E execution) {
+		R result = Objects.requireNonNull(internalExecutionStates.getIfPresent(execution.getId()), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
 	}
 
-	public void clearLockExternalExecution(ManagedExecutionId id) {
-		ExternalResult result = Objects.requireNonNull(externalExecutionResults.getIfPresent(id), "Cannot clear lock on absent execution result");
+	public void clearBarrierExternalExecution(ManagedExecutionId id) {
+		ExternalState result = Objects.requireNonNull(externalExecutionStates.getIfPresent(id), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
 	}
@@ -223,12 +235,12 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalResult
 			return state;
 		}
 
-		Result result;
-		if (execution instanceof InternalExecution<?>) {
-			result = executionResults.getIfPresent(id);
+		State result;
+		if (execution instanceof InternalExecution) {
+			result = internalExecutionStates.getIfPresent(id);
 		}
 		else {
-			result = externalExecutionResults.getIfPresent(id);
+			result = externalExecutionStates.getIfPresent(id);
 		}
 
 		if (result == null) {

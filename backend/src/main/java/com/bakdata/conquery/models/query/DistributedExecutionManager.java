@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -18,17 +19,21 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
 
-	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements ExecutionManager.InternalResult {
+	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalState {
 
 		@Override
 		public Stream<EntityResult> streamQueryResults() {
@@ -51,19 +56,33 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 
 	@Override
-	protected <E extends ManagedExecution & InternalExecution<?>> void doExecute(E execution) {
+	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addResult(execution.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+		addState(execution.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addResult(query.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1))));
+			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1))));
 		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution);
 
-		workerHandler.sendToAll(execution.createExecutionMessage());
+		workerHandler.sendToAll(createExecutionMessage(execution));
+	}
+
+	private WorkerMessage createExecutionMessage(ManagedExecution execution) {
+		if (execution instanceof ManagedQuery mq) {
+			return new ExecuteQuery(mq.getId(), mq.getQuery());
+		}
+		else if (execution instanceof ManagedInternalForm<?> form) {
+			return new ExecuteForm(form.getId(), form.getFlatSubQueries()
+													 .entrySet()
+													 .stream()
+													 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
+		}
+		throw new NotImplementedException("Unable to build execution message for " + execution.getClass());
+
 	}
 
 	private WorkerHandler getWorkerHandler(ManagedExecution execution) {
@@ -77,7 +96,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 	 * @implNote subQueries of Forms are managed by the form itself, so need to be passed from outside.
 	 */
 	@SneakyThrows
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result, E execution) {
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution> void handleQueryResult(R result, E execution) {
 
 
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
@@ -90,7 +109,6 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 		if (result.getError().isPresent()) {
 			execution.fail(result.getError().get(), this);
-			clearLockInternalExecution(execution.getId());
 		}
 		else {
 
@@ -103,7 +121,6 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 			// If all known workers have returned a result, the query is DONE.
 			if (finishedWorkers.equals(getWorkerHandler(execution).getAllWorkerIds())) {
 				execution.finish(ExecutionState.DONE, this);
-				clearLockInternalExecution(execution.getId());
 
 			}
 		}
