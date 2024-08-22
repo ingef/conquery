@@ -248,7 +248,7 @@ public class ArrowRenderer {
 
 	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultPrinters.Printer printer) {
 		if (vector instanceof IntVector intVector) {
-			return intVectorFiller(intVector, (line) -> (Integer) line[pos]);
+			return intVectorFiller(intVector, (line) -> ((Number) line[pos]).intValue());
 		}
 
 		if (vector instanceof VarCharVector varCharVector) {

@@ -31,7 +31,7 @@ public class ArrowUtil {
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> ArrowUtil::boolField;
 			case INTEGER -> ArrowUtil::integerField;
-			case MONEY -> ArrowUtil::integerField;
+			case MONEY -> ArrowUtil::moneyField;
 			case NUMERIC -> ArrowUtil::floatField;
 			case DATE -> ArrowUtil::dateField;
 			case DATE_RANGE -> ArrowUtil::dateRangeField;
@@ -53,7 +53,6 @@ public class ArrowUtil {
 	}
 
 	private static Field moneyField(ResultInfo info, @NonNull String uniqueName) {
-		//TODO shift left
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
 	}
 
