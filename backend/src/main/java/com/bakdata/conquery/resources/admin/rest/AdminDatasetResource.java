@@ -9,21 +9,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.io.FileUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -43,6 +28,21 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
+
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -186,7 +186,7 @@ public class AdminDatasetResource {
 
 	@PUT
 	@Path("concepts")
-	public void updateConcept(Concept concept) {
+	public void updateConcept(Concept<?> concept) {
 		processor.updateConcept(namespace.getDataset(), concept);
 	}
 
@@ -256,7 +256,7 @@ public class AdminDatasetResource {
 	@POST
 	@Path("clear-index-cache")
 	public void clearIndexCache() {
-		processor.clearIndexCache(namespace);
+		processor.clearIndexCache();
 	}
 
 }

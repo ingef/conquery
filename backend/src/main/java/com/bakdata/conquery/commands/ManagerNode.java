@@ -11,9 +11,7 @@ import java.util.concurrent.TimeUnit;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -31,9 +29,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -84,8 +80,8 @@ public class ManagerNode implements Managed {
 
 		this.manager = manager;
 
-		final ObjectMapper objectMapper = environment.getObjectMapper();
-		customizeApiObjectMapper(objectMapper, getDatasetRegistry(), getMetaStorage(), config, validator);
+		final ObjectMapper apiObjectMapper = environment.getObjectMapper();
+		getInternalMapperFactory().customizeApiObjectMapper(apiObjectMapper, getDatasetRegistry(), getMetaStorage());
 
 
 		// FormScanner needs to be instantiated before plugins are initialized
@@ -172,59 +168,9 @@ public class ManagerNode implements Managed {
 		jerseyConfig.register(PathParamInjector.class);
 	}
 
-	/**
-	 * Customize the mapper from the environment, that is used in the REST-API.
-	 * In contrast to the internal object mapper this uses textual JSON representation
-	 * instead of the binary smile format. It also does not expose internal fields through serialization.
-	 * <p>
-	 * Internal and external mapper have in common that they might process the same classes/objects and that
-	 * they are configured to understand certain Conquery specific data types.
-	 *
-	 * @param objectMapper to be configured (should be a JSON mapper)
-	 */
-	public static void customizeApiObjectMapper(
-			ObjectMapper objectMapper,
-			DatasetRegistry<?> datasetRegistry,
-			MetaStorage metaStorage,
-			ConqueryConfig config,
-			Validator validator) {
-
-		// Set serialization config
-		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
-
-		serializationConfig = serializationConfig.withView(View.Api.class);
-
-		objectMapper.setConfig(serializationConfig);
-
-		// Set deserialization config
-		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
-
-		deserializationConfig = deserializationConfig.withView(View.Api.class);
-
-		objectMapper.setConfig(deserializationConfig);
-
-		final MutableInjectableValues injectableValues = new MutableInjectableValues();
-		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
-
-		datasetRegistry.injectInto(objectMapper);
-		metaStorage.injectInto(objectMapper);
-		config.injectInto(objectMapper);
-	}
-
-	/**
-	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables.
-	 *
-	 * @return a preconfigured binary object mapper
-	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper, DatasetRegistry, MetaStorage, ConqueryConfig, Validator)
-	 */
-	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
-	}
-
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(createInternalObjectMapper(View.Persistence.Manager.class));
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
 		log.info("Loading MetaStorage");
 		getMetaStorage().loadData();
 		log.info("MetaStorage loaded {}", getMetaStorage());

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,10 +9,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.EmptyStore;
@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.worker.Workers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -60,8 +61,8 @@ public class ColumnStoreSerializationTests {
 
 
 		// Prepare shard node internal mapper
-
-		shardInternalMapper = ShardNode.createInternalObjectMapper(View.Persistence.Shard.class, new ConqueryConfig(), Validators.newValidator());
+		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(Workers.class));
 	}
 
 	@Test
