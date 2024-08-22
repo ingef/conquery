@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.codahale.metrics.health.HealthCheck;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@RequiredArgsConstructor
 public class ClusterHealthCheck extends HealthCheck {
 
 	public static final String HEALTHY_MESSAGE_FMT = "All %d known shards are connected.";
@@ -38,7 +38,7 @@ public class ClusterHealthCheck extends HealthCheck {
 
 		LocalDateTime now = LocalDateTime.now();
 		List<ShardNodeInformation> timeoutShards = nodeProvider.get().stream()
-															   .filter((status) -> heartbeatTimeout.minus(Duration.between(now, status.getLastStatusTime()))
+															   .filter((status) -> heartbeatTimeout.minus(Duration.between(status.getLastStatusTime(), now).abs())
 																								   .isNegative()).toList();
 
 		if (!timeoutShards.isEmpty()) {
