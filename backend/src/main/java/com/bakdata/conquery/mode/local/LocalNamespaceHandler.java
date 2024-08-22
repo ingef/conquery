@@ -2,16 +2,16 @@ package com.bakdata.conquery.mode.local;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.NamespaceSetupData;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.DslContextFactory;
@@ -24,6 +24,7 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -33,19 +34,19 @@ import org.jooq.DSLContext;
 public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator mapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 	private final SqlDialectFactory dialectFactory;
 
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService) {
+	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<LocalNamespace> datasetRegistry, Environment environment) {
 
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService);
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry);
 
 		IdColumnConfig idColumns = config.getIdColumns();
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
 		DatabaseConfig databaseConfig = sqlConnectorConfig.getDatabaseConfig(namespaceStorage.getDataset());
 
-		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
+		DSLContextWrapper dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig, environment.healthChecks());
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 
@@ -59,14 +60,12 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 		return new LocalNamespace(
 				namespaceData.getPreprocessMapper(),
-				namespaceData.getCommunicationMapper(),
 				namespaceStorage,
 				executionManager,
 				dslContextWrapper,
 				sqlStorageHandler,
 				namespaceData.getJobManager(),
 				namespaceData.getFilterSearch(),
-				namespaceData.getIndexService(),
 				sqlEntityResolver,
 				namespaceData.getInjectables()
 		);

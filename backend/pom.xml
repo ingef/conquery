@@ -54,20 +54,6 @@
                             </excludes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>default-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifestEntries>
-                                    <Add-Opens>java.base/java.lang ALL-UNNAMED java.base/java.util ALL-UNNAMED java.base/java.nio ALL-UNNAMED java.base/sun.nio.ch ALL-UNNAMED
-</Add-Opens>
-                                </manifestEntries>
-                            </archive>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -408,6 +394,12 @@
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-core</artifactId>
             <version>1.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
