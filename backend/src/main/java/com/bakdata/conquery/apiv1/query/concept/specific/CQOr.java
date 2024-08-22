@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
@@ -129,7 +129,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 			final String userOrDefaultLabel = getUserOrDefaultLabel(settings.getLocale());
 			final String defaultLabel = defaultLabel(settings.getLocale());
 
-			resultInfos.add(new LocalizedDefaultResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings, printer));
+			resultInfos.add(new FixedLabelResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings, printer));
 		}
 
 		return resultInfos;

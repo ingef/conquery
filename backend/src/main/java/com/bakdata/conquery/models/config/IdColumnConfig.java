@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
@@ -136,7 +136,7 @@ public class IdColumnConfig {
 			), col.getField());
 
 			//TODO we can now hook our anonymizers into this
-			return new LocalizedDefaultResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings, ResultPrinters.defaultPrinter(ResultType.Primitive.STRING, printSettings));
+			return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings, ResultPrinters.defaultPrinter(ResultType.Primitive.STRING, printSettings));
 		}).collect(Collectors.toUnmodifiableList());
 	}
 

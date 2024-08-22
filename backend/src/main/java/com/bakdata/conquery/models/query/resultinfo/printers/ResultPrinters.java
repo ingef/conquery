@@ -7,6 +7,7 @@ import java.util.StringJoiner;
 
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.LocalizedToString;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -48,14 +49,12 @@ public class ResultPrinters {
 		String print(Object f);
 	}
 
-
 	public record StringPrinter() implements Printer {
 		@Override
 		public String print(Object f) {
 			return Objects.toString(f);
 		}
 	}
-
 
 	public record IntegerPrinter(PrintSettings cfg) implements Printer {
 
@@ -106,7 +105,6 @@ public class ResultPrinters {
 		}
 	}
 
-
 	public record DateRangePrinter(DatePrinter datePrinter, PrintSettings cfg) implements Printer {
 
 		public DateRangePrinter(PrintSettings printSettings) {
@@ -141,10 +139,11 @@ public class ResultPrinters {
 	public record BooleanPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer {
 
 		public BooleanPrinter(PrintSettings cfg) {
-			this(cfg, cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).True() : "1", cfg.isPrettyPrint()
-																												 ? C10nCache.getLocalized(Results.class, cfg.getLocale())
-																															.False()
-																												 : "0");
+			this(
+					cfg,
+					cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).True() : "1",
+					cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).False() : "0"
+			);
 		}
 
 		@Override
@@ -164,7 +163,6 @@ public class ResultPrinters {
 			return mapper.external(((String) f));
 		}
 	}
-
 
 	public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer {
 
@@ -192,7 +190,7 @@ public class ResultPrinters {
 
 	public record ListPrinter(Printer elementPrinter, PrintSettings cfg, LocaleConfig.ListFormat listFormat) implements Printer {
 
-		public ListPrinter(Printer elementPrinter, PrintSettings cfg){
+		public ListPrinter(Printer elementPrinter, PrintSettings cfg) {
 			this(elementPrinter, cfg, cfg.getListFormat());
 		}
 
@@ -208,6 +206,22 @@ public class ResultPrinters {
 				joiner.add(listFormat.escapeListElement(elementPrinter.print(obj)));
 			}
 			return joiner.toString();
+		}
+	}
+
+	public record LocalizedEnumPrinter<T extends Enum<T> & LocalizedToString>(PrintSettings cfg, Class<T> clazz) implements Printer {
+		@Override
+		public String print(Object f) {
+
+			if (clazz.isInstance(f)) {
+				return clazz.cast(f).toString(cfg.getLocale());
+			}
+			try {
+				return Enum.valueOf(clazz, f.toString()).toString(cfg.getLocale());
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException("%s is not a valid %s.".formatted(f, clazz), e);
+			}
 		}
 	}
 }

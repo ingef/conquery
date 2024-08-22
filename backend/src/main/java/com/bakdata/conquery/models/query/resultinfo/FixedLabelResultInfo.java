@@ -15,7 +15,7 @@ import lombok.ToString;
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
  * provided locale.
- * The {@link LocalizedDefaultResultInfo#localizedDefaultLabelProvider} is expected to
+ * The {@link FixedLabelResultInfo#localizedDefaultLabelProvider} is expected to
  * use {@link C10N} (Cosmopolitan) like this:
  * <pre>
  *  (locale) -> C10N.get(ExampleC10n.class, locale).example()
@@ -34,7 +34,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class LocalizedDefaultResultInfo extends ResultInfo {
+public class FixedLabelResultInfo extends ResultInfo {
 
 	@NonNull
 	private final String localizedLabel;
@@ -46,7 +46,7 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Getter
 	private final ResultPrinters.Printer printer;
 
-	public LocalizedDefaultResultInfo(String label, String defaultLabel, ResultType type, Set<SemanticType> semantics, PrintSettings settings, ResultPrinters.Printer printer) {
+	public FixedLabelResultInfo(String label, String defaultLabel, ResultType type, Set<SemanticType> semantics, PrintSettings settings, ResultPrinters.Printer printer) {
 		super(semantics, settings);
 		this.localizedLabel = label;
 		this.localizedDefaultLabel = defaultLabel;
