@@ -43,20 +43,19 @@ public class ExcelRenderer {
 
 	public static final int MAX_LINES = 1_048_576;
 
-	public TypeWriter writer(ResultType type) {
+	private static TypeWriter writer(ResultType type) {
 		if(!(type instanceof ResultType.Primitive)){
 			//Excel cannot handle complex types so we just toString them.
-			return (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
+			return (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
 		}
 
 		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> (info, cell, value, styles1, styles12) -> writeBooleanCell(info, value, styles1, styles12);
+			case BOOLEAN -> (info, settings, cell, value, styles) -> writeBooleanCell(info, cell, value, styles);
 			case INTEGER -> ExcelRenderer::writeIntegerCell;
 			case MONEY -> ExcelRenderer::writeMoneyCell;
 			case NUMERIC -> ExcelRenderer::writeNumericCell;
 			case DATE -> ExcelRenderer::writeDateCell;
-			case STRING -> (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
-			default -> (info, cell, value, styles1, styles12) -> writeStringCell(info, value, styles1, styles12);
+			default -> (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
 		};
 	}
 

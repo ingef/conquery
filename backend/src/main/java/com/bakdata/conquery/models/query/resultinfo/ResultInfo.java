@@ -34,13 +34,13 @@ public abstract class ResultInfo {
 		this.semantics.addAll(semantics);
 	}
 
-	public final void addSemantic(SemanticType... incoming) {
+	public final void addSemantics(SemanticType... incoming) {
 		semantics.addAll(Arrays.asList(incoming));
 	}
 
 	public abstract String userColumnName();
 
-	public ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
+	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
 		return ColumnDescriptor.builder()
 							   .label(collector.getUniqueName(this))
 							   .defaultLabel(defaultColumnName())

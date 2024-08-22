@@ -20,7 +20,7 @@ public class ExternalResultInfo extends ResultInfo {
 	private final ResultPrinters.Printer printer;
 
 	public ExternalResultInfo(String name, ResultType type, PrintSettings settings) {
-		this(name, type, null, ResultPrinters.defaultPrinter(type, settings), Collections.emptySet(), settings);
+		this(name, type, null, ResultPrinters.printerFor(type, settings), Collections.emptySet(), settings);
 	}
 	public ExternalResultInfo(String name, ResultType type, String description, ResultPrinters.Printer printer, Set<SemanticType> semantics, PrintSettings settings) {
 		super(semantics, settings);

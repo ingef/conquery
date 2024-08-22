@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
@@ -42,17 +41,6 @@ public class SelectResultInfo extends ResultInfo {
 	@Override
 	public ResultType getType() {
 		return select.getResultType();
-	}
-
-	@Override
-	public ColumnDescriptor asColumnDescriptor(UniqueNamer uniqueNamer) {
-		return ColumnDescriptor.builder()
-							   .label(uniqueNamer.getUniqueName(this))
-							   .defaultLabel(defaultColumnName())
-							   .type(getType().typeInfo())
-							   .semantics(getSemantics())
-							   .description(getSelect().getDescription())
-							   .build();
 	}
 
 	@Override

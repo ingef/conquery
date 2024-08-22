@@ -21,7 +21,7 @@ public class ResultHeaders {
 
 		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 
-		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT()), settings, ResultPrinters.defaultPrinter(type, settings));
+		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT()), settings, ResultPrinters.printerFor(type, settings));
 	}
 
 	public static ResultInfo historyDatesInfo(PrintSettings settings) {
@@ -29,26 +29,26 @@ public class ResultHeaders {
 
 		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 
-		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()), settings, ResultPrinters.defaultPrinter(type, settings));
+		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()), settings, ResultPrinters.printerFor(type, settings));
 	}
 
 	public static ResultInfo sourceInfo(PrintSettings settings) {
 		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).source();
 
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT()), settings, ResultPrinters.defaultPrinter(ResultType.Primitive.STRING, settings));
+		return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT()), settings, ResultPrinters.printerFor(ResultType.Primitive.STRING, settings));
 	}
 
 	public static ResultInfo formContextInfo(PrintSettings settings) {
 		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).index();
 
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.INTEGER, Set.of(), settings, ResultPrinters.defaultPrinter(ResultType.Primitive.INTEGER, settings));
+		return new FixedLabelResultInfo(label, label, ResultType.Primitive.INTEGER, Set.of(), settings, ResultPrinters.printerFor(ResultType.Primitive.INTEGER, settings));
 	}
 
 	public static ResultInfo formDateRangeInfo(PrintSettings settings) {
 		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale())
 									  .dateRange();
 
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE_RANGE, Set.of(), settings, ResultPrinters.defaultPrinter(ResultType.Primitive.DATE_RANGE, settings));
+		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE_RANGE, Set.of(), settings, ResultPrinters.printerFor(ResultType.Primitive.DATE_RANGE, settings));
 	}
 
 	public static ResultInfo formResolutionInfo(PrintSettings settings) {
@@ -61,7 +61,7 @@ public class ResultHeaders {
 		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale())
 									  .eventDate();
 
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE, Set.of(), settings, ResultPrinters.defaultPrinter(ResultType.Primitive.DATE, settings));
+		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE, Set.of(), settings, ResultPrinters.printerFor(ResultType.Primitive.DATE, settings));
 	}
 
 	public static ResultInfo formObservationScopeInfo(PrintSettings settings) {

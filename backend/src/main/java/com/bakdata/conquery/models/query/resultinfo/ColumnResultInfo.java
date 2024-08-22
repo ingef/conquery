@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.resultinfo;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
@@ -33,22 +32,12 @@ public class ColumnResultInfo extends ResultInfo {
 
 	@Override
 	public String userColumnName() {
-		return null;
-	}
-
-	@Override
-	public String defaultColumnName() {
 		return column.getTable().getLabel() + " " + column.getLabel();
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
-		return ColumnDescriptor.builder()
-							   .label(defaultColumnName())
-							   .defaultLabel(getColumn().getLabel())
-							   .type(getType().typeInfo())
-							   .semantics(getSemantics())
-							   .description(getDescription())
-							   .build();
+	public String defaultColumnName() {
+		return userColumnName();
 	}
+
 }

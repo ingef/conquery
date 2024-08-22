@@ -21,9 +21,9 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class ArrowUtil {
 
-	public final static RootAllocator ROOT_ALLOCATOR = new RootAllocator();
+	public static final RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
-	public BiFunction<ResultInfo, String, Field> fieldFor(ResultType type) {
+	private BiFunction<ResultInfo, String, Field> fieldFor(ResultType type) {
 		if (type instanceof ResultType.ListT<?>) {
 			return ArrowUtil::listField;
 		}

@@ -136,7 +136,7 @@ public class IdColumnConfig {
 			), col.getField());
 
 			//TODO we can now hook our anonymizers into this
-			return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings, ResultPrinters.defaultPrinter(ResultType.Primitive.STRING, printSettings));
+			return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings, ResultPrinters.printerFor(ResultType.Primitive.STRING, printSettings));
 		}).collect(Collectors.toUnmodifiableList());
 	}
 

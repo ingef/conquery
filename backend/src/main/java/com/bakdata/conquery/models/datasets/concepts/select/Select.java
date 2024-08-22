@@ -129,6 +129,6 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	}
 
 	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
-		return ResultPrinters.defaultPrinter(getResultType(), printSettings);
+		return ResultPrinters.printerFor(getResultType(), printSettings);
 	}
 }

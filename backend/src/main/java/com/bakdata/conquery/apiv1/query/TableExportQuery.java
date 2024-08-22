@@ -259,14 +259,14 @@ public class TableExportQuery extends Query {
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
-				infos[secondaryIdPositions.get(column.getSecondaryId())].addSemantic(new SemanticType.ColumnT(column));
+				infos[secondaryIdPositions.get(column.getSecondaryId())].addSemantics(new SemanticType.ColumnT(column));
 				continue;
 			}
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
-			ResultPrinters.Printer printer = ResultPrinters.defaultPrinter(resultType, printSettings);
+			ResultPrinters.Printer printer = ResultPrinters.printerFor(resultType, printSettings);
 
 			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.

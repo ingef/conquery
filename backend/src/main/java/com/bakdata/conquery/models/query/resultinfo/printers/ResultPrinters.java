@@ -25,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultPrinters {
 
-	public Printer defaultPrinter(ResultType type, PrintSettings printSettings) {
+	public Printer printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
-			return new ListPrinter(defaultPrinter(listT.getElementType(), printSettings), printSettings);
+			return new ListPrinter(printerFor(listT.getElementType(), printSettings), printSettings);
 		}
 
 		return switch (((ResultType.Primitive) type)) {
