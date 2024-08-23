@@ -1,14 +1,13 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.io.result.ExternalState;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Slf4j
-public abstract class ExecutionManager<R extends ExecutionManager.InternalState> {
+public abstract class ExecutionManager {
 
 	/**
 	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
@@ -54,18 +53,9 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 	private final MetaStorage storage;
 
 	/**
-	 * Cache for internal execution state.
+	 * Cache for execution states.
 	 */
-	private final Cache<ManagedExecutionId, R> internalExecutionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
-
-	/**
-	 * Cache for external execution state.
-	 */
-	private final Cache<ManagedExecutionId, ExternalState> externalExecutionStates =
+	private final Cache<ManagedExecutionId, State> executionStates =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
@@ -97,23 +87,16 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 		return storage.getExecution(execution);
 	}
 
-	protected R getResult(ManagedExecutionId id) throws ExecutionException {
-		return internalExecutionStates.getIfPresent(id);
+	public <R extends State> R getResult(ManagedExecutionId id) {
+		State state = executionStates.getIfPresent(id);
+		if (state == null) {
+			throw new NoSuchElementException("No execution found for %s".formatted(id));
+		}
+		return (R) state;
 	}
 
-	public ExternalState getExternalResult(ManagedExecutionId id) {
-		return externalExecutionStates.getIfPresent(id);
-	}
-
-	protected void addState(ManagedExecutionId id, R result) {
-		internalExecutionStates.put(id, result);
-	}
-
-	/**
-	 * Is called upon start by the external execution
-	 */
-	public void addState(ManagedExecutionId execution, ExternalState result) {
-		externalExecutionStates.put(execution, result);
+	public void addState(ManagedExecutionId id, State result) {
+		executionStates.put(id, result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
@@ -184,12 +167,12 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 	}
 
 	public final void cancelQuery(final ManagedExecution execution) {
+		executionStates.invalidate(execution.getId());
+
 		if (execution instanceof ExternalExecution externalExecution) {
 			externalExecution.cancel();
-			externalExecutionStates.invalidate(execution.getId());
 			return;
 		}
-
 		doCancelQuery(execution);
 	}
 
@@ -197,15 +180,11 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void clearQueryResults(ManagedExecution execution) {
-		if (execution instanceof InternalExecution) {
-			internalExecutionStates.invalidate(execution.getId());
-			return;
-		}
-		externalExecutionStates.invalidate(execution.getId());
+		executionStates.invalidate(execution.getId());
 	}
 
 	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
-		final R resultParts = internalExecutionStates.getIfPresent(execution.getId());
+		final InternalState resultParts = (InternalState) executionStates.getIfPresent(execution.getId());
 
 		return resultParts == null
 			   ? Stream.empty()
@@ -213,14 +192,8 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 
 	}
 
-	public <E extends ManagedExecution & InternalExecution> void clearBarrierInternalExecution(E execution) {
-		R result = Objects.requireNonNull(internalExecutionStates.getIfPresent(execution.getId()), "Cannot clear lock on absent execution result");
-
-		result.getExecutingLock().countDown();
-	}
-
-	public void clearBarrierExternalExecution(ManagedExecutionId id) {
-		ExternalState result = Objects.requireNonNull(externalExecutionStates.getIfPresent(id), "Cannot clear lock on absent execution result");
+	public void clearBarrier(ManagedExecutionId id) {
+		State result = Objects.requireNonNull(executionStates.getIfPresent(id), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
 	}
@@ -235,13 +208,7 @@ public abstract class ExecutionManager<R extends ExecutionManager.InternalState>
 			return state;
 		}
 
-		State result;
-		if (execution instanceof InternalExecution) {
-			result = internalExecutionStates.getIfPresent(id);
-		}
-		else {
-			result = externalExecutionStates.getIfPresent(id);
-		}
+		State result = executionStates.getIfPresent(id);
 
 		if (result == null) {
 			throw new IllegalStateException("Execution is running, but no result is registered");

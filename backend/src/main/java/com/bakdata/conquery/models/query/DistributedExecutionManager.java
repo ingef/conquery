@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
@@ -31,9 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 
 @Slf4j
-public class DistributedExecutionManager extends ExecutionManager<DistributedExecutionManager.DistributedResult> {
+public class DistributedExecutionManager extends ExecutionManager {
 
-	public record DistributedResult(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalState {
+	public record DistributedState(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalState {
 
 		@Override
 		public Stream<EntityResult> streamQueryResults() {
@@ -43,6 +44,11 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		@Override
 		public CountDownLatch getExecutingLock() {
 			return executingLock;
+		}
+
+		public boolean allResultsArrived(Set<WorkerId> allWorkers) {
+			Set<WorkerId> finishedWorkers = results.keySet();
+			return finishedWorkers.equals(allWorkers);
 		}
 	}
 
@@ -60,13 +66,13 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addState(execution.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+		addState(execution.getId(), new DistributedState(new ConcurrentHashMap<>(), new CountDownLatch(1)));
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedResult(new ConcurrentHashMap<>(), new CountDownLatch(1))));
+			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedState(new ConcurrentHashMap<>(), new CountDownLatch(1))));
 		}
 
-		final WorkerHandler workerHandler = getWorkerHandler(execution);
+		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
 
 		workerHandler.sendToAll(createExecutionMessage(execution));
 	}
@@ -85,9 +91,8 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 
 	}
 
-	private WorkerHandler getWorkerHandler(ManagedExecution execution) {
-		return clusterState.getWorkerHandlers()
-						   .get(execution.getDataset().getId());
+	private WorkerHandler getWorkerHandler(DatasetId datasetId) {
+		return clusterState.getWorkerHandlers().get(datasetId);
 	}
 
 	/**
@@ -113,13 +118,14 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			final DistributedResult results = getResult(execution.getId());
-			results.results.put(result.getWorkerId(), result.getResults());
-
-			final Set<WorkerId> finishedWorkers = results.results.keySet();
+			State state = getResult(execution.getId());
+			if (!(state instanceof DistributedState distributedState)) {
+				throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedState.class, state.getClass()));
+			}
+			distributedState.results.put(result.getWorkerId(), result.getResults());
 
 			// If all known workers have returned a result, the query is DONE.
-			if (finishedWorkers.equals(getWorkerHandler(execution).getAllWorkerIds())) {
+			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset().getId()).getAllWorkerIds())) {
 				execution.finish(ExecutionState.DONE, this);
 
 			}
@@ -145,7 +151,7 @@ public class DistributedExecutionManager extends ExecutionManager<DistributedExe
 		log.debug("Sending cancel message to all workers.");
 
 		execution.cancel();
-		getWorkerHandler(execution).sendToAll(new CancelQuery(execution.getId()));
+		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
 	}
 
 }

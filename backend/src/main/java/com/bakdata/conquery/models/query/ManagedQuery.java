@@ -66,14 +66,11 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 
 	@Override
-	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
+	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
 		super.finish(executionState, executionManager);
-
-		// Signal to waiting threads that the form finished
-		executionManager.clearBarrierInternalExecution(this);
 	}
 
 
@@ -126,7 +123,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void reset(ExecutionManager<?> executionManager) {
+	public void reset(ExecutionManager executionManager) {
 		super.reset(executionManager);
 		getNamespace().getExecutionManager().clearQueryResults(this);
 	}

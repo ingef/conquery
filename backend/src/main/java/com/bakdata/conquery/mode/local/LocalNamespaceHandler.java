@@ -22,7 +22,6 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialectFactory;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
-import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +53,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions);
-		ExecutionManager<SqlExecutionResult> executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage);
+		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
 

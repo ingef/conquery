@@ -73,7 +73,7 @@ public class LoadingUtil {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
-			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
+			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
 			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
@@ -88,7 +88,7 @@ public class LoadingUtil {
 			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
-			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
+			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
 			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
@@ -257,7 +257,7 @@ public class LoadingUtil {
 	}
 
 	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
-			throws JSONException, IOException {
+			throws IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
 			updateConcept(support, concept, expectedResponseFamily);

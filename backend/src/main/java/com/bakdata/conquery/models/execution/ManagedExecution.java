@@ -188,7 +188,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	public void fail(ConqueryErrorInfo error, ExecutionManager<?> executionManager) {
+	public void fail(ConqueryErrorInfo error, ExecutionManager executionManager) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -214,7 +214,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
+	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
@@ -230,9 +230,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 		}
 
-
-
 		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
+
+		// Signal to waiting threads that the form finished
+		executionManager.clearBarrier(this.getId());
 	}
 
 
@@ -410,7 +411,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
 
-	public void reset(ExecutionManager<?> executionManager) {
+	public void reset(ExecutionManager executionManager) {
 		// This avoids endless loops with already reset queries
 		if(getState().equals(ExecutionState.NEW)){
 			return;

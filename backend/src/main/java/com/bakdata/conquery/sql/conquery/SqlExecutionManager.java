@@ -4,7 +4,6 @@ package com.bakdata.conquery.sql.conquery;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -17,12 +16,12 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import com.bakdata.conquery.sql.execution.SqlExecutionState;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
+public class SqlExecutionManager extends ExecutionManager {
 
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
@@ -38,7 +37,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 	@Override
 	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
 
-		addState(execution.getId(), new SqlExecutionResult());
+		addState(execution.getId(), new SqlExecutionState());
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
@@ -48,7 +47,7 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
 			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> {
-								 addState(managedQuery.getId(), new SqlExecutionResult());
+								 addState(managedQuery.getId(), new SqlExecutionState());
 								 return executeAsync(managedQuery, this);
 
 							 }).toArray(CompletableFuture[]::new))
@@ -81,17 +80,14 @@ public class SqlExecutionManager extends ExecutionManager<SqlExecutionResult> {
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
 									ManagedExecutionId id = managedQuery.getId();
-									try {
-										// We need to transfer the columns and data from the query result together with the execution lock to a new result
-										SqlExecutionResult startResult = getResult(id);
-										SqlExecutionResult
-												finishResult =
-												new SqlExecutionResult(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
-										addState(id, finishResult);
-									}
-									catch (ExecutionException e) {
-										throw new RuntimeException(e);
-									}
+
+									// We need to transfer the columns and data from the query result together with the execution lock to a new result
+									SqlExecutionState startResult = getResult(id);
+									SqlExecutionState
+											finishResult =
+											new SqlExecutionState(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+									addState(id, finishResult);
+
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE, executionManager);
 									runningExecutions.remove(id);

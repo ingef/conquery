@@ -206,7 +206,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final ExecutionManager<?> executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(query);
 	}
 
@@ -416,7 +416,7 @@ public class QueryProcessor {
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final ExecutionManager<?> executionManager = namespace.getExecutionManager();
+		final ExecutionManager executionManager = namespace.getExecutionManager();
 
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
@@ -439,7 +439,7 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager<?> executionManager, User user) {
+	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
 		ManagedExecution execution = storage.getExecution(executionId);
 

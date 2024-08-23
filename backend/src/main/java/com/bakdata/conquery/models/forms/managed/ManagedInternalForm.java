@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -157,14 +156,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
 		return subQueries.values().iterator().next().resultRowCount();
-	}
-
-	@Override
-	public void finish(ExecutionState executionState, ExecutionManager<?> executionManager) {
-		super.finish(executionState, executionManager);
-
-		// Signal to waiting threads that the form finished
-		executionManager.clearBarrierInternalExecution(this);
 	}
 
 	public boolean allSubQueriesDone() {
