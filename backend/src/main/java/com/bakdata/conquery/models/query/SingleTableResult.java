@@ -24,26 +24,26 @@ public interface SingleTableResult {
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null);
+		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
+		for (ResultInfo header : config.getIdColumns().getIdResultInfos(settings)) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.StringT.getINSTANCE().typeInfo())
+												   .type(ResultType.Primitive.STRING.typeInfo())
 												   .semantics(header.getSemantics())
 												   .build());
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
+		getResultInfos(settings).forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	List<ResultInfo> getResultInfos();
+	List<ResultInfo> getResultInfos(PrintSettings printSettings);
 
 	/**
 	 * @param limit Optionally limits how many lines are emitted.

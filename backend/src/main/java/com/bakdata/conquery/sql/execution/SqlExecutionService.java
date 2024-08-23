@@ -49,7 +49,7 @@ public class SqlExecutionService {
 	private SqlExecutionState createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
 		final String sqlString = sqlQuery.getSql();
-		final List<ResultType<?>> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
+		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
 
 		log.info("Executing query: \n{}", sqlString);
 
@@ -74,7 +74,7 @@ public class SqlExecutionService {
 						.toList();
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
+	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
 		final List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
 		while (resultSet.next()) {
 			final SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
@@ -92,7 +92,7 @@ public class SqlExecutionService {
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType<?>> resultTypes, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
 
 		final String id = resultSet.getString(PID_COLUMN_INDEX);
 		final Object[] resultRow = new Object[columnCount - 1];

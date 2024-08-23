@@ -51,8 +51,8 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 
 	@Override

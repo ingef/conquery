@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.result.arrow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -22,17 +21,23 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class ArrowUtil {
 
-	public final static RootAllocator ROOT_ALLOCATOR = new RootAllocator();
+	public static final RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
-	private final static Map<Class<? extends ResultType>, BiFunction<ResultInfo, String, Field>> FIELD_MAP = Map.of(
-			ResultType.BooleanT.class, ArrowUtil::boolField,
-			ResultType.IntegerT.class, ArrowUtil::integerField,
-			ResultType.NumericT.class, ArrowUtil::floatField,
-			ResultType.DateT.class, ArrowUtil::dateField,
-			ResultType.DateRangeT.class, ArrowUtil::dateRangeField,
-			ResultType.MoneyT.class, ArrowUtil::integerField,
-			ResultType.ListT.class, ArrowUtil::listField
-	);
+	private BiFunction<ResultInfo, String, Field> fieldFor(ResultType type) {
+		if (type instanceof ResultType.ListT<?>) {
+			return ArrowUtil::listField;
+		}
+
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> ArrowUtil::boolField;
+			case INTEGER, MONEY -> ArrowUtil::integerField;
+			case NUMERIC -> ArrowUtil::floatField;
+			case DATE -> ArrowUtil::dateField;
+			case DATE_RANGE -> ArrowUtil::dateRangeField;
+			case STRING -> ArrowUtil::stringField;
+		};
+	}
+
 
 	private static Field stringField(ResultInfo info, @NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Utf8()), null);
@@ -70,7 +75,7 @@ public class ArrowUtil {
 		}
 
 		final ResultType elementType = ((ResultType.ListT) info.getType()).getElementType();
-		BiFunction<ResultInfo, String, Field> nestedFieldCreator = FIELD_MAP.getOrDefault(elementType.getClass(), ArrowUtil::stringField);
+		BiFunction<ResultInfo, String, Field> nestedFieldCreator = fieldFor(elementType);
 		final Field nestedField = nestedFieldCreator.apply(info, uniqueName);
 		return new Field(
 				uniqueName,
@@ -88,7 +93,7 @@ public class ArrowUtil {
 	 */
 	public Field createField(ResultInfo info, UniqueNamer collector) {
 		// Fallback to string field if type is not explicitly registered
-		BiFunction<ResultInfo, String, Field> fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
+		BiFunction<ResultInfo, String, Field> fieldCreator = fieldFor(info.getType());
 		return fieldCreator.apply(info, collector.getUniqueName(info));
 	}
 

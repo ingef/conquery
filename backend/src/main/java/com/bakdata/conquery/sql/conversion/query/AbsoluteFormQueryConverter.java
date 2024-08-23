@@ -40,7 +40,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 				FormType.ABSOLUTE,
 				stratificationTable,
 				form.getFeatures(),
-				form.getResultInfos(),
+				form.getResultInfos(context.getSqlPrintSettings()),
 				context
 		);
 	}

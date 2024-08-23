@@ -11,10 +11,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -41,6 +37,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -126,13 +125,7 @@ public class FormTest extends ConqueryTestSpec {
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				printSettings =
-				new PrintSettings(
-						false,
-						Locale.ENGLISH,
-						standaloneSupport.getNamespace(),
-						config,
-						idPrinter::createId
-				);
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
 
 		checkSingleResult(managedForm, config, printSettings);
 
@@ -145,18 +138,17 @@ public class FormTest extends ConqueryTestSpec {
 	 */
 	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
-			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
+			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos(printSettings);
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 
 			final CsvWriter writer = config.getCsv().createWriter(output);
 
-			CsvRenderer renderer =
-					new CsvRenderer(writer, printSettings);
+			CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(),
+					config.getIdColumns().getIdResultInfos(printSettings),
 					resultInfos,
 					managed.getValue()
 						   .stream()
@@ -187,14 +179,14 @@ public class FormTest extends ConqueryTestSpec {
 
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 			final CsvWriter writer = config.getCsv().createWriter(output);
-			final CsvRenderer renderer =
-					new CsvRenderer(writer, printSettings);
+			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(),
-					managedForm.getResultInfos(),
+					config.getIdColumns().getIdResultInfos(printSettings),
+					managedForm.getResultInfos(printSettings),
 					managedForm.streamResults(OptionalLong.empty())
 			);
+
 			writer.close();
 
 			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())

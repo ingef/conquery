@@ -42,7 +42,6 @@ public interface Introspection {
 				return new EnumIntrospection(f, enumDeclaration);
 			}
 			return new AbstractNodeWithMemberIntrospection<>(f, typeDeclaration);
-			//			return new ClassIntrospection(f, typeDeclaration);
 		} catch(Exception e) {
 			LoggerFactory.getLogger(Introspection.class).warn("Could not create compilation unit for {}", cl.getName(), e);
 			return new SimpleIntrospection(f);

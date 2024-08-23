@@ -53,13 +53,13 @@ public class NameGenerator {
 		return ensureValidLength("%s-%d".formatted(name, selectCount));
 	}
 
-	public String conceptName(CQConcept concept) {
-		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(Locale.ENGLISH));
+	public String conceptName(CQConcept concept, Locale locale) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(locale));
 		return ensureValidLength("concept_%s-%d".formatted(conceptLabel, ++conceptCount));
 	}
 
-	public String conceptConnectorName(CQConcept concept, Connector connector) {
-		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(Locale.ENGLISH));
+	public String conceptConnectorName(CQConcept concept, Connector connector, Locale locale) {
+		String conceptLabel = lowerAndReplaceWhitespace(concept.getUserOrDefaultLabel(locale));
 		String connectorLabel = lowerAndReplaceWhitespace(connector.getName());
 		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
 	}

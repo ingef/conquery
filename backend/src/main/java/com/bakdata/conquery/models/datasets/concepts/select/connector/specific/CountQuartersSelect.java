@@ -59,12 +59,13 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 
 	@Override
 	public SelectConverter<CountQuartersSelect> createConverter() {
 		return new CountQuartersSqlAggregator();
 	}
+
 }
