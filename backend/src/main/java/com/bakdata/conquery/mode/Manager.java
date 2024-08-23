@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -25,7 +26,7 @@ public interface Manager extends Managed {
 	StorageListener getStorageListener();
 	Supplier<Collection<ShardNodeInformation>> getNodeProvider();
 	List<Task> getAdminTasks();
-	InternalObjectMapperCreator getInternalObjectMapperCreator();
+	InternalMapperFactory getInternalMapperFactory();
 	JobManager getJobManager();
 
 	MetaStorage getMetaStorage();

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import jakarta.ws.rs.DELETE;
@@ -41,12 +42,15 @@ import com.bakdata.conquery.models.config.APIConfig;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ClusterConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.config.MinaConfig;
 import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.config.QueryConfig;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -129,6 +133,7 @@ public class Constants {
 				 .otherClass(MinaConfig.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)
 				 .otherClass(XodusConfig.class)
+				 .otherClasses(List.of(SqlConnectorConfig.class, DatabaseConfig.class, Dialect.class))
 				 .hide(Charset.class)
 				 .hide(Currency.class)
 				 .hide(InetAddress.class)

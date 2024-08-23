@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
@@ -36,8 +35,6 @@ public abstract class Namespace extends IdResolveContext {
 
 	private final ObjectMapper preprocessMapper;
 
-	private final ObjectMapper communicationMapper;
-
 	@ToString.Include
 	private final NamespaceStorage storage;
 
@@ -47,8 +44,6 @@ public abstract class Namespace extends IdResolveContext {
 	private final JobManager jobManager;
 
 	private final FilterSearch filterSearch;
-
-	private final IndexService indexService;
 
 	private final EntityResolver entityResolver;
 
@@ -91,10 +86,6 @@ public abstract class Namespace extends IdResolveContext {
 
 	public int getNumberOfEntities() {
 		return getStorage().getNumberOfEntities();
-	}
-
-	public void clearIndexCache() {
-		indexService.evictCache();
 	}
 
 	public PreviewConfig getPreviewConfig() {
