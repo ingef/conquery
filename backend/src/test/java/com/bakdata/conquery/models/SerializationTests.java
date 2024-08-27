@@ -323,7 +323,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)

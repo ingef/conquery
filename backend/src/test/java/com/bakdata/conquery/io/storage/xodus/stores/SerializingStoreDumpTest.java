@@ -1,12 +1,15 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -22,7 +25,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,7 @@ public class SerializingStoreDumpTest {
 	private ObjectMapper objectMapper;
 
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"), STORAGE);
+	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), new Dataset("dataset"), STORAGE);
 	private final ConceptQuery cQuery = new ConceptQuery(
 			new CQReusedQuery(managedQuery.getId()));
 	private final User user = new User("username", "userlabel", STORAGE);

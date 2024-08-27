@@ -6,13 +6,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import com.bakdata.conquery.io.result.ExternalResult;
-import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.resources.ResourceConstants;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
@@ -21,6 +14,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
+import com.bakdata.conquery.resources.ResourceConstants;
+import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("result/external")
@@ -32,7 +31,7 @@ public class ResultExternalResource {
 	private ExternalResultProcessor processor;
 
 
-	public static <E extends ManagedExecution & ExternalResult> URI getDownloadURL(UriBuilder uriBuilder, E exec, String filename)
+	public static URI getDownloadURL(UriBuilder uriBuilder, ExternalExecution exec, String filename)
 			throws URISyntaxException {
 		return uriBuilder
 				.path(ResultExternalResource.class)
@@ -57,12 +56,12 @@ public class ResultExternalResource {
 	@Path("{" + QUERY + "}/{" + FILENAME + "}")
 	public Response download(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ExternalExecution execution,
 			@PathParam(FILENAME) String fileName,
 			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset
 	) {
-		log.info("Result download for {} on dataset {} by user {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
+		log.info("Result download for {} on dataset {} by user {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.getResult(subject, execution, fileName);
 	}
 }

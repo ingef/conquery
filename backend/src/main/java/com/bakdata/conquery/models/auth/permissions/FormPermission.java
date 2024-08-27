@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import com.bakdata.conquery.io.cps.CPSType;
-
 import java.util.Set;
+
+import com.bakdata.conquery.io.cps.CPSType;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * Permission to restrict the usage of a specific form type.
@@ -34,7 +35,7 @@ public class FormPermission extends StringPermissionBuilder {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
-	@Deprecated
+	@TestOnly
 	public static ConqueryPermission onInstance(Ability ability, String instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

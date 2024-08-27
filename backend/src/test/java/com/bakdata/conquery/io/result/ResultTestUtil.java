@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -8,7 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -58,7 +62,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, null, null, null) {
+		return new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ResultTestUtil.class.getSimpleName()), null) {
 			@Override
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()

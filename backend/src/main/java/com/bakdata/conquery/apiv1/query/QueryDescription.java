@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,9 +26,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -62,25 +61,22 @@ public interface QueryDescription extends Visitable {
 	 * All visitors are concatenated so only a single traverse needs to be done.  
 	 * @param visitors The structure to which new visitors need to be added.
 	 */
-	default void addVisitors(@NonNull ClassToInstanceMap<QueryVisitor> visitors) {
+	default void addVisitors(@NonNull List<QueryVisitor> visitors) {
 		// Register visitors for permission checks
-		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
-		visitors.putInstance(QueryUtils.ExternalIdChecker.class, new QueryUtils.ExternalIdChecker());
+		visitors.add(new QueryUtils.ExternalIdChecker());
 	}
 
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+	default void authorize(Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	public static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, @NotNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+	static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
-		if (nsIdCollector == null) {
-			throw new IllegalStateException();
-		}
+
 		// Generate DatasetPermissions
 		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
@@ -39,8 +40,6 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ClassToInstanceMap;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -161,7 +160,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(Subject subject, Dataset submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
