@@ -36,6 +36,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	public record DistributedState(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalState {
 
+		public DistributedState() {
+			this(new ConcurrentHashMap<>(), new CountDownLatch(1));
+		}
+
 		@Override
 		public Stream<EntityResult> streamQueryResults() {
 			return results.values().stream().flatMap(Collection::stream);
@@ -66,10 +70,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addState(execution.getId(), new DistributedState(new ConcurrentHashMap<>(), new CountDownLatch(1)));
+		addState(execution.getId(), new DistributedState());
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedState(new ConcurrentHashMap<>(), new CountDownLatch(1))));
+			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedState()));
 		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
