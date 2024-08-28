@@ -51,8 +51,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 */
 	private Long lastResultCount;
 
-	@JsonIgnore
-	private transient List<ColumnDescriptor> columnDescriptions;
 
 
 	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
@@ -115,10 +113,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions(isInitialized(), getConfig());
-		}
-		status.setColumnDescriptions(columnDescriptions);
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@JsonIgnore

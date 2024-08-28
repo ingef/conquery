@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class ParquetResultGenerationTest {
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final PrintSettings
 			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel(), new ArrowResultPrinters());
 
 
 	@Test
@@ -110,7 +111,8 @@ public class ParquetResultGenerationTest {
 				null,
 				CONFIG,
 				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel()
+				(selectInfo) -> selectInfo.getSelect().getLabel(),
+				new ArrowResultPrinters()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();

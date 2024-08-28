@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.ToString;
@@ -58,11 +59,13 @@ public class PrintSettings {
 
 	private final PrintIdMapper idMapper;
 
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
-		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
+	private final PrinterFactory printerFactory;
+
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, PrinterFactory printerFactory) {
+		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale), printerFactory);
 	}
 
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat) {
+	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat, PrinterFactory printerFactory) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.namespace = namespace;
@@ -72,6 +75,7 @@ public class PrintSettings {
 
 		this.integerFormat = numberFormat;
 		this.decimalFormat = decimalFormat;
+		this.printerFactory = printerFactory;
 
 		this.listFormat = prettyPrint ? config.getLocale().getListFormats().get(0) : UNPRETTY_LIST_FORMAT;
 		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;

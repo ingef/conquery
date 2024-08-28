@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -47,7 +48,8 @@ public class CsvResultGenerationTest {
 				null,
 				CONFIG,
 				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel());
+				(selectInfo) -> selectInfo.getSelect().getLabel(), new CsvResultPrinters()
+		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
@@ -89,7 +91,7 @@ public class CsvResultGenerationTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							final String printVal = info.printNullable(val);
+							final String printVal = (String) info.printNullable(val);
 							valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter()))? "\""+printVal+"\"": printVal);
 						}
 

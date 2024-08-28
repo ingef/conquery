@@ -9,7 +9,10 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.MappedPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -40,11 +43,11 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
 		if(getMapping() == null){
-			return super.createPrinter(printSettings);
+			return super.createPrinter(printSettings, printerFactory);
 		}
 
-		return new ResultPrinters.ListPrinter(new ResultPrinters.MappedPrinter(getMapping()), printSettings);
+		return printerFactory.getListPrinter(new ChainingPrinter(new MappedPrinter(getMapping()), printerFactory.getStringPrinter(printSettings)), printSettings);
 	}
 }

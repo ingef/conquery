@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.preview;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,18 +36,14 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.JsonResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
@@ -132,8 +127,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		final int size = resultInfos.size();
 		final String[] columnNames = new String[size];
-
-		//TODO pull renderValue logic into outer loop, only use array as lookup
+		final Printer[] printers = new Printer[size];
 
 		for (int index = 0; index < size; index++) {
 			final ResultInfo resultInfo = resultInfos.get(index);
@@ -141,6 +135,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (resultInfo instanceof SelectResultInfo selectResultInfo) {
 				columnNames[index] = select2desc.get(selectResultInfo.getSelect().getId()).label();
 			}
+
+			printers[index] = resultInfo.getPrinter();
 		}
 
 		return line -> {
@@ -153,12 +149,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 					continue;
 				}
 
-
-				final Object value = renderValue(line[column], resultInfos.get(column).getType(), printSettings);
-
-				if (value == null) {
+				if (line[column] == null) {
 					continue;
 				}
+
+				final Object value = printers[column].print(line[column]);
 
 				out.put(columnName, value);
 			}
@@ -167,27 +162,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		};
 	}
 
-	/**
-	 * Instead of outputting only String values, render to Json equivalents
-	 */
-	private static Object renderValue(Object value, ResultType type, PrintSettings printSettings) {
-		if (value == null) {
-			return null;
-		}
 
-		if (type instanceof ResultType.ListT<?> listT) {
-			return ((List<?>) value).stream().map(entry -> renderValue(entry, listT.getElementType(), printSettings)).collect(Collectors.toList());
-		}
-
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> BooleanNode.valueOf((Boolean) value);
-			case INTEGER -> new IntNode((Integer) value);
-			case NUMERIC,MONEY -> DecimalNode.valueOf((BigDecimal) value);
-			case DATE -> new TextNode(new ResultPrinters.DatePrinter(printSettings).print(value)); //TODO bind printers in outer loop
-			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter(printSettings).print(value)); //TODO bind printers in outer loop
-			case STRING -> new TextNode(value.toString()); //TODO mapping
-		};
-	}
 
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
@@ -243,9 +218,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters())));
 
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters())));
 
 		return status;
 	}
@@ -267,8 +242,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos(printSettings).size(); index++) {
 			final ResultInfo resultInfo = infoCardExecution.getResultInfos(printSettings).get(index);
 
-
-			final Object printed = renderValue(values[index], resultInfo.getType(), printSettings);
+			final Object printed = resultInfo.printNullable(values[index]);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
 					resultInfo.userColumnName(),

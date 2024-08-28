@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -13,7 +15,10 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColu
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.MappedPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import jakarta.validation.Valid;
@@ -37,13 +42,27 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		this.mapping = mapping;
 	}
 
-	@Override
-	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
-		if (mapping == null) {
-			return super.createPrinter(printSettings);
+	public List<String> print(List<String> values) {
+		if(mapping == null){
+			return values;
 		}
 
-		return new ResultPrinters.MappedPrinter(getMapping());
+		final List<String> out = new ArrayList<>();
+
+		for (String value : values) {
+			out.addAll(List.of(mapping.external(value)));
+		}
+
+		return out;
+	}
+
+	@Override
+	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
+		if (mapping == null) {
+			return super.createPrinter(printSettings, printerFactory);
+		}
+
+		return new ChainingPrinter(new MappedPrinter(getMapping()), printerFactory.getStringPrinter(printSettings));
 	}
 
 	@Override

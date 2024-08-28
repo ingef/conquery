@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -125,11 +124,10 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 
 		if (createExists()) {
-			final ResultPrinters.BooleanPrinter printer = new ResultPrinters.BooleanPrinter(settings);
 			final String userOrDefaultLabel = getUserOrDefaultLabel(settings.getLocale());
 			final String defaultLabel = defaultLabel(settings.getLocale());
 
-			resultInfos.add(new FixedLabelResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings, printer));
+			resultInfos.add(new FixedLabelResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings));
 		}
 
 		return resultInfos;

@@ -6,52 +6,65 @@ import java.util.StringJoiner;
 
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.LocalizedToString;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Preconditions;
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-@UtilityClass
 @Slf4j
-public class ResultPrinters {
+public class CsvResultPrinters extends PrinterFactory {
 
-	public Printer printerFor(ResultType type, PrintSettings printSettings) {
-		if (type instanceof ResultType.ListT<?> listT) {
-			return new ListPrinter(printerFor(listT.getElementType(), printSettings), printSettings);
-		}
 
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> new BooleanPrinter(printSettings);
-			case INTEGER -> new IntegerPrinter(printSettings);
-			case NUMERIC -> new NumericPrinter(printSettings);
-			case DATE -> new DatePrinter(printSettings);
-			case DATE_RANGE -> new DateRangePrinter(printSettings);
-			case STRING -> new StringPrinter();
-			case MONEY -> new MoneyPrinter(printSettings);
-		};
+	@Override
+	public Printer getListPrinter(Printer elementPrinter, PrintSettings printSettings) {
+		return new ListPrinter(elementPrinter, printSettings);
 	}
 
-	public interface Printer {
-		String print(Object f);
+	@Override
+	public Printer getBooleanPrinter(PrintSettings printSettings) {
+		return new BooleanPrinter(printSettings);
 	}
 
-	public record StringPrinter() implements Printer {
+	@Override
+	public Printer getIntegerPrinter(PrintSettings printSettings) {
+		return new IntegerPrinter(printSettings);
+	}
+
+	@Override
+	public Printer getNumericPrinter(PrintSettings printSettings) {
+		return new NumericPrinter(printSettings);
+	}
+
+	@Override
+	public Printer getDatePrinter(PrintSettings printSettings) {
+		return new DatePrinter(printSettings);
+	}
+
+	@Override
+	public Printer getDateRangePrinter(PrintSettings printSettings) {
+		return new DateRangePrinter(printSettings);
+	}
+
+	@Override
+	public Printer getStringPrinter(PrintSettings printSettings) {
+		return new StringPrinter();
+	}
+
+	@Override
+	public Printer getMoneyPrinter(PrintSettings printSettings) {
+		return new MoneyPrinter(printSettings);
+	}
+
+	private record StringPrinter() implements Printer {
 		@Override
 		public String print(Object f) {
 			return Objects.toString(f);
 		}
 	}
 
-	public record IntegerPrinter(PrintSettings cfg) implements Printer {
+	private record IntegerPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -63,7 +76,7 @@ public class ResultPrinters {
 		}
 	}
 
-	public record NumericPrinter(PrintSettings cfg) implements Printer {
+	private record NumericPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -75,7 +88,7 @@ public class ResultPrinters {
 		}
 	}
 
-	public record MoneyPrinter(PrintSettings cfg) implements Printer {
+	private record MoneyPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -88,7 +101,7 @@ public class ResultPrinters {
 		}
 	}
 
-	public record DatePrinter(PrintSettings cfg) implements Printer {
+	private record DatePrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
@@ -99,7 +112,7 @@ public class ResultPrinters {
 		}
 	}
 
-	public record DateRangePrinter(DatePrinter datePrinter, PrintSettings cfg) implements Printer {
+	private record DateRangePrinter(DatePrinter datePrinter, PrintSettings cfg) implements Printer {
 
 		public DateRangePrinter(PrintSettings printSettings) {
 			this(new DatePrinter(printSettings), printSettings);
@@ -130,14 +143,12 @@ public class ResultPrinters {
 		}
 	}
 
-	public record BooleanPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer {
+	private record BooleanPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer {
 
 		public BooleanPrinter(PrintSettings cfg) {
-			this(
-					cfg,
-					cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).True() : "1",
-					cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).False() : "0"
-			);
+			this(cfg, cfg.isPrettyPrint() ? C10nCache.getLocalized(Results.class, cfg.getLocale()).True() : "1", cfg.isPrettyPrint()
+																												 ? C10nCache.getLocalized(Results.class, cfg.getLocale()).False()
+																												 : "0");
 		}
 
 		@Override
@@ -150,39 +161,7 @@ public class ResultPrinters {
 		}
 	}
 
-	public record MappedPrinter(InternToExternMapper mapper) implements Printer {
-
-		@Override
-		public String print(Object f) {
-			return mapper.external(((String) f));
-		}
-	}
-
-	public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer {
-
-		@Override
-		public String print(Object rawValue) {
-			if (rawValue == null) {
-				return null;
-			}
-
-			final int localId = (int) rawValue;
-
-			final ConceptTreeNode<?> node = ((TreeConcept) concept).getElementByLocalId(localId);
-
-			if (!cfg.isPrettyPrint()) {
-				return node.getId().toString();
-			}
-
-			if (node.getDescription() == null) {
-				return node.getLabel();
-			}
-
-			return node.getLabel() + " - " + node.getDescription();
-		}
-	}
-
-	public record ListPrinter(Printer elementPrinter, PrintSettings cfg, LocaleConfig.ListFormat listFormat) implements Printer {
+	private record ListPrinter(Printer elementPrinter, PrintSettings cfg, LocaleConfig.ListFormat listFormat) implements Printer {
 
 		public ListPrinter(Printer elementPrinter, PrintSettings cfg) {
 			this(elementPrinter, cfg, cfg.getListFormat());
@@ -197,25 +176,10 @@ public class ResultPrinters {
 			final StringJoiner joiner = listFormat.createListJoiner();
 
 			for (Object obj : (List<?>) f) {
-				joiner.add(listFormat.escapeListElement(elementPrinter.print(obj)));
+				joiner.add(listFormat.escapeListElement(elementPrinter.print(obj).toString()));
 			}
 			return joiner.toString();
 		}
 	}
 
-	public record LocalizedEnumPrinter<T extends Enum<T> & LocalizedToString>(PrintSettings cfg, Class<T> clazz) implements Printer {
-		@Override
-		public String print(Object f) {
-
-			if (clazz.isInstance(f)) {
-				return clazz.cast(f).toString(cfg.getLocale());
-			}
-			try {
-				return Enum.valueOf(clazz, f.toString()).toString(cfg.getLocale());
-			}
-			catch (Exception e) {
-				throw new IllegalArgumentException("%s is not a valid %s.".formatted(f, clazz), e);
-			}
-		}
-	}
 }

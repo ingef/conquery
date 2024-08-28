@@ -75,14 +75,13 @@ public class ParquetRenderer {
 			Stream<EntityResult> results) throws IOException {
 
 		// Wrap the request output stream in an output file, so the parquet writer can consume it
-		final OutputFile outputFile = new StreamOutputFile(
-				new PositionTrackingOutputStream(
-						new CountingOutputStream(outputStream)));
+		final OutputFile outputFile = new StreamOutputFile(new PositionTrackingOutputStream(new CountingOutputStream(outputStream)));
 
-		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder = new ConqueryParquetWriterBuilder(outputFile)
-				.setIdHeaders(idHeaders)
-				.setResultInfo(resultInfo)
-				.setPrintSettings(printSettings);
+		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder =
+				new ConqueryParquetWriterBuilder(outputFile)
+						.setIdHeaders(idHeaders)
+						.setResultInfo(resultInfo)
+						.setPrintSettings(printSettings);
 
 		try (final ParquetWriter<EntityResult> parquetWriter = conqueryParquetWriterBuilder.build()) {
 

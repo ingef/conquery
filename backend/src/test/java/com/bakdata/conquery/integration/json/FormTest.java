@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -129,7 +130,7 @@ public class FormTest extends ConqueryTestSpec {
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				printSettings =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null, new CsvResultPrinters());
 
 		checkSingleResult(managedForm, config, printSettings);
 

@@ -7,13 +7,14 @@ import java.util.Locale;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import org.junit.jupiter.api.Test;
 
 public class UniqueNameTest {
 	@Test
 	void testNameCollision() {
-		PrintSettings settings = new PrintSettings(true, Locale.ROOT, null, new ConqueryConfig(), null, null);
+		PrintSettings settings = new PrintSettings(true, Locale.ROOT, null, new ConqueryConfig(), null, null, new CsvResultPrinters());
 		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
 
 		final ExternalResultInfo info1 = new ExternalResultInfo("test", ResultType.Primitive.STRING, settings);

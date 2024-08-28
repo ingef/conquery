@@ -168,7 +168,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null, null));
 			}
 
 			this.namespace = namespace;

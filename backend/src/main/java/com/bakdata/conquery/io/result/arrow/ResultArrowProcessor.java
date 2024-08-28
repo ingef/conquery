@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -95,7 +96,7 @@ public class ResultArrowProcessor {
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
+		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null, new ArrowResultPrinters());
 
 
 		// Collect ResultInfos for id columns and result columns

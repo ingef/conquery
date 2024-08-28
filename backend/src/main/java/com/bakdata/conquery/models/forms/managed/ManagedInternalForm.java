@@ -102,7 +102,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void start() {
 		synchronized (this) {
-			subQueries.values().stream().forEach(flatSubQueries::add);
+			subQueries.values().forEach(flatSubQueries::add);
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();

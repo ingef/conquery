@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -52,7 +53,7 @@ public class ResultParquetProcessor {
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null, new ArrowResultPrinters()); //TODO Parquet different printer?
 
 		final StreamingOutput out = output -> {
 

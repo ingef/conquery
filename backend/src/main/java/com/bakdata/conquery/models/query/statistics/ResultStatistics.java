@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -72,15 +73,24 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 							 final StopWatch started = StopWatch.createStarted();
 
 							 final ResultInfo info = resultInfos.get(col);
+							 final Printer printer = info.getPrinter();
 							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info), info.getDescription(), info.getType(), info.getPrinter(), printSettings, conqueryConfig.getFrontend());
+									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info), info.getDescription(), info.getType(), printSettings, conqueryConfig.getFrontend());
 
 							 log.trace("BEGIN stats collection for {}", info);
 
 							 managedQuery.streamResults(OptionalLong.empty())
 										 .map(EntityResult::listResultLines)
 										 .flatMap(List::stream)
-										 .forEach(line -> statsCollector.consume(line[col]));
+										 .forEach(line -> {
+											 Object value = line[col];
+											 if (value == null) {
+												 // Printers dont handle null
+												 statsCollector.consume(null);
+												 return;
+											 }
+											 statsCollector.consume(printer.print(value));
+										 });
 
 							 log.trace("DONE collecting values for {}, in {}", info, started);
 

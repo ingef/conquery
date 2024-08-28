@@ -304,10 +304,7 @@ public class ExcelRenderer {
 
 	// Type specific cell writers
 	private static void writeStringCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(
-				info.printNullable(
-						value
-				));
+		cell.setCellValue((String) info.printNullable(value));
 	}
 
 	/**
@@ -319,7 +316,7 @@ public class ExcelRenderer {
 			cell.setCellValue(aBoolean);
 			return;
 		}
-		cell.setCellValue(info.printNullable(value));
+		cell.setCellValue((String) info.printNullable(value));
 	}
 
 	private static void writeDateCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {

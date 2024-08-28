@@ -15,16 +15,20 @@ import lombok.ToString;
 public class SecondaryIdResultInfo extends ResultInfo {
 	private final SecondaryIdDescription secondaryId;
 	private final ResultType type;
-	private final ResultPrinters.Printer printer;
+	private final Printer printer;
 
 
 	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId, PrintSettings settings) {
 		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)), settings);
 		this.secondaryId = secondaryId;
 		type = ResultType.Primitive.STRING;
-		printer = secondaryId.getMapping() == null
-					   ? new ResultPrinters.StringPrinter()
-					   : new ResultPrinters.MappedPrinter(secondaryId.getMapping());
+
+		if (secondaryId.getMapping() == null) {
+			printer = settings.getPrinterFactory().getStringPrinter(settings);
+		}
+		else {
+			printer = new ChainingPrinter(new MappedPrinter(secondaryId.getMapping()), settings.getPrinterFactory().getStringPrinter(settings));
+		}
 	}
 
 	@Override

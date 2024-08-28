@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -20,13 +21,13 @@ public interface SingleTableResult {
 
 	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
 		Preconditions.checkArgument(isInitialized, "The execution must have been initialized first");
-		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
+		// The printer is never used to generate results. But downstream code might touch them
+		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null, new JavaResultPrinters());
 
-		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null);
-
-		UniqueNamer uniqNamer = new UniqueNamer(settings);
+		final UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
 		for (ResultInfo header : config.getIdColumns().getIdResultInfos(settings)) {

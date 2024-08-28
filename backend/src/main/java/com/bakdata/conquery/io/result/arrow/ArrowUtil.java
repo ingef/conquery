@@ -2,8 +2,6 @@ package com.bakdata.conquery.io.result.arrow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -23,98 +21,80 @@ public class ArrowUtil {
 
 	public static final RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
-	private BiFunction<ResultInfo, String, Field> fieldFor(ResultType type) {
+	private Field fieldFor(ResultType type, String name) {
 		if (type instanceof ResultType.ListT<?>) {
-			return ArrowUtil::listField;
+			return ArrowUtil.listField(name, type);
 		}
 
 		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> ArrowUtil::boolField;
-			case INTEGER -> ArrowUtil::integerField;
-			case MONEY -> ArrowUtil::moneyField;
-			case NUMERIC -> ArrowUtil::floatField;
-			case DATE -> ArrowUtil::dateField;
-			case DATE_RANGE -> ArrowUtil::dateRangeField;
-			case STRING -> ArrowUtil::stringField;
+			case BOOLEAN -> ArrowUtil.boolField(name);
+			case INTEGER -> ArrowUtil.integerField(name);
+			case MONEY -> ArrowUtil.moneyField(name);
+			case NUMERIC -> ArrowUtil.floatField(name);
+			case DATE -> ArrowUtil.dateField(name);
+			case DATE_RANGE -> ArrowUtil.dateRangeField(name);
+			case STRING -> ArrowUtil.stringField(name);
 		};
 	}
 
 
-	private static Field stringField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field stringField(@NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Utf8()), null);
 	}
 
-	private static Field boolField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field boolField(@NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(ArrowType.Bool.INSTANCE), null);
 	}
 
-	private static Field integerField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field integerField(@NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
 	}
 
-	private static Field moneyField(ResultInfo info, @NonNull String uniqueName) {
-		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
-	}
-
-	private static Field floatField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field moneyField(@NonNull String uniqueName) {
+		//TODO We could use Decimal here?
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
 	}
 
-	private static Field dateField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field floatField(@NonNull String uniqueName) {
+		return new Field(uniqueName, FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
+	}
+
+	private static Field dateField(@NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null);
 	}
 
-	private static Field dateRangeField(ResultInfo info, @NonNull String uniqueName) {
+	private static Field dateRangeField(@NonNull String uniqueName) {
 		return new Field(
 				uniqueName,
 				FieldType.nullable(ArrowType.Struct.INSTANCE),
 				List.of(
-						dateField(info, "min"),
-						dateField(info, "max")
+						dateField("min"),
+						dateField("max")
 				));
 	}
 
-	private static Field listField(ResultInfo info, @NonNull String uniqueName) {
-		if (!(info.getType() instanceof ResultType.ListT)) {
-			throw new IllegalStateException("Expected result type of " + ResultType.ListT.class.getName() + " but got " + info.getType().getClass().getName());
-		}
-
-		final ResultType elementType = ((ResultType.ListT) info.getType()).getElementType();
-		BiFunction<ResultInfo, String, Field> nestedFieldCreator = fieldFor(elementType);
-		final Field nestedField = nestedFieldCreator.apply(info, uniqueName);
-		return new Field(
-				uniqueName,
-				FieldType.nullable(ArrowType.List.INSTANCE),
-				List.of(nestedField)
-		);
-	}
-
-	/**
-	 * Creates an arrow field vector (a column) corresponding to the internal conquery type and initializes the column with
-	 * a localized header.
-	 * @param info internal meta data for the result column
-	 * @param collector to create unique names across the columns
-	 * @return a Field (the arrow representation of the column)
-	 */
-	public Field createField(ResultInfo info, UniqueNamer collector) {
-		// Fallback to string field if type is not explicitly registered
-		BiFunction<ResultInfo, String, Field> fieldCreator = fieldFor(info.getType());
-		return fieldCreator.apply(info, collector.getUniqueName(info));
+	private static Field listField(@NonNull String uniqueName, ResultType type) {
+		final ResultType elementType = ((ResultType.ListT<?>) type).getElementType();
+		final Field nestedField = fieldFor(elementType, uniqueName);
+		
+		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));
 	}
 
 	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector) {
 		return info.stream()
-				   .map(i -> createField(i, collector))
-				   .collect(Collectors.toUnmodifiableList());
+				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i)))
+				   .toList();
 
 	}
 
 	@NotNull
 	public static List<Field> generateFields(List<ResultInfo> idHeaders, List<ResultInfo> resultInfo, UniqueNamer uniqueNamer) {
 		// Combine id and value Fields to one vector to build a schema
-		final List<Field> idFields = generateFields(idHeaders, uniqueNamer);
-		List<Field> fields = new ArrayList<>(idFields);
+		List<Field> fields = new ArrayList<>();
+
+		fields.addAll(generateFields(idHeaders, uniqueNamer));
 		fields.addAll(generateFields(resultInfo, uniqueNamer));
+
 		return fields;
 	}
 }

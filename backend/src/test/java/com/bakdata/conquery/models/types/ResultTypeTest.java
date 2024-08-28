@@ -17,7 +17,8 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,9 +27,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ResultTypeTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null, null);
-	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null);
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
+	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null, null, new CsvResultPrinters());
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null, new CsvResultPrinters());
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null, new CsvResultPrinters());
 
 	static {
 		// Initialization of the internationalization
@@ -94,7 +95,7 @@ public class ResultTypeTest {
 	public void testPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		ResultInfo info = info(type, cfg);
 
-		final ResultPrinters.Printer printer = info.getPrinter();
+		final Printer printer = info.getPrinter();
 
 		assertThat(printer.print(value)).isEqualTo(expected);
 
@@ -109,7 +110,7 @@ public class ResultTypeTest {
 	public void testBinaryPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		ResultInfo info = info(type, cfg);
 
-		final ResultPrinters.Printer printer = info.getPrinter();
+		final Printer printer = info.getPrinter();
 		assertThat(printer.print(value)).isEqualTo(expected);
 
 		final byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(value);

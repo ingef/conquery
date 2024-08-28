@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
@@ -19,10 +19,10 @@ public class ColumnResultInfo extends ResultInfo {
 	private final Column column;
 	private final ResultType type;
 	private final String description;
-	private final ResultPrinters.Printer printer;
+	private final Printer printer;
 
 
-	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics, ResultPrinters.Printer printer, String description, PrintSettings settings) {
+	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics, Printer printer, String description, PrintSettings settings) {
 		super(semantics, settings);
 		this.column = column;
 		this.type = type;

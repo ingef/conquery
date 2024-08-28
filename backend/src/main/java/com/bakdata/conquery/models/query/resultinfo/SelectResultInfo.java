@@ -5,7 +5,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.google.common.collect.Sets;
@@ -34,8 +34,8 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public ResultPrinters.Printer getPrinter() {
-		return select.createPrinter(getSettings());
+	public Printer getPrinter() {
+		return select.createPrinter(getSettings(), getSettings().getPrinterFactory());
 	}
 
 	@Override

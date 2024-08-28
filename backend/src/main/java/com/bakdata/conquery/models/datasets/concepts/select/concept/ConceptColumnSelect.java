@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptElementsAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ConceptIdPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
@@ -44,21 +46,21 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
 		if (isAsIds()) {
-			return new ResultPrinters.ListPrinter(new ResultPrinters.ConceptIdPrinter(getHolder().findConcept(), printSettings), printSettings);
+			return printerFactory.getListPrinter(new ConceptIdPrinter(getHolder().findConcept(), printSettings), printSettings);
 		}
 
-		return new ResultPrinters.ListPrinter(new ResultPrinters.StringPrinter(), printSettings);
+		return printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings);
 	}
 
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
-		if (!isAsIds()) {
-			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+		if (isAsIds()) {
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())), settings);
 		}
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())), settings);
 	}
 
 	@JsonIgnore

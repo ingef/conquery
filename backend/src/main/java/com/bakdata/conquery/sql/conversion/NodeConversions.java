@@ -44,7 +44,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	public ConversionContext convert(QueryDescription queryDescription, Namespace namespace, ConqueryConfig conqueryConfig) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.idColumns(idColumns)
-														.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, namespace, conqueryConfig, null, null))
+														.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, namespace, conqueryConfig, null, null, null))
 														.config(config)
 														.nameGenerator(nameGenerator)
 														.nodeConversions(this)

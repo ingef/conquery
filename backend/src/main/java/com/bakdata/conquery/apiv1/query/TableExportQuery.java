@@ -41,7 +41,9 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.ConceptIdPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -266,7 +268,7 @@ public class TableExportQuery extends Query {
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
-			ResultPrinters.Printer printer = ResultPrinters.printerFor(resultType, printSettings);
+			Printer printer = printSettings.getPrinterFactory().printerFor(resultType, printSettings);
 
 			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
@@ -278,7 +280,10 @@ public class TableExportQuery extends Query {
 
 				if (!isRawConceptValues()) {
 					resultType = ResultType.Primitive.STRING;
-					printer = new ResultPrinters.ConceptIdPrinter(concept, printSettings);
+					printer = new ChainingPrinter(
+							new ConceptIdPrinter(concept, printSettings),
+							printSettings.getPrinterFactory().getStringPrinter(printSettings)
+					);
 				}
 			}
 			else {

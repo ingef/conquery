@@ -74,6 +74,7 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -569,7 +570,7 @@ public class QueryProcessor {
 
 
 		final PrintSettings printSettings =
-				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
+				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat, new JavaResultPrinters());
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos(printSettings);

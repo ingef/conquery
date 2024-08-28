@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,7 +23,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -49,12 +48,16 @@ public class ResultTestUtil {
 
 	private static final PrintSettings
 			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, null, new ConqueryConfig(), null, (selectInfo) -> selectInfo.getSelect().getLabel());
+			new PrintSettings(false, Locale.ROOT, null, new ConqueryConfig(), null, (selectInfo) -> selectInfo.getSelect().getLabel(), new CsvResultPrinters());
 
 	public static List<ResultInfo>
 			ID_FIELDS =
 			Stream.of("id1", "id2")
-				  .map(name -> new ExternalResultInfo(name, ResultType.Primitive.STRING, "", new ResultPrinters.StringPrinter(), Set.of(new SemanticType.IdT("ID")), PRINT_SETTINGS))
+				  .map(name -> {
+					  ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING, PRINT_SETTINGS);
+					  info.addSemantics(new SemanticType.IdT("ID"));
+					  return info;
+				  })
 				  .collect(Collectors.toList());
 
 	@NotNull
@@ -64,7 +67,7 @@ public class ResultTestUtil {
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(resultType -> new TypedSelectDummy(resultType))
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
 									   .collect(Collectors.toList());
 			}
 
