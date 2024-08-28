@@ -66,14 +66,6 @@ public class JavaResultPrinters extends PrinterFactory {
 		}
 	}
 
-	private record IdentityPrinter() implements Printer {
-
-		@Override
-		public Object print(Object value) {
-			return value;
-		}
-	}
-
 	private record DatePrinter() implements Printer {
 
 		@Override
