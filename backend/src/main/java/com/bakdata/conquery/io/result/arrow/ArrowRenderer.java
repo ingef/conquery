@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -109,7 +110,7 @@ public class ArrowRenderer {
 				);
 
 				for (int index = 0; index < idWriters.length; index++) {
-					if(printedExternalId[index] == null){
+					if (printedExternalId[index] == null) {
 						continue;
 					}
 
@@ -150,66 +151,74 @@ public class ArrowRenderer {
 
 	private static RowConsumer intVectorFiller(IntVector vector) {
 		return (rowNumber, valueRaw) -> {
-			final Integer value = (Integer) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+
+			final Integer value = (Integer) valueRaw;
+
 			vector.setSafe(rowNumber, value);
 		};
 	}
 
 	private static RowConsumer bitVectorFiller(BitVector vector) {
 		return (rowNumber, valueRaw) -> {
-			final Boolean value = (Boolean) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+
+			final Boolean value = (Boolean) valueRaw;
+
 			vector.setSafe(rowNumber, value ? 1 : 0);
 		};
 	}
 
 	private static RowConsumer float8VectorFiller(Float8Vector vector) {
 		return (rowNumber, valueRaw) -> {
-			final Number value = (Number) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+
+			final Number value = (Number) valueRaw;
+
 			vector.setSafe(rowNumber, value.doubleValue());
 		};
 	}
 
 	private static RowConsumer float4VectorFiller(Float4Vector vector) {
 		return (rowNumber, valueRaw) -> {
-			final Number value = (Number) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+
+			final Number value = (Number) valueRaw;
 			vector.setSafe(rowNumber, value.floatValue());
 		};
 	}
 
 	private static RowConsumer varCharVectorFiller(VarCharVector vector) {
 		return (rowNumber, valueRaw) -> {
-			final String value = (String) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+			final String value = (String) valueRaw;
 			vector.setSafe(rowNumber, new Text(value));
 		};
 	}
 
 	private static RowConsumer dateDayVectorFiller(DateDayVector vector) {
 		return (rowNumber, valueRaw) -> {
-			final Number value = (Number) valueRaw;
-			if (value == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
+
+			final Number value = (Number) valueRaw;
 
 			// Treat our internal infinity dates (Interger.MIN and Integer.MAX) also as null
 			final int epochDay = value.intValue();
@@ -223,42 +232,43 @@ public class ArrowRenderer {
 		};
 	}
 
-	private static RowConsumer structVectorFiller(StructVector vector, RowConsumer[] nestedConsumers) {
-		return (rowNumber, valueRaw) -> {
-			// Values is a horizontal list
-			final List<?> values = (List<?>) valueRaw;
-			if (values == null) {
+	private static RowConsumer dateRangeVectorFiller(StructVector vector) {
+		final List<ValueVector> nestedVectors = vector.getPrimitiveVectors();
+		final RowConsumer minConsumer = generateVectorFiller(nestedVectors.get(0), ResultType.Primitive.DATE);
+		final RowConsumer maxConsumer = generateVectorFiller(nestedVectors.get(1), ResultType.Primitive.DATE);
+
+		return ((rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
 
-			Preconditions.checkState(
-					values.size() == nestedConsumers.length,
-					"The number of the provided nested value differs from the number of consumer for the generated vectors. Provided values: %s\t Available consumers: %d".formatted(values, nestedConsumers.length));
+			final CDateRange value = (CDateRange) valueRaw;
 
-			for (RowConsumer nestedConsumer : nestedConsumers) {
-				nestedConsumer.accept(rowNumber, values.toArray());
-			}
+			//TODO are we interested in infinities here?
+			minConsumer.accept(rowNumber, value.getMinValue());
+			maxConsumer.accept(rowNumber, value.getMaxValue());
 
 			// Finally mark that we populated the nested vectors
 			vector.setIndexDefined(rowNumber);
-		};
+		});
 	}
 
 	private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer) {
 		return (rowNumber, valueRaw) -> {
-			// Values is a vertical list
-			final List<?> values = (List<?>) valueRaw;
 
-			if (values == null) {
+			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
 
+			final List<?> values = (List<?>) valueRaw;
+
 			final int start = vector.startNewValue(rowNumber);
 
 			for (int i = 0; i < values.size(); i++) {
-				// These short lived one value arrays are a workaround at the moment
+				// These short-lived one value arrays are a workaround at the moment
+				//TODO consider using only a single array and overwriting it every row - this works only if Arrow processes the values immediately
 				nestedConsumer.accept(Math.addExact(start, i), new Object[]{values.get(i)});
 			}
 
@@ -302,18 +312,7 @@ public class ArrowRenderer {
 			case DATE -> dateDayVectorFiller(((DateDayVector) vector));
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));
-
-			case DATE_RANGE -> {
-				final StructVector structVector = (StructVector) vector;
-				final List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
-				final RowConsumer[] nestedConsumers = new RowConsumer[nestedVectors.size()];
-
-				for (int i = 0; i < nestedVectors.size(); i++) {
-					nestedConsumers[i] = generateVectorFiller(nestedVectors.get(i), ResultType.Primitive.DATE);
-				}
-
-				yield structVectorFiller(structVector, nestedConsumers);
-			}
+			case DATE_RANGE -> dateRangeVectorFiller((StructVector) vector);
 
 		};
 
