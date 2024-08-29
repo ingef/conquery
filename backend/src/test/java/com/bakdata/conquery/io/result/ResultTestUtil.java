@@ -35,13 +35,14 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-	private static User OWNER = new User("user", "User", null);
-	private static TreeConcept concept;
+	private static final User OWNER = new User("user", "User", null);
+	private static final Dataset DATASET = new Dataset("dataset");
+	private static final TreeConcept CONCEPT;
 
 	static {
-		concept = new TreeConcept();
-		concept.setName("concept");
-		concept.setDataset(new Dataset("dataset"));
+		CONCEPT = new TreeConcept();
+		CONCEPT.setName("concept");
+		CONCEPT.setDataset(DATASET);
 	}
 
 	public static List<ResultInfo> getIdFields(PrintSettings printSettings) {
@@ -54,7 +55,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, OWNER, null, null) {
+		return new ManagedQuery(null, OWNER, DATASET, null) {
 			@Override
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
@@ -87,7 +88,7 @@ public class ResultTestUtil {
 
 		public TypedSelectDummy(ResultType resultType) {
 			setLabel(resultType.toString());
-			setHolder(concept);
+			setHolder(CONCEPT);
 			this.resultType = resultType;
 		}
 
