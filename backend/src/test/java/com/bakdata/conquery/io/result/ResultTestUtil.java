@@ -72,12 +72,53 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static List<ResultType> getResultTypes() {
-		return List.of(ResultType.Primitive.BOOLEAN, ResultType.Primitive.INTEGER, ResultType.Primitive.NUMERIC, ResultType.Primitive.DATE, ResultType.Primitive.DATE_RANGE, ResultType.Primitive.STRING, ResultType.Primitive.MONEY, new ResultType.ListT(ResultType.Primitive.BOOLEAN), new ResultType.ListT(ResultType.Primitive.DATE_RANGE), new ResultType.ListT(ResultType.Primitive.STRING));
+		return List.of(ResultType.Primitive.BOOLEAN,
+					   ResultType.Primitive.INTEGER,
+					   ResultType.Primitive.NUMERIC,
+					   ResultType.Primitive.DATE,
+					   ResultType.Primitive.DATE_RANGE,
+					   ResultType.Primitive.STRING,
+					   ResultType.Primitive.MONEY,
+					   new ResultType.ListT(ResultType.Primitive.BOOLEAN),
+					   new ResultType.ListT(ResultType.Primitive.DATE_RANGE),
+					   new ResultType.ListT(ResultType.Primitive.STRING)
+		);
 	}
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
-		return List.of(new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", new BigDecimal("45.21"), List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}), new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}), new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}), new MultilineEntityResult("3", List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, new BigDecimal(4), List.of(true, false, true, false), null, null})));
+		return List.of(
+				new SinglelineEntityResult("1",
+										   new Object[]{
+												   Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345,
+																								   534
+										   ), "test_string", new BigDecimal("45.21"), List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of(
+												   "fizz",
+												   "buzz"
+										   )
+										   }
+				),
+				new SinglelineEntityResult("2",
+										   new Object[]{
+												   Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234,
+																																 Integer.MAX_VALUE
+										   )), List.of()
+										   }
+				),
+				new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}),
+				new MultilineEntityResult("3",
+										  List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null},
+												  new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
+												  new Object[]{
+														  Boolean.TRUE, null, null, null, null, null, new BigDecimal("4.00"), List.of(true,
+																																	  false,
+																																	  true,
+																																	  false
+												  ), null, null
+												  }
+										  )
+				)
+		);
 	}
 
 	public static class TypedSelectDummy extends Select {

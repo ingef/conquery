@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -213,6 +214,9 @@ public class ArrowResultGenerationTest {
         if (obj == null) {
             return "null";
         }
+		if (type.equals(ResultType.Primitive.MONEY)) {
+			return new String(((BigDecimal)obj).unscaledValue().toByteArray());
+		}
         if (type.equals(ResultType.Primitive.DATE_RANGE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
