@@ -1,17 +1,18 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import lombok.ToString;
 
+@ToString
 public class JsonResultPrinters extends PrinterFactory {
 
-	private final JavaResultPrinters delegate = new JavaResultPrinters();
+	private final PrinterFactory delegate = new JavaResultPrinters();
 
 	@Override
 	public Printer getListPrinter(Printer elementPrinter, PrintSettings printSettings) {
@@ -57,17 +58,8 @@ public class JsonResultPrinters extends PrinterFactory {
 		return new NumericPrinter();
 	}
 
-	public record ToStringPrinter(Printer delegate) implements Printer {
-
-		@Override
-		public Object apply(Object value) {
-			return new TextNode(Objects.toString(delegate.apply(value)));
-		}
-	}
-
 	@Override
 	public Printer getDatePrinter(PrintSettings printSettings) {
-		//TODO compare with current impl
 		return new ToStringPrinter(delegate.getDatePrinter(printSettings));
 	}
 

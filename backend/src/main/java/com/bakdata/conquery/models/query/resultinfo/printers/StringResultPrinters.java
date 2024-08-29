@@ -14,7 +14,7 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CsvResultPrinters extends PrinterFactory {
+public class StringResultPrinters extends PrinterFactory {
 
 
 	@Override

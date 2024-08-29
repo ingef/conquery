@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -53,7 +53,7 @@ public class ResultExcelProcessor {
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId, null, new CsvResultPrinters());
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId, null, new StringResultPrinters());
 
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 

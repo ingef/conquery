@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class DefaultSqlCDateSetParserTest {
 
 	private static final DefaultSqlCDateSetParser parser = new DefaultSqlCDateSetParser();
-	private static final CsvResultPrinters csvResultPrinters = new CsvResultPrinters();
+	private static final StringResultPrinters csvResultPrinters = new StringResultPrinters();
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null, csvResultPrinters);
 

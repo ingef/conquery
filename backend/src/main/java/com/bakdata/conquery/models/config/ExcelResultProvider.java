@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -74,7 +74,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), exec.getNamespace(), exec.getConfig(), null, null, new ExcelResultPrinters());
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), exec.getNamespace(), exec.getConfig(), null, null, new JavaResultPrinters());
 
 		// Save id column count to later check if xlsx dimensions are feasible
 		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();

@@ -15,7 +15,6 @@ public class ExternalResultInfo extends ResultInfo {
 	private final String name;
 	private final ResultType type;
 
-
 	public ExternalResultInfo(String name, ResultType type) {
 		super(Collections.emptySet());
 		this.name = name;

@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -58,7 +58,7 @@ public class ResultCsvProcessor {
 
 		// Get the locale extracted by the LocaleFilter
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null, new CsvResultPrinters());
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null, new StringResultPrinters());
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
