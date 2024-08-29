@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,8 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
+import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
-import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
@@ -115,11 +116,14 @@ public class ArrowRenderer {
 					final int colId = index + idWriters.length;
 					// In this case, the printer normalizes and adjusts values.
 
-					final Object printed = printers.get(colId).apply(line[index]);
+					final Object value = line[index];
 
-					if (printed == null) {
-						continue;
+					Object printed = null;
+
+					if (value != null) {
+						printed = printers.get(colId).apply(value);
 					}
+
 					valueWriters[index].accept(batchLineCount, printed);
 				}
 
@@ -181,6 +185,19 @@ public class ArrowRenderer {
 		};
 	}
 
+	private static RowConsumer moneyVectorFiller(DecimalVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final BigDecimal value = (BigDecimal) valueRaw;
+
+			vector.setSafe(rowNumber, value);
+		};
+	}
+
 	private static RowConsumer float8VectorFiller(Float8Vector vector) {
 		return (rowNumber, valueRaw) -> {
 			if (valueRaw == null) {
@@ -191,18 +208,6 @@ public class ArrowRenderer {
 			final Number value = (Number) valueRaw;
 
 			vector.setSafe(rowNumber, value.doubleValue());
-		};
-	}
-
-	private static RowConsumer float4VectorFiller(Float4Vector vector) {
-		return (rowNumber, valueRaw) -> {
-			if (valueRaw == null) {
-				vector.setNull(rowNumber);
-				return;
-			}
-
-			final Number value = (Number) valueRaw;
-			vector.setSafe(rowNumber, value.floatValue());
 		};
 	}
 
@@ -251,7 +256,6 @@ public class ArrowRenderer {
 
 			final CDateRange value = (CDateRange) valueRaw;
 
-			//TODO are we interested in infinities here?
 			minConsumer.accept(rowNumber, value.getMinValue());
 			maxConsumer.accept(rowNumber, value.getMaxValue());
 
@@ -306,15 +310,11 @@ public class ArrowRenderer {
 
 			return listVectorFiller(((ListVector) vector), generateVectorFiller(nestedVector, listT.getElementType()));
 		}
-		//TODO who dis?
-		//		if (vector instanceof Float4Vector float4Vector) {
-		//			return float4VectorFiller(float4Vector, (line) -> (Number) line[pos]);
-		//		}
 
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> bitVectorFiller(((BitVector) vector));
 			case INTEGER -> intVectorFiller(((IntVector) vector));
-			case MONEY -> float8VectorFiller(((Float8Vector) vector));
+			case MONEY -> moneyVectorFiller(((DecimalVector) vector));
 			case DATE -> dateDayVectorFiller(((DateDayVector) vector));
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));

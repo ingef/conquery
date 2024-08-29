@@ -53,9 +53,9 @@ public class ExcelRenderer {
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
 			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
-			case MONEY -> (value, cell, styles1) -> writeMoneyCell(value, cell, settings, styles1);
+			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
 			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
-			case DATE -> (value, cell, styles1) -> writeDateCell(value, cell, styles1, printer);
+			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
 			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
 		};
 	}
@@ -316,7 +316,7 @@ public class ExcelRenderer {
 		cell.setCellValue((Boolean) printer.apply(value));
 	}
 
-	private static void writeDateCell(Object value, Cell cell, Map<String, CellStyle> styles, Printer printer) {
+	private static void writeDateCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
 		cell.setCellValue((LocalDate) printer.apply(value));
 		cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
 	}
@@ -331,14 +331,17 @@ public class ExcelRenderer {
 		cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
 	}
 
-	public static void writeMoneyCell(Object value, Cell cell, PrintSettings settings, Map<String, CellStyle> styles) {
+	public static void writeMoneyCell(Object valueRaw, Cell cell, Printer printer, PrintSettings settings, Map<String, CellStyle> styles) {
+
+		final BigDecimal value = (BigDecimal) printer.apply(valueRaw);
+
 		final CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
 		if (currencyStyle == null) {
-			// Print as cents or what ever the minor currency unit is
-			cell.setCellValue(((BigDecimal) value).movePointRight(settings.getCurrency().getDefaultFractionDigits()).intValue());
+			// Print as cents or whatever the minor currency unit is
+			cell.setCellValue(value.movePointRight(settings.getCurrency().getDefaultFractionDigits()).intValue());
 			return;
 		}
 		cell.setCellStyle(currencyStyle);
-		cell.setCellValue(((BigDecimal) value).doubleValue());
+		cell.setCellValue(value.doubleValue());
 	}
 }

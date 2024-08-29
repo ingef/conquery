@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.result.parquet;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link WriteSupport} for Conquery's {@link EntityResult} type.
@@ -58,7 +60,9 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			Because Parquet Schemas rely on primitive types with logical annotations
 			which are tedious to configure, we take the detour over the arrow schema.
 		 */
-		final SchemaMapping schemaMapping = new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
+		final SchemaMapping
+				schemaMapping =
+				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
 
 		return schemaMapping.getParquetSchema();
 
@@ -128,13 +132,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		}
 
 		// Write ID fields
-		final String[] externalId = printSettings.getIdMapper().map(record).getExternalId();
-
-		final Object[] printedExternalId = new String[externalId.length];
-
-		for (int index = 0; index < externalId.length; index++) {
-			printedExternalId[index] = columnPrinters.get(index).apply(externalId[index]);
-		}
+		final Object[] printedExternalId = getPrintedExternalId(record);
 
 		for (Object[] listResultLine : listResultLines) {
 			recordConsumer.startMessage();
@@ -156,13 +154,14 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			for (int index = 0; index < listResultLine.length; index++) {
 				final int colId = index + printedExternalId.length;
 
-				final Object resultValue = listResultLine[index];
+				final Object value = listResultLine[index];
 
-				if (resultValue == null) {
+				if (value == null) {
+					// Parquet consumers cannot handle null?
 					continue;
 				}
 
-				final Object printed = columnPrinters.get(colId).apply(resultValue);
+				final Object printed = columnPrinters.get(colId).apply(value);
 
 				final String fieldName = schema.getFieldName(colId);
 
@@ -176,6 +175,18 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	}
 
+	@NotNull
+	private Object[] getPrintedExternalId(EntityResult record) {
+		final String[] externalId = printSettings.getIdMapper().map(record).getExternalId();
+
+		final Object[] printedExternalId = new String[externalId.length];
+
+		for (int index = 0; index < externalId.length; index++) {
+			printedExternalId[index] = columnPrinters.get(index).apply(externalId[index]);
+		}
+		return printedExternalId;
+	}
+
 	private record StringColumnConsumer() implements ColumnConsumer {
 
 		@Override
@@ -185,7 +196,6 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	}
 
 	private record BooleanColumnConsumer() implements ColumnConsumer {
-
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
 			recordConsumer.addBoolean((boolean) o);
@@ -210,10 +220,9 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	}
 
 	private record MoneyColumnConsumer() implements ColumnConsumer {
-
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			recordConsumer.addDouble(((Number) o).doubleValue());
+			recordConsumer.addBinary(Binary.fromConstantByteArray(((BigDecimal) o).unscaledValue().toByteArray()));
 		}
 	}
 

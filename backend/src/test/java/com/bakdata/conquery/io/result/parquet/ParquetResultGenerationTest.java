@@ -73,7 +73,7 @@ public class ParquetResultGenerationTest {
 					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("max")
 					 .named("DATE_RANGE")
 					 .optional(BINARY).as(stringType()).named("STRING")
-					 .optional(DOUBLE).named("MONEY")
+					 .optional(BINARY).as(LogicalTypeAnnotation.decimalType(PRINT_SETTINGS.getCurrency().getDefaultFractionDigits(), 38 - PRINT_SETTINGS.getCurrency().getDefaultFractionDigits())).named("MONEY")
 					 .optionalGroup().as(LogicalTypeAnnotation.listType())
 					 .repeatedGroup()
 					 .optional(BOOLEAN).named("element")

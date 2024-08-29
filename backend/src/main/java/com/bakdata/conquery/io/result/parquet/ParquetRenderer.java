@@ -53,7 +53,7 @@ public class ParquetRenderer {
 	@RequiredArgsConstructor
 	public static class PositionTrackingOutputStream extends PositionOutputStream {
 
-		final private CountingOutputStream stream;
+		private final CountingOutputStream stream;
 
 		@Override
 		public long getPos() throws IOException {
