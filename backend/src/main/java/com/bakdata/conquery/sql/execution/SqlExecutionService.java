@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -38,14 +39,14 @@ public class SqlExecutionService {
 
 	private final ResultSetProcessor resultSetProcessor;
 
-	public SqlExecutionResult execute(SqlQuery sqlQuery) {
+	public SqlExecutionState execute(SqlQuery sqlQuery) {
 
-		final SqlExecutionResult result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
+		final SqlExecutionState result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
 
 		return result;
 	}
 
-	private SqlExecutionResult createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
+	private SqlExecutionState createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
 		final String sqlString = sqlQuery.getSql();
 		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
@@ -58,7 +59,7 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionResult(columnNames, resultTable);
+			return new SqlExecutionState(columnNames, resultTable, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {

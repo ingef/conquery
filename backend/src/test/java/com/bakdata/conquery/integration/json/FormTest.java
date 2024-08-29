@@ -101,9 +101,10 @@ public class FormTest extends ConqueryTestSpec {
 		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) support
 				.getNamespace()
 				.getExecutionManager()
-				.runQuery(namespace, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
+				.runQuery(namespace, form, support.getTestUser(), support.getConfig(), false);
 
-		managedForm.awaitDone(10, TimeUnit.MINUTES);
+		namespace.getExecutionManager().awaitDone(managedForm, 1, TimeUnit.MINUTES);
+
 		if (managedForm.getState() != ExecutionState.DONE) {
 			if (managedForm.getState() == ExecutionState.FAILED) {
 				fail(getLabel() + " Query failed");

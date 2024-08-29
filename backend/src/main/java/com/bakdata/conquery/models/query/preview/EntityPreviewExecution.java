@@ -28,8 +28,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -41,10 +39,11 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,14 +53,11 @@ import org.jetbrains.annotations.NotNull;
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> {
 
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
-
-	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
 
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset, storage);
@@ -69,8 +65,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
 		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
@@ -94,8 +88,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
 
@@ -197,8 +189,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable() {
-		super.doInitExecutable();
+	public void doInitExecutable(Namespace namespace) {
+		super.doInitExecutable(namespace);
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
@@ -208,19 +200,20 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(Subject subject) {
+	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
 		initExecutable(getNamespace(), getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, subject);
+		setStatusFull(status, subject, namespace);
 		status.setQuery(getValuesQuery().getQuery());
 
 
+		final PrintSettings infoSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters());
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings));
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters())));
-
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters())));
+		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters());
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), stratifiedSettings));
 
 		return status;
 	}
@@ -320,12 +313,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	private Object[] getCompleteLine(EntityResult entityResult) {
 		for (Object[] line : entityResult.listResultLines()) {
 
-			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
-
-			final int year = date.getYear();
-			final int quarter = QuarterUtils.getQuarter(date);
-
 			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.COMPLETE) {
 				return line;
 			}
@@ -369,15 +356,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
-	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet()
-														   .stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
 	@Override

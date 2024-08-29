@@ -61,11 +61,6 @@
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/imports",
-    "clazz": "AdminDatasetResource"
-  },
-  {
-    "method": "POST",
     "path": "/datasets/{dataset}/label",
     "clazz": "AdminDatasetResource"
   },
@@ -153,11 +148,6 @@
     "method": "GET",
     "path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
     "clazz": "AdminTablesResource"
-  },
-  {
-    "method": "PUT",
-    "path": "/datasets/{dataset}/imports",
-    "clazz": "AdminDatasetResource"
   },
   {
     "method": "PUT",

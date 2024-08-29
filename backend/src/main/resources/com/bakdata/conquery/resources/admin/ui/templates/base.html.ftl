@@ -19,7 +19,7 @@
 
 
 		<script>
-			<#-- Global varaible for csrf used by rest-method  -->
+			<#-- Global variable for csrf used by rest-method  -->
 			var csrf_token = "${ctx.csrfToken}"
 		</script>
 

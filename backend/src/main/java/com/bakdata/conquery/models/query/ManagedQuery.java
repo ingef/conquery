@@ -22,16 +22,14 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -42,7 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
@@ -53,27 +52,23 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 
 
-	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
 		super(owner, submittedDataset, storage);
 		this.query = query;
 	}
 
 	@Override
-	protected void doInitExecutable() {
-		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+	protected void doInitExecutable(Namespace namespace) {
+		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 	}
 
 
 	@Override
-	public void finish(ExecutionState executionState) {
+	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
-		super.finish(executionState);
+		super.finish(executionState, executionManager);
 	}
 
 
@@ -99,9 +94,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
 
-		super.setStatusBase(subject, status);
+		super.setStatusBase(subject, status, namespace);
 		status.setNumberOfResults(getLastResultCount());
 
 		Query query = getQuery();
@@ -112,7 +107,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		}
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	@Override
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
@@ -122,8 +118,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void reset() {
-		super.reset();
+	public void reset(ExecutionManager executionManager) {
+		super.reset(executionManager);
 		getNamespace().getExecutionManager().clearQueryResults(this);
 	}
 
@@ -149,11 +145,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	protected String makeDefaultLabel(PrintSettings cfg) {
 		return QueryUtils.makeQueryLabel(query, cfg, getId());
-	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	@Override

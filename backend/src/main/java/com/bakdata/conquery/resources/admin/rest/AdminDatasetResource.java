@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -25,9 +24,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -42,7 +39,6 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -145,17 +141,6 @@ public class AdminDatasetResource {
 		processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
-	@PUT
-	@Path("imports")
-	public void updateImport(@NotNull @QueryParam("file") File importFile) throws WebApplicationException {
-		try {
-			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
-		}
-		catch (IOException err) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
-		}
-	}
-
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
@@ -164,19 +149,6 @@ public class AdminDatasetResource {
 		log.debug("Importing from file upload");
 		processor.addImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
-
-	@POST
-	@Path("imports")
-	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException {
-		try {
-			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
-		}
-		catch (IOException err) {
-			log.warn("Unable to process import", err);
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
-		}
-	}
-
 
 	@POST
 	@Path("concepts")
