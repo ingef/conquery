@@ -88,8 +88,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + getLabel();
 	}
 
-	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
-		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet());
 	}
 
 

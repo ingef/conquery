@@ -60,7 +60,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		//check result info size
 		PrintSettings printSettings = new PrintSettings(true, Locale.ROOT, standaloneSupport.getNamespace(), standaloneSupport.getConfig(), null, null, new CsvResultPrinters());
 
-		List<ResultInfo> resultInfos = executionResult.getResultInfos(printSettings);
+		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")

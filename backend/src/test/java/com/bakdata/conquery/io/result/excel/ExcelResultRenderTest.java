@@ -64,10 +64,10 @@ public class ExcelResultRenderTest {
 		final List<EntityResult> results = getTestEntityResults();
 
 		final ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
-			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
 									   .collect(Collectors.toList());
 			}
 
@@ -82,7 +82,7 @@ public class ExcelResultRenderTest {
 
 		final ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
 
-		renderer.renderToStream(ResultTestUtil.getIdFields(printSettings), mquery, output, OptionalLong.empty(), printSettings);
+		renderer.renderToStream(ResultTestUtil.getIdFields(), mquery, output, OptionalLong.empty(), printSettings);
 
 		final InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
@@ -90,7 +90,7 @@ public class ExcelResultRenderTest {
 		final List<String> computed = readComputed(inputStream, printSettings);
 
 
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(printSettings));
+		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), printSettings);
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -127,7 +127,7 @@ public class ExcelResultRenderTest {
 	}
 
 
-	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
+	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings) {
 		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream().map(EntityResult.class::cast).forEach(res -> {
@@ -143,7 +143,7 @@ public class ExcelResultRenderTest {
 						continue;
 					}
 					final ResultInfo info = resultInfos.get(lIdx);
-					joinValue(valueJoiner, val, info);
+					joinValue(valueJoiner, val, info, printSettings);
 				}
 				expected.add(valueJoiner.toString());
 			}
@@ -152,8 +152,8 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-	private void joinValue(StringJoiner valueJoiner, Object val, ResultInfo info) {
-		String printVal = (String) info.printNullable(val);
+	private void joinValue(StringJoiner valueJoiner, Object val, ResultInfo info, PrintSettings printSettings) {
+		String printVal = (String) info.createPrinter(printSettings).apply(val);
 
 		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
 			/**

@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -34,36 +33,28 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class FixedLabelResultInfo extends ResultInfo {
+public abstract class FixedLabelResultInfo extends ResultInfo {
 
-	@NonNull
-	private final String localizedLabel;
-	@NonNull
-	private final String localizedDefaultLabel;
+
 	@Getter
 	private final ResultType type;
 
-	@Override
-	public Printer getPrinter() {
-		return getSettings().getPrinterFactory().printerFor(getType(), getSettings());
-	}
-
-	public FixedLabelResultInfo(String label, String defaultLabel, ResultType type, Set<SemanticType> semantics, PrintSettings settings) {
-		super(semantics, settings);
-		this.localizedLabel = label;
-		this.localizedDefaultLabel = defaultLabel;
+	public FixedLabelResultInfo(ResultType type, Set<SemanticType> semantics) {
+		super(semantics);
 		this.type = type;
 	}
 
-
 	@Override
-	public String userColumnName() {
-		return localizedLabel;
+	public Printer createPrinter(PrintSettings printSettings) {
+		return printSettings.getPrinterFactory().printerFor(getType(), printSettings);
 	}
 
 	@Override
-	public String defaultColumnName() {
-		return localizedDefaultLabel;
+	public abstract String userColumnName(PrintSettings printSettings);
+
+	@Override
+	public String defaultColumnName(PrintSettings printSettings) {
+		return userColumnName(printSettings);
 	}
 
 	@Override

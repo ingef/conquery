@@ -44,7 +44,7 @@ public class ExcelRenderer {
 
 	public static final int MAX_LINES = 1_048_576;
 
-	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings1) {
+	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
 		if(!(type instanceof ResultType.Primitive)){
 			//Excel cannot handle complex types so we just toString them.
 			return (value, cell, styles) -> writeStringCell(cell, value, printer);
@@ -53,7 +53,7 @@ public class ExcelRenderer {
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
 			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
-			case MONEY -> (value, cell, styles1) -> writeMoneyCell(value, cell, settings1, styles1);
+			case MONEY -> (value, cell, styles1) -> writeMoneyCell(value, cell, settings, styles1);
 			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
 			case DATE -> (value, cell, styles1) -> writeDateCell(value, cell, styles1, printer);
 			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
@@ -65,15 +65,15 @@ public class ExcelRenderer {
 
 	private final SXSSFWorkbook workbook;
 	private final ExcelConfig config;
-	private final PrintSettings cfg;
+	private final PrintSettings settings;
 	private final ImmutableMap<String, CellStyle> styles;
 
 
-	public ExcelRenderer(ExcelConfig config, PrintSettings cfg) {
+	public ExcelRenderer(ExcelConfig config, PrintSettings settings) {
 		workbook = new SXSSFWorkbook();
 		this.config = config;
-		styles = config.generateStyles(workbook, cfg);
-		this.cfg = cfg;
+		styles = config.generateStyles(workbook, settings);
+		this.settings = settings;
 	}
 
 	@FunctionalInterface
@@ -83,7 +83,7 @@ public class ExcelRenderer {
 
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
 			throws IOException {
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos(printSettings);
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec);
 
@@ -94,7 +94,7 @@ public class ExcelRenderer {
 			// Create a table environment inside the excel sheet
 			final XSSFTable table = createTableEnvironment(exec, sheet);
 
-			writeHeader(sheet, idHeaders, resultInfosExec, table);
+			writeHeader(sheet, idHeaders, resultInfosExec, table, printSettings);
 
 			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
 
@@ -171,11 +171,11 @@ public class ExcelRenderer {
 			SXSSFSheet sheet,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> infos,
-			XSSFTable table) {
+			XSSFTable table, PrintSettings printSettings) {
 
 		final CTTableColumns columns = table.getCTTable().addNewTableColumns();
 		columns.setCount(idHeaders.size() + infos.size());
-		final UniqueNamer uniqueNamer = new UniqueNamer(cfg);
+		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
 
 		{
 			final Row header = sheet.createRow(0);
@@ -185,7 +185,7 @@ public class ExcelRenderer {
 				final CTTableColumn column = columns.addNewTableColumn();
 				// Table column ids MUST be set and MUST start at 1, excel will fail otherwise
 				column.setId(currentColumn + 1);
-				final String uniqueName = uniqueNamer.getUniqueName(idHeader);
+				final String uniqueName = uniqueNamer.getUniqueName(idHeader, printSettings);
 				column.setName(uniqueName);
 
 				final Cell headerCell = header.createCell(currentColumn);
@@ -199,7 +199,7 @@ public class ExcelRenderer {
 			}
 
 			for (ResultInfo info : infos) {
-				final String columnName = uniqueNamer.getUniqueName(info);
+				final String columnName = uniqueNamer.getUniqueName(info, printSettings);
 				final CTTableColumn column = columns.addNewTableColumn();
 				column.setId(currentColumn + 1);
 				column.setName(columnName);
@@ -221,7 +221,7 @@ public class ExcelRenderer {
 
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
-		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, cfg, sheet)).sum();
+		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, settings, sheet)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()) {
@@ -237,7 +237,7 @@ public class ExcelRenderer {
 	private int writeRowsForEntity(List<ResultInfo> infos, EntityResult internalRow, final AtomicInteger currentRow, PrintSettings settings, SXSSFSheet sheet) {
 
 		final String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
-		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.getPrinter(), settings)).toArray(TypeWriter[]::new);
+		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.createPrinter(settings), settings)).toArray(TypeWriter[]::new);
 
 		int writtenLines = 0;
 

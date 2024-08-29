@@ -117,17 +117,24 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
 		for (CQElement c : children) {
-			resultInfos.addAll(c.getResultInfos(settings));
+			resultInfos.addAll(c.getResultInfos());
 		}
 
 		if (createExists()) {
-			final String userOrDefaultLabel = getUserOrDefaultLabel(settings.getLocale());
-			final String defaultLabel = defaultLabel(settings.getLocale());
+			resultInfos.add(new FixedLabelResultInfo(ResultType.Primitive.BOOLEAN, Set.of()) {
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					return getUserOrDefaultLabel(printSettings.getLocale());
+				}
 
-			resultInfos.add(new FixedLabelResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings));
+				@Override
+				public String defaultColumnName(PrintSettings printSettings) {
+					return defaultLabel(printSettings.getLocale());
+				}
+			});
 		}
 
 		return resultInfos;

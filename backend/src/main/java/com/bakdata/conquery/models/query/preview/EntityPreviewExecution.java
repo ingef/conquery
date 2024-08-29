@@ -128,7 +128,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 				columnNames[index] = select2desc.get(selectResultInfo.getSelect().getId()).label();
 			}
 
-			printers[index] = resultInfo.getPrinter();
+			printers[index] = resultInfo.createPrinter(printSettings);
 		}
 
 		return line -> {
@@ -159,11 +159,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
 	 */
-	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
-		for (ResultInfo info : query.getResultInfos(printSettings)) {
+		for (ResultInfo info : query.getResultInfos()) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
@@ -232,13 +232,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos(printSettings).size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos(printSettings).get(index);
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 
-			final Object printed = resultInfo.printNullable(values[index]);
+			final Object printed = resultInfo.createPrinter(printSettings).apply(values[index]);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(),
+					resultInfo.userColumnName(printSettings),
 					printed,
 					resultInfo.getType().typeInfo(),
 					resultInfo.getDescription(),
@@ -268,13 +268,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(printSettings), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc, printSettings);
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
 
 			final EntityPreviewStatus.TimeStratifiedInfos
@@ -361,8 +361,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
-		return getValuesQuery().getResultInfos(printSettings);
+	public List<ResultInfo> getResultInfos() {
+		return getValuesQuery().getResultInfos();
 	}
 
 	@Override

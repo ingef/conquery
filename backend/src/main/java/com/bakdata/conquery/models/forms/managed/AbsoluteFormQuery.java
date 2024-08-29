@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -43,7 +42,7 @@ public class AbsoluteFormQuery extends Query {
 	public static final int TIME_INDEX = 2;
 
 	/**
-	 * see {@linkplain this#getResultInfos(PrintSettings)}.
+	 * see {@linkplain #getResultInfos()}.
 	 */
 	public static final int FEATURES_OFFSET = 3;
 
@@ -85,13 +84,13 @@ public class AbsoluteFormQuery extends Query {
 	}
 	
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(ResultHeaders.formResolutionInfo(printSettings));
-		resultInfos.add(ResultHeaders.formContextInfo(printSettings));
-		resultInfos.add(ResultHeaders.formDateRangeInfo(printSettings));
-		resultInfos.addAll(features.getResultInfos(printSettings));
+		resultInfos.add(ResultHeaders.formResolutionInfo());
+		resultInfos.add(ResultHeaders.formContextInfo());
+		resultInfos.add(ResultHeaders.formDateRangeInfo());
+		resultInfos.addAll(features.getResultInfos());
 
 		return resultInfos;
 	}

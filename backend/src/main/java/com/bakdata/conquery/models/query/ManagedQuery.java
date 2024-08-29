@@ -113,8 +113,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
-		return query.getResultInfos(printSettings);
+	public List<ResultInfo> getResultInfos() {
+		return query.getResultInfos();
 	}
 
 	@Override

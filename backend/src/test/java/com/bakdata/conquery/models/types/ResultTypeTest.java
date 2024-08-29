@@ -42,9 +42,6 @@ public class ResultTypeTest {
 	@SuppressWarnings("unused")
 	public static List<Arguments> testData() {
 		return List.of(
-		//TODO Arguments.of(PRETTY, ConqueryConstants.formResolutionInfo(PLAIN), Resolution.COMPLETE.name(), "complete"),
-//TODO Arguments.of(PRETTY_DE, ConqueryConstants.formResolutionInfo(PLAIN), Resolution.COMPLETE.name(), "Gesamt"),
-
 				Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, true, "Yes"),
 				Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, false, "No"),
 				Arguments.of(PRETTY, ResultType.Primitive.STRING, "test", "test"),
@@ -86,16 +83,16 @@ public class ResultTypeTest {
 		);
 	}
 
-	public static ResultInfo info(ResultType type, PrintSettings settings) {
-		return new ExternalResultInfo("col", type, settings);
+	public static ResultInfo info(ResultType type) {
+		return new ExternalResultInfo("col", type);
 	}
 
 	@ParameterizedTest(name = "{0} {1}: {2} -> {3}")
 	@MethodSource("testData")
-	public void testPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
-		ResultInfo info = info(type, cfg);
+	public void testPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
+		ResultInfo info = info(type);
 
-		final Printer printer = info.getPrinter();
+		final Printer printer = info.createPrinter(printSettings);
 
 		assertThat(printer.apply(value)).isEqualTo(expected);
 
@@ -107,10 +104,10 @@ public class ResultTypeTest {
 
 	@ParameterizedTest(name = "{1}: {2}")
 	@MethodSource("testData")
-	public void testBinaryPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
-		ResultInfo info = info(type, cfg);
+	public void testBinaryPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
+		ResultInfo info = info(type);
 
-		final Printer printer = info.getPrinter();
+		final Printer printer = info.createPrinter(printSettings);
 		assertThat(printer.apply(value)).isEqualTo(expected);
 
 		final byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(value);

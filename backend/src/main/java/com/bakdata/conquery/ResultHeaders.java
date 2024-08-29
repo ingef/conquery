@@ -17,64 +17,95 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ResultHeaders {
-	public static ResultInfo datesInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).dates();
+	public static ResultInfo datesInfo() {
 
 		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 
-		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT()), settings);
-	}
-
-	public static ResultInfo historyDatesInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).dates();
-
-		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
-
-		return new FixedLabelResultInfo(label, label, type, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()), settings);
-	}
-
-	public static ResultInfo sourceInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).source();
-
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT()), settings);
-	}
-
-	public static ResultInfo formContextInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).index();
-
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.INTEGER, Set.of(), settings);
-	}
-
-	public static ResultInfo formDateRangeInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).dateRange();
-
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE_RANGE, Set.of(), settings);
-	}
-
-	public static ResultInfo formResolutionInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).resolution();
-
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(), settings) {
+		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT())){
 			@Override
-			public Printer getPrinter() {
-				return new LocalizedEnumPrinter<>(settings, Resolution.class);
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dates();
 			}
 		};
 	}
 
-	public static ResultInfo formEventDateInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).eventDate();
+	public static ResultInfo historyDatesInfo() {
 
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.DATE, Set.of(), settings);
+		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
+
+		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT())) {
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dates();
+			}
+		};
 	}
 
-	public static ResultInfo formObservationScopeInfo(PrintSettings settings) {
-		final String label = C10nCache.getLocalized(ResultHeadersC10n.class, settings.getLocale()).observationScope();
-
-		return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(), settings) {
+	public static ResultInfo sourceInfo() {
+		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT())) {
 			@Override
-			public Printer getPrinter() {
-				return new LocalizedEnumPrinter<>(settings, FeatureGroup.class);
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).source();
+			}
+		};
+	}
+
+	public static ResultInfo formContextInfo() {
+
+		return new FixedLabelResultInfo(ResultType.Primitive.INTEGER, Set.of()) {
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).index();
+			}
+		};
+	}
+
+	public static ResultInfo formDateRangeInfo() {
+
+		return new FixedLabelResultInfo(ResultType.Primitive.DATE_RANGE, Set.of()) {
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dateRange();
+			}
+		};
+	}
+
+	public static ResultInfo formResolutionInfo() {
+
+		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of()) {
+			@Override
+			public Printer createPrinter(PrintSettings printSettings) {
+				return new LocalizedEnumPrinter<>(printSettings, Resolution.class);
+			}
+
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).resolution();
+			}
+		};
+	}
+
+	public static ResultInfo formEventDateInfo() {
+
+		return new FixedLabelResultInfo(ResultType.Primitive.DATE, Set.of()) {
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).eventDate();
+			}
+		};
+	}
+
+	public static ResultInfo formObservationScopeInfo() {
+
+		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of()) {
+			@Override
+			public Printer createPrinter(PrintSettings printSettings) {
+				return new LocalizedEnumPrinter<>(printSettings, FeatureGroup.class);
+			}
+
+			@Override
+			public String userColumnName(PrintSettings printSettings) {
+				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).observationScope();
 			}
 		};
 	}

@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -134,11 +133,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getResultInfos() {
 		if (subQueries.size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return subQueries.values().iterator().next().getResultInfos(printSettings);
+		return subQueries.values().iterator().next().getResultInfos();
 	}
 
 	@Override

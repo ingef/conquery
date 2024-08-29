@@ -56,9 +56,9 @@ public class ParquetResultGenerationTest {
 		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
 		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet())).collect(Collectors.toList());
 
-		final MessageType messageType = EntityResultWriteSupport.generateSchema(getIdFields(PRINT_SETTINGS), resultInfos, uniqueNamer);
+		final MessageType messageType = EntityResultWriteSupport.generateSchema(getIdFields(), resultInfos, uniqueNamer, PRINT_SETTINGS);
 
 		assertThat(messageType).isEqualTo(
 				Types.buildMessage()
@@ -120,7 +120,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, getIdFields(PRINT_SETTINGS), managedQuery.getResultInfos(printSettings), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -142,7 +142,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos(printSettings), printSettings));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos()));
 
 	}
 

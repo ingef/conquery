@@ -77,9 +77,9 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), exec.getNamespace(), exec.getConfig(), null, null, new ExcelResultPrinters());
 
 		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos(printSettings).size();
+		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();
 
-		final int columnCount = singleExecution.getResultInfos(printSettings).size() + idColumnsCount;
+		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
 		if (columnCount > maxColumnCount) {
 

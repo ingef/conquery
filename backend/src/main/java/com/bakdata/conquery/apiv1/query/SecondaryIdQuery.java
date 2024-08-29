@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -125,12 +124,12 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(new SecondaryIdResultInfo(secondaryId, printSettings));
+		resultInfos.add(new SecondaryIdResultInfo(secondaryId));
 
-		resultInfos.addAll(query.getResultInfos(printSettings));
+		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;
 	}

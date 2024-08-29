@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -45,9 +44,9 @@ public class ResultTestUtil {
 		CONCEPT.setDataset(DATASET);
 	}
 
-	public static List<ResultInfo> getIdFields(PrintSettings printSettings) {
+	public static List<ResultInfo> getIdFields() {
 		return Stream.of("id1", "id2").map(name -> {
-			ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING, printSettings);
+			ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING);
 			info.addSemantics(new SemanticType.IdT("ID"));
 			return info;
 		}).collect(Collectors.toList());
@@ -57,10 +56,10 @@ public class ResultTestUtil {
 	public static ManagedQuery getTestQuery() {
 		return new ManagedQuery(null, OWNER, DATASET, null) {
 			@Override
-			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
 									   .collect(Collectors.toList());
 			}
 

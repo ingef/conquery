@@ -64,7 +64,7 @@ public class ArrowResultGenerationTest {
     void generateFieldsIdMapping() {
 		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-        List<Field> fields = generateFields(getIdFields(PRINT_SETTINGS), uniqueNamer);
+        List<Field> fields = generateFields(getIdFields(), uniqueNamer, PRINT_SETTINGS);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -80,12 +80,12 @@ public class ArrowResultGenerationTest {
 
 
 		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet())).collect(Collectors.toList());
 
 		List<Field> fields = generateFields(
-                resultInfos,
-                // Custom column namer so we don't require a dataset registry
-				uniqueNamer
+				resultInfos,
+				// Custom column namer so we don't require a dataset registry
+				uniqueNamer, PRINT_SETTINGS
 		);
 
         assertThat(fields).containsExactlyElementsOf(
@@ -143,8 +143,8 @@ public class ArrowResultGenerationTest {
 				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				printSettings,
 				new ArrowConfig(BATCH_SIZE),
-				getIdFields(PRINT_SETTINGS),
-				mquery.getResultInfos(printSettings),
+				getIdFields(),
+				mquery.getResultInfos(),
 				mquery.streamResults(OptionalLong.empty())
 		);
 
@@ -153,7 +153,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(printSettings), printSettings));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos()));
 
     }
 
@@ -180,7 +180,7 @@ public class ArrowResultGenerationTest {
 		return stringJoiner.toString();
     }
 
-	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		String expected = results.stream()
 								 .map(EntityResult.class::cast)
 								 .map(res -> {
@@ -193,7 +193,7 @@ public class ArrowResultGenerationTest {
 										 for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
-                            valueJoiner.add(getPrintValue(val, info.getType(), settings));
+                            valueJoiner.add(getPrintValue(val, info.getType()));
                         }
                         lineJoiner.add(valueJoiner.toString());
                     }
@@ -203,14 +203,14 @@ public class ArrowResultGenerationTest {
 
 		return Stream.concat(
 				// Id column headers
-				getIdFields(PRINT_SETTINGS).stream().map(i -> i.defaultColumnName()),
+				getIdFields().stream().map(i -> i.defaultColumnName(PRINT_SETTINGS)),
 				// result column headers
 				getResultTypes().stream().map(ResultType::typeInfo)
 		).collect(Collectors.joining("\t"))
 			   + "\n" + expected;
     }
 
-    private static String getPrintValue(Object obj, ResultType type, PrintSettings settings) {
+    private static String getPrintValue(Object obj, ResultType type) {
         if (obj == null) {
             return "null";
         }
@@ -238,7 +238,7 @@ public class ArrowResultGenerationTest {
             Collection<?> col = (Collection<?>) obj;
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
             @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
-			return col.stream().map(v -> getPrintValue(v, elemType, settings)).collect(Collectors.joining(",", "[", "]"));
+			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
         }
         return obj.toString();
     }

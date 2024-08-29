@@ -73,9 +73,9 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 							 final StopWatch started = StopWatch.createStarted();
 
 							 final ResultInfo info = resultInfos.get(col);
-							 final Printer printer = info.getPrinter();
+							 final Printer printer = info.createPrinter(printSettings);
 							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info), info.getDescription(), info.getType(), printSettings, conqueryConfig.getFrontend());
+									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings), info.getDescription(), info.getType(), printSettings, conqueryConfig.getFrontend());
 
 							 log.trace("BEGIN stats collection for {}", info);
 

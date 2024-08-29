@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +30,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -41,8 +39,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ConceptIdPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -169,8 +165,8 @@ public class TableExportQuery extends Query {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
-		return createResultInfos(conceptColumns, printSettings);
+	public List<ResultInfo> getResultInfos() {
+		return createResultInfos(conceptColumns);
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
@@ -223,21 +219,21 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Set<Column> conceptColumns, PrintSettings printSettings) {
+	private List<ResultInfo> createResultInfos(Set<Column> conceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
-		infos[0] = ResultHeaders.historyDatesInfo(printSettings);
-		infos[1] = ResultHeaders.sourceInfo(printSettings);
+		infos[0] = ResultHeaders.historyDatesInfo();
+		infos[1] = ResultHeaders.sourceInfo();
 
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			final SecondaryIdDescription desc = e.getKey();
 			final Integer pos = e.getValue();
 
-			infos[pos] = new SecondaryIdResultInfo(desc, printSettings);
+			infos[pos] = new SecondaryIdResultInfo(desc);
 		}
 
 
@@ -264,30 +260,27 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			final Set<SemanticType> semantics = new HashSet<>();
-
-			ResultType resultType = ResultType.resolveResultType(column.getType());
-			Printer printer = printSettings.getPrinterFactory().printerFor(resultType, printSettings);
-
+			final ResultInfo columnResultInfo;
 			if (connectorColumns.containsKey(column)) {
-				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
-
 				final Concept<?> concept = connectorColumns.get(column).getConcept();
 
-				// Columns that are used to build concepts are marked as ConceptColumn.
-				semantics.add(new SemanticType.ConceptColumnT(concept));
+				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
+				columnResultInfo = new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : concept);
 
-				if (!isRawConceptValues()) {
-					resultType = ResultType.Primitive.STRING;
-					printer = new ConceptIdPrinter(concept, printSettings);
-				}
+				// Columns that are used to build concepts are marked as ConceptColumn.
+				columnResultInfo.addSemantics(new SemanticType.ConceptColumnT(concept));
+
+				infos[position] = columnResultInfo;
 			}
 			else {
 				// If it's not a connector column, we just link to the source column.
-				semantics.add(new SemanticType.ColumnT(column));
+				columnResultInfo = new ColumnResultInfo(column, ResultType.resolveResultType(column.getType()), column.getDescription(), null);
+				columnResultInfo.addSemantics(new SemanticType.ColumnT(column));
 			}
 
-			infos[position] = new ColumnResultInfo(column, resultType, semantics, printer, column.getDescription(), printSettings);
+			infos[position] = columnResultInfo;
+
+
 		}
 
 		return List.of(infos);

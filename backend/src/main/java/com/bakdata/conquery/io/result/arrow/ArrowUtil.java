@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
@@ -80,20 +81,20 @@ public class ArrowUtil {
 		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));
 	}
 
-	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector) {
+	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector, PrintSettings printSettings) {
 		return info.stream()
-				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i)))
+				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings)))
 				   .toList();
 
 	}
 
 	@NotNull
-	public static List<Field> generateFields(List<ResultInfo> idHeaders, List<ResultInfo> resultInfo, UniqueNamer uniqueNamer) {
+	public static List<Field> generateFields(List<ResultInfo> idHeaders, List<ResultInfo> resultInfo, UniqueNamer uniqueNamer, PrintSettings printSettings) {
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>();
 
-		fields.addAll(generateFields(idHeaders, uniqueNamer));
-		fields.addAll(generateFields(resultInfo, uniqueNamer));
+		fields.addAll(generateFields(idHeaders, uniqueNamer, printSettings));
+		fields.addAll(generateFields(resultInfo, uniqueNamer, printSettings));
 
 		return fields;
 	}

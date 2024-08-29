@@ -50,14 +50,15 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	 * @param idHeaders        {@link ResultInfo} for the Ids
 	 * @param resultValueInfos {@link ResultInfo} for the result values
 	 * @param uniqueNamer      A column namer for the fields in the schema
+	 * @param printSettings1
 	 * @return the parquet schema
 	 */
-	public static MessageType generateSchema(List<ResultInfo> idHeaders, List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer) {
+	public static MessageType generateSchema(List<ResultInfo> idHeaders, List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer, PrintSettings printSettings1) {
 		/*
 			Because Parquet Schemas rely on primitive types with logical annotations
 			which are tedious to configure, we take the detour over the arrow schema.
 		 */
-		final SchemaMapping schemaMapping = new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer)));
+		final SchemaMapping schemaMapping = new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
 
 		return schemaMapping.getParquetSchema();
 
@@ -75,14 +76,14 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		return consumers;
 	}
 
-	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos) {
+	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings) {
 		final List<Printer> consumers = new ArrayList<>();
 		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(idHeader.getPrinter());
+			consumers.add(idHeader.createPrinter(printSettings));
 		}
 
 		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(resultInfo.getPrinter());
+			consumers.add(resultInfo.createPrinter(printSettings));
 		}
 		return consumers;
 	}
@@ -105,9 +106,9 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	@Override
 	public WriteContext init(Configuration configuration) {
-		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings));
+		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		columnConsumers = generateColumnConsumers(idHeaders, resultInfo);
-		columnPrinters = generateColumnPrinters(idHeaders, resultInfo);
+		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings);
 		return new WriteContext(schema, Map.of());
 	}
 

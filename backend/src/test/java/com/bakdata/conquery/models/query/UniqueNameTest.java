@@ -17,14 +17,14 @@ public class UniqueNameTest {
 		PrintSettings settings = new PrintSettings(true, Locale.ROOT, null, new ConqueryConfig(), null, null, new CsvResultPrinters());
 		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
 
-		final ExternalResultInfo info1 = new ExternalResultInfo("test", ResultType.Primitive.STRING, settings);
-		final ExternalResultInfo info2 = new ExternalResultInfo("test", ResultType.Primitive.STRING, settings);
-		final ExternalResultInfo info3 = new ExternalResultInfo("test_1", ResultType.Primitive.STRING, settings);
-		final ExternalResultInfo info4 = new ExternalResultInfo("test", ResultType.Primitive.STRING, settings);
+		final ExternalResultInfo info1 = new ExternalResultInfo("test", ResultType.Primitive.STRING);
+		final ExternalResultInfo info2 = new ExternalResultInfo("test", ResultType.Primitive.STRING);
+		final ExternalResultInfo info3 = new ExternalResultInfo("test_1", ResultType.Primitive.STRING);
+		final ExternalResultInfo info4 = new ExternalResultInfo("test", ResultType.Primitive.STRING);
 
-		assertThat(uniqueNamer.getUniqueName(info1)).isEqualTo("test");
-		assertThat(uniqueNamer.getUniqueName(info2)).isEqualTo("test_1");
-		assertThat(uniqueNamer.getUniqueName(info3)).isEqualTo("test_1_1");
-		assertThat(uniqueNamer.getUniqueName(info4)).isEqualTo("test_2");
+		assertThat(uniqueNamer.getUniqueName(info1, settings)).isEqualTo("test");
+		assertThat(uniqueNamer.getUniqueName(info2, settings)).isEqualTo("test_1");
+		assertThat(uniqueNamer.getUniqueName(info3, settings)).isEqualTo("test_1_1");
+		assertThat(uniqueNamer.getUniqueName(info4, settings)).isEqualTo("test_2");
 	}
 }

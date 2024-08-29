@@ -144,7 +144,7 @@ public class FormTest extends ConqueryTestSpec {
 	 */
 	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
-			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos(printSettings);
+			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -154,11 +154,11 @@ public class FormTest extends ConqueryTestSpec {
 			CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(printSettings),
+					config.getIdColumns().getIdResultInfos(),
 					resultInfos,
 					managed.getValue()
 						   .stream()
-						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty()))
+						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty())), printSettings
 			);
 
 			writer.close();
@@ -188,9 +188,9 @@ public class FormTest extends ConqueryTestSpec {
 			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(printSettings),
-					managedForm.getResultInfos(printSettings),
-					managedForm.streamResults(OptionalLong.empty())
+					config.getIdColumns().getIdResultInfos(),
+					managedForm.getResultInfos(),
+					managedForm.streamResults(OptionalLong.empty()), printSettings
 			);
 
 			writer.close();

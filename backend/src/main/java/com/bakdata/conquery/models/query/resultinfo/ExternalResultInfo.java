@@ -14,24 +14,31 @@ public class ExternalResultInfo extends ResultInfo {
 
 	private final String name;
 	private final ResultType type;
-	private final String description;
-	private final Printer printer;
 
-	public ExternalResultInfo(String name, ResultType type, PrintSettings settings) {
-		super(Collections.emptySet(), settings);
+
+	public ExternalResultInfo(String name, ResultType type) {
+		super(Collections.emptySet());
 		this.name = name;
 		this.type = type;
-		this.description = null;
-		this.printer = settings.getPrinterFactory().printerFor(type, settings);
 	}
 
 	@Override
-	public String userColumnName() {
+	public String userColumnName(PrintSettings printSettings) {
 		return null;
 	}
 
 	@Override
-	public String defaultColumnName() {
+	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
+	}
+
+	@Override
+	public String getDescription() {
+		return null;
+	}
+
+	@Override
+	public Printer createPrinter(PrintSettings printSettings) {
+		return printSettings.getPrinterFactory().printerFor(type, printSettings);
 	}
 }

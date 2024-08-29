@@ -122,20 +122,24 @@ public class IdColumnConfig {
 	 * @return
 	 */
 	@JsonIgnore
-	public List<ResultInfo> getIdResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getIdResultInfos() {
 		return ids.stream().filter(ColumnConfig::isPrint).map(col -> {
-			final Map<Locale, String> labels = col.getLabel();
-			// Get the label for the locale,
-			// fall back to any label if there is exactly one defined,
-			// then fall back to the field name.
-			final String label = Objects.requireNonNullElse(labels.getOrDefault(
-					printSettings.getLocale(),
-					// fall backs
-					labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
-			), col.getField());
 
 			//TODO we can now hook our anonymizers into this
-			return new FixedLabelResultInfo(label, label, ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName())), printSettings);
+			return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName()))) {
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					final Map<Locale, String> labels = col.getLabel();
+					// Get the label for the locale,
+					// fall back to any label if there is exactly one defined,
+					// then fall back to the field name.
+					return Objects.requireNonNullElse(labels.getOrDefault(
+							printSettings.getLocale(),
+							// fall backs
+							labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
+					), col.getField());
+				}
+			};
 		}).collect(Collectors.toUnmodifiableList());
 	}
 

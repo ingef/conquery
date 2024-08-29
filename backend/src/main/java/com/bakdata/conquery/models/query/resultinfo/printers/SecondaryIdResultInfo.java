@@ -15,20 +15,14 @@ import lombok.ToString;
 public class SecondaryIdResultInfo extends ResultInfo {
 	private final SecondaryIdDescription secondaryId;
 	private final ResultType type;
-	private final Printer printer;
 
 
-	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId, PrintSettings settings) {
-		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)), settings);
+	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId) {
+		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)));
 		this.secondaryId = secondaryId;
 		type = ResultType.Primitive.STRING;
 
-		if (secondaryId.getMapping() == null) {
-			printer = settings.getPrinterFactory().getStringPrinter(settings);
-		}
-		else {
-			printer = new MappedPrinter(secondaryId.getMapping());
-		}
+
 	}
 
 	@Override
@@ -37,12 +31,22 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String userColumnName() {
+	public Printer createPrinter(PrintSettings printSettings) {
+		if (secondaryId.getMapping() == null) {
+			return printSettings.getPrinterFactory().getStringPrinter(printSettings);
+		}
+		else {
+			return new MappedPrinter(secondaryId.getMapping());
+		}
+	}
+
+	@Override
+	public String userColumnName(PrintSettings printSettings) {
 		return secondaryId.getLabel();
 	}
 
 	@Override
-	public String defaultColumnName() {
-		return userColumnName();
+	public String defaultColumnName(PrintSettings printSettings) {
+		return userColumnName(printSettings);
 	}
 }

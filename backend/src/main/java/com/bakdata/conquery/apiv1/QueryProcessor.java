@@ -21,12 +21,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -90,6 +84,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -582,7 +582,7 @@ public class QueryProcessor {
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat, new JavaResultPrinters());
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
-		final List<ResultInfo> resultInfos = managedQuery.getResultInfos(printSettings);
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
 				dateInfo =

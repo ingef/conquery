@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
@@ -22,36 +23,45 @@ public class CsvRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
-	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
+	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, PrintSettings printSettings) {
 
 		UniqueNamer uniqNamer = new UniqueNamer(cfg);
-		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream()).map(uniqNamer::getUniqueName).toArray(String[]::new);
+		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream()).map(info -> uniqNamer.getUniqueName(info, printSettings)).toArray(String[]::new);
 
 		writer.writeHeaders(headers);
 
-		createCSVBody(cfg, infos, resultStream);
+		createCSVBody(cfg, infos, resultStream, printSettings);
 	}
 
-	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results) {
+	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings) {
+		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printSettings)).toArray(Printer[]::new);
+
 		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
 			   .sorted(Map.Entry.comparingByKey())
 			   .forEach(res -> res
 					   .getValue()
 					   .streamValues()
-					   .forEach(result -> printLine(res.getKey(), infos, result)));
+					   .forEach(result -> printLine(res.getKey(), printers, result)));
 	}
 
 
-	public void printLine(EntityPrintId entity, List<ResultInfo> infos, Object[] value) {
+	public void printLine(EntityPrintId entity, Printer[] printers, Object[] values) {
 		// Cast here to Object[] so it is clear to intellij that the varargs call is intended
 		writer.addValues((Object[]) entity.getExternalId());
 		try {
-			for (int i = 0; i < infos.size(); i++) {
-				writer.addValue(infos.get(i).printNullable(value[i]));
+			for (int i = 0; i < printers.length; i++) {
+				final Object value = values[i];
+
+				if (value == null) {
+					writer.addValue("");
+					continue;
+				}
+
+				writer.addValue(printers[i].apply(value));
 			}
 		}
 		catch (Exception e) {
-			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value), e);
+			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(values), e);
 		}
 
 		writer.writeValuesToRow();

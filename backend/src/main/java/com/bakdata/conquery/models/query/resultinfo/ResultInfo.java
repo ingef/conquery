@@ -24,13 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class ResultInfo {
 
-	private final PrintSettings settings;
-
 	@ToString.Include
 	private final Set<SemanticType> semantics = new HashSet<>();
 
-	protected ResultInfo(Collection<SemanticType> semantics, PrintSettings settings) {
-		this.settings = settings;
+	protected ResultInfo(Collection<SemanticType> semantics) {
 		this.semantics.addAll(semantics);
 	}
 
@@ -38,12 +35,12 @@ public abstract class ResultInfo {
 		semantics.addAll(Arrays.asList(incoming));
 	}
 
-	public abstract String userColumnName();
+	public abstract String userColumnName(PrintSettings printSettings);
 
-	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
+	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector, PrintSettings printSettings) {
 		return ColumnDescriptor.builder()
-							   .label(collector.getUniqueName(this))
-							   .defaultLabel(defaultColumnName())
+							   .label(collector.getUniqueName(this, printSettings))
+							   .defaultLabel(defaultColumnName(printSettings))
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
 							   .description(getDescription())
@@ -52,8 +49,9 @@ public abstract class ResultInfo {
 
 	/**
 	 * Use default label schema which ignores user labels.
+	 * @param printSettings
 	 */
-	public abstract String defaultColumnName();
+	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
 	public abstract ResultType getType();
@@ -64,13 +62,5 @@ public abstract class ResultInfo {
 
 	public abstract String getDescription();
 
-	public final Object printNullable(Object f) {
-		if (f == null) {
-			return "";
-		}
-
-		return getPrinter().apply(f);
-	}
-
-	public abstract Printer getPrinter();
+	public abstract Printer createPrinter(PrintSettings printSettings);
 }

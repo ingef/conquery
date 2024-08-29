@@ -57,12 +57,12 @@ public class CsvResultGenerationTest {
 		final StringWriter writer = new StringWriter();
 
 		final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(getIdFields(printSettings), mquery.getResultInfos(printSettings), mquery.streamResults(OptionalLong.empty()));
+		renderer.toCSV(getIdFields(), mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings);
 
 		final String computed = writer.toString();
 
 
-		final String expected = generateExpectedCSV(results, mquery.getResultInfos(printSettings), printSettings);
+		final String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings);
 
 		log.info("Wrote and than read this csv data: {}", computed);
 
@@ -73,7 +73,7 @@ public class CsvResultGenerationTest {
 
 	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings) {
 		final List<String> expected = new ArrayList<>();
-		expected.add(getIdFields(printSettings).stream().map(info -> info.defaultColumnName()).collect(Collectors.joining(","))
+		expected.add(getIdFields().stream().map(info -> info.defaultColumnName(printSettings)).collect(Collectors.joining(","))
 					 + ","
 					 + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(","))
 					 + "\n");
@@ -92,7 +92,7 @@ public class CsvResultGenerationTest {
 							   continue;
 						   }
 						   final ResultInfo info = resultInfos.get(lIdx);
-						   final String printVal = (String) info.printNullable(val);
+						   final String printVal = (String) info.createPrinter(printSettings).apply(val);
 						   valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter())) ? "\"" + printVal + "\"" : printVal);
 					   }
 

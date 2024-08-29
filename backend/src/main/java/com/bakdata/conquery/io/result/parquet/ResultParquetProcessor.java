@@ -60,8 +60,8 @@ public class ResultParquetProcessor {
 			final SingleTableResult singleTableResult = (SingleTableResult) exec;
 			ParquetRenderer.writeToStream(
 					output,
-					config.getIdColumns().getIdResultInfos(settings),
-					singleTableResult.getResultInfos(settings),
+					config.getIdColumns().getIdResultInfos(),
+					singleTableResult.getResultInfos(),
 					settings,
 					singleTableResult.streamResults(limit)
 			);

@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -25,26 +24,26 @@ public interface SingleTableResult {
 
 		final Locale locale = I18n.LOCALE.get();
 		// The printer is never used to generate results. But downstream code might touch them
-		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null, new JavaResultPrinters());
+		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null,null);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getIdColumns().getIdResultInfos(settings)) {
+		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header))
+												   .label(uniqNamer.getUniqueName(header, settings))
 												   .type(ResultType.Primitive.STRING.typeInfo())
 												   .semantics(header.getSemantics())
 												   .build());
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos(settings).forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector)));
+		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector, settings)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	List<ResultInfo> getResultInfos(PrintSettings printSettings);
+	List<ResultInfo> getResultInfos();
 
 	/**
 	 * @param limit Optionally limits how many lines are emitted.

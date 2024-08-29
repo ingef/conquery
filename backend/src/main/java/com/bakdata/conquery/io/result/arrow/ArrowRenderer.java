@@ -36,6 +36,7 @@ import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class ArrowRenderer {
@@ -48,7 +49,7 @@ public class ArrowRenderer {
 			List<ResultInfo> resultInfo,
 			Stream<EntityResult> results) throws IOException {
 
-		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings));
+		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		final VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
 		// Build separate pipelines for id and value, as they have different sources but the same target
@@ -58,13 +59,12 @@ public class ArrowRenderer {
 		final List<Printer> printers = new ArrayList<>();
 
 		for (ResultInfo header : idHeaders) {
-			printers.add(header.getPrinter());
+			printers.add(header.createPrinter(printSettings));
 		}
 
 		for (ResultInfo info : resultInfo) {
-			printers.add(info.getPrinter());
+			printers.add(info.createPrinter(printSettings));
 		}
-
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -95,13 +95,7 @@ public class ArrowRenderer {
 		while (resultIterator.hasNext()) {
 			final EntityResult cer = resultIterator.next();
 
-			final String[] externalId = idMapper.map(cer).getExternalId();
-
-			final Object[] printedExternalId = new String[externalId.length];
-
-			for (int index = 0; index < idWriters.length; index++) {
-				printedExternalId[index] = printers.get(index).apply(externalId[index]);
-			}
+			final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
 
 			for (Object[] line : cer.listResultLines()) {
 				Preconditions.checkState(
@@ -147,6 +141,18 @@ public class ArrowRenderer {
 		}
 		log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
 		writer.end();
+	}
+
+	@NotNull
+	private static Object[] getPrintedExternalId(RowConsumer[] idWriters, PrintIdMapper idMapper, List<Printer> printers, EntityResult cer) {
+		final String[] externalId = idMapper.map(cer).getExternalId();
+
+		final Object[] printedExternalId = new String[externalId.length];
+
+		for (int index = 0; index < idWriters.length; index++) {
+			printedExternalId[index] = printers.get(index).apply(externalId[index]);
+		}
+		return printedExternalId;
 	}
 
 	private static RowConsumer intVectorFiller(IntVector vector) {

@@ -29,7 +29,7 @@ public class RelativFormQueryConverter implements NodeConverter<RelativeFormQuer
 				FormType.RELATIVE,
 				stratificationTable,
 				form.getFeatures(),
-				form.getResultInfos(context.getSqlPrintSettings()),
+				form.getResultInfos(),
 				context
 		);
 	}

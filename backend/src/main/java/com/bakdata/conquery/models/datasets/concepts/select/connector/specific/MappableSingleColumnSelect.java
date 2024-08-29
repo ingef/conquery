@@ -65,13 +65,13 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
 		if (!isCategorical()) {
-			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+			return new SelectResultInfo(this, cqConcept, Collections.emptySet());
 		}
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 	}
 
 	@Override
