@@ -102,7 +102,8 @@ public class ArrowResultGenerationTest {
                                         new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
-                        new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
+						//TODO this is just an experiment
+                        new Field("MONEY", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
                         new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))),
                         new Field("LIST[DATE_RANGE]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[DATE_RANGE]",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
