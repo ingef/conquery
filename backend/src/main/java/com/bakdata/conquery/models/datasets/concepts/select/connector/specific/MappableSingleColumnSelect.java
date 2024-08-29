@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColu
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.MappedPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
@@ -62,7 +61,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter(printSettings, printerFactory);
 		}
 
-		return new ChainingPrinter(new MappedPrinter(getMapping()), printerFactory.getStringPrinter(printSettings));
+		return new MappedPrinter(getMapping());
 	}
 
 	@Override

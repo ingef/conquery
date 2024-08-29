@@ -59,7 +59,7 @@ public class CsvResultPrinters extends PrinterFactory {
 
 	private record StringPrinter() implements Printer {
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			return Objects.toString(f);
 		}
 	}
@@ -67,7 +67,7 @@ public class CsvResultPrinters extends PrinterFactory {
 	private record IntegerPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			if (cfg.isPrettyPrint()) {
 				return cfg.getIntegerFormat().format(((Number) f).longValue());
 			}
@@ -79,7 +79,7 @@ public class CsvResultPrinters extends PrinterFactory {
 	private record NumericPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			if (cfg.isPrettyPrint()) {
 				return cfg.getDecimalFormat().format(f);
 			}
@@ -91,7 +91,7 @@ public class CsvResultPrinters extends PrinterFactory {
 	private record MoneyPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 
 			if (cfg.isPrettyPrint()) {
 				return cfg.getDecimalFormat().format(f);
@@ -104,7 +104,7 @@ public class CsvResultPrinters extends PrinterFactory {
 	private record DatePrinter(PrintSettings cfg) implements Printer {
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			Preconditions.checkArgument(f instanceof Number, "Expected an Number but got an '%s' with the value: %s".formatted(f.getClass().getName(), f));
 
 			final Number number = (Number) f;
@@ -119,7 +119,7 @@ public class CsvResultPrinters extends PrinterFactory {
 		}
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			Preconditions.checkArgument(f instanceof List<?>, "Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f);
 			Preconditions.checkArgument(((List<?>) f).size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
 
@@ -131,13 +131,13 @@ public class CsvResultPrinters extends PrinterFactory {
 				log.warn("Encountered incomplete range, treating it as an open range. Either min or max was null: {}", list);
 			}
 			// Compute minString first because we need it either way
-			final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : datePrinter.print(min);
+			final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : datePrinter.apply(min);
 
 			if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 				// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 				return minString;
 			}
-			final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? "+∞" : datePrinter.print(max);
+			final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? "+∞" : datePrinter.apply(max);
 
 			return minString + cfg.getDateRangeSeparator() + maxString;
 		}
@@ -152,7 +152,7 @@ public class CsvResultPrinters extends PrinterFactory {
 		}
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 			if ((Boolean) f) {
 				return trueVal;
 			}
@@ -168,7 +168,7 @@ public class CsvResultPrinters extends PrinterFactory {
 		}
 
 		@Override
-		public String print(Object f) {
+		public String apply(Object f) {
 
 			// Jackson deserializes collections as lists instead of an array, if the type is not given
 			Preconditions.checkArgument(f instanceof List, "Expected a List got %s (as String `%s` )".formatted(f.getClass().getName(), f));
@@ -176,7 +176,7 @@ public class CsvResultPrinters extends PrinterFactory {
 			final StringJoiner joiner = listFormat.createListJoiner();
 
 			for (Object obj : (List<?>) f) {
-				joiner.add(listFormat.escapeListElement(elementPrinter.print(obj).toString()));
+				joiner.add(listFormat.escapeListElement(elementPrinter.apply(obj).toString()));
 			}
 			return joiner.toString();
 		}

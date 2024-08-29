@@ -132,7 +132,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		final Object[] printedExternalId = new String[externalId.length];
 
 		for (int index = 0; index < externalId.length; index++) {
-			printedExternalId[index] = columnPrinters.get(index).print(externalId[index]);
+			printedExternalId[index] = columnPrinters.get(index).apply(externalId[index]);
 		}
 
 		for (Object[] listResultLine : listResultLines) {
@@ -161,7 +161,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 					continue;
 				}
 
-				final Object printed = columnPrinters.get(colId).print(resultValue);
+				final Object printed = columnPrinters.get(colId).apply(resultValue);
 
 				final String fieldName = schema.getFieldName(colId);
 

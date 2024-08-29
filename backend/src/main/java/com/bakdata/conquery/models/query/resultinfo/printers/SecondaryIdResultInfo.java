@@ -27,7 +27,7 @@ public class SecondaryIdResultInfo extends ResultInfo {
 			printer = settings.getPrinterFactory().getStringPrinter(settings);
 		}
 		else {
-			printer = new ChainingPrinter(new MappedPrinter(secondaryId.getMapping()), settings.getPrinterFactory().getStringPrinter(settings));
+			printer = new MappedPrinter(secondaryId.getMapping());
 		}
 	}
 

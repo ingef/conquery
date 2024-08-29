@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
-import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.MappedPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
@@ -48,6 +47,6 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 			return super.createPrinter(printSettings, printerFactory);
 		}
 
-		return printerFactory.getListPrinter(new ChainingPrinter(new MappedPrinter(getMapping()), printerFactory.getStringPrinter(printSettings)), printSettings);
+		return printerFactory.getListPrinter(new MappedPrinter(getMapping()), printSettings);
 	}
 }

@@ -100,7 +100,7 @@ public class ArrowRenderer {
 			final Object[] printedExternalId = new String[externalId.length];
 
 			for (int index = 0; index < idWriters.length; index++) {
-				printedExternalId[index] = printers.get(index).print(externalId[index]);
+				printedExternalId[index] = printers.get(index).apply(externalId[index]);
 			}
 
 			for (Object[] line : cer.listResultLines()) {
@@ -121,7 +121,7 @@ public class ArrowRenderer {
 					final int colId = index + idWriters.length;
 					// In this case, the printer normalizes and adjusts values.
 
-					final Object printed = printers.get(colId).print(line[index]);
+					final Object printed = printers.get(colId).apply(line[index]);
 
 					if (printed == null) {
 						continue;

@@ -21,7 +21,7 @@ public class JsonResultPrinters extends PrinterFactory {
 	public record BooleanPrinter() implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			return BooleanNode.valueOf(((Boolean) value));
 		}
 	}
@@ -34,7 +34,7 @@ public class JsonResultPrinters extends PrinterFactory {
 	public record IntegerPrinter() implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			return IntNode.valueOf(((Integer) value));
 		}
 	}
@@ -47,7 +47,7 @@ public class JsonResultPrinters extends PrinterFactory {
 	public record NumericPrinter() implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			return DecimalNode.valueOf(((BigDecimal) value));
 		}
 	}
@@ -60,8 +60,8 @@ public class JsonResultPrinters extends PrinterFactory {
 	public record ToStringPrinter(Printer delegate) implements Printer {
 
 		@Override
-		public Object print(Object value) {
-			return new TextNode(Objects.toString(delegate.print(value)));
+		public Object apply(Object value) {
+			return new TextNode(Objects.toString(delegate.apply(value)));
 		}
 	}
 
@@ -79,7 +79,7 @@ public class JsonResultPrinters extends PrinterFactory {
 	public record StringPrinter() implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			return new TextNode((String) value);
 		}
 	}

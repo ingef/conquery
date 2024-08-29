@@ -89,7 +89,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 												 statsCollector.consume(null);
 												 return;
 											 }
-											 statsCollector.consume(printer.print(value));
+											 statsCollector.consume(printer.apply(value));
 										 });
 
 							 log.trace("DONE collecting values for {}, in {}", info, started);

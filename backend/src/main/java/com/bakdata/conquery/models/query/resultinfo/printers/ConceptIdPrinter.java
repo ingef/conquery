@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer {
 
 	@Override
-	public String print(Object rawValue) {
+	public String apply(Object rawValue) {
 		if (rawValue == null) {
 			return null;
 		}

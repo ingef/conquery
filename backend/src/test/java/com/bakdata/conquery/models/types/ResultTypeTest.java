@@ -97,12 +97,12 @@ public class ResultTypeTest {
 
 		final Printer printer = info.getPrinter();
 
-		assertThat(printer.print(value)).isEqualTo(expected);
+		assertThat(printer.apply(value)).isEqualTo(expected);
 
 		final String str = Jackson.MAPPER.writeValueAsString(value);
 		final Object copy = Jackson.MAPPER.readValue(str, Object.class);
 
-		assertThat(printer.print(copy)).isEqualTo(expected);
+		assertThat(printer.apply(copy)).isEqualTo(expected);
 	}
 
 	@ParameterizedTest(name = "{1}: {2}")
@@ -111,11 +111,11 @@ public class ResultTypeTest {
 		ResultInfo info = info(type, cfg);
 
 		final Printer printer = info.getPrinter();
-		assertThat(printer.print(value)).isEqualTo(expected);
+		assertThat(printer.apply(value)).isEqualTo(expected);
 
 		final byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(value);
 		final Object copy = Jackson.BINARY_MAPPER.readValue(bytes, Object.class);
 
-		assertThat(printer.print(copy)).isEqualTo(expected);
+		assertThat(printer.apply(copy)).isEqualTo(expected);
 	}
 }

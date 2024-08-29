@@ -145,7 +145,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 					continue;
 				}
 
-				final Object value = printers[column].print(line[column]);
+				final Object value = printers[column].apply(line[column]);
 
 				out.put(columnName, value);
 			}

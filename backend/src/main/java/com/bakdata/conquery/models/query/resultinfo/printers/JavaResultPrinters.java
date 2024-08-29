@@ -54,12 +54,12 @@ public class JavaResultPrinters extends PrinterFactory {
 	private record ListPrinter(Printer elementPrinter) implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			final List<?> inList = (List) value;
 			final List<Object> out = new ArrayList<>(inList.size());
 
 			for (Object elt : inList) {
-				out.add(elementPrinter.print(elt));
+				out.add(elementPrinter.apply(elt));
 			}
 
 			return out;
@@ -69,7 +69,7 @@ public class JavaResultPrinters extends PrinterFactory {
 	private record DatePrinter() implements Printer {
 
 		@Override
-		public Object print(Object value) {
+		public Object apply(Object value) {
 			return CDate.toLocalDate(((Number) value).intValue());
 		}
 	}
@@ -78,7 +78,7 @@ public class JavaResultPrinters extends PrinterFactory {
 
 
 		@Override
-		public Object print(Object f) {
+		public Object apply(Object f) {
 			Preconditions.checkArgument(f instanceof List<?>, "Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f);
 			Preconditions.checkArgument(((List<?>) f).size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
 

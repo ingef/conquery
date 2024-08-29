@@ -305,7 +305,7 @@ public class ExcelRenderer {
 
 	// Type specific cell writers
 	private static void writeStringCell(Cell cell, Object value, Printer printer) {
-		cell.setCellValue((String) printer.print(value));
+		cell.setCellValue((String) printer.apply(value));
 	}
 
 	/**
@@ -313,21 +313,21 @@ public class ExcelRenderer {
 	 * because MS Excel can only represent those as strings
 	 */
 	private static void writeBooleanCell(Object value, Cell cell, Printer printer) {
-		cell.setCellValue((Boolean) printer.print(value));
+		cell.setCellValue((Boolean) printer.apply(value));
 	}
 
 	private static void writeDateCell(Object value, Cell cell, Map<String, CellStyle> styles, Printer printer) {
-		cell.setCellValue((LocalDate) printer.print(value));
+		cell.setCellValue((LocalDate) printer.apply(value));
 		cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
 	}
 
 	public static void writeIntegerCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
-		cell.setCellValue(((Number) printer.print(value)).longValue());
+		cell.setCellValue(((Number) printer.apply(value)).longValue());
 		cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
 	}
 
 	public static void writeNumericCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
-		cell.setCellValue(((Number) printer.print(value)).doubleValue());
+		cell.setCellValue(((Number) printer.apply(value)).doubleValue());
 		cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
 	}
 

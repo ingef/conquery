@@ -41,7 +41,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ChainingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.ConceptIdPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
@@ -280,10 +279,7 @@ public class TableExportQuery extends Query {
 
 				if (!isRawConceptValues()) {
 					resultType = ResultType.Primitive.STRING;
-					printer = new ChainingPrinter(
-							new ConceptIdPrinter(concept, printSettings),
-							printSettings.getPrinterFactory().getStringPrinter(printSettings)
-					);
+					printer = new ConceptIdPrinter(concept, printSettings);
 				}
 			}
 			else {

@@ -8,6 +8,6 @@ public interface RowConsumer {
      *
      * @param t the input argument
      */
-    void accept(int rowNumber, Object row);
+    void accept(int rowNumber, Object value);
 
 }

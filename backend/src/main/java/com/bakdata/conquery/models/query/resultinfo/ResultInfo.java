@@ -69,7 +69,7 @@ public abstract class ResultInfo {
 			return "";
 		}
 
-		return getPrinter().print(f);
+		return getPrinter().apply(f);
 	}
 
 	public abstract Printer getPrinter();

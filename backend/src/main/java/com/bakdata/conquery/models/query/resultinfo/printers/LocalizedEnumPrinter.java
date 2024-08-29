@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 
 public record LocalizedEnumPrinter<T extends Enum<T> & LocalizedToString>(PrintSettings cfg, Class<T> clazz) implements Printer {
 	@Override
-	public String print(Object f) {
+	public String apply(Object f) {
 
 		if (clazz.isInstance(f)) {
 			return clazz.cast(f).toString(cfg.getLocale());

@@ -25,7 +25,7 @@ class DefaultSqlCDateSetParserTest {
 	@MethodSource("testToEpochDayRangeListProvider")
 	public void testToEpochDayRangeList(String input, String expected, String message) {
 		List<List<Integer>> epochDayRangeList = parser.toEpochDayRangeList(input);
-		final String actual = (String) csvResultPrinters.printerFor(new ResultType.ListT(ResultType.Primitive.DATE_RANGE), PLAIN).print(epochDayRangeList);
+		final String actual = (String) csvResultPrinters.printerFor(new ResultType.ListT(ResultType.Primitive.DATE_RANGE), PLAIN).apply(epochDayRangeList);
 		Assertions.assertEquals(expected, actual, message);
 	}
 
