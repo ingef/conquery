@@ -31,7 +31,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	public static final String ATTRIBUTE_SUB_TYPE = "subType";
 	public static final String SEPARATOR_SUB_TYPE = "@";
 
-	private static HashMap<Class<?>, CPSMap> globalMap;
+	private static final HashMap<Class<?>, CPSMap> globalMap;
 
 	public static final ScanResult SCAN_RESULT;
 
