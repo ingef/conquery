@@ -153,7 +153,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos()));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(), false));
 
     }
 
@@ -180,7 +180,7 @@ public class ArrowResultGenerationTest {
 		return stringJoiner.toString();
     }
 
-	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
+	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, boolean isParquet) {
 		String expected = results.stream()
 								 .map(EntityResult.class::cast)
 								 .map(res -> {
@@ -193,7 +193,7 @@ public class ArrowResultGenerationTest {
 										 for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
-                            valueJoiner.add(getPrintValue(val, info.getType()));
+                            valueJoiner.add(getPrintValue(val, info.getType(), isParquet));
                         }
                         lineJoiner.add(valueJoiner.toString());
                     }
@@ -210,11 +210,12 @@ public class ArrowResultGenerationTest {
 			   + "\n" + expected;
     }
 
-    private static String getPrintValue(Object obj, ResultType type) {
+    private static String getPrintValue(Object obj, ResultType type, boolean isParquet) {
         if (obj == null) {
             return "null";
         }
-		if (type.equals(ResultType.Primitive.MONEY)) {
+		if (type.equals(ResultType.Primitive.MONEY) && isParquet) {
+			//The way Parquet handles decimals is as binary values, so we need to handle this specifically here.
 			return new String(((BigDecimal)obj).unscaledValue().toByteArray());
 		}
         if (type.equals(ResultType.Primitive.DATE_RANGE)) {
@@ -241,7 +242,7 @@ public class ArrowResultGenerationTest {
             Collection<?> col = (Collection<?>) obj;
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
             @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
-			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
+			return col.stream().map(v -> getPrintValue(v, elemType, isParquet)).collect(Collectors.joining(",", "[", "]"));
         }
         return obj.toString();
     }

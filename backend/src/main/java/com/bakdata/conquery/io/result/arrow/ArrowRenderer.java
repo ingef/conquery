@@ -277,9 +277,7 @@ public class ArrowRenderer {
 			final int start = vector.startNewValue(rowNumber);
 
 			for (int i = 0; i < values.size(); i++) {
-				// These short-lived one value arrays are a workaround at the moment
-				//TODO consider using only a single array and overwriting it every row - this works only if Arrow processes the values immediately
-				nestedConsumer.accept(Math.addExact(start, i), new Object[]{values.get(i)});
+				nestedConsumer.accept(Math.addExact(start, i), values.get(i));
 			}
 
 			vector.endValue(rowNumber, values.size());
