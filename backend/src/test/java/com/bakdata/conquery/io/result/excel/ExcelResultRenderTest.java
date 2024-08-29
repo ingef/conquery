@@ -56,14 +56,14 @@ public class ExcelResultRenderTest {
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
-		PrintSettings
+		final PrintSettings
 				printSettings =
 				new PrintSettings(true, Locale.GERMAN, null, CONFIG, (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()), (selectInfo) -> selectInfo.getSelect()
 																																								  .getLabel(), new CsvResultPrinters()); // TODO ?
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-		List<EntityResult> results = getTestEntityResults();
+		final List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
+		final ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
@@ -78,19 +78,19 @@ public class ExcelResultRenderTest {
 		};
 
 		// First we write to the buffer, than we read from it and parse it as TSV
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
+		final ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
 
-		renderer.renderToStream(ResultTestUtil.ID_FIELDS, mquery, output, OptionalLong.empty(), printSettings);
+		renderer.renderToStream(ResultTestUtil.getIdFields(printSettings), mquery, output, OptionalLong.empty(), printSettings);
 
-		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
-
-
-		List<String> computed = readComputed(inputStream, printSettings);
+		final InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
 
-		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(printSettings));
+		final List<String> computed = readComputed(inputStream, printSettings);
+
+
+		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(printSettings));
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -101,14 +101,14 @@ public class ExcelResultRenderTest {
 
 	@NotNull
 	private List<String> readComputed(InputStream inputStream, PrintSettings settings) throws IOException {
-		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-		XSSFSheet sheet = workbook.getSheetAt(0);
+		final XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+		final XSSFSheet sheet = workbook.getSheetAt(0);
 
-		List<String> computed = new ArrayList<>();
+		final List<String> computed = new ArrayList<>();
 		int i = 0;
 		for (Row row : sheet) {
-			StringJoiner sj = new StringJoiner("\t");
-			DataFormatter formatter = new DataFormatter(settings.getLocale());
+			final StringJoiner sj = new StringJoiner("\t");
+			final DataFormatter formatter = new DataFormatter(settings.getLocale());
 			for (Cell cell : row) {
 
 				final String formatted = switch (cell.getCellType()) {
@@ -128,21 +128,21 @@ public class ExcelResultRenderTest {
 
 
 	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
-		List<String> expected = new ArrayList<>();
+		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream().map(EntityResult.class::cast).forEach(res -> {
 
 			for (Object[] line : res.listResultLines()) {
-				StringJoiner valueJoiner = new StringJoiner("\t");
+				final StringJoiner valueJoiner = new StringJoiner("\t");
 				valueJoiner.add(String.valueOf(res.getEntityId()));
 				valueJoiner.add(String.valueOf(res.getEntityId()));
 				for (int lIdx = 0; lIdx < line.length; lIdx++) {
-					Object val = line[lIdx];
+					final Object val = line[lIdx];
 					if (val == null) {
 						valueJoiner.add("null");
 						continue;
 					}
-					ResultInfo info = resultInfos.get(lIdx);
+					final ResultInfo info = resultInfos.get(lIdx);
 					joinValue(valueJoiner, val, info);
 				}
 				expected.add(valueJoiner.toString());

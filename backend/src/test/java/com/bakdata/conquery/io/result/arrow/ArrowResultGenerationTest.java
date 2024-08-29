@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -65,7 +64,7 @@ public class ArrowResultGenerationTest {
     void generateFieldsIdMapping() {
 		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, uniqueNamer);
+        List<Field> fields = generateFields(getIdFields(PRINT_SETTINGS), uniqueNamer);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -144,7 +143,7 @@ public class ArrowResultGenerationTest {
 				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				printSettings,
 				new ArrowConfig(BATCH_SIZE),
-				ResultTestUtil.ID_FIELDS,
+				getIdFields(PRINT_SETTINGS),
 				mquery.getResultInfos(printSettings),
 				mquery.streamResults(OptionalLong.empty())
 		);
@@ -204,7 +203,7 @@ public class ArrowResultGenerationTest {
 
 		return Stream.concat(
 				// Id column headers
-				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName()),
+				getIdFields(PRINT_SETTINGS).stream().map(i -> i.defaultColumnName()),
 				// result column headers
 				getResultTypes().stream().map(ResultType::typeInfo)
 		).collect(Collectors.joining("\t"))

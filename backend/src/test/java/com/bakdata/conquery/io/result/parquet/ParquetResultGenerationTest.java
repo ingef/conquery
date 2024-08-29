@@ -16,7 +16,6 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.io.result.arrow.ArrowResultGenerationTest;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -59,7 +58,7 @@ public class ParquetResultGenerationTest {
 		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
 													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
 
-		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, uniqueNamer);
+		final MessageType messageType = EntityResultWriteSupport.generateSchema(getIdFields(PRINT_SETTINGS), resultInfos, uniqueNamer);
 
 		assertThat(messageType).isEqualTo(
 				Types.buildMessage()
@@ -121,7 +120,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(printSettings), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, getIdFields(PRINT_SETTINGS), managedQuery.getResultInfos(printSettings), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 

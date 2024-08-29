@@ -3,13 +3,12 @@ package com.bakdata.conquery.io.result;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -23,7 +22,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.CsvResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -37,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-
+	private static User OWNER = new User("user", "User", null);
 	private static TreeConcept concept;
 
 	static {
@@ -46,27 +44,21 @@ public class ResultTestUtil {
 		concept.setDataset(new Dataset("dataset"));
 	}
 
-	private static final PrintSettings
-			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, null, new ConqueryConfig(), null, (selectInfo) -> selectInfo.getSelect().getLabel(), new CsvResultPrinters());
-
-	public static List<ResultInfo>
-			ID_FIELDS =
-			Stream.of("id1", "id2")
-				  .map(name -> {
-					  ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING, PRINT_SETTINGS);
-					  info.addSemantics(new SemanticType.IdT("ID"));
-					  return info;
-				  })
-				  .collect(Collectors.toList());
+	public static List<ResultInfo> getIdFields(PrintSettings printSettings) {
+		return Stream.of("id1", "id2").map(name -> {
+			ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING, printSettings);
+			info.addSemantics(new SemanticType.IdT("ID"));
+			return info;
+		}).collect(Collectors.toList());
+	}
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, null, null, null) {
+		return new ManagedQuery(null, OWNER, null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
-									   .map(resultType -> new TypedSelectDummy(resultType))
+									   .map(TypedSelectDummy::new)
 									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
 									   .collect(Collectors.toList());
 			}
@@ -85,13 +77,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
-		return List.of(new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", new BigDecimal("45.21"), List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
-					   new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
-					   new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}),
-					   new MultilineEntityResult("3",
-												 List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null},
-														 new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-														 new Object[]{Boolean.TRUE, null, null, null, null, null, new BigDecimal(4), List.of(true, false, true, false), null, null})));
+		return List.of(new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", new BigDecimal("45.21"), List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}), new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}), new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}), new MultilineEntityResult("3", List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null}, new Object[]{Boolean.TRUE, null, null, null, null, null, new BigDecimal(4), List.of(true, false, true, false), null, null})));
 	}
 
 	public static class TypedSelectDummy extends Select {
