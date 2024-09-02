@@ -34,8 +34,8 @@ jobs:
           -r awildturtok,thoniTUB
           -B develop
           --title "Reintegrate Main"
+          --body "Merge main branch back into develop branch"
           --head $REINTEGRATE_BRANCH_NAME
-          --fill
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Modify pull request
