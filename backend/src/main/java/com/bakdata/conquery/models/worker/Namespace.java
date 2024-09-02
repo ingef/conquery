@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
@@ -36,19 +35,15 @@ public abstract class Namespace extends IdResolveContext {
 
 	private final ObjectMapper preprocessMapper;
 
-	private final ObjectMapper communicationMapper;
-
 	@ToString.Include
 	private final NamespaceStorage storage;
 
-	private final ExecutionManager<?> executionManager;
+	private final ExecutionManager executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;
 
 	private final FilterSearch filterSearch;
-
-	private final IndexService indexService;
 
 	private final EntityResolver entityResolver;
 
@@ -93,10 +88,6 @@ public abstract class Namespace extends IdResolveContext {
 		return getStorage().getNumberOfEntities();
 	}
 
-	public void clearIndexCache() {
-		indexService.evictCache();
-	}
-
 	public PreviewConfig getPreviewConfig() {
 		return getStorage().getPreviewConfig();
 	}
@@ -138,8 +129,6 @@ public abstract class Namespace extends IdResolveContext {
 	 * This collects the string values of the given {@link Column}s (each is a {@link com.bakdata.conquery.models.datasets.concepts.Searchable})
 	 * and registers them in the namespace's {@link FilterSearch#registerValues(Searchable, Collection)}.
 	 * After value registration for a column is complete, {@link FilterSearch#shrinkSearch(Searchable)} should be called.
-	 *
-	 * @param columns
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 

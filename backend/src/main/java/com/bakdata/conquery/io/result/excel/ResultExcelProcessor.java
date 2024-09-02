@@ -52,12 +52,12 @@ public class ResultExcelProcessor {
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId, null);
 
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output, limit);
+			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(settings), exec, output, limit, settings);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 

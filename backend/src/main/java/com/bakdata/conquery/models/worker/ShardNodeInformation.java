@@ -38,6 +38,7 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 	@Getter
 	private final Set<JobManagerStatus> jobManagerStatus = new HashSet<>();
 	private final AtomicBoolean full = new AtomicBoolean(false);
+	@Getter
 	private LocalDateTime lastStatusTime = LocalDateTime.now();
 
 	public ShardNodeInformation(NetworkSession session, int backpressure) {

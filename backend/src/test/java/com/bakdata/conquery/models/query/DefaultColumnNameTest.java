@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j
 public class DefaultColumnNameTest {
 	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
+	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null, null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
@@ -168,7 +169,7 @@ public class DefaultColumnNameTest {
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
-		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept);
+		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet(), SETTINGS);
 
 		assertThat(uniqNamer.getUniqueName(info)).isEqualTo(expectedColumnName);
 	}
@@ -293,8 +294,8 @@ public class DefaultColumnNameTest {
 			}
 
 			@Override
-			public ResultType<?> getResultType() {
-				return null;
+			public ResultType getResultType() {
+				return ResultType.Primitive.STRING;
 			}
 
 			@Override

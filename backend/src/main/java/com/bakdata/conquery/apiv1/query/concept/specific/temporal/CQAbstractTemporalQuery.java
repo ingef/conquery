@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -80,10 +81,10 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.addAll(index.getChild().getResultInfos());
-		resultInfos.addAll(preceding.getChild().getResultInfos());
+		resultInfos.addAll(index.getChild().getResultInfos(settings));
+		resultInfos.addAll(preceding.getChild().getResultInfos(settings));
 		return resultInfos;
 	}
 

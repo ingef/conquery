@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -30,26 +29,26 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,14 +58,11 @@ import org.jetbrains.annotations.NotNull;
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> {
 
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
-
-	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
 
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset, storage);
@@ -74,8 +70,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
 		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
@@ -99,8 +93,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	/**
 	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 *
-	 * @return
 	 */
 	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
 
@@ -132,6 +124,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		final int size = resultInfos.size();
 		final String[] columnNames = new String[size];
+
+		//TODO pull renderValue logic into outer loop, only use array as lookup
 
 		for (int index = 0; index < size; index++) {
 			final ResultInfo resultInfo = resultInfos.get(index);
@@ -173,65 +167,29 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			return null;
 		}
 
-		if (type instanceof ResultType.StringT stringT) {
-
-			// StringT may have a mapping that translates values
-			final String string = stringT.printNullable(printSettings, value);
-
-			if (string.isBlank()) {
-				return null;
-			}
-
-			return new TextNode(string);
-		}
-
-		if (type instanceof ResultType.DateT) {
-			// TODO this sidesteps issues with Jackson not localizing LocalDates when printing.
-			//  The proper approach would be to return LocalDates and configure Jackson/DateFormatter to request-scope localization.
-			// TODO is this actually a sneaky frontend-issue? Considering the other values are additionally rendered in the frontend?
-			return new TextNode(ResultType.DateT.INSTANCE.print(printSettings, value));
-		}
-
-		if (type instanceof ResultType.DateRangeT) {
-			//TODO this is not yet properly localised, we will need to fix this either in FE/BE
-			final List<Integer> values = (List<Integer>) value;
-			return CDateRange.fromList(values);
-		}
-
-		if (type instanceof ResultType.IntegerT) {
-			return new IntNode((Integer) value);
-		}
-
-		if (type instanceof ResultType.BooleanT) {
-			return BooleanNode.valueOf((Boolean) value);
-		}
-
-		if (type instanceof ResultType.MoneyT) {
-			return new BigDecimal(((Number) value).longValue()).movePointLeft(printSettings.getCurrency().getDefaultFractionDigits());
-		}
-
-		if (type instanceof ResultType.NumericT) {
-			return DecimalNode.valueOf((BigDecimal) value);
-		}
-
-
-
-
-		if (type instanceof ResultType.ListT listT) {
+		if (type instanceof ResultType.ListT<?> listT) {
 			return ((List<?>) value).stream().map(entry -> renderValue(entry, listT.getElementType(), printSettings)).collect(Collectors.toList());
 		}
 
-		throw new IllegalArgumentException(String.format("Don't know how to handle %s", type));
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> BooleanNode.valueOf((Boolean) value);
+			case INTEGER -> new IntNode((Integer) value);
+			case NUMERIC -> DecimalNode.valueOf((BigDecimal) value);
+			case DATE -> new TextNode(new ResultPrinters.DatePrinter(printSettings).print(value)); //TODO bind printers in outer loop
+			case DATE_RANGE -> new TextNode(new ResultPrinters.DateRangePrinter(printSettings).print(value)); //TODO bind printers in outer loop
+			case STRING -> new TextNode(value.toString()); //TODO mapping
+			case MONEY -> ResultPrinters.readMoney(printSettings, ((Number) value));
+		};
 	}
 
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
 	 */
-	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
-		for (ResultInfo info : query.getResultInfos()) {
+		for (ResultInfo info : query.getResultInfos(printSettings)) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
@@ -257,8 +215,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable() {
-		super.doInitExecutable();
+	public void doInitExecutable(Namespace namespace) {
+		super.doInitExecutable(namespace);
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
@@ -268,12 +226,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(Subject subject) {
+	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
 		initExecutable(getNamespace(), getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, subject);
+		setStatusFull(status, subject, namespace);
 		status.setQuery(getValuesQuery().getQuery());
 
 
@@ -299,14 +257,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos(printSettings).size(); index++) {
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos(printSettings).get(index);
 
 
 			final Object printed = renderValue(values[index], resultInfo.getType(), printSettings);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
+					resultInfo.userColumnName(),
 					printed,
 					resultInfo.getType().typeInfo(),
 					resultInfo.getDescription(),
@@ -336,13 +294,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(printSettings), select2desc, printSettings);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc, printSettings);
 
 
 			final EntityPreviewStatus.TimeStratifiedInfos
@@ -430,20 +388,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet()
-														   .stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
-	}
-
-	@Override
-	public List<ResultInfo> getResultInfos() {
-		return getValuesQuery().getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+		return getValuesQuery().getResultInfos(printSettings);
 	}
 
 	@Override

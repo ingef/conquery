@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -37,7 +38,7 @@ public abstract class Query implements QueryDescription {
 	}
 
 	@JsonIgnore
-	public abstract List<ResultInfo> getResultInfos();
+	public abstract List<ResultInfo> getResultInfos(PrintSettings printSettings);
 
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {

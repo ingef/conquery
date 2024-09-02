@@ -1,7 +1,10 @@
 package com.bakdata.conquery.sql;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jooq.DSLContext;
@@ -12,12 +15,20 @@ import org.jooq.impl.DSL;
 
 public class DslContextFactory {
 
-	public static DSLContextWrapper create(DatabaseConfig config, SqlConnectorConfig connectorConfig) {
+	public static DSLContextWrapper create(DatabaseConfig config, SqlConnectorConfig connectorConfig, @Nullable HealthCheckRegistry healthCheckRegistry) {
 
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setJdbcUrl(config.getJdbcConnectionUrl());
 		hikariConfig.setUsername(config.getDatabaseUsername());
 		hikariConfig.setPassword(config.getDatabasePassword());
+
+		if (healthCheckRegistry != null) {
+			hikariConfig.setHealthCheckRegistry(healthCheckRegistry);
+			if (connectorConfig.getConnectivityCheckTimeout() != null) {
+				long connectivityTimeoutMs = connectorConfig.getConnectivityCheckTimeout().toMilliseconds();
+				hikariConfig.addHealthCheckProperty("connectivityCheckTimeoutMs", Long.toString(connectivityTimeoutMs));
+			}
+		}
 
 		HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
 

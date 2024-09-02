@@ -21,6 +21,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -61,6 +67,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
@@ -82,14 +89,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,22 +111,23 @@ public class QueryProcessor {
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
+		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
 						 // one dataset.
-						 .filter(q -> q.getDataset().equals(datasetId))
+						 .filter(q -> q.getDataset().getId().equals(datasetId))
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(Predicate.not(ManagedExecution::isSystem))
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+							 Namespace namespace = datasetRegistry.get(mq.getDataset().getId());
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, namespace);
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -207,7 +207,7 @@ public class QueryProcessor {
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
 		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
-		executionManager.cancelQuery(dataset, query);
+		executionManager.cancelQuery(query);
 	}
 
 	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {
@@ -275,14 +275,19 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
+	public ExecutionState awaitDone(ManagedExecution query, int time, TimeUnit unit) {
+		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
+		return namespace.getExecutionManager().awaitDone(query, time, unit);
+	}
+
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
 		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
 		query.initExecutable(namespace, config);
 
-		final FullExecutionStatus status = query.buildStatusFull(subject);
+		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
-		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
+		if (query.isReadyToDownload() && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
@@ -317,7 +322,7 @@ public class QueryProcessor {
 				execution =
 				((ManagedQuery) namespace
 						.getExecutionManager()
-						.createExecution(query, subject.getUser(), dataset, false));
+						.createExecution(query, subject.getUser(), namespace, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -338,7 +343,8 @@ public class QueryProcessor {
 		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
-		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
+		Namespace namespace = datasetRegistry.get(dataset.getId());
+		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 		final EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
 
@@ -350,7 +356,7 @@ public class QueryProcessor {
 		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
-		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		if (namespace.getExecutionManager().awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
@@ -361,7 +367,7 @@ public class QueryProcessor {
 		}
 
 
-		final FullExecutionStatus status = execution.buildStatusFull(subject);
+		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
 		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
@@ -377,21 +383,23 @@ public class QueryProcessor {
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
 		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
-		final ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
+		final List<QueryVisitor> visitors = new ArrayList<>();
 		query.addVisitors(visitors);
 
 		// Initialize checks that need to traverse the query tree
-		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
-		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
+		QueryUtils.OnlyReusingChecker onlyReusingChecker = new QueryUtils.OnlyReusingChecker();
+		visitors.add(onlyReusingChecker);
+		NamespacedIdentifiableCollector namespacedIdentifiableCollector = new NamespacedIdentifiableCollector();
+		visitors.add(namespacedIdentifiableCollector);
 
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(subject, storage).map(Group::getName).orElse("none");
-
-		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
+		ExecutionMetrics.QueryMetricsReporter queryMetricsReporter = new ExecutionMetrics.QueryMetricsReporter(primaryGroupName);
+		visitors.add(queryMetricsReporter);
 
 
 		// Chain all Consumers
 		Consumer<Visitable> consumerChain = QueryUtils.getNoOpEntryPoint();
-		for (QueryVisitor visitor : visitors.values()) {
+		for (QueryVisitor visitor : visitors) {
 			consumerChain = consumerChain.andThen(visitor);
 		}
 
@@ -402,7 +410,8 @@ public class QueryProcessor {
 		query.authorize(subject, dataset, visitors, storage);
 		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the Userish in methods
 
-		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
+
+		ExecutionMetrics.reportNamespacedIds(namespacedIdentifiableCollector.getIdentifiables(), primaryGroupName);
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
@@ -412,7 +421,7 @@ public class QueryProcessor {
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
+			final Optional<ManagedExecutionId> executionId = onlyReusingChecker.getOnlyReused();
 
 			final Optional<ManagedExecution>
 					execution =
@@ -424,7 +433,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(namespace, query, subject.getUser(), dataset, config, system);
+		return executionManager.runQuery(namespace, query, subject.getUser(), config, system);
 	}
 
 	/**
@@ -458,7 +467,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(execution.getSubmitted(), user, execution.getDataset(), false);
+					executionManager.createExecution(execution.getSubmitted(), user, namespace, false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -511,7 +520,7 @@ public class QueryProcessor {
 
 		final ManagedExecution execution = postQuery(dataset, query, subject, true);
 
-		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		if (namespace.getExecutionManager().awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
@@ -560,13 +569,6 @@ public class QueryProcessor {
 	}
 
 	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
-		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
-
-		final Optional<ResultInfo>
-				dateInfo =
-				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
-
-		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
@@ -578,6 +580,14 @@ public class QueryProcessor {
 		final PrintSettings printSettings =
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
+
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos(printSettings);
+
+		final Optional<ResultInfo>
+				dateInfo =
+				resultInfos.stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+
+		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
 	}

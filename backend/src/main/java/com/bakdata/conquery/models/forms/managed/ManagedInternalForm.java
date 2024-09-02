@@ -20,20 +20,19 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +44,8 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution {
 
 
 	/**
@@ -63,10 +63,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@EqualsAndHashCode.Exclude
 	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
-	public ManagedInternalForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(form, user, submittedDataset, storage);
 	}
@@ -77,9 +73,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public void doInitExecutable() {
+	public void doInitExecutable(Namespace namespace) {
 		// Convert sub queries to sub executions
-		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
@@ -92,7 +88,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage())
 
 				));
 	}
@@ -101,7 +97,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void start() {
 		synchronized (this) {
-			subQueries.values().stream().forEach(flatSubQueries::add);
+			subQueries.values().forEach(flatSubQueries::add);
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
@@ -113,7 +109,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
@@ -138,11 +134,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		if (subQueries.size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return subQueries.values().iterator().next().getResultInfos();
+		return subQueries.values().iterator().next().getResultInfos(printSettings);
 	}
 
 	@Override
@@ -162,13 +158,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		}
 		return subQueries.values().iterator().next().resultRowCount();
 	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), flatSubQueries.entrySet().stream()
-													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
-	}
-
 
 	public boolean allSubQueriesDone() {
 		synchronized (this) {

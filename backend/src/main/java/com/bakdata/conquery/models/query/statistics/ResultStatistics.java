@@ -73,7 +73,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 							 final ResultInfo info = resultInfos.get(col);
 							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, conqueryConfig.getFrontend());
+									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info), info.getDescription(), info.getType(), info.getPrinter(), printSettings, conqueryConfig.getFrontend());
 
 							 log.trace("BEGIN stats collection for {}", info);
 
@@ -136,16 +136,16 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 	}
 
 	public static BiConsumer<Object, Consumer<CDateRange>> validityDateExtractor(ResultType dateType) {
-		if (dateType instanceof ResultType.DateRangeT) {
+		if (dateType.equals(ResultType.Primitive.DATE_RANGE)) {
 			return (obj, con) -> con.accept(CDateRange.fromList((List<? extends Number>) obj));
 		}
 
 
-		if (dateType instanceof ResultType.DateT) {
+		if (dateType.equals(ResultType.Primitive.DATE)) {
 			return (obj, con) -> con.accept(CDateRange.exactly((Integer) obj));
 		}
 
-		if (dateType instanceof ResultType.ListT listT) {
+		if (dateType instanceof ResultType.ListT<?> listT) {
 			final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(listT.getElementType());
 			return (obj, con) -> ((List<?>) obj).forEach(date -> extractor.accept(date, con));
 		}

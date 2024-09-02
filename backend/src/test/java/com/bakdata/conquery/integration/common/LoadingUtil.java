@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -16,6 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -48,10 +54,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +75,8 @@ public class LoadingUtil {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
-			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -88,8 +90,8 @@ public class LoadingUtil {
 			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
-			ExecutionManager<?> executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
+			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -177,28 +179,34 @@ public class LoadingUtil {
 			assertThat(cqpp).exists();
 		}
 
-		final String methodName = update ? "updateImport" : "addImport";
+		final String methodName = update ? "updateCqppImport" : "uploadImport";
 
 		final URI addImport =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, methodName)
-							   .queryParam("file", cqpp)
 							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
 
-		final Entity<Entity<String>> entity = Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE);
+		final Entity<FileInputStream> entity;
+		try {
+			entity = Entity.entity(new FileInputStream(cqpp), MediaType.APPLICATION_OCTET_STREAM);
 
-		final Invocation.Builder request = support.getClient()
-												  .target(addImport)
-												  .request(MediaType.APPLICATION_JSON);
 
-		final Invocation invocation = update ? request.buildPut(entity) : request.buildPost(entity);
+			final Invocation.Builder request = support.getClient()
+													  .target(addImport)
+													  .request(MediaType.APPLICATION_JSON);
 
-		log.info("sending CQPP with {}", invocation);
+			final Invocation invocation = update ? request.buildPut(entity) : request.buildPost(entity);
 
-		try (final Response response = invocation.invoke()) {
+			log.info("sending CQPP with {}", invocation);
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(expectedResponseFamily);
+			try (final Response response = invocation.invoke()) {
+
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(expectedResponseFamily);
+			}
+		}
+		catch (FileNotFoundException e) {
+			fail("Cqpp not found", e);
 		}
 	}
 
@@ -247,7 +255,7 @@ public class LoadingUtil {
 	}
 
 
-	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws IOException {
 		return ConqueryTestSpec.parseSubTreeList(
 				support,
 				rawConcepts,
@@ -257,7 +265,7 @@ public class LoadingUtil {
 	}
 
 	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
-			throws JSONException, IOException {
+			throws IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
 			updateConcept(support, concept, expectedResponseFamily);
