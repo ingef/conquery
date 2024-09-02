@@ -3,9 +3,10 @@ package com.bakdata.conquery.models.query.resultinfo.printers;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.DatePrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrinter;
 import com.google.common.base.Preconditions;
 
 public class JavaResultPrinters extends PrinterFactory {
@@ -63,14 +64,6 @@ public class JavaResultPrinters extends PrinterFactory {
 			}
 
 			return out;
-		}
-	}
-
-	private record DatePrinter() implements Printer {
-
-		@Override
-		public Object apply(Object value) {
-			return CDate.toLocalDate(((Number) value).intValue());
 		}
 	}
 

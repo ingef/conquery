@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.excel;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
-import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -27,6 +27,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -56,14 +58,18 @@ public class ExcelResultRenderTest {
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
-		final PrintSettings
-				printSettings =
-				new PrintSettings(true, Locale.GERMAN, null, CONFIG, (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()), (selectInfo) -> selectInfo.getSelect()
-																																								  .getLabel(), new StringResultPrinters()); // TODO ?
+		final PrintSettings printSettings = new PrintSettings(true,
+															  Locale.GERMAN,
+															  null,
+															  CONFIG,
+															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+															  (selectInfo) -> selectInfo.getSelect().getLabel(),
+															  new ExcelResultPrinters()
+		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
 
-		final ManagedQuery mquery = new ManagedQuery(null, null, null, null) {
+		final ManagedQuery mquery = new ManagedQuery(null, OWNER, DATASET, null) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
@@ -89,8 +95,16 @@ public class ExcelResultRenderTest {
 
 		final List<String> computed = readComputed(inputStream, printSettings);
 
-
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), printSettings);
+		// We have to do some magic here to emulate the excel printed results.
+		PrintSettings tsvPrintSettings = new PrintSettings(true,
+														   Locale.GERMAN,
+														   null,
+														   CONFIG,
+														   (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+														   (selectInfo) -> selectInfo.getSelect().getLabel(),
+														   new StringResultPrinters()
+		);
+		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings);
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -134,16 +148,17 @@ public class ExcelResultRenderTest {
 
 			for (Object[] line : res.listResultLines()) {
 				final StringJoiner valueJoiner = new StringJoiner("\t");
+
 				valueJoiner.add(String.valueOf(res.getEntityId()));
 				valueJoiner.add(String.valueOf(res.getEntityId()));
+
 				for (int lIdx = 0; lIdx < line.length; lIdx++) {
 					final Object val = line[lIdx];
-					if (val == null) {
-						valueJoiner.add("null");
-						continue;
-					}
+
 					final ResultInfo info = resultInfos.get(lIdx);
-					joinValue(valueJoiner, val, info, printSettings);
+					final String printed = printValue(val, info, printSettings);
+
+					valueJoiner.add(printed);
 				}
 				expected.add(valueJoiner.toString());
 			}
@@ -152,20 +167,27 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-	private void joinValue(StringJoiner valueJoiner, Object val, ResultInfo info, PrintSettings printSettings) {
-		String printVal = (String) info.createPrinter(printSettings).apply(val);
+	private String printValue(Object val, ResultInfo info, PrintSettings printSettings) {
+		if (val == null) {
+			return "null";
+		}
+
+		final Printer printer = info.createPrinter(printSettings);
 
 		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
-			/**
+			/*
 			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
 			 */
-			printVal = (Boolean) val ? "TRUE" : "FALSE";
+			return (Boolean) val ? "TRUE" : "FALSE";
 		}
 
 		if (info.getType().equals(ResultType.Primitive.MONEY)) {
-			printVal += " €";
+			return printer.apply(val) + " €";
 		}
-		valueJoiner.add(printVal);
+
+		return Objects.toString(printer.apply(val));
+
+
 	}
 
 }

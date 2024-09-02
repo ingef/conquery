@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 
 public abstract class PrinterFactory {
-	public final Printer printerFor(ResultType type, PrintSettings printSettings) {
+	public Printer printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
 			final Printer elementPrinter = printerFor(listT.getElementType(), printSettings);
 			return getListPrinter(elementPrinter, printSettings);

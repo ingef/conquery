@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.query.resultinfo.printers;
+package com.bakdata.conquery.models.query.resultinfo.printers.common;
 
 import com.bakdata.conquery.models.common.LocalizedToString;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 
 public record LocalizedEnumPrinter<T extends Enum<T> & LocalizedToString>(PrintSettings cfg, Class<T> clazz) implements Printer {
 	@Override

@@ -34,8 +34,8 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-	private static final User OWNER = new User("user", "User", null);
-	private static final Dataset DATASET = new Dataset("dataset");
+	public static final User OWNER = new User("user", "User", null);
+	public static final Dataset DATASET = new Dataset("dataset");
 	private static final TreeConcept CONCEPT;
 
 	static {
