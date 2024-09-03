@@ -92,12 +92,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		JsonResultPrinters printers = new JsonResultPrinters();
-		final PrintSettings infoSettings =
-				new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		final PrintSettings infoSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings, printers));
 
-		final PrintSettings stratifiedSettings =
-				new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), stratifiedSettings, printers));
 
 		return status;
@@ -113,13 +111,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(
-			ManagedQuery infoCardExecution, PrintSettings printSettings,
-			PrinterFactory printerFactory) {
+			ManagedQuery infoCardExecution, PrintSettings printSettings, PrinterFactory printerFactory) {
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result =
-				(MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
@@ -130,12 +126,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 			final Object printed = resultInfo.createPrinter(printerFactory, printSettings).apply(values[index]);
 
-			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
-					printed,
-					resultInfo.getType().typeInfo(),
-					resultInfo.getDescription(),
-					resultInfo.getSemantics()
+			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings),
+														printed,
+														resultInfo.getType().typeInfo(),
+														resultInfo.getDescription(),
+														resultInfo.getSemantics()
 			));
 		}
 
@@ -149,9 +144,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@NotNull
 	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(
-			PreviewConfig previewConfig,
-			Map<String, ManagedQuery> subQueries,
-			PrintSettings printSettings, PrinterFactory printers) {
+			PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings, PrinterFactory printers) {
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
@@ -160,12 +153,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 
 			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
-					description.selects().stream()
-							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
+					description.selects().stream().collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer =
-					createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings, printers);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings, printers);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
@@ -174,14 +165,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
 
-			final EntityPreviewStatus.TimeStratifiedInfos
-					infos =
-					new EntityPreviewStatus.TimeStratifiedInfos(description.label(),
-																description.description(),
-																columnDescriptors,
-																lineTransformer.apply(completeResult),
-																yearEntries
-					);
+			final EntityPreviewStatus.TimeStratifiedInfos infos = new EntityPreviewStatus.TimeStratifiedInfos(description.label(),
+																											  description.description(),
+																											  columnDescriptors,
+																											  lineTransformer.apply(completeResult),
+																											  yearEntries
+			);
 
 			timeStratifiedInfos.add(infos);
 		}
@@ -194,8 +183,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Null values are omitted.
 	 */
 	private static Function<Object[], Map<String, Object>> createLineToMapTransformer(
-			List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings,
-			PrinterFactory printerFactory) {
+			List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings, PrinterFactory printerFactory) {
 
 
 		final int size = resultInfos.size();
@@ -356,8 +344,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// Add grouping semantics to secondaryIds to group by
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
-													&& previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 

@@ -103,13 +103,12 @@ public class ParquetResultGenerationTest {
 		I18n.init();
 
 		// Prepare every input data
-		PrintSettings printSettings = new PrintSettings(
-				false,
-				Locale.ROOT,
-				null,
-				CONFIG,
-				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel()
+		PrintSettings printSettings = new PrintSettings(false,
+														Locale.ROOT,
+														null,
+														CONFIG,
+														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+														(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();

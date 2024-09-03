@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -41,20 +39,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		this.mapping = mapping;
 	}
 
-	public List<String> print(List<String> values) {
-		if(mapping == null){
-			return values;
-		}
-
-		final List<String> out = new ArrayList<>();
-
-		for (String value : values) {
-			out.addAll(List.of(mapping.external(value)));
-		}
-
-		return out;
-	}
-
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (mapping == null) {
@@ -76,7 +60,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		if(mapping == null){
+		if (mapping == null) {
 			return ResultType.resolveResultType(getColumn().getType());
 		}
 		return ResultType.Primitive.STRING;

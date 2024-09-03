@@ -11,9 +11,12 @@ import com.bakdata.conquery.models.query.resultinfo.printers.common.ListStringPr
 import com.bakdata.conquery.models.query.resultinfo.printers.common.MoneyStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.NumericStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.StringPrinter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.ToString;
 
-@Slf4j
+/**
+ * All printers in this factory should be assumed to return {@link String}, this is useful for CSV or HTML printing.
+ */
+@ToString
 public class StringResultPrinters extends PrinterFactory {
 
 

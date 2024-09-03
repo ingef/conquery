@@ -167,9 +167,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.IntegerRange(Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null), Optional.ofNullable(orig.getMax())
-																														 .map(Number::intValue)
-																														 .orElse(null));
+			return new Range.IntegerRange(Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
+										  Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null)
+			);
 		}
 
 		@Override
@@ -198,9 +198,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.LongRange(Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null), Optional.ofNullable(orig.getMax())
-																													   .map(Number::longValue)
-																													   .orElse(null));
+			return new Range.LongRange(Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
+									   Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null)
+			);
 		}
 
 		@Override
@@ -229,9 +229,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.FloatRange(Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null), Optional.ofNullable(orig.getMax())
-																														 .map(Number::floatValue)
-																														 .orElse(null));
+			return new Range.FloatRange(Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
+										Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null)
+			);
 		}
 
 		@Override
@@ -263,9 +263,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.DoubleRange(Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null), Optional.ofNullable(orig.getMax())
-																														   .map(Number::doubleValue)
-																														   .orElse(null));
+			return new Range.DoubleRange(Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
+										 Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null)
+			);
 		}
 
 		@Override

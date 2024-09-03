@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -36,14 +37,19 @@ import org.jetbrains.annotations.NotNull;
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
-	public static ResultStatistics collectResultStatistics(SingleTableResult managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, Optional<Integer> dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig,
-														   PrinterFactory printerFactory) {
+	public static ResultStatistics collectResultStatistics(
+			SingleTableResult managedQuery,
+			List<ResultInfo> resultInfos,
+			Optional<ResultInfo> dateInfo,
+			Optional<Integer> dateIndex,
+			PrintSettings printSettings,
+			UniqueNamer uniqueNamer,
+			ConqueryConfig conqueryConfig,
+			PrinterFactory printerFactory) {
 
 
 		//TODO pull inner executor service from ManagerNode
-		final ListeningExecutorService
-				executorService =
-				MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
 
 		// Yes, we are actually iterating the result for every job.
 
@@ -53,7 +59,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		final boolean containsDates = dateInfo.isPresent();
 
 		if (containsDates) {
-			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get()));
+			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get(), printSettings));
 		}
 		else {
 			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
@@ -62,12 +68,10 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
 		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
 
-		final ListenableFuture<Integer> futureEntities =
-				executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
+		final ListenableFuture<Integer> futureEntities = executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
 
 		// compute ResultColumnStatistics for each column
-		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>>
-				futureDescriptions =
+		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>> futureDescriptions =
 				IntStream.range(0, resultInfos.size())
 						 // If the query doesn't contain dates, we can skip the dates-column.
 						 .filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || containsDates)
@@ -77,7 +81,12 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 							 final ResultInfo info = resultInfos.get(col);
 							 final Printer printer = info.createPrinter(printerFactory, printSettings);
 							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings), info.getDescription(), info.getType(), printSettings, conqueryConfig.getFrontend());
+									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings),
+																			info.getDescription(),
+																			info.getType(),
+																			printSettings,
+																			conqueryConfig.getFrontend()
+									 );
 
 							 log.trace("BEGIN stats collection for {}", info);
 
@@ -85,7 +94,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 										 .map(EntityResult::listResultLines)
 										 .flatMap(List::stream)
 										 .forEach(line -> {
-											 Object value = line[col];
+											 final Object value = line[col];
 											 if (value == null) {
 												 // Printers dont handle null
 												 statsCollector.consume(null);
@@ -115,13 +124,13 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		return new ResultStatistics(entities, lines, descriptions, span);
 	}
 
-	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex) {
+	private static Range<LocalDate> calculateDateSpan(SingleTableResult managedQuery, Optional<ResultInfo> dateInfo, int dateIndex, PrintSettings printSettings) {
 		if (dateInfo.isEmpty()) {
 			return CDateRange.all().toSimpleRange();
 		}
 
 		final AtomicReference<CDateRange> spanRef = new AtomicReference<>(null);
-		final Consumer<Object[]> dateAggregator = getDateSpanner(dateInfo.get(), dateIndex, spanRef);
+		final Consumer<Object[]> dateAggregator = getDateSpanner(dateInfo.get(), dateIndex, spanRef, printSettings);
 
 		managedQuery.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues).forEach(dateAggregator);
 
@@ -137,28 +146,32 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 	/**
 	 * If not dateInfo is given, don't try to span values. otherwise takes values from line at dateIndex, and handles them according to dateInfo.
 	 */
-	private static Consumer<Object[]> getDateSpanner(ResultInfo dateInfo, int dateIndex, AtomicReference<CDateRange> spanRef) {
+	private static Consumer<Object[]> getDateSpanner(ResultInfo dateInfo, int dateIndex, AtomicReference<CDateRange> spanRef, PrintSettings printSettings) {
 
 		final Consumer<CDateRange> spanner = date -> spanRef.getAndAccumulate(date, (old, incoming) -> incoming.spanClosed(old));
 
-		final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(dateInfo.getType());
+		final JavaResultPrinters printers = new JavaResultPrinters();
+		final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(dateInfo.getType(), printSettings, printers);
 
 		return line -> extractor.accept(line[dateIndex], spanner);
 
 	}
 
-	public static BiConsumer<Object, Consumer<CDateRange>> validityDateExtractor(ResultType dateType) {
+	public static BiConsumer<Object, Consumer<CDateRange>> validityDateExtractor(ResultType dateType, PrintSettings printSettings, JavaResultPrinters printers) {
+
 		if (dateType.equals(ResultType.Primitive.DATE_RANGE)) {
-			return (obj, con) -> con.accept(CDateRange.fromList((List<? extends Number>) obj));
+			final Printer printer = printers.getDateRangePrinter(printSettings);
+			return (obj, con) -> con.accept((CDateRange) printer.apply(obj));
 		}
 
 
 		if (dateType.equals(ResultType.Primitive.DATE)) {
-			return (obj, con) -> con.accept(CDateRange.exactly((Integer) obj));
+			final Printer printer = printers.getDatePrinter(printSettings);
+			return (obj, con) -> con.accept(CDateRange.exactly((LocalDate) printer.apply(obj)));
 		}
 
 		if (dateType instanceof ResultType.ListT<?> listT) {
-			final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(listT.getElementType());
+			final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(listT.getElementType(), printSettings, printers);
 			return (obj, con) -> ((List<?>) obj).forEach(date -> extractor.accept(date, con));
 		}
 

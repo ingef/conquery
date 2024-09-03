@@ -7,6 +7,6 @@ public record MappedPrinter(InternToExternMapper mapper) implements Printer<Stri
 
 	@Override
 	public String apply(String f) {
-		return mapper.external(((String) f));
+		return mapper.external(f);
 	}
 }

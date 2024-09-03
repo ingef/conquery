@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.types.ResultType;
 /**
  * This class is a mess because Excel supports some of our types natively.
  *
- * With LIST types we fall back onto the StringResultPrinter, as Excel does not support Lists.
+ * With LIST types we fall back onto the StringResultPrinter, as Excel does not support Lists, BUT we also cannot use the {@link IdentityPrinter} inside the list, as some of our printers are native types.
  */
 public class ExcelResultPrinters extends StringResultPrinters {
 

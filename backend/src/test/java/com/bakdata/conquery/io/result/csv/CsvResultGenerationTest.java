@@ -42,13 +42,12 @@ public class CsvResultGenerationTest {
 	void writeAndRead() throws IOException {
 		// Prepare every input data
 		StringResultPrinters printers = new StringResultPrinters();
-		final PrintSettings printSettings = new PrintSettings(
-				true,
-				Locale.GERMAN,
-				null,
-				CONFIG,
-				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel()
+		final PrintSettings printSettings = new PrintSettings(true,
+															  Locale.GERMAN,
+															  null,
+															  CONFIG,
+															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+															  (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
@@ -77,25 +76,35 @@ public class CsvResultGenerationTest {
 		final List<String> expected = new ArrayList<>();
 		expected.add(getIdFields().stream().map(info -> info.defaultColumnName(printSettings)).collect(Collectors.joining(","))
 					 + ","
-					 + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(","))
+					 + getResultTypes().stream()
+									   .map(ResultType::typeInfo)
+									   .collect(Collectors.joining(","))
 					 + "\n");
+
+		final String delimiter = String.valueOf(CONFIG.getCsv().getDelimeter());
+
 		results.stream()
 			   .map(EntityResult.class::cast)
 			   .forEach(res -> {
 
 				   for (Object[] line : res.listResultLines()) {
 					   final StringJoiner valueJoiner = new StringJoiner(",");
+
 					   valueJoiner.add(String.valueOf(res.getEntityId()));
 					   valueJoiner.add(String.valueOf(res.getEntityId()));
+
 					   for (int lIdx = 0; lIdx < line.length; lIdx++) {
 						   final Object val = line[lIdx];
+
 						   if (val == null) {
 							   valueJoiner.add("");
 							   continue;
 						   }
+
 						   final ResultInfo info = resultInfos.get(lIdx);
 						   final String printVal = (String) info.createPrinter(printerFactory, printSettings).apply(val);
-						   valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter())) ? "\"" + printVal + "\"" : printVal);
+
+						   valueJoiner.add(printVal.contains(delimiter) ? "\"" + printVal + "\"" : printVal);
 					   }
 
 					   expected.add(valueJoiner + "\n");

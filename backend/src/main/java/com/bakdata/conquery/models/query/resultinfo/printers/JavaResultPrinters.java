@@ -67,14 +67,9 @@ public class JavaResultPrinters extends PrinterFactory {
 
 	private record DateRangePrinter() implements Printer<List<Integer>> {
 
-
 		@Override
 		public Object apply(List<Integer> f) {
-			final Integer min = (Integer) ((List<?>) f).get(0);
-			final Integer max = (Integer) ((List<?>) f).get(1);
-
-
-			return CDateRange.of(min, max);
+			return CDateRange.of(f.get(0), f.get(1));
 		}
 	}
 }

@@ -6,6 +6,9 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ToStringPrinter;
 import lombok.ToString;
 
+/**
+ * This class simply put's out native types where possible to let Jackson handle the Serialization, except for Date and DateRange, where the Frontend cannot ensure proper handling.
+ */
 @ToString
 public class JsonResultPrinters extends JavaResultPrinters {
 
