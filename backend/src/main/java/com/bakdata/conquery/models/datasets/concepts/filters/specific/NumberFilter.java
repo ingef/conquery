@@ -73,7 +73,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	 */
 	public static IRange<? extends Number, ?> readFilterValue(IRange<? extends Number, ?> value, @NotNull MajorTypeId type, @NotNull ConqueryConfig config) {
 		return switch (type) {
-			case MONEY -> Range.MoneyRange.from(value, config.getFrontend().getCurrency());
+			case MONEY -> Range.MoneyRange.fromNumberRange(value, config.getFrontend().getCurrency());
 			case INTEGER -> (Range.LongRange) value;
 			case DECIMAL -> ((Range<BigDecimal>) value);
 			case REAL -> Range.DoubleRange.fromNumberRange(value);

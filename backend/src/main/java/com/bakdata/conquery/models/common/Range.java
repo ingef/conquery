@@ -296,13 +296,15 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			super(min, max);
 		}
 
-		public static MoneyRange from(IRange<? extends Number, ?> orig, FrontendConfig.CurrencyConfig currency) {
+		public static MoneyRange fromNumberRange(IRange<? extends Number, ?> orig, FrontendConfig.CurrencyConfig currency) {
 			BigDecimal mappedMin = Optional.ofNullable(orig.getMin())
-									  .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
-									  .orElse(null);
+										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+										   .orElse(null);
+
 			BigDecimal mappedMax = Optional.ofNullable(orig.getMax())
-									  .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
-									  .orElse(null);
+										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+										   .orElse(null);
+
 			return new Range.MoneyRange(mappedMin, mappedMax);
 		}
 
