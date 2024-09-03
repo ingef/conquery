@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
@@ -54,16 +55,29 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 		f.setType(type);
 	}
 
-
 	@Override
 	public FilterNode<?> createFilterNode(RANGE value) {
-				return switch (getColumn().getType()) {
-			case MONEY -> new MoneyFilterNode(getColumn(), Range.MoneyRange.from(value, config.getFrontend().getCurrency()));
-			case INTEGER -> new IntegerFilterNode(getColumn(), (Range.LongRange) value);
-			case DECIMAL -> new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
-			case REAL -> new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
+		final IRange<? extends Number, ?> range = readFilterValue(value, getColumn().getType(), config);
+		return switch (getColumn().getType()) {
+			case MONEY -> new MoneyFilterNode(getColumn(), (Range.MoneyRange) range);
+			case INTEGER -> new IntegerFilterNode(getColumn(), (Range.LongRange) range);
+			case DECIMAL -> new DecimalFilterNode(getColumn(), (Range<BigDecimal>) range);
+			case REAL -> new RealFilterNode(getColumn(), (Range.DoubleRange) range);
 
 			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
+		};
+	}
+
+	/**
+	 * This method only exists because we messed up and never implemented a DECIMAL_RANGE, otherwise it could be embedded in the FilterValues themselves.
+	 */
+	public static IRange<? extends Number, ?> readFilterValue(IRange<? extends Number, ?> value, @NotNull MajorTypeId type, @NotNull ConqueryConfig config) {
+		return switch (type) {
+			case MONEY -> Range.MoneyRange.from(value, config.getFrontend().getCurrency());
+			case INTEGER -> (Range.LongRange) value;
+			case DECIMAL -> ((Range<BigDecimal>) value);
+			case REAL -> Range.DoubleRange.fromNumberRange(value);
+			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", type));
 		};
 	}
 

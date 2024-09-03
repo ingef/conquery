@@ -27,16 +27,12 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
 		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
-		IRange<? extends Number, ?> filterValue = filterContext.getValue();
+		IRange<? extends Number, ?> filterValue = NumberFilter.readFilterValue(filterContext.getValue(), column.getType(), filter.getConfig());
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
-														 .preprocessingSelects(List.of(rootSelect))
-														 .build();
+		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelects(List.of(rootSelect)).build();
 
-		WhereClauses whereClauses = WhereClauses.builder()
-												.eventFilter(condition)
-												.build();
+		WhereClauses whereClauses = WhereClauses.builder().eventFilter(condition).build();
 
 		return new SqlFilters(selects, whereClauses);
 	}
@@ -47,6 +43,8 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
-		return new NumberCondition(field, filterContext.getValue()).condition();
+		IRange<? extends Number, ?> range = NumberFilter.readFilterValue(filterContext.getValue(), column.getType(), filter.getConfig());
+
+		return new NumberCondition(field, range).condition();
 	}
 }
