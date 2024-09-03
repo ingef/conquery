@@ -1,16 +1,19 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 
+
 public abstract class PrinterFactory {
-	public Printer printerFor(ResultType type, PrintSettings printSettings) {
+	public <T> Printer<T> printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
-			final Printer elementPrinter = printerFor(listT.getElementType(), printSettings);
-			return getListPrinter(elementPrinter, printSettings);
+			final Printer<?> elementPrinter = printerFor(listT.getElementType(), printSettings);
+			return (Printer<T>) getListPrinter(elementPrinter, printSettings);
 		}
 
-		return switch (((ResultType.Primitive) type)) {
+		return (Printer<T>) switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> getBooleanPrinter(printSettings);
 			case INTEGER -> getIntegerPrinter(printSettings);
 			case NUMERIC -> getNumericPrinter(printSettings);
@@ -21,19 +24,19 @@ public abstract class PrinterFactory {
 		};
 	}
 
-	public abstract Printer getListPrinter(Printer elementPrinter, PrintSettings printSettings);
+	public abstract <T> Printer<List<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings);
 
-	public abstract Printer getBooleanPrinter(PrintSettings printSettings);
+	public abstract Printer<Boolean> getBooleanPrinter(PrintSettings printSettings);
 
-	public abstract Printer getIntegerPrinter(PrintSettings printSettings);
+	public abstract Printer<Number> getIntegerPrinter(PrintSettings printSettings);
 
-	public abstract Printer getNumericPrinter(PrintSettings printSettings);
+	public abstract Printer<Number> getNumericPrinter(PrintSettings printSettings);
 
-	public abstract Printer getDatePrinter(PrintSettings printSettings);
+	public abstract Printer<Number> getDatePrinter(PrintSettings printSettings);
 
-	public abstract Printer getDateRangePrinter(PrintSettings printSettings);
+	public abstract Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings);
 
-	public abstract Printer getStringPrinter(PrintSettings printSettings);
+	public abstract Printer<String> getStringPrinter(PrintSettings printSettings);
 
-	public abstract Printer getMoneyPrinter(PrintSettings printSettings);
+	public abstract Printer<Number> getMoneyPrinter(PrintSettings printSettings);
 }

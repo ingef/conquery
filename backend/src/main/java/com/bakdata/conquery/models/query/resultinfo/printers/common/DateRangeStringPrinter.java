@@ -9,24 +9,19 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSettings cfg) implements Printer {
+public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
 
 	public DateRangeStringPrinter(PrintSettings printSettings) {
 		this(new DateStringPrinter(printSettings), printSettings);
 	}
 
 	@Override
-	public String apply(Object f) {
-		Preconditions.checkArgument(f instanceof List<?>, "Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f);
-		Preconditions.checkArgument(((List<?>) f).size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
+	public String apply(List<Integer> f) {
+		Preconditions.checkArgument(f.size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
 
-		final List<?> list = (List<?>) f;
-		final Integer min = (Integer) list.get(0);
-		final Integer max = (Integer) list.get(1);
+		final Integer min = f.get(0);
+		final Integer max = f.get(1);
 
-		if (min == null || max == null) {
-			log.warn("Encountered incomplete range, treating it as an open range. Either min or max was null: {}", list);
-		}
 		// Compute minString first because we need it either way
 		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : datePrinter.apply(min);
 

@@ -4,10 +4,10 @@ import java.util.Objects;
 
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 
-public record ToStringPrinter(Printer delegate) implements Printer {
+public record ToStringPrinter<T>(Printer<T> delegate) implements Printer<T> {
 
 	@Override
-	public Object apply(Object value) {
+	public Object apply(T value) {
 		return Objects.toString(delegate.apply(value));
 	}
 }

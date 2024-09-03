@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.BooleanStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DateRangeStringPrinter;
@@ -16,42 +18,42 @@ public class StringResultPrinters extends PrinterFactory {
 
 
 	@Override
-	public Printer getListPrinter(Printer elementPrinter, PrintSettings printSettings) {
-		return new ListStringPrinter(elementPrinter, printSettings);
+	public <T> Printer<List<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
+		return new ListStringPrinter<>(elementPrinter, printSettings);
 	}
 
 	@Override
-	public Printer getBooleanPrinter(PrintSettings printSettings) {
+	public Printer<Boolean> getBooleanPrinter(PrintSettings printSettings) {
 		return BooleanStringPrinter.create(printSettings);
 	}
 
 	@Override
-	public Printer getIntegerPrinter(PrintSettings printSettings) {
+	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
 		return new IntegerStringPrinter(printSettings);
 	}
 
 	@Override
-	public Printer getNumericPrinter(PrintSettings printSettings) {
+	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
 		return new NumericStringPrinter(printSettings);
 	}
 
 	@Override
-	public Printer getDatePrinter(PrintSettings printSettings) {
+	public Printer<Number> getDatePrinter(PrintSettings printSettings) {
 		return new DateStringPrinter(printSettings);
 	}
 
 	@Override
-	public Printer getDateRangePrinter(PrintSettings printSettings) {
+	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
 		return new DateRangeStringPrinter(printSettings);
 	}
 
 	@Override
-	public Printer getStringPrinter(PrintSettings printSettings) {
+	public Printer<String> getStringPrinter(PrintSettings printSettings) {
 		return new StringPrinter();
 	}
 
 	@Override
-	public Printer getMoneyPrinter(PrintSettings printSettings) {
+	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
 		return new MoneyStringPrinter(printSettings);
 	}
 

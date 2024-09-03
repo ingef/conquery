@@ -14,7 +14,7 @@ public class ExcelResultPrinters extends StringResultPrinters {
 
 	private final PrinterFactory partialDelegate = new StringResultPrinters();
 
-	public Printer printerFor(ResultType type, PrintSettings printSettings) {
+	public Printer<?> printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
 			final Printer elementPrinter = partialDelegate.printerFor(listT.getElementType(), printSettings);
 			return getListPrinter(elementPrinter, printSettings);
@@ -32,28 +32,28 @@ public class ExcelResultPrinters extends StringResultPrinters {
 	}
 
 	@Override
-	public Printer getBooleanPrinter(PrintSettings printSettings) {
-		return new IdentityPrinter();
+	public Printer<Boolean> getBooleanPrinter(PrintSettings printSettings) {
+		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer getNumericPrinter(PrintSettings printSettings) {
-		return new IdentityPrinter();
+	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
+		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer getMoneyPrinter(PrintSettings printSettings) {
-		return new IdentityPrinter();
+	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
+		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer getDatePrinter(PrintSettings printSettings) {
+	public Printer<Number> getDatePrinter(PrintSettings printSettings) {
 		return new DatePrinter();
 	}
 
 	@Override
-	public Printer getIntegerPrinter(PrintSettings printSettings) {
-		return new IdentityPrinter();
+	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
+		return new IdentityPrinter<>();
 	}
 
 }

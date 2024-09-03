@@ -6,15 +6,13 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 
-public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer {
+public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer<Integer> {
 
 	@Override
-	public String apply(Object rawValue) {
-		if (rawValue == null) {
+	public String apply(Integer localId) {
+		if (localId == null) {
 			return null;
 		}
-
-		final int localId = (int) rawValue;
 
 		final ConceptTreeNode<?> node = ((TreeConcept) concept).getElementByLocalId(localId);
 

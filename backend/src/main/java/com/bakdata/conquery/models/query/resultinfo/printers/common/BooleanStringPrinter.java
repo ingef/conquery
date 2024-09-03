@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 
-public record BooleanStringPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer {
+public record BooleanStringPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer<Boolean> {
 
 	public static BooleanStringPrinter create(PrintSettings settings) {
 		if (!settings.isPrettyPrint()) {
@@ -18,11 +18,7 @@ public record BooleanStringPrinter(PrintSettings cfg, String trueVal, String fal
 
 
 	@Override
-	public String apply(Object f) {
-		if ((Boolean) f) {
-			return trueVal;
-		}
-		return falseVal;
-
+	public String apply(Boolean f) {
+		return f ? trueVal : falseVal;
 	}
 }
