@@ -119,7 +119,6 @@ public class ExcelResultRenderTest {
 		final XSSFSheet sheet = workbook.getSheetAt(0);
 
 		final List<String> computed = new ArrayList<>();
-		int i = 0;
 		for (Row row : sheet) {
 			final StringJoiner sj = new StringJoiner("\t");
 			final DataFormatter formatter = new DataFormatter(settings.getLocale());
@@ -135,7 +134,6 @@ public class ExcelResultRenderTest {
 				sj.add(formatted);
 			}
 			computed.add(sj.toString());
-			i++;
 		}
 		return computed;
 	}
@@ -175,14 +173,8 @@ public class ExcelResultRenderTest {
 		final Printer printer = info.createPrinter(printSettings);
 
 		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
-			/*
-			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
-			 */
+			// Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
 			return (Boolean) val ? "TRUE" : "FALSE";
-		}
-
-		if (info.getType().equals(ResultType.Primitive.MONEY)) {
-			return printer.apply(val) + " €";
 		}
 
 		return Objects.toString(printer.apply(val));

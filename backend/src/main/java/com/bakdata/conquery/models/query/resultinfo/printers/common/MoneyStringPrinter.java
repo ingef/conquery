@@ -9,7 +9,7 @@ public record MoneyStringPrinter(PrintSettings cfg) implements Printer {
 	public String apply(Object f) {
 
 		if (cfg.isPrettyPrint()) {
-			return cfg.getDecimalFormat().format(f);
+			return cfg.getCurrencyFormat().format(f);
 		}
 
 		return f.toString();
