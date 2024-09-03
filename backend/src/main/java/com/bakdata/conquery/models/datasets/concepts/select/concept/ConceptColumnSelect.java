@@ -46,7 +46,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAsIds()) {
 			return printerFactory.getListPrinter(new ConceptIdPrinter(getHolder().findConcept(), printSettings), printSettings);
 		}

@@ -10,7 +10,9 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -80,14 +82,15 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		return consumers;
 	}
 
-	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings) {
+	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings,
+														PrinterFactory printerFactory) {
 		final List<Printer> consumers = new ArrayList<>();
 		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(idHeader.createPrinter(printSettings));
+			consumers.add(idHeader.createPrinter(printerFactory, printSettings));
 		}
 
 		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(resultInfo.createPrinter(printSettings));
+			consumers.add(resultInfo.createPrinter(printerFactory, printSettings));
 		}
 		return consumers;
 	}
@@ -112,7 +115,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	public WriteContext init(Configuration configuration) {
 		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		columnConsumers = generateColumnConsumers(idHeaders, resultInfo);
-		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings);
+		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings, new ArrowResultPrinters());
 		return new WriteContext(schema, Map.of());
 	}
 

@@ -20,10 +20,8 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
@@ -56,9 +54,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
 		SingleTableResult executionResult = (SingleTableResult) execution;
-
-		//check result info size
-		PrintSettings printSettings = new PrintSettings(true, Locale.ROOT, standaloneSupport.getNamespace(), standaloneSupport.getConfig(), null, null, new StringResultPrinters());
 
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 

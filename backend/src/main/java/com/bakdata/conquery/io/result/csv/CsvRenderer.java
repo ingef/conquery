@@ -10,6 +10,8 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +32,12 @@ public class CsvRenderer {
 
 		writer.writeHeaders(headers);
 
-		createCSVBody(cfg, infos, resultStream, printSettings);
+		createCSVBody(cfg, infos, resultStream, printSettings, new StringResultPrinters());
 	}
 
-	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings) {
-		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printSettings)).toArray(Printer[]::new);
+	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings,
+							   PrinterFactory printerFactory) {
+		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toArray(Printer[]::new);
 
 		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
 			   .sorted(Map.Entry.comparingByKey())

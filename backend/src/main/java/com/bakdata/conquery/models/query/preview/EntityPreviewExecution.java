@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.JsonResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -61,125 +62,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset, storage);
-	}
-
-	/**
-	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 */
-	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
-		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
-
-		for (Object[] line : entityResult.listResultLines()) {
-			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.QUARTERS) {
-				continue;
-			}
-
-			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
-
-			final int year = date.getYear();
-			final int quarter = QuarterUtils.getQuarter(date);
-
-			quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
-		}
-
-		return quarterLines;
-	}
-
-	/**
-	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 */
-	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
-
-		final Map<Integer, Object[]> yearLines = new HashMap<>();
-
-		for (Object[] line : entityResult.listResultLines()) {
-
-			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.YEARS) {
-				continue;
-			}
-
-			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
-
-			final int year = date.getYear();
-
-			yearLines.put(year, line);
-		}
-
-		return yearLines;
-	}
-
-	/**
-	 * Creates a transformer printing lines, transformed into a Map of label->value.
-	 * Null values are omitted.
-	 */
-	private static Function<Object[], Map<String, Object>> createLineToMapTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
-
-
-		final int size = resultInfos.size();
-		final String[] columnNames = new String[size];
-		final Printer[] printers = new Printer[size];
-
-		for (int index = 0; index < size; index++) {
-			final ResultInfo resultInfo = resultInfos.get(index);
-
-			if (resultInfo instanceof SelectResultInfo selectResultInfo) {
-				columnNames[index] = select2desc.get(selectResultInfo.getSelect().getId()).label();
-			}
-
-			printers[index] = resultInfo.createPrinter(printSettings);
-		}
-
-		return line -> {
-			final Map<String, Object> out = new HashMap<>(size);
-
-			for (int column = 0; column < size; column++) {
-				final String columnName = columnNames[column];
-
-				if (columnName == null) {
-					continue;
-				}
-
-				if (line[column] == null) {
-					continue;
-				}
-
-				final Object value = printers[column].apply(line[column]);
-
-				out.put(columnName, value);
-			}
-
-			return out;
-		};
-	}
-
-
-
-	/**
-	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
-	 */
-	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
-
-		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
-
-		for (ResultInfo info : query.getResultInfos()) {
-			if (info instanceof SelectResultInfo selectResultInfo) {
-				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
-
-				// We build these by hand because they are labeled and described by config.
-				columnDescriptions.add(ColumnDescriptor.builder()
-													   .label(desc.label())
-													   .defaultLabel(desc.label())
-													   .type(info.getType().typeInfo())
-													   .semantics(info.getSemantics())
-													   .description((desc.description() != null) ? desc.description() : selectResultInfo.getDescription()) // both might be null
-													   .build());
-			}
-		}
-
-
-		return columnDescriptions;
 	}
 
 	@Override
@@ -209,24 +91,35 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		status.setQuery(getValuesQuery().getQuery());
 
 
-		final PrintSettings infoSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters());
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings));
+		JsonResultPrinters printers = new JsonResultPrinters();
+		final PrintSettings infoSettings =
+				new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings, printers));
 
-		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel, new JsonResultPrinters());
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), stratifiedSettings));
+		final PrintSettings stratifiedSettings =
+				new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), stratifiedSettings, printers));
 
 		return status;
+	}
+
+	@JsonIgnore
+	private ManagedQuery getValuesQuery() {
+		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	/**
 	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, PrintSettings printSettings) {
+	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(
+			ManagedQuery infoCardExecution, PrintSettings printSettings,
+			PrinterFactory printerFactory) {
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
+		final MultilineEntityResult result =
+				(MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
@@ -235,7 +128,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
 			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 
-			final Object printed = resultInfo.createPrinter(printSettings).apply(values[index]);
+			final Object printed = resultInfo.createPrinter(printerFactory, printSettings).apply(values[index]);
 
 			extraInfos.add(new EntityPreviewStatus.Info(
 					resultInfo.userColumnName(printSettings),
@@ -255,7 +148,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(
+			PreviewConfig previewConfig,
+			Map<String, ManagedQuery> subQueries,
+			PrintSettings printSettings, PrinterFactory printers) {
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
@@ -268,7 +164,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer =
+					createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings, printers);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
@@ -279,12 +176,63 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 			final EntityPreviewStatus.TimeStratifiedInfos
 					infos =
-					new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, lineTransformer.apply(completeResult), yearEntries);
+					new EntityPreviewStatus.TimeStratifiedInfos(description.label(),
+																description.description(),
+																columnDescriptors,
+																lineTransformer.apply(completeResult),
+																yearEntries
+					);
 
 			timeStratifiedInfos.add(infos);
 		}
 
 		return timeStratifiedInfos;
+	}
+
+	/**
+	 * Creates a transformer printing lines, transformed into a Map of label->value.
+	 * Null values are omitted.
+	 */
+	private static Function<Object[], Map<String, Object>> createLineToMapTransformer(
+			List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings,
+			PrinterFactory printerFactory) {
+
+
+		final int size = resultInfos.size();
+		final String[] columnNames = new String[size];
+		final Printer[] printers = new Printer[size];
+
+		for (int index = 0; index < size; index++) {
+			final ResultInfo resultInfo = resultInfos.get(index);
+
+			if (resultInfo instanceof SelectResultInfo selectResultInfo) {
+				columnNames[index] = select2desc.get(selectResultInfo.getSelect().getId()).label();
+			}
+
+			printers[index] = resultInfo.createPrinter(printerFactory, printSettings);
+		}
+
+		return line -> {
+			final Map<String, Object> out = new HashMap<>(size);
+
+			for (int column = 0; column < size; column++) {
+				final String columnName = columnNames[column];
+
+				if (columnName == null) {
+					continue;
+				}
+
+				if (line[column] == null) {
+					continue;
+				}
+
+				final Object value = printers[column].apply(line[column]);
+
+				out.put(columnName, value);
+			}
+
+			return out;
+		};
 	}
 
 	@NotNull
@@ -321,6 +269,81 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		throw new IllegalStateException("Result has no row for COMPLETE");
 	}
 
+	/**
+	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
+	 */
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+
+		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+
+		for (ResultInfo info : query.getResultInfos()) {
+			if (info instanceof SelectResultInfo selectResultInfo) {
+				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
+
+				// We build these by hand because they are labeled and described by config.
+				columnDescriptions.add(ColumnDescriptor.builder()
+													   .label(desc.label())
+													   .defaultLabel(desc.label())
+													   .type(info.getType().typeInfo())
+													   .semantics(info.getSemantics())
+													   .description((desc.description() != null)
+																	? desc.description()
+																	: selectResultInfo.getDescription()) // both might be null
+													   .build());
+			}
+		}
+
+
+		return columnDescriptions;
+	}
+
+	/**
+	 * Query contains both YEARS and QUARTERS lines: Group them.
+	 */
+	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
+
+		final Map<Integer, Object[]> yearLines = new HashMap<>();
+
+		for (Object[] line : entityResult.listResultLines()) {
+
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.YEARS) {
+				continue;
+			}
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+
+			final int year = date.getYear();
+
+			yearLines.put(year, line);
+		}
+
+		return yearLines;
+	}
+
+	/**
+	 * Query contains both YEARS and QUARTERS lines: Group them.
+	 */
+	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
+		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
+
+		for (Object[] line : entityResult.listResultLines()) {
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.QUARTERS) {
+				continue;
+			}
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+
+			final int year = date.getYear();
+			final int quarter = QuarterUtils.getQuarter(date);
+
+			quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
+		}
+
+		return quarterLines;
+	}
+
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
@@ -348,11 +371,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		return descriptors;
-	}
-
-	@JsonIgnore
-	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	@Override

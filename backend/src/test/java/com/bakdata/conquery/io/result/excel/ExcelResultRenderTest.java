@@ -27,8 +27,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -63,8 +63,7 @@ public class ExcelResultRenderTest {
 															  null,
 															  CONFIG,
 															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-															  (selectInfo) -> selectInfo.getSelect().getLabel(),
-															  new ExcelResultPrinters()
+															  (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
@@ -101,10 +100,9 @@ public class ExcelResultRenderTest {
 														   null,
 														   CONFIG,
 														   (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-														   (selectInfo) -> selectInfo.getSelect().getLabel(),
-														   new StringResultPrinters()
+														   (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings);
+		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings, new StringResultPrinters());
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -139,7 +137,8 @@ public class ExcelResultRenderTest {
 	}
 
 
-	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings) {
+	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings,
+											 PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream().map(EntityResult.class::cast).forEach(res -> {
@@ -154,7 +153,7 @@ public class ExcelResultRenderTest {
 					final Object val = line[lIdx];
 
 					final ResultInfo info = resultInfos.get(lIdx);
-					final String printed = printValue(val, info, printSettings);
+					final String printed = printValue(val, info, printSettings, printerFactory);
 
 					valueJoiner.add(printed);
 				}
@@ -165,12 +164,12 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-	private String printValue(Object val, ResultInfo info, PrintSettings printSettings) {
+	private String printValue(Object val, ResultInfo info, PrintSettings printSettings, PrinterFactory printerFactory) {
 		if (val == null) {
 			return "null";
 		}
 
-		final Printer printer = info.createPrinter(printSettings);
+		final Printer printer = info.createPrinter(printerFactory, printSettings);
 
 		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
 			// Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans

@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -35,7 +36,8 @@ import org.jetbrains.annotations.NotNull;
 public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
-	public static ResultStatistics collectResultStatistics(SingleTableResult managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, Optional<Integer> dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig) {
+	public static ResultStatistics collectResultStatistics(SingleTableResult managedQuery, List<ResultInfo> resultInfos, Optional<ResultInfo> dateInfo, Optional<Integer> dateIndex, PrintSettings printSettings, UniqueNamer uniqueNamer, ConqueryConfig conqueryConfig,
+														   PrinterFactory printerFactory) {
 
 
 		//TODO pull inner executor service from ManagerNode
@@ -73,7 +75,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 							 final StopWatch started = StopWatch.createStarted();
 
 							 final ResultInfo info = resultInfos.get(col);
-							 final Printer printer = info.createPrinter(printSettings);
+							 final Printer printer = info.createPrinter(printerFactory, printSettings);
 							 final ColumnStatsCollector statsCollector =
 									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings), info.getDescription(), info.getType(), printSettings, conqueryConfig.getFrontend());
 

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -40,13 +41,14 @@ public class CsvResultGenerationTest {
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
+		StringResultPrinters printers = new StringResultPrinters();
 		final PrintSettings printSettings = new PrintSettings(
 				true,
 				Locale.GERMAN,
 				null,
 				CONFIG,
 				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel(), new StringResultPrinters()
+				(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
@@ -62,7 +64,7 @@ public class CsvResultGenerationTest {
 		final String computed = writer.toString();
 
 
-		final String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings);
+		final String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings, printers);
 
 		log.info("Wrote and than read this csv data: {}", computed);
 
@@ -71,7 +73,7 @@ public class CsvResultGenerationTest {
 
 	}
 
-	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings) {
+	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
 		expected.add(getIdFields().stream().map(info -> info.defaultColumnName(printSettings)).collect(Collectors.joining(","))
 					 + ","
@@ -92,7 +94,7 @@ public class CsvResultGenerationTest {
 							   continue;
 						   }
 						   final ResultInfo info = resultInfos.get(lIdx);
-						   final String printVal = (String) info.createPrinter(printSettings).apply(val);
+						   final String printVal = (String) info.createPrinter(printerFactory, printSettings).apply(val);
 						   valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter())) ? "\"" + printVal + "\"" : printVal);
 					   }
 

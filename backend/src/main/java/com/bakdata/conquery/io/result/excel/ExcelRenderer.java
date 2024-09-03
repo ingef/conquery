@@ -21,7 +21,9 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableMap;
@@ -72,7 +74,7 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table, printSettings);
 
-			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
+			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))), new ExcelResultPrinters());
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
@@ -171,12 +173,12 @@ public class ExcelRenderer {
 	private int writeBody(
 			SXSSFSheet sheet,
 			List<ResultInfo> infos,
-			Stream<EntityResult> resultLines) {
+			Stream<EntityResult> resultLines, PrinterFactory printerFactory) {
 
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
 
-		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.createPrinter(settings), settings)).toArray(TypeWriter[]::new);
+		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
 		final PrintIdMapper idMapper = settings.getIdMapper();
 
 		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();

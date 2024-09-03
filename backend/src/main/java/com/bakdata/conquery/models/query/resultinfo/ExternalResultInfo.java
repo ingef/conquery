@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +38,7 @@ public class ExternalResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings) {
-		return printSettings.getPrinterFactory().printerFor(type, printSettings);
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		return printerFactory.printerFor(type, printSettings);
 	}
 }

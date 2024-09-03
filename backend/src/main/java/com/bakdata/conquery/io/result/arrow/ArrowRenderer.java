@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class ArrowRenderer {
 			ArrowConfig arrowConfig,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> resultInfo,
-			Stream<EntityResult> results) throws IOException {
+			Stream<EntityResult> results, PrinterFactory printerFactory) throws IOException {
 
 		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		final VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
@@ -60,11 +61,11 @@ public class ArrowRenderer {
 		final List<Printer> printers = new ArrayList<>();
 
 		for (ResultInfo header : idHeaders) {
-			printers.add(header.createPrinter(printSettings));
+			printers.add(header.createPrinter(printerFactory, printSettings));
 		}
 
 		for (ResultInfo info : resultInfo) {
-			printers.add(info.createPrinter(printSettings));
+			printers.add(info.createPrinter(printerFactory, printSettings));
 		}
 
 		// Write the data

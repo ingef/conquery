@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -77,6 +76,25 @@ public class FormTest extends ConqueryTestSpec {
 	@JsonIgnore
 	private Form form;
 
+	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		if (rawConcepts == null) {
+			return;
+		}
+
+		Dataset dataset = support.getDataset();
+
+		List<Concept<?>> concepts = parseSubTreeList(
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset())
+		);
+
+		for (Concept<?> concept : concepts) {
+			LoadingUtil.uploadConcept(support, dataset, concept);
+		}
+	}
+
 	@ValidationMethod(message = "Form test defines no concepts. Neither explicit nor automatic concepts")
 	public boolean isWithConcepts() {
 		return rawConcepts != null || content.isAutoConcept();
@@ -87,6 +105,10 @@ public class FormTest extends ConqueryTestSpec {
 		support.getTestImporter().importFormTestData(support, this);
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
+	}
+
+	private Form parseForm(StandaloneSupport support) throws JSONException, IOException {
+		return parseSubTree(support, rawForm, Form.class);
 	}
 
 	@Override
@@ -131,9 +153,42 @@ public class FormTest extends ConqueryTestSpec {
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				printSettings =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null, new StringResultPrinters());
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
 
 		checkSingleResult(managedForm, config, printSettings);
+
+	}
+
+	/**
+	 * The form produces only one result, so the result is directly requested.
+	 *
+	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
+	 */
+	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+			throws IOException {
+
+
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+			final CsvWriter writer = config.getCsv().createWriter(output);
+			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
+
+			renderer.toCSV(
+					config.getIdColumns().getIdResultInfos(),
+					managedForm.getResultInfos(),
+					managedForm.streamResults(OptionalLong.empty()), printSettings
+			);
+
+			writer.close();
+
+			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
+					.containsExactlyInAnyOrderElementsOf(
+							In.stream(expectedCsv.values().iterator().next().stream())
+							  .withUTF8()
+							  .readLines()
+					);
+		}
+
 
 	}
 
@@ -172,62 +227,5 @@ public class FormTest extends ConqueryTestSpec {
 							  .readLines()
 					);
 		}
-	}
-
-	/**
-	 * The form produces only one result, so the result is directly requested.
-	 *
-	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
-	 */
-	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
-			throws IOException {
-
-
-		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-			final CsvWriter writer = config.getCsv().createWriter(output);
-			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
-
-			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(),
-					managedForm.getResultInfos(),
-					managedForm.streamResults(OptionalLong.empty()), printSettings
-			);
-
-			writer.close();
-
-			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
-					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
-					.containsExactlyInAnyOrderElementsOf(
-							In.stream(expectedCsv.values().iterator().next().stream())
-							  .withUTF8()
-							  .readLines()
-					);
-		}
-
-
-	}
-
-	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
-		if (rawConcepts == null) {
-			return;
-		}
-
-		Dataset dataset = support.getDataset();
-
-		List<Concept<?>> concepts = parseSubTreeList(
-				support,
-				rawConcepts,
-				Concept.class,
-				c -> c.setDataset(support.getDataset())
-		);
-
-		for (Concept<?> concept : concepts) {
-			LoadingUtil.uploadConcept(support, dataset, concept);
-		}
-	}
-
-
-	private Form parseForm(StandaloneSupport support) throws JSONException, IOException {
-		return parseSubTree(support, rawForm, Form.class);
 	}
 }

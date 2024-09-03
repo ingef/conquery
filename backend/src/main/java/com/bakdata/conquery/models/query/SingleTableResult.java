@@ -24,7 +24,7 @@ public interface SingleTableResult {
 
 		final Locale locale = I18n.LOCALE.get();
 		// The printer is never used to generate results. But downstream code might touch them
-		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null,null);
+		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(settings);
 

@@ -56,9 +56,9 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (mapping == null) {
-			return super.createPrinter(printSettings, printerFactory);
+			return super.createPrinter(printerFactory, printSettings);
 		}
 
 		return new MappedPrinter(getMapping());

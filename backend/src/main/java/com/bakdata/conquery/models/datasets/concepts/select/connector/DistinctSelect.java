@@ -42,9 +42,9 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if(getMapping() == null){
-			return super.createPrinter(printSettings, printerFactory);
+			return super.createPrinter(printerFactory, printSettings);
 		}
 
 		return printerFactory.getListPrinter(new MappedPrinter(getMapping()), printSettings);

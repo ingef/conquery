@@ -579,7 +579,7 @@ public class QueryProcessor {
 
 
 		final PrintSettings printSettings =
-				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat, new JavaResultPrinters());
+				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
@@ -590,7 +590,15 @@ public class QueryProcessor {
 
 		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
-		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
+		return ResultStatistics.collectResultStatistics(managedQuery,
+														resultInfos,
+														dateInfo,
+														dateIndex,
+														printSettings,
+														uniqueNamer,
+														config,
+														new JavaResultPrinters()
+		);
 	}
 
 }

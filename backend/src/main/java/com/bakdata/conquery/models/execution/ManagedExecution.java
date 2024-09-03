@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -50,6 +48,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -160,7 +160,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null));
 			}
 			this.config = config;
 			this.namespace = namespace;

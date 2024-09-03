@@ -129,7 +129,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return false;
 	}
 
-	public Printer createPrinter(PrintSettings printSettings, PrinterFactory printerFactory) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return printerFactory.printerFor(getResultType(), printSettings);
 	}
 }

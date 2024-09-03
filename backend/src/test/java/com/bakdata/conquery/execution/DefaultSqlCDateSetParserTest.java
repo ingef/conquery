@@ -19,7 +19,7 @@ class DefaultSqlCDateSetParserTest {
 	private static final DefaultSqlCDateSetParser parser = new DefaultSqlCDateSetParser();
 	private static final StringResultPrinters csvResultPrinters = new StringResultPrinters();
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null, csvResultPrinters);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
 
 	@ParameterizedTest
 	@MethodSource("testToEpochDayRangeListProvider")

@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.LocalizedEnumPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -74,7 +75,7 @@ public class ResultHeaders {
 
 		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of()) {
 			@Override
-			public Printer createPrinter(PrintSettings printSettings) {
+			public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 				return new LocalizedEnumPrinter<>(printSettings, Resolution.class);
 			}
 
@@ -99,7 +100,7 @@ public class ResultHeaders {
 
 		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of()) {
 			@Override
-			public Printer createPrinter(PrintSettings printSettings) {
+			public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 				return new LocalizedEnumPrinter<>(printSettings, FeatureGroup.class);
 			}
 

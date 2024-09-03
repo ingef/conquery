@@ -5,6 +5,7 @@ import java.util.Set;
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
@@ -45,8 +46,8 @@ public abstract class FixedLabelResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings) {
-		return printSettings.getPrinterFactory().printerFor(getType(), printSettings);
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		return printerFactory.printerFor(getType(), printSettings);
 	}
 
 	@Override

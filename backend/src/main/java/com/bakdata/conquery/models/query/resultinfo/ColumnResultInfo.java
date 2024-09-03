@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ConceptIdPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.EqualsAndHashCode;
@@ -42,11 +43,11 @@ public class ColumnResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Printer createPrinter(PrintSettings printSettings) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if(concept != null){
 			return new ConceptIdPrinter(concept, printSettings);
 		}
-		return printSettings.getPrinterFactory().printerFor(type, printSettings);
+		return printerFactory.printerFor(type, printSettings);
 	}
 
 }

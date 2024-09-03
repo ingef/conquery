@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -27,9 +28,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ResultTypeTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null, null, new StringResultPrinters());
-	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null, new StringResultPrinters());
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null, new StringResultPrinters());
+	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null, null);
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
+
+	private static PrinterFactory PRINTERS = new StringResultPrinters();
 
 	static {
 		// Initialization of the internationalization
@@ -38,6 +41,7 @@ public class ResultTypeTest {
 		CONFIG.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
 		CONFIG.getLocale().setDateFormatMapping(Map.of(Locale.GERMAN, "dd.MM.yyyy"));
 	}
+
 
 	@SuppressWarnings("unused")
 	public static List<Arguments> testData() {
@@ -106,7 +110,8 @@ public class ResultTypeTest {
 	public void testPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
 		ResultInfo info = info(type);
 
-		final Printer printer = info.createPrinter(printSettings);
+
+		final Printer printer = info.createPrinter(PRINTERS, printSettings);
 
 		assertThat(printer.apply(value)).isEqualTo(expected);
 
@@ -125,7 +130,7 @@ public class ResultTypeTest {
 	public void testBinaryPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
 		ResultInfo info = info(type);
 
-		final Printer printer = info.createPrinter(printSettings);
+		final Printer printer = info.createPrinter(PRINTERS, printSettings);
 		assertThat(printer.apply(value)).isEqualTo(expected);
 
 		final byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(value);
