@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -96,6 +95,7 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
@@ -850,7 +850,8 @@ public class SerializationTests extends AbstractSerializationTest {
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 		mapper.setStorage(getNamespaceStorage());

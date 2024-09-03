@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.index;
 
+import java.util.Collection;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -15,6 +17,10 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 	void init();
 
 	String external(String internalValue);
+	Collection<String> externalMultiple(String internalValue);
+
+	boolean isAllowMultiple();
+
 
 	@Override
 	InternToExternMapperId getId();

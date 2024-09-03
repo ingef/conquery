@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -45,6 +46,10 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
+		if (mapping.isAllowMultiple()) {
+			return printerFactory.getListPrinter(new MultiMappedPrinter(getMapping()), printSettings);
+		}
+
 		return new MappedPrinter(getMapping());
 	}
 
@@ -63,12 +68,25 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		if (mapping == null) {
 			return ResultType.resolveResultType(getColumn().getType());
 		}
+
+		if (mapping.isAllowMultiple()) {
+			return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		}
+
 		return ResultType.Primitive.STRING;
 	}
 
 	public void loadMapping() {
 		if (mapping != null) {
 			mapping.init();
+		}
+	}
+
+	private record MultiMappedPrinter(InternToExternMapper mapper) implements Printer<String> {
+
+		@Override
+		public Collection<String> apply(String f) {
+			return mapper.externalMultiple(f);
 		}
 	}
 }

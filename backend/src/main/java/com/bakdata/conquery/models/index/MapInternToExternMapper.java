@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,36 +37,10 @@ import org.jetbrains.annotations.TestOnly;
 @ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
 @Getter
-@JsonDeserialize(converter = MapInternToExternMapper.Initializer.class )
+@JsonDeserialize(converter = MapInternToExternMapper.Initializer.class)
 @EqualsAndHashCode(callSuper = true)
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId>, Initializing {
 
-
-	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
-	@JsonIgnore
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@Setter(onMethod_ = @TestOnly)
-	@EqualsAndHashCode.Exclude
-	private IndexService mapIndex;
-
-	@JsonIgnore
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@Setter(onMethod_ = @TestOnly)
-	@EqualsAndHashCode.Exclude
-	private ConqueryConfig config;
-
-	@JsonIgnore
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@Setter(onMethod_ = @TestOnly)
-	@EqualsAndHashCode.Exclude
-	private NamespaceStorage storage;
-
-	@JsonIgnore
-	@NotNull
-	private Dataset dataset;
 
 	@ToString.Include
 	@NotEmpty
@@ -78,8 +54,30 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@ToString.Include
 	@NotEmpty
 	private final String externalTemplate;
-
-
+	@ToString.Include
+	private final boolean allowMultiple;
+	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
+	private IndexService mapIndex;
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
+	private ConqueryConfig config;
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@Setter(onMethod_ = @TestOnly)
+	@EqualsAndHashCode.Exclude
+	private NamespaceStorage storage;
+	@JsonIgnore
+	@NotNull
+	private Dataset dataset;
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
@@ -116,6 +114,32 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		});
 	}
 
+	@Override
+	public String external(String internalValue) {
+		return externalMultiple(internalValue).iterator().next();
+	}
+
+	@Override
+	public Collection<String> externalMultiple(String internalValue) {
+		if (!initialized()) {
+			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
+			return List.of(internalValue);
+		}
+
+		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
+			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
+			return List.of(internalValue);
+		}
+
+		try {
+			return int2ext.get().get(internalValue, internalValue);
+		}
+		catch (InterruptedException | ExecutionException e) {
+			// Should never be reached
+			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, (Exception) (log.isTraceEnabled() ? e : null));
+			return List.of(internalValue);
+		}
+	}
 
 	@Override
 	public boolean initialized() {
@@ -123,30 +147,10 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	}
 
 	@Override
-	public String external(String internalValue) {
-		if(!initialized()){
-			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
-			return internalValue;
-		}
-
-		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
-			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
-			return internalValue;
-		}
-
-		try {
-			return int2ext.get().getOrDefault(internalValue, internalValue);
-		} catch (InterruptedException | ExecutionException e) {
-			// Should never be reached
-			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, (Exception) (log.isTraceEnabled() ? e : null));
-			return internalValue;
-		}
-	}
-
-	@Override
 	public InternToExternMapperId createId() {
 		return new InternToExternMapperId(getDataset().getId(), getName());
 	}
 
-	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {}
+	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {
+	}
 }

@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
@@ -11,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -47,6 +50,23 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return printerFactory.getListPrinter(new MappedPrinter(getMapping()), printSettings);
+		return printerFactory.getListPrinter(new MultiMappedDistinctPrinter(getMapping()), printSettings);
+	}
+
+	/**
+	 * Ensures that mapped values are still distinct.
+	 */
+	private record MultiMappedDistinctPrinter(InternToExternMapper mapper) implements Printer<Collection<String>> {
+
+		@Override
+		public Object apply(Collection<String> values) {
+			final Set<String> out = new HashSet<>();
+
+			for (String value : values) {
+				out.addAll(mapper.externalMultiple(value));
+			}
+
+			return out;
+		}
 	}
 }
