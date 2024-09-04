@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
@@ -16,7 +17,7 @@ public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSetting
 	}
 
 	@Override
-	public String apply(List<Integer> f) {
+	public String apply(@NotNull List<Integer> f) {
 		Preconditions.checkArgument(f.size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
 
 		final Integer min = f.get(0);

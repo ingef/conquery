@@ -4,6 +4,7 @@ import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import org.jetbrains.annotations.NotNull;
 
 public record BooleanStringPrinter(PrintSettings cfg, String trueVal, String falseVal) implements Printer<Boolean> {
 
@@ -18,7 +19,7 @@ public record BooleanStringPrinter(PrintSettings cfg, String trueVal, String fal
 
 
 	@Override
-	public String apply(Boolean f) {
+	public String apply(@NotNull Boolean f) {
 		return f ? trueVal : falseVal;
 	}
 }

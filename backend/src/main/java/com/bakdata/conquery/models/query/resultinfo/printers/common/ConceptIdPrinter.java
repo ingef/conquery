@@ -5,11 +5,12 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import org.jetbrains.annotations.NotNull;
 
 public record ConceptIdPrinter(Concept concept, PrintSettings cfg) implements Printer<Integer> {
 
 	@Override
-	public String apply(Integer localId) {
+	public String apply(@NotNull Integer localId) {
 		if (localId == null) {
 			return null;
 		}

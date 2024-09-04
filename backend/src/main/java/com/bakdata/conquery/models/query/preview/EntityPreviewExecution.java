@@ -126,7 +126,16 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
 			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 
-			final Object printed = resultInfo.createPrinter(printerFactory, printSettings).apply(values[index]);
+			final Object value = values[index];
+			final Object printed;
+
+			if (value == null) {
+				printed = null;
+			}
+			else {
+				Printer printer = resultInfo.createPrinter(printerFactory, printSettings);
+				printed = printer.apply(value);
+			}
 
 			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings),
 														printed,

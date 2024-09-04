@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DatePrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrinter;
+import org.jetbrains.annotations.NotNull;
 
 public class JavaResultPrinters extends PrinterFactory {
 
@@ -54,7 +55,7 @@ public class JavaResultPrinters extends PrinterFactory {
 	private record ListPrinter<T>(Printer<T> elementPrinter) implements Printer<List<T>> {
 
 		@Override
-		public Object apply(List<T> value) {
+		public Object apply(@NotNull List<T> value) {
 			final List<Object> out = new ArrayList<>(value.size());
 
 			for (T elt : value) {
@@ -68,7 +69,7 @@ public class JavaResultPrinters extends PrinterFactory {
 	private record DateRangePrinter() implements Printer<List<Integer>> {
 
 		@Override
-		public Object apply(List<Integer> f) {
+		public Object apply(@NotNull List<Integer> f) {
 			return CDateRange.of(f.get(0), f.get(1));
 		}
 	}
