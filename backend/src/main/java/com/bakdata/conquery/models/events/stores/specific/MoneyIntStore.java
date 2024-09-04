@@ -15,11 +15,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Data
@@ -30,8 +30,8 @@ public class MoneyIntStore implements MoneyStore, Initializing {
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
 	@EqualsAndHashCode.Exclude
+	@Accessors(fluent = true)
 	private ConqueryConfig config;
 
 	private IntegerStore numberType;

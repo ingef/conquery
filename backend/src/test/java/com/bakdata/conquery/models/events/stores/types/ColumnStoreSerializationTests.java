@@ -54,6 +54,7 @@ public class ColumnStoreSerializationTests {
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
 
 	private static ObjectMapper shardInternalMapper;
+	private static ConqueryConfig config;
 
 	@BeforeAll
 	public static void setupRegistry() {
@@ -61,7 +62,8 @@ public class ColumnStoreSerializationTests {
 
 
 		// Prepare shard node internal mapper
-		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
+		config = new ConqueryConfig();
+		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, Validators.newValidator());
 		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(Workers.class));
 	}
 
@@ -88,7 +90,7 @@ public class ColumnStoreSerializationTests {
 
 		return Arrays.asList(
 				new ScaledDecimalStore(13, IntArrayStore.create(10)),
-				new MoneyIntStore(IntArrayStore.create(10), 2),
+				new MoneyIntStore(IntArrayStore.create(10), 2).config(config),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),
