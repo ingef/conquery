@@ -70,10 +70,16 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
         };
       } else if (cellType === "MONEY") {
         return (value) => {
-          if (value && !isNaN(value as unknown as number)) {
-            return currencyFormatter.format((value as unknown as number) / 100); // MONEY is sent as cent
+          if (!value) {
+            return "";
           }
-          return "";
+
+          const numVal = Number(value);
+          if(isNan(numVal)) {
+            return "";
+          }
+
+          return currencyFormatter.format(value);
         };
       } else if (cellType === "BOOLEAN") {
         return (value) => (value ? t("common.true") : t("common.false"));
