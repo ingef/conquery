@@ -3,21 +3,48 @@ package com.bakdata.conquery.models.events.stores.specific;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Initializing;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Data
 @ToString(of = "numberType")
-public class MoneyIntStore implements MoneyStore {
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+@JsonDeserialize(converter = MoneyIntStore.MoneyIntStoreInitializer.class)
+public class MoneyIntStore implements MoneyStore, Initializing {
 
-	private final IntegerStore numberType;
-	private final int decimalShift; //TODO this might require preprocessing, consider injecting this.
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	@EqualsAndHashCode.Exclude
+	private ConqueryConfig config;
 
+	private IntegerStore numberType;
+
+	@JsonProperty(required = false)
+	private int decimalShift = Integer.MIN_VALUE;
+
+
+	public MoneyIntStore(IntegerStore store, int decimalShift){
+		this();
+		this.numberType = store;
+		this.decimalShift = decimalShift;
+	}
 
 	@Override
 	public int getLines() {
@@ -62,4 +89,16 @@ public class MoneyIntStore implements MoneyStore {
 	public void setParent(Bucket bucket) {
 		// not used
 	}
+
+	@Override
+	public void init() {
+		if (decimalShift != Integer.MIN_VALUE){
+			return;
+		}
+
+		decimalShift = config.getFrontend().getCurrency().getDecimalScale();
+	}
+
+	public static class MoneyIntStoreInitializer extends Initializing.Converter<MoneyIntStore> {}
+
 }
