@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,6 +44,7 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
+import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -345,14 +347,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
-				descriptor.getSemantics().add(new SemanticType.GroupT());
+				descriptor.setSemantics(Sets.union(Set.of(new SemanticType.GroupT()), descriptor.getSemantics()));
 			}
 
 			// Add hidden semantics to fields flagged for hiding.
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
-				descriptor.getSemantics().add(new SemanticType.HiddenT());
+				descriptor.setSemantics(Sets.union(Set.of(new SemanticType.HiddenT()), descriptor.getSemantics()));
 			}
 		}
 
