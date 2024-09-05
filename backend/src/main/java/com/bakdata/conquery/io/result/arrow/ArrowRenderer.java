@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
-import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
@@ -186,14 +184,14 @@ public class ArrowRenderer {
 		};
 	}
 
-	private static RowConsumer moneyVectorFiller(DecimalVector vector) {
+	private static RowConsumer moneyVectorFiller(IntVector vector) {
 		return (rowNumber, valueRaw) -> {
 			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
 
-			final BigDecimal value = (BigDecimal) valueRaw;
+			final int value = (int) valueRaw;
 
 			vector.setSafe(rowNumber, value);
 		};
@@ -313,7 +311,7 @@ public class ArrowRenderer {
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> bitVectorFiller(((BitVector) vector));
 			case INTEGER -> intVectorFiller(((IntVector) vector));
-			case MONEY -> moneyVectorFiller(((DecimalVector) vector));
+			case MONEY -> moneyVectorFiller(((IntVector) vector));
 			case DATE -> dateDayVectorFiller(((DateDayVector) vector));
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));

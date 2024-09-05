@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -39,18 +40,18 @@ public abstract class PrinterFactory {
 	/**
 	 * Jackson will opportunistically read {@link Long} and {@link Integer} hence our usage of Number.
 	 */
-	public abstract Printer<Number> getIntegerPrinter(PrintSettings printSettings);
+	public abstract Printer<? extends Number> getIntegerPrinter(PrintSettings printSettings);
 
-	public abstract Printer<Number> getNumericPrinter(PrintSettings printSettings);
+	public abstract Printer<? extends Number> getNumericPrinter(PrintSettings printSettings);
 
 	/**
 	 * Jackson will opportunistically read {@link Long} and {@link Integer} hence our usage of Number.
 	 */
-	public abstract Printer<Number> getDatePrinter(PrintSettings printSettings);
+	public abstract Printer<? extends Number> getDatePrinter(PrintSettings printSettings);
 
 	public abstract Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings);
 
 	public abstract Printer<String> getStringPrinter(PrintSettings printSettings);
 
-	public abstract Printer<Number> getMoneyPrinter(PrintSettings printSettings);
+	public abstract Printer<BigDecimal> getMoneyPrinter(PrintSettings printSettings);
 }

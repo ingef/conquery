@@ -22,15 +22,15 @@ public class ArrowUtil {
 
 	public static final RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
-	private Field fieldFor(ResultType type, String name, PrintSettings settings) {
+	private Field fieldFor(ResultType type, String name) {
 		if (type instanceof ResultType.ListT<?>) {
-			return ArrowUtil.listField(name, type, settings);
+			return ArrowUtil.listField(name, type);
 		}
 
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> ArrowUtil.boolField(name);
 			case INTEGER -> ArrowUtil.integerField(name);
-			case MONEY -> ArrowUtil.moneyField(name,  settings.getCurrency().getDefaultFractionDigits());
+			case MONEY -> ArrowUtil.moneyField(name);
 			case NUMERIC -> ArrowUtil.floatField(name);
 			case DATE -> ArrowUtil.dateField(name);
 			case DATE_RANGE -> ArrowUtil.dateRangeField(name);
@@ -51,13 +51,14 @@ public class ArrowUtil {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
 	}
 
-	private static Field moneyField(@NonNull String uniqueName, int scale) {
-		/*
-		 * From https://arrow.apache.org/docs/python/generated/pyarrow.decimal128.html
-		 * Maximum precision is 38 digits total, therefore we can assume to pack all digits, minus scale in there;
-		 * assuming that no currency will exceed 28 digits, this should be more than fine as a heuristic.
+	private static Field moneyField(@NonNull String uniqueName) {
+		/*TODO FK
+		   use decimal: new Field(uniqueName, FieldType.nullable(new ArrowType.Decimal(38 - scale, scale, 128)), null);
+		   This will also impact Frontend preview, and ExternalFormBackends, needs planning.
+		   Note: I suspect jsArrow has a bug, where it reads Decimal as BigInt
 		 */
-		return new Field(uniqueName, FieldType.nullable(new ArrowType.Decimal(38 - scale, scale, 128)), null);
+		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
+
 	}
 
 	private static Field floatField(@NonNull String uniqueName) {
@@ -78,16 +79,16 @@ public class ArrowUtil {
 				));
 	}
 
-	private static Field listField(@NonNull String uniqueName, ResultType type, PrintSettings printSettings) {
+	private static Field listField(@NonNull String uniqueName, ResultType type) {
 		final ResultType elementType = ((ResultType.ListT<?>) type).getElementType();
-		final Field nestedField = fieldFor(elementType, uniqueName, printSettings);
+		final Field nestedField = fieldFor(elementType, uniqueName);
 		
 		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));
 	}
 
 	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector, PrintSettings printSettings) {
 		return info.stream()
-				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings), printSettings))
+				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings)))
 				   .toList();
 
 	}

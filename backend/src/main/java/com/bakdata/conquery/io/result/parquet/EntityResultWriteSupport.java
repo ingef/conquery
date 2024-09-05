@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.parquet;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +224,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	private record MoneyColumnConsumer() implements ColumnConsumer {
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			recordConsumer.addBinary(Binary.fromConstantByteArray(((BigDecimal) o).unscaledValue().toByteArray()));
+			recordConsumer.addInteger(((Integer) o));
 		}
 	}
 

@@ -72,7 +72,7 @@ public class ParquetResultGenerationTest {
 					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("max")
 					 .named("DATE_RANGE")
 					 .optional(BINARY).as(stringType()).named("STRING")
-					 .optional(BINARY).as(LogicalTypeAnnotation.decimalType(PRINT_SETTINGS.getCurrency().getDefaultFractionDigits(), 38 - PRINT_SETTINGS.getCurrency().getDefaultFractionDigits())).named("MONEY")
+					 .optional(INT32).as(LogicalTypeAnnotation.intType(32, true)).named("MONEY")
 					 .optionalGroup().as(LogicalTypeAnnotation.listType())
 					 .repeatedGroup()
 					 .optional(BOOLEAN).named("element")
@@ -139,7 +139,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos(), true));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos()));
 
 	}
 

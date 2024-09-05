@@ -79,7 +79,7 @@ public class ArrowResultGenerationTest {
 		return stringJoiner.toString();
 	}
 
-	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, boolean isParquet) {
+	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		String expected =
 				results.stream()
 					   .map(EntityResult.class::cast)
@@ -96,7 +96,7 @@ public class ArrowResultGenerationTest {
 								   Object val = line[lIdx];
 								   ResultInfo info = resultInfos.get(lIdx);
 
-								   valueJoiner.add(getPrintValue(val, info.getType(), isParquet));
+								   valueJoiner.add(getPrintValue(val, info.getType()));
 							   }
 
 							   lineJoiner.add(valueJoiner.toString());
@@ -115,13 +115,12 @@ public class ArrowResultGenerationTest {
 			   + expected;
 	}
 
-	private static String getPrintValue(Object obj, ResultType type, boolean isParquet) {
+	private static String getPrintValue(Object obj, ResultType type) {
 		if (obj == null) {
 			return "null";
 		}
-		if (type.equals(ResultType.Primitive.MONEY) && isParquet) {
-			//The way Parquet handles decimals is as binary values, so we need to handle this specifically here.
-			return new String(((BigDecimal) obj).unscaledValue().toByteArray());
+		if (type.equals(ResultType.Primitive.MONEY)) {
+			return Integer.toString(((BigDecimal) obj).unscaledValue().intValueExact());
 		}
 		if (type.equals(ResultType.Primitive.DATE_RANGE)) {
 			// Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
@@ -147,7 +146,7 @@ public class ArrowResultGenerationTest {
 			Collection<?> col = (Collection<?>) obj;
 			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
 			ResultType elemType = ((ResultType.ListT) type).getElementType();
-			return col.stream().map(v -> getPrintValue(v, elemType, isParquet)).collect(Collectors.joining(",", "[", "]"));
+			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
 		}
 		return obj.toString();
 	}
@@ -200,13 +199,7 @@ public class ArrowResultGenerationTest {
 								  )
 						),
 						new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
-						new Field("MONEY",
-								  FieldType.nullable(new ArrowType.Decimal(38 - PRINT_SETTINGS.getCurrency().getDefaultFractionDigits(),
-																		   PRINT_SETTINGS.getCurrency().getDefaultFractionDigits(),
-																		   128
-								  )),
-								  null
-						),
+						new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
 						new Field("LIST[BOOLEAN]",
 								  FieldType.nullable(ArrowType.List.INSTANCE),
 								  List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))
@@ -264,7 +257,7 @@ public class ArrowResultGenerationTest {
 		String computed = readTSV(inputStream);
 
 		assertThat(computed).isNotBlank();
-		assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(), false));
+		assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos()));
 
 	}
 
