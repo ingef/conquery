@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
-import java.math.BigDecimal;
-
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DatePrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrinter;
@@ -39,22 +37,22 @@ public class ExcelResultPrinters extends StringResultPrinters {
 	}
 
 	@Override
-	public Printer<? extends Number> getNumericPrinter(PrintSettings printSettings) {
+	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer<BigDecimal> getMoneyPrinter(PrintSettings printSettings) {
+	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer<? extends Number> getDatePrinter(PrintSettings printSettings) {
+	public Printer<Number> getDatePrinter(PrintSettings printSettings) {
 		return new DatePrinter();
 	}
 
 	@Override
-	public Printer<? extends Number> getIntegerPrinter(PrintSettings printSettings) {
+	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 

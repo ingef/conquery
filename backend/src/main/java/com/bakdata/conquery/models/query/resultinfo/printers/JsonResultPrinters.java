@@ -14,7 +14,7 @@ public class JsonResultPrinters extends JavaResultPrinters {
 
 
 	@Override
-	public Printer<? extends Number> getDatePrinter(PrintSettings printSettings) {
+	public Printer<Number> getDatePrinter(PrintSettings printSettings) {
 		return new ToStringPrinter<>(super.getDatePrinter(printSettings));
 	}
 
