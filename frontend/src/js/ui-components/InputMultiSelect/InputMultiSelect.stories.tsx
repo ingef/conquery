@@ -31,7 +31,6 @@ const Template: Story<
     },
   ]);
   const onLoad = (str: string) => {
-    console.log("ONLOAD MORE WITH ", str);
     setLoading(true);
     setTimeout(() => {
       setOptions((opts) => {
@@ -52,7 +51,6 @@ const Template: Story<
   };
 
   const onResolve = (csvLines: string[]) => {
-    console.log(csvLines);
     setValue(csvLines.map((line) => ({ value: line, label: line })));
   };
 
