@@ -23,7 +23,7 @@ public class FrontendResultType {
 		if (resultType instanceof ResultType.ListT<?> listT) {
 			return List.builder()
 					   .elementType(from(listT.getElementType()))
-					   .type(listT.typeInfo()).build();
+					   .type("LIST").build();
 		}
 
 		return FrontendResultType.builder().type(resultType.typeInfo()).build();
