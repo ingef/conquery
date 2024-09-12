@@ -3,13 +3,16 @@ package com.bakdata.conquery.apiv1.frontend;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.types.ResultType;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+@Getter
 @SuperBuilder
 public class FrontendResultType {
 	@NotNull
 	String type;
 
+	@Getter
 	@SuperBuilder
 	public static class List extends FrontendResultType {
 		@NotNull
