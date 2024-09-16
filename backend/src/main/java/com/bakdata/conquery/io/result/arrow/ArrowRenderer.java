@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -56,15 +55,10 @@ public class ArrowRenderer {
 		final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
 		final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
 
-		final List<Printer> printers = new ArrayList<>();
-
-		for (ResultInfo header : idHeaders) {
-			printers.add(header.createPrinter(printerFactory, printSettings));
-		}
-
-		for (ResultInfo info : resultInfo) {
-			printers.add(info.createPrinter(printerFactory, printSettings));
-		}
+		final List<Printer> printers =
+				Stream.concat(idHeaders.stream(), resultInfo.stream())
+					  .map(info -> info.createPrinter(printerFactory, printSettings))
+					  .toList();
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -92,6 +86,7 @@ public class ArrowRenderer {
 		int batchCount = 0;
 		int batchLineCount = 0;
 		final Iterator<EntityResult> resultIterator = results.iterator();
+
 		while (resultIterator.hasNext()) {
 			final EntityResult cer = resultIterator.next();
 
@@ -120,7 +115,8 @@ public class ArrowRenderer {
 					Object printed = null;
 
 					if (value != null) {
-						printed = printers.get(colId).apply(value);
+						Printer printer = printers.get(colId);
+						printed = printer.apply(value);
 					}
 
 					valueWriters[index].accept(batchLineCount, printed);
@@ -153,7 +149,8 @@ public class ArrowRenderer {
 		final Object[] printedExternalId = new String[externalId.length];
 
 		for (int index = 0; index < idWriters.length; index++) {
-			printedExternalId[index] = printers.get(index).apply(externalId[index]);
+			Printer printer = printers.get(index);
+			printedExternalId[index] = printer.apply(externalId[index]);
 		}
 		return printedExternalId;
 	}

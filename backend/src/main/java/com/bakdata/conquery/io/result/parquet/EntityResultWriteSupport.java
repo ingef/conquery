@@ -1,8 +1,8 @@
 package com.bakdata.conquery.io.result.parquet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.result.arrow.ArrowUtil;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -69,34 +69,25 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	}
 
 	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos) {
-		final List<ColumnConsumer> consumers = new ArrayList<>();
-		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(getForResultType(idHeader.getType()));
-		}
+		return Stream.concat(idHeaders.stream(), resultInfos.stream())
+					 .map(ResultInfo::getType)
+					 .map(EntityResultWriteSupport::columnConsumerForType)
+					 .toList();
 
-		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(getForResultType(resultInfo.getType()));
-		}
-		return consumers;
 	}
 
-	private static List<Printer> generateColumnPrinters(
-			List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
-		final List<Printer> consumers = new ArrayList<>();
-		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(idHeader.createPrinter(printerFactory, printSettings));
-		}
+	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
 
-		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(resultInfo.createPrinter(printerFactory, printSettings));
-		}
-		return consumers;
+		return Stream.concat(idHeaders.stream(), resultInfos.stream())
+					 .map(info -> info.createPrinter(printerFactory, printSettings))
+					 .toList();
+
 	}
 
-	private static ColumnConsumer getForResultType(ResultType resultType) {
+	private static ColumnConsumer columnConsumerForType(ResultType resultType) {
 
 		if (resultType instanceof ResultType.ListT<?> listT) {
-			return new ListColumnConsumer(getForResultType(listT.getElementType()));
+			return new ListColumnConsumer(columnConsumerForType(listT.getElementType()));
 		}
 
 		return switch (((ResultType.Primitive) resultType)) {
@@ -162,7 +153,8 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 					continue;
 				}
 
-				final Object printed = columnPrinters.get(colId).apply(value);
+				Printer printer = columnPrinters.get(colId);
+				final Object printed = printer.apply(value);
 
 				final String fieldName = schema.getFieldName(colId);
 
@@ -183,7 +175,8 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		final Object[] printedExternalId = new String[externalId.length];
 
 		for (int index = 0; index < externalId.length; index++) {
-			printedExternalId[index] = columnPrinters.get(index).apply(externalId[index]);
+			Printer printer = columnPrinters.get(index);
+			printedExternalId[index] = printer.apply(externalId[index]);
 		}
 		return printedExternalId;
 	}
