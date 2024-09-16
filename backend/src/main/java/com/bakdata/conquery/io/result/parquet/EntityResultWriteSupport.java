@@ -61,8 +61,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			Because Parquet Schemas rely on primitive types with logical annotations
 			which are tedious to configure, we take the detour over the arrow schema.
 		 */
-		final SchemaMapping
-				schemaMapping =
+		final SchemaMapping schemaMapping =
 				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
 
 		return schemaMapping.getParquetSchema();
@@ -81,8 +80,8 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 		return consumers;
 	}
 
-	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings,
-														PrinterFactory printerFactory) {
+	private static List<Printer> generateColumnPrinters(
+			List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
 		final List<Printer> consumers = new ArrayList<>();
 		for (ResultInfo idHeader : idHeaders) {
 			consumers.add(idHeader.createPrinter(printerFactory, printSettings));
