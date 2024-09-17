@@ -157,9 +157,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
       (resolvedResponse.resolvedFilter?.value?.length || 0) > 0 ||
       resolvedResponse.unknownCodes.length > 0;
 
-    console.log("hasSomethingToInsert", hasSomethingToInsert);
-    console.log("resolvedResponse", resolvedResponse);
-
     if (!hasSomethingToInsert) return;
 
     const value = includeUnresolved
