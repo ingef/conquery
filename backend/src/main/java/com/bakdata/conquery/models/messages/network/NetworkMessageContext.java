@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.messages.network;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.mina.MessageSender;
@@ -10,7 +8,8 @@ import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.models.worker.ShardWorkers;
+import jakarta.validation.Validator;
 import lombok.Getter;
 
 @Getter
@@ -32,12 +31,12 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ShardNodeNetworkContext extends NetworkMessageContext<MessageToManagerNode> {
 
-		private final Workers workers;
+		private final ShardWorkers workers;
 		private final ConqueryConfig config;
 		private final Validator validator;
 		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
+		public ShardNodeNetworkContext(NetworkSession session, ShardWorkers workers, ConqueryConfig config, Validator validator) {
 			super(session, config.getCluster().getBackpressure());
 			this.workers = workers;
 			this.config = config;

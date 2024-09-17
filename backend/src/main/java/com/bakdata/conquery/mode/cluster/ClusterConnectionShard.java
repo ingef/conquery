@@ -22,9 +22,9 @@ import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
 import com.bakdata.conquery.models.worker.IdResolveContext;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.models.worker.Workers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
@@ -49,7 +49,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	private final ConqueryConfig config;
 	private final Environment environment;
-	private final Workers workers;
+	private final ShardWorkers workers;
 	private final InternalMapperFactory internalMapperFactory;
 
 	private JobManager jobManager;
