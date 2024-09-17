@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.apiv1.frontend.FrontendNode;
+import com.bakdata.conquery.apiv1.frontend.FrontendResultType;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
 import com.bakdata.conquery.apiv1.frontend.FrontendSelect;
@@ -172,7 +173,7 @@ public class FrontEndConceptBuilder {
 							 .id(select.getId())
 							 .label(select.getLabel())
 							 .description(select.getDescription())
-							 .resultType(select.getResultType().typeInfo())
+							 .resultType(FrontendResultType.from(select.getResultType()))
 							 .isDefault(select.isDefault())
 							 .build();
 	}
