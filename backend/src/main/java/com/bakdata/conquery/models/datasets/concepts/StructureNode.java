@@ -3,6 +3,9 @@ package com.bakdata.conquery.models.datasets.concepts;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -12,8 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,5 +41,9 @@ public class StructureNode extends Labeled<StructureNodeId> {
 	@Override
 	public StructureNodeId createId() {
 		return new StructureNodeId(dataset.getId(), parent!=null?parent.getId():null, getName());
+	}
+
+	public Stream<StructureNode> stream() {
+		return Stream.concat(Stream.of(this), children.stream());
 	}
 }
