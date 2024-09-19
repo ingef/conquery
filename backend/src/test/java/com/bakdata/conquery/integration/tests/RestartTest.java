@@ -2,7 +2,12 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import jakarta.validation.Validator;
+
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -23,7 +28,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,7 +44,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		//read test specification
-		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 		EntityIdMap entityIdMap = IdMapSerialisationTest.createTestPersistentMap();
@@ -61,6 +65,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		test.executeTest(conquery);
 
 		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+		assertThat(numberOfExecutions).isEqualTo(1);
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
@@ -141,10 +146,13 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 
 		log.info("Restart complete");
-		
-		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
+
+		DatasetRegistry<?> datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
 
 		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
+
+		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
+		assertThat(allQueries).size().isEqualTo(1);
 
 		test.executeTest(support);
 
