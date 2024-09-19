@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.cluster;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -10,7 +12,6 @@ import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import jakarta.validation.Validator;
 
 public record InternalMapperFactory(ConqueryConfig config, Validator validator) {
 
@@ -35,7 +36,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 	}
 
 	public ObjectMapper createNamespacePersistenceMapper(DatasetRegistry<?> datasetRegistry) {
-		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
+		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Manager.class);
 
 		datasetRegistry.injectInto(objectMapper);
 
