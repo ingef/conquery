@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
@@ -78,6 +79,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 				syncExternalState(executionManager);
 			}
 
+			// Check after possible sync
 			boolean isRunning = executionManager.tryGetResult(getId())
 												.map(ExecutionManager.State::getState)
 												.map(ExecutionState.RUNNING::equals).orElse(false);
@@ -97,29 +99,28 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
 
-			this.executionManager.addState(this.getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
-
 			externalTaskId = externalTaskState.getId();
 
 			super.start(executionManager);
+
+			this.executionManager.addState(this.getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
 		}
 	}
 
 	private synchronized void syncExternalState(ExecutionManager executionManager) {
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
-		ExternalState state = this.executionManager.getResult(this.getId());
-		final ExternalTaskState formState = state.getApi().getFormState(externalTaskId);
-
-		updateStatus(formState, executionManager);
+		Optional<ExternalState> state = this.executionManager.tryGetResult(this.getId());
+		if (state.isPresent()) {
+			final ExternalTaskState formState = state.get().getApi().getFormState(externalTaskId);
+			updateStatus(formState, executionManager);
+		}
 	}
 
 	private void updateStatus(ExternalTaskState formState, ExecutionManager executionManager) {
 		switch (formState.getStatus()) {
 
-			case RUNNING -> {
-				setProgress(formState.getProgress().floatValue());
-			}
+			case RUNNING -> setProgress(formState.getProgress().floatValue());
 			case FAILURE -> fail(formState.getError(), executionManager);
 			case SUCCESS -> {
 				List<Pair<ResultAsset, ExternalState.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
