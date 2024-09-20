@@ -97,13 +97,12 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			User serviceUser = formBackendConfig.createServiceUser(originalUser, dataset);
 			ExternalFormBackendApi api = formBackendConfig.createApi();
 
-			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
-
-			externalTaskId = externalTaskState.getId();
-
 			super.start(executionManager);
 
 			this.executionManager.addState(this.getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
+
+			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
+			externalTaskId = externalTaskState.getId();
 		}
 	}
 
@@ -155,7 +154,9 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, ExecutionManager executionManager) {
-		syncExternalState(executionManager);
+		if (externalTaskId != null) {
+			syncExternalState(executionManager);
+		}
 
 		super.setStatusBase(subject, status, executionManager);
 	}
