@@ -96,9 +96,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, ExecutionManager executionManager) {
 
-		super.setStatusBase(subject, status, namespace);
+		super.setStatusBase(subject, status, executionManager);
 		status.setNumberOfResults(getLastResultCount());
 
 		Query query = getQuery();
@@ -120,12 +120,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		return query.getResultInfos(printSettings);
-	}
-
-	@Override
-	public void reset(ExecutionManager executionManager) {
-		super.reset(executionManager);
-		getNamespace().getExecutionManager().clearQueryResults(this);
 	}
 
 	@Override

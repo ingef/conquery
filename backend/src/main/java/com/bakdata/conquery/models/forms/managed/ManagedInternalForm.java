@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -95,12 +96,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 
 	@Override
-	public void start() {
+	public void start(ExecutionManager executionManager) {
 		synchronized (this) {
 			subQueries.values().forEach(flatSubQueries::add);
 		}
-		flatSubQueries.values().forEach(ManagedQuery::start);
-		super.start();
+		flatSubQueries.values().forEach(query -> query.start(executionManager));
+		super.start(executionManager);
 	}
 
 	@Override
@@ -159,9 +160,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return subQueries.values().iterator().next().resultRowCount();
 	}
 
-	public boolean allSubQueriesDone() {
+	public boolean allSubQueriesDone(ExecutionManager executionManager) {
 		synchronized (this) {
-			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
+			return flatSubQueries.values().stream().allMatch(q -> q.getState(executionManager).equals(ExecutionState.DONE));
 		}
 	}
 

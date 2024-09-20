@@ -86,7 +86,7 @@ public class SqlExecutionManager extends ExecutionManager {
 									SqlExecutionState startResult = getResult(id);
 									SqlExecutionState
 											finishResult =
-											new SqlExecutionState(result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+											new SqlExecutionState(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
 									managedQuery.setLastResultCount(((long) result.getRowCount()));

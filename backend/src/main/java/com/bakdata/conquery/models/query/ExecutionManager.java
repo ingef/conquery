@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Data
 @Slf4j
@@ -37,6 +39,16 @@ public abstract class ExecutionManager {
 	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
 	 */
 	public interface State {
+
+		/**
+		 * The current {@link ExecutionState} of the execution.
+		 *
+		 * @return
+		 */
+		@NotNull
+		ExecutionState getState();
+
+		void setState(ExecutionState state);
 
 		/**
 		 * Synchronization barrier for web requests.
@@ -87,12 +99,23 @@ public abstract class ExecutionManager {
 		return storage.getExecution(execution);
 	}
 
+	/**
+	 * Returns the state or throws an NoSuchElementException if no state was found.
+	 */
 	public <R extends State> R getResult(ManagedExecutionId id) {
 		State state = executionStates.getIfPresent(id);
 		if (state == null) {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
 		}
 		return (R) state;
+	}
+
+	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
+		return Optional.ofNullable((R) executionStates.getIfPresent(id));
+	}
+
+	public boolean isResultPresent(ManagedExecutionId id) {
+		return executionStates.getIfPresent(id) != null;
 	}
 
 	public void addState(ManagedExecutionId id, State result) {
@@ -131,7 +154,8 @@ public abstract class ExecutionManager {
 		ManagedExecutionId executionId = execution.getId();
 		log.info("Starting execution[{}]", executionId);
 		try {
-			execution.start();
+
+			execution.start(this);
 
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
@@ -139,6 +163,7 @@ public abstract class ExecutionManager {
 			if (execution instanceof InternalExecution internalExecution) {
 				doExecute((ManagedExecution & InternalExecution) internalExecution);
 			}
+
 		}
 		catch (Exception e) {
 			log.warn("Failed to execute '{}'", executionId);
@@ -177,6 +202,17 @@ public abstract class ExecutionManager {
 	}
 
 
+	public void updateState(ManagedExecutionId id, ExecutionState execState) {
+		State state = executionStates.getIfPresent(id);
+		if (state != null) {
+			state.setState(execState);
+			return;
+		}
+
+		log.warn("Could not update state of {} to {}, because it had no state.", id, execState);
+	}
+
+
 	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void clearQueryResults(ManagedExecution execution) {
@@ -203,9 +239,13 @@ public abstract class ExecutionManager {
 	 */
 	public ExecutionState awaitDone(ManagedExecution execution, int time, TimeUnit unit) {
 		ManagedExecutionId id = execution.getId();
-		ExecutionState state = execution.getState();
-		if (state != ExecutionState.RUNNING) {
-			return state;
+		State state = executionStates.getIfPresent(id);
+		if (state == null) {
+			return ExecutionState.NEW;
+		}
+		ExecutionState execState = state.getState();
+		if (execState != ExecutionState.RUNNING) {
+			return execState;
 		}
 
 		State result = executionStates.getIfPresent(id);
@@ -215,6 +255,10 @@ public abstract class ExecutionManager {
 		}
 		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
 
-		return execution.getState();
+		State stateAfterWait = executionStates.getIfPresent(id);
+		if (stateAfterWait == null) {
+			return ExecutionState.NEW;
+		}
+		return stateAfterWait.getState();
 	}
 }

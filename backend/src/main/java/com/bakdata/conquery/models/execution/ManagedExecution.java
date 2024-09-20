@@ -46,6 +46,7 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -69,6 +70,7 @@ import org.apache.shiro.authz.Permission;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties("state")
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -96,11 +98,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonAlias("machineGenerated")
 	private boolean system;
-
-
-	// we don't want to store or send query results or other result metadata
-	@EqualsAndHashCode.Exclude
-	private ExecutionState state = ExecutionState.NEW;
 
 	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
@@ -202,22 +199,22 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		finish(ExecutionState.FAILED, executionManager);
 	}
 
-	public void start() {
+	public void start(ExecutionManager executionManager) {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-			Preconditions.checkArgument(getState() != ExecutionState.RUNNING);
+
+			if (executionManager.isResultPresent(getId())) {
+				Preconditions.checkArgument(executionManager.getResult(getId()).getState() != ExecutionState.RUNNING);
+			}
 
 			startTime = LocalDateTime.now();
 
-			setState(ExecutionState.RUNNING);
 			getMetaStorage().updateExecution(this);
 		}
 	}
 
 	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
-		if (getState() == ExecutionState.NEW) {
-			log.error("Query[{}] was never run.", getId(), new Exception());
-		}
+
 
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
@@ -225,15 +222,16 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
-			setState(executionState);
 			getMetaStorage().updateExecution(this);
+
+			executionManager.updateState(getId(), executionState);
+
+			// Signal to waiting threads that the execution finished
+			executionManager.clearBarrier(getId());
 
 		}
 
-		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
-
-		// Signal to waiting threads that the form finished
-		executionManager.clearBarrier(this.getId());
+		log.info("{} {} {} within {}", executionState, getId(), getClass().getSimpleName(), getExecutionTime());
 	}
 
 
@@ -244,7 +242,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, ExecutionManager executionManager) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -255,7 +253,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStartTime(startTime);
 		status.setFinishTime(finishTime);
-		status.setStatus(getState());
+		status.setStatus(getState(executionManager));
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
@@ -268,9 +266,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject, Namespace namespace) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject, ExecutionManager executionManager) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(subject, status, namespace);
+		setStatusBase(subject, status, executionManager);
 
 		return status;
 	}
@@ -288,7 +286,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
-		setStatusBase(subject, status, namespace);
+		setStatusBase(subject, status, namespace.getExecutionManager());
 
 		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
@@ -297,7 +295,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setProgress(progress);
 
 
-		if (getState().equals(ExecutionState.FAILED) && error != null) {
+		if (getState(namespace.getExecutionManager()).equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
@@ -363,20 +361,28 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 
-		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
+		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
 														   .stream()
 														   .filter(ConceptElement.class::isInstance)
 														   .map(ConceptElement.class::cast)
-														   .map(ConceptElement::getConcept)
+															  .<Concept<?>>map(ConceptElement::getConcept)
 														   .collect(Collectors.toSet());
 
 		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
 		return canExpand;
 	}
 
+	public ExecutionState getState(ExecutionManager executionManager) {
+		if (!executionManager.isResultPresent(getId())) {
+			return ExecutionState.NEW;
+		}
+
+		return executionManager.getResult(getId()).getState();
+	}
+
 	@JsonIgnore
-	public boolean isReadyToDownload() {
-		return getState() == ExecutionState.DONE;
+	public boolean isReadyToDownload(ExecutionManager executionManager) {
+		return getState(executionManager) == ExecutionState.DONE;
 	}
 
 	/**
@@ -413,11 +419,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public void reset(ExecutionManager executionManager) {
 		// This avoids endless loops with already reset queries
-		if(getState().equals(ExecutionState.NEW)){
+		if (getState(executionManager).equals(ExecutionState.NEW)) {
 			return;
 		}
 
-		setState(ExecutionState.NEW);
+		executionManager.clearQueryResults(this);
 	}
 
 	public abstract void cancel();

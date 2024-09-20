@@ -70,7 +70,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 
 	@Override
-	public void start() {
+	public void start(ExecutionManager executionManager) {
 
 		synchronized (this) {
 
@@ -78,7 +78,10 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 				syncExternalState(executionManager);
 			}
 
-			if (getState() == ExecutionState.RUNNING) {
+			boolean isRunning = executionManager.tryGetResult(getId())
+												.map(ExecutionManager.State::getState)
+												.map(ExecutionState.RUNNING::equals).orElse(false);
+			if (isRunning) {
 				throw new ConqueryError.ExecutionProcessingError();
 			}
 
@@ -94,11 +97,11 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
 
-			executionManager.addState(this.getId(), new ExternalStateImpl(new CountDownLatch(0), api, serviceUser));
+			this.executionManager.addState(this.getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
 
 			externalTaskId = externalTaskState.getId();
 
-			super.start();
+			super.start(executionManager);
 		}
 	}
 
@@ -115,7 +118,6 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		switch (formState.getStatus()) {
 
 			case RUNNING -> {
-				setState(ExecutionState.RUNNING);
 				setProgress(formState.getProgress().floatValue());
 			}
 			case FAILURE -> fail(formState.getError(), executionManager);
@@ -151,10 +153,10 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
-		syncExternalState(namespace.getExecutionManager());
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, ExecutionManager executionManager) {
+		syncExternalState(executionManager);
 
-		super.setStatusBase(subject, status, namespace);
+		super.setStatusBase(subject, status, executionManager);
 	}
 
 	@Override
@@ -168,7 +170,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	@Override
 	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
-		if (getState().equals(executionState)) {
+		if (getState(executionManager).equals(executionState)) {
 			return;
 		}
 		ExternalState state = executionManager.getResult(this.getId());

@@ -111,10 +111,14 @@ public class QueryProcessor {
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
+		Map<DatasetId, ExecutionManager> executionManagerMap = datasetRegistry.getDatasets()
+																			  .stream()
+																			  .collect(Collectors.toMap(n -> n.getDataset()
+																											  .getId(), Namespace::getExecutionManager));
+		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders, executionManagerMap);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders, Map<DatasetId, ExecutionManager> executionManagerMap) {
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
@@ -123,12 +127,19 @@ public class QueryProcessor {
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(Predicate.not(ManagedExecution::isSystem))
-						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
+						 .filter(q -> {
+									 ExecutionManager executionManager = executionManagerMap.get(q.getDataset().getId());
+									 ExecutionState state = q.getState(executionManager);
+									 return state == ExecutionState.NEW || state == ExecutionState.DONE;
+								 }
+						 )
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 Namespace namespace = datasetRegistry.get(mq.getDataset().getId());
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, namespace);
-							 if (mq.isReadyToDownload()) {
+							 ExecutionManager executionManager = executionManagerMap.get(mq.getDataset().getId());
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, executionManager);
+
+							 if (mq.isReadyToDownload(executionManager)) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
@@ -200,13 +211,13 @@ public class QueryProcessor {
 	public void cancel(Subject subject, Dataset dataset, ManagedExecution query) {
 
 		// Does not make sense to cancel a query that isn't running.
-		if (!query.getState().equals(ExecutionState.RUNNING)) {
+		ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		if (!query.getState(executionManager).equals(ExecutionState.RUNNING)) {
 			return;
 		}
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(query);
 	}
 
@@ -258,7 +269,8 @@ public class QueryProcessor {
 	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
-		if (!query.getState().equals(ExecutionState.RUNNING)) {
+		ExecutionManager executionManager = datasetRegistry.get(query.getDataset().getId()).getExecutionManager();
+		if (!query.getState(executionManager).equals(ExecutionState.RUNNING)) {
 			final Namespace namespace = query.getNamespace();
 
 			namespace.getExecutionManager().execute(namespace, query, config);
@@ -287,7 +299,7 @@ public class QueryProcessor {
 
 		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
-		if (query.isReadyToDownload() && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
+		if (query.isReadyToDownload(namespace.getExecutionManager()) && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
@@ -356,13 +368,14 @@ public class QueryProcessor {
 		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
-		if (namespace.getExecutionManager().awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		ExecutionManager executionManager = namespace.getExecutionManager();
+		if (executionManager.awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
 
-		if (execution.getState() == ExecutionState.FAILED) {
+		if (execution.getState(executionManager) == ExecutionState.FAILED) {
 			throw new ConqueryError.ExecutionProcessingError();
 		}
 
@@ -474,7 +487,7 @@ public class QueryProcessor {
 			execution = newExecution;
 		}
 
-		final ExecutionState state = execution.getState();
+		final ExecutionState state = execution.getState(executionManager);
 		if (state.equals(ExecutionState.RUNNING)) {
 			log.trace("The Execution[{}] was already started and its state is: {}", execution.getId(), state);
 			return execution;
@@ -525,7 +538,7 @@ public class QueryProcessor {
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
-		if (execution.getState() == ExecutionState.FAILED) {
+		if (execution.getState(namespace.getExecutionManager()) == ExecutionState.FAILED) {
 			throw new ConqueryError.ExecutionProcessingError();
 		}
 

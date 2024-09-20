@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -52,9 +53,9 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
 
 	@Override
-	public void start() {
+	public void start(ExecutionManager executionManager) {
 		synchronized (this) {
-			super.start();
+			super.start(executionManager);
 
 			if (getSubmittedForm().getValues() != null) {
 				// save as formConfig

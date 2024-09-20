@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.validation.Validator;
@@ -26,6 +27,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -42,8 +44,11 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -63,6 +68,9 @@ public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+
+
+	private static final ExecutionManager EXECUTION_MANAGER = new DistributedExecutionManager(STORAGE, new ClusterState());
 	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null, null);
 	private static final QueryProcessor processor = new QueryProcessor(datasetRegistry, STORAGE, CONFIG, VALIDATOR);
 
@@ -129,7 +137,11 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], queries, true)
+		Map<DatasetId, ExecutionManager> executionManagerMap = Map.of(
+				DATASET_0.getId(), EXECUTION_MANAGER,
+				DATASET_1.getId(), EXECUTION_MANAGER
+		);
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], queries, true, executionManagerMap)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
@@ -157,13 +169,24 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm<?> mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset) {
-		return new ManagedInternalForm<>(new ExportForm(), user, dataset, STORAGE) {
+		ManagedInternalForm<ExportForm> managedInternalForm = new ManagedInternalForm<>(new ExportForm(), user, dataset, STORAGE) {
 			{
-				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
 			}
 		};
+		setState(execState, managedInternalForm.getId());
+		return managedInternalForm;
+	}
+
+	private static void setState(ExecutionState execState, ManagedExecutionId id) {
+		if (execState != NEW) {
+			DistributedExecutionManager.DistributedState state = new DistributedExecutionManager.DistributedState();
+			state.setState(execState);
+			state.getExecutingLock().countDown();
+
+			EXECUTION_MANAGER.addState(id, state);
+		}
 	}
 
 	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, Dataset dataset, long resultCount) {
@@ -192,9 +215,8 @@ public class StoredQueriesProcessorTest {
 
 
 	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset, final long resultCount) {
-		return new ManagedQuery(queryDescription, user, dataset, STORAGE) {
+		ManagedQuery managedQuery = new ManagedQuery(queryDescription, user, dataset, STORAGE) {
 			{
-				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
@@ -208,6 +230,8 @@ public class StoredQueriesProcessorTest {
 				return Collections.emptyList();
 			}
 		};
+		setState(execState, managedQuery.getId());
+		return managedQuery;
 	}
 
 	@SneakyThrows
