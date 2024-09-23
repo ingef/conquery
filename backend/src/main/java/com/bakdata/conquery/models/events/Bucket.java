@@ -5,11 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.IntStream;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -18,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
@@ -30,10 +27,16 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,43 +53,52 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
+
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
 	private final int bucket;
 
-	private final int root;
-
-	@Min(0)
-	private final int numberOfEvents;
-
-
+	@ToString.Include
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
 
-	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
-	private final Set<Integer> entities;
-
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	private final int[] start;
+	private final Object2IntMap<String> start;
 
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	private final int[] ends;
+	private final Object2IntMap<String> ends;
+
+	private final int numberOfEvents;
 
 	@NsIdRef
 	private final Import imp;
 
+	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
+		return Arrays.stream(table.getColumns())
+					 .map(Column::getName)
+					 .map(stores::get)
+					 .map(Objects::requireNonNull)
+					 .toArray(ColumnStore[]::new);
+	}
+
+	public static Bucket fromPreprocessed(Table table, PreprocessedData container, Import imp) {
+		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
+		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
+
+		return new Bucket(container.getBucketId(), storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()),numberOfEvents, imp);
+	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Number of events does not match to the number of stores")
+	@ValidationMethod(message = "Number of events does not match the length of some stores.")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
 		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
 	}
@@ -105,31 +117,28 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	/**
 	 * Iterate entities
 	 */
-	public Collection<Integer> entities() {
-		return entities;
+	public Collection<String> entities() {
+		return ImmutableSet.copyOf(start.keySet());
 	}
 
-	public boolean containsEntity(int entity) {
-		return getEntityStart(entity) != -1;
+	public boolean containsEntity(String entity) {
+		return start.containsKey(entity);
 	}
 
-	public int getEntityStart(int entityId) {
-		return start[getEntityIndex(entityId)];
+	public int getEntityStart(String entityId) {
+		return start.get(entityId);
 	}
 
-	public int getEntityIndex(int entityId) {
-		return entityId - root;
-	}
 
-	public int getEntityEnd(int entityId) {
-		return ends[getEntityIndex(entityId)];
+	public int getEntityEnd(String entityId) {
+		return ends.getInt(entityId);
 	}
 
 	public final boolean has(int event, Column column) {
 		return getStore(column).has(event);
 	}
 
-	public int getString(int event, @NotNull Column column) {
+	public String getString(int event, @NotNull Column column) {
 		return ((StringStore) getStore(column)).getString(event);
 	}
 
@@ -165,19 +174,22 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return ((DateRangeStore) getStore(column)).getDateRange(event);
 	}
 
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(getAsDateRange(event, column));
+	public boolean eventIsContainedIn(int event, ValidityDate validityDate, CDateSet dateRanges) {
+		final CDateRange dateRange = validityDate.getValidityDate(event, this);
+
+		if (dateRange == null){
+			return false;
+		}
+
+		return dateRanges.intersects(dateRange);
 	}
 
 	public CDateRange getAsDateRange(int event, Column column) {
-		switch (column.getType()) {
-			case DATE:
-				return CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
-			case DATE_RANGE:
-				return getDateRange(event, column);
-			default:
-				throw new IllegalStateException("Column is not of DateCompatible type.");
-		}
+		return switch (column.getType()) {
+			case DATE -> CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
+			case DATE_RANGE -> getDateRange(event, column);
+			default -> throw new IllegalStateException("Column is not of DateCompatible type.");
+		};
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
@@ -185,10 +197,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public Map<String, Object> calculateMap(int event) {
-		Map<String, Object> out = new HashMap<>(stores.length);
+		final Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
-			ColumnStore store = stores[i];
+			final ColumnStore store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}

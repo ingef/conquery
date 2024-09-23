@@ -1,5 +1,6 @@
 # maven
 *.xml.versionsBackup
+.flattened-pom.xml
 
 # vscode
 launch.json
@@ -45,12 +46,8 @@ nb-configuration.xml
 hs_err_pid*
 /frontend/node/
 /frontend/cfp-*
-nbactions.xml
 
 **/.settings/
-**/.project
-**/.classpath
-**/.eclipse-pmd
 **/.checkstyle
 **/*.hprof
 **/.idea/
@@ -64,6 +61,7 @@ nbactions.xml
 /storage/
 *.iml
 
+# Jupyter notebook tutorial development
 /workspace.code-workspace
 **/Lib/
 **/Include/
@@ -73,4 +71,9 @@ nbactions.xml
 **/pyvenv.cfg
 tutorial/mimic_iii_demo/data/**
 
+# Include frontend container assets
+!/frontend/container/etc
+
 /node_modules
+cypress/screenshots/
+cypress/videos/

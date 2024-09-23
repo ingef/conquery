@@ -17,7 +17,7 @@ import lombok.ToString;
 @CPSType(id="SINGLE_LINE", base= EntityResult.class)
 public class SinglelineEntityResult implements EntityResult {
 
-	private final int entityId;
+	private final String entityId;
 	private Object[] values;
 
 	@Override
@@ -38,5 +38,10 @@ public class SinglelineEntityResult implements EntityResult {
 	@Override
 	public List<Object[]> listResultLines() {
 		return Collections.singletonList(values);
+	}
+
+	@Override
+	public int length() {
+		return 1;
 	}
 }

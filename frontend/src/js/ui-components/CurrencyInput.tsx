@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
-import { FC, useState, useEffect } from "react";
-import NumberFormat from "react-number-format";
+import { FC, useEffect, useState } from "react";
+import { NumericFormat } from "react-number-format";
 
 import type { CurrencyConfigT } from "../api/types";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 
-const SxNumberFormat = styled(NumberFormat)<{ large?: boolean }>`
+const SxNumberFormat = styled(NumericFormat)<{ large?: boolean }>`
   outline: 0;
   min-width: 170px;
 
@@ -48,10 +48,10 @@ const CurrencyInput: FC<PropsT> = ({
       setNumberFormatValue("");
     }
   }, [value]);
-
   return (
     <SxNumberFormat
       {...currencyConfig}
+      suffix={" " + currencyConfig?.unit}
       placeholder={placeholder}
       type="text"
       value={numberFormatValue}

@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
@@ -158,7 +159,7 @@ const TimebasedNode: FC<PropsT> = ({
             {toggleButton}
           </TimebasedNodeTimestamp>
           <TimebasedNodeDescription>
-            <StyledIconButton icon="times" onClick={onRemove} />
+            <StyledIconButton icon={faTimes} onClick={onRemove} />
             <TimebasedNodeDescriptionText>
               {node.label || node.id}
             </TimebasedNodeDescriptionText>

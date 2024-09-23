@@ -1,69 +1,70 @@
 {
-    "type": "FORM_TEST",
-    "label": "ENTITY-DATE-EXPORT-FORM SECONDARY_ID",
-    "expectedCsv": {
-        "results": "/tests/form/EXPORT_FORM/ENTITY_DATE/SECONDARY_ID/expected.csv"
-    },
-    "form": {
-        "type": "EXPORT_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001",
-        "resolution": "QUARTERS",
-        "timeMode": {
-            "value": "ENTITY_DATE",
-            "features": [
-                {
-                    "ids": [
-                        "two_connector"
-                    ],
-                    "type": "CONCEPT",
-                    "label": "explicitly set select",
-                    "tables": [
-                        {
-                            "id": "two_connector.table1",
-                            "selects": "two_connector.table1.alter_select"
-                        },
-                        {
-                            "id": "two_connector.table2"
-                        }
-                    ]
-                }
-            ]
-        }
-    },
-    "concepts": [
-        "/tests/form/shared/two_connector.concept.json",
-        "/tests/form/shared/abc.concept.json"
-    ],
-    "content": {
-        "secondaryIds": [
-            "/tests/form/shared/secondary.sid.json"
-        ],
-        "tables": [
-            "/tests/form/shared/vers_stamm.table.json",
-            "/tests/form/shared/abc.table.json"
-        ],
-        "previousQueries": [
-            {
-                "type": "SECONDARY_ID_QUERY",
-                "secondaryId": "secondary",
-                "root": {
-                    "type": "AND",
-                    "children": [
-                        {
-                            "type": "CONCEPT",
-                            "excludeFromSecondaryId": false,
-                            "ids": [
-                                "abc-concept.a"
-                            ],
-                            "tables": [
-                                {
-                                    "id": "abc-concept.connector"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        ]
-    }
+	"type": "FORM_TEST",
+	"label": "ENTITY-DATE-EXPORT-FORM SECONDARY_ID",
+	"expectedCsv": {
+		"results": "/tests/form/EXPORT_FORM/ENTITY_DATE/SECONDARY_ID/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"two_connector"
+				],
+				"type": "CONCEPT",
+				"label": "explicitly set select",
+				"tables": [
+					{
+						"id": "two_connector.table1",
+						"selects": "two_connector.table1.alter_select"
+					},
+					{
+						"id": "two_connector.table2"
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ENTITY_DATE"
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/two_connector.concept.json",
+		"/tests/form/shared/abc.concept.json"
+	],
+	"content": {
+		"secondaryIds": [
+			"/tests/form/shared/secondary.sid.json"
+		],
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json",
+			"/tests/form/shared/abc.table.json"
+		],
+		"previousQueries": [
+			{
+				"type": "SECONDARY_ID_QUERY",
+				"secondaryId": "secondary",
+				"root": {
+					"type": "AND",
+					"children": [
+						{
+							"type": "CONCEPT",
+							"excludeFromSecondaryId": false,
+							"ids": [
+								"abc-concept.a"
+							],
+							"tables": [
+								{
+									"id": "abc-concept.connector"
+								}
+							]
+						}
+					]
+				}
+			}
+		]
+	}
 }

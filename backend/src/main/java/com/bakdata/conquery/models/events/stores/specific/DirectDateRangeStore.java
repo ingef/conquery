@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
@@ -27,6 +28,10 @@ public class DirectDateRangeStore implements DateRangeStore {
 	public DirectDateRangeStore(DateStore minStore, DateStore maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 
 	@Override
@@ -75,8 +80,8 @@ public class DirectDateRangeStore implements DateRangeStore {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		int min = Integer.MIN_VALUE;
-		int max = Integer.MAX_VALUE;
+		int min = CDateRange.NEGATIVE_INFINITY;
+		int max = CDateRange.POSITIVE_INFINITY;
 
 		if (minStore.has(event)) {
 			min = minStore.getDate(event);

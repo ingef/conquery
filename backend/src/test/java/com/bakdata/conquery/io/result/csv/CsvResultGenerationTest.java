@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public class CsvResultGenerationTest {
 				Locale.GERMAN,
 				null,
 				CONFIG,
-				(cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 				(selectInfo) -> selectInfo.getSelect().getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -56,12 +57,12 @@ public class CsvResultGenerationTest {
 		StringWriter writer = new StringWriter();
 
 		CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults());
+		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(printSettings), mquery.streamResults(OptionalLong.empty()));
 
 		String computed = writer.toString();
 
 
-		String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings);
+		String expected = generateExpectedCSV(results, mquery.getResultInfos(printSettings));
 
 		log.info("Wrote and than read this csv data: {}", computed);
 
@@ -70,9 +71,9 @@ public class CsvResultGenerationTest {
 
 	}
 
-	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		List<String> expected = new ArrayList<>();
-		expected.add(ResultTestUtil.ID_FIELDS.stream().map(info -> info.defaultColumnName(settings)).collect(Collectors.joining(",")) + "," + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(",")) + "\n");
+		expected.add(ResultTestUtil.ID_FIELDS.stream().map(info -> info.defaultColumnName()).collect(Collectors.joining(",")) + "," + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(",")) + "\n");
 		results.stream()
 				.map(EntityResult.class::cast)
 				.forEach(res -> {
@@ -88,7 +89,7 @@ public class CsvResultGenerationTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							final String printVal = info.getType().printNullable(settings, val);
+							final String printVal = info.printNullable(val);
 							valueJoiner.add(printVal.contains(String.valueOf(CONFIG.getCsv().getDelimeter()))? "\""+printVal+"\"": printVal);
 						}
 

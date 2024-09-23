@@ -1,11 +1,12 @@
 import styled from "@emotion/styled";
+import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import { DateStringMinMax } from "../common/helpers";
+import { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -13,8 +14,8 @@ import { QueryGroupType } from "../standard-query-editor/types";
 import InputDateRange from "../ui-components/InputDateRange";
 
 import {
-  queryGroupModalSetDate,
   queryGroupModalResetAllDates,
+  queryGroupModalSetDate,
 } from "./actions";
 
 const HeadlinePart = styled("span")`
@@ -93,7 +94,7 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <ResetAll bare onClick={onResetAllDates} icon="undo">
+      <ResetAll bare onClick={onResetAllDates} icon={faUndo}>
         {t("queryNodeEditor.reset")}
       </ResetAll>
     ) : null;

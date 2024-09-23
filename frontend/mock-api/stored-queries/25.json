@@ -2,7 +2,17 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
-  "resultUrls": ["/api/results/1234-123123123-123123-1231.csv"],
+  "label": "Result list",
+  "resultUrls": [
+    {
+      "label": "XLSX",
+      "url": "/api/results/1234-123123123-123123-1231.xlsx"
+    },
+    {
+      "label": "CSV",
+      "url": "/api/results/1234-123123123-123123-1231.csv"
+    }
+  ],
   "createdAt": "2016-12-02T14:19:09Z",
   "version": 0,
   "tags": ["Fun"],

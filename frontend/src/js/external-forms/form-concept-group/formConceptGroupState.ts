@@ -1,9 +1,9 @@
 import type {
-  SelectOptionT,
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
-import { includes, compose } from "../../common/helpers";
+import { compose } from "../../common/helpers/commonHelper";
 import { exists } from "../../common/helpers/exists";
 import {
   getConceptById,
@@ -12,19 +12,20 @@ import {
 import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
-import { resetSelects } from "../../model/select";
+import { SelectConfig, resetSelects } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
-  TableWithFilterValueT,
   FilterWithValueType,
   SelectedSelectorT,
+  TableWithFilterValueT,
 } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import {
   initSelectsWithDefaults,
+  initTables,
   initTablesWithDefaults,
 } from "../transformers";
 
@@ -36,10 +37,21 @@ export interface FormConceptGroupT {
   connector: string;
 }
 
+export interface TableConfig {
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
+}
+
 export const addValue = (
   value: FormConceptGroupT[],
   newValue: FormConceptGroupT,
 ) => [...value, newValue];
+
+export const insertValue = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  newValue: FormConceptGroupT,
+) => [...value.slice(0, valueIdx), newValue, ...value.slice(valueIdx)];
 
 export const removeValue = (value: FormConceptGroupT[], valueIdx: number) => {
   return [...value.slice(0, valueIdx), ...value.slice(valueIdx + 1)];
@@ -220,7 +232,7 @@ export const onToggleIncludeSubnodes = (
       ]
     : value.filter((val) =>
         val.concepts.filter(exists).some((cpt) => {
-          return childIds.every((childId) => !includes(cpt.ids, childId));
+          return childIds.every((childId) => !cpt.ids.includes(childId));
         }),
       );
 
@@ -265,6 +277,8 @@ export const addConceptsFromFile = (
   rootConcepts: TreesT,
   resolvedConcepts: string[],
 
+  tableConfig: TableConfig,
+  selectConfig: SelectConfig,
   defaults: ConceptListDefaultsType,
   isValidConcept: ((item: FormConceptNodeT) => boolean) | undefined,
 
@@ -273,6 +287,12 @@ export const addConceptsFromFile = (
 
   valueIdx: number,
   conceptIdx?: number,
+
+  resolvedFilter?: {
+    tableId: string;
+    filterId: string;
+    value: SelectOptionT[];
+  },
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -282,9 +302,23 @@ export const addConceptsFromFile = (
 
   if (!queryElement) return value;
 
-  const concept = initializeConcept(queryElement, defaults);
+  const concept = initializeConcept(
+    queryElement,
+    defaults,
+    tableConfig,
+    selectConfig,
+  );
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
+
+  if (resolvedFilter) {
+    const table = concept.tables.find((t) => t.id === resolvedFilter.tableId);
+    const filter = table?.filters.find((f) => f.id === resolvedFilter.filterId);
+
+    if (table && filter) {
+      filter.value = resolvedFilter.value;
+    }
+  }
 
   if (exists(conceptIdx)) {
     return setConcept(value, valueIdx, conceptIdx, concept);
@@ -296,18 +330,21 @@ export const addConceptsFromFile = (
 export const initializeConcept = (
   item: FormConceptNodeT,
   defaults: ConceptListDefaultsType,
+  tableConfig: TableConfig,
+  selectConfig: SelectConfig,
 ) => {
   if (!item) return item;
 
   return compose(
     initSelectsWithDefaults(defaults.selects),
     initTablesWithDefaults(defaults.connectors),
+    initTables(tableConfig),
   )({
     ...item,
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
-    tables: resetTables(item.tables, { useDefaults: true }),
-    selects: resetSelects(item.selects, { useDefaults: true }),
+    tables: resetTables(item.tables, { useDefaults: true, selectConfig }),
+    selects: resetSelects(item.selects, { useDefaults: true, selectConfig }),
   });
 };
 
@@ -370,9 +407,10 @@ export const setFilterValue = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  filterValue: any,
+  filterValue: unknown,
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    // @ts-ignore TODO: maybe use generic types here
     value: filterValue,
   });
 };

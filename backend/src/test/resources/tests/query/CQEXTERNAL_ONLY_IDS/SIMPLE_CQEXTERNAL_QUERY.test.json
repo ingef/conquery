@@ -1,0 +1,79 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CQExternal Extra Data Test",
+  "expectedCsv": "tests/query/CQEXTERNAL_ONLY_IDS/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "NEGATION",
+          "child": {
+            "type": "EXTERNAL",
+            "format": [
+              "ID"
+            ],
+            "values": [
+              [
+                "result"
+              ],
+              [
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "max": "2010-12-31"
+          },
+          "child": {
+            "type": "CONCEPT",
+            "ids": [
+              "test_tree"
+            ],
+            "tables": [
+              {
+                "id": "test_tree.connector"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "table": "test_table",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/CQEXTERNAL_ONLY_IDS/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

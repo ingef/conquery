@@ -1,14 +1,12 @@
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { useSelector } from "react-redux";
 
 import type {
-  ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
   FilterT,
   PostFilterSuggestionsResponseT,
-  TableT,
+  RangeFilterValueT,
 } from "../api/types";
 import { StateT } from "../app/reducers";
 import { FilterWithValueType } from "../standard-query-editor/types";
@@ -21,18 +19,14 @@ const Container = styled("div")`
   margin-bottom: 10px;
 `;
 
-export interface FiltersContextT {
-  datasetId: DatasetT["id"];
-  treeId: ConceptIdT;
-  tableId: TableT["id"];
-}
-
 export interface BaseTableFilterProps {
   className?: string;
-  context: FiltersContextT;
   excludeTable?: boolean;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
-  onSetFilterValue: (filterIdx: number, value: unknown) => void;
+  onSetFilterValue: (
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
     filterId: FilterT["id"],
@@ -52,7 +46,6 @@ const TableFilter = ({
   filter,
   filterIdx,
   excludeTable,
-  context,
   className,
   onLoadFilterSuggestions,
   onSetFilterValue,
@@ -60,11 +53,6 @@ const TableFilter = ({
 }: TableFilterProps) => {
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
-  );
-
-  const filterContext = useMemo(
-    () => ({ ...context, filterId: filter.id }),
-    [context, filter.id],
   );
 
   const filterComponent = (() => {
@@ -90,7 +78,7 @@ const TableFilter = ({
       case "MULTI_SELECT":
         return (
           <FilterListMultiSelect
-            context={filterContext}
+            filterId={filter.id}
             indexPrefix={filterIdx + 1}
             value={filter.value || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
@@ -105,7 +93,7 @@ const TableFilter = ({
         return (
           <FilterListMultiSelect
             indexPrefix={filterIdx + 1}
-            context={filterContext}
+            filterId={filter.id}
             value={filter.value || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
@@ -133,7 +121,9 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
@@ -151,7 +141,9 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
@@ -171,7 +163,9 @@ const TableFilter = ({
             moneyRange
             value={filter.value}
             defaultValue={filter.defaultValue}
-            onChange={(value) => onSetFilterValue(filterIdx, value)}
+            onChange={(value) =>
+              onSetFilterValue(filterIdx, value as RangeFilterValueT)
+            }
             unit={filter.unit}
             label={filter.label}
             tooltip={filter.tooltip}

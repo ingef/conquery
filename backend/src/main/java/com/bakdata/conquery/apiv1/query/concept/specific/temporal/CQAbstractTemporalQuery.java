@@ -2,12 +2,17 @@ package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -76,10 +81,24 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.addAll(index.getChild().getResultInfos());
-		resultInfos.addAll(preceding.getChild().getResultInfos());
+		resultInfos.addAll(index.getChild().getResultInfos(settings));
+		resultInfos.addAll(preceding.getChild().getResultInfos(settings));
 		return resultInfos;
+	}
+
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return getIndex().getChild().collectRequiredEntities(context); //TODO preceeding also?
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> out) {
+
+		out.addAll(getIndex().getChild().collectRequiredQueries());
+		out.addAll(getPreceding().getChild().collectRequiredQueries());
+
 	}
 }

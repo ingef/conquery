@@ -2,10 +2,11 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -24,8 +25,8 @@ public class QuartersInYearFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) {
-		f.setType(FEFilterType.Fields.INTEGER_RANGE);
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
+		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 		f.setMin(1);
 		f.setMax(4);
 	}

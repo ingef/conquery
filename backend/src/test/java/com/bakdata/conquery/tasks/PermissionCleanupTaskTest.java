@@ -3,6 +3,7 @@ package com.bakdata.conquery.tasks;
 import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
 import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -41,7 +42,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-        final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
+		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE);
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 

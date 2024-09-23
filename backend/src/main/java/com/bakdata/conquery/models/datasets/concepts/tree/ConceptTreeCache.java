@@ -1,71 +1,62 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tomgibara.bits.BitStore;
-import com.tomgibara.bits.Bits;
-import lombok.Getter;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Cache for ConceptTree index searches.
  */
+@RequiredArgsConstructor
+@Data
 public class ConceptTreeCache {
 
 	/**
 	 * Statistics for Cache.
 	 */
-	@Getter
 	private int hits;
 	/**
 	 * Statistics for Cache.
 	 */
-	@Getter
 	private int misses;
 
 	@JsonIgnore
 	private final TreeConcept treeConcept;
 
 	/**
-	 * Stores if the value is present in the cache. Values are allowed to not be resolvable but we still want to cache the tree walk.
-	 */
-	@JsonIgnore
-	private final BitStore cached;
-
-	/**
 	 * Store of all cached values.
+	 *
+	 * @implNote ConcurrentHashMap does not allow null values, but we want to have null values in the map. So we wrap the values in Optional.
 	 */
 	@JsonIgnore
-	private final ConceptTreeChild[] values;
+	private final Map<String, Optional<ConceptElement<?>>> cached = new ConcurrentHashMap<>();;
 
-	public ConceptTreeCache(TreeConcept treeConcept, int size) {
-		this.treeConcept = treeConcept;
-		values = new ConceptTreeChild[size];
-		cached = Bits.store(size);
-	}
 
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
 	 *
-	 * @param id String id to resolve in conceptTree.
-	 * @param scriptValue
+	 * @param value
 	 */
-	public ConceptTreeChild findMostSpecificChild(int id, String scriptValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptElement<?> findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
-		if(cached.getBit(id)) {
+		if(cached.containsKey(value)) {
 			hits++;
-			return values[id];
+			return cached.get(value).orElse(null);
 		}
 
 		misses++;
 
-		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
+		final ConceptElement<?> child = treeConcept.findMostSpecificChild(value, rowMap);
 
 		if(!rowMap.isCalculated()) {
-			cached.setBit(id, true);
-			this.values[id] = child;
+			cached.put(value, Optional.ofNullable(child));
 		}
 
 		return child;

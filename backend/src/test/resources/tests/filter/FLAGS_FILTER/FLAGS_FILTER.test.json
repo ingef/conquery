@@ -1,0 +1,45 @@
+{
+  "type": "FILTER_TEST",
+  "label": "FLAGS FILTER Test",
+  "expectedCsv": "tests/filter/FLAGS_FILTER/expected.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/FLAGS_FILTER/content.csv",
+      "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "a",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "b",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "c",
+          "type": "BOOLEAN"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "filters": {
+      "type": "FLAGS",
+      "flags": {
+        "A": "table.a",
+        "B": "table.b",
+        "C": "table.c"
+      }
+    }
+  },
+  "filterValue": {
+    "type": "MULTI_SELECT",
+    "value": [
+      "B",
+      "C"
+    ]
+  }
+}

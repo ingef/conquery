@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 
-import { getUniqueFileRows } from "../../common/helpers";
+import { SelectOptionT } from "../../api/types";
+import { StateT } from "../../app/reducers";
+import { getUniqueFileRows } from "../../common/helpers/fileHelper";
 import { TreesT } from "../../concept-trees/reducer";
 import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import {
@@ -10,9 +13,11 @@ import {
 } from "../../upload-concept-list-modal/actions";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 
+import { SelectConfig } from "../../model/select";
 import {
   addConceptsFromFile,
   FormConceptGroupT,
+  TableConfig,
 } from "./formConceptGroupState";
 
 interface UploadConceptListModalContext {
@@ -25,30 +30,38 @@ export const useUploadConceptListModal = ({
   onChange,
   newValue,
   defaults,
+  tableConfig,
+  selectConfig,
   isValidConcept,
 }: {
   value: FormConceptGroupT[];
   onChange: (value: FormConceptGroupT[]) => void;
   newValue: FormConceptGroupT;
   defaults: ConceptListDefaultsType;
+  tableConfig: TableConfig;
+  selectConfig: SelectConfig;
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
+  );
+
   const initModal = async (file: File) => {
     const rows = await getUniqueFileRows(file);
 
     return dispatch(initUploadConceptListModal({ rows, filename: file.name }));
   };
-  const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalContext, setModalContext] =
     useState<UploadConceptListModalContext | null>(null);
 
-  const onClose = () => {
-    setIsOpen(false); // For the Modal "container"
-    resetModal(); // For the common UploadConceptListModal
-  };
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+    dispatch(resetUploadConceptListModal());
+  }, [dispatch]);
 
   const onDropFile = async (
     file: File,
@@ -64,10 +77,29 @@ export const useUploadConceptListModal = ({
     setIsOpen(true); // For the Modal "container"
   };
 
-  const onAccept = (
+  const onImportLines = (
+    { lines, filename }: { lines: string[]; filename?: string },
+    { valueIdx, conceptIdx }: UploadConceptListModalContext,
+  ) => {
+    setModalContext({ valueIdx, conceptIdx });
+    dispatch(
+      initUploadConceptListModal({
+        rows: lines,
+        filename: filename || t("importModal.pasted"),
+      }),
+    );
+
+    setIsOpen(true); // For the Modal "container"
+  };
+
+  const onAcceptConceptsOrFilter = (
     label: string,
-    rootConcepts: TreesT,
     resolvedConcepts: string[],
+    resolvedFilter?: {
+      tableId: string;
+      filterId: string;
+      value: SelectOptionT[];
+    },
   ) => {
     if (!modalContext) return;
     const { valueIdx, conceptIdx } = modalContext;
@@ -78,6 +110,8 @@ export const useUploadConceptListModal = ({
         rootConcepts,
         resolvedConcepts,
 
+        tableConfig,
+        selectConfig,
         defaults,
         isValidConcept,
 
@@ -86,6 +120,8 @@ export const useUploadConceptListModal = ({
 
         valueIdx,
         conceptIdx,
+
+        resolvedFilter,
       ),
     );
 
@@ -96,6 +132,7 @@ export const useUploadConceptListModal = ({
     isOpen,
     onClose,
     onDropFile,
-    onAccept,
+    onImportLines,
+    onAcceptConceptsOrFilter,
   };
 };

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
-import static com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner.FRONTEND_FORM_CONFIGS;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,7 +13,7 @@ public class FormProcessor {
 	public Collection<JsonNode> getFormsForUser(Subject subject) {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
-		for (FormType formMapping : FRONTEND_FORM_CONFIGS.values()) {
+		for (FormType formMapping : FormScanner.getAllFormTypes()) {
 			if (!subject.isPermitted(formMapping, Ability.CREATE)) {
 				continue;
 			}

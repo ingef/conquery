@@ -1,109 +1,108 @@
-{  
-   "type":"QUERY_TEST",
-   "label":"MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY Test",
-   "expectedCsv":"tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/expected.csv",
-   "query":{  
-      "type":"CONCEPT_QUERY",
-      "root":{  
-         "type":"NEGATION",
-         "child":{  
-            "type":"DATE_RESTRICTION",
-            "dateRange":{  
-               "min":"2012-01-01",
-               "max":"2012-11-11"
+{
+  "type": "QUERY_TEST",
+  "label": "MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "NEGATION",
+      "child": {
+        "type": "DATE_RESTRICTION",
+        "dateRange": {
+          "min": "2012-01-01",
+          "max": "2012-12-31"
+        },
+        "child": {
+          "type": "OR",
+          "children": [
+            {
+              "ids": [
+                "geschlecht_select"
+              ],
+              "type": "CONCEPT",
+              "label": "Geschlecht SELECT",
+              "tables": [
+                {
+                  "id": "geschlecht_select.geschlecht_connector",
+                  "filters": [
+                    {
+                      "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                      "type": "MULTI_SELECT",
+                      "value": [
+                        "f"
+                      ]
+                    }
+                  ]
+                }
+              ]
             },
-            "child":{  
-               "type":"OR",
-               "children":[  
-                  {  
-                     "ids":[  
-                        "geschlecht_select"
-                     ],
-                     "type":"CONCEPT",
-                     "label":"Geschlecht SELECT",
-                     "tables":[  
-                        {  
-                           "id":"geschlecht_select.geschlecht_connector",
-                           "filters":[  
-                              {  
-                                 "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                                 "type":"MULTI_SELECT",
-                                 "value":[  
-                                    "f"
-                                 ]
-                              }
-                           ]
-                        }
-                     ]
-                  },
-                  {  
-                     "ids":[  
-                        "geschlecht_select"
-                     ],
-                     "type":"CONCEPT",
-                     "label":"Geschlecht SELECT",
-                     "tables":[  
-                        {  
-                           "id":"geschlecht_select.geschlecht_connector",
-                           "filters":[  
-                              {  
-                                 "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                                 "type":"MULTI_SELECT",
-                                 "value":[  
-                                    "m"
-                                 ]
-                              }
-                           ]
-                        }
-                     ]
-                  }
-               ]
+            {
+              "ids": [
+                "geschlecht_select"
+              ],
+              "type": "CONCEPT",
+              "label": "Geschlecht SELECT",
+              "tables": [
+                {
+                  "id": "geschlecht_select.geschlecht_connector",
+                  "filters": [
+                    {
+                      "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                      "type": "MULTI_SELECT",
+                      "value": [
+                        "m"
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
-         }
+          ]
+        }
       }
-   },
-   "concepts":[  
-      {  
-         "label":"geschlecht_select",
-         "type":"TREE",
-         "connectors":[  
-            {  
-               "label":"geschlecht_connector",
-               "table":"table1",
-               "validityDates":{  
-                  "label":"datum",
-                  "column":"table1.datum"
-               },
-               "filters":{
-                  "label":"geschlecht",
-                  "description":"Geschlecht zur gegebenen Datumseinschränkung",
-                  "column":"table1.geschlecht",
-                  "type":"SELECT"
-               }
-            }
-         ]
-      }
-   ],
-   "content":{  
-      "tables":[  
-         {  
-            "csv":"tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/content.csv",
-            "name":"table1",
-            "primaryColumn":{  
-               "name":"pid",
-               "type":"STRING"
-            },
-            "columns":[  
-               {  
-                  "name":"datum",
-                  "type":"DATE"
-               },
-               {  
-                  "name":"geschlecht",
-                  "type":"STRING"
-               }
-            ]
-         }
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "column": "table1.geschlecht",
+            "type": "SELECT"
+          }
+        }
       ]
-   }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -49,7 +48,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 
 		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
 			return;
@@ -73,8 +72,4 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 		return hit ? sum : null;
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.NumericT.INSTANCE;
-	}
 }

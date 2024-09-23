@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -16,8 +14,6 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -25,9 +21,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
+import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.Valid;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -37,15 +36,18 @@ import lombok.ToString;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@ToString(of = {"connectors"})
+@ToString(of = "connectors")
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
 
 	/**
 	 * Display Concept for users.
 	 */
-	private boolean hidden = false;
+	private boolean hidden;
+
+	private boolean defaultExcludeFromTimeAggregation = false;
 
 	@JsonManagedReference
 	@Valid
@@ -55,18 +57,10 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private Dataset dataset;
 
 	public List<Select> getDefaultSelects() {
-		return getSelects()
-					  .stream()
-					  .filter(Select::isDefault)
-					  .collect(Collectors.toList());
+		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
 	}
 
 	public abstract List<? extends Select> getSelects();
-
-	public void initElements() throws ConfigurationException, JSONException {
-		getSelects().forEach(Select::init);
-		getConnectors().forEach(CONNECTOR::init);
-	}
 
 	@Override
 	@JsonIgnore
@@ -86,11 +80,12 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			return new Leaf();
-		}
-		return FiltersNode.create(filters, aggregators, eventDateAggregators);
+	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, ValidityDate validityDate) {
+		final QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
+
+
+		// Only if a validityDateColumn exists, capsule children in ValidityDateNode
+		return validityDate != null ? new ValidityDateNode(validityDate, child) : child;
 	}
 
 	@Override

@@ -1,0 +1,71 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CONCEPT_RESTRICTION Test",
+  "expectedCsv": "tests/query/CONCEPT_DATE_RESTRICTION_OPEN/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2018-01-01",
+            "max": "2018-12-31"
+          },
+          "child": {
+            "type": "CONCEPT",
+            "ids": [
+              "open_concept"
+            ],
+            "tables": [
+              {
+                "id": "open_concept.connector",
+                "filters": []
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "open_concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "open_table",
+          "validityDates": [
+            {
+              "name": "date",
+              "column": "open_table.open_date"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "children": [
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/CONCEPT_DATE_RESTRICTION_OPEN/content.csv",
+        "name": "open_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "open_date",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+} 

@@ -30,8 +30,8 @@ public class TemporalQueryNode extends QPParentNode {
 		super.init(entity, ctx);
 		dateUnion.init(entity, ctx);
 
-		referenceSampler = referenceSamplerFactory.sampler();
-		precedingSampler = precedingSamplerFactory.sampler();
+		referenceSampler = referenceSamplerFactory.sampler(ctx.getToday());
+		precedingSampler = precedingSamplerFactory.sampler(ctx.getToday());
 	}
 
 	/**

@@ -1,6 +1,6 @@
 #!/bin/bash
 
 pushd ./frontend
-yarn --ignore-platform --frozen-lockfile
-yarn run react-app-rewired build
+npm ci
+npm run build
 popd

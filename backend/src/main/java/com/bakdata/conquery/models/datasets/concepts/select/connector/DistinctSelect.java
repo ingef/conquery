@@ -6,9 +6,13 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "DISTINCT", base = Select.class)
@@ -27,9 +31,20 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		if (getMapping() == null) {
-			return super.getResultType();
+		return new ResultType.ListT(super.getResultType());
+	}
+
+	@Override
+	public SelectConverter<DistinctSelect> createConverter() {
+		return new DistinctSelectConverter();
+	}
+
+	@Override
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+		if(getMapping() == null){
+			return super.createPrinter(printSettings);
 		}
-		return new ResultType.ListT(new ResultType.StringT(mapper));
+
+		return new ResultPrinters.ListPrinter(new ResultPrinters.MappedPrinter(getMapping()), printSettings);
 	}
 }

@@ -1,44 +1,59 @@
-import { FC } from "react";
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
-import {
-  acceptQueryUploadConceptListModal,
-  closeQueryUploadConceptListModal,
-} from "./actions";
-import type { QueryUploadConceptListModalStateT } from "./reducer";
+import { acceptUploadedConceptsOrFilter } from "./actions";
 
-const QueryUploadConceptListModal: FC = () => {
-  const context = useSelector<StateT, QueryUploadConceptListModalStateT>(
-    (state) => state.queryUploadConceptListModal,
+const QueryUploadConceptListModal = ({
+  andIdx,
+  onClose,
+}: {
+  andIdx?: number;
+  onClose: () => void;
+}) => {
+  const dispatch = useDispatch();
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
   );
 
-  const dispatch = useDispatch();
-  const onClose = () => {
-    dispatch(closeQueryUploadConceptListModal());
+  const onCloseModal = useCallback(() => {
     dispatch(resetUploadConceptListModal());
-  };
-  const onAccept = (
-    label: string,
-    rootConcepts: TreesT,
-    resolvedConcepts: string[],
-  ) =>
-    dispatch(
-      acceptQueryUploadConceptListModal({
-        andIdx: context.andIdx,
-        label,
-        rootConcepts,
-        resolvedConcepts,
-      }),
-    );
+    onClose();
+  }, [dispatch, onClose]);
 
-  if (!context.isOpen) return null;
+  const onAcceptConceptsOrFilter = useCallback(
+    (
+      label: string,
+      resolvedConcepts: string[],
+      resolvedFilter?: {
+        tableId: string;
+        filterId: string;
+        value: SelectOptionT[];
+      },
+    ) =>
+      dispatch(
+        acceptUploadedConceptsOrFilter({
+          andIdx,
+          label,
+          rootConcepts,
+          resolvedConcepts,
+          resolvedFilter,
+        }),
+      ),
+    [andIdx, dispatch, rootConcepts],
+  );
 
-  return <UploadConceptListModal onClose={onClose} onAccept={onAccept} />;
+  return (
+    <UploadConceptListModal
+      onClose={onCloseModal}
+      onAcceptConceptsOrFilter={onAcceptConceptsOrFilter}
+    />
+  );
 };
 
 export default QueryUploadConceptListModal;

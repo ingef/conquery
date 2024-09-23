@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
@@ -19,7 +20,8 @@ const Root = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.col.bg};
-  z-index: 1;
+  position: relative;
+  z-index: 2;
 `;
 
 const Row = styled("div")`
@@ -38,10 +40,7 @@ const SxIconButton = styled(IconButton)`
   padding: 7px 10px;
 `;
 
-interface Props {
-  reset: () => void;
-}
-const FormsNavigation = ({ reset }: Props) => {
+const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
   const language = useActiveLang();
   const { t } = useTranslation();
 
@@ -69,15 +68,6 @@ const FormsNavigation = ({ reset }: Props) => {
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 
-  const activeFormType = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state),
-  );
-  const onClear = () => {
-    if (activeFormType) {
-      reset();
-    }
-  };
-
   return (
     <Root>
       <Row>
@@ -88,17 +78,19 @@ const FormsNavigation = ({ reset }: Props) => {
           value={options.find((o) => o.value === activeForm) || null}
           onChange={(value) => {
             if (value) {
-              reset();
               onChangeToForm(value.value as string);
+              // we intentionally only change the form
+              // but we don't reset field state,
+              // so values are kept when switching forms
             }
           }}
         />
         <ConfirmableTooltip
-          onConfirm={onClear}
+          onConfirm={onReset}
           confirmationText={t("externalForms.common.clearConfirm")}
         >
           <WithTooltip text={t("externalForms.common.clear")}>
-            <SxIconButton frame regular icon="trash-alt" />
+            <SxIconButton frame icon={faTrash} />
           </WithTooltip>
         </ConfirmableTooltip>
       </Row>

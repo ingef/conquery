@@ -5,11 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -20,17 +16,23 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RelativeFormQuery extends Query {
 	@NotNull @Valid
 	private final Query query;
@@ -48,19 +50,21 @@ public class RelativeFormQuery extends Query {
 	private final CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
-	
+
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context),
-			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		return new RelativeFormQueryPlan(
+				query.createQueryPlan(context),
+				// At the moment we do not use the dates of feature and outcome query
+				features.createQueryPlan(context),
+				indexSelector, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap
+		);
 	}
 
 	@Override
@@ -70,22 +74,18 @@ public class RelativeFormQuery extends Query {
 	}
 	
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		// resolution
-		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
-		// index
-		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
-		// event date
-		resultInfos.add(ConqueryConstants.EVENT_DATE_INFO);
-		// date range info
-		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
 
-		final List<ResultInfo> featureInfos = features.getResultInfos();
+		resultInfos.add(ResultHeaders.formResolutionInfo(printSettings));
+		resultInfos.add(ResultHeaders.formContextInfo(printSettings));
+		resultInfos.add(ResultHeaders.formEventDateInfo(printSettings));
+		resultInfos.add(ResultHeaders.formDateRangeInfo(printSettings));
 
-		resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
+		final List<ResultInfo> featureInfos = features.getResultInfos(printSettings);
 
-		//features
+		resultInfos.add(ResultHeaders.formObservationScopeInfo(printSettings));
+
 		resultInfos.addAll(featureInfos);
 
 		return resultInfos;
@@ -97,5 +97,10 @@ public class RelativeFormQuery extends Query {
 		visitor.accept(this);
 		query.visit(visitor);
 		features.visit(visitor);
+	}
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return query.collectRequiredEntities(context);
 	}
 }

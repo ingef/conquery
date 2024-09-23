@@ -18,13 +18,15 @@ public enum Ability {
 	STATISTIC, // Not used yet: Only get aggregations over entities and statistics about query results
 	DOWNLOAD,  // Allow download of per entity results
 	PRESERVE_ID,  // Needs extra implementation: Allow the user to see the real id of entities and externally resolve real ids into conquery
-	
+
+	ENTITY_PREVIEW,
+	QUERY_PREVIEW, //TODO not yet implemented
+
 	// FormConfig specific
-	MODIFY
-	;
-	
+	MODIFY;
+
 	private final Set<Ability> asSet = Collections.singleton(this);
-	
+
 	public Set<Ability> asSet() {
 		return asSet;
 	}

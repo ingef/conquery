@@ -6,13 +6,12 @@ import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -21,17 +20,18 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class EventDurationSumAggregator extends Aggregator<Long> {
 
+	private final CDateSet set = CDateSet.createEmpty();
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
-	private final CDateSet set = CDateSet.create();
-
 	@CheckForNull
 	private CDateSet dateRestriction;
 	@CheckForNull
-	private Column validityDateColumn;
+	private ValidityDate validityDateColumn;
+	private int realUpperBound;
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -42,23 +42,19 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (validityDateColumn == null) {
 			return;
 		}
 
-		if (!bucket.has(event, validityDateColumn)) {
-			return;
-		}
+		final CDateRange value = validityDateColumn.getValidityDate(event, bucket);
 
-		final CDateRange value = bucket.getAsDateRange(event, validityDateColumn);
-
-		if (value.isOpen()) {
+		if (value == null){
 			return;
 		}
 
 
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override
@@ -71,11 +67,6 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 				);
 
 		return set.countDays();
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.IntegerT.INSTANCE;
 	}
 
 }

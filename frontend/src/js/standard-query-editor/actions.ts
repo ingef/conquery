@@ -11,21 +11,24 @@ import {
 import type {
   AndQueryT,
   ConceptIdT,
-  QueryT,
-  QueryNodeT,
   PostFilterSuggestionsResponseT,
+  QueryNodeT,
+  QueryT,
   SelectOptionT,
 } from "../api/types";
-import { successPayload } from "../common/actions";
+import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
-import { useDatasetId } from "../dataset/selectors";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
 import { expandNode } from "./expandNode";
 import { StandardQueryStateT } from "./queryReducer";
-import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
+import type {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+  FilterWithValueType,
+} from "./types";
 
 export type StandardQueryEditorActions = ActionType<
   | typeof resetTable
@@ -92,9 +95,7 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
     case "OR":
       return [
         ...queries,
-        ...node.children.flatMap((child: any) =>
-          findPreviousQueryIds(child, []),
-        ),
+        ...node.children.flatMap((child) => findPreviousQueryIds(child, [])),
       ];
     default:
       return queries;
@@ -124,7 +125,6 @@ export const expandPreviousQuery = createAction(
 )<StandardQueryStateT>();
 
 const useLoadBigMultiSelectValues = () => {
-  const datasetId = useDatasetId();
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
   return useCallback(
@@ -133,8 +133,6 @@ const useLoadBigMultiSelectValues = () => {
     // don't have value: SelectOptionT[] yet, but string[]
     // we just don't have an extra type for it.
     async (state: StandardQueryStateT): Promise<StandardQueryStateT> => {
-      if (!datasetId) return state;
-
       return Promise.all(
         state.map(async (val) => ({
           ...val,
@@ -148,21 +146,28 @@ const useLoadBigMultiSelectValues = () => {
                     ...table,
                     filters: await Promise.all(
                       table.filters.map(async (filter) => {
-                        if (filter.type !== "BIG_MULTI_SELECT") return filter;
-                        if (!filter.value || filter.value.length === 0)
+                        if (
+                          filter.type !== "BIG_MULTI_SELECT" ||
+                          !filter.value ||
+                          filter.value.length === 0
+                        ) {
                           return filter;
+                        }
 
                         try {
                           const result = await postFilterValuesResolve(
-                            datasetId,
-                            el.tree,
-                            table.id,
                             filter.id,
                             filter.value as unknown as string[], // See explanation above
                           );
                           return {
                             ...filter,
-                            value: result.resolvedFilter?.value || [],
+                            value: [
+                              ...(result.resolvedFilter?.value || []),
+                              ...(result.unknownCodes || []).map((code) => ({
+                                label: code,
+                                value: code,
+                              })),
+                            ],
                           };
                         } catch (e) {
                           console.error(e);
@@ -178,7 +183,7 @@ const useLoadBigMultiSelectValues = () => {
         })),
       );
     },
-    [datasetId, postFilterValuesResolve],
+    [postFilterValuesResolve],
   );
 };
 
@@ -257,7 +262,7 @@ export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
-  value: any; // Actually: FilterWithValueType["value"] which is overloaded;
+  value: FilterWithValueType["value"]; // Actually: FilterWithValueType["value"] which is overloaded;
 }>();
 
 export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{

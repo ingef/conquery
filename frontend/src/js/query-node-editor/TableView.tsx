@@ -1,15 +1,17 @@
 import styled from "@emotion/styled";
-import { FC, memo, useCallback, useMemo } from "react";
+import { FC, memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type {
+  ConceptQueryNodeType,
+  FilterWithValueType,
+} from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
@@ -30,13 +32,16 @@ const MaximizedCell = styled(ContentCell)`
 interface PropsT {
   node: ConceptQueryNodeType;
   tableIdx: number;
-  datasetId: DatasetT["id"];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
 
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -46,14 +51,13 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-    { returnOnly }?: { returnOnly?: boolean },
+    config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
 }
 
 const TableView: FC<PropsT> = ({
   node,
   tableIdx,
-  datasetId,
   allowlistedSelects,
   blocklistedSelects,
 
@@ -73,17 +77,8 @@ const TableView: FC<PropsT> = ({
     !!table.dateColumn && table.dateColumn.options.length > 0;
   const displayFilters = !!table.filters && table.filters.length > 0;
 
-  const filterContext = useMemo(
-    () => ({
-      datasetId,
-      treeId: node.tree,
-      tableId: table.id,
-    }),
-    [node.tree, table.id, datasetId],
-  );
-
   const setFilterValue = useCallback(
-    (filterIdx: number, value: unknown) =>
+    (filterIdx: number, value: FilterWithValueType["value"]) =>
       onSetFilterValue(tableIdx, filterIdx, value),
     [tableIdx, onSetFilterValue],
   );
@@ -95,12 +90,16 @@ const TableView: FC<PropsT> = ({
   );
 
   const loadFilterSuggestions = useCallback(
-    (filterIdx, filterId, prefix, page, pageSize, config) =>
+    (
+      filterIdx: number,
+      filterId: string,
+      prefix: string,
+      page: number,
+      pageSize: number,
+      config?: { returnOnly?: boolean },
+    ) =>
       onLoadFilterSuggestions(
         {
-          datasetId: datasetId,
-          conceptId: node.tree,
-          tableId: table.id,
           filterId,
           prefix,
           page,
@@ -111,11 +110,11 @@ const TableView: FC<PropsT> = ({
         config,
       ),
 
-    [onLoadFilterSuggestions, datasetId, node.tree, table.id, tableIdx],
+    [onLoadFilterSuggestions, tableIdx],
   );
 
   const selectTableSelects = useCallback(
-    (value) => onSelectTableSelects(tableIdx, value),
+    (value: SelectOptionT[]) => onSelectTableSelects(tableIdx, value),
     [onSelectTableSelects, tableIdx],
   );
 
@@ -148,7 +147,6 @@ const TableView: FC<PropsT> = ({
             key={tableIdx}
             filters={table.filters}
             excludeTable={table.exclude}
-            context={filterContext}
             onSetFilterValue={setFilterValue}
             onSwitchFilterMode={setFilterMode}
             onLoadFilterSuggestions={loadFilterSuggestions}

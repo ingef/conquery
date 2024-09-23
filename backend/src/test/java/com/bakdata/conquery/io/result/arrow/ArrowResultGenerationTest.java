@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +24,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
@@ -52,14 +55,16 @@ public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	public static final UniqueNamer
-			UNIQUE_NAMER =
-			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
+	private static final PrintSettings
+			PRINT_SETTINGS =
+			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
-    @Test
+
+	@Test
     void generateFieldsIdMapping() {
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, UNIQUE_NAMER);
+        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, uniqueNamer);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -70,13 +75,17 @@ public class ArrowResultGenerationTest {
 
     @Test
     void generateFieldsValue() {
-        List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
-                .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
+
+
+
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
 
 		List<Field> fields = generateFields(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-				UNIQUE_NAMER
+				uniqueNamer
 		);
 
         assertThat(fields).containsExactlyElementsOf(
@@ -118,7 +127,7 @@ public class ArrowResultGenerationTest {
                 Locale.ROOT,
                 null,
                 CONFIG,
-                (cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+                (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = getTestEntityResults();
@@ -128,19 +137,21 @@ public class ArrowResultGenerationTest {
         // First we write to the buffer, than we read from it and parse it as TSV
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-                printSettings,
-                BATCH_SIZE,
-                ResultTestUtil.ID_FIELDS,
-                mquery.getResultInfos(),
-                mquery.streamResults());
+		renderToStream(
+				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+				printSettings,
+				new ArrowConfig(BATCH_SIZE),
+				ResultTestUtil.ID_FIELDS,
+				mquery.getResultInfos(printSettings),
+				mquery.streamResults(OptionalLong.empty())
+		);
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(), printSettings));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(printSettings), printSettings));
 
     }
 
@@ -190,7 +201,7 @@ public class ArrowResultGenerationTest {
 
 		return Stream.concat(
 				// Id column headers
-				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
+				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName()),
 				// result column headers
 				getResultTypes().stream().map(ResultType::typeInfo)
 		).collect(Collectors.joining("\t"))
@@ -201,7 +212,7 @@ public class ArrowResultGenerationTest {
         if (obj == null) {
             return "null";
         }
-        if (type.equals(ResultType.DateRangeT.INSTANCE)) {
+        if (type.equals(ResultType.Primitive.DATE_RANGE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
             StringBuilder sb = new StringBuilder();

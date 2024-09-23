@@ -1,11 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC } from "react";
-
-interface PropsT {
-  className?: string;
-  isHighlighted?: boolean;
-}
+import { ReactNode } from "react";
 
 const Label = styled("span")<{ isHighlighted?: boolean }>`
   ${({ theme, isHighlighted }) =>
@@ -17,10 +12,14 @@ const Label = styled("span")<{ isHighlighted?: boolean }>`
     `};
 `;
 
-const HighlightableLabel: FC<PropsT> = ({
+const HighlightableLabel = ({
   isHighlighted,
   className,
   children,
+}: {
+  children: ReactNode;
+  className?: string;
+  isHighlighted?: boolean;
 }) => {
   return (
     <Label className={className} isHighlighted={isHighlighted}>

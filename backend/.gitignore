@@ -1,3 +1,6 @@
+# Explicitly check in stub classes
+!/src/main/java/org/apache/hadoop/mapreduce/lib
+
 # Compiled class file
 *.class
 

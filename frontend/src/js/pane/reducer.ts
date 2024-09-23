@@ -15,7 +15,7 @@ const initialState: PanesStateT = {
     activeTab: "conceptTrees",
   },
   right: {
-    activeTab: null,
+    activeTab: "queryEditor",
   },
 };
 

@@ -62,7 +62,7 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		final List<Object> incoming = new ArrayList<>(getColumns().size());
 
 		// Do not accept completely empty lines
@@ -79,12 +79,8 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 		}
 
 		if (anyPresent && observed.add(incoming)) {
-			aggregator.acceptEvent(bucket, event);
+			aggregator.consumeEvent(bucket, event);
 		}
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return aggregator.getResultType();
-	}
 }

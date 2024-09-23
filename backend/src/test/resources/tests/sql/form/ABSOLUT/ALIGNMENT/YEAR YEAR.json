@@ -1,0 +1,46 @@
+{
+  "type": "FORM_TEST",
+  "label": "YEAR Alignment, YEAR Resolution",
+  "expectedCsv": {
+    "results": "tests/sql/form/ABSOLUT/ALIGNMENT/year_year_expected.csv"
+  },
+  "form": {
+    "type": "EXPORT_FORM",
+    "queryGroup": "00000000-0000-0000-0000-000000000001",
+    "resolution": "YEARS",
+    "alsoCreateCoarserSubdivisions": true,
+    "features": [
+      {
+        "ids": [
+          "alter"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "alter.alter",
+            "filters": []
+          }
+        ]
+      }
+    ],
+    "timeMode": {
+      "value": "ABSOLUTE",
+      "alignmentHint": "YEAR",
+      "dateRange": {
+        "min": "2012-06-16",
+        "max": "2014-12-17"
+      }
+    }
+  },
+  "concepts": [
+    "/shared/alter.concept.json"
+  ],
+  "content": {
+    "tables": [
+      "/shared/vers_stamm.table.json"
+    ],
+    "previousQueryResults": [
+      "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"
+    ]
+  }
+}

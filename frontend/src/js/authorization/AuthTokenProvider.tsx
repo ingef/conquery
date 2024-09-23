@@ -6,7 +6,7 @@ import { isIDPEnabled } from "../environment";
 
 import { getStoredAuthToken, storeAuthToken } from "./helper";
 
-export interface AuthTokenContextValue {
+interface AuthTokenContextValue {
   authToken: string;
   setAuthToken: (token: string) => void;
 }

@@ -11,6 +11,6 @@
 		<appender-ref ref="STDOUT" />
 	</root>
 
-	<logger name="com.bakdata" level="INFO"/>
+    <logger name="com.bakdata" level="INFO"/>
 
 </configuration>

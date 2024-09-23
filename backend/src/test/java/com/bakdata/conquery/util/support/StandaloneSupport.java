@@ -4,15 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class StandaloneSupport {
+public class StandaloneSupport implements TestSupport {
 
+	public enum Mode {WORKER, SQL}
+
+	@Getter
+	private final Mode mode;
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;
@@ -52,9 +56,11 @@ public class StandaloneSupport {
 	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
+	@Getter
+	private final TestDataImporter testImporter;
 
 	public AuthorizationController getAuthorizationController() {
-		return testConquery.getStandaloneCommand().getManager().getAuthController();
+		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
 	public void waitUntilWorkDone() {
@@ -67,8 +73,10 @@ public class StandaloneSupport {
 				Map.of(
 						"in", tmpDir,
 						"out", tmpDir,
-						"desc", descriptions
-
+						"desc", descriptions,
+						"buckets", 10,
+						"strict", true,
+						"fast-fail", true
 				)
 		);
 
@@ -84,19 +92,19 @@ public class StandaloneSupport {
 
 
 	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getManager().getValidator();
+		return testConquery.getStandaloneCommand().getManagerNode().getValidator();
 	}
 
 	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManager().getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getMetaStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
 	public DatasetRegistry getDatasetRegistry() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry();
 	}
 
 	public List<ShardNode> getShardNodes() {

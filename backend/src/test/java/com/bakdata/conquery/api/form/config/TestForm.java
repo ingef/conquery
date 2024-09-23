@@ -1,29 +1,36 @@
 package com.bakdata.conquery.api.form.config;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class TestForm extends Form {
+public abstract class TestForm extends Form implements InternalForm {
 
 	@Override
-	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
+	}
+
+	@Override
+	public Map<String, Query> createSubQueries() {
+		return Collections.emptyMap();
 	}
 
 	@Override
@@ -34,11 +41,6 @@ public abstract class TestForm extends Form {
 	@Override
 	public void resolve(QueryResolveContext context) {
 
-	}
-
-	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
-		return Collections.emptyMap();
 	}
 
 	@Override
@@ -53,9 +55,19 @@ public abstract class TestForm extends Form {
 
 	@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
 	public static class Abs extends TestForm {
+		@Nullable
+		@Override
+		public JsonNode getValues() {
+			return null;
+		}
 	}
 
 	@CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
 	public static class Rel extends TestForm {
+		@Nullable
+		@Override
+		public JsonNode getValues() {
+			return null;
+		}
 	}
 }

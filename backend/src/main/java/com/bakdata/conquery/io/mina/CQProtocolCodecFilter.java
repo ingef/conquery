@@ -264,8 +264,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 			return;
 		}
 
-		if (writeRequest instanceof MessageWriteRequest) {
-			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
+		if (writeRequest instanceof MessageWriteRequest wrappedRequest) {
 			nextFilter.messageSent(session, wrappedRequest.getOriginalRequest());
 		} else {
 			nextFilter.messageSent(session, writeRequest);

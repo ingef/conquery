@@ -1,4 +1,7 @@
-import { useCallback } from "react";
+import startOfYear from "date-fns/startOfYear";
+import subYears from "date-fns/subYears";
+import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -10,18 +13,24 @@ import type {
   ColumnDescription,
   DatasetT,
   EntityInfo,
-  HistorySources,
+  GetEntityHistoryDefaultParamsResponse,
+  ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { ErrorObject, errorPayload } from "../common/actions";
-import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
+import { ErrorObject, errorPayload } from "../common/actions/genericActions";
+import {
+  formatStdDate,
+  getFirstAndLastDateOfRange,
+} from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
-import { useLoadPreviewData } from "../preview/actions";
+import { setMessage } from "../snack-message/actions";
 
 import { EntityEvent, EntityId } from "./reducer";
+import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -29,6 +38,7 @@ export type EntityHistoryActions = ActionType<
   | typeof loadHistoryData
   | typeof loadDefaultHistoryParamsSuccess
   | typeof resetCurrentEntity
+  | typeof resetHistory
 >;
 
 export const openHistory = createAction("history/OPEN")();
@@ -36,18 +46,30 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: HistorySources }>();
+)<GetEntityHistoryDefaultParamsResponse>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
+
+  // TODO: Get this to work such that we only try to load
+  // if the user has the permission to do so.
+  // So far, if we enable this, we won't load the entityHistoryDefaultParams
+  // on the first app load, because we'd have to time the result of /me (permissions)
+  // to be available before loading this.
+  // const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
+  // const canViewHistoryRef = useRef(canViewHistory);
+  // canViewHistoryRef.current = canViewHistory;
+
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
 
   return useCallback(
     async (datasetId: DatasetT["id"]) => {
       try {
+        // if (!canViewHistoryRef.current) return;
+
         const result = await getEntityHistoryDefaultParams(datasetId);
 
-        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+        dispatch(loadDefaultHistoryParamsSuccess(result));
       } catch (error) {
         // TODO: Fail without noticing user, maybe change this later if required
         console.error(error);
@@ -60,6 +82,7 @@ export const useLoadDefaultHistoryParams = () => {
 export const resetCurrentEntity = createAction(
   "history/RESET_CURRENT_ENTITY",
 )();
+export const resetHistory = createAction("history/RESET")();
 
 export const loadHistoryData = createAsyncAction(
   "history/LOAD_START",
@@ -71,9 +94,10 @@ export const loadHistoryData = createAsyncAction(
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityInfos: EntityInfo[];
+    currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
     currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
-    resultUrls?: string[];
+    resultUrls?: ResultUrlWithLabel[];
     entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
@@ -99,19 +123,32 @@ function getPreferredIdColumns(columns: ColumnDescription[]) {
   }));
 }
 
+async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
+  try {
+    const result = await loadCSV(url);
+    return {
+      csv: result.data,
+      columns,
+      resultUrl: url,
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
 // - from a dropped file with a list of entities
 // - from a previous query
 export function useNewHistorySession() {
   const dispatch = useDispatch();
-  const loadPreviewData = useLoadPreviewData();
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, { noLoading: true });
+    const result = await onLoadHistoryData(url, columns);
 
     if (!result) {
       dispatch(
@@ -127,7 +164,7 @@ export function useNewHistorySession() {
     }
 
     const entityIds = result.csv
-      .slice(1) // remove header
+      .slice(1)
       .map((row) => {
         for (const col of preferredIdColumns) {
           // some values might be empty, search for defined values
@@ -137,8 +174,8 @@ export function useNewHistorySession() {
               kind: col.idKind,
             };
           }
+          return null;
         }
-        return null;
       })
       .filter(exists);
 
@@ -156,18 +193,30 @@ export function useNewHistorySession() {
   };
 }
 
+const SHOW_LOADING_DELAY = 300;
+
 export function useUpdateHistorySession() {
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
   const getEntityHistory = useGetEntityHistory();
   const getAuthorizedUrl = useGetAuthorizedUrl();
+  const { t } = useTranslation();
+
+  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const [loadingId, setLoadingId] = useState<string>();
 
   const defaultEntityHistoryParams = useSelector<
     StateT,
-    { sources: HistorySources }
+    StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
+  const observationPeriodMin = useSelector<StateT, string>((state) => {
+    return (
+      state.startup.config.observationPeriodStart ||
+      formatStdDate(subYears(startOfYear(new Date()), 1))
+    );
+  });
 
-  return useCallback(
+  const updateHistorySession = useCallback(
     async ({
       entityId,
       entityIds,
@@ -180,33 +229,57 @@ export function useUpdateHistorySession() {
     }) => {
       if (!datasetId) return;
 
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      loadingIdTimeout.current = setTimeout(() => {
+        setLoadingId(entityId.id);
+      }, SHOW_LOADING_DELAY);
+
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions, infos } =
+        const { resultUrls, columnDescriptions, infos, timeStratifiedInfos } =
           await getEntityHistory(
             datasetId,
             entityId,
             defaultEntityHistoryParams.sources,
+            {
+              min: observationPeriodMin,
+              max: formatStdDate(new Date()),
+            },
           );
 
-        const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
+        const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
 
         if (!csvUrl) {
           throw new Error("No CSV URL found");
         }
 
-        const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
-        const csv = await loadCSV(authorizedCSVUrl, { english: true });
+        const authorizedCSVUrl = getAuthorizedUrl(csvUrl.url);
+        const csv = await loadCSV(authorizedCSVUrl);
         const currentEntityData = await parseCSVWithHeaderToObj(
           csv.data.map((r) => r.join(";")).join("\n"),
         );
+        const dateColumn = columnDescriptions.find(isDateColumn);
+        if (!dateColumn) {
+          throw new Error("No date column found");
+        }
+        const sourceColumn = columnDescriptions.find(isSourceColumn);
+        if (!sourceColumn) {
+          throw new Error("No sources column found");
+        }
 
-        const currentEntityDataProcessed =
-          transformEntityData(currentEntityData);
+        const currentEntityDataProcessed = transformEntityData(
+          currentEntityData,
+          { dateColumn },
+        );
+
         const uniqueSources = [
-          ...new Set(currentEntityDataProcessed.map((row) => row.source)),
-        ];
+          ...new Set(
+            currentEntityDataProcessed.map((row) => row[sourceColumn.label]),
+          ),
+        ] as string[];
 
         const csvHeader = csv.data[0];
         const columns: Record<string, ColumnDescription> = Object.fromEntries(
@@ -222,10 +295,11 @@ export function useUpdateHistorySession() {
 
         dispatch(
           loadHistoryData.success({
-            currentEntityCsvUrl: csvUrl,
+            currentEntityCsvUrl: csvUrl.url,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
             currentEntityInfos: nonEmptyInfos,
+            currentEntityTimeStratifiedInfos: timeStratifiedInfos,
             currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
             resultUrls,
@@ -236,27 +310,60 @@ export function useUpdateHistorySession() {
         );
       } catch (e) {
         dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
+        dispatch(
+          setMessage({
+            message: t("history.error"),
+            type: "error",
+          }),
+        );
       }
+
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      setLoadingId(undefined);
     },
     [
+      t,
       datasetId,
-      defaultEntityHistoryParams.sources,
+      defaultEntityHistoryParams,
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,
+      observationPeriodMin,
     ],
   );
+
+  return {
+    loadingId,
+    updateHistorySession,
+  };
 }
 
-const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
+interface DateRow {
+  from: Date;
+  to: Date;
+}
+const transformEntityData = (
+  data: { [key: string]: unknown }[],
+  {
+    dateColumn,
+  }: {
+    dateColumn: ColumnDescription;
+  },
+): EntityEvent[] => {
+  const dateKey = dateColumn.label;
+
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row["dates"]);
+      const { first, last } = getFirstAndLastDateOfRange(
+        row[dateKey] as string,
+      );
 
       return first && last
         ? {
             ...row,
-            dates: {
+            [dateKey]: {
               from: first,
               to: last,
             },
@@ -264,16 +371,19 @@ const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
         : row;
     })
     .sort((a, b) => {
-      return a.dates.from - b.dates.from > 0 ? -1 : 1;
+      return (a[dateKey] as DateRow).from.getTime() -
+        (b[dateKey] as DateRow).from.getTime() >
+        0
+        ? -1
+        : 1;
     })
     .map((row) => {
-      const { dates, ...rest } = row;
       return {
-        dates: {
-          from: formatStdDate(row.dates?.from),
-          to: formatStdDate(row.dates?.to),
+        ...row,
+        [dateKey]: {
+          from: formatStdDate((row[dateKey] as DateRow)?.from),
+          to: formatStdDate((row[dateKey] as DateRow)?.to),
         },
-        ...rest,
       };
     });
 };

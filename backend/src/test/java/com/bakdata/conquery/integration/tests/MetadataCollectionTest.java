@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -23,19 +24,20 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		
+
 		DatasetId dataset = conquery.getDataset().getId();
-		
+
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-		
+
 		test.importRequiredData(conquery);
-		
+
 		//ensure the metadata is collected
-		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage());
+		DistributedNamespace namespace = (DistributedNamespace) conquery.getNamespace();
+		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
 
 		conquery.waitUntilWorkDone();
-		
+
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 
 		//check the number of matched events

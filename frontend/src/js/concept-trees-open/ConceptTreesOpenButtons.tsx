@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
 import { FC, memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -83,13 +84,13 @@ const ConceptTreesOpenButtonsView = memo(
     return (
       <Row className={className}>
         <WithTooltip text={t("conceptTreesOpen.resetAll")}>
-          <SxIconButton frame icon="home" onClick={onResetAllConceptOpen} />
+          <SxIconButton frame icon={faHome} onClick={onResetAllConceptOpen} />
         </WithTooltip>
         <WithTooltip text={t("conceptTreesOpen.closeAll")}>
           <SxIconButton
             disabled={isCloseAllDisabled}
             frame
-            icon="folder-minus"
+            icon={faFolderMinus}
             onClick={onCloseAllConceptOpen}
           />
         </WithTooltip>

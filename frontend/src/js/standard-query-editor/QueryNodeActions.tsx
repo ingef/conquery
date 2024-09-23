@@ -1,4 +1,11 @@
 import styled from "@emotion/styled";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import {
+  faExpandArrowsAlt,
+  faMicroscope,
+  faSpinner,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,7 +25,7 @@ const StyledFaIcon = styled(FaIcon)`
 `;
 
 const StyledIconButton = styled(IconButton)`
-  padding: 0px 6px 4px;
+  padding: 4px 6px 4px;
 `;
 
 const RelativeContainer = styled.div`
@@ -59,7 +66,7 @@ const QueryNodeActions = (props: Props) => {
     <Actions>
       <WithTooltip text={t("queryEditor.removeNode")}>
         <StyledIconButton
-          icon="times"
+          icon={faTimes}
           onClick={(e) => {
             e.stopPropagation();
             props.onDeleteNode(props.andIdx, props.orIdx);
@@ -70,8 +77,7 @@ const QueryNodeActions = (props: Props) => {
         <WithTooltip text={t("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton
             red
-            regular
-            icon="calendar"
+            icon={faCalendar}
             onClick={(e) => {
               e.stopPropagation();
               props.onToggleTimestamps(props.andIdx, props.orIdx);
@@ -81,13 +87,13 @@ const QueryNodeActions = (props: Props) => {
       )}
       {!props.error && !!props.previousQueryLoading && (
         <WithTooltip text={t("queryEditor.loadingPreviousQuery")}>
-          <StyledFaIcon icon="spinner" />
+          <StyledFaIcon icon={faSpinner} />
         </WithTooltip>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
         <WithTooltip text={t("queryEditor.expand")}>
           <StyledIconButton
-            icon="expand-arrows-alt"
+            icon={faExpandArrowsAlt}
             onClick={(e) => {
               e.stopPropagation();
               props.onExpandClick();
@@ -105,7 +111,7 @@ const QueryNodeActions = (props: Props) => {
         >
           <RelativeContainer>
             <StyledIconButton
-              icon="microscope"
+              icon={faMicroscope}
               onClick={(e) => {
                 e.stopPropagation();
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,12 +23,13 @@ const SxIconButton = styled(IconButton)`
   padding: 9px 6px;
 `;
 
-interface PropsT {
+const UploadQueryResults = ({
+  className,
+  datasetId,
+}: {
   className?: string;
   datasetId: DatasetT["id"] | null;
-}
-
-const UploadQueryResults = ({ className, datasetId }: PropsT) => {
+}) => {
   const { t } = useTranslation();
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -56,16 +58,21 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
       setLoading(true);
 
       const result = await postQueryUpload(datasetId, query);
-
       setUploadResult(result);
 
       loadQueries(datasetId);
     } catch (e) {
-      if ((e as { status?: number }).status === 400) {
+      if (
+        (e as { status?: number }).status === 400 &&
+        "resolved" in (e as object)
+      ) {
         setUploadResult(e as UploadQueryResponseT);
       } else {
         dispatch(
-          setMessage({ message: t("uploadQueryResultsModal.uploadFailed") }),
+          setMessage({
+            message: t("uploadQueryResultsModal.uploadFailed"),
+            type: "error",
+          }),
         );
       }
     }
@@ -77,7 +84,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
       <WithTooltip text={t("uploadQueryResults.uploadResults")}>
         <SxIconButton
           frame
-          icon="upload"
+          icon={faUpload}
           onClick={() => setIsModalOpen(true)}
         />
       </WithTooltip>

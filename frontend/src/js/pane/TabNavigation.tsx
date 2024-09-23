@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
+import tw from "tailwind-styled-components";
 import FaIcon from "../icon/FaIcon";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
@@ -12,32 +14,28 @@ const Root = styled("div")`
   align-items: flex-start;
 `;
 
-const Headline = styled("h2")<{ active: boolean }>`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin-bottom: 0;
-  margin-top: 6px;
-  padding: 0 12px;
-  letter-spacing: 1px;
-  line-height: 30px;
-  text-transform: uppercase;
-  flex-shrink: 0;
+const Headline = tw("h2")<{ $active: boolean }>`
+  text-sm
+  mb-0
+  mt-[6px]
+  mr-[5px]
+  px-3
+  font-bold
+  leading-[30px]
+  uppercase
+  flex-shrink-0
+  transition-colors
+  cursor-pointer
+  tracking-wider
 
-  transition: color ${({ theme }) => theme.transitionTime},
-    border-bottom ${({ theme }) => theme.transitionTime};
-  cursor: pointer;
-  margin-right: 5px;
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.gray};
-  border-bottom: 4px solid
-    ${({ theme, active }) => (active ? theme.col.blueGrayDark : "transparent")};
+  border-b-[3px]
+  ${({ $active }) =>
+    $active ? "text-primary-500" : "text-gray-500 hover:text-black"};
+  ${({ $active }) =>
+    $active
+      ? "border-primary-500"
+      : "border-transparent hover:border-primary-200"};
 
-  &:hover {
-    color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayDark : theme.col.black};
-    border-bottom: 4px solid
-      ${({ theme, active }) =>
-        active ? theme.col.blueGrayDark : theme.col.grayLight};
-  }
 `;
 
 const SxWithTooltip = styled(WithTooltip)`
@@ -55,29 +53,40 @@ export interface TabNavigationTab {
   loading?: boolean;
 }
 
-interface PropsT {
+const TabNavigation = ({
+  tabs,
+  activeTab,
+  onClickTab,
+  dataTestId,
+}: {
   onClickTab: (tab: string) => void;
   activeTab: string | null;
   tabs: TabNavigationTab[];
   dataTestId: string;
-}
+}) => {
+  function createClickHandler(key: string) {
+    return () => {
+      if (key !== activeTab) {
+        onClickTab(key);
+      }
+    };
+  }
 
-const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) => {
   return (
     <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
-          <SxWithTooltip text={tooltip} lazy key={key}>
-            <Headline
-              active={activeTab === key}
-              onClick={() => {
-                if (key !== activeTab) onClickTab(key);
-              }}
-            >
-              {label}
-              {loading && <SxFaIcon icon="spinner" />}
-            </Headline>
-          </SxWithTooltip>
+          <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
+            <SxWithTooltip text={tooltip} lazy>
+              <Headline
+                $active={activeTab === key}
+                onClick={createClickHandler(key)}
+              >
+                {label}
+                {loading && <SxFaIcon icon={faSpinner} />}
+              </Headline>
+            </SxWithTooltip>
+          </HoverNavigatable>
         );
       })}
     </Root>

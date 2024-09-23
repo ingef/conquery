@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT, TreesT } from "./reducer";
+import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -57,6 +58,12 @@ const ConceptTreeFolder: FC<PropsT> = ({
     openInitially,
   });
 
+  if (!search.showMismatches) {
+    const shouldRender = isNodeInSearchResult(conceptId, search, tree.children);
+
+    if (!shouldRender) return null;
+  }
+
   const matchingEntries =
     !tree.children || !tree.matchingEntries
       ? null
@@ -82,6 +89,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
           children: tree.children,
         }}
         conceptId={conceptId}
+        root={tree}
         isStructFolder
         open={open || false}
         depth={depth}

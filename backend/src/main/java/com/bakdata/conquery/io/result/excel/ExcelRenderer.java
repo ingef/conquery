@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -40,12 +41,24 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 public class ExcelRenderer {
 
-	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
-			ResultType.DateT.class, ExcelRenderer::writeDateCell,
-			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
-			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-			ResultType.NumericT.class, ExcelRenderer::writeNumericCell
-	);
+	public static final int MAX_LINES = 1_048_576;
+
+	private static TypeWriter writer(ResultType type) {
+		if(!(type instanceof ResultType.Primitive)){
+			//Excel cannot handle complex types so we just toString them.
+			return (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
+		}
+
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> (info, settings, cell, value, styles) -> writeBooleanCell(info, cell, value, styles);
+			case INTEGER -> ExcelRenderer::writeIntegerCell;
+			case MONEY -> ExcelRenderer::writeMoneyCell;
+			case NUMERIC -> ExcelRenderer::writeNumericCell;
+			case DATE -> ExcelRenderer::writeDateCell;
+			default -> (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
+		};
+	}
+
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 
@@ -67,11 +80,9 @@ public class ExcelRenderer {
 		void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
 	}
 
-	public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
-			List<ResultInfo> idHeaders,
-			E exec,
-			OutputStream outputStream) throws IOException {
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
+			throws IOException {
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos(printSettings);
 
 		setMetaData(exec);
 
@@ -84,7 +95,7 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table);
 
-			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults());
+			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
@@ -99,7 +110,7 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
@@ -136,7 +147,7 @@ public class ExcelRenderer {
 	 * Create a table environment, which improves mainly the visuals of the produced table.
 	 */
 	@NotNull
-	private XSSFTable createTableEnvironment(ManagedExecution<?> exec, SXSSFSheet sheet) {
+	private XSSFTable createTableEnvironment(ManagedExecution exec, SXSSFSheet sheet) {
 		XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
 
 		CTTable cttable = table.getCTTable();
@@ -254,7 +265,7 @@ public class ExcelRenderer {
 				}
 
 				// Fallback to string if type is not explicitly registered
-				TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+				TypeWriter typeWriter = writer(resultInfo.getType());
 
 				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
 			}
@@ -292,23 +303,23 @@ public class ExcelRenderer {
 	}
 
 	// Type specific cell writers
-	private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
+	private static void writeStringCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
 		cell.setCellValue(
-				info.getType().printNullable(
-						settings,
+				info.printNullable(
 						value
 				));
 	}
 
 	/**
-	 * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
+	 * This writer is only used on Columns with the result type {@link ResultType.Primitive#BOOLEAN}, not on complex types such as `LIST[BOOLEAN]`,
+	 * because MS Excel can only represent those as strings
 	 */
-	private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (value instanceof Boolean) {
-			Boolean aBoolean = (Boolean) value;
+	private static void writeBooleanCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
+		if (value instanceof Boolean aBoolean) {
 			cell.setCellValue(aBoolean);
+			return;
 		}
-		cell.setCellValue(info.getType().printNullable(settings, value));
+		cell.setCellValue(info.printNullable(value));
 	}
 
 	private static void writeDateCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {

@@ -3,22 +3,28 @@ package com.bakdata.conquery.io.result.excel;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -59,21 +65,21 @@ public class ExcelResultRenderTest {
 				Locale.GERMAN,
 				null,
 				CONFIG,
-				(cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
+				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 				(selectInfo) -> selectInfo.getSelect().getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null) {
-			public List<ResultInfo> getResultInfos() {
+		ManagedQuery mquery = new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ExcelResultRenderTest.class.getSimpleName()), null) {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
-						.map(ResultTestUtil.TypedSelectDummy::new)
-						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList());
+									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), printSettings))
+									   .collect(Collectors.toList());
 			}
 
 			@Override
-			public Stream<EntityResult> streamResults() {
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
 			}
 		};
@@ -86,7 +92,8 @@ public class ExcelResultRenderTest {
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,
 				mquery,
-				output);
+				output, OptionalLong.empty(), printSettings
+		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
@@ -94,7 +101,7 @@ public class ExcelResultRenderTest {
 		List<String> computed = readComputed(inputStream, printSettings);
 
 
-		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), printSettings);
+		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(printSettings));
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -109,33 +116,27 @@ public class ExcelResultRenderTest {
 		XSSFSheet sheet = workbook.getSheetAt(0);
 
 		List<String> computed = new ArrayList<>();
-		int i = 0;
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
+			DataFormatter formatter = new DataFormatter(settings.getLocale());
 			for (Cell cell : row) {
-				DataFormatter formatter = new DataFormatter(settings.getLocale());
-				switch (cell.getCellType()) {
-					case STRING:
-					case FORMULA:
-					case BOOLEAN:
-					case NUMERIC:
-						sj.add(formatter.formatCellValue(cell));
-						break;
-					case BLANK:
-						// We write 'null' here to express that the cell was empty
-						sj.add("null");
-						break;
-					default: throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
-				}
+
+				final String formatted = switch (cell.getCellType()) {
+					case STRING, FORMULA, BOOLEAN, NUMERIC -> formatter.formatCellValue(cell);
+					// We write 'null' here to express that the cell was empty
+					case BLANK -> "null";
+					default -> throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
+				};
+
+				sj.add(formatted);
 			}
 			computed.add(sj.toString());
-			i++;
 		}
 		return computed;
 	}
 
 
-	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+	private List<String> generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream()
@@ -153,7 +154,7 @@ public class ExcelResultRenderTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							joinValue(settings, valueJoiner, val, info);
+							joinValue(valueJoiner, val, info);
 						}
 						expected.add(valueJoiner.toString());
 					}
@@ -162,11 +163,18 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
-		String printVal = info.getType().printNullable(settings, val);
-		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
-			printVal = printVal +" €";
+	private void joinValue(StringJoiner valueJoiner, Object val, ResultInfo info) {
+		String printVal = info.printNullable(val);
+
+		if (info.getType().equals(ResultType.Primitive.BOOLEAN)) {
+			// Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
+			printVal = (Boolean) val ? "TRUE" : "FALSE";
 		}
+
+		if(info.getType().equals(ResultType.Primitive.MONEY)){
+			printVal = printVal.replace(" ", " ");
+		}
+
 		valueJoiner.add(printVal);
 	}
 

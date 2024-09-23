@@ -66,6 +66,13 @@
               "column": "table1.datum"
             }
           ],
+          "filters" : [
+            {
+              "name" : "values-filter",
+              "type" : "SELECT",
+              "column" : "table1.column"
+            }
+          ],
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"

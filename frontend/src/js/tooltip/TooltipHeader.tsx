@@ -1,36 +1,35 @@
 import styled from "@emotion/styled";
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
 
+import tw from "tailwind-styled-components";
 import { toggleDisplayTooltip } from "./actions";
 
-const Header = styled("h2")`
-  background-color: white;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #ccc;
-  margin: 0;
-  padding: 0 20px;
-  font-size: ${({ theme }) => theme.font.sm};
-  letter-spacing: 1px;
-  line-height: 38px;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
+const Header = tw("h2")`
+  bg-white
+  h-[40px]
+  flex-shrink-0
+  flex items-center
+  px-5
+  pt-1
+  text-sm
+  tracking-[1px]
+  uppercase
+  text-primary-500
+  border-b border-gray-100
+  font-bold
 `;
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  padding: 6px 15px;
-  top: 46px;
+  top: 40px;
+  height: 39px;
   right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-radius: 0;
 `;
 
 export const TooltipHeader = memo(() => {
@@ -42,9 +41,9 @@ export const TooltipHeader = memo(() => {
   return (
     <>
       <StyledIconButton
-        frame
+        bgHover
         onClick={onToggleDisplayTooltip}
-        icon="angle-left"
+        icon={faAngleLeft}
       />
       <Header>{t("tooltip.headline")}</Header>
     </>

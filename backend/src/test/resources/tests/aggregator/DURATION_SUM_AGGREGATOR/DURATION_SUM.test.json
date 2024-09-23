@@ -25,7 +25,7 @@
       "type": "TREE",
       "connectors": [
         {
-          "label": "connector",
+          "name": "connector",
           "table": "table",
           "validityDates": {
             "label": "datum",
@@ -33,7 +33,7 @@
           },
           "selects": {
             "type": "DURATION_SUM",
-            "name" : "select",
+            "name": "select",
             "column": "table.datum"
           }
         }

@@ -11,20 +11,69 @@ import org.junit.jupiter.api.Test;
 class QuickSearchTest {
 
 	@Test
-	public void pants() {
-		final TrieSearch<String> search = new TrieSearch<>(2, "");
-		for (String item : List.of("Pants", "Pantshop", "Sweatpants", "PantsPants")) {
+	public void anaconda() {
+		final TrieSearch<String> search = new TrieSearch<>(3, "");
+		for (String item : List.of("Anaconda", "Anaxonds" /* Simulate Typing Errors */, "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
 			search.addItem(item, List.of(item));
 		}
 
 		search.shrinkToFit();
 
-		final List<String> results = search.findItems(List.of("pants"), Integer.MAX_VALUE);
+		String query = "anaconda";
+		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
 
-		assertThat(results).isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants"));
+		assertThat(results)
+				.describedAs("Query for %s".formatted(query))
+				.isEqualTo(List.of("Anaconda",	// Full match
+								   "Condar",	// 3 trigrams
+								   "Condor",	// 2 trigrams
+								   "Honda",		// 2 trigrams
+								   "Anaxonds",	// 1 trigram
+								   "London",	// 1 trigram
+								   "Ananas",	// 1 trigram
+								   "Analysis",	// 1 trigram
+								   "Canada"		// 1 trigram
+				));
 
 	}
 
+	@Test
+	public void pants() {
+		final TrieSearch<String> search = new TrieSearch<>(3, "");
+		for (String item : List.of("Pants", "Pantshop", "Sweatpants", "PantsPants", "Rantsom", "Fantastic", "Nohit")) {
+			search.addItem(item, List.of(item));
+		}
+
+		search.shrinkToFit();
+
+		String query = "pants";
+		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
+
+		assertThat(results)
+				.describedAs("Query for %s".formatted(query))
+				.isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants", "Rantsom", "Fantastic"));
+	}
+
+	@Test
+	public void searchOrder() {
+
+		final TrieSearch<String> search = setup();
+
+		// The more hits an item has, the more do we favor it.
+
+		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
+				.containsExactly(
+						"c aa",       // Two exact matches
+						"aa",         // One exact match
+						"c",          // One exact match
+						"aaa",        // One prefix match, onto a whole word
+						"aab",        // One prefix match, onto a whole word
+						"d baaacd"    // Two partial matches
+				);
+
+		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
+		assertThat(search.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
+	}
 
 	private static TrieSearch<String> setup() {
 		final TrieSearch<String> search = new TrieSearch<>(2, "");
@@ -43,29 +92,8 @@ class QuickSearchTest {
 		for (String item : items) {
 			search.addItem(item, List.of(item));
 		}
+		search.shrinkToFit();
 		return search;
-	}
-
-
-	@Test
-	public void searchOrder() {
-
-		final TrieSearch<String> search = setup();
-
-		// The more hits an item has, the more do we favor it.
-
-		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
-				.containsExactly(
-						"c aa",        // Two exact matches
-						"aa",        // One exact match
-						"c",        // One exact match
-						"aaa",        // One prefix match, onto a whole word
-						"aab",        // One prefix match, onto a whole word
-						"d baaacd"    // Two partial matches
-				);
-
-		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
-		assertThat(search.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
 	}
 
 	@Test
@@ -81,21 +109,33 @@ class QuickSearchTest {
 	}
 
 	@Test
-	public void testSuffixes() {
+	public void testNGrams() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.suffixes("baaacd"))
+		assertThat(search.ngramSplit("baaacd"))
 				.containsExactly(
-						"baaacd!",
-						"aaacd",
-						"aacd",
-						"acd"
+						"ba",
+						"aa",
+						"aa",
+						"ac",
+						"cd"
 				);
 
-		assertThat(search.suffixes("acd"))
-				.containsExactly("acd!");
+		assertThat(search.ngramSplit("acd"))
+				.containsExactly("ac", "cd");
 
-		assertThat(search.suffixes("aacd"))
-				.containsExactly("aacd!", "acd");
+		assertThat(search.ngramSplit("aacd"))
+				.containsExactly("aa", "ac", "cd");
+	}
+
+	@Test
+	public void testNoNGram() {
+		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
+
+		assertThat(search.ngramSplit("baaacd")).isEmpty();
+
+		assertThat(search.ngramSplit("acd")).isEmpty();
+
+		assertThat(search.ngramSplit("aacd")).isEmpty();
 	}
 }

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,7 +25,7 @@ const FoldersToggleButton: FC<Props> = ({ className, active, onClick }) => {
       text={t("previousQueriesFolderButton.tooltip")}
       className={className}
     >
-      <FoldersButton onClick={onClick} icon="folder" active={active} frame />
+      <FoldersButton onClick={onClick} icon={faFolder} active={active} frame />
     </WithTooltip>
   );
 };

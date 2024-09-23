@@ -17,6 +17,7 @@ const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {
       <InputSelect
         label={t("queryNodeEditor.dateColumn")}
         options={dateColumn.options}
+        tooltip={dateColumn.tooltip ?? undefined}
         value={
           dateColumn.options.find((op) => op.value === dateColumn.value) || null
         }

@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -16,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -27,17 +26,20 @@ import lombok.extern.slf4j.Slf4j;
 public class ExternalNode<T> extends QPNode {
 
 	private final Table table;
-	private final CDateSet dateUnion = CDateSet.create();
+	private final CDateSet dateUnion = CDateSet.createEmpty();
 
 	@NotEmpty
 	@NonNull
-	private final Map<Integer, CDateSet> includedEntities;
+	private final Map<String, CDateSet> includedEntities;
 
-	private final Map<Integer, Map<String, T>> extraData;
+	private final Map<String, Map<String, T>> extraData;
 	private final String[] extraColumns;
-
-	private CDateSet contained;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
+	private CDateSet contained;
+
+	public Set<String> getEntities() {
+		return includedEntities.keySet();
+	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -67,25 +69,35 @@ public class ExternalNode<T> extends QPNode {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 
-		if (table.equals(currentTable) && contained != null){
+		if (table.equals(currentTable) && contained != null) {
 			dateUnion.addAll(contained);
 			dateUnion.retainAll(ctx.getDateRestriction());
 		}
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		// Nothing to do
+		return true;
 	}
 
 	@Override
 	public boolean isContained() {
-		return contained != null;
+		if (contained == null) {
+			// Entity was not in the selected set.
+			return false;
+		}
+
+		/*
+		If the intersection 'dateUnion' is not empty its contained.
+		Unless the initial dateset 'contained' was also empty, which means that no date context was provided anyway.
+		 */
+		return !dateUnion.isEmpty() || contained.isEmpty();
 	}
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.DateRangeT.INSTANCE)));
+		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.Primitive.DATE_RANGE)));
 	}
 
 	@Override

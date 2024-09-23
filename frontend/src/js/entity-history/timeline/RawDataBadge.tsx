@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 
-import WithTooltip from "../../tooltip/WithTooltip";
+import { ColumnDescription } from "../../api/types";
 import { EntityEvent } from "../reducer";
 
 const Badge = styled("div")`
@@ -15,37 +15,20 @@ const Badge = styled("div")`
 interface Props {
   event: EntityEvent;
   className?: string;
+  sourceColumn: ColumnDescription;
 }
 
-export const RawDataBadge = ({ className, event }: Props) => {
+export const RawDataBadge = ({ className, event, sourceColumn }: Props) => {
   return (
-    <WithTooltip
-      placement="right"
-      html={
-        <pre
-          style={{
-            textAlign: "left",
-            fontSize: "12px",
-            lineHeight: "1.1",
-            padding: "8px 14px",
-            margin: 0,
-          }}
-        >
-          {JSON.stringify(event, null, 2)}
-        </pre>
-      }
+    <Badge
+      className={className}
+      onClick={() => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(JSON.stringify(event, null, 2));
+        }
+      }}
     >
-      <Badge
-        className={className}
-        style={{ cursor: "pointer" }}
-        onClick={() => {
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(JSON.stringify(event, null, 2));
-          }
-        }}
-      >
-        {event.source}
-      </Badge>
-    </WithTooltip>
+      {event[sourceColumn.label] as string}
+    </Badge>
   );
 };

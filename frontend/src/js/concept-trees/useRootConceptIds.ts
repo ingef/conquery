@@ -9,7 +9,8 @@ import type { TreesT } from "./reducer";
 const isRootTreeId = (trees: TreesT) => (treeId: string) => {
   const tree = trees[treeId];
   const hasParent =
-    tree.hasOwnProperty("parent") && exists((tree as any).parent);
+    Object.hasOwnProperty.call(tree, "parent") &&
+    exists((tree as { parent?: string }).parent);
   const isntLoadingOrBrokenSomehow = exists(tree.label);
 
   return !hasParent && isntLoadingOrBrokenSomehow;

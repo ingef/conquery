@@ -31,9 +31,6 @@ import projectItemsTypeFilter, {
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
-import queryUploadConceptListModal, {
-  QueryUploadConceptListModalStateT,
-} from "../query-upload-concept-list-modal/reducer";
 import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
 import queryReducer, {
   StandardQueryStateT,
@@ -58,7 +55,6 @@ export type StateT = {
   tooltip: TooltipStateT;
   panes: PanesStateT;
   uploadConceptListModal: UploadConceptListModalStateT;
-  queryUploadConceptListModal: QueryUploadConceptListModalStateT;
   user: UserStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
@@ -68,6 +64,7 @@ export type StateT = {
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
+  editorV2QueryRunner: QueryRunnerStateT;
   queryEditor: {
     query: StandardQueryStateT;
     selectedSecondaryId: SelectedSecondaryIdStateT;
@@ -93,7 +90,6 @@ const buildAppReducer = () => {
     conceptTrees,
     conceptTreesOpen,
     uploadConceptListModal,
-    queryUploadConceptListModal,
     datasets,
     tooltip,
     panes,
@@ -106,6 +102,7 @@ const buildAppReducer = () => {
     preview,
     user,
     entityHistory,
+    editorV2QueryRunner: createQueryRunnerReducer("editorV2"),
     queryEditor: combineReducers({
       query: queryReducer,
       selectedSecondaryId: selectedSecondaryIdsReducer,

@@ -10,26 +10,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.VariableDefaultValue;
@@ -56,8 +54,7 @@ import org.apache.shiro.authz.Permission;
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
-	@NsIdRef
-	protected Dataset dataset;
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -66,10 +63,10 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
-	
+
 	/**
-	 * This is a blackbox for us at the moment, where the front end saves the state of the 
-	 * formular, when the user saved it.
+	 * This is a blackbox for us at the moment, where the front end saves the state of the
+	 * form, when the user saved it.
 	 */
 	@NotNull
 	private JsonNode values;
@@ -86,14 +83,14 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(dataset.getId(), formType, formId);
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(Subject subject) {
+	public FormConfigOverviewRepresentation overview(MetaStorage storage, Subject subject) {
 		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
@@ -124,7 +121,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}
@@ -192,7 +188,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	public Consumer<FormConfigPatch> valueSetter() {
-		return (patch) -> {setValues(patch.getValues());};
+		return (patch) -> setValues(patch.getValues());
 	}
 
 }

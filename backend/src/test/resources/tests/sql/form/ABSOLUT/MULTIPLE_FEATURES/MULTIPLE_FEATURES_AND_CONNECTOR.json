@@ -1,0 +1,80 @@
+{
+  "type": "FORM_TEST",
+  "label": "ABS-EXPORT-FORM with multiple features and AND connector",
+  "expectedCsv": {
+    "results": "tests/sql/form/ABSOLUT/MULTIPLE_FEATURES/expected_and_connector.csv"
+  },
+  "form": {
+    "type": "EXPORT_FORM",
+    "queryGroup": "00000000-0000-0000-0000-000000000001",
+    "resolution": "QUARTERS",
+    "alsoCreateCoarserSubdivisions": true,
+    "features": [
+      {
+        "type": "AND",
+        "children": [
+          {
+            "type": "CONCEPT",
+            "ids": "abc-concept",
+            "tables": {
+              "id": "abc-concept.connector2",
+              "filters": [
+                {
+                  "filter": "abc-concept.connector2.value",
+                  "type": "MULTI_SELECT",
+                  "value": [
+                    "A",
+                    "B"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "type": "CONCEPT",
+            "ids": "geschlecht",
+            "tables": {
+              "id": "geschlecht.geschlecht"
+            }
+          }
+        ]
+      }
+    ],
+    "timeMode": {
+      "value": "ABSOLUTE",
+      "dateRange": {
+        "min": "2012-01-01",
+        "max": "2012-12-17"
+      }
+    }
+  },
+  "concepts": [
+    "/tests/form/shared/abc.concept.json",
+    "/shared/geschlecht.concept.json"
+  ],
+  "content": {
+    "tables": [
+      "/shared/vers_stamm.table.json",
+      "/tests/form/shared/abc.table.json"
+    ],
+    "secondaryIds": [
+      {
+        "name": "secondary"
+      }
+    ],
+    "previousQueries": [
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "ids": [
+            "abc-concept"
+          ],
+          "tables": {
+            "id": "abc-concept.connector"
+          },
+          "type": "CONCEPT"
+        }
+      }
+    ]
+  }
+}

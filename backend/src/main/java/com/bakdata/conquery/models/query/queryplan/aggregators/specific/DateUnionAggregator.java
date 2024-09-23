@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -17,8 +16,10 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
+
+	private int realUpperBound;
 
 	public DateUnionAggregator(Column column) {
 		super(column);
@@ -27,6 +28,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -35,18 +37,14 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		CDateRange value = bucket.getAsDateRange(event, getColumn());
-		//otherwise the result would be something weird
-		if (value.isOpen()) {
-			return;
-		}
+		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override
@@ -54,8 +52,4 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 		return CDateSet.create(set.asRanges());
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
-	}
 }

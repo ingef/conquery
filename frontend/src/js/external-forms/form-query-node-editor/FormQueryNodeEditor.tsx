@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
   ConceptIdT,
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../../api/types";
-import type { StateT } from "../../app/reducers";
-import { toUpperCaseUnderscore } from "../../common/helpers";
-import { usePrevious } from "../../common/helpers/usePrevious";
+import { toUpperCaseUnderscore } from "../../common/helpers/commonHelper";
 import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
-import { initTables } from "../transformers";
 
 interface PropsT {
   formType: string;
@@ -37,7 +30,7 @@ interface PropsT {
   onSetFilterValue: (
     tableIdx: number,
     filterIdx: number,
-    filterValue: any,
+    filterValue: unknown,
   ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
@@ -61,56 +54,21 @@ interface PropsT {
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
-  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
-    (state) => state.datasets.selectedDatasetId,
-  );
-
-  const [editedNode, setEditedNode] = useState(props.node);
-
-  const previousNodePosition = usePrevious(props.nodePosition);
-  useEffect(
-    function () {
-      if (previousNodePosition !== props.nodePosition) {
-        setEditedNode(
-          initTables({
-            blocklistedTables: props.blocklistedTables,
-            allowlistedTables: props.allowlistedTables,
-          })(props.node),
-        );
-      }
-    },
-    [
-      previousNodePosition,
-      props.nodePosition,
-      props.node,
-      props.blocklistedTables,
-      props.allowlistedTables,
-    ],
-  );
-
-  useEffect(
-    function syncWithNodeFromOutside() {
-      setEditedNode(props.node);
-    },
-    [props.node],
-  );
-
   const showTables =
-    !!editedNode &&
-    editedNode.tables &&
-    editedNode.tables.length > 1 &&
-    editedNode.tables.some((table) => tableIsEditable(table));
+    !!props.node &&
+    props.node.tables &&
+    props.node.tables.length > 1 &&
+    props.node.tables.some((table) => tableIsEditable(table));
 
-  if (!datasetId || !editedNode) {
+  if (!props.node) {
     return null;
   }
 
   return (
     <QueryNodeEditor
-      datasetId={datasetId}
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
-      node={editedNode}
+      node={props.node}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}

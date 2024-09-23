@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.messages.network;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Workers;
 import lombok.Getter;
 
@@ -51,12 +52,14 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ManagerNodeNetworkContext extends NetworkMessageContext<MessageToShardNode> {
 
-		private final DatasetRegistry namespaces;
+		private final ClusterState clusterState;
+		private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 
 
-		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry namespaces, int backpressure) {
+		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry<DistributedNamespace> datasetRegistry, ClusterState clusterState, int backpressure) {
 			super(session, backpressure);
-			this.namespaces = namespaces;
+			this.datasetRegistry = datasetRegistry;
+			this.clusterState = clusterState;
 		}
 	}
 }

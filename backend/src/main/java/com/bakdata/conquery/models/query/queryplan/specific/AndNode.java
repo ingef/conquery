@@ -25,13 +25,10 @@ public class AndNode extends QPParentNode {
 	}
 
 	public static QPNode of(Collection<? extends QPNode> children, DateAggregationAction action) {
-		switch (children.size()) {
-			case 0:
-				return new Leaf();
-			case 1:
-				return children.iterator().next();
-			default:
-				return new AndNode(new ArrayList<>(children), action);
-		}
+		return switch (children.size()) {
+			case 0 -> new Leaf();
+			case 1 -> children.iterator().next();
+			default -> new AndNode(new ArrayList<>(children), action);
+		};
 	}
 }

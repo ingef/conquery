@@ -4,7 +4,11 @@ import { ActionType, createAsyncAction } from "typesafe-actions";
 
 import { useGetFrontendConfig } from "../api/api";
 import { GetFrontendConfigResponseT } from "../api/types";
-import { ErrorObject, errorPayload, successPayload } from "../common/actions";
+import {
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions/genericActions";
 
 export type StartupActions = ActionType<typeof loadConfig>;
 

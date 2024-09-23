@@ -13,9 +13,7 @@ import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 
 public class JacksonTest {
@@ -37,12 +35,12 @@ public class JacksonTest {
 	public static Stream<Arguments> arguments() {
 		return Stream
 				.of(
-						Arguments.of(null, "{\"external\":0}"),
+						Arguments.of(null, "{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"internalCommunication\":3,\"persistentManager\":5,\"persistentShard\":6,\"persistent\":7,\"api\":8}"),
 						Arguments.of(View.InternalCommunication.class, "{\"external\":0,\"internalOnly\":2,\"internalCommunication\":3}"),
 						Arguments.of(View.Persistence.Manager.class, "{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"persistentManager\":5,\"persistent\":7}"),
 						Arguments.of(View.Persistence.Shard.class, "{\"external\":0,\"internalOnly\":2,\"persistentShard\":6,\"persistent\":7}"),
 						Arguments.of(View.Api.class, "{\"external\":0,\"apiPersistent\":1,\"api\":8}")
-						);
+				);
 	}
 
 	@ParameterizedTest

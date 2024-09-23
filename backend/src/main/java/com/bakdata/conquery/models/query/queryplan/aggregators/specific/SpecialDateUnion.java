@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -18,9 +18,9 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class SpecialDateUnion extends Aggregator<CDateSet> {
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 
-	private Column currentColumn;
+	private ValidityDate validityDate;
 	private CDateSet dateRestriction;
 
 
@@ -31,27 +31,33 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table table) {
-		currentColumn = ctx.getValidityDateColumn();
+		validityDate = ctx.getValidityDateColumn();
 		dateRestriction = ctx.getDateRestriction();
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		if (currentColumn != null && bucket.has(event, currentColumn)) {
-			set.maskedAdd(bucket.getAsDateRange(event, currentColumn), dateRestriction);
+	public void consumeEvent(Bucket bucket, int event) {
+		if (validityDate == null) {
+			set.addAll(dateRestriction);
 			return;
 		}
 
-		if(!dateRestriction.isEmpty()) {
+		final CDateRange dateRange = validityDate.getValidityDate(event, bucket);
+
+		if (dateRange == null){
 			set.addAll(dateRestriction);
+			return;
 		}
+
+		set.maskedAdd(dateRange, dateRestriction);
 	}
 
 	/**
 	 * Helper method to insert dates from outside.
+	 *
 	 * @param other CDateSet to be included.
 	 */
-	public void merge(CDateSet other){
+	public void merge(CDateSet other) {
 		set.addAll(other);
 	}
 
@@ -60,8 +66,4 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 		return CDateSet.create(set.asRanges());
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
-	}
 }

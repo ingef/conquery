@@ -1,14 +1,14 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -19,18 +19,24 @@ import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id="NEGATION", base= CQElement.class)
+@CPSType(id = "NEGATION", base = CQElement.class)
 @Setter
 @Getter
 public class CQNegation extends CQElement {
 
-	@Valid @NotNull @Getter @Setter
+	@Valid
+	@NotNull
+	@Getter
+	@Setter
 	private CQElement child;
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
@@ -38,6 +44,11 @@ public class CQNegation extends CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		Preconditions.checkNotNull(dateAction);
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		child.collectRequiredQueries(requiredQueries);
 	}
 
 	@Override
@@ -49,23 +60,17 @@ public class CQNegation extends CQElement {
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		switch(context.getDateAggregationMode()) {
-			case MERGE:
-			case NONE:
-			case INTERSECT:
-				return DateAggregationAction.BLOCK;
-			case LOGICAL:
-				return DateAggregationAction.NEGATE;
-			default:
-				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
-		}
+		return switch (context.getDateAggregationMode()) {
+			case MERGE, NONE, INTERSECT -> DateAggregationAction.BLOCK;
+			case LOGICAL -> DateAggregationAction.NEGATE;
+		};
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return child.getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+		return child.getResultInfos(settings);
 	}
-	
+
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);

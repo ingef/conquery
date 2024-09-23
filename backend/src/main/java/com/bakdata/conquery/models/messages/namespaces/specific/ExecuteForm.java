@@ -4,6 +4,7 @@ import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
@@ -64,7 +66,7 @@ public class ExecuteForm extends WorkerMessage {
 
 			// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 			try {
-				query.createQueryPlan(new QueryPlanContext(worker));
+				query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
 			}
 			catch (Exception e) {
 				ConqueryError err = asConqueryError(e);
@@ -73,9 +75,13 @@ public class ExecuteForm extends WorkerMessage {
 				return;
 			}
 
-			final QueryExecutionContext subQueryContext = new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+			final QueryExecutionContext
+					subQueryContext =
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
-			if (!queryExecutor.execute(query, subQueryContext, result)) {
+			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
+
+			if (!queryExecutor.execute(query, subQueryContext, result, entities)) {
 				return;
 			}
 		}

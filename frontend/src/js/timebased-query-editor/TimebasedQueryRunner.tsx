@@ -50,15 +50,15 @@ const TimebasedQueryRunner = () => {
     }
   };
   const stopQuery = () => {
-    if (datasetId && queryId) {
-      stopTimebasedQuery(datasetId, queryId);
+    if (queryId) {
+      stopTimebasedQuery(queryId);
     }
   };
 
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      isButtonEnabled={isButtonEnabled}
+      disabled={!isButtonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}
       stopQuery={stopQuery}

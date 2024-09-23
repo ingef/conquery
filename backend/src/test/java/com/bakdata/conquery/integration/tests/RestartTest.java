@@ -2,8 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -25,6 +23,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,7 +45,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		Validator validator = Validators.newValidator();
 		EntityIdMap entityIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
-		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
+		ManagerNode manager = testConquery.getStandaloneCommand().getManagerNode();
 		AdminDatasetProcessor adminDatasetProcessor = manager.getAdmin().getAdminDatasetProcessor();
 		AdminProcessor adminProcessor = manager.getAdmin().getAdminProcessor();
 
@@ -149,6 +148,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
+		storage = support.getMetaStorage();
+
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
 			assertThat(userStored).isEqualTo(user);
@@ -179,7 +180,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
 		// We need to reassign the dataset processor because the instance prio to the restart became invalid
-		adminDatasetProcessor = testConquery.getStandaloneCommand().getManager().getAdmin().getAdminDatasetProcessor();
+		adminDatasetProcessor = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getAdminDatasetProcessor();
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1);
 		adminDatasetProcessor.deleteDataset(dataset2);
@@ -189,4 +190,3 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		adminDatasetProcessor.deleteDataset(dataset6);
 	}
 }
-

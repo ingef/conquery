@@ -1,10 +1,22 @@
 package com.bakdata.conquery.models.auth;
 
+import static com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockserver.model.Header.header;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+import static org.mockserver.model.Parameter.param;
+import static org.mockserver.model.ParameterBody.params;
+
+import java.util.Map;
+
+import jakarta.validation.Validator;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.passwordflow.IdpDelegatingAccessTokenCreator;
+import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import io.dropwizard.validation.BaseValidator;
 import lombok.Getter;
@@ -15,18 +27,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
-
-import javax.validation.Validator;
-import java.util.Map;
-
-import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockserver.model.Header.header;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.Parameter.param;
-import static org.mockserver.model.ParameterBody.params;
 
 @Slf4j
 public class IdpDelegatingAccessTokenCreatorTest {
@@ -98,7 +98,7 @@ public class IdpDelegatingAccessTokenCreatorTest {
 
 	@Test
 	public void vaildUsernamePassword() {
-		String jwt = idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, USER_1_PASSWORD.toCharArray());
+		String jwt = idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, USER_1_PASSWORD);
 
 		assertThat(jwt).isEqualTo(USER_1_TOKEN);
 	}
@@ -107,7 +107,7 @@ public class IdpDelegatingAccessTokenCreatorTest {
 	public void invaildUsernamePassword() {
 		log.info("This test will print an Error below.");
 		assertThatThrownBy(
-				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password".toCharArray()))
+				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password"))
 				.isInstanceOf(IllegalStateException.class);
 	}
 

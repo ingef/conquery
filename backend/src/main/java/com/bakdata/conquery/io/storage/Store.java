@@ -1,11 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 
-public interface Store<KEY, VALUE> {
+public interface Store<KEY, VALUE> extends ManagedStore {
 
 	public void add(KEY key, VALUE value);
 
@@ -18,8 +17,7 @@ public interface Store<KEY, VALUE> {
 	
 	public void remove(KEY key);
 
-	public void fillCache();
-	
+
 	public int count();
 
 	public Collection<VALUE> getAll();
@@ -36,7 +34,4 @@ public interface Store<KEY, VALUE> {
 
 	void clear();
 
-	void deleteStore();
-
-	void close() throws IOException;
 }

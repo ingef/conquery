@@ -9,6 +9,44 @@
     },
     "fields": [
       {
+        "name": "someString",
+        "type": "STRING",
+        "label": {
+          "de": "Ein STRING-Feld"
+        },
+        "tooltip": {
+          "de": "Tippe einen Kurztext"
+        },
+        "validations": ["NOT_EMPTY"]
+      },
+      {
+        "name": "someString2",
+        "type": "STRING",
+        "label": {
+          "de": "Ein STRING-Feld in voller Breite"
+        },
+        "tooltip": {
+          "de": "Tippe einen Kurztext"
+        },
+        "style": {
+          "fullWidth": true
+        },
+        "validations": ["NOT_EMPTY"]
+      },
+      {
+        "name": "someTextarea",
+        "type": "TEXTAREA",
+        "label": {
+          "de": "Ein TEXTAREA-Feld"
+        },
+        "tooltip": {
+          "de": "Tippe einen längeren Text"
+        },
+        "style": {
+          "rows": 4
+        }
+      },
+      {
         "name": "queryGroup",
         "type": "RESULT_GROUP",
         "label": {
@@ -21,6 +59,41 @@
           "de": "Füge eine Gruppe aus einer bestehenden Anfrage hinzu"
         },
         "validations": ["NOT_EMPTY"]
+      },
+      {
+        "name": "theDisclosure",
+        "type": "DISCLOSURE_LIST",
+        "label": {
+          "de": "Datenschutz"
+        },
+        "creatable": true,
+        "tooltip": {
+          "de": "Der Datenschutz ist ein wichtiges Thema, deshalb musst du hier zustimmen."
+        },
+        "fields": [
+          {
+            "type": "HEADLINE",
+            "label": {
+              "de": "Datenschutztext"
+            }
+          },
+          {
+            "type": "CHECKBOX",
+            "name": "disclosureCheckbox",
+            "label": {
+              "de": "Ich habe den Datenschutztext gelesen und bin einverstanden."
+            }
+          },
+          {
+            "type": "NUMBER",
+            "name": "timesIlike",
+            "label": {
+              "de": "Gefällt mir SO sehr"
+            },
+            "defaultValue": 1,
+            "min": 1
+          }
+        ]
       },
       {
         "name": "timeMode",

@@ -35,11 +35,11 @@ public class Cloner {
 	public static <T> T clone(T element, Injectable injectable, Class<T> valueType) {
 		try {
 			return injectable
-						   .injectIntoNew(Jackson.BINARY_MAPPER)
-						   .readValue(
-								   Jackson.BINARY_MAPPER.writeValueAsBytes(element),
-								   valueType
-						   );
+					.injectIntoNew(Jackson.BINARY_MAPPER)
+					.readValue(
+							Jackson.BINARY_MAPPER.writeValueAsBytes(element),
+							valueType
+					);
 		}
 		catch (IOException e) {
 			throw new IllegalStateException("Failed to clone the CQElement " + element, e);

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -14,10 +15,10 @@ import { SettingsModal } from "./SettingsModal";
 
 const Root = styled("div")`
   display: grid;
-  gap: 15px;
+  gap: 8px;
   background-color: white;
   box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.2);
-  padding: 10px;
+  padding: 14px;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
@@ -39,11 +40,11 @@ const SxHeading3 = styled(Heading3)`
 const Count = styled(SxHeading3)`
   justify-self: end;
 `;
+
 const Text = styled("span")`
   font-size: ${({ theme }) => theme.font.md};
   color: ${({ theme }) => theme.col.gray};
-  text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 400;
 `;
 
 const SpecialText = styled("p")<{ zero?: boolean }>`
@@ -52,12 +53,6 @@ const SpecialText = styled("p")<{ zero?: boolean }>`
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
   text-transform: uppercase;
   font-weight: 400;
-`;
-
-const StatsGrid = styled("div")`
-  display: grid;
-  gap: 0px 4px;
-  grid-template-columns: auto 1fr;
 `;
 
 interface Props {
@@ -98,17 +93,17 @@ export const NavigationHeader = memo(
           </div>
           <WithTooltip text={t("history.settings.headline")}>
             <IconButton
-              icon="sliders"
+              icon={faSliders}
               onClick={() => setSettingsModalOpen(true)}
             />
           </WithTooltip>
         </BaseInfo>
-        <StatsGrid>
+        <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Count>{idsCount}</Count>
           <Text>{t("tooltip.entitiesFound", { count: idsCount })}</Text>
           <Count>{markedCount}</Count>
           <Text>{t("history.marked", { count: markedCount })}</Text>
-        </StatsGrid>
+        </div>
         <ProgressBar donePercent={100 * (markedCount / idsCount)} />
       </Root>
     );

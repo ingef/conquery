@@ -4,12 +4,13 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.Getter;
@@ -25,14 +26,15 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 
 	@Override
 	public void react(ManagerNodeNetworkContext context) throws Exception {
-		Namespace ns = Objects.requireNonNull(context.getNamespaces().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
+
+
+		DistributedNamespace ns = Objects.requireNonNull(context.getDatasetRegistry().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
 		message.react(ns);
-	}
 
-	@Override
-	public boolean isSlowMessage() {
-		return message.isSlowMessage();
+		if (message instanceof ReactionMessage reactionMessage) {
+			ns.getWorkerHandler().handleReactionMessage(reactionMessage);
+		}
 	}
 
 	@Override

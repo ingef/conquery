@@ -4,7 +4,11 @@ import { ActionType, createAsyncAction } from "typesafe-actions";
 
 import { useGetMe } from "../api/api";
 import type { GetMeResponseT } from "../api/types";
-import { ErrorObject, errorPayload, successPayload } from "../common/actions";
+import {
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions/genericActions";
 
 export type UserActions = ActionType<typeof loadMe>;
 

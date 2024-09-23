@@ -1,11 +1,9 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
-import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
@@ -18,17 +16,19 @@ public enum TemporalSamplerFactory {
 	 */
 	EARLIEST {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			return data -> {
 				if (data.isEmpty()) {
 					return OptionalInt.empty();
 				}
 
-				if (!data.span().hasLowerBound()) {
-					return OptionalInt.empty();
+				final CDateRange span = data.span();
+
+				if (span.hasLowerBound()) {
+					return OptionalInt.of(span.getMinValue());
 				}
 
-				return OptionalInt.of(data.span().getMinValue());
+				return OptionalInt.empty();
 			};
 		}
 	},
@@ -37,17 +37,24 @@ public enum TemporalSamplerFactory {
 	 */
 	LATEST {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			return data -> {
 				if (data.isEmpty()) {
 					return OptionalInt.empty();
 				}
 
-				if (!data.span().hasUpperBound()) {
-					return OptionalInt.empty();
+				final CDateRange span = data.span();
+
+				if (span.hasUpperBound()) {
+					return OptionalInt.of(span.getMaxValue());
 				}
 
-				return OptionalInt.of(data.span().getMaxValue());
+				if(span.hasLowerBound() && span.getMinValue() > today){
+					return OptionalInt.of(span.getMinValue());
+				}
+
+				return OptionalInt.of(today);
+
 			};
 		}
 	},
@@ -56,7 +63,7 @@ public enum TemporalSamplerFactory {
 	 */
 	RANDOM {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			final Random random = new Random(ConqueryConstants.RANDOM_SEED);
 
 			return data -> {
@@ -64,29 +71,32 @@ public enum TemporalSamplerFactory {
 					return OptionalInt.empty();
 				}
 
-				CDateRange span = data.span();
+				final CDateRange span = data.span();
+
 				// It would not produce sensible to just return random data.
 				if (span.isAll()) {
 					return OptionalInt.empty();
 				}
 
-				int lower;
+				final int lower;
 
 				if (span.hasLowerBound()) {
 					lower = span.getMinValue();
 				}
 				else {
-					lower = CDate.ofLocalDate(LocalDate.MIN);
+					// Very rare edge case with no real answer to give
+					lower = CDateRange.NEGATIVE_INFINITY;
 				}
 
 
-				int upper;
+				final int upper;
 
 				if (span.hasUpperBound()) {
 					upper = span.getMaxValue();
 				}
 				else {
-					upper = CDate.ofLocalDate(LocalDate.MAX);
+					// Since there is no satisfying real value, but real values are preferred, we set the maximum to today for sampling purposes.
+					upper = today;
 				}
 
 
@@ -107,16 +117,16 @@ public enum TemporalSamplerFactory {
 		}
 	};
 
-	@FunctionalInterface
-	public static interface Sampler{
-		public OptionalInt sample(CDateSet data);
-	}
-
 	/**
 	 * Get a date from within the {@link CDateSet} that is produced according to a sampling scheme.
 	 *
 	 * @return A sampler returning a date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
-	public abstract Sampler sampler();
+	public abstract Sampler sampler(int today);
+
+	@FunctionalInterface
+	public interface Sampler {
+		OptionalInt sample(CDateSet data);
+	}
 
 }

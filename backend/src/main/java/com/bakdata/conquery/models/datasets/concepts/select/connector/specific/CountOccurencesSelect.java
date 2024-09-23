@@ -2,21 +2,22 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.EnumSet;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.MultiSelectAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SelectAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+//TODO delete?
 @CPSType(id = "COUNT_OCCURENCES", base = Select.class)
 public class CountOccurencesSelect extends SingleColumnSelect {
 
@@ -43,5 +44,10 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 		}
 
 		return new MultiSelectAggregator(getColumn(), selection);
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 }

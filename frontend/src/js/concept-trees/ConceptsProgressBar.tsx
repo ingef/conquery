@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import ProgressBar from "../common/components/ProgressBar";
@@ -38,7 +39,7 @@ const ConceptsProgressBar = ({ trees }: PropsT) => {
   return (
     <Root>
       <Row>
-        <FaIcon icon="spinner" />
+        <FaIcon icon={faSpinner} />
         <Text>
           {t("conceptTreeList.loading")} {doneCount} / {treeIds.length}
         </Text>

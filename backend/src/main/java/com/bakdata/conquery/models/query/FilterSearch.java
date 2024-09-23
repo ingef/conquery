@@ -1,49 +1,32 @@
 package com.bakdata.conquery.models.query;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Functions;
-import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMaps;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.StopWatch;
 
 
 @Slf4j
-@Data
+@RequiredArgsConstructor
 public class FilterSearch {
 
-	private final NamespaceStorage storage;
-	private final JobManager jobManager;
-	private final CSVConfig parserConfig;
-	private final SearchConfig searchConfig;
+	@Getter
+	private final IndexConfig indexConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -51,14 +34,14 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private final Map<Searchable, TrieSearch<FEValue>> searchCache = new HashMap<>();
-	private Object2LongMap<SelectFilter<?>> totals = Object2LongMaps.emptyMap();
+	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Map<SelectFilter<?>, Integer> totals = new HashMap<>();
 
 	/**
-	 * From a given {@link FEValue} extract all relevant keywords.
+	 * From a given {@link FrontendValue} extract all relevant keywords.
 	 */
-	public static List<String> extractKeywords(FEValue value) {
-		List<String> keywords = new ArrayList<>(3);
+	public static List<String> extractKeywords(FrontendValue value) {
+		final List<String> keywords = new ArrayList<>(3);
 
 		keywords.add(value.getLabel());
 		keywords.add(value.getValue());
@@ -73,26 +56,78 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public List<TrieSearch<FEValue>> getSearchesFor(SelectFilter<?> filter) {
-		return filter.getSearchReferences().stream()
-					 .map(searchCache::get)
-					 .filter(Objects::nonNull)
-					 .collect(Collectors.toList());
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+		final List<? extends Searchable> references = searchable.getSearchReferences();
+
+		if (log.isTraceEnabled()) {
+			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
+		}
+
+		return references.stream()
+						 .map(searchCache::get)
+						 .filter(Objects::nonNull)
+						 .collect(Collectors.toList());
 	}
 
-	public long getTotal(SelectFilter<?> filter) {
-		return totals.getOrDefault(filter, 0);
+	public int getTotal(SelectFilter<?> filter) {
+		return totals.computeIfAbsent(filter, (f) -> {
+			HashSet<FrontendValue> count = new HashSet<>();
+
+			for (TrieSearch<FrontendValue> search : getSearchesFor(filter)) {
+				search.iterator().forEachRemaining(count::add);
+			}
+
+			return count.size();
+		});
 	}
 
 
 	/**
-	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
+	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public void updateSearch() {
+	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
 
-		totals = new Object2LongOpenHashMap<>();
-
-		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, searchConfig, totals));
+		this.searchCache.putAll(searchCache);
 	}
 
+
+	/**
+	 * Adds new values to a search. If there is no search for the searchable yet, it is created.
+	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
+	 * prevents from adding new values.
+	 */
+	public void registerValues(Searchable searchable, Collection<String> values) {
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
+			try {
+				return searchable.createTrieSearch(indexConfig);
+			}
+			catch (IndexCreationException e) {
+				throw new IllegalStateException(e);
+			}
+		});
+
+		synchronized (search) {
+			values.stream()
+				  .map(value -> new FrontendValue(value, value))
+				  .forEach(value -> search.addItem(value, extractKeywords(value)));
+		}
+	}
+
+	/**
+	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
+	 */
+	public void shrinkSearch(Searchable searchable) {
+		final TrieSearch<FrontendValue> search = searchCache.get(searchable);
+
+		if (search == null) {
+			log.warn("Searchable has no search associated: {}", searchable);
+			return;
+		}
+		search.shrinkToFit();
+	}
+
+	public synchronized void clearSearch() {
+		totals = new HashMap<>();
+		searchCache = new HashMap<>();
+	}
 }

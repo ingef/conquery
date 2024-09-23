@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.result.arrow.ArrowUtil;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.types.pojo.Schema;
@@ -117,15 +120,15 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	}
 
-	@RequiredArgsConstructor
+	@Data
 	private static class StringTColumnConsumer implements ColumnConsumer {
 
-		private final ResultType.StringT resultType;
+		private final ResultPrinters.Printer printer;
 		private final PrintSettings printSettings;
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final String printValue = resultType.printNullable(printSettings, o);
+			final String printValue = getPrinter().print(o);
 			recordConsumer.addBinary(Binary.fromString(printValue));
 		}
 	}
@@ -168,14 +171,16 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			recordConsumer.startGroup();
 			Integer min = dateRange.get(0);
 
-			if (min != null && !(min == Integer.MIN_VALUE)) {
+
+
+			if (min != null && !(CDate.isNegativeInfinity(min))) {
 				recordConsumer.startField(MIN_FIELD_NAME, 0);
 				recordConsumer.addInteger(min);
 				recordConsumer.endField(MIN_FIELD_NAME, 0);
 			}
 
 			Integer max = dateRange.get(1);
-			if (max != null && !(max == Integer.MAX_VALUE)) {
+			if (max != null && !(CDate.isPositiveInfinity(max))) {
 				recordConsumer.startField(MAX_FIELD_NAME, 1);
 				recordConsumer.addInteger(max);
 				recordConsumer.endField(MAX_FIELD_NAME, 1);
@@ -187,13 +192,11 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	@RequiredArgsConstructor
 	private static class ListTColumnConsumer implements ColumnConsumer {
 
-		private final ResultType.ListT resultType;
+		private final ColumnConsumer elementConsumer;
 		private final PrintSettings printSettings;
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final ResultType elementType = resultType.getElementType();
-			final ColumnConsumer elementConsumer = getForResultType(elementType, printSettings);
 
 			List<?> list = (List<?>) o;
 
@@ -222,41 +225,27 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings) {
 		final List<ColumnConsumer> consumers = new ArrayList<>();
 		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(getForResultType(idHeader.getType(), printSettings));
+			consumers.add(getForResultType(idHeader.getType(), idHeader.getPrinter(), printSettings));
 		}
 
 		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(getForResultType(resultInfo.getType(), printSettings));
+			consumers.add(getForResultType(resultInfo.getType(), resultInfo.getPrinter(), printSettings));
 		}
 		return consumers;
 	}
 
-	private static ColumnConsumer getForResultType(ResultType resultType, PrintSettings printSettings) {
-		if (resultType instanceof ResultType.StringT) {
-			return new StringTColumnConsumer((ResultType.StringT) resultType, printSettings);
-		}
-		else if (resultType instanceof ResultType.BooleanT) {
-			return new BooleanTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.IntegerT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.NumericT) {
-			return new NumericTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.MoneyT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.DateT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.DateRangeT) {
-			return new DateRangeTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.ListT) {
-			return new ListTColumnConsumer((ResultType.ListT) resultType, printSettings);
+	private static ColumnConsumer getForResultType(ResultType resultType, ResultPrinters.Printer printer, PrintSettings printSettings) {
+
+		if (resultType instanceof ResultType.ListT<?> listT) {
+			return new ListTColumnConsumer(getForResultType(listT.getElementType(), ((ResultPrinters.ListPrinter) printer).elementPrinter(), printSettings), printSettings);
 		}
 
-		throw new IllegalArgumentException(String.format("Cannot support ResultType %s", resultType));
+		return switch (((ResultType.Primitive) resultType)) {
+			case BOOLEAN -> new BooleanTColumnConsumer();
+			case INTEGER, DATE, MONEY -> new IntegerTColumnConsumer();
+			case NUMERIC -> new NumericTColumnConsumer();
+			case DATE_RANGE -> new DateRangeTColumnConsumer();
+			case STRING -> new StringTColumnConsumer(printer, printSettings);
+		};
 	}
 }

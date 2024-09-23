@@ -1,4 +1,5 @@
-import { TFunction, useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -17,8 +18,12 @@ import type {
   PostQueriesResponseT,
   QueryIdT,
 } from "../api/types";
-import { ErrorObject, errorPayload, successPayload } from "../common/actions";
-import { getExternalSupportedErrorMessage } from "../environment";
+import {
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions/genericActions";
+import { EditorV2Query } from "../editor-v2/types";
 import {
   useLoadFormConfigs,
   useLoadQueries,
@@ -26,6 +31,7 @@ import {
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
+import { updateQueryId } from "../preview/actions";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
 export type QueryRunnerActions = ActionType<
@@ -53,7 +59,11 @@ export type QueryRunnerActions = ActionType<
   by sending a DELETE request for that query ID
 */
 
-export type QueryTypeT = "standard" | "timebased" | "externalForms";
+export type QueryTypeT =
+  | "standard"
+  | "editorV2"
+  | "timebased"
+  | "externalForms";
 
 export const startQuery = createAsyncAction(
   "query-runners/START_QUERY_START",
@@ -75,6 +85,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
     datasetId: DatasetT["id"],
     query:
       | StandardQueryStateT
+      | EditorV2Query
       | ValidatedTimebasedQueryStateT
       | FormQueryPostPayload,
     {
@@ -91,7 +102,10 @@ export const useStartQuery = (queryType: QueryTypeT) => {
         : () =>
             postQueries(
               datasetId,
-              query as StandardQueryStateT | ValidatedTimebasedQueryStateT,
+              query as
+                | StandardQueryStateT
+                | EditorV2Query
+                | ValidatedTimebasedQueryStateT,
               {
                 queryType,
                 selectedSecondaryId,
@@ -103,7 +117,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
         dispatch(startQuery.success(successPayload(r, { queryType })));
 
         const queryId = r.id;
-
+        dispatch(updateQueryId({ queryId }));
         return queryResult(datasetId, queryId);
       },
       (e) => dispatch(startQuery.failure(errorPayload(e, { queryType }))),
@@ -125,10 +139,10 @@ export const useStopQuery = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
   const cancelQuery = usePostQueryCancel();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT) => {
+  return (queryId: QueryIdT) => {
     dispatch(stopQuery.request({ queryType }));
 
-    return cancelQuery(datasetId, queryId).then(
+    return cancelQuery(queryId).then(
       (r) => dispatch(stopQuery.success(successPayload(r, { queryType }))),
       (e) => dispatch(stopQuery.failure(errorPayload(e, { queryType }))),
     );
@@ -165,12 +179,7 @@ const getQueryErrorMessage = ({
     return t("queryRunner.queryCanceled");
   }
 
-  return (
-    (error &&
-      error.code &&
-      getExternalSupportedErrorMessage(t, error.code, error.context)) ||
-    t("queryRunner.queryFailed")
-  );
+  return error?.message || t("queryRunner.queryFailed");
 };
 
 export const queryResultErrorAction = createAction(
@@ -214,7 +223,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const queryResult = (datasetId: DatasetT["id"], queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));
 
-    return getQuery(datasetId, queryId).then(
+    return getQuery(queryId).then(
       (r) => {
         // Indicate that looking for the result has stopped,
         // but not necessarily succeeded

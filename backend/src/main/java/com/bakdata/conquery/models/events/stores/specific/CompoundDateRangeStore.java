@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
@@ -10,7 +7,10 @@ import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -90,6 +90,7 @@ public class CompoundDateRangeStore implements DateRangeStore {
 	}
 
 	@Override
+	@JsonBackReference
 	public void setParent(@NonNull Bucket bucket) {
 		parent = bucket;
 	}
@@ -136,8 +137,8 @@ public class CompoundDateRangeStore implements DateRangeStore {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		int start = Integer.MIN_VALUE;
-		int end = Integer.MAX_VALUE;
+		int start = CDateRange.NEGATIVE_INFINITY;
+		int end = CDateRange.POSITIVE_INFINITY;
 
 		final DateStore startStore = getStartStore();
 		final DateStore endStore = getEndStore();

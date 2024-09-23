@@ -21,11 +21,6 @@ public interface ResultHeadersC10n {
 	@De("Quelle")
 	String source();
 
-	@En("event_duration")
-	@De("Anzahl relevanter Tage")
-	String eventDuration();
-
-
 	@En("event_date")
 	@De("Indexdatum")
 	String eventDate();
@@ -45,6 +40,10 @@ public interface ResultHeadersC10n {
 	@En("outcome_date_range")
 	@De("Nachbeobachtungszeitraum")
 	String outcomeDateRange();
+
+	@En("{0} others")
+	@De("{0} andere")
+	String others(long count);
 
 
 }

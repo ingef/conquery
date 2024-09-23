@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { useContext, useState } from "react";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -83,7 +84,7 @@ const LoginPage = () => {
   const { t } = useTranslation();
   const { setAuthToken } = useContext(AuthTokenContext);
 
-  async function onSubmit(e: any) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);
@@ -131,7 +132,7 @@ const LoginPage = () => {
             }}
           />
           <SxPrimaryButton disabled={!user || !password} large type="submit">
-            <SxFaIcon large white icon={loading ? "spinner" : "check"} />
+            <SxFaIcon large white icon={loading ? faSpinner : faCheck} />
             {t("login.submit")}
           </SxPrimaryButton>
         </Form>

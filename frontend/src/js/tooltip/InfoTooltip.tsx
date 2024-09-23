@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { FC, ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
@@ -28,7 +29,7 @@ const InfoTooltip: FC<PropsT> = ({ className, text, html, wide }) => {
   return (
     <WithTooltip text={text} html={html} wide={wide}>
       <SpanContainer className={className}>
-        <SxFaIcon gray regular icon="question-circle" />
+        <SxFaIcon gray icon={faQuestionCircle} />
       </SpanContainer>
     </WithTooltip>
   );

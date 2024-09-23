@@ -4,27 +4,27 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-
-import com.bakdata.conquery.apiv1.ExecutionStatus;
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
-import com.bakdata.conquery.apiv1.frontend.FERoot;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -42,12 +42,15 @@ import com.bakdata.conquery.models.config.APIConfig;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ClusterConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.config.MinaConfig;
 import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.config.QueryConfig;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -69,7 +72,6 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -131,6 +133,7 @@ public class Constants {
 				 .otherClass(MinaConfig.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)
 				 .otherClass(XodusConfig.class)
+				 .otherClasses(List.of(SqlConnectorConfig.class, DatabaseConfig.class, Dialect.class))
 				 .hide(Charset.class)
 				 .hide(Currency.class)
 				 .hide(InetAddress.class)
@@ -149,8 +152,6 @@ public class Constants {
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))
 				 .base(new Base(FilterValue.class, ""))
-
-				 .base(new Base(ResultType.class, ""))
 				 .base(new Base(SemanticType.class, ""))
 
 				 .hide(Response.class)
@@ -161,8 +162,8 @@ public class Constants {
 				 .otherClass(OverviewExecutionStatus.class)
 				 .otherClass(IdLabel.class)
 				 .otherClass(FrontendConfig.class)
-				 .otherClass(FERoot.class)
-				 .otherClass(FEValue.class)
+				 .otherClass(FrontendRoot.class)
+				 .otherClass(FrontendValue.class)
 				 .otherClass(FilterResource.FilterValues.class)
 				 .otherClass(MetaDataPatch.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)
