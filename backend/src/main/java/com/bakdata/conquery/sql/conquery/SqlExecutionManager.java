@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -27,8 +28,8 @@ public class SqlExecutionManager extends ExecutionManager {
 	private final SqlConverter converter;
 	private final ConcurrentMap<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage) {
-		super(storage);
+	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(storage, datasetRegistry);
 		this.converter = sqlConverter;
 		this.executionService = sqlExecutionService;
 		this.runningExecutions = new ConcurrentHashMap<>();
@@ -51,7 +52,7 @@ public class SqlExecutionManager extends ExecutionManager {
 								 return executeAsync(managedQuery, this);
 
 							 }).toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE, this));
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
 			return;
 		}
 
@@ -90,11 +91,11 @@ public class SqlExecutionManager extends ExecutionManager {
 									addState(id, finishResult);
 
 									managedQuery.setLastResultCount(((long) result.getRowCount()));
-									managedQuery.finish(ExecutionState.DONE, executionManager);
+									managedQuery.finish(ExecutionState.DONE);
 									runningExecutions.remove(id);
 								})
 								.exceptionally(e -> {
-									managedQuery.fail(ConqueryError.asConqueryError(e), this);
+									managedQuery.fail(ConqueryError.asConqueryError(e));
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});

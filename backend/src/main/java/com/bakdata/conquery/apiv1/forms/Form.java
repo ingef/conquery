@@ -28,7 +28,7 @@ public abstract class Form implements QueryDescription {
 
 	/**
 	 * Raw form config (basically the raw format of this form), that is used by the backend at the moment to
-	 * create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedExecution#start(com.bakdata.conquery.models.query.ExecutionManager)}).
+	 * create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedExecution#start()}).
 	 */
 	@Nullable
 	public abstract JsonNode getValues();

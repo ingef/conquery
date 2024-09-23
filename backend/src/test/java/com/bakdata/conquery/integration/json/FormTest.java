@@ -101,7 +101,7 @@ public class FormTest extends ConqueryTestSpec {
 
 		ExecutionState executionState = namespace.getExecutionManager().awaitDone(managedForm, 10, TimeUnit.MINUTES);
 		if (executionState != ExecutionState.DONE) {
-			if (managedForm.getState(executionManager) == ExecutionState.FAILED) {
+			if (managedForm.getState() == ExecutionState.FAILED) {
 				fail(getLabel() + " Query failed");
 			}
 			else {

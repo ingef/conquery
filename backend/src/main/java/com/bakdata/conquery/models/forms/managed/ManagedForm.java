@@ -10,9 +10,9 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DatabindContext;
 import lombok.AccessLevel;
@@ -46,16 +46,16 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Getter
 	private Form submittedForm;
 
-	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(owner, submittedDataset, storage, datasetRegistry);
 		this.submittedForm = submittedForm;
 	}
 
 
 	@Override
-	public void start(ExecutionManager executionManager) {
+	public void start() {
 		synchronized (this) {
-			super.start(executionManager);
+			super.start();
 
 			if (getSubmittedForm().getValues() != null) {
 				// save as formConfig

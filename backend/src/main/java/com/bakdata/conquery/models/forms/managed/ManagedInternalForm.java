@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
@@ -64,8 +65,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@EqualsAndHashCode.Exclude
 	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
-	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(form, user, submittedDataset, storage);
+	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(form, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	@Nullable
@@ -74,13 +75,13 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public void doInitExecutable(Namespace namespace) {
+	public void doInitExecutable() {
 		// Convert sub queries to sub executions
 		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
-		subQueries.values().forEach(mq -> mq.initExecutable(getNamespace(), getConfig()));
+		subQueries.values().forEach(mq -> mq.initExecutable(getConfig()));
 	}
 
 	@NotNull
@@ -89,19 +90,19 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage())
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry())
 
 				));
 	}
 
 
 	@Override
-	public void start(ExecutionManager executionManager) {
+	public void start() {
 		synchronized (this) {
 			subQueries.values().forEach(flatSubQueries::add);
 		}
-		flatSubQueries.values().forEach(query -> query.start(executionManager));
-		super.start(executionManager);
+		flatSubQueries.values().forEach(ManagedExecution::start);
+		super.start();
 	}
 
 	@Override
@@ -162,7 +163,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	public boolean allSubQueriesDone(ExecutionManager executionManager) {
 		synchronized (this) {
-			return flatSubQueries.values().stream().allMatch(q -> q.getState(executionManager).equals(ExecutionState.DONE));
+			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}
 	}
 

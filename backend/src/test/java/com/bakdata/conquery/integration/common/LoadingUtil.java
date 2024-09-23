@@ -80,7 +80,7 @@ public class LoadingUtil {
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
-			if (managed.getState(executionManager) == ExecutionState.FAILED) {
+			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
 			}
 		}
@@ -95,7 +95,7 @@ public class LoadingUtil {
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
-			if (managed.getState(executionManager) == ExecutionState.FAILED) {
+			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
 			}
 		}

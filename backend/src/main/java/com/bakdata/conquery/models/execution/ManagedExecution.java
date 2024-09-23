@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -119,36 +120,34 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient ConqueryConfig config;
 
 	/**
-	 * TODO remove this when identifiables hold reference to NsIdResolver
-	 */
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private transient Namespace namespace;
-
-	/**
 	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
 	 */
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
+	@NotNull
 	private transient MetaStorage metaStorage;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	@NotNull
+	private transient DatasetRegistry<?> datasetRegistry;
 
-	public ManagedExecution(@NonNull User owner, @NonNull Dataset dataset, MetaStorage metaStorage) {
+
+	public ManagedExecution(@NonNull User owner, @NonNull Dataset dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
 		this.owner = owner;
 		this.dataset = dataset;
 		this.metaStorage = metaStorage;
+		this.datasetRegistry = datasetRegistry;
 	}
 
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
-		if (!namespace.getDataset().equals(dataset)) {
-			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset, namespace.getDataset()
-																																								   .getId()));
-		}
+	public final void initExecutable(ConqueryConfig config) {
 
 		synchronized (this) {
 			if (initialized) {
@@ -157,12 +156,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
 			}
 			this.config = config;
-			this.namespace = namespace;
 
-			doInitExecutable(namespace);
+			doInitExecutable();
 
 			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
 			containsDates = containsDates(getSubmitted());
@@ -171,7 +169,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	protected abstract void doInitExecutable(Namespace namespace);
+	protected abstract void doInitExecutable();
 
 
 	@Override
@@ -185,7 +183,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	public void fail(ConqueryErrorInfo error, ExecutionManager executionManager) {
+	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -196,15 +194,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
-		finish(ExecutionState.FAILED, executionManager);
+		finish(ExecutionState.FAILED);
 	}
 
-	public void start(ExecutionManager executionManager) {
+	public void start() {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
-			if (executionManager.isResultPresent(getId())) {
-				Preconditions.checkArgument(executionManager.getResult(getId()).getState() != ExecutionState.RUNNING);
+			if (getExecutionManager().isResultPresent(getId())) {
+				Preconditions.checkArgument(getExecutionManager().getResult(getId()).getState() != ExecutionState.RUNNING);
 			}
 
 			startTime = LocalDateTime.now();
@@ -213,7 +211,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
+	public void finish(ExecutionState executionState) {
 
 
 		synchronized (this) {
@@ -224,10 +222,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			// Not sure if also the storage needs an update first
 			getMetaStorage().updateExecution(this);
 
-			executionManager.updateState(getId(), executionState);
+			getExecutionManager().updateState(getId(), executionState);
 
 			// Signal to waiting threads that the execution finished
-			executionManager.clearBarrier(getId());
+			getExecutionManager().clearBarrier(getId());
 
 		}
 
@@ -242,7 +240,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, ExecutionManager executionManager) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -253,7 +251,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStartTime(startTime);
 		status.setFinishTime(finishTime);
-		status.setStatus(getState(executionManager));
+		status.setStatus(getState());
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
@@ -266,9 +264,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject, ExecutionManager executionManager) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(subject, status, executionManager);
+		setStatusBase(subject, status);
 
 		return status;
 	}
@@ -286,7 +284,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
-		setStatusBase(subject, status, namespace.getExecutionManager());
+		setStatusBase(subject, status);
 
 		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
@@ -295,7 +293,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setProgress(progress);
 
 
-		if (getState(namespace.getExecutionManager()).equals(ExecutionState.FAILED) && error != null) {
+		if (getState().equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
@@ -372,17 +370,17 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return canExpand;
 	}
 
-	public ExecutionState getState(ExecutionManager executionManager) {
-		if (!executionManager.isResultPresent(getId())) {
+	public ExecutionState getState() {
+		if (!getExecutionManager().isResultPresent(getId())) {
 			return ExecutionState.NEW;
 		}
 
-		return executionManager.getResult(getId()).getState();
+		return getExecutionManager().getResult(getId()).getState();
 	}
 
 	@JsonIgnore
-	public boolean isReadyToDownload(ExecutionManager executionManager) {
-		return getState(executionManager) == ExecutionState.DONE;
+	public boolean isReadyToDownload() {
+		return getState() == ExecutionState.DONE;
 	}
 
 	/**
@@ -417,14 +415,26 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
 
-	public void reset(ExecutionManager executionManager) {
+	public void reset() {
 		// This avoids endless loops with already reset queries
-		if (getState(executionManager).equals(ExecutionState.NEW)) {
+		if (getState().equals(ExecutionState.NEW)) {
 			return;
 		}
 
-		executionManager.clearQueryResults(this);
+		getExecutionManager().clearQueryResults(this);
 	}
 
 	public abstract void cancel();
+
+	//// Shortcut helper methods
+
+	@JsonIgnore
+	public Namespace getNamespace() {
+		return datasetRegistry.get(getDataset().getId());
+	}
+
+	@JsonIgnore
+	protected ExecutionManager getExecutionManager() {
+		return getNamespace().getExecutionManager();
+	}
 }

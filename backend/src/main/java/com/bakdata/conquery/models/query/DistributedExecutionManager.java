@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -79,8 +80,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 	private final ClusterState clusterState;
 
 
-	public DistributedExecutionManager(MetaStorage storage, ClusterState state) {
-		super(storage);
+	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state) {
+		super(storage, datasetRegistry);
 		clusterState = state;
 	}
 
@@ -135,12 +136,12 @@ public class DistributedExecutionManager extends ExecutionManager {
 		State state = getResult(id);
 		ExecutionState execState = state.getState();
 		if (execState != ExecutionState.RUNNING) {
-			log.warn("Received result for Query[{}] that is not RUNNING but {}", id, execState);
+			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
 			return;
 		}
 
 		if (result.getError().isPresent()) {
-			execution.fail(result.getError().get(), this);
+			execution.fail(result.getError().get());
 		}
 		else {
 
@@ -153,9 +154,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			// If all known workers have returned a result, the query is DONE.
 			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset().getId()).getAllWorkerIds())) {
 
-				DistributedExecutionManager.DistributedState previousState = getResult(id);
-				((DistributedState) state).setState(ExecutionState.DONE);
-				execution.finish(ExecutionState.DONE, this);
+				execution.finish(ExecutionState.DONE);
 
 			}
 		}

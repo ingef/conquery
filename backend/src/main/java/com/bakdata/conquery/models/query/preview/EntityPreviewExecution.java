@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.BooleanNode;
@@ -64,8 +65,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(entityPreviewQuery, user, submittedDataset, storage);
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	/**
@@ -215,8 +216,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable(Namespace namespace) {
-		super.doInitExecutable(namespace);
+	public void doInitExecutable() {
+		super.doInitExecutable();
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
@@ -228,7 +229,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getNamespace(), getConfig());
+		initExecutable(getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, subject, namespace);

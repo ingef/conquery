@@ -44,7 +44,7 @@ public class SerializingStoreDumpTest {
 	private ObjectMapper objectMapper;
 
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), new Dataset("dataset"), STORAGE);
+	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), new Dataset("dataset"), STORAGE, null);
 	private final ConceptQuery cQuery = new ConceptQuery(
 			new CQReusedQuery(managedQuery.getId()));
 	private final User user = new User("username", "userlabel", STORAGE);

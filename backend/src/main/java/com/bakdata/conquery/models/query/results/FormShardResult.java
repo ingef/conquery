@@ -39,19 +39,18 @@ public class FormShardResult extends ShardResult {
 		executionManager.handleQueryResult(this, subQuery);
 
 		// Fail the whole execution if a subquery fails
-		if (ExecutionState.FAILED.equals(subQuery.getState(executionManager))) {
+		if (ExecutionState.FAILED.equals(subQuery.getState())) {
 			managedInternalForm.fail(
 					getError().orElseThrow(
 							() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))
-					),
-					executionManager
+					)
 			);
 		}
 
 		if (managedInternalForm.allSubQueriesDone(executionManager)) {
 
 			ManagedExecutionId id = managedInternalForm.getId();
-			managedInternalForm.finish(ExecutionState.DONE, executionManager);
+			managedInternalForm.finish(ExecutionState.DONE);
 		}
 
 	}

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -42,8 +43,6 @@ public abstract class ExecutionManager {
 
 		/**
 		 * The current {@link ExecutionState} of the execution.
-		 *
-		 * @return
 		 */
 		@NotNull
 		ExecutionState getState();
@@ -63,6 +62,8 @@ public abstract class ExecutionManager {
 	}
 
 	private final MetaStorage storage;
+
+	private final DatasetRegistry<?> datasetRegistry;
 
 	/**
 	 * Cache for execution states.
@@ -90,7 +91,7 @@ public abstract class ExecutionManager {
 
 		// The query might already be deleted
 		if (execution != null) {
-			execution.reset(this);
+			execution.reset();
 		}
 	}
 
@@ -136,7 +137,7 @@ public abstract class ExecutionManager {
 		clearQueryResults(execution);
 
 		try {
-			execution.initExecutable(namespace, config);
+			execution.initExecutable(config);
 		}
 		catch (Exception e) {
 			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
@@ -155,7 +156,7 @@ public abstract class ExecutionManager {
 		log.info("Starting execution[{}]", executionId);
 		try {
 
-			execution.start(this);
+			execution.start();
 
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
@@ -167,7 +168,7 @@ public abstract class ExecutionManager {
 		}
 		catch (Exception e) {
 			log.warn("Failed to execute '{}'", executionId);
-			execution.fail(ConqueryError.asConqueryError(e), this);
+			execution.fail(ConqueryError.asConqueryError(e));
 		}
 	}
 
@@ -180,7 +181,7 @@ public abstract class ExecutionManager {
 
 	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage, datasetRegistry);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 		managed.setMetaStorage(storage);
@@ -209,7 +210,7 @@ public abstract class ExecutionManager {
 			return;
 		}
 
-		log.warn("Could not update state of {} to {}, because it had no state.", id, execState);
+		log.warn("Could not update execution state of {} to {}, because it had no state.", id, execState);
 	}
 
 
