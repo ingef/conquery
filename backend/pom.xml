@@ -54,20 +54,6 @@
                             </excludes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>default-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifestEntries>
-                                    <Add-Opens>java.base/java.lang ALL-UNNAMED java.base/java.util ALL-UNNAMED java.base/java.nio ALL-UNNAMED java.base/sun.nio.ch ALL-UNNAMED
-</Add-Opens>
-                                </manifestEntries>
-                            </archive>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -96,7 +82,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-to-slf4j</artifactId>
-            <version>2.19.0</version>
+            <version>2.24.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -163,7 +149,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.97</version>
+            <version>4.8.112</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
@@ -381,7 +367,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.17.6</version>
+            <version>1.20.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -408,6 +394,12 @@
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-core</artifactId>
             <version>1.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

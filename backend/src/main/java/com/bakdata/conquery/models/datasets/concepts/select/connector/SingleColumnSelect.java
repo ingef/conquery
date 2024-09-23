@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +11,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,13 +50,13 @@ public abstract class SingleColumnSelect extends Select {
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
 
 		if(categorical){
-			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);
 		}
 
-		return new SelectResultInfo(this, cqConcept);
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 	}
 
 	@Nullable

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -14,8 +15,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -32,13 +35,13 @@ import org.jetbrains.annotations.NotNull;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
+@Getter
+@Setter
 @EqualsAndHashCode(callSuper = true)
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
 	@EqualsAndHashCode.Exclude
 	@JsonBackReference
-	@Getter
-	@Setter
 	private SelectHolder<?> holder;
 
 	@JsonIgnore
@@ -47,15 +50,11 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return getHolder().findConcept().getDataset();
 	}
 
-	@Setter
-	@Getter
 	private String description;
 
 	/**
 	 * When set, the Frontend will preselect the Select for the User.
 	 */
-	@Setter
-	@Getter
 	@JsonProperty("default")
 	private boolean isDefault = false;
 
@@ -63,7 +62,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public abstract List<Column> getRequiredColumns();
 
 	@JsonIgnore
-	public abstract ResultType<?> getResultType();
+	public abstract ResultType getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -73,9 +72,6 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			return new ConnectorSelectId(((Connector) holder).getId(), getName());
 		}
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
-	}
-
-	public void init() {
 	}
 
 	@NotNull
@@ -91,8 +87,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + getLabel();
 	}
 
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
-		return new SelectResultInfo(this, cqConcept);
+	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
 	}
 
 
@@ -132,4 +128,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return false;
 	}
 
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+		return ResultPrinters.printerFor(getResultType(), printSettings);
+	}
 }

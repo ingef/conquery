@@ -1,10 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
@@ -49,11 +45,13 @@ class TablePath {
 
 	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
-		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector());
+		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector(), context.getSqlPrintSettings()
+																																 .getLocale());
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptConnectorLabel, context.getNameGenerator());
 
 		return new ConnectorSqlTables(
+				cqTable.getConnector(),
 				conceptConnectorLabel,
 				tableInfo.getRootTable(),
 				cteNameMap,
@@ -65,16 +63,14 @@ class TablePath {
 	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
 
 		TablePathInfo tableInfo = collectConceptTables(predecessor);
-		String conceptName = context.getNameGenerator().conceptName(cqConcept);
+		String conceptName = context.getNameGenerator().conceptName(cqConcept, context.getSqlPrintSettings().getLocale());
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptName, context.getNameGenerator());
 		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
 
 		return new ConceptSqlTables(
-				conceptName,
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking(),
 				connectorSqlTables
 		);
 	}

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -34,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorage extends ConqueryStorage {
+public abstract class NamespacedStorage extends ConqueryStorage implements Injectable {
 
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
@@ -56,7 +59,9 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
-
+		// Before we start to parse the stores we need to replace the injected value for the IdResolveContext (from DatasetRegistry to this centralRegistry)
+		new SingletonNamespaceCollection(centralRegistry).injectInto(objectMapper);
+		this.injectInto(objectMapper);
 
 		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
@@ -65,9 +70,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
-		decorateSecondaryIdDescriptionStore(secondaryIds);
 		decorateTableStore(tables);
-		decorateImportStore(imports);
 		decorateConceptStore(concepts);
 	}
 
@@ -84,10 +87,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
 		store.onAdd(centralRegistry::register).onRemove(centralRegistry::remove);
-	}
-
-	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
@@ -107,13 +106,13 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
 		store.onAdd(concept -> {
 
-			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
-				throw new IllegalStateException("Concept is not for this dataset.");
+			if (concept.getDataset() == null) {
+				throw new IllegalStateException("Concept had no dataset set");
 			}
 
-			concept.setDataset(dataset.get());
-
-			concept.initElements();
+			if (!concept.getDataset().equals(dataset.get())) {
+				throw new IllegalStateException("Concept is not for this dataset.");
+			}
 
 			concept.getSelects().forEach(centralRegistry::register);
 			for (Connector connector : concept.getConnectors()) {
@@ -142,11 +141,6 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 			}
 		});
 	}
-
-	private void decorateImportStore(IdentifiableStore<Import> store) {
-		// Intentionally left blank
-	}
-
 
 	public void addImport(Import imp) {
 		imports.add(imp);
@@ -229,4 +223,9 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		return concepts.getAll();
 	}
 
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NamespacedStorage.class, this);
+	}
 }

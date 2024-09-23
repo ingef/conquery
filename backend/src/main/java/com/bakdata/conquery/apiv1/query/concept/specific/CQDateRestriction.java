@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -59,8 +60,8 @@ public class CQDateRestriction extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return child.getResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+		return child.getResultInfos(settings);
 	}
 
 	@Override

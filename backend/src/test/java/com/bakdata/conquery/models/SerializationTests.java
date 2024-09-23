@@ -4,6 +4,8 @@ import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -31,8 +34,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -47,6 +48,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -74,6 +76,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -92,7 +96,6 @@ import io.dropwizard.jersey.validation.Validators;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
 import org.junit.jupiter.api.Tag;
@@ -220,7 +223,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		Bucket bucket = new Bucket(0, new ColumnStore[]{startStore, endStore, compoundStore}, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4),4, imp);
 
 		compoundStore.setParent(bucket);
 
@@ -242,12 +245,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				.forType(Bucket.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.registry(registry)
-				.injectables(new Injectable() {
-					@Override
-					public MutableInjectableValues inject(MutableInjectableValues values) {
-						return values.add(Validator.class, validator);
-					}
-				})
+				.injectables(values -> values.add(Validator.class, validator))
 				.test(bucket);
 
 	}
@@ -293,9 +291,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		Dataset dataset = createDataset(registry);
 
 		TreeConcept concept = createConcept(registry, dataset);
+		concept.init();
 
 		SerializationTestUtil
-				.forType(TreeConcept.class)
+				.forType(Concept.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(concept);
@@ -324,7 +323,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setDataset(dataset);
+		formConfig.setDataset(dataset.getId());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
@@ -494,7 +493,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", getMetaStorage());
+		User user = new User("name", "label", getMetaStorage());
 
 		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
 																				  .userName(user.getLabel())
@@ -583,7 +582,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), imp);
+		final Bucket bucket = new Bucket(0, new ColumnStore[0], Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(),0, imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
@@ -844,4 +843,25 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .test(version);
 	}
 
+
+	@Test
+	public void mapInternToExternMapper() throws JSONException, IOException, URISyntaxException {
+		final MapInternToExternMapper mapper = new MapInternToExternMapper(
+				"test1",
+				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				"internal",
+				"{{external}}"
+		);
+
+		mapper.setStorage(getNamespaceStorage());
+		mapper.setConfig(getConfig());
+		mapper.setMapIndex(getIndexService());
+
+
+		mapper.init();
+
+		SerializationTestUtil.forType(InternToExternMapper.class)
+				.objectMappers(getApiMapper(), getNamespaceInternalMapper())
+				.test(mapper);
+	}
 }

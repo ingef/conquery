@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.execution;
 import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
@@ -31,13 +33,12 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 
 	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
-	private static final Namespace NAMESPACE = Mockito.mock(LocalNamespace.class);
+	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final User user = new User("user","user", STORAGE);
 
@@ -126,7 +127,7 @@ public class DefaultLabelTest {
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), DATASET, STORAGE);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQReusedQuery reused = new CQReusedQuery(managedQuery.getId());
@@ -166,7 +167,7 @@ public class DefaultLabelTest {
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), DATASET, STORAGE);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();
@@ -199,7 +200,7 @@ public class DefaultLabelTest {
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), mock(User.class), DATASET, STORAGE);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();

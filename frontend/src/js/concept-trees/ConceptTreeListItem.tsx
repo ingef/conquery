@@ -1,5 +1,3 @@
-import { FC } from "react";
-
 import type { ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
@@ -8,18 +6,16 @@ import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
 
-interface PropsT {
-  trees: TreesT;
-  conceptId: ConceptIdT;
-  search: SearchT;
-  onLoadTree: (id: string) => void;
-}
-
-const ConceptTreeListItem: FC<PropsT> = ({
+const ConceptTreeListItem = ({
   trees,
   conceptId,
   search,
   onLoadTree,
+}: {
+  trees: TreesT;
+  conceptId: ConceptIdT;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 }) => {
   const tree = trees[conceptId];
 

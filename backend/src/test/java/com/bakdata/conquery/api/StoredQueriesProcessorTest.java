@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -43,6 +45,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
@@ -50,8 +53,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -128,7 +129,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries, true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], queries, true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
@@ -155,8 +156,8 @@ public class StoredQueriesProcessorTest {
 
 	}
 
-	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm(new ExportForm(), user, dataset, STORAGE) {
+	private static ManagedForm<?> mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset) {
+		return new ManagedInternalForm<>(new ExportForm(), user, dataset, STORAGE) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -197,10 +198,11 @@ public class StoredQueriesProcessorTest {
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				// With method is mocked because the ExcelResultProvider needs some info to check dimensions,
 				// but actually resolving the query here requires much more setup
 				return Collections.emptyList();
@@ -216,10 +218,11 @@ public class StoredQueriesProcessorTest {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
+				setConfig(CONFIG);
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return Collections.emptyList();
 			}
 		};

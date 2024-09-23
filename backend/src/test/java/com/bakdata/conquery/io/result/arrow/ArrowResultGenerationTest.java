@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -54,14 +55,16 @@ public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	public static final UniqueNamer
-			UNIQUE_NAMER =
-			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
+	private static final PrintSettings
+			PRINT_SETTINGS =
+			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
-    @Test
+
+	@Test
     void generateFieldsIdMapping() {
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, UNIQUE_NAMER);
+        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, uniqueNamer);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -72,13 +75,17 @@ public class ArrowResultGenerationTest {
 
     @Test
     void generateFieldsValue() {
-        List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
-                .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
+
+
+
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet(), PRINT_SETTINGS)).collect(Collectors.toList());
 
 		List<Field> fields = generateFields(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-				UNIQUE_NAMER
+				uniqueNamer
 		);
 
         assertThat(fields).containsExactlyElementsOf(
@@ -135,7 +142,7 @@ public class ArrowResultGenerationTest {
 				printSettings,
 				new ArrowConfig(BATCH_SIZE),
 				ResultTestUtil.ID_FIELDS,
-				mquery.getResultInfos(),
+				mquery.getResultInfos(printSettings),
 				mquery.streamResults(OptionalLong.empty())
 		);
 
@@ -144,7 +151,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(), printSettings));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(printSettings), printSettings));
 
     }
 
@@ -194,7 +201,7 @@ public class ArrowResultGenerationTest {
 
 		return Stream.concat(
 				// Id column headers
-				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
+				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName()),
 				// result column headers
 				getResultTypes().stream().map(ResultType::typeInfo)
 		).collect(Collectors.joining("\t"))
@@ -205,7 +212,7 @@ public class ArrowResultGenerationTest {
         if (obj == null) {
             return "null";
         }
-        if (type.equals(ResultType.DateRangeT.INSTANCE)) {
+        if (type.equals(ResultType.Primitive.DATE_RANGE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
             StringBuilder sb = new StringBuilder();

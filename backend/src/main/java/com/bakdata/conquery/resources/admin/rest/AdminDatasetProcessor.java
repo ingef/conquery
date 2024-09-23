@@ -8,7 +8,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -35,12 +41,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
+import io.dropwizard.core.setup.Environment;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -57,11 +58,13 @@ public class AdminDatasetProcessor {
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
 	private final ConqueryConfig config;
-	private final Validator validator;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
+	private final MetaStorage metaStorage;
 	private final JobManager jobManager;
 	private final ImportHandler importHandler;
 	private final StorageListener storageListener;
+	private final Environment environment;
+
 
 
 	/**
@@ -74,7 +77,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
+		return datasetRegistry.createNamespace(dataset, metaStorage, environment).getDataset();
 	}
 
 	/**
@@ -166,7 +169,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
-		ValidatorHelper.failOnError(log, validator.validate(table));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);
@@ -192,7 +195,7 @@ public class AdminDatasetProcessor {
 	 */
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
 		concept.setDataset(dataset);
-		ValidatorHelper.failOnError(log, validator.validate(concept));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			if (!force) {
@@ -201,8 +204,6 @@ public class AdminDatasetProcessor {
 			deleteConcept(concept);
 			log.info("Force deleted previous concept: {}", concept.getId());
 		}
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -213,7 +214,7 @@ public class AdminDatasetProcessor {
 	public void setPreviewConfig(PreviewConfig previewConfig, Namespace namespace) {
 		log.info("Received new {}", previewConfig);
 
-		ValidatorHelper.failOnError(log, getValidator().validate(previewConfig));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(previewConfig));
 
 		namespace.getStorage().setPreviewConfig(previewConfig);
 	}
@@ -325,9 +326,7 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
-		internToExternMapper.setDataset(namespace.getDataset());
-
-		ValidatorHelper.failOnError(log, validator.validate(internToExternMapper));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 
 		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {
 			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
@@ -364,14 +363,14 @@ public class AdminDatasetProcessor {
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
-	public void clearIndexCache(Namespace namespace) {
-		namespace.clearIndexCache();
+	public void clearIndexCache() {
+		datasetRegistry.resetIndexService();
 	}
 
 	public void addSearchIndex(Namespace namespace, SearchIndex searchIndex) {
 		searchIndex.setDataset(namespace.getDataset());
 
-		ValidatorHelper.failOnError(log, validator.validate(searchIndex));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(searchIndex));
 
 		if (namespace.getStorage().getSearchIndex(searchIndex.getId()) != null) {
 			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);

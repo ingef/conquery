@@ -31,5 +31,4 @@ public class ClusterState {
 					   .flatMap(ns -> ns.getWorkers().getOptional(workerId))
 					   .orElseThrow(() -> new NoSuchElementException("Unknown worker worker '%s' for dataset '%s'".formatted(workerId, id)));
 	}
-
 }

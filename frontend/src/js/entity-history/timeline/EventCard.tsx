@@ -17,13 +17,15 @@ import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
-import { ColumnBuckets } from "../Timeline";
 import type { DateRow, EntityEvent } from "../reducer";
 
+import Highlighter from "react-highlight-words";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
-import { isDateColumn, isSourceColumn } from "./util";
+import { ColumnBuckets } from "./util/useColumnInformation";
+import { isDateColumn, isSourceColumn } from "./util/util";
 
 const Card = styled("div")`
   display: grid;
@@ -116,6 +118,7 @@ const EventCard = ({
   groupedRows?: EntityEvent[];
   groupedRowsKeysWithDifferentValues?: string[];
 }) => {
+  const { searchTerm } = useTimelineSearch();
   const { t } = useTranslation();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
@@ -189,7 +192,16 @@ const EventCard = ({
               {applicableRest.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>{row[column.label] as string}</span>
+                  <span>
+                    {searchTerm && searchTerm.length > 0 ? (
+                      <Highlighter
+                        searchWords={searchTerm.split(" ")}
+                        textToHighlight={row[column.label] as string}
+                      />
+                    ) : (
+                      (row[column.label] as string)
+                    )}
+                  </span>
                 </div>
               ))}
             </ColBucket>
@@ -206,7 +218,16 @@ const EventCard = ({
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  {row[column.label] as string}
+                  <span>
+                    {searchTerm && searchTerm.length > 0 ? (
+                      <Highlighter
+                        searchWords={searchTerm.split(" ")}
+                        textToHighlight={row[column.label] as string}
+                      />
+                    ) : (
+                      (row[column.label] as string)
+                    )}
+                  </span>
                 </div>
               ))}
             </ColBucket>

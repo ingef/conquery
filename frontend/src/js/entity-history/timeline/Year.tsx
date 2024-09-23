@@ -9,11 +9,12 @@ import {
 } from "../../api/types";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets, EventsByQuarterWithGroups } from "../Timeline";
+import { ColumnBuckets } from "./util/useColumnInformation";
 
-import { useTimelineSearch } from "../timelineSearchState";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import { Quarter } from "./Quarter";
 import YearHead from "./YearHead";
+import { EventsByQuarterWithGroups } from "./util/findEventGroups";
 
 const YearGroup = styled("div")`
   display: flex;

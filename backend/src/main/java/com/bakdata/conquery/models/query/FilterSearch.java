@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,10 +13,9 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class FilterSearch {
 	 */
 	@JsonIgnore
 	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<SelectFilter<?>> totals = new Object2LongOpenHashMap<>();
+	private Map<SelectFilter<?>, Integer> totals = new HashMap<>();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -69,12 +69,16 @@ public class FilterSearch {
 						 .collect(Collectors.toList());
 	}
 
-	public long getTotal(SelectFilter<?> filter) {
-		return totals.computeIfAbsent(filter, (f) -> filter.getSearchReferences().stream()
-														   .map(searchCache::get)
-														   .flatMap(TrieSearch::stream)
-														   .distinct()
-														   .count());
+	public int getTotal(SelectFilter<?> filter) {
+		return totals.computeIfAbsent(filter, (f) -> {
+			HashSet<FrontendValue> count = new HashSet<>();
+
+			for (TrieSearch<FrontendValue> search : getSearchesFor(filter)) {
+				search.iterator().forEachRemaining(count::add);
+			}
+
+			return count.size();
+		});
 	}
 
 
@@ -88,12 +92,19 @@ public class FilterSearch {
 
 
 	/**
-	 * Adds new values to a search. If there is no search yet for the searchable, it is created.
+	 * Adds new values to a search. If there is no search for the searchable yet, it is created.
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
 	public void registerValues(Searchable searchable, Collection<String> values) {
-		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig));
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
+			try {
+				return searchable.createTrieSearch(indexConfig);
+			}
+			catch (IndexCreationException e) {
+				throw new IllegalStateException(e);
+			}
+		});
 
 		synchronized (search) {
 			values.stream()
@@ -116,7 +127,7 @@ public class FilterSearch {
 	}
 
 	public synchronized void clearSearch() {
-		totals = new Object2LongOpenHashMap<>();
+		totals = new HashMap<>();
 		searchCache = new HashMap<>();
 	}
 }

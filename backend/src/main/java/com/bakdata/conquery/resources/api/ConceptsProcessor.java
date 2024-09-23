@@ -26,9 +26,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -254,7 +254,7 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private long countAllValues(SelectFilter<?> searchable) {
+	private int countAllValues(SelectFilter<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		return namespace.getFilterSearch().getTotal(searchable);
@@ -294,7 +294,7 @@ public class ConceptsProcessor {
 
 		for (String conceptCode : conceptCodes) {
 			try {
-				final ConceptTreeChild child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				final ConceptElement<?> child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
 
 				if (child != null) {
 					resolvedCodes.add(child.getId());
@@ -313,10 +313,10 @@ public class ConceptsProcessor {
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
-	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
+	private record CursorAndLength(Cursor<FrontendValue> values, int size) {
 	}
 
-	public record AutoCompleteResult(List<FrontendValue> values, long total) {
+	public record AutoCompleteResult(List<FrontendValue> values, int total) {
 	}
 
 	public record ResolvedFilterResult(ConnectorId tableId, String filterId, Collection<FrontendValue> value) {

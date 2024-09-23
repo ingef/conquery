@@ -1,10 +1,8 @@
 package com.bakdata.conquery.commands;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.*;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
@@ -12,7 +10,6 @@ import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.core.cli.ServerCommand;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -26,7 +23,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 	private final Conquery conquery;
 	private ClusterManager manager;
-	private ManagerNode managerNode = new ManagerNode();
+	private final ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 
 	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
@@ -73,62 +70,27 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 		conquery.setManagerNode(managerNode);
 		conquery.run(manager);
 
-		//create thread pool to start multiple ShardNodes at the same time
-		ExecutorService starterPool = Executors.newFixedThreadPool(
-				config.getStandalone().getNumberOfShardNodes(),
-				new ThreadFactoryBuilder()
-						.setNameFormat("ShardNode Storage Loader %d")
-						.setUncaughtExceptionHandler((t, e) -> {
-							ConqueryMDC.setLocation(t.getName());
-							log.error("{} failed to init storage of ShardNode", t.getName(), e);
-						})
-						.build()
-		);
+		for (int id = 0; id < config.getStandalone().getNumberOfShardNodes(); id++) {
 
-		List<Future<ShardNode>> tasks = new ArrayList<>();
-		for (int i = 0; i < config.getStandalone().getNumberOfShardNodes(); i++) {
+			ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
 
-			final int id = i;
+			shardNodes.add(sc);
 
-			tasks.add(starterPool.submit(() -> {
-				ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+			ConqueryMDC.setLocation(sc.getName());
 
-				shardNodes.add(sc);
+			ConqueryConfig clone = config;
 
-				ConqueryMDC.setLocation(sc.getName());
-
-				ConqueryConfig clone = config;
-
-				if (config.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
-				}
-
-				sc.run(environment, namespace, clone);
-				return sc;
-			}));
-		}
-		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Waiting for ShardNodes to start");
-		starterPool.shutdown();
-		starterPool.awaitTermination(1, TimeUnit.HOURS);
-		//catch exceptions on tasks
-		boolean failed = false;
-		for (Future<ShardNode> f : tasks) {
-			try {
-				f.get();
-
+			if (config.getStorage() instanceof XodusStoreFactory) {
+				final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
+				clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
 			}
-			catch (ExecutionException e) {
-				log.error("during ShardNodes creation", e);
-				failed = true;
-			}
+
+			sc.run(clone, environment);
 		}
-		if (failed) {
-			System.exit(-1);
-		}
+
 
 		// starts the Jersey Server
+		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);

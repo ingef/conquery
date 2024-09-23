@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.query;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -32,6 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -41,7 +41,8 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -102,9 +103,10 @@ public class TableExportQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	private Map<Column, Integer> positions;
 
-
 	@JsonIgnore
-	private List<ResultInfo> resultInfos = Collections.emptyList();
+	private Set<Column> conceptColumns;
+	@JsonIgnore
+	private Map<SecondaryIdDescription, Integer> secondaryIdPositions;
 
 
 	@Override
@@ -142,7 +144,7 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		final AtomicInteger currentPosition = new AtomicInteger(2);
 
-		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
+		secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
 		final Set<ValidityDate> validityDates = tables.stream()
 													  .map(CQConcept::getTables)
@@ -152,7 +154,7 @@ public class TableExportQuery extends Query {
 													  .collect(Collectors.toSet());
 
 		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
-		final Set<Column> conceptColumns = tables.stream()
+		conceptColumns = tables.stream()
 												 .map(CQConcept::getTables)
 												 .flatMap(Collection::stream)
 												 .map(CQTable::getConnector)
@@ -162,7 +164,12 @@ public class TableExportQuery extends Query {
 
 		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
 
-		resultInfos = createResultInfos(secondaryIdPositions, conceptColumns);
+
+	}
+
+	@Override
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+		return createResultInfos(conceptColumns, printSettings);
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
@@ -215,36 +222,21 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
+	private List<ResultInfo> createResultInfos(Set<Column> conceptColumns, PrintSettings printSettings) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
-		infos[0] = ConqueryConstants.DATES_INFO_HISTORY;
-		infos[1] = ConqueryConstants.SOURCE_INFO;
+		infos[0] = ResultHeaders.historyDatesInfo(printSettings);
+		infos[1] = ResultHeaders.sourceInfo(printSettings);
 
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			final SecondaryIdDescription desc = e.getKey();
 			final Integer pos = e.getValue();
 
-			// If mapping is available, values are mapped
-			final ResultType.StringT resultType =
-					desc.getMapping() != null
-					? new ResultType.StringT((internal, printSettings) -> {
-						if (internal == null) {
-							return null;
-						}
-						return desc.getMapping().external((String) internal);
-					})
-					: ResultType.StringT.INSTANCE;
-
-			final Set<SemanticType> semantics = new HashSet<>();
-
-			semantics.add(new SemanticType.SecondaryIdT(desc));
-
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
+			infos[pos] = new SecondaryIdResultInfo(desc, printSettings);
 		}
 
 
@@ -267,14 +259,14 @@ public class TableExportQuery extends Query {
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
-				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
-																		.add(new SemanticType.ColumnT(column));
+				infos[secondaryIdPositions.get(column.getSecondaryId())].addSemantics(new SemanticType.ColumnT(column));
 				continue;
 			}
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
+			ResultPrinters.Printer printer = ResultPrinters.printerFor(resultType, printSettings);
 
 			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
@@ -285,7 +277,8 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
 				if (!isRawConceptValues()) {
-					resultType = new ResultType.StringT(concept::printConceptLocalId);
+					resultType = ResultType.Primitive.STRING;
+					printer = new ResultPrinters.ConceptIdPrinter(concept, printSettings);
 				}
 			}
 			else {
@@ -293,7 +286,7 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.ColumnT(column));
 			}
 
-			infos[position] = new ColumnResultInfo(column, resultType, semantics);
+			infos[position] = new ColumnResultInfo(column, resultType, semantics, printer, column.getDescription(), printSettings);
 		}
 
 		return List.of(infos);

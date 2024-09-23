@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -88,13 +89,13 @@ public class EntityDateQuery extends Query {
     }
 
     @Override
-    public List<ResultInfo> getResultInfos() {
+    public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		List<ResultInfo>  resultInfos = new ArrayList<>();
-		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
-		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
-		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.add(ResultHeaders.formResolutionInfo(printSettings));
+		resultInfos.add(ResultHeaders.formContextInfo(printSettings));
+		resultInfos.add(ResultHeaders.formDateRangeInfo(printSettings));
 
-		resultInfos.addAll(features.getResultInfos());
+		resultInfos.addAll(features.getResultInfos(printSettings));
 
 		return resultInfos;
 

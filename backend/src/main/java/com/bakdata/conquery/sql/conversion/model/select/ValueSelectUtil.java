@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -17,7 +16,7 @@ class ValueSelectUtil {
 			Column column,
 			String alias,
 			BiFunction<Field<?>, List<Field<?>>, Field<?>> aggregationFunction,
-			SelectContext<Connector, ConnectorSqlTables> selectContext
+			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		ConnectorSqlTables tables = selectContext.getTables();
 

@@ -32,15 +32,13 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ShardNodeNetworkContext extends NetworkMessageContext<MessageToManagerNode> {
 
-		private final ShardNode shardNode;
 		private final Workers workers;
 		private final ConqueryConfig config;
 		private final Validator validator;
 		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(ShardNode shardNode, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
+		public ShardNodeNetworkContext(NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
 			super(session, config.getCluster().getBackpressure());
-			this.shardNode = shardNode;
 			this.workers = workers;
 			this.config = config;
 			this.validator = validator;

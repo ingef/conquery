@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -26,9 +27,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.query.resultinfo.printers.SecondaryIdResultInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -126,12 +125,12 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(new SimpleResultInfo(secondaryId.getLabel(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
+		resultInfos.add(new SecondaryIdResultInfo(secondaryId, printSettings));
 
-		resultInfos.addAll(query.getResultInfos());
+		resultInfos.addAll(query.getResultInfos(printSettings));
 
 		return resultInfos;
 	}

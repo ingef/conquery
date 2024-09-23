@@ -7,14 +7,11 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -27,8 +24,7 @@ public class IdRefrenceTest {
 
 	@Test
 	public void testListReferences() throws IOException {
-		final ObjectMapper mapper = Jackson.MAPPER.copy();
-		mapper.setInjectableValues(new MutableInjectableValues());
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 
 		CentralRegistry registry = new CentralRegistry();
 		Dataset dataset = new Dataset();
@@ -39,12 +35,9 @@ public class IdRefrenceTest {
 		registry.register(dataset);
 		registry.register(table);
 
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, null, null, null, null);
-
-		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
 
 		metaStorage.openStores(null);
-		datasetRegistry.setMetaStorage(metaStorage);
 
 
 		User user = new User("usermail", "userlabel", metaStorage);
@@ -61,14 +54,20 @@ public class IdRefrenceTest {
 				.contains("\"user.usermail\"")
 				.contains("\"dataset.table\"");
 
-		ListHolder holder = new SingletonNamespaceCollection(registry, metaStorage.getCentralRegistry())
-				.injectIntoNew(mapper.readerFor(ListHolder.class))
+		new SingletonNamespaceCollection(registry)
+				.injectInto(mapper);
+		metaStorage.injectInto(mapper);
+		ListHolder holder = mapper
+				.readerFor(ListHolder.class)
 				.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);
 		assertThat(holder.getTables().get(0)).isSameAs(table);
 	}
 
+	/**
+	 * @implNote this needs to be a class, because jackson ignores NsIdRefCollection on records
+	 */
 	@Getter
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ListHolder {

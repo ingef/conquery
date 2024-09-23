@@ -6,7 +6,7 @@ import Highlighter from "react-highlight-words";
 import { ConceptIdT, ConceptT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
-import { useTimelineSearch } from "../timelineSearchState";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
 const Root = styled("div")`
   display: flex;

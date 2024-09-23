@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
@@ -46,7 +47,6 @@ import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.views.common.ViewMessageBodyWriter;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -89,7 +89,7 @@ public class AdminServlet {
 		adminProcessor = new AdminProcessor(
 				manager,
 				manager.getConfig(),
-				manager.getStorage(),
+				manager.getMetaStorage(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
@@ -99,18 +99,19 @@ public class AdminServlet {
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
 				manager.getConfig(),
-				manager.getValidator(),
 				manager.getDatasetRegistry(),
+				manager.getMetaStorage(),
 				manager.getJobManager(),
 				manager.getImportHandler(),
-				manager.getStorageListener()
+				manager.getStorageListener(),
+				manager.getEnvironment()
 		);
 
 		jerseyConfig.register(new AbstractBinder() {
 						@Override
 						protected void configure() {
 							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							bind(manager.getStorage()).to(MetaStorage.class);
+							bind(manager.getMetaStorage()).to(MetaStorage.class);
 							bind(manager.getValidator()).to(Validator.class);
 							bind(manager.getJobManager()).to(JobManager.class);
 							bind(manager.getConfig()).to(ConqueryConfig.class);
@@ -134,7 +135,7 @@ public class AdminServlet {
 							  bind(adminProcessor).to(AdminProcessor.class);
 							  bindAsContract(UIProcessor.class);
 							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							  bind(manager.getStorage()).to(MetaStorage.class);
+							  bind(manager.getMetaStorage()).to(MetaStorage.class);
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })

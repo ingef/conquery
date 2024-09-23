@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import org.junit.jupiter.api.Assertions;
@@ -17,13 +18,13 @@ class DefaultSqlCDateSetParserTest {
 
 	private static final DefaultSqlCDateSetParser parser = new DefaultSqlCDateSetParser();
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
 
 	@ParameterizedTest
 	@MethodSource("testToEpochDayRangeListProvider")
 	public void testToEpochDayRangeList(String input, String expected, String message) {
 		List<List<Integer>> epochDayRangeList = parser.toEpochDayRangeList(input);
-		String actual = new ResultType.ListT(ResultType.DateRangeT.getINSTANCE()).printNullable(PLAIN, epochDayRangeList);
+		String actual = ResultPrinters.printerFor(new ResultType.ListT(ResultType.Primitive.DATE_RANGE), PLAIN).print(epochDayRangeList);
 		Assertions.assertEquals(expected, actual, message);
 	}
 

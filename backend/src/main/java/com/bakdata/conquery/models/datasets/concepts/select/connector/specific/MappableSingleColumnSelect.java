@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
-import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -14,9 +13,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColu
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import lombok.Getter;
 
@@ -32,50 +31,42 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@NsIdRef
 	private final InternToExternMapper mapping;
 
-	@JsonIgnore
-	protected final BiFunction<Object, PrintSettings, String> mapper;
 
-	public MappableSingleColumnSelect(Column column,
-									  @Nullable InternToExternMapper mapping) {
+	public MappableSingleColumnSelect(Column column, @Nullable InternToExternMapper mapping) {
 		super(column);
 		this.mapping = mapping;
-
-		if (mapping != null) {
-			mapper = (value, cfg) -> applyMapping(value);
-		}
-		else {
-			mapper = null;
-		}
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
-
-		final Set<SemanticType> semantics = new HashSet<>();
-
-		if (isCategorical()) {
-			semantics.add(new SemanticType.CategoricalT());
-		}
-
-		return new SelectResultInfo(this, cqConcept, semantics);
-	}
-
-	@Override
-	public ResultType<?> getResultType() {
+	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
 		if (mapping == null) {
+			return super.createPrinter(printSettings);
+		}
+
+		return new ResultPrinters.MappedPrinter(getMapping());
+	}
+
+	@Override
+	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
+
+		if (!isCategorical()) {
+			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+		}
+
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);
+	}
+
+	@Override
+	public ResultType getResultType() {
+		if(mapping == null){
 			return ResultType.resolveResultType(getColumn().getType());
 		}
-		return new ResultType.StringT(mapper);
+		return ResultType.Primitive.STRING;
 	}
 
 	public void loadMapping() {
 		if (mapping != null) {
 			mapping.init();
 		}
-	}
-
-	private String applyMapping(Object intern) {
-
-		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
 	}
 }

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +42,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.base.Strings;
-import com.google.common.collect.ClassToInstanceMap;
+import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -60,12 +59,12 @@ public class QueryUtils {
 	public static <T> Consumer<T> getNoOpEntryPoint() {
 		return (whatever) -> {};
 	}
-	
+
 	/**
 	 * Gets the specified visitor from the map. If none was found an exception is raised.
 	 */
-	public static <T extends QueryVisitor> T getVisitor(ClassToInstanceMap<QueryVisitor> visitors, Class<T> clazz){
-		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
+	public static <T extends QueryVisitor> T getVisitor(List<QueryVisitor> visitors, Class<T> clazz){
+		return (T) visitors.stream().filter(clazz::isInstance).collect(MoreCollectors.onlyElement());
 	}
 
 	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
@@ -275,6 +274,7 @@ public class QueryUtils {
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
 		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+
 		if (label == null) {
 			label = cqConcept.getConcept().getLabel();
 		}

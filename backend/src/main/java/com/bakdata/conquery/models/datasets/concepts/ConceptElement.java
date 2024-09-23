@@ -6,11 +6,9 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,10 +34,6 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	private MatchingStats matchingStats;
 
 	public abstract void clearMatchingStats();
-
-	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
-		throw new UnsupportedOperationException("The concept "+this+" has no children. Was looking for "+conceptTreeChildId);
-	}
 
 	@Override
 	public String toString() {

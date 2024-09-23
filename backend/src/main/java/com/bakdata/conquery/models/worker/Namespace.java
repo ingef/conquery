@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
@@ -35,8 +35,6 @@ public abstract class Namespace extends IdResolveContext {
 
 	private final ObjectMapper preprocessMapper;
 
-	private final ObjectMapper communicationMapper;
-
 	@ToString.Include
 	private final NamespaceStorage storage;
 
@@ -47,7 +45,7 @@ public abstract class Namespace extends IdResolveContext {
 
 	private final FilterSearch filterSearch;
 
-	private final IndexService indexService;
+	private final EntityResolver entityResolver;
 
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
@@ -59,16 +57,14 @@ public abstract class Namespace extends IdResolveContext {
 	public void close() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
 		try {
 			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
 	}
@@ -76,8 +72,7 @@ public abstract class Namespace extends IdResolveContext {
 	public void remove() {
 		try {
 			jobManager.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
@@ -93,23 +88,6 @@ public abstract class Namespace extends IdResolveContext {
 		return getStorage().getNumberOfEntities();
 	}
 
-	public void updateInternToExternMappings() {
-		storage.getAllConcepts().stream()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(con -> con.getSelects().stream())
-			   .filter(MappableSingleColumnSelect.class::isInstance)
-			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
-
-		storage.getSecondaryIds().stream()
-			   .filter(desc -> desc.getMapping() != null)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
-	}
-
-	public void clearIndexCache() {
-		indexService.evictCache();
-	}
-
 	public PreviewConfig getPreviewConfig() {
 		return getStorage().getPreviewConfig();
 	}
@@ -122,11 +100,18 @@ public abstract class Namespace extends IdResolveContext {
 		return storage.getCentralRegistry();
 	}
 
-	@Override
-	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException();
-	}
+	public void updateInternToExternMappings() {
+		storage.getAllConcepts().stream()
+				.flatMap(c -> c.getConnectors().stream())
+				.flatMap(con -> con.getSelects().stream())
+				.filter(MappableSingleColumnSelect.class::isInstance)
+				.map(MappableSingleColumnSelect.class::cast)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
+		storage.getSecondaryIds().stream()
+				.filter(desc -> desc.getMapping() != null)
+				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
+	}
 
 	/**
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
@@ -144,8 +129,6 @@ public abstract class Namespace extends IdResolveContext {
 	 * This collects the string values of the given {@link Column}s (each is a {@link com.bakdata.conquery.models.datasets.concepts.Searchable})
 	 * and registers them in the namespace's {@link FilterSearch#registerValues(Searchable, Collection)}.
 	 * After value registration for a column is complete, {@link FilterSearch#shrinkSearch(Searchable)} should be called.
-	 *
-	 * @param columns
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
@@ -160,9 +143,9 @@ public abstract class Namespace extends IdResolveContext {
 		getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+					updateInternToExternMappings();
 					updateMatchingStats();
 					updateFilterSearch();
-					updateInternToExternMappings();
 				}
 		));
 
