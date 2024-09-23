@@ -191,16 +191,17 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		for (ResultInfo info : query.getResultInfos(printSettings)) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
-				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
+				final PreviewConfig.InfoCardSelect additionalInfo = select2desc.get(selectResultInfo.getSelect().getId());
 
 				// We build these by hand because they are labeled and described by config.
-				columnDescriptions.add(ColumnDescriptor.builder()
-													   .label(desc.label())
-													   .defaultLabel(desc.label())
-													   .type(info.getType().typeInfo())
-													   .semantics(info.getSemantics())
-													   .description((desc.description() != null) ? desc.description() : selectResultInfo.getDescription()) // both might be null
-													   .build());
+				final ColumnDescriptor descriptor = new ColumnDescriptor(
+						additionalInfo.label(),
+						additionalInfo.label(),
+						(additionalInfo.description() != null) ? additionalInfo.description() : selectResultInfo.getDescription(),// both might be null
+						info.getType().typeInfo(),
+						info.getSemantics()
+				);
+				columnDescriptions.add(descriptor);
 			}
 		}
 

@@ -151,7 +151,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(infos.columns()).containsExactly(
 				new ColumnDescriptor(
-						"Values", "Description", "Values", "LIST[STRING]",
+						"Values", "Values", "Description", "LIST[STRING]",
 						Set.of(new SemanticType.SelectResultT(
 								conquery.getNamespace().getCentralRegistry().resolve(valuesSelectId)
 						))
