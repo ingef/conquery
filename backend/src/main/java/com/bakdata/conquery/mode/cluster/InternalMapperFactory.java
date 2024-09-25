@@ -8,7 +8,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -19,7 +19,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return createInternalObjectMapper(View.InternalCommunication.class);
 	}
 
-	public ObjectMapper createWorkerCommunicationMapper(Workers workers) {
+	public ObjectMapper createWorkerCommunicationMapper(ShardWorkers workers) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		workers.injectInto(objectMapper);
@@ -27,7 +27,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createWorkerPersistenceMapper(Workers workers) {
+	public ObjectMapper createWorkerPersistenceMapper(ShardWorkers workers) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
 
 		workers.injectInto(objectMapper);
@@ -36,7 +36,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 	}
 
 	public ObjectMapper createNamespacePersistenceMapper(DatasetRegistry<?> datasetRegistry) {
-		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
+		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Manager.class);
 
 		datasetRegistry.injectInto(objectMapper);
 

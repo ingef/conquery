@@ -14,7 +14,7 @@ public class FrontendSelect {
 	private SelectId id;
 	private String label;
 	private String description;
-	private String resultType;
+	private FrontendResultType resultType;
 	@JsonProperty("default")
 	private Boolean isDefault;
 }

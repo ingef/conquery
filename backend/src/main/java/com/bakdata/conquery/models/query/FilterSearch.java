@@ -2,11 +2,12 @@ package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -34,8 +35,8 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Map<SelectFilter<?>, Integer> totals = new HashMap<>();
+	private ConcurrentMap<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -127,7 +128,7 @@ public class FilterSearch {
 	}
 
 	public synchronized void clearSearch() {
-		totals = new HashMap<>();
-		searchCache = new HashMap<>();
+		totals = new ConcurrentHashMap<>();
+		searchCache = new ConcurrentHashMap<>();
 	}
 }
