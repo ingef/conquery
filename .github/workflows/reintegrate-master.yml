@@ -14,8 +14,9 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
           submodules: true
       - name: Configure git
         run: |
@@ -38,6 +39,8 @@ jobs:
           --head $REINTEGRATE_BRANCH_NAME
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Modify the request in the scope of a PAT (an actual user).
+      # This should allow to trigger subsequent actions with the merge commit.
       - name: Modify pull request
         run: >
           gh pr merge
@@ -45,4 +48,4 @@ jobs:
           --auto
           --delete-branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
