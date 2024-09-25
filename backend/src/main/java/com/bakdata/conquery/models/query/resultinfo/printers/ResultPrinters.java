@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -32,12 +33,12 @@ public class ResultPrinters {
 
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> new BooleanPrinter(printSettings);
-			case INTEGER -> new IntegerPrinter(printSettings);
-			case NUMERIC -> new NumericPrinter(printSettings);
+			case INTEGER -> NumberFormatPrinter.integerPrinter(printSettings);
+			case NUMERIC -> NumberFormatPrinter.decimalPrinter(printSettings);
 			case DATE -> new DatePrinter(printSettings);
 			case DATE_RANGE -> new DateRangePrinter(printSettings);
 			case STRING -> new StringPrinter();
-			case MONEY -> new MoneyPrinter(printSettings);
+			case MONEY -> MoneyPrinter.create(printSettings);
 		};
 	}
 
@@ -56,41 +57,44 @@ public class ResultPrinters {
 		}
 	}
 
-	public record IntegerPrinter(PrintSettings cfg) implements Printer {
+	public record NumberFormatPrinter(NumberFormat format) implements Printer {
+
+		public static Printer integerPrinter(PrintSettings cfg){
+			if (!cfg.isPrettyPrint()) {
+				return new StringPrinter();
+			}
+
+			return new NumberFormatPrinter(cfg.getIntegerFormat());
+		}
+
+		public static Printer decimalPrinter(PrintSettings cfg){
+			if (!cfg.isPrettyPrint()) {
+				return new StringPrinter();
+			}
+
+			return new NumberFormatPrinter(cfg.getDecimalFormat());
+		}
 
 		@Override
 		public String print(Object f) {
-			if (cfg.isPrettyPrint()) {
-				return cfg.getIntegerFormat().format(((Number) f).longValue());
-			}
-
-			return f.toString();
+			return format.format(f);
 		}
 	}
 
-	public record NumericPrinter(PrintSettings cfg) implements Printer {
+	public record MoneyPrinter(PrintSettings cfg, NumberFormat format) implements Printer {
 
-		@Override
-		public String print(Object f) {
-			if (cfg.isPrettyPrint()) {
-				return cfg.getDecimalFormat().format(f);
+		public static Printer create(PrintSettings cfg) {
+			if (!cfg.isPrettyPrint()) {
+				return new StringPrinter();
 			}
 
-			return f.toString();
+			return new MoneyPrinter(cfg, (NumberFormat) cfg.getCurrencyFormat().clone());
 		}
-	}
-
-	public record MoneyPrinter(PrintSettings cfg) implements Printer {
 
 		@Override
 		public String print(Object f) {
-
-			if (cfg.isPrettyPrint()) {
-
-				return cfg.getDecimalFormat().format(readMoney(cfg, (Number) f));
-			}
-
-			return f.toString();
+			final BigDecimal asMoney = readMoney(cfg, (Number) f);
+			return format.format(asMoney);
 		}
 	}
 
