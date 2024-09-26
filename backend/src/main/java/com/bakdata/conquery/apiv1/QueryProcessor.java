@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,12 +19,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -89,6 +81,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -174,12 +172,12 @@ public class QueryProcessor {
 	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
-					   .map(r -> {
+					   .map(rendererProvider -> {
 						   try {
-							   return r.generateResultURLs(exec, uriBuilder.clone(), allProviders);
+							   return rendererProvider.generateResultURLs(exec, uriBuilder.clone(), allProviders);
 						   }
-						   catch (MalformedURLException | URISyntaxException e) {
-							   log.error("Cannot generate result urls for execution '{}' with provider '{}'", exec.getId(), r.getClass().getName());
+						   catch (Exception e) {
+							   log.error("Cannot generate result urls for execution '{}' with provider {}", exec.getId(), rendererProvider, e);
 							   return null;
 						   }
 					   })
