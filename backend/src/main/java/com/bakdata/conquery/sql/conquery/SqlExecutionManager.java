@@ -48,32 +48,16 @@ public class SqlExecutionManager extends ExecutionManager {
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
 			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> {
-								 addState(managedQuery.getId(), new SqlExecutionState());
-								 return executeAsync(managedQuery, this);
+												   addState(managedQuery.getId(), new SqlExecutionState());
+												   return executeAsync(managedQuery, this);
 
-							 }).toArray(CompletableFuture[]::new))
+											   })
+											   .toArray(CompletableFuture[]::new))
 							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
 			return;
 		}
 
 		throw new IllegalStateException("Unexpected type of execution: %s".formatted(execution.getClass()));
-	}
-
-	@Override
-	public void doCancelQuery(ManagedExecution execution) {
-
-		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
-
-		// already finished/canceled
-		if (sqlQueryExecution == null) {
-			return;
-		}
-
-		if (!sqlQueryExecution.isCancelled()) {
-			sqlQueryExecution.cancel(true);
-		}
-
-		execution.cancel();
 	}
 
 	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery, SqlExecutionManager executionManager) {
@@ -99,6 +83,23 @@ public class SqlExecutionManager extends ExecutionManager {
 									runningExecutions.remove(managedQuery.getId());
 									return null;
 								});
+	}
+
+	@Override
+	public void doCancelQuery(ManagedExecution execution) {
+
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
+
+		// already finished/canceled
+		if (sqlQueryExecution == null) {
+			return;
+		}
+
+		if (!sqlQueryExecution.isCancelled()) {
+			sqlQueryExecution.cancel(true);
+		}
+
+		execution.cancel();
 	}
 
 }

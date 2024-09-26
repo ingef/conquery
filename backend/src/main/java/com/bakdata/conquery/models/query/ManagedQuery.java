@@ -67,7 +67,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 
 	@Override
-	public void finish(ExecutionState executionState) {
+	public synchronized void finish(ExecutionState executionState) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
@@ -89,7 +89,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public long resultRowCount() {
+	public synchronized long resultRowCount() {
 		if (lastResultCount == null) {
 			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
 		}

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -52,6 +50,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -144,6 +144,21 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		this.datasetRegistry = datasetRegistry;
 	}
 
+	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
+		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
+		query.visit(namespacesIdCollector);
+
+		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
+															  .stream()
+															  .filter(ConceptElement.class::isInstance)
+															  .map(ConceptElement.class::cast)
+															  .<Concept<?>>map(ConceptElement::getConcept)
+															  .collect(Collectors.toSet());
+
+		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
+		return canExpand;
+	}
+
 	/**
 	 * Executed right before execution submission.
 	 */
@@ -169,8 +184,41 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
+	protected String makeAutoLabel(PrintSettings cfg) {
+		return makeDefaultLabel(cfg) + AUTO_LABEL_SUFFIX;
+	}
+
+	@JsonIgnore
+	public Namespace getNamespace() {
+		return datasetRegistry.get(getDataset().getId());
+	}
+
 	protected abstract void doInitExecutable();
 
+	private static boolean containsDates(QueryDescription query) {
+		return Visitable.stream(query)
+						.anyMatch(visitable -> {
+
+							if (visitable instanceof CQConcept cqConcept) {
+								return !cqConcept.isExcludeFromTimeAggregation();
+							}
+
+							if (visitable instanceof CQExternal external) {
+								return external.containsDates();
+							}
+
+							return false;
+						});
+	}
+
+	/**
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
+	 */
+	@JsonIgnore
+	public abstract QueryDescription getSubmitted();
+
+	@JsonIgnore
+	protected abstract String makeDefaultLabel(PrintSettings cfg);
 
 	@Override
 	public ManagedExecutionId createId() {
@@ -197,6 +245,33 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		finish(ExecutionState.FAILED);
 	}
 
+	public synchronized void finish(ExecutionState executionState) {
+
+		finishTime = LocalDateTime.now();
+		progress = null;
+
+		// Set execution state before acting on the latch to prevent a race condition
+		// Not sure if also the storage needs an update first
+		getMetaStorage().updateExecution(this);
+
+		getExecutionManager().updateState(getId(), executionState);
+
+		// Signal to waiting threads that the execution finished
+		getExecutionManager().clearBarrier(getId());
+
+		log.info("{} {} {} within {}", executionState, getId(), getClass().getSimpleName(), getExecutionTime());
+	}
+
+	@JsonIgnore
+	protected ExecutionManager getExecutionManager() {
+		return getNamespace().getExecutionManager();
+	}
+
+	@JsonIgnore
+	public Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
+	}
+
 	public void start() {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
@@ -211,34 +286,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	public void finish(ExecutionState executionState) {
+	/**
+	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 */
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
+		OverviewExecutionStatus status = new OverviewExecutionStatus();
+		setStatusBase(subject, status);
 
-
-		synchronized (this) {
-			finishTime = LocalDateTime.now();
-			progress = null;
-
-			// Set execution state before acting on the latch to prevent a race condition
-			// Not sure if also the storage needs an update first
-			getMetaStorage().updateExecution(this);
-
-			getExecutionManager().updateState(getId(), executionState);
-
-			// Signal to waiting threads that the execution finished
-			getExecutionManager().clearBarrier(getId());
-
-		}
-
-		log.info("{} {} {} within {}", executionState, getId(), getClass().getSimpleName(), getExecutionTime());
+		return status;
 	}
-
-
-
-	@JsonIgnore
-	public Duration getExecutionTime() {
-		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
-	}
-
 
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
@@ -261,14 +317,26 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	/**
-	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
-	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
-		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(subject, status);
+	@JsonIgnore
+	public String getLabelWithoutAutoLabelSuffix() {
+		final int idx;
+		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
+			return label.substring(0, idx);
+		}
+		return label;
+	}
 
-		return status;
+	@JsonIgnore
+	public boolean isAutoLabeled() {
+		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
+	}
+
+	public ExecutionState getState() {
+		if (!getExecutionManager().isResultPresent(getId())) {
+			return ExecutionState.NEW;
+		}
+
+		return getExecutionManager().getResult(getId()).getState();
 	}
 
 	/**
@@ -339,81 +407,17 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setQuery(canSubjectExpand(subject, query) ? getSubmitted() : null);
 	}
 
-	private static boolean containsDates(QueryDescription query) {
-		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
-	}
-
-	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
-		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
-		query.visit(namespacesIdCollector);
-
-		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
-														   .stream()
-														   .filter(ConceptElement.class::isInstance)
-														   .map(ConceptElement.class::cast)
-															  .<Concept<?>>map(ConceptElement::getConcept)
-														   .collect(Collectors.toSet());
-
-		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-		return canExpand;
-	}
-
-	public ExecutionState getState() {
-		if (!getExecutionManager().isResultPresent(getId())) {
-			return ExecutionState.NEW;
-		}
-
-		return getExecutionManager().getResult(getId()).getState();
-	}
-
 	@JsonIgnore
 	public boolean isReadyToDownload() {
 		return getState() == ExecutionState.DONE;
-	}
-
-	/**
-	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
-	 */
-	@JsonIgnore
-	public abstract QueryDescription getSubmitted();
-
-	@JsonIgnore
-	public String getLabelWithoutAutoLabelSuffix() {
-		final int idx;
-		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
-			return label.substring(0, idx);
-		}
-		return label;
-	}
-
-	@JsonIgnore
-	public boolean isAutoLabeled() {
-		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
-	}
-
-	@JsonIgnore
-	protected abstract String makeDefaultLabel(PrintSettings cfg);
-
-	protected String makeAutoLabel(PrintSettings cfg) {
-		return makeDefaultLabel(cfg) + AUTO_LABEL_SUFFIX;
 	}
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
+
+	//// Shortcut helper methods
 
 	public void reset() {
 		// This avoids endless loops with already reset queries
@@ -425,16 +429,4 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public abstract void cancel();
-
-	//// Shortcut helper methods
-
-	@JsonIgnore
-	public Namespace getNamespace() {
-		return datasetRegistry.get(getDataset().getId());
-	}
-
-	@JsonIgnore
-	protected ExecutionManager getExecutionManager() {
-		return getNamespace().getExecutionManager();
-	}
 }

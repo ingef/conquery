@@ -48,8 +48,6 @@ public class FormShardResult extends ShardResult {
 		}
 
 		if (managedInternalForm.allSubQueriesDone(executionManager)) {
-
-			ManagedExecutionId id = managedInternalForm.getId();
 			managedInternalForm.finish(ExecutionState.DONE);
 		}
 

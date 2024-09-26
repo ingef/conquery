@@ -75,26 +75,26 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			}
 
 			// Check after possible sync
-			boolean isRunning = getExecutionManager().tryGetResult(getId())
-												.map(ExecutionManager.State::getState)
-												.map(ExecutionState.RUNNING::equals).orElse(false);
+			final boolean isRunning = getExecutionManager().tryGetResult(getId())
+														   .map(ExecutionManager.State::getState)
+														   .map(ExecutionState.RUNNING::equals).orElse(false);
 			if (isRunning) {
 				throw new ConqueryError.ExecutionProcessingError();
 			}
 
 
 			// Create service user
-			Dataset dataset = getNamespace().getDataset();
-			User originalUser = getOwner();
-			FormBackendConfig formBackendConfig = getConfig().getPluginConfigs(FormBackendConfig.class)
-															 .filter(c -> c.supportsFormType(getSubmittedForm().getFormType()))
-															 .collect(MoreCollectors.onlyElement());
-			User serviceUser = formBackendConfig.createServiceUser(originalUser, dataset);
-			ExternalFormBackendApi api = formBackendConfig.createApi();
+			final Dataset dataset = getNamespace().getDataset();
+			final User originalUser = getOwner();
+			final FormBackendConfig formBackendConfig = getConfig().getPluginConfigs(FormBackendConfig.class)
+																   .filter(c -> c.supportsFormType(getSubmittedForm().getFormType()))
+																   .collect(MoreCollectors.onlyElement());
+			final User serviceUser = formBackendConfig.createServiceUser(originalUser, dataset);
+			final ExternalFormBackendApi api = formBackendConfig.createApi();
 
 			super.start();
 
-			getExecutionManager().addState(this.getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
+			getExecutionManager().addState(getId(), new ExternalStateImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
 
 			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
 			externalTaskId = externalTaskState.getId();
@@ -104,7 +104,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	private synchronized void syncExternalState(ExecutionManager executionManager) {
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
-		Optional<ExternalState> state = executionManager.tryGetResult(this.getId());
+		final Optional<ExternalState> state = executionManager.tryGetResult(getId());
 		if (state.isPresent()) {
 			final ExternalTaskState formState = state.get().getApi().getFormState(externalTaskId);
 			updateStatus(formState);
@@ -117,8 +117,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			case RUNNING -> setProgress(formState.getProgress().floatValue());
 			case FAILURE -> fail(formState.getError());
 			case SUCCESS -> {
-				List<Pair<ResultAsset, ExternalState.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
-				ExternalState state = getExecutionManager().getResult(this.getId());
+				final List<Pair<ResultAsset, ExternalState.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
+				final ExternalState state = getExecutionManager().getResult(getId());
 				state.setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE);
 			}
@@ -130,6 +130,21 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		final List<Pair<ResultAsset, ExternalState.AssetBuilder>> assetMap = new ArrayList<>();
 		response.getResults().forEach(asset -> assetMap.add(Pair.of(asset, createResultAssetBuilder(asset))));
 		return assetMap;
+	}
+
+	@Override
+	public synchronized void finish(ExecutionState executionState) {
+		if (getState().equals(executionState)) {
+			return;
+		}
+
+		final ExternalState state = getExecutionManager().getResult(getId());
+		final User serviceUser = state.getServiceUser();
+
+		super.finish(executionState);
+
+		AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
+
 	}
 
 	/**
@@ -161,30 +176,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		//TODO this is no longer called as the ExecutionManager used to call this.
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
-		ExternalState state = getExecutionManager().getResult(this.getId());
+		final ExternalState state = getExecutionManager().getResult(getId());
 		updateStatus(state.getApi().cancelTask(externalTaskId));
-	}
-
-	@Override
-	public void finish(ExecutionState executionState) {
-		if (getState().equals(executionState)) {
-			return;
-		}
-
-		synchronized (this) {
-			ExternalState state = getExecutionManager().getResult(this.getId());
-			User serviceUser = state.getServiceUser();
-
-			super.finish(executionState);
-
-			AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
-		}
-
 	}
 
 	@JsonIgnore
 	public Stream<ExternalState.AssetBuilder> getResultAssets() {
-		ExternalState state = getExecutionManager().getResult(this.getId());
+		final ExternalState state = getExecutionManager().getResult(getId());
 		return state.getResultAssets();
 	}
 }
