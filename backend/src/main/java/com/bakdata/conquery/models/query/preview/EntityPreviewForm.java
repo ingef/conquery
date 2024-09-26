@@ -82,7 +82,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -97,7 +97,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.
@@ -171,8 +171,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new EntityPreviewExecution(this, user, submittedDataset, storage);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	@Override

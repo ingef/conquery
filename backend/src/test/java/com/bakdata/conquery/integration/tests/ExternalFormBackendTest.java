@@ -93,6 +93,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 		assert managedExecutionId != null;
 		final FullExecutionStatus executionStatus = IntegrationUtils.getExecutionStatus(support, managedExecutionId, testUser, 200);
 
+		assertThat(executionStatus.getStatus()).isEqualTo(ExecutionState.DONE);
 
 		// Generate asset urls and check them in the status
 		final ManagedExecution storedExecution = testConquery.getSupport(name).getMetaStorage().getExecution(managedExecutionId);
@@ -108,7 +109,6 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 																																				 .getAssetId());
 
 
-		assertThat(executionStatus.getStatus()).isEqualTo(ExecutionState.DONE);
 		assertThat(executionStatus.getResultUrls()).containsExactly(new ResultAsset("Result", downloadUrlAsset1), new ResultAsset("Another Result", downloadUrlAsset2));
 
 		log.info("Download Result");

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,12 +19,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -89,6 +81,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,11 +121,15 @@ public class QueryProcessor {
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(Predicate.not(ManagedExecution::isSystem))
-						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
+						 .filter(q -> {
+							 ExecutionState state = q.getState();
+									 return state == ExecutionState.NEW || state == ExecutionState.DONE;
+								 }
+						 )
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 Namespace namespace = datasetRegistry.get(mq.getDataset().getId());
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject, namespace);
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -170,12 +172,12 @@ public class QueryProcessor {
 	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
-					   .map(r -> {
+					   .map(rendererProvider -> {
 						   try {
-							   return r.generateResultURLs(exec, uriBuilder.clone(), allProviders);
+							   return rendererProvider.generateResultURLs(exec, uriBuilder.clone(), allProviders);
 						   }
-						   catch (MalformedURLException | URISyntaxException e) {
-							   log.error("Cannot generate result urls for execution '{}' with provider '{}'", exec.getId(), r.getClass().getName());
+						   catch (Exception e) {
+							   log.error("Cannot generate result urls for execution '{}' with provider {}", exec.getId(), rendererProvider, e);
 							   return null;
 						   }
 					   })
@@ -200,13 +202,13 @@ public class QueryProcessor {
 	public void cancel(Subject subject, Dataset dataset, ManagedExecution query) {
 
 		// Does not make sense to cancel a query that isn't running.
+		ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			return;
 		}
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(query);
 	}
 
@@ -258,6 +260,7 @@ public class QueryProcessor {
 	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
+		ExecutionManager executionManager = datasetRegistry.get(query.getDataset().getId()).getExecutionManager();
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			final Namespace namespace = query.getNamespace();
 
@@ -283,7 +286,7 @@ public class QueryProcessor {
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
 		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
-		query.initExecutable(namespace, config);
+		query.initExecutable(config);
 
 		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
@@ -330,7 +333,7 @@ public class QueryProcessor {
 			execution.setLabel(upload.getLabel());
 		}
 
-		execution.initExecutable(namespace, config);
+		execution.initExecutable(config);
 
 		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
@@ -356,7 +359,8 @@ public class QueryProcessor {
 		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
-		if (namespace.getExecutionManager().awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+		ExecutionManager executionManager = namespace.getExecutionManager();
+		if (executionManager.awaitDone(execution, 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}

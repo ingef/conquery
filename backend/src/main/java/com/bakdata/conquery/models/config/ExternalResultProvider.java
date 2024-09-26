@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.config;
 
 import java.util.Collection;
 import java.util.Collections;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -13,11 +12,14 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import jakarta.ws.rs.core.UriBuilder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Getter
+@Data
 @CPSType(base = ResultRendererProvider.class, id = "EXTERNAL")
 public class ExternalResultProvider implements ResultRendererProvider {
 

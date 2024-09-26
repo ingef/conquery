@@ -53,7 +53,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
-		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage);
+		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
 

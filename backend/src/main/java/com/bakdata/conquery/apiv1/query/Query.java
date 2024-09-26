@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
@@ -41,8 +42,8 @@ public abstract class Query implements QueryDescription {
 	public abstract List<ResultInfo> getResultInfos(PrintSettings printSettings);
 
 	@Override
-	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedQuery(this, user, submittedDataset, storage);
+	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	/**

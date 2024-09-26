@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -37,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -215,7 +215,7 @@ public class ExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm(this, user, submittedDataset, storage);
+	public ManagedForm<?> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry);
 	}
 }

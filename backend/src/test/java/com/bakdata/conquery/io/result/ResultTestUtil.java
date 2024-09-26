@@ -62,7 +62,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ResultTestUtil.class.getSimpleName()), null) {
+		return new ManagedQuery(mock(Query.class), mock(User.class), new Dataset(ResultTestUtil.class.getSimpleName()), null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 				return getResultTypes().stream()
