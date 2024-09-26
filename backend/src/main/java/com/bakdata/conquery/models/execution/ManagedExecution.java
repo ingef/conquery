@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -40,16 +38,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -69,6 +71,7 @@ import org.apache.shiro.authz.Permission;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties("state")
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -97,11 +100,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonAlias("machineGenerated")
 	private boolean system;
 
-
-	// we don't want to store or send query results or other result metadata
-	@EqualsAndHashCode.Exclude
-	private ExecutionState state = ExecutionState.NEW;
-
 	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
 	private LocalDateTime startTime;
@@ -122,36 +120,49 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient ConqueryConfig config;
 
 	/**
-	 * TODO remove this when identifiables hold reference to NsIdResolver
-	 */
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private transient Namespace namespace;
-
-	/**
 	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
 	 */
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
+	@NotNull
 	private transient MetaStorage metaStorage;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	@NotNull
+	private transient DatasetRegistry<?> datasetRegistry;
 
-	public ManagedExecution(@NonNull User owner, @NonNull Dataset dataset, MetaStorage metaStorage) {
+
+	public ManagedExecution(@NonNull User owner, @NonNull Dataset dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
 		this.owner = owner;
 		this.dataset = dataset;
 		this.metaStorage = metaStorage;
+		this.datasetRegistry = datasetRegistry;
+	}
+
+	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
+		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
+		query.visit(namespacesIdCollector);
+
+		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
+															  .stream()
+															  .filter(ConceptElement.class::isInstance)
+															  .map(ConceptElement.class::cast)
+															  .<Concept<?>>map(ConceptElement::getConcept)
+															  .collect(Collectors.toSet());
+
+		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
+		return canExpand;
 	}
 
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
-		if (!namespace.getDataset().equals(dataset)) {
-			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset, namespace.getDataset()
-																																								   .getId()));
-		}
+	public final void initExecutable(ConqueryConfig config) {
 
 		synchronized (this) {
 			if (initialized) {
@@ -160,12 +171,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
 			}
 			this.config = config;
-			this.namespace = namespace;
 
-			doInitExecutable(namespace);
+			doInitExecutable();
 
 			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
 			containsDates = containsDates(getSubmitted());
@@ -174,8 +184,41 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	protected abstract void doInitExecutable(Namespace namespace);
+	protected String makeAutoLabel(PrintSettings cfg) {
+		return makeDefaultLabel(cfg) + AUTO_LABEL_SUFFIX;
+	}
 
+	@JsonIgnore
+	public Namespace getNamespace() {
+		return datasetRegistry.get(getDataset().getId());
+	}
+
+	protected abstract void doInitExecutable();
+
+	private static boolean containsDates(QueryDescription query) {
+		return Visitable.stream(query)
+						.anyMatch(visitable -> {
+
+							if (visitable instanceof CQConcept cqConcept) {
+								return !cqConcept.isExcludeFromTimeAggregation();
+							}
+
+							if (visitable instanceof CQExternal external) {
+								return external.containsDates();
+							}
+
+							return false;
+						});
+	}
+
+	/**
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
+	 */
+	@JsonIgnore
+	public abstract QueryDescription getSubmitted();
+
+	@JsonIgnore
+	protected abstract String makeDefaultLabel(PrintSettings cfg);
 
 	@Override
 	public ManagedExecutionId createId() {
@@ -188,7 +231,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	public void fail(ConqueryErrorInfo error, ExecutionManager executionManager) {
+	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -199,52 +242,61 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
-		finish(ExecutionState.FAILED, executionManager);
+		finish(ExecutionState.FAILED);
 	}
 
-	public void start() {
-		synchronized (this) {
-			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-			Preconditions.checkArgument(getState() != ExecutionState.RUNNING);
+	public synchronized void finish(ExecutionState executionState) {
 
-			startTime = LocalDateTime.now();
+		finishTime = LocalDateTime.now();
+		progress = null;
 
-			setState(ExecutionState.RUNNING);
-			getMetaStorage().updateExecution(this);
-		}
+		// Set execution state before acting on the latch to prevent a race condition
+		// Not sure if also the storage needs an update first
+		getMetaStorage().updateExecution(this);
+
+		getExecutionManager().updateState(getId(), executionState);
+
+		// Signal to waiting threads that the execution finished
+		getExecutionManager().clearBarrier(getId());
+
+		log.info("{} {} {} within {}", executionState, getId(), getClass().getSimpleName(), getExecutionTime());
 	}
 
-	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
-		if (getState() == ExecutionState.NEW) {
-			log.error("Query[{}] was never run.", getId(), new Exception());
-		}
-
-		synchronized (this) {
-			finishTime = LocalDateTime.now();
-			progress = null;
-
-			// Set execution state before acting on the latch to prevent a race condition
-			// Not sure if also the storage needs an update first
-			setState(executionState);
-			getMetaStorage().updateExecution(this);
-
-		}
-
-		log.info("{} {} {} within {}", getState(), queryId, getClass().getSimpleName(), getExecutionTime());
-
-		// Signal to waiting threads that the form finished
-		executionManager.clearBarrier(this.getId());
+	@JsonIgnore
+	protected ExecutionManager getExecutionManager() {
+		return getNamespace().getExecutionManager();
 	}
-
-
 
 	@JsonIgnore
 	public Duration getExecutionTime() {
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
+	public void start() {
+		synchronized (this) {
+			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
+			if (getExecutionManager().isResultPresent(getId())) {
+				Preconditions.checkArgument(getExecutionManager().getResult(getId()).getState() != ExecutionState.RUNNING);
+			}
+
+			startTime = LocalDateTime.now();
+
+			getMetaStorage().updateExecution(this);
+		}
+	}
+
+	/**
+	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 */
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
+		OverviewExecutionStatus status = new OverviewExecutionStatus();
+		setStatusBase(subject, status);
+
+		return status;
+	}
+
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -265,14 +317,26 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 
-	/**
-	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
-	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject, Namespace namespace) {
-		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(subject, status, namespace);
+	@JsonIgnore
+	public String getLabelWithoutAutoLabelSuffix() {
+		final int idx;
+		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
+			return label.substring(0, idx);
+		}
+		return label;
+	}
 
-		return status;
+	@JsonIgnore
+	public boolean isAutoLabeled() {
+		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
+	}
+
+	public ExecutionState getState() {
+		if (!getExecutionManager().isResultPresent(getId())) {
+			return ExecutionState.NEW;
+		}
+
+		return getExecutionManager().getResult(getId()).getState();
 	}
 
 	/**
@@ -288,7 +352,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
-		setStatusBase(subject, status, namespace);
+		setStatusBase(subject, status);
 
 		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
@@ -343,67 +407,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setQuery(canSubjectExpand(subject, query) ? getSubmitted() : null);
 	}
 
-	private static boolean containsDates(QueryDescription query) {
-		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
-	}
-
-	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
-		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
-		query.visit(namespacesIdCollector);
-
-		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
-														   .stream()
-														   .filter(ConceptElement.class::isInstance)
-														   .map(ConceptElement.class::cast)
-														   .map(ConceptElement::getConcept)
-														   .collect(Collectors.toSet());
-
-		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-		return canExpand;
-	}
-
 	@JsonIgnore
 	public boolean isReadyToDownload() {
 		return getState() == ExecutionState.DONE;
-	}
-
-	/**
-	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
-	 */
-	@JsonIgnore
-	public abstract QueryDescription getSubmitted();
-
-	@JsonIgnore
-	public String getLabelWithoutAutoLabelSuffix() {
-		final int idx;
-		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
-			return label.substring(0, idx);
-		}
-		return label;
-	}
-
-	@JsonIgnore
-	public boolean isAutoLabeled() {
-		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
-	}
-
-	@JsonIgnore
-	protected abstract String makeDefaultLabel(PrintSettings cfg);
-
-	protected String makeAutoLabel(PrintSettings cfg) {
-		return makeDefaultLabel(cfg) + AUTO_LABEL_SUFFIX;
 	}
 
 	@Override
@@ -411,13 +417,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
 
-	public void reset(ExecutionManager executionManager) {
+	//// Shortcut helper methods
+
+	public void reset() {
 		// This avoids endless loops with already reset queries
-		if(getState().equals(ExecutionState.NEW)){
+		if (getState().equals(ExecutionState.NEW)) {
 			return;
 		}
 
-		setState(ExecutionState.NEW);
+		getExecutionManager().clearQueryResults(this);
 	}
 
 	public abstract void cancel();

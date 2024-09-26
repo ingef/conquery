@@ -130,7 +130,7 @@ public class FormConfigTest {
 		user = new User("test", "test", storage);
 		storage.addUser(user);
 
-		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), user, dataset, null);
+		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), user, dataset, null, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();

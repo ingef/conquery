@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
@@ -41,7 +42,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage);
+		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage, conquery.getDatasetRegistry());
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
@@ -56,7 +57,10 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			exec.setState(ExecutionState.DONE);
+			DistributedExecutionManager.DistributedState distributedState = new DistributedExecutionManager.DistributedState();
+			distributedState.setState(ExecutionState.DONE);
+			distributedState.getExecutingLock().countDown();
+			conquery.getNamespace().getExecutionManager().addState(exec.getId(), distributedState);
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			assertThat(status.getResultUrls()).isEmpty();

@@ -18,14 +18,15 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class TestForm extends Form implements InternalForm {
 
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<>(this, user, submittedDataset, storage);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	@Override

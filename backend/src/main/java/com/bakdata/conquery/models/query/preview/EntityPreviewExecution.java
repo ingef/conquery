@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.BooleanNode;
@@ -64,8 +65,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(entityPreviewQuery, user, submittedDataset, storage);
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	/**
@@ -191,16 +192,17 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		for (ResultInfo info : query.getResultInfos(printSettings)) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
-				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
+				final PreviewConfig.InfoCardSelect additionalInfo = select2desc.get(selectResultInfo.getSelect().getId());
 
 				// We build these by hand because they are labeled and described by config.
-				columnDescriptions.add(ColumnDescriptor.builder()
-													   .label(desc.label())
-													   .defaultLabel(desc.label())
-													   .type(info.getType().typeInfo())
-													   .semantics(info.getSemantics())
-													   .description((desc.description() != null) ? desc.description() : selectResultInfo.getDescription()) // both might be null
-													   .build());
+				final ColumnDescriptor descriptor = new ColumnDescriptor(
+						additionalInfo.label(),
+						additionalInfo.label(),
+						(additionalInfo.description() != null) ? additionalInfo.description() : selectResultInfo.getDescription(),// both might be null
+						info.getType().typeInfo(),
+						info.getSemantics()
+				);
+				columnDescriptions.add(descriptor);
 			}
 		}
 
@@ -215,8 +217,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable(Namespace namespace) {
-		super.doInitExecutable(namespace);
+	public void doInitExecutable() {
+		super.doInitExecutable();
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
@@ -228,7 +230,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getNamespace(), getConfig());
+		initExecutable(getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, subject, namespace);
