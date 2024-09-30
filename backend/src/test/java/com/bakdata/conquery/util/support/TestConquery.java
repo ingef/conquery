@@ -27,8 +27,8 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.Cloner;
@@ -252,11 +252,10 @@ public class TestConquery {
 	private boolean isBusy() {
 		boolean busy;
 		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
-		busy |= standaloneCommand.getManagerNode()
-				.getMetaStorage()
-								 .getAllExecutions()
-								 .stream()
-								 .map(ManagedExecution::getState)
+		busy |= standaloneCommand.getManager().getDatasetRegistry().getDatasets().stream()
+								 .map(Namespace::getExecutionManager)
+								 .flatMap(e -> e.getExecutionStates().asMap().values().stream())
+								 .map(ExecutionManager.State::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
 		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getDatasets()) {

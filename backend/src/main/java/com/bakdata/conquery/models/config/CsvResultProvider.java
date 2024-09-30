@@ -16,14 +16,12 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jakarta.ws.rs.core.UriBuilder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @CPSType(base = ResultRendererProvider.class, id = "CSV")
 public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;

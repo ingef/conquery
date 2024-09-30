@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -54,23 +55,23 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	private transient List<ColumnDescriptor> columnDescriptions;
 
 
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(owner, submittedDataset, storage, datasetRegistry);
 		this.query = query;
 	}
 
 	@Override
-	protected void doInitExecutable(Namespace namespace) {
+	protected void doInitExecutable() {
 		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 	}
 
 
 	@Override
-	public void finish(ExecutionState executionState, ExecutionManager executionManager) {
+	public synchronized void finish(ExecutionState executionState) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
-		super.finish(executionState, executionManager);
+		super.finish(executionState);
 	}
 
 
@@ -88,7 +89,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public long resultRowCount() {
+	public synchronized long resultRowCount() {
 		if (lastResultCount == null) {
 			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
 		}
@@ -96,9 +97,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status, Namespace namespace) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
-		super.setStatusBase(subject, status, namespace);
+		super.setStatusBase(subject, status);
 		status.setNumberOfResults(getLastResultCount());
 
 		Query query = getQuery();
@@ -120,12 +121,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
 		return query.getResultInfos(printSettings);
-	}
-
-	@Override
-	public void reset(ExecutionManager executionManager) {
-		super.reset(executionManager);
-		getNamespace().getExecutionManager().clearQueryResults(this);
 	}
 
 	@Override

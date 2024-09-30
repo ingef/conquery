@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
@@ -26,18 +27,38 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerHandler;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager {
 
-	public record DistributedState(Map<WorkerId, List<EntityResult>> results, CountDownLatch executingLock) implements InternalState {
+	@Data
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class DistributedState implements InternalState {
+		@Setter
+		@NonNull
+		private ExecutionState state;
+		private Map<WorkerId, List<EntityResult>> results;
+		private CountDownLatch executingLock;
 
 		public DistributedState() {
-			this(new ConcurrentHashMap<>(), new CountDownLatch(1));
+			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
+		}
+
+		@NotNull
+		@Override
+		public ExecutionState getState() {
+			return state;
 		}
 
 		@Override
@@ -59,8 +80,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 	private final ClusterState clusterState;
 
 
-	public DistributedExecutionManager(MetaStorage storage, ClusterState state) {
-		super(storage);
+	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state) {
+		super(storage, datasetRegistry);
 		clusterState = state;
 	}
 
@@ -111,18 +132,20 @@ public class DistributedExecutionManager extends ExecutionManager {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 		log.trace("Received Result\n{}", result.getResults());
 
-		if (execution.getState() != ExecutionState.RUNNING) {
-			log.warn("Received result for Query[{}] that is not RUNNING but {}", execution.getId(), execution.getState());
+		ManagedExecutionId id = execution.getId();
+		State state = getResult(id);
+		ExecutionState execState = state.getState();
+		if (execState != ExecutionState.RUNNING) {
+			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
 			return;
 		}
 
 		if (result.getError().isPresent()) {
-			execution.fail(result.getError().get(), this);
+			execution.fail(result.getError().get());
 		}
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			State state = getResult(execution.getId());
 			if (!(state instanceof DistributedState distributedState)) {
 				throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedState.class, state.getClass()));
 			}
@@ -130,17 +153,19 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 			// If all known workers have returned a result, the query is DONE.
 			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset().getId()).getAllWorkerIds())) {
-				execution.finish(ExecutionState.DONE, this);
+
+				execution.finish(ExecutionState.DONE);
 
 			}
 		}
 
 		// State changed to DONE or FAILED
-		if (execution.getState() != ExecutionState.RUNNING) {
+		ExecutionState execStateAfterResultCollect = getResult(id).getState();
+		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), getStorage()).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
-			ExecutionMetrics.getQueryStateCounter(execution.getState(), primaryGroupName).inc();
+			ExecutionMetrics.getQueryStateCounter(execStateAfterResultCollect, primaryGroupName).inc();
 			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(execution.getExecutionTime().toMillis());
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
