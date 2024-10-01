@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,6 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 @RequiredArgsConstructor
 public class ClusterConnectionManager extends IoHandlerAdapter {
 
-	private IoAcceptor acceptor;
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final Validator validator;
@@ -44,6 +44,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	private final InternalMapperFactory internalMapperFactory;
 	@Getter
 	private final ClusterState clusterState;
+	private IoAcceptor acceptor;
 
 	@Override
 	public void sessionOpened(IoSession session) {
@@ -74,7 +75,10 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 						config.getCluster().getBackpressure()
 				));
 
-			if (toManagerNode instanceof SlowMessage slowMessage) {
+			if (toManagerNode instanceof ForwardToNamespace nsMesg) {
+				datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
+			}
+			else if (toManagerNode instanceof SlowMessage slowMessage) {
 				slowMessage.setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
 			}
