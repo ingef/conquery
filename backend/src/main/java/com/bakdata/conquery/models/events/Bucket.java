@@ -162,7 +162,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return ((DecimalStore) getStore(column)).getDecimal(event);
 	}
 
-	public long getMoney(int event, @NotNull Column column) {
+	public BigDecimal getMoney(int event, @NotNull Column column) {
 		return ((MoneyStore) getStore(column)).getMoney(event);
 	}
 

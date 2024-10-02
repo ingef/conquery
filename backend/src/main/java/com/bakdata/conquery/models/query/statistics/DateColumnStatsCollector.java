@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.statistics;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -35,8 +34,8 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 	private static Function<Object, CDateRange> getDateExtractor(ResultType dateType) {
 		return switch (((ResultType.Primitive) dateType)) {
-			case DATE_RANGE -> dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
-			case DATE -> dateValue -> CDateRange.exactly((Integer) dateValue);
+			case DATE_RANGE -> dateValue -> (CDateRange) dateValue;
+			case DATE -> dateValue -> CDateRange.exactly((LocalDate) dateValue);
 			default -> throw new IllegalStateException("Unexpected type %s".formatted(dateType));
 		};
 	}

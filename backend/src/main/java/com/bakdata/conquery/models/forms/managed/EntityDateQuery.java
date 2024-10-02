@@ -16,7 +16,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -89,13 +88,13 @@ public class EntityDateQuery extends Query {
     }
 
     @Override
-    public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+    public List<ResultInfo> getResultInfos() {
 		List<ResultInfo>  resultInfos = new ArrayList<>();
-		resultInfos.add(ResultHeaders.formResolutionInfo(printSettings));
-		resultInfos.add(ResultHeaders.formContextInfo(printSettings));
-		resultInfos.add(ResultHeaders.formDateRangeInfo(printSettings));
+		resultInfos.add(ResultHeaders.formResolutionInfo());
+		resultInfos.add(ResultHeaders.formContextInfo());
+		resultInfos.add(ResultHeaders.formDateRangeInfo());
 
-		resultInfos.addAll(features.getResultInfos(printSettings));
+		resultInfos.addAll(features.getResultInfos());
 
 		return resultInfos;
 

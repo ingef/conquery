@@ -9,19 +9,21 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
 import org.apache.arrow.vector.FieldVector;
-import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
@@ -33,277 +35,288 @@ import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class ArrowRenderer {
 
-    public static void renderToStream(
+	public static void renderToStream(
 			Function<VectorSchemaRoot, ArrowWriter> writerProducer,
 			PrintSettings printSettings,
 			ArrowConfig arrowConfig,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> resultInfo,
-			Stream<EntityResult> results) throws IOException {
+			Stream<EntityResult> results, PrinterFactory printerFactory) throws IOException {
 
-		List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings));
-		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
+		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
+		final VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
 		// Build separate pipelines for id and value, as they have different sources but the same target
-		RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, idHeaders);
-		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), printSettings, resultInfo);
+		final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
+		final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
+
+		final List<Printer> printers =
+				Stream.concat(idHeaders.stream(), resultInfo.stream())
+					  .map(info -> info.createPrinter(printerFactory, printSettings))
+					  .toList();
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
-			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, arrowConfig.getBatchSize());
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), printers, results, arrowConfig.getBatchSize());
 		}
 
-    }
+	}
 
 
 	public static void write(
 			ArrowWriter writer,
 			VectorSchemaRoot root,
-			RowConsumer[] idWriter,
-			RowConsumer[] valueWriter,
+			RowConsumer[] idWriters,
+			RowConsumer[] valueWriters,
 			PrintIdMapper idMapper,
+			List<Printer> printers,
 			Stream<EntityResult> results,
 			int batchSize) throws IOException {
 		Preconditions.checkArgument(batchSize > 0, "Batch size needs be larger than 0.");
 		// TODO add time metric for writing
 
-        log.trace("Starting result write");
-        writer.start();
-        int batchCount = 0;
-        int batchLineCount = 0;
-        Iterator<EntityResult> resultIterator = results.iterator();
-        while (resultIterator.hasNext()) {
-            EntityResult cer = resultIterator.next();
-            for (Object[] line : cer.listResultLines()) {
-                if(line.length != valueWriter.length) {
-                    throw new IllegalStateException("The number of value writers and values in a result line differs. Writers: " + valueWriter.length + " Line: " + line.length);
-                }
-                for (RowConsumer rowConsumer : idWriter) {
-                    // Write id information
-                    rowConsumer.accept(batchLineCount, idMapper.map(cer).getExternalId());
-                }
-                for (RowConsumer rowConsumer : valueWriter) {
-                    // Write values
-                    rowConsumer.accept(batchLineCount, line);
-                }
-                batchLineCount++;
+		log.trace("Starting result write");
 
-                if (batchLineCount >= batchSize) {
-                    root.setRowCount(batchLineCount);
-                    writer.writeBatch();
-                    root.clear();
-                    batchLineCount = 0;
-                }
-            }
-        }
-        if (batchLineCount > 0) {
-            root.setRowCount(batchLineCount);
-            writer.writeBatch();
-            root.clear();
-            batchCount++;
-        }
-        log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
-        writer.end();
-    }
+		writer.start();
+		int batchCount = 0;
+		int batchLineCount = 0;
+		final Iterator<EntityResult> resultIterator = results.iterator();
 
-    private static RowConsumer intVectorFiller(IntVector vector, Function<Object[], Integer> resultExtractor) {
-        return (rowNumber, line) -> {
-            Integer value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            vector.setSafe(rowNumber, value);
-        };
-    }
+		while (resultIterator.hasNext()) {
+			final EntityResult cer = resultIterator.next();
 
-    private static RowConsumer bitVectorFiller(BitVector vector, Function<Object[], Boolean> resultExtractor) {
-        return (rowNumber, line) -> {
-            Boolean value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            vector.setSafe(rowNumber, value ? 1 : 0);
-        };
-    }
+			final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
 
-    private static RowConsumer float8VectorFiller(Float8Vector vector, Function<Object[], Number> resultExtractor) {
-        return (rowNumber, line) -> {
-            Number value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            vector.setSafe(rowNumber, value.doubleValue());
-        };
-    }
+			for (Object[] line : cer.listResultLines()) {
+				Preconditions.checkState(
+						line.length == valueWriters.length,
+						"The number of value writers and values in a result line differs. Writers: %d Line: %d".formatted(valueWriters.length, line.length)
+				);
 
-    private static RowConsumer float4VectorFiller(Float4Vector vector, Function<Object[], Number> resultExtractor) {
-        return (rowNumber, line) -> {
-            Number value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            vector.setSafe(rowNumber, value.floatValue());
-        };
-    }
+				for (int index = 0; index < idWriters.length; index++) {
+					if (printedExternalId[index] == null) {
+						continue;
+					}
 
-    private static RowConsumer varCharVectorFiller(VarCharVector vector, Function<Object[], String> resultExtractor) {
-        return (rowNumber, line) -> {
-            String value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            vector.setSafe(rowNumber, new Text(value));
-        };
-    }
+					idWriters[index].accept(batchLineCount, printedExternalId[index]);
+				}
 
-    private static RowConsumer dateDayVectorFiller(DateDayVector vector, Function<Object[], Number> resultExtractor) {
-        return (rowNumber, line) -> {
-            Number value = resultExtractor.apply(line);
-            if (value == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
+				for (int index = 0; index < valueWriters.length; index++) {
+					final int colId = index + idWriters.length;
+					// In this case, the printer normalizes and adjusts values.
 
-            // Treat our internal infinity dates (Interger.MIN and Integer.MAX) also as null
-            final int epochDay = value.intValue();
-            if (CDate.isNegativeInfinity(epochDay) || CDate.isPositiveInfinity(epochDay)) {
-                vector.setNull(rowNumber);
-                return;
-            }
+					final Object value = line[index];
 
-            vector.setSafe(rowNumber, epochDay);
-        };
-    }
+					Object printed = null;
 
-    private static RowConsumer structVectorFiller(StructVector vector, RowConsumer [] nestedConsumers,  Function<Object[], List<?>> resultExtractor) {
-        return (rowNumber, line) -> {
-            // Values is a horizontal list
-            List<?> values = resultExtractor.apply(line);
-            if (values == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
-            if(values.size() != nestedConsumers.length) {
-                throw new IllegalStateException("The number of the provided nested value differs from the number of consumer for the generated vectors. Provided values: " + values + "\t Available consumers: " + nestedConsumers.length);
-            }
-            for (RowConsumer nestedConsumer : nestedConsumers) {
-                nestedConsumer.accept(rowNumber, values.toArray());
-            }
+					if (value != null) {
+						Printer printer = printers.get(colId);
+						printed = printer.apply(value);
+					}
 
-            // Finally mark that we populated the nested vectors
-            vector.setIndexDefined(rowNumber);
-        };
-    }
+					valueWriters[index].accept(batchLineCount, printed);
+				}
 
-    private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], List<?>> resultExtractor){
-        return (rowNumber, line) -> {
-            // Values is a vertical list
-            List<?> values = resultExtractor.apply(line);
-            if (values == null) {
-                vector.setNull(rowNumber);
-                return;
-            }
+				batchLineCount++;
 
-            int start = vector.startNewValue(rowNumber);
+				if (batchLineCount >= batchSize) {
+					root.setRowCount(batchLineCount);
+					writer.writeBatch();
+					root.clear();
+					batchLineCount = 0;
+				}
+			}
+		}
+		if (batchLineCount > 0) {
+			root.setRowCount(batchLineCount);
+			writer.writeBatch();
+			root.clear();
+			batchCount++;
+		}
+		log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
+		writer.end();
+	}
 
-            for (int i = 0; i < values.size(); i++) {
-                // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(Math.addExact(start, i), new Object[] {values.get(i)});
-            }
+	@NotNull
+	private static Object[] getPrintedExternalId(RowConsumer[] idWriters, PrintIdMapper idMapper, List<Printer> printers, EntityResult cer) {
+		final String[] externalId = idMapper.map(cer).getExternalId();
 
-            vector.endValue(rowNumber, values.size());
-       };
-    }
+		final Object[] printedExternalId = new String[externalId.length];
+
+		for (int index = 0; index < idWriters.length; index++) {
+			Printer printer = printers.get(index);
+			printedExternalId[index] = printer.apply(externalId[index]);
+		}
+		return printedExternalId;
+	}
+
+	private static RowConsumer intVectorFiller(IntVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final Integer value = (Integer) valueRaw;
+
+			vector.setSafe(rowNumber, value);
+		};
+	}
+
+	private static RowConsumer bitVectorFiller(BitVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final Boolean value = (Boolean) valueRaw;
+
+			vector.setSafe(rowNumber, value ? 1 : 0);
+		};
+	}
+
+	private static RowConsumer moneyVectorFiller(IntVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final int value = (int) valueRaw;
+
+			vector.setSafe(rowNumber, value);
+		};
+	}
+
+	private static RowConsumer float8VectorFiller(Float8Vector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final Number value = (Number) valueRaw;
+
+			vector.setSafe(rowNumber, value.doubleValue());
+		};
+	}
+
+	private static RowConsumer varCharVectorFiller(VarCharVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+			final String value = (String) valueRaw;
+			vector.setSafe(rowNumber, new Text(value));
+		};
+	}
+
+	private static RowConsumer dateDayVectorFiller(DateDayVector vector) {
+		return (rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final Number value = (Number) valueRaw;
+
+			// Treat our internal infinity dates (Interger.MIN and Integer.MAX) also as null
+			final int epochDay = value.intValue();
+
+			if (CDate.isNegativeInfinity(epochDay) || CDate.isPositiveInfinity(epochDay)) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			vector.setSafe(rowNumber, epochDay);
+		};
+	}
+
+	private static RowConsumer dateRangeVectorFiller(StructVector vector) {
+		final List<ValueVector> nestedVectors = vector.getPrimitiveVectors();
+		final RowConsumer minConsumer = generateVectorFiller(nestedVectors.get(0), ResultType.Primitive.DATE);
+		final RowConsumer maxConsumer = generateVectorFiller(nestedVectors.get(1), ResultType.Primitive.DATE);
+
+		return ((rowNumber, valueRaw) -> {
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final CDateRange value = (CDateRange) valueRaw;
+
+			minConsumer.accept(rowNumber, value.getMinValue());
+			maxConsumer.accept(rowNumber, value.getMaxValue());
+
+			// Finally mark that we populated the nested vectors
+			vector.setIndexDefined(rowNumber);
+		});
+	}
+
+	private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer) {
+		return (rowNumber, valueRaw) -> {
+
+			if (valueRaw == null) {
+				vector.setNull(rowNumber);
+				return;
+			}
+
+			final List<?> values = (List<?>) valueRaw;
+
+			final int start = vector.startNewValue(rowNumber);
+
+			for (int i = 0; i < values.size(); i++) {
+				nestedConsumer.accept(Math.addExact(start, i), values.get(i));
+			}
+
+			vector.endValue(rowNumber, values.size());
+		};
+	}
 
 
-    public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors, final PrintSettings settings, List<ResultInfo> resultInfos) {
-        Preconditions.checkArgument(vectorOffset >= 0, "Offset was negative: %s", vectorOffset);
-        Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negative: %s", numVectors);
+	public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors, List<ResultInfo> resultInfos) {
+		Preconditions.checkArgument(vectorOffset >= 0, "Offset was negative: %s", vectorOffset);
+		Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negative: %s", numVectors);
 
-        RowConsumer[] builder = new RowConsumer[numVectors];
+		final RowConsumer[] builder = new RowConsumer[numVectors];
 
-        for (
-				int vecI = vectorOffset;
-				(vecI < root.getFieldVectors().size()) && (vecI < vectorOffset + numVectors);
-				vecI++
-		) {
+		for (int vecI = vectorOffset; (vecI < root.getFieldVectors().size()) && (vecI < vectorOffset + numVectors); vecI++) {
 			final int pos = vecI - vectorOffset;
 			final FieldVector vector = root.getVector(vecI);
 			final ResultInfo resultInfo = resultInfos.get(pos);
-			builder[pos] = generateVectorFiller(pos, vector, settings, resultInfo.getPrinter());
+			builder[pos] = generateVectorFiller(vector, resultInfo.getType());
 
 		}
-        return builder;
+		return builder;
 
-    }
+	}
 
-	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultPrinters.Printer printer) {
-		if (vector instanceof IntVector intVector) {
-			return intVectorFiller(intVector, (line) -> (Integer) line[pos]);
+	private static RowConsumer generateVectorFiller(ValueVector vector, ResultType type) {
+		if (type instanceof ResultType.ListT<?> listT) {
+			final ValueVector nestedVector = ((ListVector) vector).getDataVector();
+
+			return listVectorFiller(((ListVector) vector), generateVectorFiller(nestedVector, listT.getElementType()));
 		}
 
-		if (vector instanceof VarCharVector varCharVector) {
-			return varCharVectorFiller(
-					varCharVector,
-					(line) -> {
-						// This is a bit clunky at the moment, since this lambda is executed for each textual value
-						// in the result, but it should be okay for now. This code moves as soon shards deliver themselves
-						// arrow as a result.
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> bitVectorFiller(((BitVector) vector));
+			case INTEGER -> intVectorFiller(((IntVector) vector));
+			case MONEY -> moneyVectorFiller(((IntVector) vector));
+			case DATE -> dateDayVectorFiller(((DateDayVector) vector));
+			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
+			case STRING -> varCharVectorFiller(((VarCharVector) vector));
+			case DATE_RANGE -> dateRangeVectorFiller((StructVector) vector);
 
-						if (line[pos] == null) {
-							// If there is no value, we don't want to have it displayed as an empty string (see next if)
-							return null;
-						}
-						// We reference the printer directly,
-						return printer.print(line[pos]);
-					});
-        }
+		};
 
-        if (vector instanceof BitVector bitVector) {
-            return bitVectorFiller(bitVector, (line) -> (Boolean) line[pos]);
-        }
 
-        if (vector instanceof Float4Vector float4Vector) {
-            return float4VectorFiller(float4Vector, (line) -> (Number) line[pos]);
-        }
-
-        if (vector instanceof Float8Vector float8Vector) {
-            return float8VectorFiller(float8Vector, (line) -> (Number) line[pos]);
-        }
-
-        if (vector instanceof DateDayVector dateDayVector) {
-            return dateDayVectorFiller(dateDayVector, (line) -> (Number) line[pos]);
-        }
-
-        if (vector instanceof StructVector structVector) {
-
-			List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
-            RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
-
-            for (int i = 0; i < nestedVectors.size(); i++) {
-				nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, printer);
-            }
-            return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
-        }
-
-        if (vector instanceof ListVector listVector) {
-
-			ValueVector nestedVector = listVector.getDataVector();
-
-            // pos = 0 is a workaround for now
-			return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, ((ResultPrinters.ListPrinter) printer).elementPrinter()), (line) -> (List<?>) line[pos]);
-        }
-
-        throw new IllegalArgumentException("Unsupported vector type " + vector);
-    }
+	}
 
 }
