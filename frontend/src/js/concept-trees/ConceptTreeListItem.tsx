@@ -12,11 +12,11 @@ const getNonFolderChildren = (trees: TreesT, node: LoadedConcept): string[] => {
 
   if (!node.children) return [];
 
-  // recursively get children of children
-  return node.children.reduce((acc, childId) => {
+  // collect all non-folder children, recursively
+  return node.children.reduce<ConceptIdT[]>((acc, childId) => {
     const child = trees[childId];
     return acc.concat(getNonFolderChildren(trees, child));
-  }, [] as ConceptIdT[]);
+  }, []);
 };
 
 const ConceptTreeListItem = ({
