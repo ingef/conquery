@@ -39,13 +39,12 @@ public abstract class ResultInfo {
 	public abstract String userColumnName(PrintSettings printSettings);
 
 	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector, PrintSettings printSettings) {
-		return ColumnDescriptor.builder()
-							   .label(collector.getUniqueName(this, printSettings))
-							   .defaultLabel(defaultColumnName(printSettings))
-							   .type(getType().typeInfo())
-							   .semantics(getSemantics())
-							   .description(getDescription())
-							   .build();
+		return new ColumnDescriptor(
+				collector.getUniqueName(this, printSettings),
+				defaultColumnName(printSettings), getDescription(),
+				getType().typeInfo(),
+				getSemantics()
+		);
 	}
 
 	/**

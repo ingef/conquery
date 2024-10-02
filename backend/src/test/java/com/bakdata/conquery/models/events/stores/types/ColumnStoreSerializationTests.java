@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -64,7 +64,7 @@ public class ColumnStoreSerializationTests {
 		// Prepare shard node internal mapper
 		config = new ConqueryConfig();
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, Validators.newValidator());
-		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(Workers.class));
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(ShardWorkers.class));
 	}
 
 	@Test

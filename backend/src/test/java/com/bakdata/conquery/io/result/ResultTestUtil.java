@@ -54,7 +54,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, OWNER, DATASET, null) {
+		return new ManagedQuery(null, OWNER, DATASET, null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()

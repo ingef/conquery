@@ -1,13 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -22,6 +20,7 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -33,13 +32,13 @@ import lombok.extern.slf4j.Slf4j;
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
-public class Workers extends IdResolveContext implements Managed {
+public class ShardWorkers extends IdResolveContext implements Managed {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
 	private final ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
-	private final transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
+	private final transient ConcurrentMap<DatasetId, Worker> dataset2Worker = new ConcurrentHashMap<>();
 
 	/**
 	 * Shared ExecutorService among Workers for Jobs.
@@ -54,7 +53,7 @@ public class Workers extends IdResolveContext implements Managed {
 	private final int secondaryIdSubPlanRetention;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, InternalMapperFactory internalMapperFactory, int entityBucketSize, int secondaryIdSubPlanRetention) {
+	public ShardWorkers(ThreadPoolDefinition queryThreadPoolDefinition, InternalMapperFactory internalMapperFactory, int entityBucketSize, int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition

@@ -10,8 +10,8 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.cluster.ClusterConnectionShard;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
@@ -33,7 +33,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 	private final String name;
 	@Setter
-	private Workers workers;
+	private ShardWorkers workers;
 	private ClusterConnectionShard clusterConnection;
 
 	public ShardNode() {
@@ -51,7 +51,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
-		workers = new Workers(
+		workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,
 				config.getCluster().getEntityBucketSize(),

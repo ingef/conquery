@@ -6,10 +6,8 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.BooleanStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DateRangeStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DateStringPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.IntegerStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ListStringPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MoneyStringPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.NumericStringPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.NumberFormatStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.StringPrinter;
 import lombok.ToString;
 
@@ -32,12 +30,12 @@ public class StringResultPrinters extends PrinterFactory {
 
 	@Override
 	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
-		return new IntegerStringPrinter(printSettings);
+		return NumberFormatStringPrinter.create(printSettings, printSettings.getIntegerFormat());
 	}
 
 	@Override
 	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
-		return new NumericStringPrinter(printSettings);
+		return NumberFormatStringPrinter.create(printSettings, printSettings.getDecimalFormat());
 	}
 
 	@Override
@@ -57,7 +55,7 @@ public class StringResultPrinters extends PrinterFactory {
 
 	@Override
 	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
-		return new MoneyStringPrinter(printSettings);
+		return NumberFormatStringPrinter.create(printSettings, printSettings.getCurrencyFormat());
 	}
 
 }

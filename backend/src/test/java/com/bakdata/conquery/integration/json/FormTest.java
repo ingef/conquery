@@ -11,6 +11,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -27,6 +30,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -41,9 +45,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -120,9 +121,8 @@ public class FormTest extends ConqueryTestSpec {
 				.isEmpty();
 
 
-		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) support
-				.getNamespace()
-				.getExecutionManager()
+		ExecutionManager executionManager = support.getNamespace().getExecutionManager();
+		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) executionManager
 				.runQuery(namespace, form, support.getTestUser(), support.getConfig(), false);
 
 		namespace.getExecutionManager().awaitDone(managedForm, 1, TimeUnit.MINUTES);

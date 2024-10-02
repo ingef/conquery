@@ -85,4 +85,24 @@ public class PrintSettings {
 	}
 
 
+	/**
+	 * @implNote We are cloning, because {@link NumberFormat} is NOT thread safe.
+	 */
+	public NumberFormat getIntegerFormat() {
+		return (NumberFormat) integerFormat.clone();
+	}
+
+	/**
+	 * @implNote We are cloning, because {@link NumberFormat} is NOT thread safe.
+	 */
+	public DecimalFormat getCurrencyFormat() {
+		return (DecimalFormat) currencyFormat.clone();
+	}
+
+	/**
+	 * @implNote We are cloning, because {@link NumberFormat} is NOT thread safe.
+	 */
+	public NumberFormat getDecimalFormat() {
+		return (NumberFormat) decimalFormat.clone();
+	}
 }

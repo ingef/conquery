@@ -42,7 +42,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE, null);
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 

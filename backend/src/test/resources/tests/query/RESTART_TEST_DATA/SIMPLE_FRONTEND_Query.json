@@ -5,14 +5,24 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "CONCEPT",
-      "ids": [
-        "test_tree.test_child1"
-      ],
-      "tables": [
+      "type": "AND",
+      "children": [
         {
-          "id": "test_tree.connector",
-          "filters": []
+          "type": "OR",
+          "children": [
+            {
+              "type": "CONCEPT",
+              "ids": [
+                "test_tree.test_child1"
+              ],
+              "tables": [
+                {
+                  "id": "test_tree.connector",
+                  "filters": []
+                }
+              ]
+            }
+          ]
         }
       ]
     }

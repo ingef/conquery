@@ -2,8 +2,6 @@ package com.bakdata.conquery.io;
 
 import static org.mockito.Mockito.mock;
 
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -15,10 +13,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.Validator;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -62,7 +61,7 @@ public abstract class AbstractSerializationTest {
 		namespaceStorage.updateDataset(new Dataset("serialization_test"));
 
 		// Prepare shard node internal mapper
-		final Workers workers = mock(Workers.class);
+		final ShardWorkers workers = mock(ShardWorkers.class);
 		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(workers);
 
 		// Prepare api mapper with a Namespace injected (usually done by PathParamInjector)

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +23,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
-	private int nulls = 0;
+	private final NumberFormat decimalFormat;
+	private int nulls;
 
 
 	private final Comparator<TYPE> comparator;
@@ -47,13 +47,16 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		this.expectedBins = expectedBins;
 		this.upperPercentile = upperPercentile;
 		this.lowerPercentile = lowerPercentile;
+
+		// Clone to ensure Thread-safe access
+		decimalFormat = printSettings.getDecimalFormat();
 	}
 
 	private static NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
 		return switch (((ResultType.Primitive) type)) {
-			case INTEGER -> ((NumberFormat) printSettings.getIntegerFormat().clone());
-			case MONEY -> ((DecimalFormat) printSettings.getCurrencyFormat().clone());
-			default -> ((NumberFormat) printSettings.getDecimalFormat().clone());
+			case INTEGER -> printSettings.getIntegerFormat();
+			case MONEY -> printSettings.getCurrencyFormat();
+			default -> printSettings.getDecimalFormat();
 		};
 	}
 
@@ -149,7 +152,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		// mean is always a decimal number, therefore integer needs special handling
 		if(ResultType.Primitive.INTEGER.equals(getType())){
-			out.put(labels.mean(), getPrintSettings().getDecimalFormat().format(getStatistics().getMean()));
+			out.put(labels.mean(), decimalFormat.format(getStatistics().getMean()));
 		}
 		else {
 			out.put(labels.mean(), printValue(getStatistics().getMean()));
@@ -159,7 +162,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		out.put(labels.median(), printValue(getStatistics().getPercentile(50)));
 		out.put(labels.p75(), printValue(getStatistics().getPercentile(75)));
 
-		out.put(labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()));
+		out.put(labels.std(), decimalFormat.format(getStatistics().getStandardDeviation()));
 
 		out.put(labels.sum(), printValue(getStatistics().getSum()));
 		out.put(labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()));

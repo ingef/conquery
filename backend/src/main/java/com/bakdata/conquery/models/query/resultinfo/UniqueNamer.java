@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UniqueNamer {
 
 	private final PrintSettings settings;
-	
+
 	/**
 	 * Is used to track possible name duplicates for column names and provide an index to enumerate these.
 	 * This lowers the risk of duplicate column names in the result.

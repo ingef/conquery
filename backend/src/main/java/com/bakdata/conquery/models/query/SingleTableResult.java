@@ -30,11 +30,9 @@ public interface SingleTableResult {
 
 		// First add the id columns to the descriptor list. The are the first columns
 		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
-			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header, settings))
-												   .type(ResultType.Primitive.STRING.typeInfo())
-												   .semantics(header.getSemantics())
-												   .build());
+			final ColumnDescriptor descriptor =
+					new ColumnDescriptor(uniqNamer.getUniqueName(header, settings), null, null, ResultType.Primitive.STRING.typeInfo(), header.getSemantics());
+			columnDescriptions.add(descriptor);
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);

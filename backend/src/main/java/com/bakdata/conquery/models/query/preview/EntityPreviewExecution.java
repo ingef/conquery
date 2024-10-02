@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,10 +40,10 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
-import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -62,8 +61,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(entityPreviewQuery, user, submittedDataset, storage);
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	@Override
@@ -73,8 +72,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable(Namespace namespace) {
-		super.doInitExecutable(namespace);
+	public void doInitExecutable() {
+		super.doInitExecutable();
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
@@ -86,7 +85,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getNamespace(), getConfig());
+		initExecutable(getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, subject, namespace);
@@ -280,15 +279,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
 				// We build these by hand because they are labeled and described by config.
-				columnDescriptions.add(ColumnDescriptor.builder()
-													   .label(desc.label())
-													   .defaultLabel(desc.label())
-													   .type(info.getType().typeInfo())
-													   .semantics(info.getSemantics())
-													   .description((desc.description() != null)
-																	? desc.description()
-																	: selectResultInfo.getDescription()) // both might be null
-													   .build());
+				columnDescriptions.add(new ColumnDescriptor(desc.label(),
+															desc.label(),
+															desc.description() != null ? desc.description() : selectResultInfo.getDescription(), // both might be null
+															info.getType().typeInfo(),
+															info.getSemantics()
+				));
 			}
 		}
 
@@ -356,14 +352,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
-				descriptor.setSemantics(Sets.union(Set.of(new SemanticType.GroupT()), descriptor.getSemantics()));
+				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 
 			// Add hidden semantics to fields flagged for hiding.
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
-				descriptor.setSemantics(Sets.union(Set.of(new SemanticType.HiddenT()), descriptor.getSemantics()));
+				descriptor.getSemantics().add(new SemanticType.HiddenT());
 			}
 		}
 

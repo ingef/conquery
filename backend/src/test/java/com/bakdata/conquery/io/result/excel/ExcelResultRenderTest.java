@@ -68,7 +68,7 @@ public class ExcelResultRenderTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
 
-		final ManagedQuery mquery = new ManagedQuery(null, OWNER, DATASET, null) {
+		final ManagedQuery mquery = new ManagedQuery(null, OWNER, DATASET, null, null) {
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
 									   .map(ResultTestUtil.TypedSelectDummy::new)
@@ -180,8 +180,6 @@ public class ExcelResultRenderTest {
 		}
 
 		return Objects.toString(printer.apply(val));
-
-
 	}
 
 }

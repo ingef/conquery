@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -44,7 +45,7 @@ public interface QueryDescription extends Visitable {
 	 * @param storage
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage);
+	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry);
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();
