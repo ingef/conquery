@@ -1,4 +1,4 @@
-import { ComponentMeta, Story } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { ComponentProps, useState } from "react";
 
 import wordslist from "../../../fixtures/words.json";
@@ -14,9 +14,11 @@ export default {
   argTypes: {
     backgroundColor: { control: "#fafafa" },
   },
-} as ComponentMeta<typeof InputSelect>;
+} as Meta<typeof InputSelect>;
 
-const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
+type Story = StoryObj<typeof InputSelect>;
+
+const RenderDefault = (args: ComponentProps<typeof InputSelect>) => {
   const [options] = useState<SelectOptionT[]>(
     wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
@@ -37,17 +39,19 @@ const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
-  label: "This is a nice label",
-  smallMenu: false,
-  tooltip:
-    "And here goes some tooltip that really helps the user understand what's going on",
-  disabled: false,
-  indexPrefix: 5,
-};
-Default.argTypes = {
-  indexPrefix: {
-    type: { name: "number", required: false },
+export const Default: Story = {
+  args: {
+    label: "This is a nice label",
+    smallMenu: false,
+    tooltip:
+      "And here goes some tooltip that really helps the user understand what's going on",
+    disabled: false,
+    indexPrefix: 5,
   },
+  argTypes: {
+    indexPrefix: {
+      type: { name: "number", required: false },
+    },
+  },
+  render: RenderDefault,
 };
