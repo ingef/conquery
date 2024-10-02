@@ -2,22 +2,10 @@ import { useMemo } from "react";
 import type { ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
-import ConceptTreeFolder from "./ConceptTreeFolder";
+import ConceptTreeFolder, { getNonFolderChildren } from "./ConceptTreeFolder";
 import { getConceptById } from "./globalTreeStoreHelper";
-import type { LoadedConcept, SearchT, TreesT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-
-const getNonFolderChildren = (trees: TreesT, node: LoadedConcept): string[] => {
-  if (node.detailsAvailable) return node.children || [];
-
-  if (!node.children) return [];
-
-  // collect all non-folder children, recursively
-  return node.children.reduce<ConceptIdT[]>((acc, childId) => {
-    const child = trees[childId];
-    return acc.concat(getNonFolderChildren(trees, child));
-  }, []);
-};
 
 const ConceptTreeListItem = ({
   trees,
@@ -32,11 +20,11 @@ const ConceptTreeListItem = ({
 }) => {
   const tree = trees[conceptId];
 
-  const nonFolderChildren = useMemo(() => {
-    if (tree.detailsAvailable) return tree.children;
-
-    return getNonFolderChildren(trees, tree);
-  }, [trees, tree]);
+  const nonFolderChildren = useMemo(
+    () =>
+      tree.detailsAvailable ? tree.children : getNonFolderChildren(trees, tree),
+    [trees, tree],
+  );
 
   if (!isNodeInSearchResult(conceptId, search, nonFolderChildren)) return null;
 

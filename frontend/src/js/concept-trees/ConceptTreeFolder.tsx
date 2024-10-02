@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { useMemo } from "react";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
@@ -7,23 +7,12 @@ import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
-import type { SearchT, TreesT } from "./reducer";
+import type { LoadedConcept, SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
-
-interface PropsT {
-  depth: number;
-  trees: TreesT;
-  tree: ConceptT;
-  conceptId: ConceptIdT;
-  active?: boolean;
-  openInitially?: boolean;
-  search: SearchT;
-  onLoadTree: (id: string) => void;
-}
 
 const sumMatchingEntities = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
@@ -43,7 +32,22 @@ const sumMatchingEntries = (children: string[], initSum: number) => {
   }, initSum);
 };
 
-const ConceptTreeFolder: FC<PropsT> = ({
+export const getNonFolderChildren = (
+  trees: TreesT,
+  node: LoadedConcept,
+): string[] => {
+  if (node.detailsAvailable) return node.children || [];
+
+  if (!node.children) return [];
+
+  // collect all non-folder children, recursively
+  return node.children.reduce<ConceptIdT[]>((acc, childId) => {
+    const child = trees[childId];
+    return acc.concat(getNonFolderChildren(trees, child));
+  }, []);
+};
+
+const ConceptTreeFolder = ({
   trees,
   tree,
   conceptId,
@@ -52,17 +56,32 @@ const ConceptTreeFolder: FC<PropsT> = ({
   active,
   onLoadTree,
   openInitially,
+}: {
+  depth: number;
+  trees: TreesT;
+  tree: ConceptT;
+  conceptId: ConceptIdT;
+  active?: boolean;
+  openInitially?: boolean;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 }) => {
   const { open, onToggleOpen } = useOpenableConcept({
     conceptId,
     openInitially,
   });
 
-  if (!search.showMismatches) {
-    const shouldRender = isNodeInSearchResult(conceptId, search, tree.children);
+  const nonFolderChildren = useMemo(
+    () =>
+      tree.detailsAvailable ? tree.children : getNonFolderChildren(trees, tree),
+    [trees, tree],
+  );
 
-    if (!shouldRender) return null;
-  }
+  if (
+    !search.showMismatches &&
+    !isNodeInSearchResult(conceptId, search, nonFolderChildren)
+  )
+    return null;
 
   const matchingEntries =
     !tree.children || !tree.matchingEntries
