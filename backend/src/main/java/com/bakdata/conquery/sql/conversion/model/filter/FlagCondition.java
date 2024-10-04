@@ -10,15 +10,22 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor
 public class FlagCondition implements WhereCondition {
 
-	private final List<Field<Boolean>> flagFields;
+	private final List<Field<Boolean>> includedFlags;
+	private final List<Field<Boolean>> excludedFlags;
 
 	@Override
 	public Condition condition() {
-		return flagFields.stream()
-						 .map(DSL::condition)
-						 .map(Field::isTrue)
-						 .reduce(Condition::or)
-						 .orElseThrow(() -> new IllegalArgumentException("Can't construct a FlagCondition with an empty flag field list."));
+		Condition excludedFlagsFalseCondition = excludedFlags.stream()
+															 .map(DSL::condition)
+															 .map(field -> field.isFalse().or(field.isNull()))
+															 .reduce(Condition::and)
+															 .orElse(DSL.noCondition());
+		return includedFlags.stream()
+							.map(DSL::condition)
+							.map(Field::isTrue)
+							.reduce(Condition::or)
+							.orElseThrow(() -> new IllegalArgumentException("Can't construct a FlagCondition with empty flag field lists."))
+							.and(excludedFlagsFalseCondition);
 	}
 
 	@Override
