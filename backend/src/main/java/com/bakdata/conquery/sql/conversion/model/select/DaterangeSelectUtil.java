@@ -113,7 +113,7 @@ class DaterangeSelectUtil {
 
 		String eventFilterCteName = context.getTables().cteName(EVENT_FILTER);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
-																			  .ids(context.getIds().qualify(eventFilterCteName))
+																			  .ids(context.getIds().withAlias().qualify(eventFilterCteName))
 																			  .daterange(daterange.qualify(eventFilterCteName))
 																			  .tables(dateUnionTables)
 																			  .build();
