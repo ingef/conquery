@@ -106,7 +106,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
-			SqlIdColumns ids = selectContext.getIds();
+			SqlIdColumns ids = selectContext.getIds().withAlias();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);
 			return ConnectorSqlSelects.builder()
@@ -140,7 +140,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
 			sumAggregationSelect =
-					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
+					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds()
+																										 .withAlias(), tables, filterContext.getNameGenerator());
 			selects = ConnectorSqlSelects.builder()
 										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
 										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())

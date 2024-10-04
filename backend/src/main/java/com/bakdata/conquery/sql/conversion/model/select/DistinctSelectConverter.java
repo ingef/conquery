@@ -117,7 +117,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 		// values to aggregate must be event-filtered first
 		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
 		ExtractingSqlSelect<Object> qualified = preprocessingSelect.qualify(eventFilterTable);
-		SqlIdColumns ids = selectContext.getIds().qualify(eventFilterTable);
+		SqlIdColumns ids = selectContext.getIds().withAlias().qualify(eventFilterTable);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)

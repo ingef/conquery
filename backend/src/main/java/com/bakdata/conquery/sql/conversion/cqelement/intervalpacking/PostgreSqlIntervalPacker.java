@@ -33,7 +33,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	private QueryStep aggregateDate(IntervalPackingContext context, AggregationMode aggregationMode) {
 
 		String sourceTableName = context.getTables().getPredecessor(IntervalPackingCteStep.INTERVAL_COMPLETE);
-		SqlIdColumns ids = context.getIds().qualify(sourceTableName);
+		SqlIdColumns ids = context.getIds().withAlias().qualify(sourceTableName);
 		ColumnDateRange qualifiedDaterange = context.getDaterange().qualify(sourceTableName);
 		ColumnDateRange aggregatedDaterange = this.functionProvider.aggregated(qualifiedDaterange);
 

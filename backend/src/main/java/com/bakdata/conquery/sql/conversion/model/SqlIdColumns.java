@@ -36,10 +36,23 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		this.secondaryId = null;
 	}
 
+	public SqlIdColumns withAlias() {
+		if (this.secondaryId == null) {
+			return new SqlIdColumns(this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()));
+		}
+		return new SqlIdColumns(
+				this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()),
+				this.secondaryId.as(SharedAliases.SECONDARY_ID.getAlias())
+		);
+	}
+
 	@Override
 	public SqlIdColumns qualify(String qualifier) {
 		Field<Object> primaryColumn = QualifyingUtil.qualify(this.primaryColumn, qualifier);
-		Field<Object> secondaryId = this.secondaryId != null ? QualifyingUtil.qualify(this.secondaryId, qualifier) : null;
+		if (secondaryId == null) {
+			return new SqlIdColumns(primaryColumn);
+		}
+		Field<Object> secondaryId = QualifyingUtil.qualify(this.secondaryId, qualifier);
 		return new SqlIdColumns(primaryColumn, secondaryId);
 	}
 
@@ -110,9 +123,10 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		});
 
 		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
-		Field<Object> coalescedSecondaryIds = !secondaryIds.isEmpty()
-											  ? coalesceFields(secondaryIds).as(SharedAliases.SECONDARY_ID.getAlias())
-											  : null;
+		if (secondaryIds.isEmpty()) {
+			return new SqlIdColumns(coalescedPrimaryColumn);
+		}
+		Field<Object> coalescedSecondaryIds = coalesceFields(secondaryIds).as(SharedAliases.SECONDARY_ID.getAlias());
 
 		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}

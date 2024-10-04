@@ -28,7 +28,7 @@ class PreprocessingCte extends ConnectorCte {
 													   .toList();
 
 		Selects preprocessingSelects = Selects.builder()
-											  .ids(tableContext.getIds())
+											  .ids(tableContext.getIds().withAlias())
 											  .validityDate(tableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
