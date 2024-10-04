@@ -43,6 +43,7 @@ import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import com.bakdata.conquery.resources.admin.ui.model.ConnectorUIResource;
 import io.dropwizard.core.setup.AdminEnvironment;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
@@ -115,6 +116,7 @@ public class AdminServlet {
 							bind(manager.getValidator()).to(Validator.class);
 							bind(manager.getJobManager()).to(JobManager.class);
 							bind(manager.getConfig()).to(ConqueryConfig.class);
+							bind(manager.getEnvironment()).to(Environment.class);
 							bind(adminProcessor).to(AdminProcessor.class);
 							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
 						}
@@ -137,6 +139,7 @@ public class AdminServlet {
 							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 							  bind(manager.getMetaStorage()).to(MetaStorage.class);
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
+							  bind(manager.getEnvironment()).to(Environment.class);
 						  }
 					  })
 					  .register(AdminPermissionFilter.class)

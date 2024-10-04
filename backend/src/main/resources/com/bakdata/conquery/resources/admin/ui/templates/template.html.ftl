@@ -3,7 +3,7 @@
 	<@base.html "Conquery Admin UI" >
 	  <body>
 		  <nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
-			  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
+			  <a class="navbar-brand" href="${ctxPath}/admin-ui">Conquery Admin</a>
 			  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
 				  aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 				  <span class="navbar-toggler-icon"></span>
@@ -12,29 +12,29 @@
 			  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 				  <ul class="navbar-nav mr-auto">
 					  <li class="nav-item">
-						  <a class="nav-link" href="/admin-ui/datasets">Datasets</a>
+						  <a class="nav-link" href="${ctxPath}/admin-ui/datasets">Datasets</a>
 					  </li>
 					  <li class="nav-item">
-						  <a class="nav-link" href="/${ctx.staticUriElem.ADMIN_UI_SERVLET_PATH}/${ctx.staticUriElem.INDEX_SERVICE_PATH_ELEMENT}">Index Service</a>
+						  <a class="nav-link" href="${ctxPath}/${ctx.staticUriElem.ADMIN_UI_SERVLET_PATH}/${ctx.staticUriElem.INDEX_SERVICE_PATH_ELEMENT}">Index Service</a>
 					  </li>
 					  <li class="nav-item">
-						  <a class="nav-link" href="/admin-ui/jobs">Jobs</a>
+						  <a class="nav-link" href="${ctxPath}/admin-ui/jobs">Jobs</a>
 					  </li>
 					  <li class="nav-item">
-						  <a class="nav-link" href="/admin-ui/queries">Queries</a>
+						  <a class="nav-link" href="${ctxPath}/admin-ui/queries">Queries</a>
 					  </li>
 					  <li class="nav-item">
-						  <a class="nav-link" href="/admin-ui/script">Script</a>
+						  <a class="nav-link" href="${ctxPath}/admin-ui/script">Script</a>
 					  <li class="nav-item dropdown">
 						  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
 							  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 							  Auth
 						  </a>
 						  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-							  <a class="dropdown-item" href="/admin-ui/auth-overview">Overview</a>
-							  <a class="dropdown-item" href="/admin-ui/groups">Groups</a>
-							  <a class="dropdown-item" href="/admin-ui/users">Users</a>
-							  <a class="dropdown-item" href="/admin-ui/roles">Roles</a>
+							  <a class="dropdown-item" href="${ctxPath}/admin-ui/auth-overview">Overview</a>
+							  <a class="dropdown-item" href="${ctxPath}/admin-ui/groups">Groups</a>
+							  <a class="dropdown-item" href="${ctxPath}/admin-ui/users">Users</a>
+							  <a class="dropdown-item" href="${ctxPath}/admin-ui/roles">Roles</a>
 						  </div>
 					  </li>
 					  <li class="nav-item dropdown">
@@ -43,9 +43,9 @@
 							  Dropwizard
 						  </a>
 						  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-							  <a class="dropdown-item" href="/metrics?pretty=true">Metrics JSON</a>
-							  <a class="dropdown-item" href="/threads">Threads</a>
-							  <a class="dropdown-item" href="/healthcheck?pretty=true">Health</a>
+							  <a class="dropdown-item" href="${ctxPath}/metrics?pretty=true">Metrics JSON</a>
+							  <a class="dropdown-item" href="${ctxPath}/threads">Threads</a>
+							  <a class="dropdown-item" href="${ctxPath}/healthcheck?pretty=true">Health</a>
 							  <a class="dropdown-item" href=""
 								  onclick="shutdown(event)"><i
 									  class="fas fa-power-off text-danger"></i> Shutdown</a>
@@ -61,7 +61,7 @@
 			  </div>
 
 			  <div class="pl-2">
-				<a href="/admin-ui/logout" class="btn btn-secondary">Logout</a>
+				<a href="${ctxPath}/admin-ui/logout" class="btn btn-secondary">Logout</a>
 			  </div>
 		  </nav>
 
