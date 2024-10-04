@@ -73,7 +73,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public long getMoney(int event, Column column) {
+	public BigDecimal getMoney(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

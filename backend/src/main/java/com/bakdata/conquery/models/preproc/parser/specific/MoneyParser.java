@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
@@ -11,62 +10,58 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class MoneyParser extends Parser<Long, MoneyStore> {
+public class MoneyParser extends Parser<BigDecimal, MoneyStore> {
 
-	private long maxValue = Long.MIN_VALUE;
-	private long minValue = Long.MAX_VALUE;
-
-	@JsonIgnore
-	private final BigDecimal moneyFactor;
+	private final int defaultFractionDigits;
+	private BigDecimal maxValue = null;
+	private BigDecimal minValue = null;
 
 	public MoneyParser(ConqueryConfig config) {
 		super(config);
-		moneyFactor = BigDecimal.valueOf(10).pow(config.getPreprocessor().getParsers().getCurrency().getDefaultFractionDigits());
+		defaultFractionDigits = config.getPreprocessor().getParsers().getCurrency().getDefaultFractionDigits();
 	}
 
 	@Override
-	protected Long parseValue(String value) throws ParsingException {
-		return NumberParsing
-					   .parseMoney(value)
-					   .multiply(moneyFactor)
-					   .longValueExact();
+	protected BigDecimal parseValue(String value) throws ParsingException {
+		return NumberParsing.parseMoney(value);
 	}
 
 	@Override
-	protected void registerValue(Long v) {
-		if (v > maxValue) {
+	protected void registerValue(BigDecimal v) {
+		if (maxValue == null){
 			maxValue = v;
 		}
-		if (v < minValue) {
+		if(minValue == null){
 			minValue = v;
 		}
+
+		maxValue = maxValue.max(v);
+		minValue = minValue.min(v);
 	}
 
 	@Override
 	protected MoneyStore decideType() {
 		IntegerParser subParser = new IntegerParser(getConfig());
-		subParser.registerValue(maxValue);
-		subParser.registerValue(minValue);
+		subParser.registerValue(maxValue.movePointRight(defaultFractionDigits).longValue());
+		subParser.registerValue(minValue.movePointRight(defaultFractionDigits).longValue());
 		subParser.setLines(getLines());
 		subParser.setNullLines(getNullLines());
 		IntegerStore subDecision = subParser.findBestType();
 
-		return new MoneyIntStore(subDecision);
+		return new MoneyIntStore(subDecision, defaultFractionDigits);
 	}
 
 	@Override
-	public void setValue(MoneyStore store, int event, Long value) {
+	public void setValue(MoneyStore store, int event, BigDecimal value) {
 		store.setMoney(event, value);
 	}
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return new LongColumnValues();
+		return new ListColumnValues();
 	}
 
 }

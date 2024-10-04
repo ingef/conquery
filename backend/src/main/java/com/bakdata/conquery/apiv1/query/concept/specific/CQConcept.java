@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -286,16 +285,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
-			resultInfos.add(select.getResultInfo(this, settings));
+			resultInfos.add(select.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				resultInfos.add(sel.getResultInfo(this, settings));
+				resultInfos.add(sel.getResultInfo(this));
 			}
 		}
 

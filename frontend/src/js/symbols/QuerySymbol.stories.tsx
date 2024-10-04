@@ -1,16 +1,11 @@
-import { ComponentMeta, Story } from "@storybook/react";
-import { ComponentProps } from "react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import QuerySymbol from "./QuerySymbol";
 
-export default {
+const meta = {
   title: "Symbols/QuerySymbol",
   component: QuerySymbol,
-} as ComponentMeta<typeof QuerySymbol>;
+} as Meta<typeof QuerySymbol>;
+export default meta;
 
-const Template: Story<ComponentProps<typeof QuerySymbol>> = () => {
-  return <QuerySymbol />;
-};
-
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: StoryFn = () => <QuerySymbol />;

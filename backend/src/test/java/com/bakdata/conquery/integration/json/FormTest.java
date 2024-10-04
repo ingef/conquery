@@ -16,12 +16,15 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.csv.CsvRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -74,6 +77,25 @@ public class FormTest extends ConqueryTestSpec {
 	@JsonIgnore
 	private Form form;
 
+	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		if (rawConcepts == null) {
+			return;
+		}
+
+		Dataset dataset = support.getDataset();
+
+		List<Concept<?>> concepts = parseSubTreeList(
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset())
+		);
+
+		for (Concept<?> concept : concepts) {
+			LoadingUtil.uploadConcept(support, dataset, concept);
+		}
+	}
+
 	@ValidationMethod(message = "Form test defines no concepts. Neither explicit nor automatic concepts")
 	public boolean isWithConcepts() {
 		return rawConcepts != null || content.isAutoConcept();
@@ -84,6 +106,10 @@ public class FormTest extends ConqueryTestSpec {
 		support.getTestImporter().importFormTestData(support, this);
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
+	}
+
+	private Form parseForm(StandaloneSupport support) throws JSONException, IOException {
+		return parseSubTree(support, rawForm, Form.class);
 	}
 
 	@Override
@@ -99,8 +125,9 @@ public class FormTest extends ConqueryTestSpec {
 		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) executionManager
 				.runQuery(namespace, form, support.getTestUser(), support.getConfig(), false);
 
-		ExecutionState executionState = namespace.getExecutionManager().awaitDone(managedForm, 10, TimeUnit.MINUTES);
-		if (executionState != ExecutionState.DONE) {
+		namespace.getExecutionManager().awaitDone(managedForm, 1, TimeUnit.MINUTES);
+
+		if (managedForm.getState() != ExecutionState.DONE) {
 			if (managedForm.getState() == ExecutionState.FAILED) {
 				fail(getLabel() + " Query failed");
 			}
@@ -133,48 +160,11 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	/**
-	 * Checks result of subqueries instead of form result.
-	 *
-	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, PrintSettings)
-	 */
-	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
-		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
-			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos(printSettings);
-			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
-
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-			final CsvWriter writer = config.getCsv().createWriter(output);
-
-			CsvRenderer renderer = new CsvRenderer(writer, printSettings);
-
-			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(printSettings),
-					resultInfos,
-					managed.getValue()
-						   .stream()
-						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty()))
-			);
-
-			writer.close();
-			output.close();
-
-			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
-					.as("Checking result " + managed.getKey())
-					.containsExactlyInAnyOrderElementsOf(
-							In.stream(expectedCsv.get(managed.getKey()).stream())
-							  .withUTF8()
-							  .readLines()
-					);
-		}
-	}
-
-	/**
 	 * The form produces only one result, so the result is directly requested.
 	 *
 	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
 	 */
-	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 
 
@@ -183,9 +173,9 @@ public class FormTest extends ConqueryTestSpec {
 			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getIdColumns().getIdResultInfos(printSettings),
-					managedForm.getResultInfos(printSettings),
-					managedForm.streamResults(OptionalLong.empty())
+					config.getIdColumns().getIdResultInfos(),
+					managedForm.getResultInfos(),
+					managedForm.streamResults(OptionalLong.empty()), printSettings
 			);
 
 			writer.close();
@@ -202,8 +192,40 @@ public class FormTest extends ConqueryTestSpec {
 
 	}
 
+	/**
+	 * Checks result of subqueries instead of form result.
+	 *
+	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, PrintSettings)
+	 */
+	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
+		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
+			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
+			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 
-	private Form parseForm(StandaloneSupport support) throws JSONException, IOException {
-		return parseSubTree(support, rawForm, Form.class);
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+			final CsvWriter writer = config.getCsv().createWriter(output);
+
+			CsvRenderer renderer = new CsvRenderer(writer, printSettings);
+
+			renderer.toCSV(
+					config.getIdColumns().getIdResultInfos(),
+					resultInfos,
+					managed.getValue()
+						   .stream()
+						   .flatMap(managedQuery -> managedQuery.streamResults(OptionalLong.empty())), printSettings
+			);
+
+			writer.close();
+			output.close();
+
+			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+					.as("Checking result " + managed.getKey())
+					.containsExactlyInAnyOrderElementsOf(
+							In.stream(expectedCsv.get(managed.getKey()).stream())
+							  .withUTF8()
+							  .readLines()
+					);
+		}
 	}
 }

@@ -46,7 +46,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 									   .build();
 
 		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
-		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos(context.getSqlPrintSettings())));
+		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
 	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {

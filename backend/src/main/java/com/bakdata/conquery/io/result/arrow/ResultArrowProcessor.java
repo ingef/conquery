@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -99,8 +100,8 @@ public class ResultArrowProcessor {
 
 
 		// Collect ResultInfos for id columns and result columns
-		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos(settings);
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos(settings);
+		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		StreamingOutput out = output -> {
 			try {
@@ -110,7 +111,7 @@ public class ResultArrowProcessor {
 						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
-						exec.streamResults(limit)
+						exec.streamResults(limit), new ArrowResultPrinters()
 				);
 			}
 			finally {
