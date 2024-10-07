@@ -129,7 +129,7 @@ public class QueryProcessor {
 						 )
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
 
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
