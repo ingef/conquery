@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class JavaResultPrinters extends PrinterFactory {
 
 	@Override
-	public <T> Printer<List<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
+	public <T> Printer<Collection<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
 		return new ListPrinter<>(elementPrinter);
 	}
 
@@ -52,10 +53,10 @@ public class JavaResultPrinters extends PrinterFactory {
 		return new IdentityPrinter<>();
 	}
 
-	private record ListPrinter<T>(Printer<T> elementPrinter) implements Printer<List<T>> {
+	private record ListPrinter<T>(Printer<T> elementPrinter) implements Printer<Collection<T>> {
 
 		@Override
-		public Object apply(@NotNull List<T> value) {
+		public Object apply(@NotNull Collection<T> value) {
 			final List<Object> out = new ArrayList<>(value.size());
 
 			for (T elt : value) {

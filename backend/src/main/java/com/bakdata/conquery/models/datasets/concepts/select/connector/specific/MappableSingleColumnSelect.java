@@ -42,15 +42,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new MappedPrinter(mapping.resolve());
-	}
-
-	@Override
-	public ResultType getResultType() {
-		if(mapping == null){
-			return ResultType.resolveResultType(getColumn().resolve().getType());
+		if (mapping.isAllowMultiple()) {
+			return new MultiMappedPrinter(getMapping()).andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
-		return ResultType.Primitive.STRING;
+
+		return new MappedPrinter(getMapping());
 	}
 
 	@Override
@@ -61,6 +57,14 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
+	}
+
+	@Override
+	public ResultType getResultType() {
+		if(mapping == null){
+			return ResultType.resolveResultType(getColumn().resolve().getType());
+		}
+		return ResultType.Primitive.STRING;
 	}
 
 	public void loadMapping() {

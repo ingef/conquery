@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
-    "label": "FIRST_MAPPED_AGGREGATOR Test",
-    "expectedCsv": "tests/aggregator/FIRST_MAPPED_AGGREGATOR/expected.csv",
+    "label": "DISTINCT_MAPPED_AGGREGATOR Test",
+    "expectedCsv": "tests/aggregator/MAPPED/DISTINCT/expected.csv",
     "query": {
         "type": "CONCEPT_QUERY",
         "root": {
@@ -23,8 +23,8 @@
         "name": "test_map",
         "type": "CSV_MAP",
         "internalColumn": "internal",
-        "externalTemplate": "External: {{external}} {{external2}}",
-        "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
+        "externalTemplate": "{{external}}",
+        "csv": "classpath:/tests/aggregator/MAPPED/mapping.csv"
     },
     "concepts": [
         {
@@ -40,7 +40,7 @@
                     },
                     "selects": {
                         "name": "select",
-                        "type": "FIRST",
+                        "type": "DISTINCT",
                         "column": "table.value",
                         "mapping": "test_map"
                     }
@@ -51,7 +51,7 @@
     "content": {
         "tables": [
             {
-                "csv": "tests/aggregator/FIRST_MAPPED_AGGREGATOR/content.csv",
+                "csv": "tests/aggregator/MAPPED/content.csv",
                 "name": "table",
                 "primaryColumn": {
                     "name": "pid",

@@ -71,7 +71,13 @@ public class IndexServiceTest {
 
 	@Test
 	@Order(0)
-	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
+	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException, ExecutionException, InterruptedException {
+		log.info("Test loading of mapping");
+
+		try (InputStream inputStream = In.resource("/tests/aggregator/MAPPED/FIRST/mapping.csv").asStream()) {
+			REF_SERVER.when(request().withPath("/mapping.csv"))
+					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
+		}
 
 		final MapInternToExternMapper mapper = new MapInternToExternMapper(
 				"test1",
