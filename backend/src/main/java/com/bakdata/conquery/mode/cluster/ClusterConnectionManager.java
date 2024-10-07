@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -63,31 +64,43 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		if (message instanceof MessageToManagerNode toManagerNode) {
+		if (!(message instanceof MessageToManagerNode toManagerNode)) {
+			log.error("Unknown message type {} in {}", message.getClass(), message);
+			return;
 
-			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+		}
 
-			Job job = new ReactingJob<>(toManagerNode,
-				new NetworkMessageContext.ManagerNodeNetworkContext(
-						new NetworkSession(session),
-						datasetRegistry,
-						clusterState,
-						config.getCluster().getBackpressure()
-				));
+		final ShardNodeInformation shardNodeInformation = clusterState.getShardNodes().get(session.getRemoteAddress());
 
-			if (toManagerNode instanceof ForwardToNamespace nsMesg) {
-				datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
-			}
-			else if (toManagerNode instanceof SlowMessage slowMessage) {
-				slowMessage.setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
+		final NetworkSession nwSession;
+
+		if (shardNodeInformation == null) {
+			// In case the shard is not yet registered, we wont have a shardNodeInformation to pull the session from
+			nwSession = new NetworkSession(session);
 		}
 		else {
-			log.error("Unknown message type {} in {}", message.getClass(), message);
+			nwSession = shardNodeInformation.getSession();
+		}
+
+		log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+
+		final Job job = new ReactingJob<>(toManagerNode,
+										  new NetworkMessageContext.ManagerNodeNetworkContext(nwSession,
+																							  datasetRegistry,
+																							  clusterState,
+																							  config.getCluster().getBackpressure()
+										  )
+		);
+
+		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
+			datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
+		}
+		else if (toManagerNode instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
 		}
 	}
 
@@ -95,9 +108,9 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
 
-		ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
+		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
+		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
