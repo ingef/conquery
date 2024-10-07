@@ -175,7 +175,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			|| conversionContext.getSecondaryIdDescription() == null
 			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
 		) {
-			return new SqlIdColumns(primaryColumn);
+			return new SqlIdColumns(primaryColumn).withAlias();
 		}
 
 		Column secondaryIdColumn = cqTable.getConnector().getTable().findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
@@ -189,7 +189,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		);
 
 		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName()));
-		return new SqlIdColumns(primaryColumn, secondaryId);
+		return new SqlIdColumns(primaryColumn, secondaryId).withAlias();
 	}
 
 	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
