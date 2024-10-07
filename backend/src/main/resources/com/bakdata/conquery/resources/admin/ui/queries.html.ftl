@@ -128,81 +128,78 @@
             reloader = 0;
         }
 	<#noparse >
-		function getHtmltemplate(data, queryCounter) {
-			return `<div class="row container">
-    <div class="card container">
-        <div class="card-body">
-            <div class="row">
-                <div class="col title">
-                    ${data.id}: ${data.label} - ${data.ownerName}
-                </div>
-            </div>
-            <div class="row container">
-                <div class="col inner">
-                    Creation: ${((new Date(data.createdAt)).toLocaleString(languageTag))}
-                </div>
-                <div class="col inner">
-                    Started: ${((new Date(data.startTime)).toLocaleString(languageTag))}
-                </div>
-                <div class="col inner">
-                    Finished: ${((new Date(data.finishTime)).toLocaleString(languageTag))}
-                </div>
-            </div>
-            <div class="row container">
-                <div class="col inner">
-                    Duration: ${data.requiredTime}ms
-                </div>
-                <div class="col inner">
-                    Type: ${data.queryType}
-                </div>
-                <div class="col">
-                    <button class="btn btn-primary innerBtn" type="button" data-toggle="collapse"
-                        data-target="#query${queryCounter}" aria-expanded="false" aria-controls="query${queryCounter}"
-                        <#if (!data.query??)>disabled</#if>>
-                        Show query content
-                    </button>
-                    <button class="btn btn-primary innerBtn" type="button" data-toggle="collapse"
-                        data-target="#error${queryCounter}" aria-expanded="false" aria-controls="error${queryCounter}"
-                        <#if (!data.error??)>disabled</#if>>
-                        Show errors
-                    </button>
-                </div>
-            </div>
-            <div class="row container" <#if (!data.progress ??) > style="display: none;"</#if >>
-            <div class="col">
-                <div class="progress">
-                    <div class="progress-bar <#if data.status==" RUNNING">bg-warning<# /if><#if data.status=="FAILED">bg-danger<# /if><#if data.status=="DONE">bg-success<# /if>"
-                    role="progressbar"
-                    style="width: <#if data.progress??>${data.progress * 100}%</#if>"
-                    aria-valuenow="<#if data.progress??>${data.progress * 100}%</#if>"
-                    aria-valuemin="0" aria - valuemax="100" >
-                    <#if data.progress??> ${ data.progress * 100 }%</#if >
-                    </div >
-                </div >
-                </div >
-            </div >
-            <div class="row container">
-                <div class="col">
-                    <div class="collapse multi-collapse" id="query${queryCounter}">
-                        <div class="card card-body">
-                            <pre><#if data.query??>${JSON.stringify(data.query, undefined, 2)}</#if></pre>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="collapse multi-collapse" id="error${queryCounter}">
-                        <div class="card card-body">
-                            <pre><#if data.error??>${JSON.stringify(data.error, undefined, 2)}</#if></pre>
-                        </div>
-                    </div>
-                </div >
-            </div >
-        </div >
-    </div >
-</div >
-`
-		}
-	</#noparse>
+    		function getHtmltemplate(data, queryCounter) {
+    			return `
+    					<div class="row container" >
+    						<div class="card container">
+    							<div class="card-body">
+    								<div class="row">
+    									<div class="col title">
+    										${data.ownerName} - ${data.id}/${data.label}
+    									</div>
+    								</div>
+    								<div class="row container">
+    									<div class="col inner">
+    										Created: ${((new Date(data.createdAt)).toLocaleString(languageTag))}
+    									</div>
+    									<div class="col inner">
+    										Started: ${((new Date(data.startTime)).toLocaleString(languageTag))}
+    									</div>
+    									<div class="col inner">
+    										Finished: ${((new Date(data.finishTime)).toLocaleString(languageTag))}
+    									</div>
+    								</div>
+    								<div class="row container">
+    									<div class="col inner">
+    										Duration: ${data.requiredTime} ms
+    									</div>
+    									<div class="col inner">
+    										Type : ${data.queryType}
+    									</div>
+    									<div class="col">
+    										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#query${queryCounter}" aria-expanded="false" aria-controls="query${queryCounter}" ${(data.query ? '' : 'disabled')}>
+    										Show query content
+    										</button>
+    										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#error${queryCounter}" aria-expanded="false" aria-controls="error${queryCounter}" ${(data.error ? '' : 'disabled')}>
+    										Show errors
+    										</button>
+    									</div>
+    								</div>
+    								<div class="row container" ${(data.progress && data.progress != null ? "" : "style=\"display: none;\"" )}>
+    								<div class="col">
+    									<div class="progress">
+    										<div role="progressbar" class="progress-bar ${({"RUNNING" : "bg-warning", "FAILED": "bg-danger", "DONE" : "bg-success", "NEW":""})[data.status]}"
+    										 style="width: ${(data.progress && data.progress != null ? data.progress*100 : 0 )}%"
+    										 aria-valuenow="${(data.progress && data.progress != null ? data.progress*100 : 0 )}"
+
+    										 aria-valuemin="0" aria-valuemax="100">
+    										${(data.progress && data.progress != null ? data.progress*100 : 0 )} %
+    									</div>
+    								</div>
+    							</div>
+    						</div>
+    						<div class="row container">
+    							<div class="col">
+    								<div class="collapse multi-collapse" id="query${queryCounter}">
+    									<div class="card card-body">
+    										<pre>  ${(data.query ? JSON.stringify(data.query, undefined, 2) : '')}  </pre>
+    									</div>
+    								</div>
+    							</div>
+    							<div class="col">
+    								<div class="collapse multi-collapse" id="error${queryCounter}">
+    									<div class="card card-body">
+    										<pre>  ${(data.error ? JSON.stringify(data.error, undefined, 2) : '')}  </pre>
+    									</div>
+    								</div>
+    							</div>
+    						</div>
+    					</div>
+    					</div>
+    					</div>
+    			`
+    		}
+    	</#noparse>
     </script>
     <h1>Queries</h1>
     <label><input id="updateCheckBox" type='checkbox' onclick='handleUpdateCheck(this);' checked> Update
