@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -124,8 +123,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 										.orElse(connector.getTable().getName());
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tableName));
-		SqlIdColumns ids = new SqlIdColumns(DSL.field(DSL.name(tableName, SharedAliases.PRIMARY_COLUMN.getAlias())));
-
+		SqlIdColumns ids = selectContext.getIds().qualify(connectorTable.getName());
 		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().getName()));
 		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
