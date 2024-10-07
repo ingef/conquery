@@ -51,8 +51,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 */
 	private Long lastResultCount;
 
-	@JsonIgnore
-	private transient List<ColumnDescriptor> columnDescriptions;
 
 
 	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
@@ -112,15 +110,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
-		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions(isInitialized(), getConfig());
-		}
-		status.setColumnDescriptions(columnDescriptions);
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
-		return query.getResultInfos(printSettings);
+	public List<ResultInfo> getResultInfos() {
+		return query.getResultInfos();
 	}
 
 	@Override

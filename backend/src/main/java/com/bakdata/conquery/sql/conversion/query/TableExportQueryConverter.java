@@ -70,7 +70,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		);
 		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
 
-		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos(context.getSqlPrintSettings())));
+		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}
 
 	/**

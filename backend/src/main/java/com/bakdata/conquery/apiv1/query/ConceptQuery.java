@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -80,16 +79,16 @@ public class ConceptQuery extends Query {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getResultInfos() {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
 
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
 		if (resolvedDateAggregationMode != DateAggregationMode.NONE) {
-			resultInfos.add(ResultHeaders.datesInfo(printSettings));
+			resultInfos.add(ResultHeaders.datesInfo());
 		}
 
-		resultInfos.addAll(root.getResultInfos(printSettings));
+		resultInfos.addAll(root.getResultInfos());
 
 		return resultInfos;
 	}

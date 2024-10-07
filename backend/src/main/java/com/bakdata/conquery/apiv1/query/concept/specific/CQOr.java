@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -118,18 +117,24 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
 		for (CQElement c : children) {
-			resultInfos.addAll(c.getResultInfos(settings));
+			resultInfos.addAll(c.getResultInfos());
 		}
 
 		if (createExists()) {
-			final ResultPrinters.BooleanPrinter printer = new ResultPrinters.BooleanPrinter(settings);
-			final String userOrDefaultLabel = getUserOrDefaultLabel(settings.getLocale());
-			final String defaultLabel = defaultLabel(settings.getLocale());
+			resultInfos.add(new FixedLabelResultInfo(ResultType.Primitive.BOOLEAN, Set.of()) {
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					return getUserOrDefaultLabel(printSettings.getLocale());
+				}
 
-			resultInfos.add(new FixedLabelResultInfo(userOrDefaultLabel, defaultLabel, ResultType.Primitive.BOOLEAN, Set.of(), settings, printer));
+				@Override
+				public String defaultColumnName(PrintSettings printSettings) {
+					return defaultLabel(printSettings.getLocale());
+				}
+			});
 		}
 
 		return resultInfos;

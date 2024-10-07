@@ -169,9 +169,9 @@ public class DefaultColumnNameTest {
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
-		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet(), SETTINGS);
+		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet());
 
-		assertThat(uniqNamer.getUniqueName(info)).isEqualTo(expectedColumnName);
+		assertThat(uniqNamer.getUniqueName(info, SETTINGS)).isEqualTo(expectedColumnName);
 	}
 
 

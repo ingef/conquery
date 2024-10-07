@@ -7,7 +7,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.google.common.collect.ImmutableSet;
@@ -24,13 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class ResultInfo {
 
-	private final PrintSettings settings;
-
 	@ToString.Include
 	private final Set<SemanticType> semantics = new HashSet<>();
 
-	protected ResultInfo(Collection<SemanticType> semantics, PrintSettings settings) {
-		this.settings = settings;
+	protected ResultInfo(Collection<SemanticType> semantics) {
 		this.semantics.addAll(semantics);
 	}
 
@@ -38,12 +36,12 @@ public abstract class ResultInfo {
 		semantics.addAll(Arrays.asList(incoming));
 	}
 
-	public abstract String userColumnName();
+	public abstract String userColumnName(PrintSettings printSettings);
 
-	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector) {
+	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector, PrintSettings printSettings) {
 		return new ColumnDescriptor(
-				collector.getUniqueName(this),
-				defaultColumnName(), getDescription(),
+				collector.getUniqueName(this, printSettings),
+				defaultColumnName(printSettings), getDescription(),
 				getType().typeInfo(),
 				getSemantics()
 		);
@@ -51,8 +49,9 @@ public abstract class ResultInfo {
 
 	/**
 	 * Use default label schema which ignores user labels.
+	 * @param printSettings
 	 */
-	public abstract String defaultColumnName();
+	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
 	public abstract ResultType getType();
@@ -63,17 +62,5 @@ public abstract class ResultInfo {
 
 	public abstract String getDescription();
 
-	public final String printNullable(Object f) {
-		if (f == null) {
-			return "";
-		}
-
-		return print(f);
-	}
-
-	protected String print(Object f) {
-		return getPrinter().print(f);
-	}
-
-	public abstract ResultPrinters.Printer getPrinter();
+	public abstract Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings);
 }

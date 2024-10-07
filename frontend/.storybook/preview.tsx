@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@emotion/react";
+import type { Preview } from "@storybook/react";
 
 import { theme } from "../src/app-theme";
 import GlobalStyles from "../src/js/GlobalStyles";
@@ -9,23 +10,26 @@ import translationsDe from "../src/localization/de.json";
 i18next.addResourceBundle("de", "translation", translationsDe, true, true);
 i18next.changeLanguage("de");
 
-export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
+const Decorator = (Story: any) => (
+  <ThemeProvider theme={theme}>
+    <DndProvider>
+      <GlobalStyles />
+      <Story />
+    </DndProvider>
+  </ThemeProvider>
+);
+
+const preview: Preview = {
+  decorators: [Decorator],
+  parameters: {
+    actions: { argTypesRegex: "^on[A-Z].*" },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
     },
   },
 };
 
-export const decorators = [
-  (Story) => (
-    <ThemeProvider theme={theme}>
-      <DndProvider>
-        <GlobalStyles />
-        <Story />
-      </DndProvider>
-    </ThemeProvider>
-  ),
-];
+export default preview;

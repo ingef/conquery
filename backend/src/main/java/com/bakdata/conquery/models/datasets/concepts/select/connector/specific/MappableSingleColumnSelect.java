@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColu
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import jakarta.validation.Valid;
@@ -38,27 +40,27 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (mapping == null) {
-			return super.createPrinter(printSettings);
+			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new ResultPrinters.MappedPrinter(getMapping());
+		return new MappedPrinter(getMapping());
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
 		if (!isCategorical()) {
-			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+			return new SelectResultInfo(this, cqConcept, Collections.emptySet());
 		}
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()), settings);
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 	}
 
 	@Override
 	public ResultType getResultType() {
-		if(mapping == null){
+		if (mapping == null) {
 			return ResultType.resolveResultType(getColumn().getType());
 		}
 		return ResultType.Primitive.STRING;
