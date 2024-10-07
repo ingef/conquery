@@ -6,8 +6,8 @@
 <div class="container">
 	<div class="row">
 		<div class="col">
-		<h2>Role ${c.owner.label}</h2>
-		<small class="text-muted">${c.owner.id}</small>
+		<h2>Role ${c.label}</h2>
+		<small class="text-muted">${c.id}</small>
 		</div>
 	</div>
 	<div class="row pt-3">
@@ -32,11 +32,11 @@
 			<div class="tab-content" id="myTabContent">
 				<div class="tab-pane fade show active" id="ownedPermissions" role="tabpanel"
 					aria-labelledby="ownedPermissions-tab">
-					<@permissionTable.permissionTable ownerId=c.owner.getId() permissions=c.permissions />
+					<@permissionTable.permissionTable ownerId=c.id permissions=c.permissions />
 				</div>
 				<div class="tab-pane fade" id="createPermission" role="tabpanel"
 					aria-labelledby="createPermission-tab">
-					<@permissionCreator.permissionCreator ownerId=c.owner.getId()
+					<@permissionCreator.permissionCreator ownerId=c.id
 						permissionTemplateMap=c.permissionTemplateMap />
 				</div>
 				<div class="tab-pane fade" id="owners" role="tabpanel" aria-labelledby="owners-tab">

@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -30,6 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -43,7 +45,6 @@ import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.google.common.cache.CacheStats;
-import jakarta.inject.Inject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,14 +60,6 @@ public class UIProcessor {
 
 	@Getter
 	private final AdminProcessor adminProcessor;
-
-	public DatasetRegistry<? extends Namespace> getDatasetRegistry() {
-		return adminProcessor.getDatasetRegistry();
-	}
-
-	public MetaStorage getStorage() {
-		return adminProcessor.getStorage();
-	}
 
 	public UIContext getUIContext(String csrfToken) {
 		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
@@ -99,15 +92,89 @@ public class UIProcessor {
 		return FrontendAuthOverview.builder().overview(overview).build();
 	}
 
+	public MetaStorage getStorage() {
+		return adminProcessor.getStorage();
+	}
+
+	public FrontendGroupContent getGroupContent(Group group) {
+
+		Set<UserId> membersIds = group.getMembers();
+		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers());
+		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
+
+		List<FrontendUserContent> members = membersIds.stream()
+												   .map(id -> {
+													   User user = getStorage().getUser(id);
+													   if (user != null) {
+														   return getUserContent(user);
+													   }
+													   return FrontendUserContent.builder().id(id).build();
+												   })
+												   .toList();
+
+		List<FrontendRoleContent> roles = group.getRoles().stream()
+								.map(this::getFrontendRoleContent)
+							   .toList();
+
+		return FrontendGroupContent
+				.builder()
+				.resolvable(true)
+				.label(group.getLabel())
+				.id(group.getId())
+				.members(members)
+				.availableMembers(availableMembers)
+				.roles(roles)
+				.availableRoles(getStorage().getAllRoles())
+				.permissions(wrapInFEPermission(group.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
+	}
+
+	private FrontendRoleContent getFrontendRoleContent(RoleId id) {
+		Role role = getStorage().getRole(id);
+		if (role != null) {
+			return getRoleContent(role);
+		}
+		return FrontendRoleContent.builder().id(id).build();
+	}
+
+	public FrontendUserContent getUserContent(User user) {
+		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups());
+		availableGroups.removeIf(g -> g.containsMember(user));
+
+		return FrontendUserContent
+				.builder()
+				.resolvable(true)
+				.label(user.getLabel())
+				.id(user.getId())
+				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
+				.availableGroups(availableGroups)
+				.roles(user.getRoles().stream().map(this::getFrontendRoleContent).collect(Collectors.toList()))
+				.availableRoles(getStorage().getAllRoles())
+				.permissions(wrapInFEPermission(user.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
+	}
 
 	public FrontendRoleContent getRoleContent(Role role) {
 		return FrontendRoleContent.builder()
+								  .resolvable(true)
 								  .permissions(wrapInFEPermission(role.getPermissions()))
 								  .permissionTemplateMap(preparePermissionTemplate())
 								  .users(getUsers(role))
 								  .groups(getGroups(role))
-								  .owner(role)
+								  .id(role.getId())
+								  .label(role.getLabel())
 								  .build();
+	}
+
+	private SortedSet<FrontendPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
+		TreeSet<FrontendPermission> fePermissions = new TreeSet<>();
+
+		for (ConqueryPermission permission : permissions) {
+			fePermissions.add(FrontendPermission.from(permission));
+		}
+		return fePermissions;
 	}
 
 	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
@@ -144,49 +211,6 @@ public class UIProcessor {
 					 .collect(Collectors.toList());
 	}
 
-	private SortedSet<FrontendPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
-		TreeSet<FrontendPermission> fePermissions = new TreeSet<>();
-
-		for (ConqueryPermission permission : permissions) {
-			fePermissions.add(FrontendPermission.from(permission));
-		}
-		return fePermissions;
-	}
-
-	public FrontendUserContent getUserContent(User user) {
-		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups());
-		availableGroups.removeIf(g -> g.containsMember(user));
-
-		return FrontendUserContent
-				.builder()
-				.owner(user)
-				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
-				.availableGroups(availableGroups)
-				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles())
-				.permissions(wrapInFEPermission(user.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
-	}
-
-
-	public FrontendGroupContent getGroupContent(Group group) {
-
-		Set<UserId> membersIds = group.getMembers();
-		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers());
-		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
-		return FrontendGroupContent
-				.builder()
-				.owner(group)
-				.members(membersIds.stream().map(getStorage()::getUser).collect(Collectors.toList()))
-				.availableMembers(availableMembers)
-				.roles(group.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles())
-				.permissions(wrapInFEPermission(group.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
-	}
-
 	public TableStatistics getTableStatistics(Table table) {
 		final NamespaceStorage storage = getDatasetRegistry().get(table.getDataset().getId()).getStorage();
 		List<Import> imports = table.findImports(storage).collect(Collectors.toList());
@@ -214,12 +238,8 @@ public class UIProcessor {
 		);
 	}
 
-	public ImportStatistics getImportStatistics(Import imp) {
-		final NamespaceStorage storage = getDatasetRegistry().get(imp.getDataset().getId()).getStorage();
-
-		final long cBlockSize = calculateCBlocksSizeBytes(imp, storage.getAllConcepts());
-
-		return new ImportStatistics(imp, cBlockSize);
+	public DatasetRegistry<? extends Namespace> getDatasetRegistry() {
+		return adminProcessor.getDatasetRegistry();
 	}
 
 	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
@@ -241,5 +261,13 @@ public class UIProcessor {
 						   return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
 					   })
 					   .sum();
+	}
+
+	public ImportStatistics getImportStatistics(Import imp) {
+		final NamespaceStorage storage = getDatasetRegistry().get(imp.getDataset().getId()).getStorage();
+
+		final long cBlockSize = calculateCBlocksSizeBytes(imp, storage.getAllConcepts());
+
+		return new ImportStatistics(imp, cBlockSize);
 	}
 }

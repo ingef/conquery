@@ -72,11 +72,6 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return permissions;
 	}
 
-	@Override
-	public UserId createId() {
-		return new UserId(name);
-	}
-
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
@@ -85,9 +80,9 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	public synchronized void removeRole(Role role) {
-		if (roles.remove(role.getId())) {
-			log.trace("Removed role {} from user {}", role.getId(), getId());
+	public synchronized void removeRole(RoleId role) {
+		if (roles.remove(role)) {
+			log.trace("Removed role {} from user {}", role, getId());
 			updateStorage();
 		}
 	}
@@ -101,7 +96,59 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		storage.updateUser(this);
 	}
 
-	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
+	@Override
+	public UserId createId() {
+		return new UserId(name);
+	}
+
+	/**
+	 * This class is non-static so it's a fixed part of the enclosing User object.
+	 * It's protected for testing purposes only.
+	 */
+	public class ShiroUserAdapter extends FilteredUser {
+
+		@Getter
+		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
+				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
+
+		@Override
+		public Object getPrincipal() {
+			return getId();
+		}		@Override
+		public void checkPermission(Permission permission) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
+		}
+
+		@Override
+		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+		}
+
+		@Override
+		public PrincipalCollection getPrincipals() {
+			return authenticationInfo.get().getPrincipals();
+		}
+
+		@Override
+		public boolean isPermitted(Permission permission) {
+			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
+		}
+
+		@Override
+		public boolean[] isPermitted(List<Permission> permissions) {
+			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
+		}
+
+		@Override
+		public boolean isPermittedAll(Collection<Permission> permissions) {
+			return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
+		}
+
+
+
+
+
+	}	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
 		if (isOwner(object)) {
 			return;
 		}
@@ -168,52 +215,5 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 
-	/**
-	 * This class is non-static so it's a fixed part of the enclosing User object.
-	 * It's protected for testing purposes only.
-	 */
-	public class ShiroUserAdapter extends FilteredUser {
 
-		@Getter
-		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
-				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
-
-		@Override
-		public void checkPermission(Permission permission) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
-		}
-
-		@Override
-		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
-		}
-
-		@Override
-		public PrincipalCollection getPrincipals() {
-			return authenticationInfo.get().getPrincipals();
-		}
-
-		@Override
-		public boolean isPermitted(Permission permission) {
-			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
-		}
-
-		@Override
-		public boolean[] isPermitted(List<Permission> permissions) {
-			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
-		}
-
-		@Override
-		public boolean isPermittedAll(Collection<Permission> permissions) {
-			return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
-		}
-
-
-		@Override
-		public Object getPrincipal() {
-			return getId();
-		}
-
-
-	}
 }
