@@ -29,7 +29,7 @@ public class AddWorker extends MessageToShardNode.Slow {
 
 		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator(), config.isFailOnError());
 
-		worker.setSession(context.getRawSession());
+		worker.setSession(context.getSession());
 
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
