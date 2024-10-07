@@ -51,7 +51,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -289,7 +288,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
+	public OverviewExecutionStatus buildStatusOverview(Subject subject) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 		setStatusBase(subject, status);
 

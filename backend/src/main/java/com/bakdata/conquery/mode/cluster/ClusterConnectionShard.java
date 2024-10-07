@@ -66,7 +66,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		NetworkSession networkSession = new NetworkSession(session);
+		final NetworkSession networkSession = new NetworkSession(session);
 
 		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
 		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
@@ -75,8 +75,9 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		context.send(new AddShardNode());
 
 		for (Worker w : workers.getWorkers().values()) {
-			w.setSession(new NetworkSession(session));
-			WorkerInformation info = w.getInfo();
+			w.setSession(networkSession);
+			final WorkerInformation info = w.getInfo();
+
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
 		}
@@ -115,7 +116,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		}
 
 		log.trace("{} received {} from {}", environment.getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
+		final ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
 
 		if (message instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
@@ -147,7 +148,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	private void connectToCluster() {
-		InetSocketAddress address = new InetSocketAddress(
+		final InetSocketAddress address = new InetSocketAddress(
 				config.getCluster().getManagerURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
@@ -204,11 +205,11 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@NotNull
 	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
-		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
+		final ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
-		NioSocketConnector connector = new NioSocketConnector();
+		final NioSocketConnector connector = new NioSocketConnector();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
+		final BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
 		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
