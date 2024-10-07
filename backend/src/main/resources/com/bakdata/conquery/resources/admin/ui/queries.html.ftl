@@ -130,41 +130,41 @@
 							<div class="card-body">
 								<div class="row">
 									<div class="col title">
-										${data.label} ( ${data.ownerName} , ${data.id.split('.')[0]} ) : ${data.id.split('.')[1]}
+										${data.id}: ${data.label} - ${data.ownerName}
 									</div>
 								</div>
 								<div class="row container">
 									<div class="col inner">
-										Creation-Time : ${((new Date(data.createdAt)).toLocaleString(languageTag))}
+										Creation: ${((new Date(data.createdAt)).toLocaleString(languageTag))}
 									</div>
 									<div class="col inner">
-										Start-Time : ${((new Date(data.startTime)).toLocaleString(languageTag))}
+										Started: ${((new Date(data.startTime)).toLocaleString(languageTag))}
 									</div>
 									<div class="col inner">
-										Finish-Time : ${((new Date(data.finishTime)).toLocaleString(languageTag))}
+										Finished: ${((new Date(data.finishTime)).toLocaleString(languageTag))}
 									</div>
 								</div>
 								<div class="row container">
 									<div class="col inner">
-										Requested-Time : ${data.requiredTime} ms
+										Duration: ${data.requiredTime}ms
 									</div>
 									<div class="col inner">
-										Query-Type : ${data.queryType}
+										Type: ${data.queryType}
 									</div>
 									<div class="col">
-										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#query${queryCounter}" aria-expanded="false" aria-controls="query${queryCounter}" ${(data.query ? '' : 'disabled')}>
+										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#query${queryCounter}" aria-expanded="false" aria-controls="query${queryCounter}" <#if (!data.query??)>disabled</#if>>
 										Show query content
 										</button>
-										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#error${queryCounter}" aria-expanded="false" aria-controls="error${queryCounter}" ${(data.error ? '' : 'disabled')}>
+										<button class="btn btn-primary innerBtn" type="button" data-toggle="collapse" data-target="#error${queryCounter}" aria-expanded="false" aria-controls="error${queryCounter}" <#if (!data.error??)>disabled</#if>>
 										Show errors
 										</button>
 									</div>
 								</div>
-								<div class="row container" ${(data.progress && data.progress != null ? "" : "style=\"display: none;\"" )}>
+								<div class="row container" <#if (!data.progress??)>style="display: none;"</#if>>
 								<div class="col">
 									<div class="progress">
 										<div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress && data.progress != null ? data.progress*100 : 0 )}%" aria-valuenow="${(data.progress && data.progress != null ? data.progress*100 : 0 )}" aria-valuemin="0" aria-valuemax="100">
-										${(data.progress && data.progress != null ? data.progress*100 : 0 )} %
+										<#if data.progress??>${data.progress*100}%</#if>
 									</div>
 								</div>
 							</div>
@@ -173,14 +173,18 @@
 							<div class="col">
 								<div class="collapse multi-collapse" id="query${queryCounter}">
 									<div class="card card-body">
-										<pre>  ${(data.query ? JSON.stringify(data.query, undefined, 2) : '')}  </pre>
+										<pre>
+										<#if data.query??>${JSON.stringify(data.query, undefined, 2)}</#if>
+										</pre>
 									</div>
 								</div>
 							</div>
 							<div class="col">
 								<div class="collapse multi-collapse" id="error${queryCounter}">
 									<div class="card card-body">
-										<pre>  ${(data.error ? JSON.stringify(data.error, undefined, 2) : '')}  </pre>
+									    <pre>
+									        <#if data.error??>${JSON.stringify(data.error, undefined, 2)}</#if>
+                                        </pre>
 									</div>
 								</div>
 							</div>
