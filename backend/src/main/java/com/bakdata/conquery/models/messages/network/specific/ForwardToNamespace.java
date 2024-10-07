@@ -30,11 +30,17 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 
 		DistributedNamespace ns = Objects.requireNonNull(context.getDatasetRegistry().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
+
 		message.react(ns);
 
 		if (message instanceof ReactionMessage reactionMessage) {
 			ns.getWorkerHandler().handleReactionMessage(reactionMessage);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return message.toString() + " for dataset " + datasetId;
 	}
 
 	@Override
@@ -45,10 +51,5 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 	@Override
 	public void setProgressReporter(ProgressReporter progressReporter) {
 		((SlowMessage) message).setProgressReporter(progressReporter);
-	}
-
-	@Override
-	public String toString() {
-		return message.toString() + " for dataset " + datasetId;
 	}
 }
