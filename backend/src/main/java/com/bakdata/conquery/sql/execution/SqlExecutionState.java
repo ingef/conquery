@@ -38,6 +38,10 @@ public class SqlExecutionState implements ExecutionManager.InternalState {
 
 	@Override
 	public Stream<EntityResult> streamQueryResults() {
+		// when the SQL execution fails, table is null
+		if (table == null) {
+			return Stream.empty();
+		}
 		return table.stream();
 	}
 }
