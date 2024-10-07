@@ -85,22 +85,45 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
-	@ToString(callSuper = true)
 	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
 		public CQMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
+		}
+
+		@Override
+		public String toString() {
+			final String valueString;
+			if (getValue().size() > 20) {
+				valueString = getValue().size() + " values";
+			}
+			else {
+				valueString = getValue().toString();
+			}
+
+			return "%s(value=%s)".formatted(FrontendFilterType.Fields.BIG_MULTI_SELECT, valueString);
 		}
 
 	}
 
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
-	@ToString(callSuper = true)
 	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
 		public CQBigMultiSelectFilter(@NsIdRef Filter<Set<String>> filter, Set<String> value) {
 			super(filter, value);
 		}
 
+		@Override
+		public String toString() {
+			final String valueString;
+			if (getValue().size() > 20) {
+				valueString = getValue().size() + " values";
+			}
+			else {
+				valueString = getValue().toString();
+			}
+
+			return "%s(value=%s)".formatted(FrontendFilterType.Fields.BIG_MULTI_SELECT, valueString);
+		}
 	}
 
 	@NoArgsConstructor
@@ -219,11 +242,10 @@ public abstract class FilterValue<VALUE> {
 			final Filter<?> filter = nsIdDeserializer.deserialize(filterTraverse, ctxt);
 
 			if (!(filter instanceof GroupFilter)) {
-				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class,
-																										  filter != null
-																										  ? filter.getClass()
-																										  : null
-				));
+				throw InvalidTypeIdException.from(filterNode.traverse(),
+												  GroupFilter.class,
+												  String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter != null ? filter.getClass() : null)
+				);
 			}
 			GroupFilter groupFilter = (GroupFilter) filter;
 
