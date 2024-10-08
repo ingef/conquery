@@ -26,13 +26,31 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 
 	private JsonDeserializer<CBlock> beanDeserializer;
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+		JavaType type = Optional
+				.ofNullable(ctxt.getContextualType())
+				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
+
+		while(type.isContainerType()) {
+			type = type.getContentType();
+		}
+		BeanDescription descr = ctxt.getConfig().introspect(type);
+		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
+		if(deser instanceof ResolvableDeserializer) {
+			((ResolvableDeserializer) deser).resolve(ctxt);
+		}
+		return new CBlockDeserializer((JsonDeserializer)deser);
+	}
+
 	@Override
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 
-		TreeConcept concept = block.getConnector().getConcept();
 
 		if(block.getMostSpecificChildren() != null) {
+			TreeConcept concept = (TreeConcept) block.getConnector().getConcept().resolve();
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
@@ -55,21 +73,5 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		return this.deserialize(p, ctxt);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional
-				.ofNullable(ctxt.getContextualType())
-				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
-		while(type.isContainerType()) {
-			type = type.getContentType();
-		}
-		BeanDescription descr = ctxt.getConfig().introspect(type);
-		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
-		if(deser instanceof ResolvableDeserializer) {
-			((ResolvableDeserializer) deser).resolve(ctxt);
-		}
-		return new CBlockDeserializer((JsonDeserializer)deser);
-	}
 }

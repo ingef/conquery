@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -68,7 +67,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	public void sessionOpened(IoSession session) {
 		final NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
+		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
 		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
@@ -204,8 +203,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
-		final ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
+	private NioSocketConnector getClusterConnector(ShardWorkers workers) {
+		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
@@ -230,6 +229,19 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		);
 	}
 
+	@Override
+	public void start() throws Exception {
+
+
+		jobManager = new JobManager(environment.getName(), config.isFailOnError());
+
+		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
+		// Connect async as the manager might not be up jet or is started by a test in succession
+		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
+
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
+
+	}
 
 	private void reportJobManagerStatus() {
 		if (context == null || !context.isConnected()) {
@@ -259,28 +271,14 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	@Override
-	public void start() throws Exception {
-
-
-		jobManager = new JobManager(environment.getName(), config.isFailOnError());
-
-		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
-		// Connect async as the manager might not be up jet or is started by a test in succession
-		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
-
-		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
-
-	}
-
-	public boolean isBusy() {
-		return jobManager.isSlowWorkerBusy();
-	}
-
-	@Override
 	public void stop() throws Exception {
 		// close scheduler before disconnect to avoid scheduled reconnects
 		scheduler.shutdown();
 		disconnectFromCluster();
 		jobManager.close();
+	}
+
+	public boolean isBusy() {
+		return jobManager.isSlowWorkerBusy();
 	}
 }

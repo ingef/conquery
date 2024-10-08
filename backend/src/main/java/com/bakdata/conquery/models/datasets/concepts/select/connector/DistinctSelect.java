@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
-import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
@@ -21,19 +20,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
-	public DistinctSelect(@NsIdRef Column column,
-						  @NsIdRef InternToExternMapper mapping) {
+	public DistinctSelect(ColumnId column,
+						  InternToExternMapperId mapping) {
 		super(column, mapping);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new AllValuesAggregator<>(getColumn());
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(super.getResultType());
+		return new AllValuesAggregator<>(getColumn().resolve());
 	}
 
 	@Override
@@ -42,11 +36,16 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+	public Printer<?> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if(getMapping() == null){
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return printerFactory.getListPrinter(new MappedPrinter(getMapping()), printSettings);
+		return printerFactory.getListPrinter(new MappedPrinter(getMapping().resolve()), printSettings);
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return new ResultType.ListT<>(super.getResultType());
 	}
 }

@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
@@ -30,18 +30,15 @@ import lombok.Setter;
 @CPSType(id = "COUNT_QUARTERS", base = Select.class)
 public class CountQuartersSelect extends Select implements DaterangeSelectOrFilter {
 
-	@NsIdRef
 	@Nullable
-	private Column column;
-	@NsIdRef
+	private ColumnId column;
 	@Nullable
-	private Column startColumn;
-	@NsIdRef
+	private ColumnId startColumn;
 	@Nullable
-	private Column endColumn;
+	private ColumnId endColumn;
 
 	@Override
-	public List<Column> getRequiredColumns() {
+	public List<ColumnId> getRequiredColumns() {
 		if (isSingleColumnDaterange()) {
 			return List.of(column);
 		}
@@ -50,11 +47,12 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return switch (getColumn().getType()) {
-			case DATE_RANGE -> new CountQuartersOfDateRangeAggregator(getColumn());
-			case DATE -> new CountQuartersOfDatesAggregator(getColumn());
-			default ->
-					throw new IllegalArgumentException(String.format("Column '%s' is not of Date (-Range) Type but '%s'", getColumn(), getColumn().getType()));
+		final Column column = getColumn().resolve();
+		final MajorTypeId typeId = column.getType();
+		return switch (typeId) {
+			case DATE_RANGE -> new CountQuartersOfDateRangeAggregator(column);
+			case DATE -> new CountQuartersOfDatesAggregator(column);
+			default -> throw new IllegalArgumentException(String.format("Column '%s' is not of Date (-Range) Type but '%s'", getColumn(), typeId));
 		};
 	}
 
@@ -67,5 +65,4 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 	public SelectConverter<CountQuartersSelect> createConverter() {
 		return new CountQuartersSqlAggregator();
 	}
-
 }

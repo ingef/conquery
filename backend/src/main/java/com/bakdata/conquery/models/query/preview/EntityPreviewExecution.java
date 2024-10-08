@@ -16,18 +16,18 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -61,20 +61,24 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
 		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
-	}
-
-	@Override
-	public boolean isSystem() {
-		// This Form should NEVER be started manually. Nor persisted
-		return true;
 	}
 
 	@Override
 	public void doInitExecutable() {
 		super.doInitExecutable();
 		previewConfig = getNamespace().getPreviewConfig();
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
+	}
+
+	@Override
+	public boolean isSystem() {
+		// This Form should NEVER be started manually. Nor persisted
+		return true;
 	}
 
 	/**
@@ -339,7 +343,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		return quarterLines;
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	@Override
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
@@ -351,25 +356,22 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// Add grouping semantics to secondaryIds to group by
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId().resolve())
+						  )) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 
 			// Add hidden semantics to fields flagged for hiding.
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn().resolve()))) {
 				descriptor.getSemantics().add(new SemanticType.HiddenT());
 			}
 		}
 
 
 		return descriptors;
-	}
-
-	@Override
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
-		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@Override

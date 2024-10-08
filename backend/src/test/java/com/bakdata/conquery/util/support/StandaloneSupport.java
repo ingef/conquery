@@ -1,46 +1,32 @@
 package com.bakdata.conquery.util.support;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientRequestContext;
-import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.json.TestDataImporter;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 public class StandaloneSupport implements TestSupport {
 
-	public enum Mode {WORKER, SQL}
-
 	@Getter
 	private final Mode mode;
+	@Delegate
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;
@@ -51,17 +37,7 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
-	private final AdminProcessor metaProcessor;
-	@Getter
-	private final AdminDatasetProcessor datasetsProcessor;
-	@Getter
-	private final User testUser;
-	@Getter
 	private final TestDataImporter testImporter;
-
-	public AuthorizationController getAuthorizationController() {
-		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
-	}
 
 	public void waitUntilWorkDone() {
 		testConquery.waitUntilWorkDone();
@@ -90,58 +66,23 @@ public class StandaloneSupport implements TestSupport {
 		.run(env, namespace, config);
 	}
 
-
-	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getManagerNode().getValidator();
-	}
-
-	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManagerNode().getMetaStorage();
-	}
-
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
-	public DatasetRegistry getDatasetRegistry() {
-		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry();
-	}
-
-	public List<ShardNode> getShardNodes() {
-		return testConquery.getStandaloneCommand().getShardNodes();
-	}
-
-	/**
-	 * Retrieves the port of the admin API.
-	 *
-	 * @return The port.
-	 */
-	public int getAdminPort() {
-		return testConquery.getDropwizard().getAdminPort();
+	public AuthorizationController getAuthorizationController() {
+		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
 	public Client getClient() {
-		return testConquery.getClient()
-						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(getTestUser().getId())));
+		return testConquery.getClient();
 	}
 
-	public <ID extends Id<VALUE> & NamespacedId, VALUE extends Identifiable<ID>> VALUE resolve(ID id) {
-		return getDatasetRegistry().resolve(id);
-	}
-
-	@Data
-	private static class ConqueryAuthenticationFilter implements ClientRequestFilter {
-		private final String token;
-
-		@Override
-		public void filter(ClientRequestContext requestContext) throws IOException {
-			// If none set to provided token
-			if(requestContext.getHeaders().containsKey("Authorization")){
-				return;
-			}
-
-			requestContext.getHeaders().add("Authorization", "Bearer " + getToken());
-		}
+	public UriBuilder defaultApiURIBuilder() {
+		return UriBuilder.fromPath("api")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(getLocalPort());
 	}
 
 	/**
@@ -153,17 +94,23 @@ public class StandaloneSupport implements TestSupport {
 		return testConquery.getDropwizard().getLocalPort();
 	}
 
-	public UriBuilder defaultApiURIBuilder() {
-		return UriBuilder.fromPath("api")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(getLocalPort());
-	}
-
 	public UriBuilder defaultAdminURIBuilder() {
 		return UriBuilder.fromPath("admin")
 						 .host("localhost")
 						 .scheme("http")
 						 .port(getAdminPort());
 	}
+
+	/**
+	 * Retrieves the port of the admin API.
+	 *
+	 * @return The port.
+	 */
+	public int getAdminPort() {
+		return testConquery.getDropwizard().getAdminPort();
+	}
+
+	public enum Mode {WORKER, SQL}
+
+
 }

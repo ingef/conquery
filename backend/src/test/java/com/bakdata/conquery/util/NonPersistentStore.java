@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
@@ -46,23 +46,28 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void loadData() {
-
-	}
-
-	@Override
 	public int count() {
 		return map.size();
 	}
 
 	@Override
-	public Collection<VALUE> getAll() {
-		return map.values();
+	public Stream<VALUE> getAll() {
+		return map.values().stream();
 	}
 
 	@Override
-	public Collection<KEY> getAllKeys() {
-		return map.keySet();
+	public Stream<KEY> getAllKeys() {
+		return map.keySet().stream();
+	}
+
+	@Override
+	public void loadData() {
+
+	}
+
+	@Override
+	public void close() throws IOException {
+		// Nothing to close
 	}
 
 	@Override
@@ -73,10 +78,5 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void clear() {
 		map.clear();
-	}
-
-	@Override
-	public void close() throws IOException {
-		// Nothing to close
 	}
 }

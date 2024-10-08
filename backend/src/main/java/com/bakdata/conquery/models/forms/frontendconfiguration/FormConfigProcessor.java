@@ -85,7 +85,7 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+		final Stream<FormConfig> stream = storage.getAllFormConfigs()
 												 .filter(c -> dataset.getId().equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
@@ -116,7 +116,7 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset.getId());
+		final FormConfig internalConfig = config.intern(subject.getId(), targetDataset.getId());
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

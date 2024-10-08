@@ -65,7 +65,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 		lifecycle.manage(clusterConnection);
 
-		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
+		final Collection<? extends WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
 
 
 		ExecutorService loaders = config.getQueries().getExecutionPool().createService("Worker loader");
@@ -74,7 +74,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

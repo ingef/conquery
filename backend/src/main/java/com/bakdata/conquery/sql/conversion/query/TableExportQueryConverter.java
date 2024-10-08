@@ -13,6 +13,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -49,7 +50,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
 
 		QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
-		Map<Column, Integer> positions = tableExportQuery.getPositions();
+		Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
 		CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
 
 		List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
@@ -105,12 +106,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			CQConcept concept,
 			CDateRange dateRestriction,
 			QueryStep convertedPrerequisite,
-			Map<Column, Integer> positions,
+			Map<ColumnId, Integer> positions,
 			ConversionContext context
 	) {
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(), context.getConfig());
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-    String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings().getLocale());
+    String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve(), context.getSqlPrintSettings().getLocale());
 		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
 		List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
@@ -142,22 +143,22 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
 	}
 
-	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<Column, Integer> positions) {
+	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
 
 		Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
-		for (Column column : cqTable.getConnector().getTable().getColumns()) {
+		for (Column column : cqTable.getConnector().resolve().getResolvedTable().getColumns()) {
 			// e.g. date column(s) are handled separately and not part of positions
-			if (!positions.containsKey(column)) {
+			if (!positions.containsKey(column.getId())) {
 				continue;
 			}
-			int position = positions.get(column) - 1;
+			int position = positions.get(column.getId()) - 1;
 			exportColumns[position] = createColumnSelect(column, position);
 		}
 
 		return Arrays.stream(exportColumns).map(FieldWrapper::new).collect(Collectors.toList());
 	}
 
-	private static Field<?>[] createPlaceholders(Map<Column, Integer> positions, CQTable cqTable) {
+	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
 
 		Field<?>[] exportColumns = new Field[positions.size() + 1];
 		exportColumns[0] = createSourceInfoSelect(cqTable);
@@ -165,7 +166,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
 		positions.forEach((column, position) -> {
 			int shifted = position - 1;
-			Field<?> columnSelect = DSL.inline(null, Object.class).as("%s-%d".formatted(column.getName(), shifted));
+			Field<?> columnSelect = DSL.inline(null, Object.class).as("%s-%d".formatted(column.getColumn(), shifted));
 			exportColumns[shifted] = columnSelect;
 		});
 
@@ -173,7 +174,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		String tableName = cqTable.getConnector().getTable().getName();
+		String tableName = cqTable.getConnector().resolve().getResolvedTableId().getTable();
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
@@ -191,7 +192,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			ConversionContext context
 	) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().getTable().getName()));
+		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getResolvedTableId().getTable()));
 		Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
 
 		ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());

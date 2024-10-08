@@ -1,12 +1,16 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +18,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FormConfigId extends Id<FormConfig> {
+public class FormConfigId extends Id<FormConfig> implements MetaId {
 
 
 	private final DatasetId dataset;
@@ -27,6 +31,17 @@ public class FormConfigId extends Id<FormConfig> {
 		components.add(formType);
 		components.add(id);
 
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
+	}
+
+	@Override
+	public Identifiable<?> get(MetaStorage storage) {
+		return storage.getFormConfig(this);
 	}
 
 	public static enum Parser implements IdUtil.Parser<FormConfigId> {

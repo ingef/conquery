@@ -20,7 +20,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 	@Override
 	public SqlFilters convertToSqlFilter(NumberFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
@@ -39,7 +39,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 
 	@Override
 	public Condition convertForTableExport(NumberFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);

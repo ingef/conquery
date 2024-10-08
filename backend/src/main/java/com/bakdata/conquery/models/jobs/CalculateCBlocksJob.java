@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-@Data
+@Getter
 @ToString(onlyExplicitlyIncluded = true)
 public class CalculateCBlocksJob extends Job {
 
@@ -38,12 +39,6 @@ public class CalculateCBlocksJob extends Job {
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
 	private final ExecutorService executorService;
-
-	@ToString.Include
-	@Override
-	public String getLabel() {
-		return "Calculate CBlocks[" + tasks.size() + "]";
-	}
 
 	public void addCBlock(Bucket bucket, ConceptTreeConnector connector) {
 		tasks.add(createInformationProcessor(connector, bucket));
@@ -89,6 +84,12 @@ public class CalculateCBlocksJob extends Job {
 
 		log.debug("DONE CalculateCBlocks for {} entries.", tasks.size());
 
+	}
+
+	@ToString.Include
+	@Override
+	public String getLabel() {
+		return "Calculate CBlocks[" + tasks.size() + "]";
 	}
 
 	private void incrementProgressReporter() {

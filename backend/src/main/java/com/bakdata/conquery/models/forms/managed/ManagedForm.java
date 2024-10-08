@@ -6,10 +6,10 @@ import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -46,7 +46,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Getter
 	private Form submittedForm;
 
-	protected ManagedForm(F submittedForm, User owner, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+	protected ManagedForm(F submittedForm, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
 		super(owner, submittedDataset, storage, datasetRegistry);
 		this.submittedForm = submittedForm;
 	}
@@ -64,7 +64,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 														 .tags(this.getTags())
 														 .values(getSubmittedForm().getValues()).build();
 
-				final FormConfig formConfig = build.intern(getOwner(), getDataset().getId());
+				final FormConfig formConfig = build.intern(getOwner(), getDataset());
 
 				getMetaStorage().addFormConfig(formConfig);
 			}

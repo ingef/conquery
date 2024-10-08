@@ -9,14 +9,16 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
@@ -37,7 +39,7 @@ public interface QueryDescription extends Visitable {
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
 	 * However, steps that require add or manipulates queries programmatically based on the submitted query
-	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable()}.
+	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable(Namespace)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
 	 * @param user
@@ -45,7 +47,7 @@ public interface QueryDescription extends Visitable {
 	 * @param storage
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry);
+	ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry);
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();
@@ -81,15 +83,16 @@ public interface QueryDescription extends Visitable {
 		// Generate DatasetPermissions
 		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
+												   .map(Id::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);
 
 		// Generate ConceptPermissions
-		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
+		final Set<Concept<?>> concepts = nsIdCollector.getIdentifiables().stream()
 												   .filter(ConceptElement.class::isInstance)
 												   .map(ConceptElement.class::cast)
-												   .map(ConceptElement::getConcept)
+												   .<Concept<?>>map(ConceptElement::getConcept)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(concepts, Ability.READ);

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.List;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -30,7 +31,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -77,9 +77,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(cqpps.size()).isEqualTo(tables.size());
 
 			LoadingUtil.importCqppFiles(conquery, List.of(cqpps.get(0)));
-
 			conquery.waitUntilWorkDone();
-
 		}
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
@@ -92,8 +90,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getImport(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -105,7 +103,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
@@ -187,8 +185,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getImport(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -200,7 +198,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
@@ -216,8 +214,6 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(9);
 			// Issue a query and assert that it has more content.
 			IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
-
-
 		}
 	}
 }

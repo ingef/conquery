@@ -38,6 +38,6 @@ public class ExistsSelect extends UniversalSelect {
 	}
 
 	private Set<Table> collectRequiredTables() {
-		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).collect(Collectors.toSet());
+		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getResolvedTable).collect(Collectors.toSet());
 	}
 }

@@ -106,13 +106,13 @@ public class AdminResource {
 
 
 		return storage.getAllExecutions()
-					  .stream()
+
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
 						  try {
 							  if (t.isInitialized()) {
-								  final Namespace namespace = processor.getDatasetRegistry().get(t.getDataset().getId());
+								  final Namespace namespace = processor.getDatasetRegistry().get(t.getDataset());
 								  return t.buildStatusFull(currentUser, namespace);
 							  }
 

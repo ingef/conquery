@@ -20,7 +20,7 @@ public class SecondaryIdResultInfo extends ResultInfo {
 
 
 	public SecondaryIdResultInfo(SecondaryIdDescription secondaryId) {
-		super(Set.of(new SemanticType.SecondaryIdT(secondaryId)));
+		super(Set.of(new SemanticType.SecondaryIdT(secondaryId.getId())));
 		this.secondaryId = secondaryId;
 		type = ResultType.Primitive.STRING;
 
@@ -33,12 +33,12 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+	public Printer<?> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (secondaryId.getMapping() == null) {
 			return printerFactory.getStringPrinter(printSettings);
 		}
 		else {
-			return new MappedPrinter(secondaryId.getMapping());
+			return new MappedPrinter(secondaryId.getMapping().resolve());
 		}
 	}
 
