@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.jackson;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.google.common.base.Throwables;
 
 /**
  * Interface for class instances that need initialization after deserialization and value injection.
@@ -16,14 +17,20 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  */
 public interface Initializing {
 
-	void init();
+	void init() throws Exception;
 
 	class Converter<T extends Initializing> extends StdConverter<T, T> {
 
 		@Override
 		public T convert(T value) {
-			value.init();
-			return value;
+			try {
+				value.init();
+				return value;
+			}
+			catch (Exception e) {
+				Throwables.throwIfUnchecked(e);
+				throw new IllegalStateException("Could not initialize %s".formatted(value), e);
+			}
 		}
 	}
 }

@@ -10,11 +10,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id="CANCEL_JOB", base= NetworkMessage.class)
 public class CancelJobMessage extends MessageToShardNode {
 
-	@Getter
 	private final UUID jobId;
 
 	@Override

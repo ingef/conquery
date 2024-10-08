@@ -24,7 +24,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 
 	@Override
 	public DistributedNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<DistributedNamespace> datasetRegistry, Environment environment) {
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry);
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, datasetRegistry, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), namespaceStorage);
 		clusterState.getWorkerHandlers().put(namespaceStorage.getDataset().getId(), workerHandler);
@@ -49,7 +49,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 
 	@Override
 	public void removeNamespace(DatasetId id, DistributedNamespace namespace) {
-		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset())));
+		clusterState.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(namespace.getDataset().getId())));
 		clusterState.getWorkerHandlers().keySet().removeIf(worker -> worker.getDataset().getDataset().equals(id));
 	}
 

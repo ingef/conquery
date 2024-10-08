@@ -12,11 +12,13 @@ import java.util.stream.Stream;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -93,8 +95,8 @@ public class ExcelRenderer {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final User owner = exec.getOwner();
-		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
+		final UserId owner = exec.getOwner();
+		coreProperties.setCreator(owner != null ? owner.resolve().getLabel() : config.getApplicationName());
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());

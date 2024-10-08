@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
-
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
@@ -13,7 +12,7 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.auth.PasswordHashCredential;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -101,7 +100,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		// Open/create the database/store
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = StoreMappings.cached(
+		passwordStore = new CachedStore<>(
 				new SerializingStore<>(
 						new XodusStore(
 								passwordEnvironment,
@@ -216,7 +215,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	@Override
 	public List<UserId> getAllUsers() {
-		return ImmutableList.copyOf(passwordStore.getAllKeys());
+		return ImmutableList.copyOf(passwordStore.getAllKeys().toList());
 	}
 
 

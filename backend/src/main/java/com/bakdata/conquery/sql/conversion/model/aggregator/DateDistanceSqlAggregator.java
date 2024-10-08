@@ -37,7 +37,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
-		Column column = select.getColumn();
+		Column column = select.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = selectContext.getTables();
 		ConversionContext conversionContext = selectContext.getConversionContext();
@@ -60,7 +60,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(filter);
 		ConnectorSqlTables tables = filterContext.getTables();
 		ConversionContext conversionContext = filterContext.getConversionContext();
@@ -80,7 +80,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public Condition convertForTableExport(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 

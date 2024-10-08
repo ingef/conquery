@@ -112,7 +112,7 @@ public class QueryResource {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.CANCEL);
 
-		processor.cancel(subject, query.getDataset(), query);
+		processor.cancel(subject, query);
 	}
 
 

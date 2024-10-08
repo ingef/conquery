@@ -1,11 +1,15 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -20,14 +24,35 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 	}
 
 	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		connector.collectIds(collect);
+	}
+
+	@Override
+	public DatasetId getDataset() {
+		return connector.getDataset();
+	}
+
+	@Override
+	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+		return storage.getConcept(findConcept()).getConnectorByName(getConnector().getConnector()).getSelectByName(getSelect());
+	}
+
+	@Override
+	public ConceptId findConcept() {
+		return connector.getConcept();
+	}
+
+	@Override
 	public void collectComponents(List<Object> components) {
 		connector.collectComponents(components);
 		super.collectComponents(components);
 	}
 
 	@Override
-	public DatasetId getDataset() {
-		return connector.getDataset();
+	public NamespacedStorageProvider getNamespacedStorageProvider() {
+		return connector.getNamespacedStorageProvider();
 	}
 
 	public enum Parser implements IdUtil.Parser<ConnectorSelectId> {
@@ -39,10 +64,5 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
 			return new ConnectorSelectId(parent, name);
 		}
-	}
-
-	@Override
-	public ConceptId findConcept() {
-		return connector.getConcept();
 	}
 }

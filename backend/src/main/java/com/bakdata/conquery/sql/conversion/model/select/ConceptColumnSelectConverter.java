@@ -43,7 +43,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		if (connector.getColumn() == null) {
 			return ConnectorSqlSelects.none();
 		}
-		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.getTable().getName(), connector.getColumn().getName(), Object.class);
+		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.getResolvedTableId().getTable(), connector.getColumn().getColumn(), Object.class);
 		ExtractingSqlSelect<Object> qualified = connectorColumn.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.EVENT_FILTER));
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelect(connectorColumn)
@@ -117,14 +117,14 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		String tableName = selectContext.getTables()
 										.getConnectorTables()
 										.stream()
-										.filter(tables -> Objects.equals(tables.getRootTable(), connector.getTable().getName()))
+										.filter(tables -> Objects.equals(tables.getRootTable(), connector.getResolvedTableId().getTable()))
 										.findFirst()
 										.map(tables -> tables.cteName(ConceptCteStep.EVENT_FILTER))
-										.orElse(connector.getTable().getName());
+										.orElse(connector.getResolvedTableId().getTable());
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tableName));
 		SqlIdColumns ids = selectContext.getIds().qualify(connectorTable.getName());
-		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().getName()));
+		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().resolve().getName()));
 		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
 

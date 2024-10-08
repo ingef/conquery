@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,22 +7,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,25 +32,20 @@ import lombok.extern.slf4j.Slf4j;
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
-public class ShardWorkers extends IdResolveContext implements Managed {
-	@Getter @Setter
-	private AtomicInteger nextWorker = new AtomicInteger(0);
+public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	@Getter
 	private final ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private final transient ConcurrentMap<DatasetId, Worker> dataset2Worker = new ConcurrentHashMap<>();
-
 	/**
 	 * Shared ExecutorService among Workers for Jobs.
 	 */
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
-
 	private final InternalMapperFactory internalMapperFactory;
-
 	private final int entityBucketSize;
-
 	private final int secondaryIdSubPlanRetention;
+	private final AtomicInteger nextWorker = new AtomicInteger(0);
 
 	
 	public ShardWorkers(ThreadPoolDefinition queryThreadPoolDefinition, InternalMapperFactory internalMapperFactory, int entityBucketSize, int secondaryIdSubPlanRetention) {
@@ -66,28 +61,13 @@ public class ShardWorkers extends IdResolveContext implements Managed {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment) {
 
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
-		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(this);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(storage);
+		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(storage);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
-
-		addWorker(worker);
-
-		return worker;
-	}
-
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
-
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
-
-		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(this);
-
-		final Worker
-				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment);
 
 		addWorker(worker);
 
@@ -100,18 +80,19 @@ public class ShardWorkers extends IdResolveContext implements Managed {
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
-	public Worker getWorker(WorkerId worker) {
-		return Objects.requireNonNull(workers.get(worker));
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Environment environment, boolean failOnError) {
+
+		final Worker
+				worker =
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, internalMapperFactory, secondaryIdSubPlanRetention, environment);
+
+		addWorker(worker);
+
+		return worker;
 	}
 
-
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) {
-		if (!dataset2Worker.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
-		}
-
-		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
+	public Worker getWorker(WorkerId worker) {
+		return Objects.requireNonNull(workers.get(worker));
 	}
 
 	public void removeWorkerFor(DatasetId dataset) {
@@ -133,7 +114,7 @@ public class ShardWorkers extends IdResolveContext implements Managed {
 			removed.remove();
 		}
 		catch(Exception e) {
-			log.error("Failed to remove storage "+removed, e);
+			log.error("Failed to remove storage {}", removed, e);
 		}
 	}
 	
@@ -160,5 +141,15 @@ public class ShardWorkers extends IdResolveContext implements Managed {
 		for (Worker w : workers.values()) {
 			w.close();
 		}
+	}
+
+	@Override
+	public NamespacedStorage getStorage(DatasetId datasetId) {
+		return dataset2Worker.get(datasetId).getStorage();
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NamespacedStorageProvider.class, this);
 	}
 }

@@ -44,7 +44,7 @@ public interface  Shareable extends Authorized {
 
 			final S shareable = (S) this;
 			// Collect groups that do not have access to this instance and remove their probable permission
-			for (Group group : storage.getAllGroups()) {
+			for (Group group : storage.getAllGroups().toList()) {
 				if (patch.getGroups().contains(group.getId())) {
 					continue;
 				}

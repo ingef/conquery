@@ -6,6 +6,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
@@ -27,10 +32,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -47,10 +48,10 @@ public class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		handleImport(namespace, inputStream, true);
+		handleImport(namespace, inputStream, true, datasetRegistry);
 	}
 
-	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update) throws IOException {
+	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update, DatasetRegistry<?> datasetRegistry) throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 			// We parse semi-manually as the incoming file consist of multiple documents we read progressively:
 			// 1) the header to check metadata
@@ -60,7 +61,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final Table table = validateImportable(((DistributedNamespace) namespace), header, update);
 
-			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
+			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser, datasetRegistry);
 
 			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 		}
@@ -97,7 +98,7 @@ public class ClusterImportHandler implements ImportHandler {
 			}
 
 			// before updating the import, make sure that all workers removed the prior import
-			namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport));
+			namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport.getId()));
 			namespace.getStorage().removeImport(importId);
 		}
 		else if (processedImport != null) {
@@ -107,7 +108,7 @@ public class ClusterImportHandler implements ImportHandler {
 		return table;
 	}
 
-	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
+	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader, DatasetRegistry<?> datasetRegistry) {
 		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
 		final ImportId importId = new ImportId(tableId, header.getName());
 
@@ -149,16 +150,12 @@ public class ClusterImportHandler implements ImportHandler {
 
 	}
 
-	private static void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
-		for (Concept<?> c : allConcepts) {
-			for (Connector con : c.getConnectors()) {
-				if (!con.getTable().equals(table)) {
-					continue;
-				}
-
-				con.getConcept().clearMatchingStats();
-			}
-		}
+	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, Table table) {
+		allConcepts.map(Concept::getConnectors)
+				   .flatMap(List::stream)
+				   .filter(con -> con.getResolvedTableId().equals(table.getId()))
+				   .map(Connector::getConcept)
+				   .forEach(Concept::clearMatchingStats);
 	}
 
 	/**
@@ -177,19 +174,19 @@ public class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
-		handleImport(namespace, inputStream, false);
+		handleImport(namespace, inputStream, false, datasetRegistry);
 	}
 
 	@Override
 	public void deleteImport(Import imp) {
 
-		final DatasetId id = imp.getTable().getDataset().getId();
+		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable().resolve());
 
 		namespace.getStorage().removeImport(imp.getId());
-		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp));
+		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp.getId()));
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);

@@ -20,7 +20,7 @@ public class ExternalResultProcessor {
 
 		ResultUtil.authorizeExecutable(subject, execution);
 
-		ExecutionManager executionManager = datasetRegistry.get(execution.getDataset().getId()).getExecutionManager();
+		ExecutionManager executionManager = datasetRegistry.get(execution.getDataset()).getExecutionManager();
 		ExternalState externalResult = executionManager.getResult(execution.getId());
 
 		return externalResult.fetchExternalResult(fileName);

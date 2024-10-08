@@ -4,15 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.worker.Namespace;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -25,6 +16,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -84,8 +84,7 @@ public class AdminTablesResource {
 	public List<ImportId> listImports() {
 		return namespace.getStorage()
 						.getAllImports()
-						.stream()
-						.filter(imp -> imp.getTable().equals(table))
+						.filter(imp -> imp.getTable().equals(table.getId()))
 						.map(Import::getId)
 						.collect(Collectors.toList());
 	}

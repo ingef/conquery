@@ -17,15 +17,14 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
@@ -53,7 +52,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 
 
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
 		super(owner, submittedDataset, storage, datasetRegistry);
 		this.query = query;
 	}
@@ -71,7 +70,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 		super.finish(executionState);
 	}
-
 
 	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 		final Stream<EntityResult> results = getNamespace().getExecutionManager().streamQueryResults(this);
@@ -104,12 +102,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 
 		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
-			status.setSecondaryId((secondaryIdQuery).getSecondaryId().getId());
+			status.setSecondaryId((secondaryIdQuery).getSecondaryId());
 		}
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 

@@ -4,15 +4,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntFunction;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
@@ -23,13 +22,15 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -51,12 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
 	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
-	@NsIdRef
-	private final Bucket bucket;
+	private final BucketId bucket;
 	@NotNull
-	@NsIdRef
 	@ToString.Include
-	private final ConceptTreeConnector connector;
+	private final ConnectorId connector;
 	/**
 	 * We leverage the fact that a Bucket contains entities from bucketSize * {@link Bucket#getBucket()} to (1 + bucketSize) * {@link Bucket#getBucket()} - 1 to layout our internal structure.
 	 * This is maps the first Entities entry in this bucket to 0.
@@ -100,7 +99,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
-		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		return cBlock;
 	}
 
 	/**
@@ -114,9 +114,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final TreeConcept treeConcept = connector.getConcept();
 
 		// If we have a column, and it is of string-type, we initialize a cache.
-		if (connector.getColumn() != null && bucket.getStore(connector.getColumn()) instanceof StringStore) {
+		if (connector.getColumn() != null && bucket.getStore(connector.getColumn().resolve()) instanceof StringStore) {
 
-			column = connector.getColumn();
+			column = connector.getColumn().resolve();
 
 			treeConcept.initializeIdCache(bucket.getImp());
 		}
@@ -136,6 +136,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
 
+		IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
+
 		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
 
@@ -152,7 +154,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				// Lazy evaluation of map to avoid allocations if possible.
 				// Copy event for closure.
 				final int _event = event;
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
 
 				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
 					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
@@ -165,7 +167,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				final ConceptElement<?> child = cache == null
+				final ConceptTreeChild child = cache == null
 											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
 											   : cache.findMostSpecificChild(stringValue, rowMap);
 
@@ -226,21 +228,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	/**
-	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
-	 */
-	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
-
-		for (int index = pathIndex; index > 0; index--) {
-			// TODO how could they be > Long.SIZE?
-			if (mostSpecificChild[index] < Long.SIZE) {
-				return 1L << mostSpecificChild[index];
-			}
-		}
-
-		return 0;
-	}
-
-	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 *
 	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
@@ -248,7 +235,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket) {
 		final Map<String, CDateRange> spans = new HashMap<>();
 
-		final Table table = bucket.getTable();
+		final Table table = bucket.getTable().resolve();
 
 
 		for (Column column : table.getColumns()) {
@@ -297,6 +284,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		return spans;
 	}
 
+	/**
+	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
+	 */
+	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
+
+		for (int index = pathIndex; index > 0; index--) {
+			// TODO how could they be > Long.SIZE?
+			if (mostSpecificChild[index] < Long.SIZE) {
+				return 1L << mostSpecificChild[index];
+			}
+		}
+
+		return 0;
+	}
+
 	public int[] getPathToMostSpecificChild(int event) {
 		if (mostSpecificChildren == null) {
 			return null;
@@ -321,7 +323,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(bucket.getId(), connector.getId());
+		return new CBlockId(bucket, connector);
 	}
 
 	public boolean isConceptIncluded(String entity, long requiredBits) {
@@ -341,7 +343,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	@Override
 	@JsonIgnore
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return bucket.getDataset();
 	}
 

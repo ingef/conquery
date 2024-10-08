@@ -6,12 +6,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -27,6 +28,9 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,8 +39,6 @@ import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,31 +58,31 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
-
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
 	private final int bucket;
-
+	/**
+	 * start of each Entity in {@code stores}.
+	 */
+	private final Object2IntMap<String> start;
+	/**
+	 * Number of events per Entity in {@code stores}.
+	 */
+	private final Object2IntMap<String> ends;
+	private final int numberOfEvents;
+	private final ImportId imp;
 	@ToString.Include
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
 
-	/**
-	 * start of each Entity in {@code stores}.
-	 */
-	private final Object2IntMap<String> start;
+	public static Bucket fromPreprocessed(Table table, PreprocessedData container, Import imp) {
+		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
+		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
 
-	/**
-	 * Number of events per Entity in {@code stores}.
-	 */
-	private final Object2IntMap<String> ends;
-
-	private final int numberOfEvents;
-
-	@NsIdRef
-	private final Import imp;
+		return new Bucket(container.getBucketId(), new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), numberOfEvents, imp.getId(), storesSorted);
+	}
 
 	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
 		return Arrays.stream(table.getColumns())
@@ -90,28 +92,15 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 					 .toArray(ColumnStore[]::new);
 	}
 
-	public static Bucket fromPreprocessed(Table table, PreprocessedData container, Import imp) {
-		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
-		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
-
-		return new Bucket(container.getBucketId(), storesSorted, new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()),numberOfEvents, imp);
-	}
-
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match the length of some stores.")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
 		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
 	}
 
-
-	@JsonIgnore
-	public Table getTable() {
-		return imp.getTable();
-	}
-
 	@Override
 	public BucketId createId() {
-		return new BucketId(imp.getId(), bucket);
+		return new BucketId(imp, bucket);
 	}
 
 	/**
@@ -126,9 +115,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public int getEntityStart(String entityId) {
-		return start.get(entityId);
+		return start.getInt(entityId);
 	}
-
 
 	public int getEntityEnd(String entityId) {
 		return ends.getInt(entityId);
@@ -138,12 +126,12 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return getStore(column).has(event);
 	}
 
-	public String getString(int event, @NotNull Column column) {
-		return ((StringStore) getStore(column)).getString(event);
-	}
-
 	public ColumnStore getStore(@NotNull Column column) {
 		return stores[column.getPosition()];
+	}
+
+	public String getString(int event, @NotNull Column column) {
+		return ((StringStore) getStore(column)).getString(event);
 	}
 
 	public long getInteger(int event, @NotNull Column column) {
@@ -170,10 +158,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return ((DateStore) getStore(column)).getDate(event);
 	}
 
-	public CDateRange getDateRange(int event, Column column) {
-		return ((DateRangeStore) getStore(column)).getDateRange(event);
-	}
-
 	public boolean eventIsContainedIn(int event, ValidityDate validityDate, CDateSet dateRanges) {
 		final CDateRange dateRange = validityDate.getValidityDate(event, this);
 
@@ -192,11 +176,27 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		};
 	}
 
+	public CDateRange getDateRange(int event, Column column) {
+		return ((DateRangeStore) getStore(column)).getDateRange(event);
+	}
+
 	public Object createScriptValue(int event, @NotNull Column column) {
 		return getStore(column).createScriptValue(event);
 	}
 
-	public Map<String, Object> calculateMap(int event) {
+	public IntFunction<Map<String, Object>> mapCalculator(){
+		Column[] columns = getTable().resolve().getColumns();
+
+		return event -> calculateMap(event, stores, columns);
+
+	}
+
+	@JsonIgnore
+	public TableId getTable() {
+		return imp.getTable();
+	}
+
+	private static Map<String, Object> calculateMap(int event, ColumnStore[] stores, Column[] columns) {
 		final Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
@@ -204,7 +204,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 			if (!store.has(event)) {
 				continue;
 			}
-			out.put(getTable().getColumns()[i].getName(), store.createScriptValue(event));
+			out.put(columns[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
@@ -212,11 +212,11 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getTable().getDataset();
 	}
 
 	public ColumnStore getStore(@NotNull String storeName) {
-		return getStore(getTable().getColumnByName(storeName));
+		return getStore(getTable().resolve().getColumnByName(storeName));
 	}
 }

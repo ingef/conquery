@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardWorkers;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 
 @Getter
@@ -34,13 +35,15 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 
 		private final ShardWorkers workers;
 		private final ConqueryConfig config;
-		private final Validator validator;
+		private final Environment environment;
+		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(NetworkSession session, ShardWorkers workers, ConqueryConfig config, Validator validator) {
+		public ShardNodeNetworkContext(NetworkSession session, ShardWorkers workers, ConqueryConfig config, Environment environment) {
 			super(session, config.getCluster().getBackpressure());
 			this.workers = workers;
 			this.config = config;
-			this.validator = validator;
+			this.environment = environment;
+			this.rawSession = session;
 		}
 	}
 	

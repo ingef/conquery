@@ -12,6 +12,7 @@ import com.bakdata.conquery.mode.cluster.ClusterEntityResolver;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -53,17 +54,17 @@ public class DistributedNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		final Collection<Concept<?>> concepts = getStorage().getAllConcepts()
-															.stream()
-															.filter(concept -> concept.getMatchingStats() == null)
-															.collect(Collectors.toSet());
+		final Collection<ConceptId> concepts = getStorage().getAllConcepts()
+														   .filter(concept -> concept.getMatchingStats() == null)
+														   .map(Concept::getId)
+														   .collect(Collectors.toSet());
 		getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 	}
 
 	@Override
 	void registerColumnValuesInSearch(Set<Column> columns) {
 		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
-		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns, this));
+		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns.stream().map(Column::getId).collect(Collectors.toSet()), this));
 	}
 
 }

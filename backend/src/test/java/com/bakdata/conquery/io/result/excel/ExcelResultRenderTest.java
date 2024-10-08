@@ -1,7 +1,9 @@
 package com.bakdata.conquery.io.result.excel;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.*;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,10 +19,14 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -33,6 +39,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinter
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -45,7 +52,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ExcelResultRenderTest {
 
-	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
+	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
@@ -68,19 +75,10 @@ public class ExcelResultRenderTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
 
-		final ManagedQuery mquery = new ManagedQuery(null, OWNER, DATASET, null, null) {
-			public List<ResultInfo> getResultInfos() {
-				return getResultTypes().stream()
-									   .map(ResultTestUtil.TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
-									   .collect(Collectors.toList());
-			}
+		MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
+		metaStorage.openStores(null, new MetricRegistry());
 
-			@Override
-			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
-				return results.stream();
-			}
-		};
+		ManagedQuery mquery = getManagedQuery(metaStorage, results);
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		final ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -110,6 +108,26 @@ public class ExcelResultRenderTest {
 		assertThat(computed).isNotEmpty();
 		assertThat(computed).isEqualTo(expected);
 
+	}
+
+	private static @NotNull ManagedQuery getManagedQuery(MetaStorage metaStorage, List<EntityResult> results) {
+		User user = new User("test", "test", metaStorage);
+		user.updateStorage();
+
+		return new ManagedQuery(mock(Query.class), user.getId(), new Dataset(ExcelResultRenderTest.class.getSimpleName()).getId(), metaStorage, null) {
+			@Override
+			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+				return results.stream();
+			}
+
+			@Override
+			public List<ResultInfo> getResultInfos() {
+				return getResultTypes().stream()
+									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
+									   .collect(Collectors.toList());
+			}
+		};
 	}
 
 	@NotNull

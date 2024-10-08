@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -17,8 +21,6 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -50,7 +52,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
-import jakarta.validation.constraints.NotNull;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -78,15 +81,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 	private UUID queryId;
 	private String label;
 
 	private LocalDateTime creationTime = LocalDateTime.now();
 
-	@MetaIdRef
-	private User owner;
+	private UserId owner;
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -136,7 +137,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
-	public ManagedExecution(@NonNull User owner, @NonNull Dataset dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
 		this.owner = owner;
 		this.dataset = dataset;
 		this.metaStorage = metaStorage;
@@ -189,7 +190,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	public Namespace getNamespace() {
-		return datasetRegistry.get(getDataset().getId());
+		return datasetRegistry.get(getDataset());
 	}
 
 	protected abstract void doInitExecutable();
@@ -224,7 +225,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		return new ManagedExecutionId(dataset.getId(), queryId);
+		ManagedExecutionId managedExecutionId = new ManagedExecutionId(dataset, queryId);
+		managedExecutionId.setMetaStorage(getMetaStorage());
+		return managedExecutionId;
 	}
 
 	/**
@@ -310,7 +313,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = owner;
+			User user = owner.resolve();
 			status.setOwner(user.getId());
 			status.setOwnerName(user.getLabel());
 		}
@@ -353,7 +356,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(subject, status, namespace);
+		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
 		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
@@ -379,7 +382,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : getMetaStorage().getAllGroups()) {
+		for (Group group : getMetaStorage().getAllGroups().toList()) {
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
@@ -390,7 +393,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		// Implementation specific
 	}
 

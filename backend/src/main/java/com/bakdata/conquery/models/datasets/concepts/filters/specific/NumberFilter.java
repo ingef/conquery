@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -8,6 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -22,7 +24,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,11 +46,12 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		final String type = switch (getColumn().getType()) {
+		final MajorTypeId typeId = getColumn().resolve().getType();
+		final String type = switch (typeId) {
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
 			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
-			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
+			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
 		};
 
 		f.setType(type);
@@ -57,14 +59,17 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 
 	@Override
 	public FilterNode<?> createFilterNode(RANGE value) {
-		final IRange<? extends Number, ?> range = readFilterValue(value, getColumn().getType(), config);
-		return switch (getColumn().getType()) {
-			case MONEY -> new MoneyFilterNode(getColumn(), (Range.MoneyRange) range);
-			case INTEGER -> new IntegerFilterNode(getColumn(), (Range.LongRange) range);
-			case DECIMAL -> new DecimalFilterNode(getColumn(), (Range<BigDecimal>) range);
-			case REAL -> new RealFilterNode(getColumn(), (Range.DoubleRange) range);
+		final Column column = getColumn().resolve();
+		final MajorTypeId typeId = column.getType();
+		final IRange<? extends Number, ?> range = readFilterValue(value, typeId, config);
 
-			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
+		return switch (typeId) {
+			case MONEY -> new MoneyFilterNode(column, (Range.MoneyRange) range);
+			case INTEGER -> new IntegerFilterNode(column, (Range.LongRange) range);
+			case DECIMAL -> new DecimalFilterNode(column, (Range<BigDecimal>) range);
+			case REAL -> new RealFilterNode(column, (Range.DoubleRange) range);
+
+			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", column));
 		};
 	}
 

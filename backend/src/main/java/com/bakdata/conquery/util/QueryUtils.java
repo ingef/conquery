@@ -28,13 +28,14 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -75,128 +76,15 @@ public class QueryUtils {
 		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter));
 	}
 
-	/**
-	 * Checks if the query requires to resolve external ids.
-	 *
-	 * @return True if a {@link CQExternal} is found.
-	 */
-	public static class ExternalIdChecker implements QueryVisitor {
-
-		private final List<CQElement> elements = new ArrayList<>();
-
-		@Override
-		public void accept(Visitable element) {
-			if (element instanceof CQExternal) {
-				elements.add((CQElement) element);
-			}
-		}
-
-		public boolean resolvesExternalIds() {
-			return !elements.isEmpty();
-		}
-	}
-
-	/**
-	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
-	 */
-	public static class OnlyReusingChecker implements QueryVisitor {
-
-		private CQReusedQuery reusedQuery = null;
-		private boolean containsOthersElements = false;
-
-		@Override
-		public void accept(Visitable element) {
-			if(containsOthersElements){
-				return;
-			}
-
-			if (element instanceof CQReusedQuery) {
-				// We would have to reason way too much about the sent query so we just reexecute it.
-				containsOthersElements = containsOthersElements || ((CQReusedQuery) element).isExcludeFromSecondaryId();
-
-				if (reusedQuery == null) {
-					reusedQuery = (CQReusedQuery) element;
-				}
-				else {
-					containsOthersElements = true;
-				}
-				return;
-			}
-
-			if (!(element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription)) {
-				containsOthersElements = true;
-			}
-		}
-
-		public Optional<ManagedExecutionId> getOnlyReused() {
-			if (containsOthersElements || reusedQuery == null) {
-				return Optional.empty();
-			}
-
-			return Optional.of(reusedQuery.getQueryId());
-		}
-	}
-
-
-	/**
-	 * Collects all {@link NamespacedIdentifiable} provided by a user from a
-	 * {@link Visitable}.
-	 */
-	public static class NamespacedIdentifiableCollector implements QueryVisitor {
-
-		@Getter
-		private final Set<NamespacedIdentifiable<?>> identifiables = new HashSet<>();
-
-		@Override
-		public void accept(Visitable element) {
-			if (element instanceof NamespacedIdentifiableHolding idHolder) {
-				idHolder.collectNamespacedObjects(identifiables);
-			}
-		}
-	}
-
-	/**
-	 * Collects all {@link NamespacedId} references provided by a user from a
-	 * {@link Visitable}.
-	 */
-	public static class AvailableSecondaryIdCollector implements QueryVisitor {
-
-		@Getter
-		private final Set<SecondaryIdDescription> ids = new HashSet<>();
-
-		@Override
-		public void accept(Visitable element) {
-			if(element instanceof final CQConcept cqConcept){
-
-				// Excluded Concepts are not available
-				if(cqConcept.isExcludeFromSecondaryId()){
-					return;
-				}
-
-				for (Connector connector : cqConcept.getConcept().getConnectors()) {
-					for (Column column : connector.getTable().getColumns()) {
-						if(column.getSecondaryId() == null){
-							continue;
-						}
-
-						ids.add(column.getSecondaryId());
-					}
-				}
-			}
-		}
-	}
-	
 	public static void generateConceptReadPermissions(@NonNull QueryUtils.NamespacedIdentifiableCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
 		idCollector.getIdentifiables().stream()
 				   .filter(id -> id instanceof ConceptElement)
 				   .map(ConceptElement.class::cast)
-				   .map(ConceptElement::getConcept)
+				   .<Concept<?>>map(ConceptElement::getConcept)
 				   .map(cId -> cId.createPermission(Ability.READ.asSet()))
 				   .distinct()
 				   .collect(Collectors.toCollection(() -> collectPermissions));
 	}
-
-
 
 	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> altValidityDateAggregator) {
 		if (ctx.getQueryDateAggregator().isPresent()) {
@@ -271,7 +159,6 @@ public class QueryUtils {
 		return sb.toString();
 	}
 
-
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
 		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
 
@@ -281,5 +168,115 @@ public class QueryUtils {
 
 		// Concat everything with dashes
 		return label.replace(" ", "-");
+	}
+	
+	/**
+	 * Checks if the query requires to resolve external ids.
+	 *
+	 * @return True if a {@link CQExternal} is found.
+	 */
+	public static class ExternalIdChecker implements QueryVisitor {
+
+		private final List<CQElement> elements = new ArrayList<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if (element instanceof CQExternal) {
+				elements.add((CQElement) element);
+			}
+		}
+
+		public boolean resolvesExternalIds() {
+			return !elements.isEmpty();
+		}
+	}
+
+	/**
+	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
+	 */
+	public static class OnlyReusingChecker implements QueryVisitor {
+
+		private CQReusedQuery reusedQuery = null;
+		private boolean containsOthersElements = false;
+
+		@Override
+		public void accept(Visitable element) {
+			if(containsOthersElements){
+				return;
+			}
+
+			if (element instanceof CQReusedQuery) {
+				// We would have to reason way too much about the sent query so we just reexecute it.
+				containsOthersElements = containsOthersElements || ((CQReusedQuery) element).isExcludeFromSecondaryId();
+
+				if (reusedQuery == null) {
+					reusedQuery = (CQReusedQuery) element;
+				}
+				else {
+					containsOthersElements = true;
+				}
+				return;
+			}
+
+			if (!(element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription)) {
+				containsOthersElements = true;
+			}
+		}
+
+		public Optional<ManagedExecutionId> getOnlyReused() {
+			if (containsOthersElements || reusedQuery == null) {
+				return Optional.empty();
+			}
+
+			return Optional.of(reusedQuery.getQueryId());
+		}
+	}
+
+	/**
+	 * Collects all {@link NamespacedIdentifiable} provided by a user from a
+	 * {@link Visitable}.
+	 */
+	public static class NamespacedIdentifiableCollector implements QueryVisitor {
+
+		@Getter
+		private final Set<NamespacedIdentifiable<?>> identifiables = new HashSet<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if (element instanceof NamespacedIdentifiableHolding idHolder) {
+				idHolder.collectNamespacedObjects(identifiables);
+			}
+		}
+	}
+
+	/**
+	 * Collects all {@link NamespacedId} references provided by a user from a
+	 * {@link Visitable}.
+	 */
+	@Getter
+	public static class AvailableSecondaryIdCollector implements QueryVisitor {
+
+		private final Set<SecondaryIdDescriptionId> ids = new HashSet<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if(element instanceof final CQConcept cqConcept){
+
+				// Excluded Concepts are not available
+				if(cqConcept.isExcludeFromSecondaryId()){
+					return;
+				}
+
+				for (Connector connector : cqConcept.getConcept().getConnectors()) {
+					for (Column column : connector.getResolvedTable().getColumns()) {
+						if(column.getSecondaryId() == null){
+							continue;
+						}
+
+						ids.add(column.getSecondaryId());
+					}
+				}
+			}
+		}
 	}
 }

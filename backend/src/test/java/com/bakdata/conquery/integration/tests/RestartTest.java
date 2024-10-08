@@ -47,7 +47,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
-		EntityIdMap entityIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManagerNode();
 		AdminDatasetProcessor adminDatasetProcessor = manager.getAdmin().getAdminDatasetProcessor();
@@ -64,11 +63,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
-		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+		final long numberOfExecutions = conquery.getMetaStorage().getAllExecutions().count();
 		assertThat(numberOfExecutions).isEqualTo(1);
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
+		EntityIdMap entityIdMap = IdMapSerialisationTest.createTestPersistentMap(namespaceStorage);
 
 		namespaceStorage.updateIdMapping(entityIdMap);
 
@@ -79,8 +79,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
 		final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
 		final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
-
-
 
 
 		MetaStorage storage = conquery.getMetaStorage();
@@ -147,9 +145,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		log.info("Restart complete");
 
-		DatasetRegistry<?> datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
+		DatasetRegistry<?> datasetRegistry = support.getDatasetRegistry();
 
-		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		assertThat(support.getMetaStorage().getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
 		assertThat(allQueries).size().isEqualTo(1);

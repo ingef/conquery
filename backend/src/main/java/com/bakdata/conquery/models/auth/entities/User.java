@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,25 +57,23 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = storage.getRole(roleId);
+			Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Iterator<Group> it = getMetaStorage().getAllGroups().iterator(); it.hasNext(); ) {
+			Group group = it.next();
 			if (!group.containsMember(this)) {
 				continue;
 			}
 			permissions = Sets.union(permissions, group.getEffectivePermissions());
 		}
-		return permissions;
-	}
 
-	@Override
-	public UserId createId() {
-		return new UserId(name);
+		return permissions;
 	}
 
 	public synchronized void addRole(Role role) {
@@ -98,10 +97,64 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public void updateStorage() {
-		storage.updateUser(this);
+		getMetaStorage().updateUser(this);
 	}
 
-	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
+	@Override
+	public UserId createId() {
+		UserId userId = new UserId(name);
+		userId.setMetaStorage(getMetaStorage());
+		return userId;
+	}
+
+	/**
+	 * This class is non-static so it's a fixed part of the enclosing User object.
+	 * It's protected for testing purposes only.
+	 */
+	public class ShiroUserAdapter extends FilteredUser {
+
+		@Getter
+		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
+				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
+
+		@Override
+		public Object getPrincipal() {
+			return getId();
+		}		@Override
+		public void checkPermission(Permission permission) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
+		}
+
+		@Override
+		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+		}
+
+		@Override
+		public PrincipalCollection getPrincipals() {
+			return authenticationInfo.get().getPrincipals();
+		}
+
+		@Override
+		public boolean isPermitted(Permission permission) {
+			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
+		}
+
+		@Override
+		public boolean[] isPermitted(List<Permission> permissions) {
+			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
+		}
+
+		@Override
+		public boolean isPermittedAll(Collection<Permission> permissions) {
+			return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
+		}
+
+
+
+
+
+	}	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
 		if (isOwner(object)) {
 			return;
 		}
@@ -139,7 +192,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
+		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
 	}
 
 	@JsonIgnore
@@ -168,52 +221,5 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 
-	/**
-	 * This class is non-static so it's a fixed part of the enclosing User object.
-	 * It's protected for testing purposes only.
-	 */
-	public class ShiroUserAdapter extends FilteredUser {
 
-		@Getter
-		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
-				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
-
-		@Override
-		public void checkPermission(Permission permission) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
-		}
-
-		@Override
-		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
-		}
-
-		@Override
-		public PrincipalCollection getPrincipals() {
-			return authenticationInfo.get().getPrincipals();
-		}
-
-		@Override
-		public boolean isPermitted(Permission permission) {
-			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
-		}
-
-		@Override
-		public boolean[] isPermitted(List<Permission> permissions) {
-			return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
-		}
-
-		@Override
-		public boolean isPermittedAll(Collection<Permission> permissions) {
-			return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
-		}
-
-
-		@Override
-		public Object getPrincipal() {
-			return getId();
-		}
-
-
-	}
 }

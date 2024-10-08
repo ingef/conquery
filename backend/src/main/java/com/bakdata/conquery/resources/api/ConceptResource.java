@@ -4,14 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.bakdata.conquery.apiv1.frontend.FrontendList;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +17,14 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.EntityTag;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;

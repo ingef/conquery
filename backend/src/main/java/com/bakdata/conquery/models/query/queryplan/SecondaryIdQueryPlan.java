@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -55,11 +56,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final Set<Table> tablesWithoutSecondaryId;
 
 	private final ConceptQueryPlan queryPlan;
-
-
-	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
-
-
 	/**
 	 * TODO borrow these from {@link QueryExecutionContext}
 	 *
@@ -67,8 +63,20 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	@Getter(AccessLevel.NONE)
 	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
-
 	private final int subPlanRetentionLimit;
+	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
+
+	@Override
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		queryPlan.init(ctx, entity);
+
+		// Dump the created children into reuse-pool
+		childPlanReusePool.clear();
+
+		childPerKey.values().stream().limit(subPlanRetentionLimit).forEach(childPlanReusePool::add);
+
+		childPerKey = new HashMap<>();
+	}
 
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
@@ -107,9 +115,11 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		nextTable(ctxWithPhase, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+		final List<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
 
-		for (Bucket bucket : tableBuckets) {
+		for (BucketId bucketId : tableBuckets) {
+			Bucket bucket = bucketId.resolve();
+
 			String entityId = entity.getId();
 
 			nextBlock(bucket);
@@ -154,17 +164,14 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 	}
 
-	private boolean discardSubPlan(ConceptQueryPlan plan) {
-		return childPlanReusePool.add(plan);
-	}
-
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
 
 		nextTable(ctx, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+		final List<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
 
-		for (Bucket bucket : tableBuckets) {
+		for (BucketId bucketId : tableBuckets) {
+			Bucket bucket = bucketId.resolve();
 			String entityId = entity.getId();
 			nextBlock(bucket);
 			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
@@ -242,23 +249,15 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
 
 		plan.init(context, queryPlan.getEntity());
-		plan.nextTable(context, currentBucket.getTable());
+		plan.nextTable(context, currentBucket.getTable().resolve());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 
 		return plan;
 	}
 
-	@Override
-	public void init(QueryExecutionContext ctx, Entity entity) {
-		queryPlan.init(ctx, entity);
-
-		// Dump the created children into reuse-pool
-		childPlanReusePool.clear();
-
-		childPerKey.values().stream().limit(subPlanRetentionLimit).forEach(childPlanReusePool::add);
-
-		childPerKey = new HashMap<>();
+	private boolean discardSubPlan(ConceptQueryPlan plan) {
+		return childPlanReusePool.add(plan);
 	}
 
 	@Override
