@@ -13,9 +13,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -51,6 +48,9 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -162,7 +162,7 @@ public class TableExportQuery extends Query {
 							   .filter(Objects::nonNull)
 							   .collect(Collectors.toSet());
 
-		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, validityDates);
 
 
 	}
@@ -189,7 +189,6 @@ public class TableExportQuery extends Query {
 			AtomicInteger currentPosition,
 			List<CQConcept> tables,
 			Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions,
-			Collection<ColumnId> conceptColumns,
 			Collection<ValidityDate> validityDates
 	) {
 		final Map<ColumnId, Integer> positions = new HashMap<>();
@@ -206,18 +205,17 @@ public class TableExportQuery extends Query {
 						continue;
 					}
 
-					final ColumnId columnId = column.getId();
-					if (positions.containsKey(columnId)) {
+					final ColumnId id = column.getId();
+					if (positions.containsKey(id)) {
 						continue;
 					}
 
-					// We want to have ConceptColumns separate here.
-					if (column.getSecondaryId() != null && !conceptColumns.contains(column.getId())) {
-						positions.putIfAbsent(columnId, secondaryIdPositions.get(column.getSecondaryId()));
+					if (column.getSecondaryId() != null) {
+						positions.putIfAbsent(id, secondaryIdPositions.get(column.getSecondaryId()));
 						continue;
 					}
 
-					positions.put(columnId, currentPosition.getAndIncrement());
+					positions.put(id, currentPosition.getAndIncrement());
 				}
 			}
 		}
