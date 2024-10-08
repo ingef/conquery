@@ -2,8 +2,6 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
@@ -26,7 +24,6 @@ public class SelectContext<T extends SqlTables> implements Context {
 	ConversionContext conversionContext;
 
 	public static SelectContext<ConnectorSqlTables> create(
-			CQTable cqTable,
 			SqlIdColumns ids,
 			Optional<ColumnDateRange> validityDate,
 			ConnectorSqlTables tables,
@@ -36,7 +33,6 @@ public class SelectContext<T extends SqlTables> implements Context {
 	}
 
 	public static SelectContext<ConceptSqlTables> create(
-			CQConcept cqConcept,
 			SqlIdColumns ids,
 			Optional<ColumnDateRange> validityDate,
 			ConceptSqlTables tables,

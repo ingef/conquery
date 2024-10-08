@@ -1,6 +1,10 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;

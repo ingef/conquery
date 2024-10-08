@@ -7,19 +7,16 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -126,11 +123,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 										.orElse(connector.getTable().getName());
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tableName));
-
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(connector.getTable(), selectContext.getConversionContext().getConfig());
-		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, connectorTable.getName()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
-		SqlIdColumns ids = new SqlIdColumns(qualifiedPrimaryColumn);
-
+		SqlIdColumns ids = selectContext.getIds().qualify(connectorTable.getName());
 		Field<Object> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().getName()));
 		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);

@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -97,7 +98,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> validityDate = predecessorSelects.getValidityDate();
 		SqlIdColumns ids = predecessorSelects.getIds();
 
-		SelectContext<ConceptSqlTables> selectContext = SelectContext.create(cqConcept, ids, validityDate, universalTables, context);
+		SelectContext<ConceptSqlTables> selectContext = SelectContext.create(ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
 													 .map(select -> select.createConverter().conceptSelect(select, selectContext))
 													 .toList();
@@ -151,7 +152,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		getDateRestriction(conversionContext, tablesValidityDate).ifPresent(allSqlFiltersForTable::add);
 
 		// convert selects
-		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(cqTable, ids, tablesValidityDate, connectorTables, conversionContext);
+		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(ids, tablesValidityDate, connectorTables, conversionContext);
 		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
@@ -167,29 +168,30 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 							 .build();
 	}
 
-	private static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
+	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), conversionContext.getConfig());
+		Table table = cqTable.getConnector().getTable();
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
 			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
 		) {
-			return new SqlIdColumns(primaryColumn);
+			return new SqlIdColumns(primaryColumn).withAlias();
 		}
 
-		Column secondaryIdColumn = cqTable.getConnector().getTable().findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
+		Column secondaryIdColumn = table.findSecondaryIdColumn(conversionContext.getSecondaryIdDescription());
 
 		Preconditions.checkArgument(
 				secondaryIdColumn != null,
 				"Expecting Table %s to have a matching secondary id for %s".formatted(
-						cqTable.getConnector().getTable(),
+						table,
 						conversionContext.getSecondaryIdDescription()
 				)
 		);
 
-		Field<Object> secondaryId = DSL.field(DSL.name(secondaryIdColumn.getName()));
-		return new SqlIdColumns(primaryColumn, secondaryId);
+		Field<Object> secondaryId = DSL.field(DSL.name(table.getName(), secondaryIdColumn.getName()));
+		return new SqlIdColumns(primaryColumn, secondaryId).withAlias();
 	}
 
 	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
