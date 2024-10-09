@@ -40,6 +40,12 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor
 public class TableExportQueryConverter implements NodeConverter<TableExportQuery> {
 
+	/**
+	 * Validity date is part of positions, but not when converting to SQL because it might have multiple columns and not just one.
+	 * Thus, we need to apply an offset to the positions.
+	 */
+	private static final int POSITION_OFFSET = 1;
+
 	private final QueryStepTransformer queryStepTransformer;
 
 	@Override
@@ -57,12 +63,13 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 																.stream()
 																.flatMap(concept -> concept.getTables()
 																						   .stream()
-																						   .map(table -> convertTable(table,
-																													  concept,
-																													  dateRestriction,
-																													  convertedPrerequisite,
-																													  tableExportQuery.getPositions(),
-																													  context
+																						   .map(table -> convertTable(
+																								   table,
+																								   concept,
+																								   dateRestriction,
+																								   convertedPrerequisite,
+																								   tableExportQuery.getPositions(),
+																								   context
 																						   )))
 																.toList();
 
@@ -104,7 +111,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 		final Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().getTable(), context.getConfig());
 		final SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-		final String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings().getLocale());
+		final String
+				conceptConnectorName =
+				context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector(), context.getSqlPrintSettings().getLocale());
 		final Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
 		final List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
@@ -136,7 +145,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			if (!positions.containsKey(column.getId())) {
 				continue;
 			}
-			final int position = positions.get(column.getId()) - 1;
+			final int position = positions.get(column.getId()) - POSITION_OFFSET;
 			exportColumns[position] = createColumnSelect(column, position);
 		}
 
@@ -144,8 +153,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Table<Record> joinConnectorTableWithPrerequisite(
-			CQTable cqTable, SqlIdColumns ids, QueryStep convertedPrerequisite, CDateRange dateRestriction, ConversionContext context) {
-
+			CQTable cqTable,
+			SqlIdColumns ids,
+			QueryStep convertedPrerequisite,
+			CDateRange dateRestriction,
+			ConversionContext context
+	) {
 		final SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().getTable().getName()));
 		final Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
@@ -162,7 +175,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
 
-		final Field<?>[] exportColumns = new Field[TableExportQuery.calculateWidth(positions)];
+		final Field<?>[] exportColumns = new Field[TableExportQuery.calculateWidth(positions) - POSITION_OFFSET];
 		exportColumns[0] = createSourceInfoSelect(cqTable);
 
 		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
@@ -170,7 +183,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			final ColumnId column = entry.getKey();
 			final int position = entry.getValue();
 
-			final int shifted = position - 1;
+			final int shifted = position - POSITION_OFFSET;
 			final Field<?> columnSelect = DSL.inline(null, Object.class).as("%s-%d".formatted(column.getColumn(), shifted));
 
 			exportColumns[shifted] = columnSelect;
