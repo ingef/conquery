@@ -274,7 +274,7 @@
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
       "invalidDateRange": "End date is smaller than start date",
-      "validSelectRequired": "Valid select required"
+      "validSelectRequired": "Valid selects required for these concepts"
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",
