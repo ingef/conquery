@@ -61,8 +61,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<? extends EntityResult> result = subPlan.execute(ctx, entity);
 
-		final Optional<? extends EntityResult> result = subPlan.execute(ctx, entity);
 
 		if (result.isEmpty() || tables.isEmpty()) {
 			return Optional.empty();
