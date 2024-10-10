@@ -55,12 +55,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	@Override
 	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
 
-		QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
-		Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
-		CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
+		final QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
+		final Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
+		final CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
 
-		List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
-														  .flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
+		final List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
+																.flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
 																  table,
 																  concept,
 																  dateRestriction,
@@ -68,14 +68,14 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 																  positions,
 																  context
 														  )))
-														  .toList();
+																.toList();
 
-		QueryStep unionedTables = QueryStep.createUnionAllStep(
+		final QueryStep unionedTables = QueryStep.createUnionAllStep(
 				convertedTables,
 				null, // no CTE name required as this step will be the final select
 				List.of(convertedPrerequisite)
 		);
-		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}
@@ -85,14 +85,14 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	 */
 	private static QueryStep convertPrerequisite(TableExportQuery exportQuery, ConversionContext context) {
 
-		ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(exportQuery.getQuery(), context);
+		final ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(exportQuery.getQuery(), context);
 		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
-		QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
+		final QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
 
-		Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
-		Selects selects = Selects.builder()
-								 .ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
-								 .build();
+		final Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
+		final Selects selects = Selects.builder()
+									   .ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
+									   .build();
 
 		return QueryStep.builder()
 						.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
@@ -115,20 +115,21 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			Map<ColumnId, Integer> positions,
 			ConversionContext context
 	) {
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(), context.getConfig());
-		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
-    	String conceptConnectorName = context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve(), context.getSqlPrintSettings().getLocale());
-		Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
+		final Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(), context.getConfig());
+		final SqlIdColumns ids = new SqlIdColumns(primaryColumn);
+		final String conceptConnectorName =
+				context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve(), context.getSqlPrintSettings().getLocale());
+		final Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
-		List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .validityDate(validityDate)
-								 .sqlSelects(exportColumns)
-								 .build();
+		final List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
+		final Selects selects = Selects.builder()
+									   .ids(ids)
+									   .validityDate(validityDate)
+									   .sqlSelects(exportColumns)
+									   .build();
 
-		List<Condition> filters = cqTable.getFilters().stream().map(filterValue -> filterValue.convertForTableExport(ids, context)).toList();
-		Table<Record> joinedTable = joinConnectorTableWithPrerequisite(cqTable, ids, convertedPrerequisite, dateRestriction, context);
+		final List<Condition> filters = cqTable.getFilters().stream().map(filterValue -> filterValue.convertForTableExport(ids, context)).toList();
+		final Table<Record> joinedTable = joinConnectorTableWithPrerequisite(cqTable, ids, convertedPrerequisite, dateRestriction, context);
 
 		return QueryStep.builder()
 						.cteName(conceptConnectorName)
@@ -142,52 +143,27 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		if (table.findValidityDate() == null) {
 			return Optional.of(ColumnDateRange.empty());
 		}
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
+		final SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
 		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
-		Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
+		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
 
-		Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
+		final Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
+
 		for (Column column : cqTable.getConnector().resolve().getResolvedTable().getColumns()) {
 			// e.g. date column(s) are handled separately and not part of positions
 			if (!positions.containsKey(column.getId())) {
 				continue;
 			}
-			int position = positions.get(column.getId()) - POSITION_OFFSET;
+			final int position = positions.get(column.getId()) - POSITION_OFFSET;
 			exportColumns[position] = createColumnSelect(column, position);
 		}
 
 		return Arrays.stream(exportColumns).map(FieldWrapper::new).collect(Collectors.toList());
-	}
-
-	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
-
-		final int size = TableExportQuery.calculateWidth(positions);
-		final Field<?>[] exportColumns = new Field[size];
-		exportColumns[0] = createSourceInfoSelect(cqTable);
-
-		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
-		for (int index = 0; index < size; index++) {
-			final Field<?> columnSelect = DSL.inline(null, Object.class).as("null-%d".formatted(index));
-			exportColumns[index] = columnSelect;
-		}
-
-		return exportColumns;
-	}
-
-	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		String tableName = cqTable.getConnector().resolve().getResolvedTableId().getTable();
-		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
-	}
-
-	private static Field<?> createColumnSelect(Column column, int position) {
-		String columnName = "%s-%s".formatted(column.getName(), position);
-		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
-				  .as(columnName);
 	}
 
 	private static Table<Record> joinConnectorTableWithPrerequisite(
@@ -197,17 +173,43 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			CDateRange dateRestriction,
 			ConversionContext context
 	) {
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getResolvedTableId().getTable()));
-		Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
+		final SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getResolvedTableId().getTable()));
+		final Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
 
-		ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
-		List<Condition> joinConditions = Stream.concat(
+		final ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
+		final List<Condition> joinConditions = Stream.concat(
 				ids.join(convertedPrerequisite.getQualifiedSelects().getIds()).stream(),
 				Stream.of(functionProvider.dateRestriction(functionProvider.forCDateRange(dateRestriction), validityDate))
 		).toList();
 
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);
+	}
+
+	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
+
+		final int size = TableExportQuery.calculateWidth(positions) - POSITION_OFFSET;
+		final Field<?>[] exportColumns = new Field[size];
+		exportColumns[0] = createSourceInfoSelect(cqTable);
+
+		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
+		for (int index = 0; index < exportColumns.length; index++) {
+			final Field<?> columnSelect = DSL.inline(null, Object.class).as("null-%d".formatted(index));
+			exportColumns[index] = columnSelect;
+		}
+
+		return exportColumns;
+	}
+
+	private static Field<?> createColumnSelect(Column column, int position) {
+		final String columnName = "%s-%s".formatted(column.getName(), position);
+		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
+				  .as(columnName);
+	}
+
+	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
+		final String tableName = cqTable.getConnector().resolve().getResolvedTableId().getTable();
+		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
 }
