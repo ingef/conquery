@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -69,7 +70,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		final List<Object[]> results = new ArrayList<>();
 
-		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
+		final int totalColumns = TableExportQuery.calculateWidth(positions);
 		final String entityId = entity.getId();
 
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
