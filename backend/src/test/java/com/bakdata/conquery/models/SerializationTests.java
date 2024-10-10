@@ -249,7 +249,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), 4,imp.getId(), new ColumnStore[]{startStore, endStore, compoundStore});
+		Bucket bucket =
+				new Bucket(0, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), 4, imp.getId(), new ColumnStore[]{startStore, endStore, compoundStore});
 
 		compoundStore.setParent(bucket);
 
@@ -572,7 +573,9 @@ public class SerializationTests extends AbstractSerializationTest {
 																				  .userName(user.getLabel())
 																				  .hideLogoutButton(false)
 																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true, true, true)))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"),
+																										   new MeProcessor.FrontendDatasetAbility(true, true, true)
+																				  ))
 																				  .build();
 
 		SerializationTestUtil
@@ -668,8 +671,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		workerStorage.addBucket(bucket);
 
-		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
-
+		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), 0, Collections.emptyMap(), Collections.emptyMap(), new int[0][]);
 
 		SerializationTestUtil.forType(CBlock.class)
 							 .objectMappers(getShardInternalMapper())
