@@ -167,15 +167,14 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
 
 		final int size = TableExportQuery.calculateWidth(positions);
-		Field<?>[] exportColumns = new Field[size];
+		final Field<?>[] exportColumns = new Field[size];
 		exportColumns[0] = createSourceInfoSelect(cqTable);
 
 		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
-		positions.forEach((column, position) -> {
-			int shifted = position - 1;
-			Field<?> columnSelect = DSL.inline(null, Object.class).as("%s-%d".formatted(column.getColumn(), shifted));
-			exportColumns[shifted] = columnSelect;
-		});
+		for (int index = 0; index < size; index++) {
+			final Field<?> columnSelect = DSL.inline(null, Object.class).as("null-%d".formatted(index));
+			exportColumns[index] = columnSelect;
+		}
 
 		return exportColumns;
 	}
