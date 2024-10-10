@@ -61,13 +61,13 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 		final List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
 																.flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
-																  table,
-																  concept,
-																  dateRestriction,
-																  convertedPrerequisite,
-																  positions,
-																  context
-														  )))
+																		table,
+																		concept,
+																		dateRestriction,
+																		convertedPrerequisite,
+																		positions,
+																		context
+																)))
 																.toList();
 
 		final QueryStep unionedTables = QueryStep.createUnionAllStep(
@@ -122,6 +122,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
 
 		final List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
+
 		final Selects selects = Selects.builder()
 									   .ids(ids)
 									   .validityDate(validityDate)
@@ -152,7 +153,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
 
-		final Field<?>[] exportColumns = createPlaceholders(positions, cqTable);
+		final Field<?>[] exportColumns = createPlaceholders(positions);
+
+		exportColumns[0] = createSourceInfoSelect(cqTable);
 
 		for (Column column : cqTable.getConnector().resolve().getResolvedTable().getColumns()) {
 			// e.g. date column(s) are handled separately and not part of positions
@@ -186,11 +189,10 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);
 	}
 
-	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions, CQTable cqTable) {
+	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions) {
 
 		final int size = TableExportQuery.calculateWidth(positions) - POSITION_OFFSET;
 		final Field<?>[] exportColumns = new Field[size];
-		exportColumns[0] = createSourceInfoSelect(cqTable);
 
 		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
 		for (int index = 0; index < exportColumns.length; index++) {
@@ -201,15 +203,15 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return exportColumns;
 	}
 
+	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
+		final String tableName = cqTable.getConnector().resolve().getResolvedTableId().getTable();
+		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
+	}
+
 	private static Field<?> createColumnSelect(Column column, int position) {
 		final String columnName = "%s-%s".formatted(column.getName(), position);
 		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
 				  .as(columnName);
-	}
-
-	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		final String tableName = cqTable.getConnector().resolve().getResolvedTableId().getTable();
-		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
 }
