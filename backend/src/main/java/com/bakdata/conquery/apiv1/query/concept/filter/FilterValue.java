@@ -10,6 +10,8 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
+import com.bakdata.conquery.models.common.Range.MoneyRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -19,7 +21,11 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +34,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.jooq.Condition;
 
-@Getter
 @Setter
+@Getter
 @RequiredArgsConstructor
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -44,19 +50,22 @@ public abstract class FilterValue<VALUE> {
 
 	@NotNull
 	@Nonnull
-	private VALUE value;
-
+	private Object value;
 
 	public void resolve(QueryResolveContext context) {
 	}
 
 	public FilterNode<?> createNode() {
 		final Filter<VALUE> resolve = (Filter<VALUE>) getFilter().resolve();
-		return resolve.createFilterNode(getValue());
+		return resolve.createFilterNode(readValue());
+	}
+
+	public VALUE readValue() {
+		return ((VALUE) value);
 	}
 
 	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
-		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, value, context, tables);
+		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
 		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
 		if (context.isNegation()) {
@@ -66,7 +75,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
-		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, value, context);
+		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, readValue(), context);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
 		return resolve.createConverter().convertForTableExport(resolve, filterContext);
 	}
@@ -74,6 +83,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
+		@JsonCreator
 		public CQMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
@@ -81,14 +91,16 @@ public abstract class FilterValue<VALUE> {
 		@Override
 		public String toString() {
 			final String valueString;
-			if (getValue().size() > 20) {
-				valueString = getValue().size() + " values";
+			final int size = readValue().size();
+
+			if (size > 20) {
+				valueString = size + " values";
 			}
 			else {
-				valueString = getValue().toString();
+				valueString = readValue().toString();
 			}
 
-			return "%s(value=%s)".formatted(FrontendFilterType.Fields.BIG_MULTI_SELECT, valueString);
+			return "%s(value=%s)".formatted(FrontendFilterType.Fields.MULTI_SELECT, valueString);
 		}
 
 	}
@@ -96,6 +108,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
+
+		@JsonCreator
 		public CQBigMultiSelectFilter(FilterId filter, Set<String> value) {
 			super(filter, value);
 		}
@@ -103,11 +117,13 @@ public abstract class FilterValue<VALUE> {
 		@Override
 		public String toString() {
 			final String valueString;
-			if (getValue().size() > 20) {
-				valueString = getValue().size() + " values";
+			final int size = readValue().size();
+
+			if (size > 20) {
+				valueString = size + " values";
 			}
 			else {
-				valueString = getValue().toString();
+				valueString = readValue().toString();
 			}
 
 			return "%s(value=%s)".formatted(FrontendFilterType.Fields.BIG_MULTI_SELECT, valueString);
@@ -118,6 +134,7 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQSelectFilter extends FilterValue<String> {
+		@JsonCreator
 		public CQSelectFilter(FilterId filter, String value) {
 			super(filter, value);
 		}
@@ -127,6 +144,7 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.STRING, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQStringFilter extends FilterValue<String> {
+		@JsonCreator
 		public CQStringFilter(FilterId filter, String value) {
 			super(filter, value);
 		}
@@ -136,6 +154,7 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.INTEGER, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerFilter extends FilterValue<Long> {
+		@JsonCreator
 		public CQIntegerFilter(FilterId filter, Long value) {
 			super(filter, value);
 		}
@@ -145,6 +164,7 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
+		@JsonCreator
 		public CQIntegerRangeFilter(FilterId filter, LongRange value) {
 			super(filter, value);
 		}
@@ -157,9 +177,22 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
+	public static class CQMoneyRangeFilter extends FilterValue<MoneyRange> {
+
+		@JsonIgnore
+		@JacksonInject(useInput = OptBoolean.FALSE)
+		@NotNull
+		@EqualsAndHashCode.Exclude
+		private ConqueryConfig config;
+
+		@JsonCreator
 		public CQMoneyRangeFilter(FilterId filter, LongRange value) {
 			super(filter, value);
+		}
+
+		@Override
+		public MoneyRange readValue() {
+			return MoneyRange.fromNumberRange((LongRange) getValue(), config.getFrontend().getCurrency());
 		}
 	}
 
@@ -167,7 +200,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.REAL, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQRealFilter extends FilterValue<BigDecimal> {
+	public static class CQRealFilter extends FilterValue<Double> {
+		@JsonCreator
 		public CQRealFilter(FilterId filter, BigDecimal value) {
 			super(filter, value);
 		}
@@ -177,8 +211,10 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FrontendFilterType.Fields.REAL_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
+		@JsonCreator
 		public CQRealRangeFilter(FilterId filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
+
 	}
 }
