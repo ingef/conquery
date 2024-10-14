@@ -7,9 +7,9 @@ import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
 
+import { useTheme } from "@emotion/react";
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
-import { useTheme } from "@emotion/react";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.bg};
@@ -82,9 +82,11 @@ const Header = () => {
   return (
     <Root>
       <OverflowHidden>
-        <Logo style={{
-          backgroundImage: `url(${logo})`
-        }} />
+        <Logo
+          style={{
+            backgroundImage: `url(${logo})`,
+          }}
+        />
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
