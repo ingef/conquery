@@ -35,16 +35,20 @@ const sumMatchingEntries = (children: string[], initSum: number) => {
 export const getNonFolderChildren = (
   trees: TreesT,
   node: LoadedConcept,
+  conceptId: ConceptIdT,
 ): string[] => {
-  if (node.detailsAvailable) return node.children || [];
+  if (node.detailsAvailable) return [conceptId, ...(node.children || [])];
 
-  if (!node.children) return [];
+  if (!node.children) return [conceptId];
 
   // collect all non-folder children, recursively
-  return node.children.reduce<ConceptIdT[]>((acc, childId) => {
-    const child = trees[childId];
-    return acc.concat(getNonFolderChildren(trees, child));
-  }, []);
+  return node.children.reduce<ConceptIdT[]>(
+    (acc, childId) => {
+      const child = trees[childId];
+      return acc.concat(getNonFolderChildren(trees, child, childId));
+    },
+    [conceptId],
+  );
 };
 
 const ConceptTreeFolder = ({
@@ -73,8 +77,10 @@ const ConceptTreeFolder = ({
 
   const nonFolderChildren = useMemo(
     () =>
-      tree.detailsAvailable ? tree.children : getNonFolderChildren(trees, tree),
-    [trees, tree],
+      tree.detailsAvailable
+        ? tree.children
+        : getNonFolderChildren(trees, tree, conceptId),
+    [trees, tree, conceptId],
   );
 
   if (
