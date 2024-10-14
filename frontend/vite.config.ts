@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     sourcemap: true,
     minify: "terser",
+    assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
   plugins: [
