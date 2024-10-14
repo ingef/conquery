@@ -62,8 +62,10 @@ context("Simplest Smoke Tests", () => {
           .find('a')
           .contains('table')
           .click()
-          
-          cy.root().should('not.contain.text', 'FreeMarker template error')
+
+        cy.get('[data-test-id="accordion-Columns"]').click()
+
+        cy.root().should('not.contain.text', 'FreeMarker template error')
 
 
       });
