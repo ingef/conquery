@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -10,6 +9,7 @@ import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
+import { useTheme } from "@emotion/react";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.bg};
@@ -51,7 +51,6 @@ const Spacer = styled("span")`
 const Logo = styled("div")`
   height: 40px;
   width: ${({ theme }) => theme.img.logoWidth};
-  background-image: url(${({ theme }) => theme.img.logo});
   background-repeat: no-repeat;
   background-position-y: 50%;
   background-size: ${({ theme }) => theme.img.logoBackgroundSize};
@@ -68,7 +67,7 @@ const Headline = styled("h1")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const Header: FC = () => {
+const Header = () => {
   const { t } = useTranslation();
   const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
   const hideLogoutButton = useHideLogoutButton();
@@ -77,10 +76,15 @@ const Header: FC = () => {
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
+  const theme = useTheme();
+  const logo = theme.img.logo;
+
   return (
     <Root>
       <OverflowHidden>
-        <Logo />
+        <Logo style={{
+          backgroundImage: `url(${logo})`
+        }} />
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
