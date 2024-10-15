@@ -26,26 +26,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import org.jooq.Condition;
 
-@Setter
-@Getter
-@RequiredArgsConstructor
-@NoArgsConstructor
+/**
+ * @implNote The {@link JsonCreator} annos are necessary. Otherwise, Jackson will deserilaize all values as generic objects.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@EqualsAndHashCode
-@ToString(of = "value")
+@Data
+@AllArgsConstructor
 public abstract class FilterValue<VALUE> {
 
 	@NotNull
 	@Nonnull
+	@ToString.Exclude
 	private FilterId filter;
 
 	@NotNull
@@ -80,7 +78,6 @@ public abstract class FilterValue<VALUE> {
 		return resolve.createConverter().convertForTableExport(resolve, filterContext);
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
 		@JsonCreator
@@ -105,7 +102,6 @@ public abstract class FilterValue<VALUE> {
 
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
 
@@ -130,7 +126,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQSelectFilter extends FilterValue<String> {
@@ -140,7 +135,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.STRING, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQStringFilter extends FilterValue<String> {
@@ -150,7 +144,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.INTEGER, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerFilter extends FilterValue<Long> {
@@ -160,7 +153,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
@@ -174,7 +166,6 @@ public abstract class FilterValue<VALUE> {
 	 * @implNote Is basically the same as INTEGER_RANGE, but when a deserialized MONEY_RANGE was serialized again
 	 * it became an INTEGER_RANGE, which is handled differently by the frontend.
 	 */
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMoneyRangeFilter extends FilterValue<MoneyRange> {
@@ -197,7 +188,6 @@ public abstract class FilterValue<VALUE> {
 	}
 
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.REAL, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealFilter extends FilterValue<Double> {
@@ -207,7 +197,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FrontendFilterType.Fields.REAL_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
