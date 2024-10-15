@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
@@ -202,19 +201,20 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	private static int[][] calculateSpecificChildrenPathsWithoutColumn(Bucket bucket, Connector connector) {
 
-		final Concept<?> treeConcept = connector.getConcept();
-		final CTCondition connectorCondition = connector.getCondition();
-
 		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 
 		// All elements resolve to the root, unless they are filtered out by the condition.
-		Arrays.fill(mostSpecificChildren, treeConcept.getPrefix());
+		Arrays.fill(mostSpecificChildren, connector.getConcept().getPrefix());
+
+		if (connector.getCondition() == null) {
+			return mostSpecificChildren;
+		}
 
 		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
 
-		if (connectorCondition == null) {
-			return mostSpecificChildren;
-		}
+		// Since the connector has no column, there is no real columnValue.
+		// All downstream code assumes the presence of a column value, so we just pass an empty string to avoid exceptions.
+		final String columnValue = "";
 
 		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 			try {
@@ -225,7 +225,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int _event = event;
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
 
-				if (connectorCondition.matches("", rowMap)) {
+				if (connector.getCondition().matches(columnValue, rowMap)) {
 					// by default initialized to the only element, the root.
 					continue;
 				}
@@ -233,7 +233,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				mostSpecificChildren[event] = Connector.NOT_CONTAINED;
 			}
 			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
+				log.error("Failed to evaluate event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
 			}
 		}
 
@@ -248,17 +248,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final Column column = connector.getColumn().resolve();
 
-		final TreeConcept treeConcept = connector.getConcept();
-		treeConcept.initializeIdCache(bucket.getImp());
+		connector.getConcept().initializeIdCache(bucket.getImp());
 
-		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
-
-		final CTCondition connectorCondition = connector.getCondition();
+		final ConceptTreeCache cache = connector.getConcept().getCache(bucket.getImp());
+		final int[] rootPrefix = connector.getConcept().getPrefix();
 
 		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
 
 		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
+
 
 		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 			try {
@@ -267,7 +266,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				final String stringValue = bucket.getString(event, column);
+				final String columnValue = bucket.getString(event, column);
 
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				// Lazy evaluation of map to avoid allocations if possible.
@@ -275,22 +274,22 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int _event = event;
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
 
-				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
+				if (connector.getCondition() != null && !connector.getCondition().matches(columnValue, rowMap)) {
 					continue;
 				}
 
-				final ConceptTreeChild child = cache.findMostSpecificChild(stringValue, rowMap);
+				final ConceptTreeChild child = cache.findMostSpecificChild(columnValue, rowMap);
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
+					mostSpecificChildren[event] = rootPrefix;
 					continue;
 				}
 
 				mostSpecificChildren[event] = child.getPrefix();
 			}
 			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
+				log.error("Failed to resolve event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
 			}
 		}
 

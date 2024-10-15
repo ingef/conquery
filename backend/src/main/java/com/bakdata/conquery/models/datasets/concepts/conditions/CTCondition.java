@@ -17,9 +17,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface CTCondition {
 
-	public default void init(ConceptTreeNode node) throws ConceptConfigurationException {}
+	default void init(ConceptTreeNode node) throws ConceptConfigurationException {}
 	
-	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
+	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
