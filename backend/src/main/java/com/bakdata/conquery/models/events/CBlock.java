@@ -89,10 +89,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
-	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
+	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, BucketManager bucketManager) {
+		final int bucketSize = bucketManager.getEntityBucketSize();
 		final int root = bucket.getBucket() * bucketSize;
 
-		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
+		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
@@ -105,12 +106,12 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
-	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector) {
+	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
 		if (connector.getColumn() == null) {
 			return calculateSpecificChildrenPathsWithoutColumn(bucket, connector);
 		}
 
-		return calculateSpecificChildrenPathsWithColumn(bucket, connector);
+		return calculateSpecificChildrenPathsWithColumn(bucket, connector, bucketManager);
 	}
 
 	/**
@@ -244,13 +245,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
-	private static int[][] calculateSpecificChildrenPathsWithColumn(Bucket bucket, ConceptTreeConnector connector) {
+	private static int[][] calculateSpecificChildrenPathsWithColumn(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
 
 		final Column column = connector.getColumn().resolve();
 
-		connector.getConcept().initializeIdCache(bucket.getImp());
-
-		final ConceptTreeCache cache = connector.getConcept().getCache(bucket.getImp());
+		final ConceptTreeCache cache = bucketManager.getConceptTreeCache(connector.getConcept(), bucket.getImp());
 		final int[] rootPrefix = connector.getConcept().getPrefix();
 
 		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();

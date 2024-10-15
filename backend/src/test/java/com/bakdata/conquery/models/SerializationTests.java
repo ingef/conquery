@@ -687,8 +687,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		workerStorage.addBucket(bucket);
 
-		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
-
+		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), 0, Collections.emptyMap(), Collections.emptyMap(), new int[0][]);
 
 		SerializationTestUtil.forType(CBlock.class)
 							 .objectMappers(getShardInternalMapper())
