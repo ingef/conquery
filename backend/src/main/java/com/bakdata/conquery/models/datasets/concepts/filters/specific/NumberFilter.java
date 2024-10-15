@@ -61,28 +61,13 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	public FilterNode<?> createFilterNode(RANGE value) {
 		final Column column = getColumn().resolve();
 		final MajorTypeId typeId = column.getType();
-		final IRange<? extends Number, ?> range = readFilterValue(value, typeId, config);
 
 		return switch (typeId) {
-			case MONEY -> new MoneyFilterNode(column, (Range.MoneyRange) range);
-			case INTEGER -> new IntegerFilterNode(column, (Range.LongRange) range);
-			case DECIMAL -> new DecimalFilterNode(column, (Range<BigDecimal>) range);
-			case REAL -> new RealFilterNode(column, (Range.DoubleRange) range);
-
+			case MONEY -> new MoneyFilterNode(column, (Range.MoneyRange) value);
+			case INTEGER -> new IntegerFilterNode(column, (Range.LongRange) value);
+			case DECIMAL -> new DecimalFilterNode(column, (Range<BigDecimal>) value);
+			case REAL -> new RealFilterNode(column, Range.DoubleRange.fromNumberRange(value));
 			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", column));
-		};
-	}
-
-	/**
-	 * This method only exists because we messed up and never implemented a DECIMAL_RANGE, otherwise it could be embedded in the FilterValues themselves.
-	 */
-	public static IRange<? extends Number, ?> readFilterValue(IRange<? extends Number, ?> value, @NotNull MajorTypeId type, @NotNull ConqueryConfig config) {
-		return switch (type) {
-			case MONEY -> Range.MoneyRange.fromNumberRange(value, config.getFrontend().getCurrency());
-			case INTEGER -> (Range.LongRange) value;
-			case DECIMAL -> ((Range<BigDecimal>) value);
-			case REAL -> Range.DoubleRange.fromNumberRange(value);
-			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", type));
 		};
 	}
 
