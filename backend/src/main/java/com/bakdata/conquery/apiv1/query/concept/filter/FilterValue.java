@@ -29,7 +29,9 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import lombok.ToString;
+import org.jetbrains.annotations.TestOnly;
 import org.jooq.Condition;
 
 /**
@@ -174,6 +176,7 @@ public abstract class FilterValue<VALUE> {
 		@JacksonInject(useInput = OptBoolean.FALSE)
 		@NotNull
 		@EqualsAndHashCode.Exclude
+		@Setter(onMethod_ = {@TestOnly})
 		private ConqueryConfig config;
 
 		@JsonCreator

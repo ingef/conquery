@@ -27,6 +27,7 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
@@ -76,6 +77,7 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -249,7 +251,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), 4,imp.getId(), new ColumnStore[]{startStore, endStore, compoundStore});
+		Bucket bucket =
+				new Bucket(0, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), 4, imp.getId(), new ColumnStore[]{startStore, endStore, compoundStore});
 
 		compoundStore.setParent(bucket);
 
@@ -326,6 +329,20 @@ public class SerializationTests extends AbstractSerializationTest {
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 		return table;
+	}
+
+	@Test
+	public void filterValueMoneyRange() throws JSONException, IOException {
+		FilterValue.CQMoneyRangeFilter filterValue =
+				new FilterValue.CQMoneyRangeFilter(FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"), new Range.LongRange(2000L, 30000L));
+
+		filterValue.setConfig(getConfig());
+
+
+		SerializationTestUtil
+				.forType(FilterValue.class)
+				.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+				.test(filterValue);
 	}
 
 	@Test
@@ -572,7 +589,9 @@ public class SerializationTests extends AbstractSerializationTest {
 																				  .userName(user.getLabel())
 																				  .hideLogoutButton(false)
 																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true, true, true)))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"),
+																										   new MeProcessor.FrontendDatasetAbility(true, true, true)
+																				  ))
 																				  .build();
 
 		SerializationTestUtil
