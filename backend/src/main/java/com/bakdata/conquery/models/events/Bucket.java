@@ -188,7 +188,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		Column[] columns = getTable().resolve().getColumns();
 
 		return event -> calculateMap(event, stores, columns);
-
 	}
 
 	@JsonIgnore

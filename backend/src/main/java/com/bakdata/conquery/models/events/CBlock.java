@@ -13,12 +13,10 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -109,90 +107,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
 	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
-
-		final TreeConcept treeConcept = connector.getConcept();
-		final CTCondition connectorCondition = connector.getCondition();
-
-		final Column column;
-		final ConceptTreeCache cache;
-		
-
-		// If we have a column, and it is of string-type, we initialize a cache.
-		if (connector.getColumn() != null && bucket.getStore(connector.getColumn().resolve()) instanceof StringStore) {
-			column = connector.getColumn().resolve();
-			cache = bucketManager.getConceptTreeCache(treeConcept, bucket.getImp());
-		}
-		// No column only possible if we have just one tree element!
-		else if (treeConcept.countElements() == 1) {
-			column = null;
-			cache = null;
-		}
-		else {
-			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", connector.getId()));
+		if (connector.getColumn() == null) {
+			return calculateSpecificChildrenPathsWithoutColumn(bucket, connector);
 		}
 
-		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
-		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
-
-		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
-
-		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-
-			try {
-				String stringValue = "";
-
-				final boolean has = column != null && bucket.has(event, column);
-
-				if (column != null && has) {
-					stringValue = bucket.getString(event, column);
-				}
-
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				// Lazy evaluation of map to avoid allocations if possible.
-				// Copy event for closure.
-				final int _event = event;
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
-
-				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
-					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
-
-				// Events without values are assigned to the root
-				if (column != null && !has) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
-					continue;
-				}
-
-				final ConceptTreeChild child = cache == null
-											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
-											   : cache.findMostSpecificChild(stringValue, rowMap);
-
-				// All unresolved elements resolve to the root.
-				if (child == null) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
-					continue;
-				}
-
-				// put path into event
-				mostSpecificChildren[event] = child.getPrefix();
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
-			}
-		}
-
-		if (cache != null) {
-			log.trace(
-					"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-					cache.getHits(),
-					cache.getMisses(),
-					(double) cache.getHits() / cache.getMisses(),
-					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
-			);
-		}
-
-		return mostSpecificChildren;
+		return calculateSpecificChildrenPathsWithColumn(bucket, connector, bucketManager);
 	}
 
 	/**
@@ -281,6 +200,111 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		return spans;
 	}
 
+	private static int[][] calculateSpecificChildrenPathsWithoutColumn(Bucket bucket, Connector connector) {
+
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
+
+		// All elements resolve to the root, unless they are filtered out by the condition.
+		Arrays.fill(mostSpecificChildren, connector.getConcept().getPrefix());
+
+		if (connector.getCondition() == null) {
+			return mostSpecificChildren;
+		}
+
+		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
+
+		// Since the connector has no column, there is no real columnValue.
+		// All downstream code assumes the presence of a column value, so we just pass an empty string to avoid exceptions.
+		final String columnValue = "";
+
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+			try {
+
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				// Lazy evaluation of map to avoid allocations if possible.
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+
+				if (connector.getCondition().matches(columnValue, rowMap)) {
+					// by default initialized to the only element, the root.
+					continue;
+				}
+
+				mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+			}
+			catch (ConceptConfigurationException ex) {
+				log.error("Failed to evaluate event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			}
+		}
+
+		return mostSpecificChildren;
+	}
+
+	/**
+	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
+	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
+	 */
+	private static int[][] calculateSpecificChildrenPathsWithColumn(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
+
+		final Column column = connector.getColumn().resolve();
+
+		final ConceptTreeCache cache = bucketManager.getConceptTreeCache(connector.getConcept(), bucket.getImp());
+		final int[] rootPrefix = connector.getConcept().getPrefix();
+
+		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
+
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
+		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
+
+
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+			try {
+
+				if (!bucket.has(event, column)) {
+					continue;
+				}
+
+				final String columnValue = bucket.getString(event, column);
+
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				// Lazy evaluation of map to avoid allocations if possible.
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+
+				if (connector.getCondition() != null && !connector.getCondition().matches(columnValue, rowMap)) {
+					continue;
+				}
+
+				final ConceptTreeChild child = cache.findMostSpecificChild(columnValue, rowMap);
+
+				// All unresolved elements resolve to the root.
+				if (child == null) {
+					mostSpecificChildren[event] = rootPrefix;
+					continue;
+				}
+
+				mostSpecificChildren[event] = child.getPrefix();
+			}
+			catch (ConceptConfigurationException ex) {
+				log.error("Failed to resolve event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			}
+		}
+
+
+		log.trace(
+				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+				cache.getHits(),
+				cache.getMisses(),
+				(double) cache.getHits() / cache.getMisses(),
+				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+		);
+
+
+		return mostSpecificChildren;
+	}
+
 	/**
 	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
 	 */
@@ -328,7 +352,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return true;
 		}
 
-		if(!includedConceptElementsPerEntity.containsKey(entity)){
+		if (!includedConceptElementsPerEntity.containsKey(entity)) {
 			return false;
 		}
 

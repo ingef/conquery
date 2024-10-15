@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -55,6 +55,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -72,6 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Setter
+@ToString(onlyExplicitlyIncluded = false)
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class TableExportQuery extends Query {
@@ -79,17 +81,22 @@ public class TableExportQuery extends Query {
 	@Valid
 	@NotNull
 	@NonNull
+	@ToString.Include
 	protected final Query query;
+
 	@NotNull
+	@ToString.Include
 	private Range<LocalDate> dateRange = Range.all();
 
 	@NotEmpty
 	@Valid
+	@ToString.Include
 	private List<CQConcept> tables;
 
 	/**
 	 * @see TableExportQueryPlan#isRawConceptValues()
 	 */
+	@ToString.Include
 	private boolean rawConceptValues = true;
 
 	/**
@@ -121,13 +128,7 @@ public class TableExportQuery extends Query {
 			}
 		}
 
-		return new TableExportQueryPlan(
-				query.createQueryPlan(context),
-				CDateSet.create(CDateRange.of(dateRange)),
-				filterQueryNodes,
-				positions,
-				rawConceptValues
-		);
+		return new TableExportQueryPlan(query.createQueryPlan(context), CDateSet.create(CDateRange.of(dateRange)), filterQueryNodes, positions, rawConceptValues);
 	}
 
 	@Override
@@ -143,15 +144,6 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		final AtomicInteger currentPosition = new AtomicInteger(2);
 
-		secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
-
-		final Set<ValidityDate> validityDates = tables.stream()
-													  .map(CQConcept::getTables)
-													  .flatMap(Collection::stream)
-													  .map(CQTable::findValidityDate)
-													  .filter(Objects::nonNull)
-													  .collect(Collectors.toSet());
-
 		// We need to know if a column is a concept column, so we can prioritize it, if it is also a SecondaryId
 		conceptColumns = tables.stream()
 							   .map(CQConcept::getTables)
@@ -162,18 +154,25 @@ public class TableExportQuery extends Query {
 							   .filter(Objects::nonNull)
 							   .collect(Collectors.toSet());
 
+		secondaryIdPositions = calculateSecondaryIdPositions(currentPosition, conceptColumns, tables);
+
+		final Set<ValidityDate> validityDates =
+				tables.stream().map(CQConcept::getTables).flatMap(Collection::stream).map(CQTable::findValidityDate).filter(Objects::nonNull).collect(Collectors.toSet());
+
+
 		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
-
-
 	}
 
-	private Map<SecondaryIdDescriptionId, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+	private static Map<SecondaryIdDescriptionId, Integer> calculateSecondaryIdPositions(
+			AtomicInteger currentPosition, Set<ColumnId> conceptColumns, List<CQConcept> tables) {
 		final Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions = new HashMap<>();
 
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
 			  .flatMap(con -> con.getTables().stream())
 			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getResolvedTable().getColumns()))
+			  // Concept Columns are placed separately so they won't provide a secondaryId
+			  .filter(Predicate.not(conceptColumns::contains))
 			  .map(Column::getSecondaryId)
 			  .filter(Objects::nonNull)
 			  .map(SecondaryIdDescriptionId::resolve)
@@ -190,8 +189,7 @@ public class TableExportQuery extends Query {
 			List<CQConcept> tables,
 			Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions,
 			Collection<ColumnId> conceptColumns,
-			Collection<ValidityDate> validityDates
-	) {
+			Collection<ValidityDate> validityDates) {
 		final Map<ColumnId, Integer> positions = new HashMap<>();
 
 
@@ -232,11 +230,8 @@ public class TableExportQuery extends Query {
 
 	private List<ResultInfo> createResultInfos(Set<ColumnId> conceptColumns) {
 
-		OptionalInt max = positions.values().stream().mapToInt(i -> i).max();
-		if (max.isEmpty()) {
-			throw new IllegalStateException("Unable to determine maximum position");
-		}
-		final int size = max.getAsInt() + 1;
+		final int size = calculateWidth(positions);
+		;
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
@@ -252,13 +247,12 @@ public class TableExportQuery extends Query {
 		}
 
 
-		final Map<Column, Concept<?>> connectorColumns =
-				tables.stream()
-					  .flatMap(con -> con.getTables().stream())
-					  .map(CQTable::getConnector)
-					  .map(ConnectorId::resolve)
-					  .filter(con -> con.getColumn() != null)
-					  .collect(Collectors.toMap(con -> con.getColumn().resolve(), Connector::getConcept));
+		final Map<Column, Concept<?>> connectorColumns = tables.stream()
+															   .flatMap(con -> con.getTables().stream())
+															   .map(CQTable::getConnector)
+															   .map(ConnectorId::resolve)
+															   .filter(con -> con.getColumn() != null)
+															   .collect(Collectors.toMap(con -> con.getColumn().resolve(), Connector::getConcept));
 
 
 		for (Map.Entry<ColumnId, Integer> entry : positions.entrySet()) {
@@ -302,6 +296,10 @@ public class TableExportQuery extends Query {
 		}
 
 		return List.of(infos);
+	}
+
+	public static int calculateWidth(Map<?, Integer> positions) {
+		return positions.values().stream().max(Integer::compareTo).orElse(0) + 1;
 	}
 
 	@Override

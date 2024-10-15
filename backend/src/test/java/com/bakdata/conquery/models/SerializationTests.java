@@ -27,6 +27,7 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
@@ -76,6 +77,7 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -327,6 +329,20 @@ public class SerializationTests extends AbstractSerializationTest {
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 		return table;
+	}
+
+	@Test
+	public void filterValueMoneyRange() throws JSONException, IOException {
+		FilterValue.CQMoneyRangeFilter filterValue =
+				new FilterValue.CQMoneyRangeFilter(FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"), new Range.LongRange(2000L, 30000L));
+
+		filterValue.setConfig(getConfig());
+
+
+		SerializationTestUtil
+				.forType(FilterValue.class)
+				.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+				.test(filterValue);
 	}
 
 	@Test
