@@ -48,7 +48,8 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
-	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.072.00.20231123.1");
+	// SAP does not provide more than 1 image and on an update, the earlier image is deleted from dockerhub, thus latest tag is fine
+	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:latest");
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
 	private static boolean useLocalHanaDb = true;
 	private static DSLContextWrapper dslContextWrapper;
@@ -176,7 +177,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.databasePassword(hanaContainer.getPassword())
 												.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig);
+			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig, null);
 		}
 
 	}
@@ -201,7 +202,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 												.databasePassword(PASSWORD)
 												.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig);
+			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig, null);
 		}
 
 	}

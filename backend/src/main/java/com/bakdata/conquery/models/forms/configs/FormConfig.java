@@ -10,13 +10,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -24,15 +21,17 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,6 +45,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+import org.jetbrains.annotations.Nullable;
 
 @Slf4j
 @Data
@@ -56,8 +56,7 @@ import org.apache.shiro.authz.Permission;
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
-	@NsIdRef
-	protected Dataset dataset;
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -73,8 +72,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@NotNull
 	private JsonNode values;
-	@MetaIdRef
-	private User owner;
+	private UserId owner;
 	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
@@ -86,45 +84,51 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(dataset.getId(), formType, formId);
+		FormConfigId formConfigId = new FormConfigId(dataset, formType, formId);
+		formConfigId.setMetaStorage(getMetaStorage());
+		return formConfigId;
 	}
 
 	/**
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(Subject subject) {
-		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
+	public FormConfigOverviewRepresentation overview(MetaStorage storage, Subject subject) {
+		String ownerName = getOwnerName();
 
 		return FormConfigOverviewRepresentation.builder()
-			.id(getId())
-			.formType(formType)
-			.label(label)
-			.tags(tags)
-			.ownerName(ownerName)
-			.own(subject.isOwner(this))
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			// system?
-			.build();
+											   .id(getId())
+											   .formType(formType)
+											   .label(label)
+											   .tags(tags)
+											   .ownerName(ownerName)
+											   .own(subject.isOwner(this))
+											   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+											   .shared(shared)
+											   // system?
+											   .build();
+	}
+
+	@JsonIgnore
+	private @Nullable String getOwnerName() {
+		return Optional.ofNullable(owner).map(UserId::resolve).map(User.class::cast).map(User::getLabel).orElse(null);
 	}
 
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
-		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
+		String ownerName = getOwnerName();
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for(Group group : storage.getAllGroups()) {
+		for (Group group : storage.getAllGroups().toList()) {
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}
@@ -133,8 +137,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 										   .id(getId()).formType(formType)
 										   .label(label)
 										   .tags(tags)
-			.ownerName(ownerName)
-			.own(requestingUser.isOwner(this))
+										   .ownerName(ownerName)
+										   .own(requestingUser.isOwner(this))
 										   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 										   .shared(shared)
 										   .groups(permittedGroups)
@@ -146,6 +150,10 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return FormConfigPermission.onInstance(abilities, getId());
+	}
+
+	public Consumer<FormConfigPatch> valueSetter() {
+		return (patch) -> setValues(patch.getValues());
 	}
 
 	/**
@@ -189,10 +197,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		private Collection<GroupId> groups;
 
 		private JsonNode values;
-	}
-
-	public Consumer<FormConfigPatch> valueSetter() {
-		return (patch) -> {setValues(patch.getValues());};
 	}
 
 }

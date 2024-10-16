@@ -6,10 +6,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -107,7 +107,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	@Getter @RequiredArgsConstructor
 	public static class MessageManager {
 		
-		private final Map<UUID, ChunkedMessage.List> messages = new HashMap<>();
+		private final ConcurrentMap<UUID, ChunkedMessage.List> messages = new ConcurrentHashMap<>();
 		private UUID lastId = null;
 		private ChunkedMessage.List lastMessage = null;
 		

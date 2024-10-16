@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.preview;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -34,19 +33,22 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 		private final Object value;
 
 		public Info(String label, Object value, String typeInfo, String description, Set<SemanticType> semantics) {
-			super(label, description, label, typeInfo, semantics);
+			super(label, label, description, typeInfo, semantics);
 			this.value = value;
 		}
 	}
 
 	/**
-	 *
-	 * @param label Display label of the infos.
+	 * @param label       Display label of the infos.
 	 * @param description In depth description of the infos.
-	 * @param columns Typed description of the infos.
-	 * @param years Structured results, also contains QuarterEntries.
+	 * @param columns     Typed description of the infos.
+	 * @param years       Structured results, also contains QuarterEntries.
 	 */
-	public record TimeStratifiedInfos(String label, String description, List<ColumnDescriptor> columns, Map<String, Object> totals, List<EntityPreviewStatus.YearEntry> years) {
+	public record TimeStratifiedInfos(String label,
+									  String description,
+									  List<ColumnDescriptor> columns,
+									  Map<String, Object> totals,
+									  List<EntityPreviewStatus.YearEntry> years) {
 	}
 
 	public record QuarterEntry(int quarter, Map<String, Object> values) {

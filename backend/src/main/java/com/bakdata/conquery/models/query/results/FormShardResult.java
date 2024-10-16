@@ -25,13 +25,15 @@ public class FormShardResult extends ShardResult {
 
 	/**
 	 * Distribute the result to a sub query.
-	 *
-	 * @param executionManager
 	 */
 	@Override
 	public void addResult(DistributedExecutionManager executionManager) {
 		final ManagedInternalForm<?> managedInternalForm = (ManagedInternalForm<?>) executionManager.getExecution(getFormId());
 		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getQueryId());
+
+		if (subQuery == null) {
+			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(), formId, managedInternalForm.getSubQueries()));
+		}
 
 
 		executionManager.handleQueryResult(this, subQuery);

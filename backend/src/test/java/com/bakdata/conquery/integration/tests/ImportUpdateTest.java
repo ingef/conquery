@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.List;
-
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -91,8 +90,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getImport(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -104,7 +103,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
@@ -125,7 +124,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 		}
 
 		//Try to update an import that does not exist should throw a Not-Found Webapplication Exception
-		LoadingUtil.updateCqppFile(conquery, cqpps.get(1), Response.Status.Family.CLIENT_ERROR, "Not Found");
+		LoadingUtil.uploadCqpp(conquery, cqpps.get(1), true, Response.Status.Family.CLIENT_ERROR);
 		conquery.waitUntilWorkDone();
 
 		//Load manually new data for import and update the concerned import
@@ -170,7 +169,10 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			log.info("updating import");
 			//correct update of the import
-			LoadingUtil.updateCqppFile(conquery, newPreprocessedFile, Response.Status.Family.SUCCESSFUL, "No Content");
+			LoadingUtil.uploadCqpp(conquery, newPreprocessedFile, true, Response.Status.Family.SUCCESSFUL);
+			conquery.waitUntilWorkDone();
+
+
 			conquery.waitUntilWorkDone();
 		}
 
@@ -183,8 +185,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId1))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getImport(importId1))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -196,7 +198,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
@@ -212,8 +214,6 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(9);
 			// Issue a query and assert that it has more content.
 			IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
-
-
 		}
 	}
 }

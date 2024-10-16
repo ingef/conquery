@@ -3,10 +3,10 @@ package com.bakdata.conquery.models.jobs;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -76,8 +76,7 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
-		final HashMap<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-		final Map<Searchable, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+		final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
@@ -95,7 +94,7 @@ public class UpdateFilterSearchJob extends Job {
 				try {
 					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig);
 
-					synchronizedResult.put(searchable, search);
+					searchCache.put(searchable, search);
 
 					log.debug(
 							"DONE collecting {} entries for `{}`, within {}",
@@ -125,7 +124,7 @@ public class UpdateFilterSearchJob extends Job {
 				service.shutdownNow();
 				return;
 			}
-			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables.get(Searchable.class), synchronizedResult.keySet()));
+			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables.get(Searchable.class), searchCache.keySet()));
 		}
 
 		// Shrink searches before registering in the filter search
@@ -139,7 +138,7 @@ public class UpdateFilterSearchJob extends Job {
 
 	@NotNull
 	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
-		return storage.getAllConcepts().stream()
+		return storage.getAllConcepts()
 					  .flatMap(c -> c.getConnectors().stream())
 					  .flatMap(co -> co.collectAllFilters().stream())
 					  .filter(SelectFilter.class::isInstance)

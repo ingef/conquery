@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.error;
 
 import java.util.Set;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -15,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -248,7 +248,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
-				@Override
+		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {
 			return errorMessages.noSecondaryIdSelected();
 		}
@@ -257,7 +257,8 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class SqlError extends ConqueryError {
-		private final Exception error;
+		@ToString.Include
+		private final Throwable error;
 
 		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {

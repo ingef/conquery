@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -21,8 +21,10 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
@@ -47,10 +49,10 @@ public class GroovyIndexedTest {
 		);
 
 		return Stream.of(
-				"A13B", "I43A", "H41B", "B05Z", "L02C", "L12Z", "H08A", "I56B", "I03A", "E79C", "B80Z", "I47A", "N13A", "G08B", "F43B", "P04A", "T36Z", "T36Z", "N11A", "D13A", "R01D", "F06A", "F24A", "O03Z", "P01Z", "R63D", "A13A", "O05A", "G29B", "I18A", "J08A", "E74Z", "D06C", "H36Z", "H05Z", "P65B", "I09A", "A66Z", "F12E", "Q60E", "I46B", "I97Z", "I78Z", "T01B", "J24C", "A62Z", "Q01Z", "N25Z", "A01B", "G02A"
-				, "ZULU" // This may not fail, but return null on both sides
-		)
-				.map(v -> Arguments.of(v, rowMap.get()));
+							 "A13B", "I43A", "H41B", "B05Z", "L02C", "L12Z", "H08A", "I56B", "I03A", "E79C", "B80Z", "I47A", "N13A", "G08B", "F43B", "P04A", "T36Z", "T36Z", "N11A", "D13A", "R01D", "F06A", "F24A", "O03Z", "P01Z", "R63D", "A13A", "O05A", "G29B", "I18A", "J08A", "E74Z", "D06C", "H36Z", "H05Z", "P65B", "I09A", "A66Z", "F12E", "Q60E", "I46B", "I97Z", "I78Z", "T01B", "J24C", "A62Z", "Q01Z", "N25Z", "A01B", "G02A"
+							 , "ZULU" // This may not fail, but return null on both sides
+					 )
+					 .map(v -> Arguments.of(v, rowMap.get()));
 	}
 
 	private static TreeConcept indexedConcept;
@@ -59,21 +61,23 @@ public class GroovyIndexedTest {
 
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
-		ObjectNode node = Jackson.MAPPER.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
 
 		// load concept tree from json
-		CentralRegistry registry = new CentralRegistry();
-
+		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest");
+		storage.openStores(mapper, new MetricRegistry());
 		Table table = new Table();
 
 		table.setName("the_table");
 		Dataset dataset = new Dataset();
 
 		dataset.setName("the_dataset");
+		dataset.injectInto(mapper);
 
-		registry.register(dataset);
+		storage.updateDataset(dataset);
 
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 
 		Column column = new Column();
 		column.setName("the_column");
@@ -82,9 +86,7 @@ public class GroovyIndexedTest {
 		table.setColumns(new Column[]{column});
 		column.setTable(table);
 
-		registry.register(table);
-		registry.register(column);
-
+		storage.addTable(table);
 
 		// Prepare Serdes injections
 		final Validator validator = Validators.newValidator();
@@ -93,17 +95,17 @@ public class GroovyIndexedTest {
 			public MutableInjectableValues inject(MutableInjectableValues values) {
 				return values.add(Validator.class, validator);
 			}
-		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
+		}.injectInto(mapper).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);
 
-		indexedConcept.setDataset(dataset);
+		indexedConcept.setDataset(dataset.getId());
 		indexedConcept.initElements();
 
 		oldConcept = conceptReader.readValue(node);
 
-		oldConcept.setDataset(dataset);
+		oldConcept.setDataset(dataset.getId());
 		oldConcept.initElements();
 	}
 

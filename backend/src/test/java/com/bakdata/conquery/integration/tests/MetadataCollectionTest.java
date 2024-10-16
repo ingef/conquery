@@ -3,14 +3,12 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Set;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -43,8 +41,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		conquery.getNamespace().postprocessData();
 		conquery.waitUntilWorkDone();
 
-		Collection<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
-		TreeConcept concept = (TreeConcept) allConcepts.iterator().next();
+		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().toList().iterator().next();
 
 		//check the number of matched events from root node to the deepest child node
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(10);

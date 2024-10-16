@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
@@ -26,9 +28,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -47,8 +49,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -143,12 +143,12 @@ public class ConceptsProcessor {
 		return new FrontendPreviewConfig(
 				previewConfig.getAllConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
 
 				previewConfig.getDefaultConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
 				previewConfig.resolveSearchFilters(),
 				previewConfig.resolveSearchConcept()
@@ -164,7 +164,7 @@ public class ConceptsProcessor {
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
@@ -230,7 +230,7 @@ public class ConceptsProcessor {
 	}
 
 	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -254,8 +254,8 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private long countAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+	private int countAllValues(SelectFilter<?> searchable) {
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}
@@ -265,7 +265,7 @@ public class ConceptsProcessor {
 	 * Is used by the serach cache to load missing items
 	 */
 	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we exploit:
@@ -294,7 +294,7 @@ public class ConceptsProcessor {
 
 		for (String conceptCode : conceptCodes) {
 			try {
-				final ConceptTreeChild child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				final ConceptElement<?> child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
 
 				if (child != null) {
 					resolvedCodes.add(child.getId());
@@ -313,10 +313,10 @@ public class ConceptsProcessor {
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
-	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
+	private record CursorAndLength(Cursor<FrontendValue> values, int size) {
 	}
 
-	public record AutoCompleteResult(List<FrontendValue> values, long total) {
+	public record AutoCompleteResult(List<FrontendValue> values, int total) {
 	}
 
 	public record ResolvedFilterResult(ConnectorId tableId, String filterId, Collection<FrontendValue> value) {

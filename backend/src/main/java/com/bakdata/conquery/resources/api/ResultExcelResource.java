@@ -6,14 +6,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.OptionalLong;
-
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.resources.ResourceConstants;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -25,6 +17,14 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.resources.ResourceConstants;
+import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,8 +47,7 @@ public class ResultExcelResource {
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset()
-																										 .getId(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResult(subject, (E) execution, pretty, limit);
 	}
 

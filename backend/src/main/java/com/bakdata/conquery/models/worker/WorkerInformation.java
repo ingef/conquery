@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.worker;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -10,15 +13,13 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+@Slf4j
 public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode> {
 	@NotNull
 	private DatasetId dataset;
@@ -31,6 +32,15 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Min(0)
 	private int entityBucketSize;
+
+	public void awaitFreeJobQueue() {
+		try {
+			getConnectedShardNode().waitForFreeJobQueue();
+		}
+		catch (InterruptedException e) {
+			log.error("Interrupted while waiting for worker[{}] to have free space in queue", this, e);
+		}
+	}
 
 
 	@Override

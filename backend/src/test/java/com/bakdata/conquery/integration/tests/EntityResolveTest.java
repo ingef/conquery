@@ -8,6 +8,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -24,9 +27,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
@@ -75,9 +75,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef, so we have to use the real objects here.
-		final Filter<?> filter = conquery.getDatasetRegistry().resolve(
-				FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter")
-		);
+		FilterId filterId = FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter");
+		Filter<?> filter = filterId.get(conquery.getNamespaceStorage());
 
 
 		final List<Map<String, String>> result;
@@ -87,8 +86,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 													  .post(Entity.json(
 															  new FilterValue[]{
 																	  // Bit lazy, but this explicitly or's two filters
-																	  new FilterValue.CQMultiSelectFilter((Filter<Set<String>>) filter, Set.of("A1")),
-																	  new FilterValue.CQMultiSelectFilter((Filter<Set<String>>) filter, Set.of("B2"))
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("A1")),
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("B2"))
 															  }
 													  ))) {
 

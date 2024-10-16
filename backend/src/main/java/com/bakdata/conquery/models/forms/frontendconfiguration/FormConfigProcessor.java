@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 
@@ -86,13 +85,13 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-												 .filter(c -> dataset.equals(c.getDataset()))
+		final Stream<FormConfig> stream = storage.getAllFormConfigs()
+												 .filter(c -> dataset.getId().equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
 
 
-		return stream.map(c -> c.overview(subject));
+		return stream.map(c -> c.overview(storage, subject));
 	}
 
 	/**
@@ -117,7 +116,7 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
+		final FormConfig internalConfig = config.intern(subject.getId(), targetDataset.getId());
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

@@ -31,6 +31,8 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -38,54 +40,72 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import io.github.classgraph.Resource;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
 public class IntegrationTests {
 
 	public static final ObjectMapper MAPPER;
-	private static final ObjectWriter CONFIG_WRITER;
 	public static final String JSON_TEST_PATTERN = ".*\\.test\\.json$";
 	public static final String SQL_TEST_PATTERN = ".*\\.json$";
+	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
 
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
-					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class));
+					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class))
+					   // to always deserialize into TestSqlConnectorConfig for our tests
+					   .addMixIn(SqlConnectorConfig.class, TestSqlConnectorConfig.class);
 
 		CONFIG_WRITER = MAPPER.writerFor(ConqueryConfig.class);
 	}
 
-
+	@Getter
+	public final ConqueryConfig config  = new ConqueryConfig();
 	private final Map<String, TestConquery> reusedInstances = new HashMap<>();
-
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
 	@Getter
 	private final File workDir;
-	@Getter
-	@RegisterExtension
-	public TestConqueryConfig config;
 
 	@SneakyThrows(IOException.class)
 	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
 		this.defaultTestRoot = defaultTestRoot;
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
-		this.config = new TestConqueryConfig();
 		ConfigOverride.configurePathsAndLogging(this.config, this.workDir);
+	}
+
+	private static DynamicContainer toDynamicContainer(ResourceTree currentDir, List<DynamicNode> list) {
+		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
+		return dynamicContainer(
+				currentDir.getName(),
+				URI.create("classpath:/" + currentDir.getFullName() + "/"),
+				list.stream()
+		);
+	}
+
+	private static DynamicTest wrapError(Resource resource, String name, Exception e) {
+		return DynamicTest.dynamicTest(
+				name,
+				resource.getURI(),
+				() -> {
+					throw e;
+				}
+		);
+	}
+
+	private static ResourceTree scanForResources(String testRoot, String pattern) {
+		ResourceTree tree = new ResourceTree(null, null);
+		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + pattern)));
+		return tree;
 	}
 
 	public List<DynamicNode> jsonTests() {
@@ -94,6 +114,12 @@ public class IntegrationTests {
 		ResourceTree tree = scanForResources(testRoot, JSON_TEST_PATTERN);
 		Dialect dialect = null;
 		return collectTestTree(tree, testRoot, testImporter, dialect);
+	}
+
+	@SneakyThrows
+	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+		this.config.setSqlConnectorConfig(sqlConfig);
+		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
 	}
 
 	@SneakyThrows
@@ -132,12 +158,14 @@ public class IntegrationTests {
 				.map(programmaticIntegrationTest -> createDynamicProgrammaticTestNode(programmaticIntegrationTest, testImporter));
 	}
 
-	@SneakyThrows
-	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
-		this.config.setSqlConnectorConfig(sqlConfig);
-		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
+	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test, TestDataImporter testImporter) {
+		return DynamicTest.dynamicTest(
+				test.getClass().getSimpleName(),
+				//classpath URI
+				URI.create("classpath:/" + test.getClass().getName().replace('.', '/') + ".java"),
+				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), this, test, testImporter)
+		);
 	}
-
 
 	@SneakyThrows
 	public List<DynamicNode> sqlQueryTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
@@ -161,15 +189,6 @@ public class IntegrationTests {
 					  .collect(Collectors.toList());
 	}
 
-	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test, TestDataImporter testImporter) {
-		return DynamicTest.dynamicTest(
-				test.getClass().getSimpleName(),
-				//classpath URI
-				URI.create("classpath:/" + test.getClass().getName().replace('.', '/') + ".java"),
-				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), this, test, testImporter)
-		);
-	}
-
 	private DynamicNode collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
 		if (currentDir.getValue() != null) {
 			Optional<DynamicTest> dynamicTest = readTest(currentDir.getValue(), currentDir.getName(), testImporter, sqlDialect);
@@ -182,15 +201,6 @@ public class IntegrationTests {
 			list.add(collectTests(child, testImporter, sqlDialect));
 		}
 		return toDynamicContainer(currentDir, list);
-	}
-
-	private static DynamicContainer toDynamicContainer(ResourceTree currentDir, List<DynamicNode> list) {
-		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
-		return dynamicContainer(
-				currentDir.getName(),
-				URI.create("classpath:/" + currentDir.getFullName() + "/"),
-				list.stream()
-		);
 	}
 
 	private Optional<DynamicTest> readTest(Resource resource, String name, TestDataImporter testImporter, Dialect sqlDialect) {
@@ -207,16 +217,6 @@ public class IntegrationTests {
 		finally {
 			resource.close();
 		}
-	}
-
-	private static DynamicTest wrapError(Resource resource, String name, Exception e) {
-		return DynamicTest.dynamicTest(
-				name,
-				resource.getURI(),
-				() -> {
-					throw e;
-				}
-		);
 	}
 
 	private DynamicTest wrapTest(Resource resource, String name, JsonIntegrationTest test, TestDataImporter testImporter) {
@@ -247,35 +247,24 @@ public class IntegrationTests {
 		// This should be fast enough and a stable comparison
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
 		if (!reusedInstances.containsKey(confString)) {
-			// For the overriden config we must override the ports so there are no clashes
+
+			// For the overriden config we must override the ports and storage path (xodus) so there are no clashes
 			// We do it here so the config "hash" is not influenced by the port settings
 			ConfigOverride.configureRandomPorts(conf);
+
+			if (conf.getStorage() instanceof XodusStoreFactory storeFactory) {
+				ConfigOverride.configureWorkdir(storeFactory, workDir.toPath().resolve(String.valueOf(confString.hashCode())));
+			}
+
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf, testDataImporter);
 			reusedInstances.put(confString, conquery);
+
+			// Start the fresh instance
 			conquery.beforeAll();
 		}
 		TestConquery conquery = reusedInstances.get(confString);
 		return conquery;
-	}
-
-	@EqualsAndHashCode(callSuper = true)
-	public static class TestConqueryConfig extends ConqueryConfig implements Extension, BeforeAllCallback {
-
-		@Override
-		public void beforeAll(ExtensionContext context) throws Exception {
-
-			context.getTestInstance()
-				   .filter(ConfigOverride.class::isInstance)
-				   .map(ConfigOverride.class::cast)
-				   .ifPresent(co -> co.override(this));
-		}
-	}
-
-	private static ResourceTree scanForResources(String testRoot, String pattern) {
-		ResourceTree tree = new ResourceTree(null, null);
-		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + pattern)));
-		return tree;
 	}
 
 }

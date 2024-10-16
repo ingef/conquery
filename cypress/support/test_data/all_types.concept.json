@@ -160,12 +160,6 @@
                 "column": "table.INTEGER"
             },
             {
-                "label": "COUNT_OCCURENCES",
-                "type": "COUNT_OCCURENCES",
-                "column": "table.STRING",
-                "selection": []
-            },
-            {
                 "label": "FIRST",
                 "type": "FIRST",
                 "column": "table.INTEGER"

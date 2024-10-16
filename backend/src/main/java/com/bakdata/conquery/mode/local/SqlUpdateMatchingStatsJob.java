@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
+import static org.jooq.impl.DSL.*;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
@@ -22,6 +25,7 @@ import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
@@ -41,7 +45,6 @@ import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @Slf4j
 public class SqlUpdateMatchingStatsJob extends Job {
@@ -52,21 +55,19 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	private static final String ENTITIES_TABLE = "entities";
 	private static final String VALIDITY_DATE_SELECT = "unioned";
 	private static final String VALIDITY_DATES_TABLE = "validity_dates";
-	private static final String MIN_VALIDITY_DATE_FIELD = "min_validity_date";
-	private static final String MAX_VALIDITY_DATE_FIELD = "max_validity_date";
 
 	private final DatabaseConfig databaseConfig;
 	private final SqlExecutionService executionService;
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
-	private final Collection<Concept<?>> concepts;
+	private final Set<ConceptId> concepts;
 	private final ExecutorService executors;
 
 	public SqlUpdateMatchingStatsJob(
 			DatabaseConfig databaseConfig,
 			SqlExecutionService executionService,
 			SqlFunctionProvider functionProvider,
-			Collection<Concept<?>> concepts,
+			Set<ConceptId> concepts,
 			ExecutorService executors
 	) {
 		this.databaseConfig = databaseConfig;
@@ -88,6 +89,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
 
 		concepts.stream()
+				.map(ConceptId::resolve)
 				.filter(SqlUpdateMatchingStatsJob::isTreeConcept)
 				.flatMap(concept -> collectMatchingStats(concept.getConnectors(), (TreeConcept) concept))
 				.forEach(executors::submit);
@@ -130,7 +132,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		org.jooq.Table<Record1<Integer>> eventsUnioned =
 				union(connectors, connector -> createCountEventsQuery(connector, childCondition), Select::unionAll, EVENTS_TABLE);
 
-		SelectJoinStep<Record1<BigDecimal>> eventsQuery = dslContext.select(DSL.sum(eventsUnioned.field(EVENTS_FIELD, BigDecimal.class)).as(EVENTS_FIELD))
+		SelectJoinStep<Record1<BigDecimal>> eventsQuery = dslContext.select(sum(eventsUnioned.field(EVENTS_FIELD, BigDecimal.class)).as(EVENTS_FIELD))
 																	.from(eventsUnioned);
 
 		Result<?> result = executionService.fetch(eventsQuery);
@@ -145,8 +147,8 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	}
 
 	private SelectConditionStep<Record1<Integer>> createCountEventsQuery(Connector connector, Optional<CTCondition> childCondition) {
-		return dslContext.select(DSL.count().as(EVENTS_FIELD))
-						 .from(DSL.table(DSL.name(connector.getTable().getName())))
+		return dslContext.select(count().as(EVENTS_FIELD))
+						 .from(table(name(connector.getResolvedTable().getName())))
 						 .where(toJooqCondition(connector, childCondition));
 	}
 
@@ -158,11 +160,9 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		org.jooq.Table<Record1<Object>> entitiesUnioned =
 				union(connectors, connector -> createCountEntitiesQuery(connector, childCondition), Select::union, ENTITIES_TABLE);
 
-		SelectJoinStep<Record1<Integer>> entitiesQuery = dslContext.select(
-																		   DSL.countDistinct(entitiesUnioned.field(PRIMARY_COLUMN_ALIAS))
-																			  .as(PRIMARY_COLUMN_ALIAS)
-																   )
-																   .from(entitiesUnioned);
+		SelectJoinStep<Record1<Integer>> entitiesQuery =
+				dslContext.select(countDistinct(entitiesUnioned.field(PRIMARY_COLUMN_ALIAS)).as(PRIMARY_COLUMN_ALIAS))
+						  .from(entitiesUnioned);
 
 		Result<?> result = executionService.fetch(entitiesQuery);
 		try {
@@ -177,8 +177,8 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	}
 
 	private SelectConditionStep<Record1<Object>> createCountEntitiesQuery(Connector connector, Optional<CTCondition> childCondition) {
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(connector.getTable(), databaseConfig).as(PRIMARY_COLUMN_ALIAS);
-		Table<Record> connectorTable = DSL.table(DSL.name(connector.getTable().getName()));
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), databaseConfig).as(PRIMARY_COLUMN_ALIAS);
+		Table<Record> connectorTable = table(name(connector.getResolvedTable().getName()));
 		Condition connectorCondition = toJooqCondition(connector, childCondition);
 		return dslContext.select(primaryColumn)
 						 .from(connectorTable)
@@ -207,7 +207,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		// ensure we have a start and end field (and not a single-column range), because we need to get the min(start) and max(end)
 		ColumnDateRange dualColumn = functionProvider.toDualColumn(anyOfTheUnionedDates);
 		// the get the overall min and max
-		ColumnDateRange minAndMax = ColumnDateRange.of(DSL.min(dualColumn.getStart()), DSL.max(dualColumn.getEnd()));
+		ColumnDateRange minAndMax = ColumnDateRange.of(min(dualColumn.getStart()), max(dualColumn.getEnd()));
 		// finally, we create the proper string expression which handles possible +/-infinity date values
 		Field<String> validityDateExpression = functionProvider.daterangeStringExpression(minAndMax).as(VALIDITY_DATE_SELECT);
 		SelectJoinStep<Record1<String>> dateSpanQuery = dslContext.select(validityDateExpression)
@@ -247,12 +247,12 @@ public class SqlUpdateMatchingStatsJob extends Job {
 							  })
 							  .reduce((validityDate1, validityDate2) -> (SelectConditionStep<Record>) validityDate1.unionAll(validityDate2))
 							  .orElseThrow(() -> new RuntimeException("Expected at least 1 validity date to be present."))
-							  .asTable(DSL.name(VALIDITY_DATES_TABLE));
+							  .asTable(name(VALIDITY_DATES_TABLE));
 	}
 
 	private SelectConditionStep<Record> createValidityDateQuery(ColumnDateRange columnDateRange, Connector connector, Optional<CTCondition> childCondition) {
 		return dslContext.select(columnDateRange.toFields())
-						 .from(DSL.table(DSL.name(connector.getTable().getName())))
+						 .from(table(name(connector.getResolvedTable().getName())))
 						 .where(toJooqCondition(connector, childCondition));
 	}
 
@@ -266,14 +266,14 @@ public class SqlUpdateMatchingStatsJob extends Job {
 					.map(mapper)
 					.reduce(operator)
 					.orElseThrow(() -> new IllegalStateException("Expected at least one element to union"))
-					.asTable(DSL.name(tableName));
+					.asTable(name(tableName));
 	}
 
 	private Condition toJooqCondition(Connector connector, Optional<CTCondition> childCondition) {
-		CTConditionContext context = new CTConditionContext(connector.getTable(), connector.getColumn(), functionProvider);
+		CTConditionContext context = CTConditionContext.create(connector, functionProvider);
 		return childCondition.or(() -> Optional.ofNullable(connector.getCondition()))
 							 .map(condition -> condition.convertToSqlCondition(context).condition())
-							 .orElse(DSL.noCondition());
+							 .orElse(noCondition());
 	}
 
 	@RequiredArgsConstructor

@@ -4,14 +4,18 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 
 import java.util.Locale;
 import java.util.OptionalLong;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -20,10 +24,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,22 +42,22 @@ public class ResultExcelProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final Dataset dataset = exec.getDataset();
+		final DatasetId datasetId = exec.getDataset();
 
 		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(datasetId);
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId, null);
 
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output, limit);
+			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output, limit, settings);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 

@@ -40,19 +40,9 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, storage.getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
-	}
-
-	@Override
-	public void updateStorage() {
-		storage.updateGroup(this);
-	}
-
-	@Override
-	public GroupId createId() {
-		return new GroupId(name);
 	}
 
 	public synchronized void addMember(User user) {
@@ -60,6 +50,18 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage();
 		}
+	}
+
+	@Override
+	public void updateStorage() {
+		getMetaStorage().updateGroup(this);
+	}
+
+	@Override
+	public GroupId createId() {
+		GroupId groupId = new GroupId(name);
+		groupId.setMetaStorage(getMetaStorage());
+		return groupId;
 	}
 
 	public synchronized void removeMember(User user) {

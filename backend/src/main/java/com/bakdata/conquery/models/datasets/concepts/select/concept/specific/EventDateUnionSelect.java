@@ -25,7 +25,7 @@ public class EventDateUnionSelect extends UniversalSelect {
 		return new EventDateUnionAggregator(getHolder().findConcept()
 													   .getConnectors()
 													   .stream()
-													   .map(Connector::getTable)
+													   .map(Connector::getResolvedTable)
 													   .collect(Collectors.toSet()));
 	}
 
@@ -40,7 +40,7 @@ public class EventDateUnionSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
+	public ResultType getResultType() {
+		return new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 	}
 }

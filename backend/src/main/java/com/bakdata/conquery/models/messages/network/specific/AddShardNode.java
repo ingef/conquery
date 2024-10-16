@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -21,11 +20,7 @@ public class AddShardNode extends MessageToManagerNode {
 
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeNetworkContext context) throws Exception {
-		final ShardNodeInformation nodeInformation = new ShardNodeInformation(
-				new NetworkSession(context.getSession().getSession()),
-				context.getBackpressure()
-		);
-
+		final ShardNodeInformation nodeInformation = new ShardNodeInformation(context.getSession(), context.getBackpressure());
 		context.getClusterState().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
 
 		log.info("ShardNode `{}` registered.", context.getRemoteAddress());

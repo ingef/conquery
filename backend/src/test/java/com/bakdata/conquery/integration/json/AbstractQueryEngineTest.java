@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -29,8 +31,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
-import jakarta.validation.UnexpectedTypeException;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -49,12 +49,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final User testUser = standaloneSupport.getTestUser();
 
+
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
-		//check result info size
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))

@@ -1,10 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
@@ -15,6 +11,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -49,11 +46,13 @@ class TablePath {
 
 	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
-		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector());
+		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
+																																		   .getLocale());
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptConnectorLabel, context.getNameGenerator());
 
 		return new ConnectorSqlTables(
+				cqTable.getConnector().resolve(),
 				conceptConnectorLabel,
 				tableInfo.getRootTable(),
 				cteNameMap,
@@ -65,16 +64,14 @@ class TablePath {
 	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
 
 		TablePathInfo tableInfo = collectConceptTables(predecessor);
-		String conceptName = context.getNameGenerator().conceptName(cqConcept);
+		String conceptName = context.getNameGenerator().conceptName(cqConcept, context.getSqlPrintSettings().getLocale());
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptName, context.getNameGenerator());
 		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
 
 		return new ConceptSqlTables(
-				conceptName,
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking(),
 				connectorSqlTables
 		);
 	}
@@ -82,10 +79,10 @@ class TablePath {
 	private static TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
-		tableInfo.setRootTable(cqTable.getConnector().getTable().getName());
+		tableInfo.setRootTable(cqTable.getConnector().resolve().getResolvedTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
-		boolean eventDateSelectsPresent = cqTable.getSelects().stream().anyMatch(Select::isEventDateSelect);
+		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
 		// no validity date aggregation possible nor necessary
 		if (cqTable.findValidityDate() == null || (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent)) {
 			return tableInfo;
@@ -122,7 +119,7 @@ class TablePath {
 		tableInfo.addRootTableMapping(UNIVERSAL_SELECTS);
 
 		// no event date selects present
-		if (cqConcept.getSelects().stream().noneMatch(Select::isEventDateSelect)) {
+		if (cqConcept.getSelects().stream().map(SelectId::resolve).noneMatch(Select::isEventDateSelect)) {
 			return tableInfo;
 		}
 

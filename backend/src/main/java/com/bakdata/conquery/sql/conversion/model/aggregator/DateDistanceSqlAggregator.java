@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -36,9 +35,9 @@ import org.jooq.impl.DSL;
 public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSelect>, FilterConverter<DateDistanceFilter, Range.LongRange> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
-		Column column = select.getColumn();
+		Column column = select.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = selectContext.getTables();
 		ConversionContext conversionContext = selectContext.getConversionContext();
@@ -61,7 +60,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(filter);
 		ConnectorSqlTables tables = filterContext.getTables();
 		ConversionContext conversionContext = filterContext.getConversionContext();
@@ -81,7 +80,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	@Override
 	public Condition convertForTableExport(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 

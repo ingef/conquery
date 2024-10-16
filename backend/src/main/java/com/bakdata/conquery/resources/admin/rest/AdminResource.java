@@ -9,18 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
-
-import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import io.dropwizard.auth.Auth;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -32,6 +21,20 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
+import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -77,9 +80,7 @@ public class AdminResource {
 			info.send(new CancelJobMessage(jobId));
 		}
 
-		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
-				.build();
+		return Response.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build()).build();
 	}
 
 	@GET
@@ -96,7 +97,7 @@ public class AdminResource {
 
 	@GET
 	@Path("/queries")
-	public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong maybeLimit, @QueryParam("since") Optional<String> maybeSince) {
+	public Stream<ExecutionStatus> getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong maybeLimit, @QueryParam("since") Optional<String> maybeSince) {
 
 		final LocalDate since = maybeSince.map(LocalDate::parse).orElse(LocalDate.now());
 		final long limit = maybeLimit.orElse(100);
@@ -104,12 +105,18 @@ public class AdminResource {
 		final MetaStorage storage = processor.getStorage();
 
 
-		return storage.getAllExecutions().stream()
+		return storage.getAllExecutions()
+
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
 						  try {
-							  return t.buildStatusFull(currentUser);
+							  if (t.isInitialized()) {
+								  final Namespace namespace = processor.getDatasetRegistry().get(t.getDataset());
+								  return t.buildStatusFull(currentUser, namespace);
+							  }
+
+							  return t.buildStatusOverview(currentUser);
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status
@@ -119,8 +126,7 @@ public class AdminResource {
 							  fullExecutionStatus.setError(e);
 							  return fullExecutionStatus;
 						  }
-					  })
-					  .toArray(FullExecutionStatus[]::new);
+					  });
 	}
 
 	@POST

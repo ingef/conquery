@@ -56,11 +56,14 @@ class PreprocessingCte extends ConnectorCte {
 			List<Condition> conditions,
 			CQTableContext tableContext
 	) {
-		QueryStep stratificationTable = tableContext.getConversionContext().getStratificationTable();
+		QueryStep stratificationTableCte = tableContext.getConversionContext().getStratificationTable();
+		Table<Record> stratificationTable = DSL.table(DSL.name(stratificationTableCte.getCteName()));
 
-		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
+		Selects stratificationSelects = stratificationTableCte.getQualifiedSelects();
 		SqlIdColumns stratificationIds = stratificationSelects.getIds();
-		SqlIdColumns rootTableIds = tableContext.getIds();
+		SqlIdColumns rootTableIds = tableContext.getIds().getPredecessor().orElseThrow(() -> new IllegalStateException(
+				"Id's should have been qualified during conversion and thus have a predecessor")
+		);
 		List<Condition> idConditions = stratificationIds.join(rootTableIds);
 
 		// join full stratification with connector table on all ID's from prerequisite query

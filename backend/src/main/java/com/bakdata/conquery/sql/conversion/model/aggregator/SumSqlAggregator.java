@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
@@ -96,17 +96,17 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	private static final String SUM_DISTINCT_SUFFIX = "sum_distinct";
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		Column sumColumn = sumSelect.getColumn();
-		Column subtractColumn = sumSelect.getSubtractColumn();
-		List<Column> distinctByColumns = sumSelect.getDistinctByColumn();
+		Column sumColumn = sumSelect.getColumn().resolve();
+		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
+		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		NameGenerator nameGenerator = selectContext.getNameGenerator();
 		String alias = nameGenerator.selectName(sumSelect);
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+		if (!distinctByColumns.isEmpty()) {
 			SqlIdColumns ids = selectContext.getIds();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);
@@ -130,16 +130,16 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public SqlFilters convertToSqlFilter(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
 
-		Column sumColumn = sumFilter.getColumn();
-		Column subtractColumn = sumFilter.getSubtractColumn();
-		List<Column> distinctByColumns = sumFilter.getDistinctByColumn();
+		Column sumColumn = sumFilter.getColumn().resolve();
+		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
+		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		String alias = filterContext.getNameGenerator().selectName(sumFilter);
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		ConnectorSqlSelects selects;
 
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+		if (!distinctByColumns.isEmpty()) {
 			sumAggregationSelect =
 					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
 			selects = ConnectorSqlSelects.builder()
@@ -169,25 +169,27 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public Condition convertForTableExport(SumFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
 
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
+		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 
-		Column subtractColumn = filter.getSubtractColumn();
+		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
 			return new SumCondition(field, filterContext.getValue()).condition();
 		}
 
-		String subtractColumnName = subtractColumn.getName();
-		String subtractTableName = subtractColumn.getTable().getName();
-		Field<Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), Number.class);
+		Column resolvedSubtractionColumn = subtractColumn.resolve();
+		String subtractColumnName = resolvedSubtractionColumn.getName();
+		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
+		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
 		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 
 	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
@@ -229,7 +231,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 

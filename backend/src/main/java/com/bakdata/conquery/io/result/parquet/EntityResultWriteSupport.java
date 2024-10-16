@@ -1,14 +1,17 @@
 package com.bakdata.conquery.io.result.parquet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.result.arrow.ArrowUtil;
-import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -22,6 +25,7 @@ import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link WriteSupport} for Conquery's {@link EntityResult} type.
@@ -38,14 +42,69 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	private final PrintSettings printSettings;
 
 	private MessageType schema;
-	private List<ColumnConsumer> columnConsumer;
+	private List<ColumnConsumer> columnConsumers;
+	private List<Printer> columnPrinters;
 
 	private RecordConsumer recordConsumer;
 
+	/**
+	 * Generates the parquet schema format from the {@link ResultInfo}s of a query
+	 *
+	 * @param idHeaders        {@link ResultInfo} for the Ids
+	 * @param resultValueInfos {@link ResultInfo} for the result values
+	 * @param uniqueNamer      A column namer for the fields in the schema
+	 * @param printSettings1
+	 * @return the parquet schema
+	 */
+	public static MessageType generateSchema(List<ResultInfo> idHeaders, List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer, PrintSettings printSettings1) {
+		/*
+			Because Parquet Schemas rely on primitive types with logical annotations
+			which are tedious to configure, we take the detour over the arrow schema.
+		 */
+		final SchemaMapping schemaMapping =
+				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
+
+		return schemaMapping.getParquetSchema();
+
+	}
+
+	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos) {
+		return Stream.concat(idHeaders.stream(), resultInfos.stream())
+					 .map(ResultInfo::getType)
+					 .map(EntityResultWriteSupport::columnConsumerForType)
+					 .toList();
+
+	}
+
+	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
+
+		return Stream.concat(idHeaders.stream(), resultInfos.stream())
+					 .map(info -> info.createPrinter(printerFactory, printSettings))
+					 .toList();
+
+	}
+
+	private static ColumnConsumer columnConsumerForType(ResultType resultType) {
+
+		if (resultType instanceof ResultType.ListT<?> listT) {
+			return new ListColumnConsumer(columnConsumerForType(listT.getElementType()));
+		}
+
+		return switch (((ResultType.Primitive) resultType)) {
+			case BOOLEAN -> new BooleanColumnConsumer();
+			case INTEGER, DATE -> new IntegerColumnConsumer();
+			case NUMERIC -> new NumericColumnConsumer();
+			case MONEY -> new MoneyColumnConsumer();
+			case DATE_RANGE -> new DateRangeColumnConsumer();
+			case STRING -> new StringColumnConsumer();
+		};
+	}
+
 	@Override
 	public WriteContext init(Configuration configuration) {
-		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings));
-		columnConsumer = generateColumnConsumers(idHeaders, resultInfo, printSettings);
+		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
+		columnConsumers = generateColumnConsumers(idHeaders, resultInfo);
+		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings, new ArrowResultPrinters());
 		return new WriteContext(schema, Map.of());
 	}
 
@@ -63,32 +122,45 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			// This should not happen because of the workaround in ParquetRenderer
 			log.warn("Processing a MultilineEntityResult is not working properly. Only the first line will be output");
 		}
+
+		// Write ID fields
+		final Object[] printedExternalId = getPrintedExternalId(record);
+
 		for (Object[] listResultLine : listResultLines) {
 			recordConsumer.startMessage();
-			// Write ID fields
-			final String[] externalId = printSettings.getIdMapper().map(record).getExternalId();
-			int cellIdx = 0;
-			for (int i = 0; i < externalId.length; i++, cellIdx++) {
-				final String subId = externalId[i];
-				if (subId == null) {
+
+			for (int index = 0; index < printedExternalId.length; index++) {
+				final Object printed = printedExternalId[index];
+				if (printed == null) {
 					continue;
 				}
-				final String fieldName = schema.getFieldName(cellIdx);
-				recordConsumer.startField(fieldName, cellIdx);
-				columnConsumer.get(cellIdx).accept(recordConsumer, subId);
-				recordConsumer.endField(fieldName, cellIdx);
+
+				final String fieldName = schema.getFieldName(index);
+
+				recordConsumer.startField(fieldName, index);
+				columnConsumers.get(index).accept(recordConsumer, printed);
+				recordConsumer.endField(fieldName, index);
 			}
 
 			// Write Result fields
-			for (int i = 0; i < resultInfo.size(); i++, cellIdx++) {
-				final Object resultValue = listResultLine[i];
-				if (resultValue == null) {
+			for (int index = 0; index < listResultLine.length; index++) {
+				final int colId = index + printedExternalId.length;
+
+				final Object value = listResultLine[index];
+
+				if (value == null) {
+					// Parquet consumers cannot handle null?
 					continue;
 				}
-				final String fieldName = schema.getFieldName(cellIdx);
-				recordConsumer.startField(fieldName, cellIdx);
-				columnConsumer.get(cellIdx).accept(recordConsumer, resultValue);
-				recordConsumer.endField(fieldName, cellIdx);
+
+				Printer printer = columnPrinters.get(colId);
+				final Object printed = printer.apply(value);
+
+				final String fieldName = schema.getFieldName(colId);
+
+				recordConsumer.startField(fieldName, colId);
+				columnConsumers.get(colId).accept(recordConsumer, printed);
+				recordConsumer.endField(fieldName, colId);
 			}
 
 			recordConsumer.endMessage();
@@ -96,107 +168,89 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	}
 
-	/**
-	 * Generates the parquet schema format from the {@link ResultInfo}s of a query
-	 *
-	 * @param idHeaders        {@link ResultInfo} for the Ids
-	 * @param resultValueInfos {@link ResultInfo} for the result values
-	 * @param uniqueNamer      A column namer for the fields in the schema
-	 * @return the parquet schema
-	 */
-	public static MessageType generateSchema(
-			List<ResultInfo> idHeaders,
-			List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer) {
+	@NotNull
+	private Object[] getPrintedExternalId(EntityResult record) {
+		final String[] externalId = printSettings.getIdMapper().map(record).getExternalId();
 
-		/*
-			Because Parquet Schemas rely on primitive types with logical annotations
-			which are tedious to configure, we take the detour over the arrow schema.
-		 */
-		final SchemaMapping schemaMapping = new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer)));
+		final Object[] printedExternalId = new String[externalId.length];
 
-		return schemaMapping.getParquetSchema();
-
+		for (int index = 0; index < externalId.length; index++) {
+			Printer printer = columnPrinters.get(index);
+			printedExternalId[index] = printer.apply(externalId[index]);
+		}
+		return printedExternalId;
 	}
 
-	@RequiredArgsConstructor
-	private static class StringTColumnConsumer implements ColumnConsumer {
-
-		private final ResultType.StringT resultType;
-		private final PrintSettings printSettings;
+	private record StringColumnConsumer() implements ColumnConsumer {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final String printValue = resultType.printNullable(printSettings, o);
-			recordConsumer.addBinary(Binary.fromString(printValue));
+			recordConsumer.addBinary(Binary.fromString((String) o));
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class BooleanTColumnConsumer implements ColumnConsumer {
-
+	private record BooleanColumnConsumer() implements ColumnConsumer {
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
 			recordConsumer.addBoolean((boolean) o);
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class IntegerTColumnConsumer implements ColumnConsumer {
+	private record IntegerColumnConsumer() implements ColumnConsumer {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			recordConsumer.addInteger((int) o);
+			recordConsumer.addInteger(((Number) o).intValue());
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class NumericTColumnConsumer implements ColumnConsumer {
+
+	private record NumericColumnConsumer() implements ColumnConsumer {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			recordConsumer.addDouble((double) o);
+			recordConsumer.addDouble(((Number) o).doubleValue());
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class DateRangeTColumnConsumer implements ColumnConsumer {
-		private final static String MIN_FIELD_NAME = "min";
-		private final static String MAX_FIELD_NAME = "max";
+	private record MoneyColumnConsumer() implements ColumnConsumer {
+		@Override
+		public void accept(RecordConsumer recordConsumer, Object o) {
+			recordConsumer.addInteger(((Integer) o));
+		}
+	}
+
+
+	private record DateRangeColumnConsumer() implements ColumnConsumer {
+		private static final String MIN_FIELD_NAME = "min";
+		private static final String MAX_FIELD_NAME = "max";
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			List<Integer> dateRange = (List<Integer>) o;
+			final CDateRange dateRange = (CDateRange) o;
+
 			recordConsumer.startGroup();
-			Integer min = dateRange.get(0);
 
-
-
-			if (min != null && !(CDate.isNegativeInfinity(min))) {
+			if (dateRange.hasLowerBound()) {
 				recordConsumer.startField(MIN_FIELD_NAME, 0);
-				recordConsumer.addInteger(min);
+				recordConsumer.addInteger(dateRange.getMinValue());
 				recordConsumer.endField(MIN_FIELD_NAME, 0);
 			}
 
-			Integer max = dateRange.get(1);
-			if (max != null && !(CDate.isPositiveInfinity(max))) {
+			if (dateRange.hasUpperBound()) {
 				recordConsumer.startField(MAX_FIELD_NAME, 1);
-				recordConsumer.addInteger(max);
+				recordConsumer.addInteger(dateRange.getMaxValue());
 				recordConsumer.endField(MAX_FIELD_NAME, 1);
 			}
+
 			recordConsumer.endGroup();
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class ListTColumnConsumer implements ColumnConsumer {
-
-		private final ResultType.ListT resultType;
-		private final PrintSettings printSettings;
+	private record ListColumnConsumer(ColumnConsumer elementConsumer) implements ColumnConsumer {
 
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			final ResultType elementType = resultType.getElementType();
-			final ColumnConsumer elementConsumer = getForResultType(elementType, printSettings);
 
 			List<?> list = (List<?>) o;
 
@@ -207,7 +261,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 				return;
 			}
 
-			// This nesting is wierd but documented https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists
+			// This nesting is weird but documented https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists
 			recordConsumer.startGroup();
 			recordConsumer.startField("list", 0);
 			for (Object elem : list) {
@@ -220,46 +274,5 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			recordConsumer.endField("list", 0);
 			recordConsumer.endGroup();
 		}
-	}
-
-	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings) {
-		final List<ColumnConsumer> consumers = new ArrayList<>();
-		for (ResultInfo idHeader : idHeaders) {
-			consumers.add(getForResultType(idHeader.getType(), printSettings));
-		}
-
-		for (ResultInfo resultInfo : resultInfos) {
-			consumers.add(getForResultType(resultInfo.getType(), printSettings));
-		}
-		return consumers;
-	}
-
-	private static ColumnConsumer getForResultType(ResultType resultType, PrintSettings printSettings) {
-		if (resultType instanceof ResultType.StringT) {
-			return new StringTColumnConsumer((ResultType.StringT) resultType, printSettings);
-		}
-		else if (resultType instanceof ResultType.BooleanT) {
-			return new BooleanTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.IntegerT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.NumericT) {
-			return new NumericTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.MoneyT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.DateT) {
-			return new IntegerTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.DateRangeT) {
-			return new DateRangeTColumnConsumer();
-		}
-		else if (resultType instanceof ResultType.ListT) {
-			return new ListTColumnConsumer((ResultType.ListT) resultType, printSettings);
-		}
-
-		throw new IllegalArgumentException(String.format("Cannot support ResultType %s", resultType));
 	}
 }

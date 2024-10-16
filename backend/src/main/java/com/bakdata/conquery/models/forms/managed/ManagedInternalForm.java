@@ -12,28 +12,26 @@ import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,9 +43,16 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution {
 
 
+	/**
+	 * Subqueries that are sent to the workers.
+	 */
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 	/**
 	 * Mapping of a result table name to a set of queries.
 	 * This is required by forms that have multiple results (CSVs) as output.
@@ -56,19 +61,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@EqualsAndHashCode.Exclude
 	private Map<String, ManagedQuery> subQueries;
 
-	/**
-	 * Subqueries that are sent to the workers.
-	 */
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
-
-	public ManagedInternalForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage) {
-		super(form, user, submittedDataset, storage);
+	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+		super(form, user, submittedDataset, storage, datasetRegistry);
 	}
 
 	@Nullable
@@ -79,11 +73,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void doInitExecutable() {
 		// Convert sub queries to sub executions
-		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
-		subQueries.values().forEach(mq -> mq.initExecutable(getNamespace(), getConfig()));
+		subQueries.values().forEach(mq -> mq.initExecutable(getConfig()));
 	}
 
 	@NotNull
@@ -92,26 +86,10 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry())
 
 				));
 	}
-
-
-	@Override
-	public void start() {
-		synchronized (this) {
-			subQueries.values().stream().forEach(flatSubQueries::add);
-		}
-		flatSubQueries.values().forEach(ManagedQuery::start);
-		super.start();
-	}
-
-	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
-		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
-	}
-
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		// Set the ColumnDescription if the Form only consits of a single subquery
@@ -134,6 +112,20 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void cancel() {
 		subQueries.values().forEach(ManagedQuery::cancel);
+	}
+
+	@Override
+	public void start() {
+		synchronized (this) {
+			subQueries.values().forEach(flatSubQueries::add);
+		}
+		flatSubQueries.values().forEach(ManagedExecution::start);
+		super.start();
+	}
+
+	@Override
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
 	}
 
 	@Override
@@ -162,13 +154,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		}
 		return subQueries.values().iterator().next().resultRowCount();
 	}
-
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), flatSubQueries.entrySet().stream()
-													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
-	}
-
 
 	public boolean allSubQueriesDone() {
 		synchronized (this) {

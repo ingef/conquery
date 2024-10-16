@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
@@ -74,5 +75,9 @@ public class QuarterDateRangeStore implements DateRangeStore {
 		final LocalDate end = QuarterUtils.getLastDayOfQuarter(begin);
 
 		return CDateRange.of(begin, CDate.ofLocalDate(end));
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 }

@@ -8,7 +8,6 @@ import java.util.stream.StreamSupport;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.Frequency;
@@ -19,13 +18,13 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 	private final Frequency frequencies = new Frequency();
 	private final long limit;
-	private final ResultType.StringT type;
+
 	private int nulls = 0;
 
-	public StringColumnStatsCollector(String name, String label, String description, ResultType.StringT type, PrintSettings printSettings, long limit) {
+
+	public StringColumnStatsCollector(String name, String label, String description, PrintSettings printSettings, long limit) {
 		super(name, label, description, printSettings);
 		this.limit = limit;
-		this.type = type;
 	}
 
 	@Override
@@ -36,7 +35,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 		}
 
 		// In case there's a mapping, we need to map the value
-		final String printed = getType().printNullable(getPrintSettings(), value);
+		final String printed = (String) value;
 		frequencies.addValue(printed);
 	}
 

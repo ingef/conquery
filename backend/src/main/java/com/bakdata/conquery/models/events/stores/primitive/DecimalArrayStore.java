@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.events.stores.primitive;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -65,5 +66,9 @@ public class DecimalArrayStore implements DecimalStore {
 	@Override
 	public BigDecimal getDecimal(int event) {
 		return values[event];
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 }

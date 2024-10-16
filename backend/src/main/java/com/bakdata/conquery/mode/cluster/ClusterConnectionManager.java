@@ -2,28 +2,27 @@ package com.bakdata.conquery.mode.cluster;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,67 +38,79 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 @RequiredArgsConstructor
 public class ClusterConnectionManager extends IoHandlerAdapter {
 
-	private IoAcceptor acceptor;
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final Validator validator;
 	private final ConqueryConfig config;
-	private final InternalObjectMapperCreator internalObjectMapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 	@Getter
 	private final ClusterState clusterState;
+	private IoAcceptor acceptor;
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MessageToManagerNode toManagerNode) {
+		if (!(message instanceof MessageToManagerNode toManagerNode)) {
+			log.error("Unknown message type {} in {}", message.getClass(), message);
+			return;
 
-			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+		}
 
-			Job job = new ReactingJob<>(toManagerNode,
-				new NetworkMessageContext.ManagerNodeNetworkContext(
-						new NetworkSession(session),
-						datasetRegistry,
-						clusterState,
-						config.getCluster().getBackpressure()
-				));
+		final ShardNodeInformation shardNodeInformation = clusterState.getShardNodes().get(session.getRemoteAddress());
 
-			if (toManagerNode instanceof SlowMessage slowMessage) {
-				slowMessage.setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
+		final NetworkSession nwSession;
+
+		if (shardNodeInformation == null) {
+			// In case the shard is not yet registered, we wont have a shardNodeInformation to pull the session from
+			nwSession = new NetworkSession(session);
 		}
 		else {
-			log.error("Unknown message type {} in {}", message.getClass(), message);
+			nwSession = shardNodeInformation.getSession();
+		}
+
+		log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+
+		final Job job = new ReactingJob<>(toManagerNode,
+										  new NetworkMessageContext.ManagerNodeNetworkContext(nwSession,
+																							  datasetRegistry,
+																							  clusterState,
+																							  config.getCluster().getBackpressure()
+										  )
+		);
+
+		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
+			datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
+		}
+		else if (toManagerNode instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
 		}
 	}
 
 	public void start() throws IOException {
 		acceptor = new NioSocketAcceptor();
+		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
 
-		ObjectMapper om = internalObjectMapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
-		config.configureObjectMapper(om);
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
+		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
+
+		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
@@ -108,8 +119,6 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	}
 
 	public void stop() {
-		clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
-
 		try {
 			acceptor.dispose();
 		}

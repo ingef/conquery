@@ -4,8 +4,7 @@ import java.util.Locale;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
-import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.common.LocalizedToString;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +15,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum FeatureGroup {
+public enum FeatureGroup implements LocalizedToString {
 	FEATURE() {
 		@Override
 		public String toString(Locale locale) {
@@ -33,22 +32,6 @@ public enum FeatureGroup {
 		@Override
 		public String toString(Locale locale) {
 			return "";
-		}
-	};
-
-	public abstract String toString(Locale locale);
-
-	public static String localizeValue(Object value, PrintSettings cfg) {
-		if (value instanceof Resolution) {
-			return ((Resolution) value).toString(cfg.getLocale());
-		}
-		try {
-			// If the object was parsed as a simple string, try to convert it to a
-			// FeatureGroup to get Internationalization
-			return FeatureGroup.valueOf((String) value).toString(cfg.getLocale());
-		}
-		catch (Exception e) {
-			throw new IllegalArgumentException(value + " is not a valid resolution.", e);
 		}
 	}
 }

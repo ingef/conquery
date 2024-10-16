@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.query.statistics;
 
 import java.time.LocalDate;
-import java.time.temporal.IsoFields;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -35,15 +33,11 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	}
 
 	private static Function<Object, CDateRange> getDateExtractor(ResultType dateType) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return dateValue -> CDateRange.fromList((List<? extends Number>) dateValue);
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return dateValue -> CDateRange.exactly((Integer) dateValue);
-		}
-
-		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
+		return switch (((ResultType.Primitive) dateType)) {
+			case DATE_RANGE -> dateValue -> (CDateRange) dateValue;
+			case DATE -> dateValue -> CDateRange.exactly((LocalDate) dateValue);
+			default -> throw new IllegalStateException("Unexpected type %s".formatted(dateType));
+		};
 	}
 
 	@Override
@@ -71,7 +65,6 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	private void handleDay(int day) {
 		final LocalDate date = CDate.toLocalDate(day);
 		final int year = date.getYear();
-		final int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
 		final int month = date.getMonthValue();
 
 		// This code is pretty hot, therefore I want to avoid String.format

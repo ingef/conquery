@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.support;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -10,18 +11,17 @@ import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.collections4.CollectionUtils;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  * This interface allows to override the configuration used in tests.
  */
-@TestInstance(Lifecycle.PER_CLASS)
-public interface ConfigOverride {
+@UtilityClass
+public final class ConfigOverride {
 
 	@SneakyThrows
-	static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
+	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
 
 		config.setFailOnError(true);
 
@@ -37,7 +37,7 @@ public interface ConfigOverride {
 	}
 
 	@SneakyThrows
-	static void configureRandomPorts(ConqueryConfig config) {
+	public static void configureRandomPorts(ConqueryConfig config) {
 
 		// set random open ports
 		final Collection<ConnectorFactory> connectorFactories = CollectionUtils.union(
@@ -55,11 +55,10 @@ public interface ConfigOverride {
 		}
 	}
 
-	/**
-	 * Is called upon initialization of the test instance of Conquery.
-	 *
-	 * @param config The configuration that is initialized with the defaults.
-	 */
-	void override(ConqueryConfig config);
 
+	public static void configureWorkdir(XodusStoreFactory storageConfig, Path workdir) {
+
+		// Create new storage path to prevent xodus lock conflicts
+		storageConfig.setDirectory(workdir);
+	}
 }

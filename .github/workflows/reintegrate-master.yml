@@ -5,20 +5,47 @@ on:
     branches:
       - master
 
+env:
+  REINTEGRATE_BRANCH_NAME: reintegrate-main
+
 jobs:
   reintegrate-master:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
           submodules: true
-      - name: pull-request
-        uses: repo-sync/pull-request@v2
-        with:
-          destination_branch: "develop"
-          pr_title: "Reintegrate Master"
-          pr_reviewer: "thoniTUB,awildturtok"
-          pr_assignee: "thoniTUB,awildturtok"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config push.autoSetupRemote true
+      - name: Switch to intermediate branch
+        run: git checkout -b $REINTEGRATE_BRANCH_NAME
+      - name: Push intermediate Branch
+        run: git push -f
+      - name: Create pull-request
+        run: >
+          gh pr create
+          -l automated
+          -a awildturtok,thoniTUB
+          -r awildturtok,thoniTUB
+          -B develop
+          --title "Reintegrate Main"
+          --body "Merge main branch back into develop branch"
+          --head $REINTEGRATE_BRANCH_NAME
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Modify the request in the scope of a PAT (an actual user).
+      # This should allow to trigger subsequent actions with the merge commit.
+      - name: Modify pull request
+        run: >
+          gh pr merge
+          --merge
+          --auto
+          --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}

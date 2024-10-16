@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import org.jetbrains.annotations.TestOnly;
 
 @CPSType(id = "DATASET", base = StringPermissionBuilder.class)
 public class DatasetPermission extends StringPermissionBuilder {
@@ -38,7 +39,7 @@ public class DatasetPermission extends StringPermissionBuilder {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
-	@Deprecated
+	@TestOnly
 	public static ConqueryPermission onInstance(Ability ability, DatasetId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

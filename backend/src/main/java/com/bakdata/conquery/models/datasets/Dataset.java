@@ -8,42 +8,59 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Dataset extends Labeled<DatasetId> implements Injectable, Authorized, NamespacedIdentifiable<DatasetId> {
-	public Dataset(String name) {
-		setName(name);
-	}
 
 	/**
 	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
 	 */
 	public static final Dataset PLACEHOLDER = new Dataset("PLACEHOLDER");
-
-	public static boolean isAllIdsTable(Table table){
-		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
-	}
-
 	/**
 	 * Sorting weight for Frontend.
 	 */
 	private int weight;
 
+	/**
+	 * Resolver for {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
+	 * It is usually injected when this object is loaded from a store, or set manually, when it is created.
+	 **/
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Getter
+	@Setter
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	private transient NamespacedStorageProvider namespacedStorageProvider;
+
+	public Dataset(String name) {
+		setName(name);
+	}
+
+	public static boolean isAllIdsTable(Table table){
+		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
+	}
+
 	@JsonIgnore
 	public Table getAllIdsTable() {
 		//TODO store this somehow? / Add this at dataset creation
 		final Table table = new Table();
-		table.setDataset(this);
+		table.setDataset(this.getId());
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);
+
+		// We could use the resolvers of this dataset, but actually this table's id should never be resolved
 		return table;
 	}
 
@@ -54,17 +71,19 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 
 	@Override
 	public DatasetId createId() {
-		return new DatasetId(getName());
+		DatasetId datasetId = new DatasetId(getName());
+		datasetId.setNamespacedStorageProvider(getNamespacedStorageProvider());
+		return datasetId;
 	}
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
-		return DatasetPermission.onInstance(abilities,getId());
+		return getId().createPermission(abilities);
 	}
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
-		return this;
+	public DatasetId getDataset() {
+		return this.getId();
 	}
 }

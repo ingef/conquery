@@ -9,9 +9,9 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -28,14 +28,13 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
@@ -72,7 +71,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public Collection<WorkerStorage> discoverWorkerStorages() {
+	public Collection<? extends WorkerStorage> discoverWorkerStorages() {
 		return Collections.emptyList();
 	}
 
@@ -82,54 +81,33 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(secondaryIdDescriptionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(secondaryIdDescriptionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(tableStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(searchIndexStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(conceptStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(previewStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
-
+	public IdentifiableStore<Import> createImportStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(importStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.cached(entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>()));
+	public IdentifiableStore<CBlock> createCBlockStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(cBlockStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(tableStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(conceptStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(importStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(cBlockStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(bucketStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Bucket> createBucketStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(bucketStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
@@ -148,41 +126,71 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+	public SingletonStore<StructureNode[]> createStructureStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(structureStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(executionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<ManagedExecution> createExecutionsStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(executionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(formConfigStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<FormConfig> createFormConfigStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(formConfigStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(userStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<User> createUserStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(userStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(roleStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Role> createRoleStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(roleStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(groupStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	public IdentifiableStore<Group> createGroupStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(groupStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	}
+
+	@Override
+	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	}
+
+	@Override
+	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(searchIndexStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	}
+
+	@Override
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(previewStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+
+	}
+
+	@Override
+	public Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>());
 	}
 
 	/**
 	 * @implNote intended for Unit-tests
 	 */
 	public MetaStorage createMetaStorage() {
-		final MetaStorage metaStorage = new MetaStorage(this, null);
-		metaStorage.openStores(null);
+		final MetaStorage metaStorage = new MetaStorage(this);
+		metaStorage.openStores(null, new MetricRegistry());
 		return metaStorage;
+	}
+
+	/**
+	 * @implNote intended for Unit-tests
+	 */
+	public NamespaceStorage createNamespaceStorage() {
+		final NamespaceStorage storage = new NamespaceStorage(this, "_");
+		storage.openStores(null, new MetricRegistry());
+		return storage;
 	}
 }

@@ -4,11 +4,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -18,7 +19,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -26,7 +29,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -42,8 +45,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final JobManager jobManager;
 	@Getter
 	private final QueryExecutor queryExecutor;
-	@Setter
-	private NetworkSession session;
 	/**
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
@@ -51,9 +52,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final ExecutorService jobsExecutorService;
 	@Getter
 	private final BucketManager bucketManager;
-
 	@Getter
 	private final ObjectMapper communicationMapper;
+	@Setter
+	private NetworkSession session;
 
 
 	public Worker(
@@ -63,13 +65,15 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			ObjectMapper communicationMapper,
+			int secondaryIdSubPlanLimit,
+			Environment environment) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 		this.communicationMapper = communicationMapper;
 
 
-		storage.openStores(persistenceMapper);
+		storage.openStores(persistenceMapper, environment.metrics());
 		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
@@ -84,35 +88,38 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ExecutorService jobsExecutorService,
 			@NonNull StoreFactory config,
 			@NonNull String directory,
-			@NonNull Validator validator,
 			boolean failOnError,
 			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+			InternalMapperFactory internalMapperFactory,
+			int secondaryIdSubPlanLimit,
+			Environment environment) {
 
-		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
+		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, environment.getValidator(), directory);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
+		workerStorage.openStores(persistenceMapper, environment.metrics());
+
+		dataset.setNamespacedStorageProvider(workerStorage);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
-
-		workerStorage.openStores(persistenceMapper);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+
+
+
+		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(workerStorage);
+
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, environment);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
 		return new ModificationShieldedWorkerStorage(storage);
-	}
-
-	public WorkerInformation getInfo() {
-		return storage.getWorker();
 	}
 
 	@Override
@@ -125,9 +132,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 
-	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage.getCentralRegistry())
-				.injectIntoNew(binaryMapper);
+	public WorkerInformation getInfo() {
+		return storage.getWorker();
 	}
 
 	@Override
@@ -168,7 +174,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addImport(imp);
 	}
 
-	public void removeImport(Import imp) {
+	public void removeImport(ImportId imp) {
 		bucketManager.removeImport(imp);
 	}
 
@@ -216,7 +222,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(@NsIdRef Table table) {
+	public void removeTable(TableId table) {
 		bucketManager.removeTable(table);
 	}
 

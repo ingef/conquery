@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
@@ -7,9 +10,8 @@ import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -89,6 +91,7 @@ public class CompoundDateRangeStore implements DateRangeStore {
 	}
 
 	@Override
+	@JsonBackReference
 	public void setParent(@NonNull Bucket bucket) {
 		parent = bucket;
 	}

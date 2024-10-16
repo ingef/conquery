@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.frontend;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +14,7 @@ public class FrontendSelect {
 	private SelectId id;
 	private String label;
 	private String description;
-	private ResultType resultType;
+	private FrontendResultType resultType;
 	@JsonProperty("default")
 	private Boolean isDefault;
 }

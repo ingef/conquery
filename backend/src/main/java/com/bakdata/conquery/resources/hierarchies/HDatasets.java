@@ -20,7 +20,7 @@ import lombok.Setter;
 public abstract class HDatasets extends HAuthorized {
 
 	@Inject
-	protected DatasetRegistry datasetRegistry;
+	protected DatasetRegistry<?> datasetRegistry;
 
 	@PathParam(DATASET)
 	private Dataset dataset;

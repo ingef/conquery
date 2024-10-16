@@ -5,8 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -23,9 +26,6 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -70,10 +70,10 @@ public class EntityDateQuery extends Query {
 		return new EntityDateQueryPlan(
 				query.createQueryPlan(context),
 				features.createQueryPlan(context),
-                resolutionsAndAlignments,
-                dateRange
-        );
-    }
+				resolutionsAndAlignments,
+				dateRange
+		);
+	}
 
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
@@ -81,31 +81,31 @@ public class EntityDateQuery extends Query {
 		features.collectRequiredQueries(requiredQueries);
 	}
 
-    @Override
-    public void resolve(QueryResolveContext context) {
-        query.resolve(context.withDateAggregationMode(dateAggregationMode));
-        features.resolve(context);
-    }
+	@Override
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context.withDateAggregationMode(dateAggregationMode));
+		features.resolve(context);
+	}
 
-    @Override
-    public List<ResultInfo> getResultInfos() {
-		List<ResultInfo>  resultInfos = new ArrayList<>();
-		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
-		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
-		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+	@Override
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.add(ResultHeaders.formResolutionInfo());
+		resultInfos.add(ResultHeaders.formContextInfo());
+		resultInfos.add(ResultHeaders.formDateRangeInfo());
 
 		resultInfos.addAll(features.getResultInfos());
 
 		return resultInfos;
 
-    }
+	}
 
-    @Override
-    public void visit(Consumer<Visitable> visitor) {
-        visitor.accept(this);
-        query.visit(visitor);
-        features.visit(visitor);
-    }
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
+		query.visit(visitor);
+		features.visit(visitor);
+	}
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {

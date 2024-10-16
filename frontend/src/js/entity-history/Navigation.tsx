@@ -1,36 +1,30 @@
 import styled from "@emotion/styled";
-import {
-  faArrowDown,
-  faArrowUp,
-  faChevronLeft,
-  faDownload,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, SetStateAction, memo, useCallback, useMemo } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import {faArrowDown, faArrowUp, faChevronLeft, faDownload, faTrash,} from "@fortawesome/free-solid-svg-icons";
+import {Dispatch, memo, SetStateAction, useCallback, useMemo} from "react";
+import {useHotkeys} from "react-hotkeys-hook";
+import {useTranslation} from "react-i18next";
+import {useDispatch, useSelector} from "react-redux";
 
-import { SelectOptionT } from "../api/types";
-import { StateT } from "../app/reducers";
+import {SelectOptionT} from "../api/types";
+import {StateT} from "../app/reducers";
 import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
+import {ConfirmableTooltip} from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import { EntityIdsList } from "./EntityIdsList";
-import type { EntityIdsStatus } from "./History";
-import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
-import { NavigationHeader } from "./NavigationHeader";
-import { SearchEntites } from "./SearchEntities";
-import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
-import { EntityId } from "./reducer";
-import { saveHistory } from "./saveAndLoad";
+import {EntityIdsList} from "./EntityIdsList";
+import type {EntityIdsStatus} from "./History";
+import {LoadHistoryDropzone, LoadingPayload} from "./LoadHistoryDropzone";
+import {NavigationHeader} from "./NavigationHeader";
+import {SearchEntites} from "./SearchEntities";
+import {closeHistory, resetHistory, useUpdateHistorySession} from "./actions";
+import {EntityId} from "./reducer";
+import {saveHistory} from "./saveAndLoad";
 
 const Root = styled("div")`
   display: grid;
   gap: 10px;
   overflow: hidden;
-  background-color: ${({ theme }) => theme.col.bg};
+  background-color: ${({theme}) => theme.col.bg};
 `;
 
 const Row = styled("div")`
@@ -82,160 +76,160 @@ const ButtonWithTooltip = styled(WithTooltip)`
 `;
 
 export const Navigation = memo(
-  ({
-    blurred,
-    className,
-    entityIds,
-    entityIdsStatus,
-    currentEntityId,
-    currentEntityIndex,
-    entityStatusOptions,
-    setEntityStatusOptions,
-    onLoadFromFile,
-    onResetHistory,
-  }: {
-    blurred?: boolean;
-    className?: string;
-    entityIds: EntityId[];
-    entityIdsStatus: EntityIdsStatus;
-    currentEntityId: EntityId | null;
-    currentEntityIndex: number;
-    entityStatusOptions: SelectOptionT[];
-    setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
-    onLoadFromFile: (payload: LoadingPayload) => void;
-    onResetHistory: () => void;
-  }) => {
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const { loadingId, updateHistorySession } = useUpdateHistorySession();
-    const onCloseHistory = useCallback(() => {
-      dispatch(closeHistory());
-    }, [dispatch]);
+    ({
+         blurred,
+         className,
+         entityIds,
+         entityIdsStatus,
+         currentEntityId,
+         currentEntityIndex,
+         entityStatusOptions,
+         setEntityStatusOptions,
+         onLoadFromFile,
+         onResetHistory,
+     }: {
+        blurred?: boolean;
+        className?: string;
+        entityIds: EntityId[];
+        entityIdsStatus: EntityIdsStatus;
+        currentEntityId: EntityId | null;
+        currentEntityIndex: number;
+        entityStatusOptions: SelectOptionT[];
+        setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
+        onLoadFromFile: (payload: LoadingPayload) => void;
+        onResetHistory: () => void;
+    }) => {
+        const {t} = useTranslation();
+        const dispatch = useDispatch();
+        const {loadingId, updateHistorySession} = useUpdateHistorySession();
+        const onCloseHistory = useCallback(() => {
+            dispatch(closeHistory());
+        }, [dispatch]);
 
-    const ids = useSelector<StateT, unknown[]>(
-      (state) => state.entityHistory.entityIds,
-    );
+        const ids = useSelector<StateT, unknown[]>(
+            (state) => state.entityHistory.entityIds,
+        );
 
-    const goToPrev = useCallback(() => {
-      const prevIdx = Math.max(0, currentEntityIndex - 1);
+        const goToPrev = useCallback(() => {
+            const prevIdx = Math.max(0, currentEntityIndex - 1);
 
-      updateHistorySession({ entityId: entityIds[prevIdx] });
-    }, [entityIds, currentEntityIndex, updateHistorySession]);
-    const goToNext = useCallback(() => {
-      const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
+            updateHistorySession({entityId: entityIds[prevIdx]});
+        }, [entityIds, currentEntityIndex, updateHistorySession]);
+        const goToNext = useCallback(() => {
+            const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
 
-      updateHistorySession({ entityId: entityIds[nextIdx] });
-    }, [entityIds, currentEntityIndex, updateHistorySession]);
+            updateHistorySession({entityId: entityIds[nextIdx]});
+        }, [entityIds, currentEntityIndex, updateHistorySession]);
 
-    const onDownload = useCallback(() => {
-      saveHistory({ entityIds, entityIdsStatus });
-    }, [entityIds, entityIdsStatus]);
+        const onDownload = useCallback(() => {
+            saveHistory({entityIds, entityIdsStatus});
+        }, [entityIds, entityIdsStatus]);
 
-    const onReset = useCallback(() => {
-      onResetHistory();
-      dispatch(resetHistory());
-    }, [dispatch, onResetHistory]);
+        const onReset = useCallback(() => {
+            onResetHistory();
+            dispatch(resetHistory({includingDefaultParams: false}));
+        }, [dispatch, onResetHistory]);
 
-    useHotkeys("shift+up", goToPrev, [goToPrev]);
-    useHotkeys("shift+down", goToNext, [goToNext]);
+        useHotkeys("shift+up", goToPrev, [goToPrev]);
+        useHotkeys("shift+down", goToNext, [goToNext]);
 
-    const markedCount = useMemo(
-      () => Object.values(entityIdsStatus).filter((v) => v.length > 0).length,
-      [entityIdsStatus],
-    );
+        const markedCount = useMemo(
+            () => Object.values(entityIdsStatus).filter((v) => v.length > 0).length,
+            [entityIdsStatus],
+        );
 
-    const backButtonWarning =
-      markedCount > 0 ? t("history.backButtonWarning") : "";
+        const backButtonWarning =
+            markedCount > 0 ? t("history.backButtonWarning") : "";
 
-    const empty = ids.length === 0;
+        const empty = ids.length === 0;
 
-    return (
-      <Root
-        className={className}
-        style={{
-          gridTemplateRows: empty ? "auto 1fr" : "auto auto 1fr",
-        }}
-      >
-        <Row>
-          <WithTooltip text={backButtonWarning}>
-            <ContainedIconButton
-              frame
-              icon={faChevronLeft}
-              onClick={onCloseHistory}
+        return (
+            <Root
+                className={className}
+                style={{
+                    gridTemplateRows: empty ? "auto 1fr" : "auto auto 1fr",
+                }}
             >
-              {t("common.back")}
-            </ContainedIconButton>
-          </WithTooltip>
-          {!empty && (
-            <ConfirmableTooltip
-              onConfirm={onReset}
-              placement="bottom"
-              confirmationText={t("history.settings.resetConfirm")}
-            >
-              <ContainedIconButton frame icon={faTrash}>
-                {t("history.settings.reset")}
-              </ContainedIconButton>
-            </ConfirmableTooltip>
-          )}
-        </Row>
-        {!empty && (
-          <SxNavigationHeader
-            markedCount={markedCount}
-            idsCount={entityIds.length}
-            entityStatusOptions={entityStatusOptions}
-            setEntityStatusOptions={setEntityStatusOptions}
-          />
-        )}
-        <EntityIdNav>
-          {!empty && (
-            <TopActions>
-              <ButtonWithTooltip
-                text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
-                lazy
-              >
-                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
-              </ButtonWithTooltip>
-            </TopActions>
-          )}
-          <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
-            {entityIds.length === 0 && (
-              <SearchEntites onLoad={onLoadFromFile} />
-            )}
-            <EntityIdsList
-              blurred={blurred}
-              currentEntityId={currentEntityId}
-              entityIds={entityIds}
-              updateHistorySession={updateHistorySession}
-              entityIdsStatus={entityIdsStatus}
-              loadingId={loadingId}
-            />
-          </SxLoadHistoryDropzone>
-          {!empty && (
-            <>
-              <BottomActions>
-                <ButtonWithTooltip
-                  text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
-                  lazy
-                >
-                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
-                </ButtonWithTooltip>
-              </BottomActions>
-              <BottomActions style={{ marginTop: "10px" }}>
-                <ButtonWithTooltip text={t("history.downloadButtonLabel")}>
-                  <SxIconButton
-                    style={{ backgroundColor: "white" }}
-                    frame
-                    icon={faDownload}
-                    onClick={onDownload}
-                  >
-                    CSV
-                  </SxIconButton>
-                </ButtonWithTooltip>
-              </BottomActions>
-            </>
-          )}
-        </EntityIdNav>
-      </Root>
-    );
-  },
+                <Row>
+                    <WithTooltip text={backButtonWarning}>
+                        <ContainedIconButton
+                            frame
+                            icon={faChevronLeft}
+                            onClick={onCloseHistory}
+                        >
+                            {t("common.back")}
+                        </ContainedIconButton>
+                    </WithTooltip>
+                    {!empty && (
+                        <ConfirmableTooltip
+                            onConfirm={onReset}
+                            placement="bottom"
+                            confirmationText={t("history.settings.resetConfirm")}
+                        >
+                            <ContainedIconButton frame icon={faTrash}>
+                                {t("history.settings.reset")}
+                            </ContainedIconButton>
+                        </ConfirmableTooltip>
+                    )}
+                </Row>
+                {!empty && (
+                    <SxNavigationHeader
+                        markedCount={markedCount}
+                        idsCount={entityIds.length}
+                        entityStatusOptions={entityStatusOptions}
+                        setEntityStatusOptions={setEntityStatusOptions}
+                    />
+                )}
+                <EntityIdNav>
+                    {!empty && (
+                        <TopActions>
+                            <ButtonWithTooltip
+                                text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+                                lazy
+                            >
+                                <SxIconButton icon={faArrowUp} onClick={goToPrev}/>
+                            </ButtonWithTooltip>
+                        </TopActions>
+                    )}
+                    <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
+                        {entityIds.length === 0 && (
+                            <SearchEntites onLoad={onLoadFromFile}/>
+                        )}
+                        <EntityIdsList
+                            blurred={blurred}
+                            currentEntityId={currentEntityId}
+                            entityIds={entityIds}
+                            updateHistorySession={updateHistorySession}
+                            entityIdsStatus={entityIdsStatus}
+                            loadingId={loadingId}
+                        />
+                    </SxLoadHistoryDropzone>
+                    {!empty && (
+                        <>
+                            <BottomActions>
+                                <ButtonWithTooltip
+                                    text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+                                    lazy
+                                >
+                                    <SxIconButton icon={faArrowDown} onClick={goToNext}/>
+                                </ButtonWithTooltip>
+                            </BottomActions>
+                            <BottomActions style={{marginTop: "10px"}}>
+                                <ButtonWithTooltip text={t("history.downloadButtonLabel")}>
+                                    <SxIconButton
+                                        style={{backgroundColor: "white"}}
+                                        frame
+                                        icon={faDownload}
+                                        onClick={onDownload}
+                                    >
+                                        CSV
+                                    </SxIconButton>
+                                </ButtonWithTooltip>
+                            </BottomActions>
+                        </>
+                    )}
+                </EntityIdNav>
+            </Root>
+        );
+    },
 );

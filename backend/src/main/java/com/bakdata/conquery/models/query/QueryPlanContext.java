@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AccessLevel;
@@ -39,10 +38,6 @@ public class QueryPlanContext {
 
 	public ModificationShieldedWorkerStorage getStorage() {
 		return worker.getStorage();
-	}
-
-	public CentralRegistry getCentralRegistry() {
-		return worker.getStorage().getCentralRegistry();
 	}
 
 }

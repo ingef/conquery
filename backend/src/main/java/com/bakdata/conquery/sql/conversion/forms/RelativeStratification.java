@@ -1,8 +1,6 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_SELECTOR;
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START_NEGATIVE;
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START_POSITIVE;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -44,7 +42,9 @@ class RelativeStratification {
 
 		// we want to create the stratification for each distinct validity date range of an entity,
 		// so we first need to unnest the validity date in case it is a multirange
-		QueryStep withUnnestedValidityDate = functionProvider.unnestValidityDate(baseStep, FormCteStep.UNNEST_DATES.getSuffix());
+		Preconditions.checkArgument(baseStep.getSelects().getValidityDate().isPresent(), "Base step must contain a validity date");
+		String unnestCteName = FormCteStep.UNNEST_DATES.getSuffix();
+		QueryStep withUnnestedValidityDate = functionProvider.unnestDaterange(baseStep.getSelects().getValidityDate().get(), baseStep, unnestCteName);
 
 		QueryStep indexSelectorStep = createIndexSelectorStep(form, withUnnestedValidityDate);
 		QueryStep indexStartStep = createIndexStartStep(form, indexSelectorStep);

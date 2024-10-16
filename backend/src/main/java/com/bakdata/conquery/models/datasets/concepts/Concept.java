@@ -4,20 +4,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,8 +56,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Valid
 	private List<CONNECTOR> connectors = Collections.emptyList();
 
-	@NsIdRef
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	/**
 	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
@@ -74,6 +72,15 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	public abstract List<? extends Select> getSelects();
 
+	public Select getSelectByName(String name) {
+		for (Select select : getSelects()) {
+			if (select.getName().equals(name)) {
+				return select;
+			}
+		}
+		return null;
+	}
+
 	public void initElements() throws ConfigurationException, JSONException {
 		getSelects().forEach(Select::init);
 		getConnectors().forEach(CONNECTOR::init);
@@ -87,7 +94,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(dataset.getId(), getName());
+		return new ConceptId(dataset, getName());
 	}
 
 	public int countElements() {
@@ -107,6 +114,17 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
-		return ConceptPermission.onInstance(abilities, getId());
+		return getId().createPermission(abilities);
 	}
+
+	public CONNECTOR getConnectorByName(String name) {
+		for (CONNECTOR connector : connectors) {
+			if (connector.getName().equals(name)) {
+				return connector;
+			}
+		}
+		return null;
+	}
+
+	public abstract ConceptElement<?> findById(ConceptElementId<?> id);
 }

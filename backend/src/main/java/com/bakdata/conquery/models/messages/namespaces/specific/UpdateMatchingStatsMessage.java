@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.mode.cluster.WorkerUpdateMatchingStatsJob;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class UpdateMatchingStatsMessage extends WorkerMessage {
 
-	@NsIdRefCollection
-	private final Collection<Concept<?>> concepts;
+	@Getter
+	private final Collection<ConceptId> concepts;
 
 	@Override
 	public void react(Worker worker) throws Exception {

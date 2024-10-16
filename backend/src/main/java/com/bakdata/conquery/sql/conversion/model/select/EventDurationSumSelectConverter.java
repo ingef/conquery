@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -20,7 +18,7 @@ import org.jooq.impl.DSL;
 public class EventDurationSumSelectConverter implements SelectConverter<EventDurationSumSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(EventDurationSumSelect select, SelectContext<Connector, ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(EventDurationSumSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		FieldWrapper<BigDecimal> stringAggregation = createEventDurationSumAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
@@ -32,7 +30,7 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 	}
 
 	@Override
-	public ConceptSqlSelects conceptSelect(EventDurationSumSelect select, SelectContext<TreeConcept, ConceptSqlTables> selectContext) {
+	public ConceptSqlSelects conceptSelect(EventDurationSumSelect select, SelectContext<ConceptSqlTables> selectContext) {
 
 		FieldWrapper<BigDecimal> stringAggregation = createEventDurationSumAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
@@ -43,7 +41,7 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 								.build();
 	}
 
-	private FieldWrapper<BigDecimal> createEventDurationSumAggregation(EventDurationSumSelect select, SelectContext<?, ?> selectContext) {
+	private FieldWrapper<BigDecimal> createEventDurationSumAggregation(EventDurationSumSelect select, SelectContext<?> selectContext) {
 
 		Preconditions.checkArgument(selectContext.getValidityDate().isPresent(), "Can't convert an EventDateUnionSelect without a validity date being present");
 		String predecessorCteName = selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS);

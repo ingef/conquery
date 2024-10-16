@@ -1,24 +1,21 @@
 package com.bakdata.conquery.io.mina;
 
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.apache.mina.core.buffer.IoBuffer;
 
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.util.io.EndCheckableInputStream;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.mina.core.buffer.IoBuffer;
 
 public interface ChunkedMessage {
 	
-	public long size();
-	public EndCheckableInputStream createInputStream();
+	long size();
+	EndCheckableInputStream createInputStream();
 	
 	@Getter @RequiredArgsConstructor
-	public static class Singleton implements ChunkedMessage {
+	class Singleton implements ChunkedMessage {
 	
 		private final IoBuffer buffer;
 		
@@ -39,7 +36,7 @@ public interface ChunkedMessage {
 	}
 	
 	@Getter @RequiredArgsConstructor
-	public static class List implements ChunkedMessage {
+	class List implements ChunkedMessage {
 	
 		private final java.util.List<IoBuffer> buffers = new ArrayList<>();
 		

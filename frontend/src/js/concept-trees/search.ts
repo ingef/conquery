@@ -1,16 +1,16 @@
-import type { ConceptIdT, ConceptT } from "../api/types";
+import type {ConceptIdT, ConceptT} from "../api/types";
 
 export const doesQueryMatchNode = (node: ConceptT, query: string) => {
-  return (
-    node.label.toLowerCase().includes(query) ||
-    (node.description && node.description.toLowerCase().includes(query)) ||
-    (node.additionalInfos &&
-      node.additionalInfos
-        .map(({ value }) => value)
-        .join("")
-        .toLowerCase()
-        .includes(query))
-  );
+    return (
+        node.label.toLowerCase().includes(query) ||
+        (node.description && node.description.toLowerCase().includes(query)) ||
+        (node.additionalInfos &&
+            node.additionalInfos
+                .map(({value}) => value)
+                .join("")
+                .toLowerCase()
+                .includes(query))
+    );
 };
 
 /*
@@ -31,52 +31,52 @@ export const doesQueryMatchNode = (node: ConceptT, query: string) => {
     this object through the recursion and define new properties as we go (side effects)
 */
 export const findConcepts = (
-  trees: Record<string, Record<string, ConceptT>>,
-  treeId: string,
-  nodeId: ConceptIdT,
-  node: ConceptT,
-  query: string,
-  intermediateResult: { [key: ConceptIdT]: number } = {},
+    trees: Record<string, Record<string, ConceptT>>,
+    treeId: string,
+    nodeId: ConceptIdT,
+    node: ConceptT,
+    query: string,
+    intermediateResult: { [key: ConceptIdT]: number } = {},
 ) => {
-  // !node normall shouldn't happen.
-  // It happens when window.conceptTrees doesn't contain a node
-  // that was somewhere specified as a child.
-  // TODO: Stronger contract with API on what shape of data is allowed
-  if (!node) return intermediateResult;
+    // !node normall shouldn't happen.
+    // It happens when window.conceptTrees doesn't contain a node
+    // that was somewhere specified as a child.
+    // TODO: Stronger contract with API on what shape of data is allowed
+    if (!node) return intermediateResult;
 
-  const isNodeIncluded = doesQueryMatchNode(node, query);
+    const isNodeIncluded = doesQueryMatchNode(node, query);
 
-  // Early return if there are no children
-  if (!node.children) {
-    if (isNodeIncluded) {
-      intermediateResult[nodeId] = 1;
+    // Early return if there are no children
+    if (!node.children) {
+        if (isNodeIncluded) {
+            intermediateResult[nodeId] = 1;
+        }
+
+        return intermediateResult;
     }
 
+    // Count node as 1 already, if it matches
+    let sum = isNodeIncluded ? 1 : 0;
+
+    for (const childId of node.children) {
+        const result = findConcepts(
+            trees,
+            treeId,
+            childId,
+            trees[treeId][childId],
+            query,
+            intermediateResult,
+        );
+
+        sum += result[childId] || 0;
+    }
+
+    if (sum !== 0) {
+        intermediateResult[nodeId] = sum;
+    }
+
+    // If sum === 0, node is left out from the result,
+    // because it doesn't match itself and no child matches
+
     return intermediateResult;
-  }
-
-  // Count node as 1 already, if it matches
-  let sum = isNodeIncluded ? 1 : 0;
-
-  for (const child of node.children) {
-    const result = findConcepts(
-      trees,
-      treeId,
-      child,
-      trees[treeId][child],
-      query,
-      intermediateResult,
-    );
-
-    sum += result[child] || 0;
-  }
-
-  if (sum !== 0) {
-    intermediateResult[nodeId] = sum;
-  }
-
-  // If sum === 0, node is left out from the result,
-  // because it doesn't match itself and no child matches
-
-  return intermediateResult;
 };

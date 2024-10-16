@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -23,8 +25,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
@@ -42,7 +42,7 @@ public class AbsoluteFormQuery extends Query {
 	public static final int TIME_INDEX = 2;
 
 	/**
-	 * see {@linkplain this#getResultInfos()}.
+	 * see {@linkplain #getResultInfos()}.
 	 */
 	public static final int FEATURES_OFFSET = 3;
 
@@ -74,22 +74,22 @@ public class AbsoluteFormQuery extends Query {
 	@Override
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
-			query.createQueryPlan(context),
-			new FormQueryPlan(
-					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-					features.createQueryPlan(context),
-					false
-			)
+				query.createQueryPlan(context),
+				new FormQueryPlan(
+						DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
+						features.createQueryPlan(context),
+						false
+				)
 		);
 	}
-	
+
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
-		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
-		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.add(ResultHeaders.formResolutionInfo());
+		resultInfos.add(ResultHeaders.formContextInfo());
+		resultInfos.add(ResultHeaders.formDateRangeInfo());
 		resultInfos.addAll(features.getResultInfos());
 
 		return resultInfos;

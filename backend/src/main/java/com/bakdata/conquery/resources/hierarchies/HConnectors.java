@@ -7,8 +7,8 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +28,7 @@ public abstract class HConnectors extends HConcepts {
 		super.init();
 		connector = concept.getConnectors()
 						   .stream()
-						   .filter(con -> con.getTable().equals(table))
+						   .filter(con -> con.getResolvedTable().equals(table))
 						   .collect(MoreCollectors.toOptional())
 						   .orElseThrow(() -> new NotFoundException(String.format("Could not find Connector for Table[%s] in Concept[%s]", connector, concept)));
 	}

@@ -6,14 +6,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.apiv1.frontend.FrontendNode;
+import com.bakdata.conquery.apiv1.frontend.FrontendResultType;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
 import com.bakdata.conquery.apiv1.frontend.FrontendSelect;
@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -52,10 +51,10 @@ public class FrontEndConceptBuilder {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
-
-		final List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
-		// Remove any hidden concepts
-		allConcepts.removeIf(Concept::isHidden);
+		final List<? extends Concept<?>> allConcepts = storage.getAllConcepts()
+															  // Remove any hidden concepts
+															  .filter(Predicate.not(Concept::isHidden))
+															  .toList();
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
@@ -69,7 +68,8 @@ public class FrontEndConceptBuilder {
 				continue;
 			}
 
-			roots.put(allConcepts.get(i).getId(), createConceptRoot(allConcepts.get(i), storage.getStructure()));
+			Concept<?> concept = allConcepts.get(i);
+			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
 		if (roots.isEmpty()) {
 			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
@@ -80,17 +80,11 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for (StructureNode sn : storage.getStructure()) {
-			final FrontendNode node = createStructureNode(sn, roots);
-			if (node == null) {
-				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
-				continue;
-			}
-			roots.put(sn.getId(), node);
+			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
 		root.getSecondaryIds()
 			.addAll(storage.getSecondaryIds()
-						   .stream()
 						   .filter(sid -> !sid.isHidden())
 						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
 						   .collect(Collectors.toSet()));
@@ -102,9 +96,15 @@ public class FrontEndConceptBuilder {
 
 		final MatchingStats matchingStats = concept.getMatchingStats();
 
+
 		final StructureNodeId
 				structureParent =
-				Arrays.stream(structureNodes).filter(sn -> sn.getContainedRoots().contains(concept.getId())).findAny().map(StructureNode::getId).orElse(null);
+				Arrays.stream(structureNodes)
+					  .flatMap(StructureNode::stream)
+					  .filter(sn -> sn.getContainedRoots().contains(concept.getId()))
+					  .findAny()
+					  .map(StructureNode::getId)
+					  .orElse(null);
 
 		final FrontendNode node =
 				FrontendNode.builder()
@@ -134,31 +134,44 @@ public class FrontEndConceptBuilder {
 		return node;
 	}
 
-	@Nullable
-	private FrontendNode createStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
-		final List<ConceptId> unstructured = new ArrayList<>();
+	/**
+	 * StructureNodes can be nested and the frontend needs them plain.
+	 * This method puts the given {@link StructureNode} and its children into the given root.
+	 * If the node references only instances not contained in the given roots element, it is skipped.
+	 * This method calls itself recursively.
+	 * @param structureNode the node to process (and its children)
+	 * @param roots the map where the given and child nodes are inserted into.
+	 */
+	private void insertStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
+		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
 				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
 			}
-			unstructured.add(id);
+			contained.add(id);
 		}
 
-		if (unstructured.isEmpty()) {
-			return null;
+		if (contained.isEmpty() && structureNode.getChildren().isEmpty()) {
+			log.trace("Did not create a structure node entry for {}. Contained no concepts.", structureNode.getId());
+			return;
 		}
 
-		return FrontendNode.builder()
-						   .active(false)
-						   .description(structureNode.getDescription())
-						   .label(structureNode.getLabel())
-						   .detailsAvailable(Boolean.FALSE)
-						   .codeListResolvable(false)
-						   .additionalInfos(structureNode.getAdditionalInfos())
-						   .parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-						   .children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), unstructured.stream()).toArray(Id[]::new))
-						   .build();
+		// Add Children to root
+        structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
+
+		FrontendNode currentNode = FrontendNode.builder()
+				.active(false)
+				.description(structureNode.getDescription())
+				.label(structureNode.getLabel())
+				.detailsAvailable(Boolean.FALSE)
+				.codeListResolvable(false)
+				.additionalInfos(structureNode.getAdditionalInfos())
+				.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
+				.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(Id[]::new))
+				.build();
+
+		roots.put(structureNode.getId(), currentNode);
 	}
 
 	public FrontendSelect createSelect(Select select) {
@@ -166,7 +179,7 @@ public class FrontEndConceptBuilder {
 							 .id(select.getId())
 							 .label(select.getLabel())
 							 .description(select.getDescription())
-							 .resultType(select.getResultType())
+							 .resultType(FrontendResultType.from(select.getResultType()))
 							 .isDefault(select.isDefault())
 							 .build();
 	}
@@ -175,16 +188,15 @@ public class FrontEndConceptBuilder {
 		final FrontendTable
 				result =
 				FrontendTable.builder()
-							 .id(con.getTable().getId())
+							 .id(con.getResolvedTableId())
 							 .connectorId(con.getId())
 							 .label(con.getLabel())
 							 .isDefault(con.isDefault())
 							 .filters(con.collectAllFilters().stream().map(this::createFilter).collect(Collectors.toList()))
 							 .selects(con.getSelects().stream().map(this::createSelect).collect(Collectors.toList()))
-							 .supportedSecondaryIds(Arrays.stream(con.getTable().getColumns())
+							 .supportedSecondaryIds(Arrays.stream(con.getResolvedTable().getColumns())
 														  .map(Column::getSecondaryId)
 														  .filter(Objects::nonNull)
-														  .map(Identifiable::getId)
 														  .collect(Collectors.toSet()))
 							 .build();
 

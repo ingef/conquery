@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
@@ -72,6 +71,9 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
+		// Save id column count to later check if xlsx dimensions are feasible
+		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();
+
 		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
 		if (columnCount > maxColumnCount) {
@@ -90,8 +92,6 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	@Override
 	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
 
-		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
 
 		// inject required services
 		environment.register(new AbstractBinder() {

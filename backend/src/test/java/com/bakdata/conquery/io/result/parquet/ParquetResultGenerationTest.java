@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
@@ -15,7 +16,6 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.io.result.arrow.ArrowResultGenerationTest;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -45,16 +45,19 @@ import org.junit.jupiter.api.Test;
 public class ParquetResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	public static final UniqueNamer
-			UNIQUE_NAMER =
-			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
+	private static final PrintSettings
+			PRINT_SETTINGS =
+			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+
 
 	@Test
 	void generateSchema() {
-		List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
+		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-		final MessageType messageType = EntityResultWriteSupport.generateSchema(ResultTestUtil.ID_FIELDS, resultInfos, UNIQUE_NAMER);
+		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet())).collect(Collectors.toList());
+
+		final MessageType messageType = EntityResultWriteSupport.generateSchema(getIdFields(), resultInfos, uniqueNamer, PRINT_SETTINGS);
 
 		assertThat(messageType).isEqualTo(
 				Types.buildMessage()
@@ -100,13 +103,12 @@ public class ParquetResultGenerationTest {
 		I18n.init();
 
 		// Prepare every input data
-		PrintSettings printSettings = new PrintSettings(
-				false,
-				Locale.ROOT,
-				null,
-				CONFIG,
-				(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-				(selectInfo) -> selectInfo.getSelect().getLabel()
+		PrintSettings printSettings = new PrintSettings(false,
+														Locale.ROOT,
+														null,
+														CONFIG,
+														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+														(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -115,7 +117,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, ResultTestUtil.ID_FIELDS, managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -137,7 +139,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos(), printSettings));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos()));
 
 	}
 
