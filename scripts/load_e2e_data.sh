@@ -13,7 +13,10 @@ until $(curl --output /dev/null --silent --head -H "$h_auth" --fail $admin_api/u
     sleep 5
 done
 
-# create users
+echo "Preprocess test data"
+java -jar ./executable/target/executable*.jar preprocess --in cypress/support/test_data/ --out cypress/support/test_data/ --desc cypress/support/test_data/data.import.json
+
+# Create users
 echo "Creating users and permissions"
 curl --fail -X POST  "$admin_api/users/" -H "$h_ct" -H "$h_auth" -d '{"name": "user1", "label": "User1"}'
 
@@ -36,5 +39,8 @@ curl --fail -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_aut
 sleep 3
 echo "Creating concepts"
 curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.concept.json"
+
+echo "Upload test data"
+curl --fail -X POST --compressed "$admin_api/datasets/dataset1/cqpp" -H "content-type:application/octet-stream" -H "$h_auth" --data-binary "@./cypress/support/test_data/table.cqpp"
 
 echo "Done loading data"
