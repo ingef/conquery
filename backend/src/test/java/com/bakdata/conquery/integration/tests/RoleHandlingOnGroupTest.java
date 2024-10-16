@@ -48,7 +48,7 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 
 			
 			//// Remove role from group
-			group1.removeRole(role);
+			group1.removeRole(role.getId());
 			assertThat(group1.getRoles()).isEmpty();
 			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
 
