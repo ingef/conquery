@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -11,8 +12,10 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
@@ -54,14 +57,16 @@ public abstract class Namespace {
 	public void close() {
 		try {
 			jobManager.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
 		try {
 			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
 	}
@@ -69,7 +74,8 @@ public abstract class Namespace {
 	public void remove() {
 		try {
 			jobManager.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
 
@@ -134,5 +140,12 @@ public abstract class Namespace {
 				}
 		));
 
+	}
+
+	protected Set<ConceptId> collectConcepts() {
+		return getStorage().getAllConcepts()
+						   .filter(concept -> concept.getMatchingStats() == null)
+						   .map(Concept::getId)
+						   .collect(Collectors.toSet());
 	}
 }

@@ -15,7 +15,7 @@ public class TestSqlConnectorConfig extends SqlConnectorConfig {
 	private static final String TEST_DATASET = "test";
 
 	public TestSqlConnectorConfig(DatabaseConfig databaseConfig) {
-		super(true, true, Map.of(TEST_DATASET, databaseConfig), null);
+		super(true, true, Runtime.getRuntime().availableProcessors(), Map.of(TEST_DATASET, databaseConfig), null);
 	}
 
 	@Override
