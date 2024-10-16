@@ -5,6 +5,8 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 
 public class LocalStorageListener implements StorageListener {
 
@@ -15,7 +17,7 @@ public class LocalStorageListener implements StorageListener {
 	}
 
 	@Override
-	public void onDeleteSecondaryId(SecondaryIdDescription description) {
+	public void onDeleteSecondaryId(SecondaryIdDescriptionId description) {
 	}
 
 	@Override
@@ -23,7 +25,7 @@ public class LocalStorageListener implements StorageListener {
 	}
 
 	@Override
-	public void onRemoveTable(Table table) {
+	public void onRemoveTable(TableId table) {
 	}
 
 	@Override

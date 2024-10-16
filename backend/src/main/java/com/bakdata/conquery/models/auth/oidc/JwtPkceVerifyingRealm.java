@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -19,7 +20,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import jakarta.validation.Validator;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -245,7 +245,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 			log.trace("Adding {} to {}", role, user);
 
-			user.addRole(role);
+			user.addRole(roleId);
 		}
 	}
 

@@ -31,6 +31,8 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -95,7 +97,10 @@ public class UIProcessor {
 		return adminProcessor.getStorage();
 	}
 
-	public FrontendRoleContent getRoleContent(Role role) {
+	public FrontendRoleContent getRoleContent(RoleId roleId) {
+
+		final Role role = getStorage().getRole(roleId);
+
 		return FrontendRoleContent.builder()
 								  .permissions(wrapInFEPermission(role.getPermissions()))
 								  .permissionTemplateMap(preparePermissionTemplate())
@@ -146,9 +151,11 @@ public class UIProcessor {
 					 .collect(Collectors.toList());
 	}
 
-	public FrontendUserContent getUserContent(User user) {
+	public FrontendUserContent getUserContent(UserId userId) {
+		User user = getStorage().getUser(userId);
+
 		final Collection<Group> availableGroups = getStorage().getAllGroups()
-															  .filter(group -> !group.containsMember(user))
+															  .filter(group -> !group.containsUser(userId))
 															  .toList();
 
 		return FrontendUserContent
@@ -163,7 +170,9 @@ public class UIProcessor {
 				.build();
 	}
 
-	public FrontendGroupContent getGroupContent(Group group) {
+	public FrontendGroupContent getGroupContent(GroupId groupId) {
+		Group group = getStorage().getGroup(groupId);
+
 		Set<UserId> memberIds = group.getMembers();
 		Set<User> members = memberIds.stream().map(getStorage()::getUser).collect(Collectors.toCollection(TreeSet::new));
 		Collection<User>

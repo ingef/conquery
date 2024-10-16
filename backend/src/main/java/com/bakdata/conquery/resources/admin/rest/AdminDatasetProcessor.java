@@ -33,6 +33,9 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -125,13 +128,13 @@ public class AdminDatasetProcessor {
 	/**
 	 * Delete SecondaryId if it does not have any dependents.
 	 */
-	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
+	public synchronized void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables()
 												 .map(Table::getColumns).flatMap(Arrays::stream)
-												 .filter(column -> secondaryId.getId().equals(column.getSecondaryId()))
+												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
 												 .toList();
 
 		if (!dependents.isEmpty()) {
@@ -147,7 +150,7 @@ public class AdminDatasetProcessor {
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);
 
-		namespace.getStorage().removeSecondaryId(secondaryId.getId());
+		namespace.getStorage().removeSecondaryId(secondaryId);
 		storageListener.onDeleteSecondaryId(secondaryId);
 	}
 
@@ -299,7 +302,7 @@ public class AdminDatasetProcessor {
 					 .forEach(this::deleteImport);
 
 			namespace.getStorage().removeTable(tableId);
-			storageListener.onRemoveTable(table);
+			storageListener.onRemoveTable(table.getId());
 		}
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
@@ -338,7 +341,7 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().addInternToExternMapper(internToExternMapper);
 	}
 
-	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
+	public List<ConceptId> deleteInternToExternMapping(InternToExternMapperId internToExternMapper, boolean force) {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset());
 
 		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
@@ -357,7 +360,7 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept.getId());
 			}
 
-			namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
+			namespace.getStorage().removeInternToExternMapper(internToExternMapper);
 		}
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
@@ -380,7 +383,7 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().addSearchIndex(searchIndex);
 	}
 
-	public List<ConceptId> deleteSearchIndex(SearchIndex searchIndex, boolean force) {
+	public List<ConceptId> deleteSearchIndex(SearchIndexId searchIndex, boolean force) {
 		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset());
 
 		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
@@ -392,7 +395,7 @@ public class AdminDatasetProcessor {
 																		  .map(SelectFilter.class::cast)
 																		  .map(SelectFilter::getTemplate)
 																		  .filter(Objects::nonNull)
-																		  .anyMatch(searchIndex.getId()::equals)
+																		  .anyMatch(searchIndex::equals)
 															)
 															.toList();
 
@@ -401,7 +404,7 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept.getId());
 			}
 
-			namespace.getStorage().removeSearchIndex(searchIndex.getId());
+			namespace.getStorage().removeSearchIndex(searchIndex);
 		}
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());

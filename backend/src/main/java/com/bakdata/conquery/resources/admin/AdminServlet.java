@@ -8,8 +8,6 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
-import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
-import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -119,9 +117,7 @@ public class AdminServlet {
 							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
 						}
 					})
-					.register(PathParamInjector.class)
 					.register(AdminPermissionFilter.class)
-					.register(IdRefPathParamConverterProvider.class)
 					.register(new MultiPartFeature())
 					.register(IdParamConverter.Provider.INSTANCE)
 					.register(AuthCookieFilter.class)
@@ -140,7 +136,6 @@ public class AdminServlet {
 						  }
 					  })
 					  .register(AdminPermissionFilter.class)
-					  .register(IdRefPathParamConverterProvider.class)
 					  .register(AuthCookieFilter.class)
 					  .register(CsrfTokenSetFilter.class);
 

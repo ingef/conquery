@@ -35,21 +35,21 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 			storage.addUser(user1);
 			
 			//// ADDING
-			user1.addRole(mandator1);
+			user1.addRole(mandator1.getId());
 			assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1.getId());
 
-			user1.addRole(mandator1Copy);
+			user1.addRole(mandator1Copy.getId());
 			assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1.getId());
 
-			user1.addRole(mandator2);
+			user1.addRole(mandator2.getId());
 			assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1.getId(), mandator2.getId());
 
 			
 			//// REMOVING
-			user1.removeRole(mandator2);
+			user1.removeRole(mandator2.getId());
 			assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1.getId());
 
-			user1.removeRole(mandator1);
+			user1.removeRole(mandator1.getId());
 			assertThat(user1.getRoles()).isEmpty();
 
 		}
