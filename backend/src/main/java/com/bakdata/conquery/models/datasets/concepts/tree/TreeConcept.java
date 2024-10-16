@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +20,6 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,8 +47,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	@JsonIgnore
 	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
-	@JsonIgnore
-	private final Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 	@Getter
 	@Setter
 	@Valid
@@ -71,10 +67,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public Concept<?> findConcept() {
 		return getConcept();
-	}
-
-	public ConceptTreeCache getCache(ImportId imp) {
-		return caches.get(imp);
 	}
 
 	@Override
@@ -144,13 +136,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return best;
 	}
 
-	public void initializeIdCache(ImportId importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this));
-	}
 
-	public void removeImportCache(ImportId imp) {
-		caches.remove(imp);
-	}
 
 	/**
 	 * Method to get the element of this concept tree that has the specified local ID.

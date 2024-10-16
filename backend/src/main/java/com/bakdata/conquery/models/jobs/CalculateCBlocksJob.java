@@ -120,7 +120,7 @@ public class CalculateCBlocksJob extends Job {
 
 				log.trace("BEGIN calculating CBlock for {}", getCBlockId());
 
-				final CBlock cBlock = CBlock.createCBlock(getConnector(), getBucket(), bucketManager.getEntityBucketSize());
+				final CBlock cBlock = CBlock.createCBlock(getConnector(), getBucket(), bucketManager);
 
 				log.trace("DONE calculating CBlock for {}", getCBlockId());
 
