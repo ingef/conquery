@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
-import { FC, useMemo } from "react";
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
+import tw from "tailwind-styled-components";
 import ConceptTreeListItem from "./ConceptTreeListItem";
 import ConceptTreesLoading from "./ConceptTreesLoading";
 import ConceptsProgressBar from "./ConceptsProgressBar";
@@ -18,26 +18,27 @@ import { useRootConceptIds } from "./useRootConceptIds";
   @param show For historic reasons, it was necessary to only hide / show the concept tree list,
   instead of mounting / unmounting it. Maybe we can remove this in the future.
 */
-const Root = styled("div")<{ show?: boolean }>`
-  flex-grow: 1;
-  flex-shrink: 0;
-  flex-basis: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 10px 0;
-  white-space: nowrap;
-  margin-bottom: 10px;
-  display: ${({ show }) => (show ? "initial" : "none")};
+const Root = tw("div")<{ $show?: boolean }>`
+  flex-grow
+  shrink-0
+  basis-0
+  px-[10px]
+  overflow-y-auto
+  whitespace-nowrap
+  mb-[10px]
+
+  ${({ $show }) => ($show ? "block" : "hidden")}
 `;
 
-interface PropsT {
+const ConceptTreeList = ({
+  datasetId,
+}: {
   datasetId: DatasetT["id"] | null;
-}
-
-const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
+}) => {
   const trees = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
   );
+
   const loading = useSelector<StateT, boolean>(
     (state) => state.conceptTrees.loading,
   );
@@ -69,7 +70,7 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
   if (search.loading) return null;
 
   return (
-    <Root show={activeTab === "conceptTrees"}>
+    <Root $show={activeTab === "conceptTrees"}>
       {loading && <ConceptTreesLoading />}
       {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
         <EmptyConceptTreeList />

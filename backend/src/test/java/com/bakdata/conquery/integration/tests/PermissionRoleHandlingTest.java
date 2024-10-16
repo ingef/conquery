@@ -58,7 +58,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 
 			// Add permission to mandator, remove mandator from user
 			mandator1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
-			user1.removeRole(mandator1);
+			user1.removeRole(mandator1.getId());
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();

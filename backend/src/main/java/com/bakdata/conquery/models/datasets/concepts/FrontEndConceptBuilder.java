@@ -68,7 +68,8 @@ public class FrontEndConceptBuilder {
 				continue;
 			}
 
-			roots.put(allConcepts.get(i).getId(), createConceptRoot(allConcepts.get(i), storage.getStructure()));
+			Concept<?> concept = allConcepts.get(i);
+			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
 		if (roots.isEmpty()) {
 			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
@@ -96,9 +97,15 @@ public class FrontEndConceptBuilder {
 
 		final MatchingStats matchingStats = concept.getMatchingStats();
 
+
 		final StructureNodeId
 				structureParent =
-				Arrays.stream(structureNodes).filter(sn -> sn.getContainedRoots().contains(concept.getId())).findAny().map(StructureNode::getId).orElse(null);
+				Arrays.stream(structureNodes)
+					  .flatMap(StructureNode::stream)
+					  .filter(sn -> sn.getContainedRoots().contains(concept.getId()))
+					  .findAny()
+					  .map(StructureNode::getId)
+					  .orElse(null);
 
 		final FrontendNode node =
 				FrontendNode.builder()
@@ -146,7 +153,7 @@ public class FrontEndConceptBuilder {
 			contained.add(id);
 		}
 
-		if (contained.isEmpty()) {
+		if (contained.isEmpty() && structureNode.getChildren().isEmpty()) {
 			log.trace("Did not create a structure node entry for {}. Contained no concepts.", structureNode.getId());
 			return;
 		}

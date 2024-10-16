@@ -19,7 +19,7 @@ public interface ResultSetProcessor {
 
 	Boolean getBoolean(ResultSet resultSet, int columnIndex) throws SQLException;
 
-	Number getDate(ResultSet resultSet, int columnIndex) throws SQLException;
+	Integer getDate(ResultSet resultSet, int columnIndex) throws SQLException;
 
 	List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException;
 

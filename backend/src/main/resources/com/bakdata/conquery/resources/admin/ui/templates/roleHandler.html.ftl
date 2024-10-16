@@ -26,13 +26,18 @@
 		</thead>
 		<tbody>
 			<#list c.roles as role>
-				<tr>
-					<td><a href="/admin-ui/roles/${role.id}">${role.label}</a></td>
-					<td><a href="/admin-ui/roles/${role.id}">${role.id}</a></td>
-					<td><a href="#"
-							onclick="removeRole('${adminPathBase}/${c.owner.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/${role.id}')">Remove
-							from Entity<i class="fas fa-trash-alt text-danger"></i></a></td>
-				</tr>
+                <tr>
+                    <#if role.resolvable >
+                        <td><a href="/admin-ui/roles/${role.id}">${role.label}</a></td>
+                        <td><a href="/admin-ui/roles/${role.id}">${role.id}</a></td>
+                    <#else>
+                        <td colspan="2" class="table-warning">Unresolvable Role: ${role.id}</td>
+                    </#if>
+
+                    <td><a href="#"
+                            onclick="removeRole('${adminPathBase}/${c.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/${role.id}')">Remove
+                            from Entity<i class="fas fa-trash-alt text-danger"></i></a></td>
+                </tr>
 			</#list>
 		</tbody>
 	</table>
@@ -41,7 +46,7 @@
 		function addRole() {
 			event.preventDefault();
 			rest(
-				'${adminPathBase}/${c.owner.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/' + document.getElementById('role_id').value,
+				'${adminPathBase}/${c.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/' + document.getElementById('role_id').value,
 				{
 					method: 'post',
 				}).then(function () { location.reload() });

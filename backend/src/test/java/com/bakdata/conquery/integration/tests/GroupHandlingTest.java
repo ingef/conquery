@@ -37,7 +37,7 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 			group1.addMember(user2);
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId(), user2.getId());
 
-			group1.removeMember(user2);
+			group1.removeMember(user2.getId());
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId());
 
 

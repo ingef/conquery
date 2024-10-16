@@ -171,9 +171,10 @@ public class ExcelResultRenderTest {
 			printVal = (Boolean) val ? "TRUE" : "FALSE";
 		}
 
-		if (info.getType().equals(ResultType.Primitive.MONEY)) {
-			printVal = printVal + " €";
+		if(info.getType().equals(ResultType.Primitive.MONEY)){
+			printVal = printVal.replace(" ", " ");
 		}
+
 		valueJoiner.add(printVal);
 	}
 

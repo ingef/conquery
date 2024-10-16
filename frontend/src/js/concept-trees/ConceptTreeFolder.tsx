@@ -8,6 +8,7 @@ import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT, TreesT } from "./reducer";
+import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -56,6 +57,12 @@ const ConceptTreeFolder: FC<PropsT> = ({
     conceptId,
     openInitially,
   });
+
+  if (!search.showMismatches) {
+    const shouldRender = isNodeInSearchResult(conceptId, search, tree.children);
+
+    if (!shouldRender) return null;
+  }
 
   const matchingEntries =
     !tree.children || !tree.matchingEntries

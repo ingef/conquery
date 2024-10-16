@@ -180,13 +180,10 @@ export const globalSearch = async (trees: TreesT, query: string) => {
   //
   // TODO: Refactor the state and keep both root trees as well as concept trees in a single format
   //       Then simply use that here
-  const formattedTrees = Object.keys(trees).reduce<
-    Record<string, Record<string, ConceptT>>
-  >((all, key) => {
-    all[key] = { [key]: trees[key] };
+  const formattedTrees = Object.fromEntries(
+    Object.keys(trees).map((key) => [key, { [key]: trees[key] }]),
+  );
 
-    return all;
-  }, {});
   const combinedTrees = Object.assign({}, formattedTrees, window.conceptTrees);
 
   const result = Object.keys(combinedTrees)

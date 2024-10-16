@@ -46,10 +46,10 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 
 			
 			//// REMOVING
-			user1.removeRole(mandator2);
+			user1.removeRole(mandator2.getId());
 			assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1.getId());
 
-			user1.removeRole(mandator1);
+			user1.removeRole(mandator1.getId());
 			assertThat(user1.getRoles()).isEmpty();
 
 		}

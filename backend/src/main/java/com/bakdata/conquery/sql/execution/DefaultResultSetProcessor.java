@@ -49,13 +49,13 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	}
 
 	@Override
-	public Number getDate(ResultSet resultSet, int columnIndex) throws SQLException {
+	public Integer getDate(ResultSet resultSet, int columnIndex) throws SQLException {
 		String dateString = resultSet.getString(columnIndex);
 		if (dateString == null) {
 			return null;
 		}
 		DateReader dateReader = config.getLocale().getDateReader();
-		return dateReader.parseToLocalDate(dateString).toEpochDay();
+		return (int) dateReader.parseToLocalDate(dateString).toEpochDay();
 	}
 
 	@Override
@@ -129,6 +129,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	 * For example, calling a primitives' ResultSet getter like getDouble, getInt etc. straightaway will never return null.
 	 */
 	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, Getter getter, Class<T> resultType) throws SQLException {
+
 		if (resultSet.getObject(columnIndex) == null) {
 			return null;
 		}

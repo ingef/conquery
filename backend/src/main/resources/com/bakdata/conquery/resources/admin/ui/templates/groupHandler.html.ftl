@@ -30,7 +30,7 @@
 					<td><a href="/admin-ui/groups/${group.id}">${group.label}</a></td>
 					<td><a href="/admin-ui/groups/${group.id}">${group.id}</a></td>
 					<td><a href="#"
-							onclick="removeGroup('${adminPathBase}/${group.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.owner.id}')">Remove
+							onclick="removeGroup('${adminPathBase}/${group.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.id}')">Remove
 							from Entity <i class="fas fa-trash-alt text-danger"></i></a></td>
 				</tr>
 			</#list>
@@ -41,7 +41,7 @@
 		function addGroup() {
 			event.preventDefault();
 			rest(
-				'${adminPathBase}/' + document.getElementById('group_id').value + '/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.owner.id}',
+				'${adminPathBase}/' + document.getElementById('group_id').value + '/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.id}',
 				{
 					method: 'post',
 				}).then(function () { location.reload() });

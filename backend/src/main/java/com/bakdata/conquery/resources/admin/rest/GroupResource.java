@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
 import java.util.List;
-
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.Consumes;
@@ -20,6 +19,8 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -50,9 +51,8 @@ public class GroupResource {
 	}
 
 	@POST
-	public Response postGroups(@NotEmpty List<Group> groups) {
+	public void postGroups(@NotEmpty List<Group> groups) {
 		processor.addGroups(groups);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
@@ -64,14 +64,14 @@ public class GroupResource {
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUserFromGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) User user) {
+	public Response deleteUserFromGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) UserId user) {
 		processor.deleteUserFromGroup(group, user);
 		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) Role role) {
+	public Response deleteRoleFromUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) RoleId role) {
 		processor.deleteRoleFrom(group, role);
 		return Response.ok().build();
 	}

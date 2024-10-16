@@ -7,8 +7,8 @@
 <div class="container">
 	<div class="row">
 		<div class="col">
-		<h2>User ${c.owner.label}</h2>
-		<small class="text-muted">${c.owner.id}</small>
+		<h2>User ${c.label}</h2>
+		<small class="text-muted">${c.id}</small>
 		</div>
 	</div>
 	<div class="row pt-3">
@@ -30,10 +30,10 @@
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="ownedPermissions" role="tabpanel" aria-labelledby="ownedPermissions-tab">
-                    <@permissionTable.permissionTable ownerId=c.owner.getId() permissions=c.permissions />
+                    <@permissionTable.permissionTable ownerId=c.id permissions=c.permissions />
                 </div>
                 <div class="tab-pane fade" id="createPermission" role="tabpanel" aria-labelledby="createPermission-tab">
-                    <@permissionCreator.permissionCreator ownerId=c.owner.getId() permissionTemplateMap=c.permissionTemplateMap />
+                    <@permissionCreator.permissionCreator ownerId=c.id permissionTemplateMap=c.permissionTemplateMap />
                 </div>
                 <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
                     <@groupHandler.groupHandler c=c adminPathBase="/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}" />
