@@ -54,11 +54,11 @@ import org.apache.commons.lang3.tuple.Pair;
  * Wrapper processor that transforms internal representations of the {@link AdminProcessor} into
  * objects that are more convenient to handle with freemarker.
  */
+@Getter
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class UIProcessor {
 
-	@Getter
 	private final AdminProcessor adminProcessor;
 
 	public UIContext getUIContext(String csrfToken) {
@@ -103,13 +103,7 @@ public class UIProcessor {
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 
 		List<FrontendUserContent> members = membersIds.stream()
-												   .map(id -> {
-													   User user = getStorage().getUser(id);
-													   if (user != null) {
-														   return getUserContent(user);
-													   }
-													   return FrontendUserContent.builder().id(id).build();
-												   })
+												   .map(this::getUserContent)
 												   .toList();
 
 		List<FrontendRoleContent> roles = group.getRoles().stream()
@@ -136,6 +130,15 @@ public class UIProcessor {
 			return getRoleContent(role);
 		}
 		return FrontendRoleContent.builder().id(id).build();
+	}
+
+
+	public FrontendUserContent getUserContent(UserId id) {
+		User user = getStorage().getUser(id);
+		if (user != null) {
+			return getUserContent(user);
+		}
+		return FrontendUserContent.builder().id(id).build();
 	}
 
 	public FrontendUserContent getUserContent(User user) {

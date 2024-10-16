@@ -13,7 +13,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -29,9 +28,8 @@ public class RoleResource {
 	private final AdminProcessor processor;
 
 	@POST
-	public Response postRole(Role role) throws JSONException {
+	public void postRole(Role role) throws JSONException {
 		processor.addRole(role);
-		return Response.ok().build();
 	}
 
 	@GET
@@ -41,14 +39,13 @@ public class RoleResource {
 
 	@Path("{" + ROLE_ID + "}")
 	@GET
-	public Response getRole(@PathParam(ROLE_ID) Role role) throws JSONException {
-		return Response.ok(role).build();
+	public Role getRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+		return role;
 	}
 
 	@Path("{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRole(@PathParam(ROLE_ID) RoleId role) throws JSONException {
+	public void deleteRole(@PathParam(ROLE_ID) RoleId role) {
 		processor.deleteRole(role);
-		return Response.ok().build();
 	}
 }
