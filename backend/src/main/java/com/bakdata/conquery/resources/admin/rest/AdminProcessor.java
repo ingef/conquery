@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -167,18 +168,21 @@ public class AdminProcessor {
 
 	}
 
-	public void addUserToGroup(Group group, User user) {
+	public void addUserToGroup(GroupId groupId, UserId user) {
+		final Group group = storage.getGroup(groupId);
 		group.addMember(user);
 		log.trace("Added user {} to group {}", user, group);
 	}
 
-	public void deleteUserFromGroup(Group group, UserId user) {
+	public void deleteUserFromGroup(GroupId groupId, UserId user) {
+		final Group group = storage.getGroup(groupId);
+
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
 
-	public void deleteGroup(Group group) {
-		storage.removeGroup(group.getId());
+	public void deleteGroup(GroupId group) {
+		storage.removeGroup(group);
 		log.trace("Removed group {}", group);
 	}
 
@@ -187,7 +191,7 @@ public class AdminProcessor {
 		log.trace("Removed role {} from {}", role, owner);
 	}
 
-	public void addRoleTo(RoleOwner owner, Role role) {
+	public void addRoleTo(RoleOwner owner, RoleId role) {
 		owner.addRole(role);
 		log.trace("Added role {} to {}", role, owner);
 	}
@@ -247,7 +251,8 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(Group group) {
+	public String getPermissionOverviewAsCSV(GroupId groupId) {
+		final Group group = storage.getGroup(groupId);
 		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser));
 	}
 

@@ -31,7 +31,7 @@ public interface UserManageable {
 	/**
 	 * Removes a user from the realm only but not from the local permission storage (i.e. {@link MetaStorage}).
 	 */
-	boolean removeUser(User user);
+	boolean removeUser(UserId user);
 
 	/**
 	 * Returns a list of all users managed by the authenticating realm as {@link UserId}s.

@@ -305,8 +305,8 @@ public class FormConfigTest {
 		Group group2 = new Group("test2", "test2", storage);
 		storage.addGroup(group2);
 
-		group1.addMember(user);
-		group2.addMember(user);
+		group1.addMember(user.getId());
+		group2.addMember(user.getId());
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);

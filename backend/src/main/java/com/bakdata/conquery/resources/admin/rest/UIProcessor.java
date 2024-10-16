@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -134,7 +135,7 @@ public class UIProcessor {
 	private FrontendRoleContent getFrontendRoleContent(RoleId id) {
 		Role role = getStorage().getRole(id);
 		if (role != null) {
-			return getRoleContent(role);
+			return getRoleContent(id);
 		}
 		return FrontendRoleContent.builder().id(id).build();
 	}
@@ -150,7 +151,7 @@ public class UIProcessor {
 
 	public FrontendUserContent getUserContent(User user) {
 		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups().toList());
-		availableGroups.removeIf(g -> g.containsMember(user));
+		availableGroups.removeIf(g -> g.containsUser(user.getId()));
 
 		return FrontendUserContent
 				.builder()
@@ -166,7 +167,9 @@ public class UIProcessor {
 				.build();
 	}
 
-	public FrontendRoleContent getRoleContent(Role role) {
+	public FrontendRoleContent getRoleContent(RoleId roleId) {
+
+		final Role role = getStorage().getRole(roleId);
 		return FrontendRoleContent.builder()
 								  .resolvable(true)
 								  .permissions(wrapInFEPermission(role.getPermissions()))

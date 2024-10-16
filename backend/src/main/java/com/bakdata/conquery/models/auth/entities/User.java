@@ -70,7 +70,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
 				Group group = it.next();
-				if (!group.containsMember(this)) {
+				if (!group.containsUser(getId())) {
 					continue;
 				}
 				permissions = Sets.union(permissions, group.getEffectivePermissions());
@@ -81,9 +81,9 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return permissions;
 	}
 
-	public synchronized void addRole(Role role) {
-		if (roles.add(role.getId())) {
-			log.trace("Added role {} to user {}", role.getId(), getId());
+	public synchronized void addRole(RoleId role) {
+		if (roles.add(role)) {
+			log.trace("Added role {} to user {}", role, getId());
 			updateStorage();
 		}
 	}

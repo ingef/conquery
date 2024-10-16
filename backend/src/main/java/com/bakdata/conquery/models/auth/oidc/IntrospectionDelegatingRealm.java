@@ -223,7 +223,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			final String groupIdAttribute = authProviderConf.getGroupIdAttribute();
 			if (Strings.isNotBlank(groupIdAttribute)) {
 				final Set<Group> memberships = getUserGroups(claimsSet, groupIdAttribute);
-				syncGroupMappings(user, memberships);
+				syncGroupMappings(user.getId(), memberships);
 			}
 
 			return claimsSet;
@@ -270,25 +270,26 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 								 .collect(Collectors.toSet());
 		}
 
-		private void syncGroupMappings(User user, Set<Group> mappedGroupsToDo) {
+		private void syncGroupMappings(UserId userId, Set<Group> mappedGroupsToDo) {
 			// TODO mark mappings as managed by keycloak
 			storage.getAllGroups().forEach((group) -> {
+											   if (!group.containsUser(userId)) {
+												   return;
+											   }
 
-											   if (group.containsMember(user)) {
-												   if (mappedGroupsToDo.contains(group)) {
-													   // Mapping is still valid, remove from todo-list
-													   mappedGroupsToDo.remove(group);
-												   }
-												   else {
-													   // Mapping is not valid any more remove user from group
-													   group.removeMember(user.getId());
-												   }
+											   if (mappedGroupsToDo.contains(group)) {
+												   // Mapping is still valid, remove from todo-list
+												   mappedGroupsToDo.remove(group);
+											   }
+											   else {
+												   // Mapping is not valid any more remove user from group
+												   group.removeMember(userId);
 											   }
 										   }
 			);
 
 			for (Group group : mappedGroupsToDo) {
-				group.addMember(user);
+				group.addMember(userId);
 			}
 		}
 

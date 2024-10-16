@@ -106,20 +106,20 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.addGroup(group);
 			adminProcessor.addGroup(groupToDelete);
 
-			adminProcessor.addRoleTo(user, role);
-			adminProcessor.addRoleTo(user, roleToDelete);
-			adminProcessor.addRoleTo(userToDelete, role);
-			adminProcessor.addRoleTo(userToDelete, roleToDelete);
+			adminProcessor.addRoleTo(user, role.getId());
+			adminProcessor.addRoleTo(user, roleToDelete.getId());
+			adminProcessor.addRoleTo(userToDelete, role.getId());
+			adminProcessor.addRoleTo(userToDelete, roleToDelete.getId());
 
-			adminProcessor.addRoleTo(group, role);
-			adminProcessor.addRoleTo(group, roleToDelete);
-			adminProcessor.addRoleTo(groupToDelete, role);
-			adminProcessor.addRoleTo(groupToDelete, roleToDelete);
+			adminProcessor.addRoleTo(group, role.getId());
+			adminProcessor.addRoleTo(group, roleToDelete.getId());
+			adminProcessor.addRoleTo(groupToDelete, role.getId());
+			adminProcessor.addRoleTo(groupToDelete, roleToDelete.getId());
 
-			adminProcessor.addUserToGroup(group, user);
-			adminProcessor.addUserToGroup(group, userToDelete);
-			adminProcessor.addUserToGroup(groupToDelete, user);
-			adminProcessor.addUserToGroup(groupToDelete, userToDelete);
+			adminProcessor.addUserToGroup(group.getId(), user.getId());
+			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
 
 			// Adding Permissions
 			adminProcessor.createPermission(user, dataset1.createPermission(Ability.READ.asSet()));
@@ -135,7 +135,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			//TODO use API
 			adminProcessor.deleteUser(userToDelete.getId());
 			adminProcessor.deleteRole(roleToDelete.getId());
-			adminProcessor.deleteGroup(groupToDelete);
+			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
 
 		log.info("Shutting down for restart");

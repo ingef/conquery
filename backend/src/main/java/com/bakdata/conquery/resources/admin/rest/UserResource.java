@@ -19,6 +19,10 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 
 @Path(USERS_PATH_ELEMENT)
@@ -46,8 +50,8 @@ public class UserResource {
 
 	@Path("{" + USER_ID + "}")
 	@GET
-	public User getUser(@PathParam(USER_ID) User user) {
-		return user;
+	public User getUser(@PathParam(USER_ID) UserId user) {
+		return user.resolve();
 	}
 
 	@Path("{" + USER_ID + "}")
@@ -58,13 +62,13 @@ public class UserResource {
 
 	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public void deleteRoleFromUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) RoleId role) {
-		processor.deleteRoleFrom(user, role);
+	public void deleteRoleFromUser(@PathParam(USER_ID) UserId user, @PathParam(ROLE_ID) RoleId role) {
+		processor.deleteRoleFrom(user.resolve(), role);
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public void addRoleToUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
-		processor.addRoleTo(user, role);
+	public void addRoleToUser(@PathParam(USER_ID) UserId user, @PathParam(ROLE_ID) RoleId role) {
+		processor.addRoleTo(user.resolve(), role);
 	}
 }

@@ -213,8 +213,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	}
 
 	@Override
-	public boolean removeUser(User user) {
-		passwordStore.remove(user.getId());
+	public boolean removeUser(UserId user) {
+		passwordStore.remove(user);
 		return true;
 	}
 

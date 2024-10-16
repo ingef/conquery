@@ -9,7 +9,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -43,9 +42,8 @@ public class FormConfigResource {
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
+	public void deleteConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
 		processor.deleteConfig(subject, form);
-		return Response.ok().build();
 	}
 	
 }

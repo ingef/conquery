@@ -80,7 +80,7 @@ public class LocalAuthRealmTest {
 	@AfterEach
 	public void cleanUpEach() {
 		// Well there is an extra test case for this, but let's do it like this for now.
-		realm.removeUser(user1);
+		realm.removeUser(user1.getId());
 	}
 
 	@AfterAll
@@ -139,7 +139,7 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testRemoveUser() {
-		realm.removeUser(user1);
+		realm.removeUser(user1.getId());
 		// Wrong password
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
 				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");

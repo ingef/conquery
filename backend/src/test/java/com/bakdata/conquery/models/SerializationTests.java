@@ -80,6 +80,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -177,9 +178,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company", getMetaStorage());
-		user.addRole(role);
 
 		getMetaStorage().addRole(role);
+
+		user.addRole(role.getId());
 
 		SerializationTestUtil
 				.forType(User.class)
@@ -193,12 +195,13 @@ public class SerializationTests extends AbstractSerializationTest {
 		Group group = new Group("group", "group", getMetaStorage());
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		group.addRole(new Role("company", "company", getMetaStorage()));
+		RoleId roleId = new RoleId("company");
+		group.addRole(roleId);
 
 		Role role = new Role("company", "company", getMetaStorage());
-		group.addRole(role);
+		group.addRole(roleId);
 		User user = new User("userName", "userLabel", getMetaStorage());
-		group.addMember(user);
+		group.addMember(user.getId());
 
 		final MetaStorage metaStorage = getMetaStorage();
 		metaStorage.addRole(role);

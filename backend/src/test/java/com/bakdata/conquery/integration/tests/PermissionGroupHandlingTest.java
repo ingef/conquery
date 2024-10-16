@@ -39,9 +39,9 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			storage.addUser(user1);
 			storage.addGroup(group1);
 
-			user1.addRole(role1);
+			user1.addRole(role1.getId());
 
-			group1.addMember(user1);
+			group1.addMember(user1.getId());
 
 			user1.addPermission(ExecutionPermission.onInstance(Ability.READ, query1));
 			role1.addPermission(ExecutionPermission.onInstance(Ability.DELETE, query1));
