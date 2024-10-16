@@ -93,6 +93,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
 
 		concepts.stream()
+				.parallel()
 				.map(ConceptId::resolve)
 				.filter(SqlUpdateMatchingStatsJob::isTreeConcept)
 				.flatMap(concept -> collectMatchingStats(concept.getConnectors(), (TreeConcept) concept))
