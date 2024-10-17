@@ -92,6 +92,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
 
+		long startTime = System.currentTimeMillis();
 		concepts.stream()
 				.parallel()
 				.map(ConceptId::resolve)
@@ -105,7 +106,8 @@ public class SqlUpdateMatchingStatsJob extends Job {
 			log.debug("Waiting for executors to set matching stats for all concepts...");
 		}
 
-		log.debug("DONE collecting matching stats.");
+		long timeElapsed = System.currentTimeMillis() - startTime;
+		log.debug("DONE collecting matching stats. Elapsed time: {} ms", timeElapsed);
 	}
 
 	@Override
