@@ -134,9 +134,9 @@ public abstract class Namespace {
 		getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
-					updateInternToExternMappings();
+					//					updateInternToExternMappings();
 					updateMatchingStats();
-					updateFilterSearch();
+					//					updateFilterSearch();
 				}
 		));
 
