@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -21,10 +20,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -36,7 +32,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
@@ -57,30 +52,16 @@ public class DistributedExecutionManager extends ExecutionManager {
 		addState(execution.getId(), new DistributedState());
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedState()));
+			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedState()));
 		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
 
-		workerHandler.sendToAll(createExecutionMessage(execution));
+		workerHandler.sendToAll(execution.createExecutionMessage());
 	}
 
 	private WorkerHandler getWorkerHandler(DatasetId datasetId) {
 		return clusterState.getWorkerHandlers().get(datasetId);
-	}
-
-	private WorkerMessage createExecutionMessage(ManagedExecution execution) {
-		if (execution instanceof ManagedQuery mq) {
-			return new ExecuteQuery(mq.getId(), mq.getQuery());
-		}
-		else if (execution instanceof ManagedInternalForm<?> form) {
-			return new ExecuteForm(form.getId(), form.getFlatSubQueries()
-													 .entrySet()
-													 .stream()
-													 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
-		}
-		throw new NotImplementedException("Unable to build execution message for " + execution.getClass());
-
 	}
 
 	@Override

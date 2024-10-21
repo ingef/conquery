@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -9,63 +8,65 @@ import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
 
-	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
+	private final LoadingCache<KEY, VALUE> cache;
+	@ToString.Include
 	private final Store<KEY, VALUE> store;
+
+	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec) {
+		this.store = store;
+		cache = Caffeine.from(caffeineSpec)
+//						.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache."+store.toString()))
+						.build(this.store::get);
+	}
 
 	@Override
 	public void add(KEY key, VALUE value) {
-		if (cache.putIfAbsent(key, value) != null) {
-			throw new IllegalStateException("The id " + key + " is already part of this store");
-		}
 		store.add(key, value);
 	}
 
 	@Override
 	public VALUE get(KEY key) {
-		return cache.computeIfAbsent(key, store::get);
+		return cache.get(key);
 	}
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		return store.forEach(consumer);
+		store.getAllKeys().forEach( k -> consumer.accept(k, cache.get(k), 0 /*Leaky?*/));
+		return null;
 	}
 
 	@Override
 	public void update(KEY key, VALUE value) {
-		cache.put(key, value);
 		store.update(key, value);
+		cache.invalidate(key);
 	}
 
 	@Override
 	public void remove(KEY key) {
-		cache.remove(key);
 		store.remove(key);
-	}
-
-	@Override
-	public int count() {
-		if (cache.isEmpty()) {
-			return store.count();
-		}
-		return cache.size();
+		cache.invalidate(key);
 	}
 
 	@Override
 	public void loadData() {
 		final LongAdder totalSize = new LongAdder();
 		final int count = count();
-		cache = new ConcurrentHashMap<>(count);
 		final ProgressBar bar;
 
 		if (count > 100) {
@@ -108,36 +109,37 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		});
 		log.debug("\tloaded store {}: {} entries, {} within {}",
 				this,
-				cache.values().size(),
+			  	count,
 				BinaryByteUnit.format(totalSize.sum()),
 				timer.stop()
 		);
 	}
 
 	@Override
-	public Stream<VALUE> getAll() {
-		return cache.values().stream();
+	public int count() {
+		return store.count();
 	}
 
 	@Override
-	public String toString() {
-		return "cached " + store.toString();
+	public Stream<VALUE> getAll() {
+		return store.getAllKeys().map(cache::get);
 	}
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		return cache.keySet().stream();
+		return store.getAllKeys();
 	}
 
 	@Override
 	public void clear() {
-		cache.clear();
 		store.clear();
+		cache.invalidateAll();
 	}
 
 	@Override
 	public void removeStore() {
 		store.removeStore();
+		cache.invalidateAll();
 	}
 
 	@Override

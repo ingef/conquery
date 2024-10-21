@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.ImmutableList;
 import com.password4j.HashingFunction;
 import com.password4j.Password;
@@ -66,19 +67,16 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
-
-	@JsonIgnore
-	private Environment passwordEnvironment;
-	@JsonIgnore
-	private Store<UserId, HashEntry> passwordStore;
-
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
 	private final Validator validator;
 	private final ObjectMapper mapper;
-
 	private final HashingFunction defaultHashingFunction;
+	@JsonIgnore
+	private Environment passwordEnvironment;
+	@JsonIgnore
+	private Store<UserId, HashEntry> passwordStore;
 
 	//////////////////// INITIALIZATION ////////////////////
 
@@ -116,7 +114,9 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						false,
 						true,
 						null, Executors.newSingleThreadExecutor()
-				));
+				),
+				CaffeineSpec.parse("") // TODO add configuration
+				);
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -153,6 +153,22 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		return centralTokenRealm.createTokenForUser(userId, validDuration);
 	}
 
+	@Override
+	public boolean addUser(@NonNull User user, @NonNull CredentialType credential) {
+
+		try {
+			final HashEntry hashEntry = toHashEntry(credential);
+			passwordStore.add(user.getId(), hashEntry);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			log.warn("Unable to add user '{}'", user.getId(), e);
+		}
+		return false;
+	}
+
+	//////////////////// USER MANAGEMENT ////////////////////
+
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
 	 */
@@ -169,22 +185,6 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		}
 
 		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());
-	}
-
-	//////////////////// USER MANAGEMENT ////////////////////
-
-	@Override
-	public boolean addUser(@NonNull User user, @NonNull CredentialType credential) {
-
-		try {
-			final HashEntry hashEntry = toHashEntry(credential);
-			passwordStore.add(user.getId(), hashEntry);
-			return true;
-		}
-		catch (IllegalArgumentException e) {
-			log.warn("Unable to add user '{}'", user.getId(), e);
-		}
-		return false;
 	}
 
 	@Override

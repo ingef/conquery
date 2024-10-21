@@ -369,9 +369,12 @@ public class QueryProcessor {
 			throw new ConqueryError.ExecutionProcessingError();
 		}
 
+		// Workaround update our execution as the lastresultcount was set in the background
+		final EntityPreviewExecution executionFinished = (EntityPreviewExecution) execution.getId().resolve();
+		executionFinished.initExecutable(config);
 
 		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
-		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
+		status.setResultUrls(getResultAssets(config.getResultProviders(), executionFinished, uriBuilder, false));
 		return status;
 	}
 
@@ -571,7 +574,7 @@ public class QueryProcessor {
 					 .filter(Predicate.not(Map::isEmpty));
 	}
 
-	public ResultStatistics getResultStatistics(SingleTableResult managedQuery) {
+	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(E managedQuery) {
 
 		final Locale locale = I18n.LOCALE.get();
 		final NumberFormat decimalFormat = NumberFormat.getNumberInstance(locale);
@@ -583,6 +586,8 @@ public class QueryProcessor {
 		final PrintSettings printSettings =
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
+
+		managedQuery.initExecutable(config);
 
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 

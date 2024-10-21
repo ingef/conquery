@@ -72,7 +72,7 @@ public class QueryResource {
 			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 
-		return Response.ok((processor.getResultStatistics(((SingleTableResult) query)))).build();
+		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
 	}
 
 	@PATCH

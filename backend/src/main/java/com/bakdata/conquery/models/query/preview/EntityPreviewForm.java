@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -144,6 +145,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	@Nullable
 	@Override
+	@JsonIgnore
 	public JsonNode getValues() {
 		return null; // will not be implemented.
 	}

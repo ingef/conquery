@@ -59,10 +59,16 @@ public abstract class ExecutionManager {
 			execution.reset();
 		}
 	}
-
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
 		return storage.getExecution(execution);
-	}
+	}/**
+	 * Cache for execution states.
+	 */
+	private final Cache<ManagedExecutionId, State> executionStates =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
 
 	/**
 	 * Returns the state or throws an NoSuchElementException if no state was found.
@@ -73,14 +79,7 @@ public abstract class ExecutionManager {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
 		}
 		return (R) state;
-	}	/**
-	 * Cache for execution states.
-	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
+	}
 
 	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
 		return Optional.ofNullable((R) executionStates.getIfPresent(id));
@@ -252,9 +251,11 @@ public abstract class ExecutionManager {
 		CountDownLatch getExecutingLock();
 	}
 
-	public interface InternalState extends State{
+	public interface InternalState extends State {
 		Stream<EntityResult> streamQueryResults();
 	}
+
+
 
 
 }

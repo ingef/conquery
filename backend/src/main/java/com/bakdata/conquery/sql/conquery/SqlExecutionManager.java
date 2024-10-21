@@ -41,15 +41,15 @@ public class SqlExecutionManager extends ExecutionManager {
 		addState(execution.getId(), new SqlExecutionState());
 
 		if (execution instanceof ManagedQuery managedQuery) {
-			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery, this);
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
 			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
 			return;
 		}
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
-			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(managedQuery -> {
-												   addState(managedQuery.getId(), new SqlExecutionState());
-												   return executeAsync(managedQuery, this);
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(executionId -> {
+												   addState(executionId, new SqlExecutionState());
+												   return executeAsync((ManagedQuery) executionId.resolve());
 
 											   })
 											   .toArray(CompletableFuture[]::new))
@@ -60,7 +60,7 @@ public class SqlExecutionManager extends ExecutionManager {
 		throw new IllegalStateException("Unexpected type of execution: %s".formatted(execution.getClass()));
 	}
 
-	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery, SqlExecutionManager executionManager) {
+	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery(), managedQuery.getNamespace());
 
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
@@ -74,7 +74,6 @@ public class SqlExecutionManager extends ExecutionManager {
 											new SqlExecutionState(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
-									managedQuery.setLastResultCount(((long) result.getRowCount()));
 									managedQuery.finish(ExecutionState.DONE);
 									runningExecutions.remove(id);
 								})

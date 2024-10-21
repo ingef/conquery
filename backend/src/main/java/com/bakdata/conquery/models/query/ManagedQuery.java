@@ -22,11 +22,14 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -113,6 +116,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos() {
+		Preconditions.checkState(isInitialized());
 		return query.getResultInfos();
 	}
 
@@ -146,4 +150,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		query.visit(visitor);
 	}
 
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		Preconditions.checkState(isInitialized(), "Was not initialized");
+		return new ExecuteQuery(getId(), getQuery());
+	}
 }
