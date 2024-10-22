@@ -145,7 +145,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			throw new CredentialsException("No password hash was found for user: " + username);
 		}
 
-		final String hash = hashedEntry.getHash();
+		final String hash = hashedEntry.hash();
 		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
 			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
 		}
@@ -159,6 +159,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		try {
 			final HashEntry hashEntry = toHashEntry(credential);
 			passwordStore.add(user.getId(), hashEntry);
+			log.debug("Added user to realm: {}", user.getId());
 			return true;
 		}
 		catch (IllegalArgumentException e) {
