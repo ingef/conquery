@@ -419,7 +419,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	//// Shortcut helper methods
-
+	// TODO move to execution manager
 	public void reset() {
 		// This avoids endless loops with already reset queries
 		if (getState().equals(ExecutionState.NEW)) {

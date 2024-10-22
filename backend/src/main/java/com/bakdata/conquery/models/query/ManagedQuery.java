@@ -65,11 +65,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 	}
 
-
 	@Override
 	public synchronized void finish(ExecutionState executionState) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
+
+		log.debug("Finished {} with {} results", getId(), lastResultCount);
 
 		super.finish(executionState);
 	}
@@ -89,8 +90,16 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	public synchronized long resultRowCount() {
-		if (lastResultCount == null) {
+		Long count = updatedResultCount();
+		if (count == null) {
 			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
+		}
+		return count;
+	}
+
+	public Long updatedResultCount() {
+		if (lastResultCount == null) {
+			lastResultCount = ((ManagedQuery) getId().resolve()).getLastResultCount();
 		}
 		return lastResultCount;
 	}
@@ -99,7 +108,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(getLastResultCount());
+		status.setNumberOfResults(updatedResultCount());
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
