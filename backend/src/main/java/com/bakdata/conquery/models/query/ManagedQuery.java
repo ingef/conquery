@@ -97,6 +97,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		return count;
 	}
 
+	/**
+	 * @implNote this is a workaround for a race condition, because the execution state is handled externally by
+	 * the {@link ExecutionManager}. The manager might have updated the lastResultCount in the meantime.
+	 * Here is a mismatch because the {@link ExecutionStatus} for an execution might be constructed for an
+	 * "outdated" object (the {@link ExecutionManager} updated the stored execution asynchronously).
+	 */
 	public Long updatedResultCount() {
 		if (lastResultCount == null) {
 			lastResultCount = ((ManagedQuery) getId().resolve()).getLastResultCount();
