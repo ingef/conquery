@@ -37,7 +37,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void add(KEY key, VALUE value) {
-		store.add(key, value);
+		// We don't distinguish between add and update on this layer. Let a deeper layer complain
+		update(key, value);
+	}
+
+	@Override
+	public void update(KEY key, VALUE value) {
+		store.update(key, value);
+		cache.invalidate(key);
 	}
 
 	@Override
@@ -49,12 +56,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		store.getAllKeys().forEach( k -> consumer.accept(k, cache.get(k), 0 /*Leaky?*/));
 		return null;
-	}
-
-	@Override
-	public void update(KEY key, VALUE value) {
-		store.update(key, value);
-		cache.invalidate(key);
 	}
 
 	@Override
