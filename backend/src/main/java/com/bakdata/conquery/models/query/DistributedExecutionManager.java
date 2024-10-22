@@ -13,6 +13,7 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -39,8 +40,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	private final ClusterState clusterState;
 
-	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state) {
-		super(storage, datasetRegistry);
+	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state, ConqueryConfig config) {
+		super(storage, datasetRegistry, config);
 		clusterState = state;
 	}
 

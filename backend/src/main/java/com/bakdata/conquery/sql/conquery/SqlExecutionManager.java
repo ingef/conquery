@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
@@ -28,8 +29,8 @@ public class SqlExecutionManager extends ExecutionManager {
 	private final SqlConverter converter;
 	private final ConcurrentMap<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		super(storage, datasetRegistry);
+	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(storage, datasetRegistry, config);
 		this.converter = sqlConverter;
 		this.executionService = sqlExecutionService;
 		this.runningExecutions = new ConcurrentHashMap<>();

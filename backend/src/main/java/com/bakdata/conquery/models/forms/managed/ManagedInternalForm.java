@@ -63,8 +63,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Getter(AccessLevel.PROTECTED)
 	private  Map<String, ManagedQuery> initializedSubQueryHardRef;
 
-	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		super(form, user, submittedDataset, storage, datasetRegistry);
+	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(form, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Nullable
@@ -101,7 +101,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 		// Initialize sub executions and persist them
 		subQueries.values().forEach(mq -> {
-			mq.initExecutable(getConfig());
+			mq.initExecutable();
 			getMetaStorage().updateExecution(mq);
 		});
 
@@ -122,7 +122,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 							 .entrySet()
 							 .stream().collect(Collectors.toMap(
 						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry())
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry(), getConfig())
 
 				));
 	}

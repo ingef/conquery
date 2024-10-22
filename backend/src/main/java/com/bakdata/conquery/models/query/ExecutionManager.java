@@ -38,6 +38,7 @@ public abstract class ExecutionManager {
 
 	private final MetaStorage storage;
 	private final DatasetRegistry<?> datasetRegistry;
+	private final ConqueryConfig config;
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -59,16 +60,10 @@ public abstract class ExecutionManager {
 			execution.reset();
 		}
 	}
+
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
 		return storage.getExecution(execution);
-	}/**
-	 * Cache for execution states.
-	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
+	}
 
 	/**
 	 * Returns the state or throws an NoSuchElementException if no state was found.
@@ -93,25 +88,32 @@ public abstract class ExecutionManager {
 		executionStates.put(id, result);
 	}
 
-	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, ConqueryConfig config, boolean system) {
+	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
 		final ManagedExecution execution = createExecution(query, user, namespace, system);
 
-		execute(execution, config);
+		execute(execution);
 
 		return execution;
-	}
+	}	/**
+	 * Cache for execution states.
+	 */
+	private final Cache<ManagedExecutionId, State> executionStates =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
 
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final void execute(ManagedExecution execution, ConqueryConfig config) {
+	public final void execute(ManagedExecution execution) {
 
 		clearQueryResults(execution);
 
 		try {
-			execution.initExecutable(config);
+			execution.initExecutable();
 		}
 		catch (Exception e) {
 			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
@@ -148,7 +150,7 @@ public abstract class ExecutionManager {
 
 	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 		managed.setMetaStorage(storage);

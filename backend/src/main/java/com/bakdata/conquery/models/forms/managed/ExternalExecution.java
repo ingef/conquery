@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.result.ExternalState;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -26,7 +27,6 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ExternalStateImpl;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -58,8 +58,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	private UUID externalTaskId;
 
-	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
-		super(form, user, dataset, metaStorage, datasetRegistry);
+	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(form, user, dataset, metaStorage, datasetRegistry, config);
 	}
 
 

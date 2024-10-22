@@ -62,8 +62,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getConfig());
+		initExecutable();
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, subject, namespace);
@@ -192,7 +192,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.label());
-			query.initExecutable(getConfig());
+			query.initExecutable();
 
 			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 

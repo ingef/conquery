@@ -53,7 +53,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
-		execution.initExecutable(standaloneSupport.getConfig());
+		execution.initExecutable();
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
 		List<ResultInfo> resultInfos = executionResult.getResultInfos();

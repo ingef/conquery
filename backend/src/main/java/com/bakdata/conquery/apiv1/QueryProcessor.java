@@ -263,7 +263,7 @@ public class QueryProcessor {
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			final Namespace namespace = query.getNamespace();
 
-			namespace.getExecutionManager().execute(query, config);
+			namespace.getExecutionManager().execute(query);
 		}
 	}
 
@@ -285,7 +285,7 @@ public class QueryProcessor {
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
 		final Namespace namespace = datasetRegistry.get(query.getDataset());
 
-		query.initExecutable(config);
+		query.initExecutable();
 
 		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
@@ -332,7 +332,7 @@ public class QueryProcessor {
 			execution.setLabel(upload.getLabel());
 		}
 
-		execution.initExecutable(config);
+		execution.initExecutable();
 
 		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
@@ -371,7 +371,7 @@ public class QueryProcessor {
 
 		// Workaround update our execution as the lastresultcount was set in the background
 		final EntityPreviewExecution executionFinished = (EntityPreviewExecution) execution.getId().resolve();
-		executionFinished.initExecutable(config);
+		executionFinished.initExecutable();
 
 		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
 		status.setResultUrls(getResultAssets(config.getResultProviders(), executionFinished, uriBuilder, false));
@@ -431,7 +431,7 @@ public class QueryProcessor {
 
 			final Optional<ManagedExecution>
 					execution =
-					executionId.map(id -> tryReuse(query, id, namespace, config, executionManager, subject.getUser()));
+					executionId.map(id -> tryReuse(query, id, namespace, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -439,13 +439,13 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(namespace, query, subject.getId(), config, system);
+		return executionManager.runQuery(namespace, query, subject.getId(), system);
 	}
 
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager executionManager, User user) {
+	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ExecutionManager executionManager, User user) {
 
 		ManagedExecution execution = storage.getExecution(executionId);
 
@@ -488,7 +488,7 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		executionManager.execute(execution, config);
+		executionManager.execute(execution);
 
 		return execution;
 
@@ -587,7 +587,7 @@ public class QueryProcessor {
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
-		managedQuery.initExecutable(config);
+		managedQuery.initExecutable();
 
 		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 

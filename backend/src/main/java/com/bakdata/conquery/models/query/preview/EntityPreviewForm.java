@@ -24,6 +24,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -174,8 +175,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override

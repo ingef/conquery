@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -39,8 +40,8 @@ public abstract class Query implements QueryDescription {
 	public abstract List<ResultInfo> getResultInfos();
 
 	@Override
-	public ManagedQuery toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedQuery toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	/**

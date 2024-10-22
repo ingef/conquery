@@ -111,6 +111,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
@@ -133,9 +136,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
-	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		this.owner = owner;
 		this.dataset = dataset;
+		this.config = config;
 		this.metaStorage = metaStorage;
 		this.datasetRegistry = datasetRegistry;
 	}
@@ -158,7 +162,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(ConqueryConfig config) {
+	public final void initExecutable() {
 
 		synchronized (this) {
 			if (initialized) {
@@ -169,7 +173,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				// IdMapper is not necessary here
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
 			}
-			this.config = config;
 
 			doInitExecutable();
 

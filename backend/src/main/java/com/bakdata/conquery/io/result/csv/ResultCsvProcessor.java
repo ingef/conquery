@@ -54,7 +54,7 @@ public class ResultCsvProcessor {
 		authorizeDownloadDatasets(subject, exec);
 
 		// Initialize execution so columns can be correctly accounted
-		exec.initExecutable(config);
+		exec.initExecutable();
 
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 

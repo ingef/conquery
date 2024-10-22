@@ -25,7 +25,7 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 	@Override
 	public DistributedNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<DistributedNamespace> datasetRegistry, Environment environment) {
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
-		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, datasetRegistry, clusterState);
+		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, datasetRegistry, clusterState, config);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), namespaceStorage);
 		clusterState.getWorkerHandlers().put(namespaceStorage.getDataset().getId(), workerHandler);
 
