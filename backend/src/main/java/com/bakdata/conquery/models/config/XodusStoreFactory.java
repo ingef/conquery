@@ -59,6 +59,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
+import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
@@ -66,7 +67,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import io.dropwizard.validation.ValidationMethod;
 import jetbrains.exodus.env.Environment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -165,24 +165,11 @@ public class XodusStoreFactory implements StoreFactory {
 	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeinSpec</a>
 	 */
 	@NotEmpty
+	@ValidCaffeineSpec
 	private String caffeineSpec = "softValues";
 
 	@JsonIgnore
 	private transient Validator validator;
-
-
-	@JsonIgnore
-	@ValidationMethod(message = "CaffeineSpec cannot be parsed")
-	public boolean isValidCaffeineSpec() {
-		try {
-			CaffeineSpec.parse(caffeineSpec);
-			return true;
-		}
-		catch (Exception e) {
-			log.error("Unable to parse caffeine spec", e);
-			return false;
-		}
-	}
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {

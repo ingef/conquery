@@ -4,16 +4,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.IntStream;
 
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.util.NonPersistentStore;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.util.extensions.XodusEnvironmentExtension;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import io.dropwizard.util.DirectExecutorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CachedStoreTest {
 
-	private final Store<String, String> backingStore = new NonPersistentStore<>();
-	private final CachedStore<String, String> cachedStore = new CachedStore<>(backingStore, CaffeineSpec.parse(""));
+	@RegisterExtension
+	private final static XodusEnvironmentExtension ENVIRONMENT = new XodusEnvironmentExtension();
+	private final XodusStore xodusStore = new XodusStore(ENVIRONMENT, getClass().getSimpleName(), (env) -> {}, (env) -> {});
+	private final SerializingStore<String, String> backingStore = new SerializingStore<>(
+			xodusStore,
+			null,
+			Jackson.MAPPER,
+			String.class,
+			String.class,
+			false,
+			false,
+			null,
+			new DirectExecutorService()
+
+	);
+	private final CachedStore<String, String> cachedStore = new CachedStore<>(backingStore, CaffeineSpec.parse("softValues"));
 
 	@BeforeEach
 	public void beforeEach() {
@@ -126,6 +142,11 @@ public class CachedStoreTest {
 			assertThat(backingStore.getAll()).as("All expected values in backing store")
 											 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d_updated"::formatted).toArray(String[]::new));
 		}
+
+		// Check for equality
+		final String newVal = "some_new_val";
+		cachedStore.update("t4_0", newVal);
+		assertThat(cachedStore.get("t4_0")).as("Should reference the same object").isSameAs(newVal);
 	}
 
 	@Test

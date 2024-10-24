@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.ImmutableList;
@@ -59,28 +58,28 @@ import org.apache.shiro.util.Destroyable;
 @Slf4j
 public class LocalAuthenticationRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AccessTokenCreator, Destroyable {
 
-	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
-	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
+	private static final int ENVIRONMENT_CLOSING_RETRIES = 2;
+	private static final int ENVIRONMENT_CLOSING_TIMEOUT = 2; // seconds
+
 	// Get the path for the storage here, so it is set as soon the first class is instantiated (in the ManagerNode)
 	// In the DistributedStandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
 	private final File storageDir;
-
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
-	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
 	private final Validator validator;
 	private final ObjectMapper mapper;
 	private final HashingFunction defaultHashingFunction;
-	@JsonIgnore
+	private final CaffeineSpec caffeineSpec;
+
 	private Environment passwordEnvironment;
-	@JsonIgnore
 	private Store<UserId, HashEntry> passwordStore;
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction) {
+	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction,
+									CaffeineSpec caffeineSpec) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.defaultHashingFunction = defaultHashingFunction;
@@ -90,6 +89,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		this.centralTokenRealm = centralTokenRealm;
 		this.passwordStoreConfig = passwordStoreConfig;
 		this.validDuration = validDuration;
+		this.caffeineSpec = caffeineSpec;
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						true,
 						null, Executors.newSingleThreadExecutor()
 				),
-				CaffeineSpec.parse("") // TODO add configuration
+				caffeineSpec
 				);
 	}
 
@@ -226,7 +226,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	@Override
 	@SneakyThrows(IOException.class)
 	public void destroy() throws InterruptedException {
-		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
+		for(int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
 			try {
 				log.info("Closing the password environment.");
 				passwordStore.close();
@@ -240,8 +240,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");				
 				}
-				log.info("Waiting for {} seconds to retry.", ENVIRONMNENT_CLOSING_TIMEOUT);
-				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
+				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
+				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT * 1000 /* milliseconds */);
 			}
 		}
 		// Close the environment with force

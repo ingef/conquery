@@ -30,6 +30,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec) {
 		this.store = store;
+
 		cache = Caffeine.from(caffeineSpec)
 //						.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache."+store.toString()))
 						.build(this.store::get);
@@ -42,9 +43,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public synchronized void update(KEY key, VALUE value) {
 		store.update(key, value);
-		cache.invalidate(key);
+		cache.put(key, value);
 	}
 
 	@Override

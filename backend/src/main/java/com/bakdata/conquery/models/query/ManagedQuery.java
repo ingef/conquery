@@ -91,22 +91,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	public synchronized long resultRowCount() {
-		Long count = updatedResultCount();
-		if (count == null) {
-			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
-		}
-		return count;
-	}
-
-	/**
-	 * @implNote this is a workaround for a race condition, because the execution state is handled externally by
-	 * the {@link ExecutionManager}. The manager might have updated the lastResultCount in the meantime.
-	 * Here is a mismatch because the {@link ExecutionStatus} for an execution might be constructed for an
-	 * "outdated" object (the {@link ExecutionManager} updated the stored execution asynchronously).
-	 */
-	public Long updatedResultCount() {
 		if (lastResultCount == null) {
-			lastResultCount = ((ManagedQuery) getId().resolve()).getLastResultCount();
+			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
 		}
 		return lastResultCount;
 	}
@@ -115,7 +101,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(updatedResultCount());
+		status.setNumberOfResults(lastResultCount);
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
