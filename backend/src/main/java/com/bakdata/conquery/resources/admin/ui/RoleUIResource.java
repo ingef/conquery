@@ -3,11 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
-import com.bakdata.conquery.resources.admin.rest.UIProcessor;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.common.View;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -16,6 +11,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import io.dropwizard.views.common.View;
 import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.TEXT_HTML)
@@ -42,7 +43,7 @@ public class RoleUIResource {
 	 */
 	@Path("{" + ROLE_ID + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_ID) Role role) {
+	public View getRole(@PathParam(ROLE_ID) RoleId role) {
 		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getRoleContent(role));
 	}
 }

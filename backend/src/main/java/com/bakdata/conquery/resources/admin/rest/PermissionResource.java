@@ -2,17 +2,17 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.OWNER_ID;
 
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import lombok.RequiredArgsConstructor;
 
 @Consumes(ExtraMimeTypes.JSON_STRING)
@@ -32,14 +32,12 @@ public class PermissionResource {
 	 * The other reason is, that we delegate the permission-string-checking to SHIRO, that gives useful exception messages.
 	 */
 	@POST
-	public Response createPermission(String permission) throws JSONException {
+	public void createPermission(String permission) throws JSONException {
 		processor.createPermission(owner, new WildcardPermission(permission));
-		return Response.ok().build();
 	}
 	
 	@DELETE
-	public Response deletePermission(String permission) throws JSONException {
+	public void deletePermission(String permission) throws JSONException {
 		processor.deletePermission(owner, new WildcardPermission(permission));
-		return Response.ok().build();
 	}
 }

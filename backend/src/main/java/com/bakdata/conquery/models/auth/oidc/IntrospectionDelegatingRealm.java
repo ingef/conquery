@@ -310,20 +310,20 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		private void syncGroupMappings(User user, Set<Group> mappedGroupsToDo) {
 			// TODO mark mappings as managed by keycloak
 			for (Group group : storage.getAllGroups().toList()) {
-				if (group.containsMember(user)) {
+				if (group.containsUser(user.getId())) {
 					if (mappedGroupsToDo.contains(group)) {
 						// Mapping is still valid, remove from todo-list
 						mappedGroupsToDo.remove(group);
 					}
 					else {
 						// Mapping is not valid any more remove user from group
-						group.removeMember(user);
+						group.removeMember(user.getId());
 					}
 				}
 			}
 
 			for (Group group : mappedGroupsToDo) {
-				group.addMember(user);
+				group.addMember(user.getId());
 			}
 		}
 
