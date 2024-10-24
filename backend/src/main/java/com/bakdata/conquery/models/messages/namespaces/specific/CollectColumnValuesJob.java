@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
@@ -63,21 +65,41 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final AtomicInteger done = new AtomicInteger();
 
+		// We use a semaphore here to pace the allocation and sending of messages
+		final Semaphore semaphore = new Semaphore(4);
+
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
 					   .filter(column -> table2Buckets.get(column.getTable()) != null)
 					   .map(ColumnId::resolve)
-					   .map(column ->
-									jobsExecutorService.submit(() -> {
+					   .map(column -> {
+								try {
+									// Acquire before submitting so we don't spam the executor with waiting threads
+									semaphore.acquire();
+									return jobsExecutorService.submit(() -> {
 										final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
 
 										final Set<String> values = buckets.stream()
 																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																		  .collect(Collectors.toSet());
-										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), values));
 										log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
-									})
+
+										// Send values to manager
+										RegisterColumnValues message =
+												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), values);
+										WriteFuture send = context.send(message);
+
+										send.awaitUninterruptibly();
+									});
+								}
+								catch (InterruptedException e) {
+									throw new RuntimeException(e);
+								}
+								finally {
+									semaphore.release();
+								}
+							}
 					   )
 					   .collect(Collectors.toList());
 
@@ -87,6 +109,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		while (true) {
 			try {
 				all.get(30, TimeUnit.SECONDS);
+
 				break;
 			}
 			catch (ExecutionException e) {

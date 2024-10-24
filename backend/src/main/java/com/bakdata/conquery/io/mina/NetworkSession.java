@@ -24,6 +24,16 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	private final IoSession session;
 	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(MAX_QUEUE_LENGTH);
 
+	@NotNull
+	private static String shorten(String desc) {
+		if (desc.length() <= MAX_MESSAGE_LENGTH) {
+			return desc;
+		}
+
+		return desc.substring(0, MAX_MESSAGE_LENGTH) + "…";
+
+	}
+
 	@Override
 	public WriteFuture send(final NetworkMessage<?> message) {
 		try {
@@ -44,19 +54,10 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			return send(message);
 		}
 		WriteFuture future = session.write(message);
+		future.addListener(f -> log.trace("Sending message {} {} ({} -> {})", message, ((WriteFuture)f).isWritten() ? "was successful" : "failed", session.getLocalAddress(), session.getRemoteAddress() ));
 		future.addListener(f -> queuedMessages.remove(message));
 
 		return future;
-	}
-
-	@NotNull
-	private static String shorten(String desc) {
-		if (desc.length() <= MAX_MESSAGE_LENGTH) {
-			return desc;
-		}
-
-		return desc.substring(0, MAX_MESSAGE_LENGTH) + "…";
-
 	}
 
 	@Override
