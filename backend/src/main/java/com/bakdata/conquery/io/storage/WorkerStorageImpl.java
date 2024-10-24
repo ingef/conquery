@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
@@ -25,7 +24,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<Bucket> buckets;
 	private IdentifiableStore<CBlock> cBlocks;
 
-	public WorkerStorageImpl(StoreFactory storageFactory, Validator validator, String pathName) {
+	public WorkerStorageImpl(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
@@ -57,11 +56,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		decorateCBlockStore(cBlocks);
 	}
 
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return super.inject(values).add(WorkerStorage.class, this);
-	}
-
 	private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
 		// Nothing to decorate
 	}
@@ -70,21 +64,22 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		// Nothing to decorate
 	}
 
-	// CBlocks
-
 	private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
 		// Nothing to decorate
+	}
+
+	// CBlocks
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(WorkerStorage.class, this);
 	}
 
 	@Override
 	public void addCBlock(CBlock cBlock) {
 		log.trace("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
-	}	@Override
-	public CBlock getCBlock(CBlockId id) {
-		return cBlocks.get(id);
 	}
-
 	@Override
 	public void removeCBlock(CBlockId id) {
 		log.trace("Removing CBlock[{}]", id);
@@ -94,6 +89,11 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public Stream<CBlock> getAllCBlocks() {
 		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::getCBlock);
+	}
+
+@Override
+	public CBlock getCBlock(CBlockId id) {
+		return cBlocks.get(id);
 	}
 
 	@Override
@@ -110,11 +110,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public Bucket getBucket(BucketId id) {
-		return buckets.get(id);
-	}
-
-	@Override
 	public void removeBucket(BucketId id) {
 		log.trace("Removing Bucket[{}]", id);
 		buckets.remove(id);
@@ -123,6 +118,11 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public Stream<Bucket> getAllBuckets() {
 		return buckets.getAllKeys().map(BucketId.class::cast).map(this::getBucket);
+	}
+
+	@Override
+	public Bucket getBucket(BucketId id) {
+		return buckets.get(id);
 	}
 
 	@Override

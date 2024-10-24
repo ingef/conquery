@@ -62,7 +62,8 @@ public class LocalAuthRealmTest {
 						new XodusConfig(),
 						Duration.hours(4),
 						BcryptFunction.getInstance(4),
-						CaffeineSpec.parse("")
+						CaffeineSpec.parse(""),
+						null // no metrics
 				); // 4 is minimum
 		LifecycleUtils.init(realm);
 	}

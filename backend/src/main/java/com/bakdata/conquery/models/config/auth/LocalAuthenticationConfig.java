@@ -104,7 +104,8 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 				passwordStoreConfig,
 				jwtDuration,
 				prototype,
-				CaffeineSpec.parse(caffeineSpec)
+				CaffeineSpec.parse(caffeineSpec),
+				environment.metrics()
 		);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, authorizationController.getStorage());
 

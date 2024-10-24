@@ -3,7 +3,12 @@ package com.bakdata.conquery;
 import jakarta.validation.Validator;
 
 import ch.qos.logback.classic.Level;
-import com.bakdata.conquery.commands.*;
+import com.bakdata.conquery.commands.DistributedStandaloneCommand;
+import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.commands.MigrateCommand;
+import com.bakdata.conquery.commands.PreprocessorCommand;
+import com.bakdata.conquery.commands.RecodeStoreCommand;
+import com.bakdata.conquery.commands.ShardCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.metrics.prometheus.PrometheusBundle;
@@ -12,6 +17,7 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -39,6 +45,10 @@ public class Conquery extends Application<ConqueryConfig> {
 		this("Conquery");
 	}
 
+	public static void main(String... args) throws Exception {
+		new Conquery().run(args);
+	}
+
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
@@ -53,11 +63,20 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());
 
-		((MutableInjectableValues) confMapper.getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
+		MutableInjectableValues injectableValues = (MutableInjectableValues) confMapper.getInjectableValues();
+		injectableValues.add(Validator.class, bootstrap.getValidatorFactory().getValidator());
+		injectableValues.add(MetricRegistry.class, bootstrap.getMetricRegistry());
 
 		// do some setup in other classes after initialization but before running a
 		// command
 		bootstrap.addBundle(new ConfiguredBundle<>() {
+
+			@Override
+			public void initialize(Bootstrap<?> bootstrap) {
+				// Allow overriding of config from environment variables.
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
+			}
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) {
@@ -70,13 +89,6 @@ public class Conquery extends Application<ConqueryConfig> {
 						bind(configuration).to(ConqueryConfig.class);
 					}
 				});
-			}
-
-			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
-						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
 			}
 		});
 
@@ -100,9 +112,5 @@ public class Conquery extends Application<ConqueryConfig> {
 			managerNode = new ManagerNode();
 		}
 		managerNode.run(manager);
-	}
-
-	public static void main(String... args) throws Exception {
-		new Conquery().run(args);
 	}
 }

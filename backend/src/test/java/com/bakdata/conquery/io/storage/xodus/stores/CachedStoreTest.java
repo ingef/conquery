@@ -29,7 +29,7 @@ public class CachedStoreTest {
 			new DirectExecutorService()
 
 	);
-	private final CachedStore<String, String> cachedStore = new CachedStore<>(backingStore, CaffeineSpec.parse("softValues"));
+	private final CachedStore<String, String> cachedStore = new CachedStore<>(backingStore, CaffeineSpec.parse("softValues"), null);
 
 	@BeforeEach
 	public void beforeEach() {

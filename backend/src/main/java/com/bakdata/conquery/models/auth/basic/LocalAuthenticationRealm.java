@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.ImmutableList;
@@ -72,6 +73,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	private final ObjectMapper mapper;
 	private final HashingFunction defaultHashingFunction;
 	private final CaffeineSpec caffeineSpec;
+	private final MetricRegistry metricRegistry;
 
 	private Environment passwordEnvironment;
 	private Store<UserId, HashEntry> passwordStore;
@@ -79,7 +81,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	//////////////////// INITIALIZATION ////////////////////
 
 	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction,
-									CaffeineSpec caffeineSpec) {
+									CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.defaultHashingFunction = defaultHashingFunction;
@@ -90,6 +92,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		this.passwordStoreConfig = passwordStoreConfig;
 		this.validDuration = validDuration;
 		this.caffeineSpec = caffeineSpec;
+		this.metricRegistry = metricRegistry;
 	}
 
 	@Override
@@ -115,8 +118,9 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						true,
 						null, Executors.newSingleThreadExecutor()
 				),
-				caffeineSpec
-				);
+				caffeineSpec,
+				metricRegistry
+		);
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////

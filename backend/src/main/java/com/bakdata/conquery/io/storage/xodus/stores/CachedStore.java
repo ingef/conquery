@@ -8,6 +8,8 @@ import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -28,12 +30,19 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@ToString.Include
 	private final Store<KEY, VALUE> store;
 
-	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec) {
+	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.store = store;
 
-		cache = Caffeine.from(caffeineSpec)
-//						.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache."+store.toString()))
-						.build(this.store::get);
+		Caffeine<Object, Object> caffeine = Caffeine.from(caffeineSpec);
+		if (metricRegistry != null) {
+			caffeine // No need to reassign variable here (caffine is stateful)
+					// Global metrics
+					.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache"))
+					// Store specific metrics
+					.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache." + store.toString()));
+		}
+
+		cache = caffeine.build(this.store::get);
 	}
 
 	@Override
