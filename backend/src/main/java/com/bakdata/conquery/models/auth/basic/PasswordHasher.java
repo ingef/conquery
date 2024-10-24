@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import lombok.Data;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,12 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PasswordHasher {
 
-	@Data
 	/**
 	 * Container class for the entries in the store consisting of the salted password hash and the corresponding salt.
 	 */
-	public static class HashEntry {
-		final String hash;
+	public record HashEntry(String hash) {
 	}
 
 }

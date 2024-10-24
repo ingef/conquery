@@ -94,7 +94,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			int secondaryIdSubPlanLimit,
 			Environment environment) {
 
-		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, environment.getValidator(), directory);
+		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
 		workerStorage.openStores(persistenceMapper, environment.metrics());
 

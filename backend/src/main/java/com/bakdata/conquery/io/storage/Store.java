@@ -6,32 +6,36 @@ import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationSt
 
 public interface Store<KEY, VALUE> extends ManagedStore {
 
-	public void add(KEY key, VALUE value);
+	/**
+	 * Adds a value to the store, if the key was not present.
+	 * @return True if the value was added
+	 */
+	boolean add(KEY key, VALUE value);
 
-	public VALUE get(KEY key);
+	VALUE get(KEY key);
 
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
+	IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
-	public void update(KEY key, VALUE value);
+	void update(KEY key, VALUE value);
 
-	public void remove(KEY key);
+	void remove(KEY key);
 
 
-	public int count();
+	int count();
 
-	public Stream<VALUE> getAll();
+	Stream<VALUE> getAll();
 
-	public Stream<KEY> getAllKeys();
+	Stream<KEY> getAllKeys();
+
+	void clear();
 
 	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
 	 */
 	@FunctionalInterface
-	public interface StoreEntryConsumer<KEY, VALUE> {
-		public void accept(KEY key, VALUE value, long size);
+	interface StoreEntryConsumer<KEY, VALUE> {
+		void accept(KEY key, VALUE value, long size);
 	}
-
-	void clear();
 
 }

@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -57,8 +59,6 @@ import com.bakdata.conquery.util.extensions.UserExtension;
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -194,7 +194,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm<?> mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm<>(new ExportForm(), user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY) {
+		return new ManagedInternalForm<>(new ExportForm(), user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
 			{
 				setState(execState, id);
 				setCreationTime(LocalDateTime.MIN);
@@ -204,7 +204,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset, final long resultCount) {
-		ManagedQuery managedQuery = new ManagedQuery(queryDescription, user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY) {
+		ManagedQuery managedQuery = new ManagedQuery(queryDescription, user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
 			{
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
@@ -256,7 +256,7 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId, Long resultCount) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
-		final ManagedQuery execMock = new ManagedQuery(null, owner.getId(), DATASET_0.getId(), STORAGE, DATASET_REGISTRY) {
+		final ManagedQuery execMock = new ManagedQuery(null, owner.getId(), DATASET_0.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
 			{
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);

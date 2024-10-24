@@ -156,6 +156,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 
 	// Tables
 
+	@Override
+	public Stream<Table> getTables() {
+		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
+	}
+
 		@Override
 	public Table getTable(TableId tableId) {
 		return getTableFromStorage(tableId);
@@ -164,12 +169,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	private Table getTableFromStorage(TableId tableId) {
 		return tables.get(tableId);
 	}
-
-	@Override
-	public Stream<Table> getTables() {
-		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
-	}
-
 
 	@Override
 	public void addTable(Table table) {
@@ -184,17 +183,17 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	// SecondaryId
 
 	@Override
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
+	}
+
+	@Override
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
 		return getSecondaryIdFromStorage(descriptionId);
 	}
 
 	private SecondaryIdDescription getSecondaryIdFromStorage(SecondaryIdDescriptionId descriptionId) {
 		return secondaryIds.get(descriptionId);
-	}
-
-	@Override
-	public Stream<SecondaryIdDescription> getSecondaryIds() {
-		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
 	}
 
 	@Override
@@ -210,17 +209,17 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	// Concepts
 
 	@Override
+	public Stream<Concept<?>> getAllConcepts() {
+		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
+	}
+
+	@Override
 	public Concept<?> getConcept(ConceptId id) {
 		return getConceptFromStorage(id);
 	}
 
 	private Concept<?> getConceptFromStorage(ConceptId id) {
 		return concepts.get(id);
-	}
-
-	@Override
-	public Stream<Concept<?>> getAllConcepts() {
-		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
 	}
 
 	@Override

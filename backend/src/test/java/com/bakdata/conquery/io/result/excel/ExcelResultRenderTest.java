@@ -114,7 +114,7 @@ public class ExcelResultRenderTest {
 		User user = new User("test", "test", metaStorage);
 		user.updateStorage();
 
-		return new ManagedQuery(mock(Query.class), user.getId(), new Dataset(ExcelResultRenderTest.class.getSimpleName()).getId(), metaStorage, null) {
+		return new ManagedQuery(mock(Query.class), user.getId(), new Dataset(ExcelResultRenderTest.class.getSimpleName()).getId(), metaStorage, null, CONFIG) {
 			@Override
 			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
