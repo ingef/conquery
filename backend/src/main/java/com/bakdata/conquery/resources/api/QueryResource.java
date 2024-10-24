@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -88,11 +89,11 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
-		subject.authorize(query.getDataset(), Ability.READ);
-		subject.authorize(query, Ability.DELETE);
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId executionId) {
+		subject.authorize(executionId.getDataset(), Ability.READ);
+		subject.authorize(executionId, Ability.DELETE);
 
-		processor.deleteQuery(subject, query);
+		processor.deleteQuery(subject, executionId);
 	}
 
 	@POST

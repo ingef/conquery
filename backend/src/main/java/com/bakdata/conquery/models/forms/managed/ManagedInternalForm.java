@@ -128,11 +128,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public void cancel() {
-		subQueries.values().stream().map(ManagedExecutionId::resolve).forEach(ManagedExecution::cancel);
-	}
-
-	@Override
 	public void start() {
 		initializedSubQueryHardRef.values().forEach(ManagedExecution::start);
 		super.start();

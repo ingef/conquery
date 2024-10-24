@@ -123,11 +123,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void cancel() {
-
-	}
-
-	@Override
 	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;

@@ -168,7 +168,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void add(KEY key, VALUE value) {
+	public boolean add(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
@@ -176,7 +176,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
-		store.add(writeKey(key), writeValue(value));
+		return store.add(writeKey(key), writeValue(value));
 	}
 
 	/**
@@ -393,8 +393,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				maybeFailed = allJobs.get(30, TimeUnit.SECONDS);
 			}
 			catch (InterruptedException e) {
-				Thread.interrupted();
-				log.debug("Thread was interrupted.");
+				boolean interrupted = Thread.interrupted();
+				log.debug("Thread was interrupted: {}", interrupted);
 			}
 			catch (ExecutionException e) {
 				throw new RuntimeException(e);

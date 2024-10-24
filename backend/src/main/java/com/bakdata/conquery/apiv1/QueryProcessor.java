@@ -210,7 +210,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		executionManager.cancelQuery(query);
+		executionManager.cancelExecution(query);
 	}
 
 	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {
@@ -267,14 +267,14 @@ public class QueryProcessor {
 		}
 	}
 
-	public void deleteQuery(Subject subject, ManagedExecution execution) {
-		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
+	public void deleteQuery(Subject subject, ManagedExecutionId execution) {
+		log.info("User[{}] deleted Query[{}]", subject.getId(), execution);
 
 		datasetRegistry.get(execution.getDataset())
 					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
 					   .clearQueryResults(execution);
 
-		storage.removeExecution(execution.getId());
+		storage.removeExecution(execution);
 	}
 
 	public ExecutionState awaitDone(ManagedExecution query, int time, TimeUnit unit) {

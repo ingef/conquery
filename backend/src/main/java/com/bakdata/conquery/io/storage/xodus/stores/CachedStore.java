@@ -37,9 +37,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void add(KEY key, VALUE value) {
-		// We don't distinguish between add and update on this layer. Let a deeper layer complain
-		update(key, value);
+	public synchronized boolean add(KEY key, VALUE value) {
+		boolean added = store.add(key, value);
+		if(added) {
+			cache.put(key, value);
+		}
+		return added;
 	}
 
 	@Override

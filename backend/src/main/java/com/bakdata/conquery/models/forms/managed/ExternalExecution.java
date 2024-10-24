@@ -125,7 +125,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 				state.setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE);
 			}
-			case CANCELLED -> reset();
+			case CANCELLED -> getExecutionManager().reset(getId());
 		}
 	}
 
@@ -174,9 +174,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		super.setStatusBase(subject, status);
 	}
 
-	@Override
 	public void cancel() {
-		//TODO this is no longer called as the ExecutionManager used to call this.
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
 		final ExternalState state = getExecutionManager().getResult(getId());

@@ -14,7 +14,6 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,7 +25,6 @@ public class XodusStore {
 	private final Consumer<XodusStore> storeCloseHook;
 	private final Consumer<XodusStore> storeRemoveHook;
 	@Getter
-	@ToString.Include
 	private final String name;
 
 	public XodusStore(Environment env, String name, Consumer<XodusStore> storeCloseHook, Consumer<XodusStore> storeRemoveHook) {
@@ -108,9 +106,10 @@ public class XodusStore {
 
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
-			Cursor cursor = store.openCursor(t);
-			while(cursor.getNext()){
-				cursor.deleteCurrent();
+			try(Cursor cursor = store.openCursor(t)) {
+				while(cursor.getNext()){
+					cursor.deleteCurrent();
+				}
 			}
 		});
 	}

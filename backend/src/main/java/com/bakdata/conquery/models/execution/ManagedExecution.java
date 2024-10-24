@@ -239,7 +239,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 		else {
 			this.error = error;
-			// Log the error, so its id is atleast once in the logs
+			// Log the error, so its id is at least once in the logs
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
@@ -248,13 +248,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public synchronized void finish(ExecutionState executionState) {
 
+		// Modify state
 		finishTime = LocalDateTime.now();
 		progress = null;
 
-		// Set execution state before acting on the latch to prevent a race condition
-		// Not sure if also the storage needs an update first
-		getMetaStorage().updateExecution(this);
-
+		// Set execution state before acting on the latch (to prevent a race condition - should not happen as the CachedStore uses softValues)
 		getExecutionManager().updateState(getId(), executionState);
 
 		// Persist state of this execution
@@ -420,17 +418,4 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
-
-	//// Shortcut helper methods
-	// TODO move to execution manager
-	public void reset() {
-		// This avoids endless loops with already reset queries
-		if (getState().equals(ExecutionState.NEW)) {
-			return;
-		}
-
-		getExecutionManager().clearQueryResults(this);
-	}
-
-	public abstract void cancel();
 }

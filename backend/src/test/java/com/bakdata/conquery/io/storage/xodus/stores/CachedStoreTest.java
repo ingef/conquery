@@ -87,7 +87,7 @@ public class CachedStoreTest {
 	}
 
 	@Test
-	public void addOverride() {
+	public void add() {
 		for (int i : IntStream.range(0, 10).toArray()) {
 			cachedStore.add("t3_" + i, "%d".formatted(i));
 		}
@@ -100,7 +100,7 @@ public class CachedStoreTest {
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
 										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
-		// Update values
+		// Update values (should not succeed as keys are already present)
 		for (int i : IntStream.range(0, 10).toArray()) {
 			cachedStore.add("t3_" + i, "%d_updated".formatted(i));
 		}
@@ -108,11 +108,11 @@ public class CachedStoreTest {
 
 		// Retrieve individually
 		for (int i : IntStream.range(0, 10).toArray()) {
-			assertThat(cachedStore.get("t3_" + i)).isEqualTo("%d_updated".formatted(i));
+			assertThat(cachedStore.get("t3_" + i)).isEqualTo("%d".formatted(i));
 		}
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d_updated"::formatted).toArray(String[]::new));
+										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 	}
 
 	@Test

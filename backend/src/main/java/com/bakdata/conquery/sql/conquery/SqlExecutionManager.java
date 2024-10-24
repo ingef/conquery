@@ -98,8 +98,6 @@ public class SqlExecutionManager extends ExecutionManager {
 		if (!sqlQueryExecution.isCancelled()) {
 			sqlQueryExecution.cancel(true);
 		}
-
-		execution.cancel();
 	}
 
 }

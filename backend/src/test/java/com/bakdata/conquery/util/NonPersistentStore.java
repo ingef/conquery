@@ -15,8 +15,15 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ConcurrentMap<KEY, VALUE> map = new ConcurrentHashMap<>();
 
 	@Override
-	public void add(KEY key, VALUE value) {
-		map.put(key, value);
+	public boolean add(KEY key, VALUE value) {
+		synchronized (map) {
+			boolean notPresent = !map.containsKey(key);
+			if(notPresent) {
+				map.put(key, value);
+			}
+			// Was not present before
+			return notPresent;
+		}
 	}
 
 	@Override
