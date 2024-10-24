@@ -36,8 +36,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		Caffeine<Object, Object> caffeine = Caffeine.from(caffeineSpec);
 		if (metricRegistry != null) {
 			caffeine // No need to reassign variable here (caffine is stateful)
-					// Global metrics
-					.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache"))
 					// Store specific metrics
 					.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache." + store.toString()));
 		}
