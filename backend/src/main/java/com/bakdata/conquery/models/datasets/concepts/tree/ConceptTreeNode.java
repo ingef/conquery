@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -13,20 +14,16 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 
 	@JsonManagedReference
 	List<ConceptTreeChild> getChildren();
-
 	int getLocalId();
-
 	int getDepth();
-
 	@JsonIgnore
 	int[] getPrefix();
-
 	@JsonBackReference
 	ConceptTreeNode getParent();
-
 	void setLocalId(int size);
 
-	String getDescription();
+	MatchingStats getMatchingStats();
 
+	String getDescription();
 	String getLabel();
 }
