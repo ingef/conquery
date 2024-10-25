@@ -47,7 +47,7 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 		}
 
 		String[] dates = daterange.split(DATE_SEPARATOR);
-		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end.");
+		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end. Input was: %s".formatted(daterange));
 
 		// the dateranges have always an included start date marked by a [
 		String startDateExpression = dates[0];

@@ -85,6 +85,11 @@ public interface SqlFunctionProvider {
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
 	/**
+	 * Create an aliased null-value {@link ColumnDateRange} from the given range. Example: {@code null::daterange as "date_range"}
+	 */
+	ColumnDateRange nulled(ColumnDateRange columnDateRange);
+
+	/**
 	 * Given a single-column {@link ColumnDateRange}, it will create a new {@link ColumnDateRange} with a start and end field.
 	 * For dialects that don't support single-column ranges, it will create a copy of the given {@link ColumnDateRange}.
 	 *

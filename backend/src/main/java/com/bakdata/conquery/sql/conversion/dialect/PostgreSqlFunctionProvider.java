@@ -136,6 +136,12 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange nulled(ColumnDateRange columnDateRange) {
+		ensureIsSingleColumnRange(columnDateRange);
+		return ColumnDateRange.of(DSL.field("null::daterange")).as(columnDateRange.getAlias());
+	}
+
+	@Override
 	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
 		Field<?> daterange = columnDateRange.getRange();
 		Field<Date> start = DSL.function("lower", Date.class, daterange);

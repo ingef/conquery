@@ -17,7 +17,8 @@ import lombok.RequiredArgsConstructor;
 class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	private final ConqueryConfig config;
-	private final SqlCDateSetParser sqlCDateSetParser;
+	@lombok.Getter
+	private final SqlCDateSetParser cDateSetParser;
 
 	@Override
 	public String getString(ResultSet resultSet, int columnIndex) throws SQLException {
@@ -60,12 +61,12 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
+		return this.cDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
 	}
 
 	@Override
 	public List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
+		return this.cDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
 	}
 
 	@Override
