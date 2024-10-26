@@ -5,6 +5,7 @@ import static org.jooq.impl.DSL.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.EqualCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.PrefixCondition;
+import com.bakdata.conquery.models.datasets.concepts.conditions.PrefixRangeCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
@@ -100,8 +102,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
 
 		final List<TreeConcept> regularApproach = new ArrayList<>();
-		final List<TreeConcept> onlyEqualConditions = new ArrayList<>();
-		final List<TreeConcept> prefixConcept = new ArrayList<>();
+		final List<TreeConcept> onlyEqualOrPrefixConditions = new ArrayList<>();
 
 		concepts.stream()
 				.parallel()
@@ -109,27 +110,25 @@ public class SqlUpdateMatchingStatsJob extends Job {
 				.filter(SqlUpdateMatchingStatsJob::isTreeConcept)
 				.forEach(concept -> {
 					final TreeConcept treeConcept = (TreeConcept) concept;
-					if (treeConcept.getChildren().isEmpty()) {
+					final List<ConceptTreeChild> conceptChildren = treeConcept.getChildren();
+					if (conceptChildren.isEmpty()) {
 						regularApproach.add(treeConcept);
 					}
-					else if (anyConditionMatches(treeConcept.getChildren(), PrefixCondition.class)) {
-						prefixConcept.add(treeConcept);
-					}
-					else if (allConditionsMatch(treeConcept.getChildren(), EqualCondition.class)) {
-						onlyEqualConditions.add(treeConcept);
+					else if (allConditionsOneOf(conceptChildren, List.of(EqualCondition.class, PrefixCondition.class, PrefixRangeCondition.class))) {
+						onlyEqualOrPrefixConditions.add(treeConcept);
 					}
 					else {
 						regularApproach.add(treeConcept);
 					}
 				});
 
-		log.info("Skipping matching stats calc for prefix concepts: {}", prefixConcept.stream().map(Concept::getName).toList());
+		log.info("Matching Stats classification: regular => {}, onlyEqualOrPrefix => {}", regularApproach.size(), onlyEqualOrPrefixConditions.size());
 
 		final long startTime = System.currentTimeMillis();
 		final List<Future<Void>> runningQueries =
 				Stream.concat(
 							  regularApproach.stream().flatMap(concept -> walkAndCollectMatchingStats(concept.getConnectors(), concept)),
-							  onlyEqualConditions.stream().map(AllEqualConditionsTask::new)
+							  onlyEqualOrPrefixConditions.stream().map(AllEqualOrPrefixConditionsTask::new)
 					  )
 					  .parallel()
 					  .map(executors::submit)
@@ -160,27 +159,15 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		return true;
 	}
 
-	private boolean allConditionsMatch(final List<ConceptTreeChild> children, final Class<?> condition) {
+	private boolean allConditionsOneOf(final List<ConceptTreeChild> children, final List<Class<?>> conditions) {
 		return children.stream().allMatch(child -> {
 			if (child.getChildren().isEmpty()) {
-				return condition.isInstance(child.getCondition());
+				return child.getCondition() != null && conditions.stream().anyMatch(condition -> condition.isInstance(child.getCondition()));
 			}
-			if (child.getCondition() != null && !condition.isInstance(child.getCondition())) {
+			if (child.getCondition() != null && conditions.stream().noneMatch(condition -> condition.isInstance(child.getCondition()))) {
 				return false;
 			}
-			return allConditionsMatch(child.getChildren(), condition);
-		});
-	}
-
-	private boolean anyConditionMatches(final List<ConceptTreeChild> children, final Class<?> condition) {
-		return children.stream().anyMatch(child -> {
-			if (child.getChildren().isEmpty()) {
-				return condition.isInstance(child.getCondition());
-			}
-			if (child.getCondition() != null && condition.isInstance(child.getCondition())) {
-				return true;
-			}
-			return anyConditionMatches(child.getChildren(), condition);
+			return allConditionsOneOf(child.getChildren(), conditions);
 		});
 	}
 
@@ -379,7 +366,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	}
 
 	@RequiredArgsConstructor
-	private class AllEqualConditionsTask implements Callable<Void> {
+	private class AllEqualOrPrefixConditionsTask implements Callable<Void> {
 
 		private final TreeConcept treeConcept;
 
@@ -417,8 +404,8 @@ public class SqlUpdateMatchingStatsJob extends Job {
 					}
 			));
 
-			treeConcept.setMatchingStats(groupValueToStats.values().stream().reduce(SqlMatchingStats::add).orElseThrow(IllegalStateException::new));
-			setAndAggregate(treeConcept.getChildren(), groupValueToStats);
+			treeConcept.setMatchingStats(groupValueToStats.values().stream().reduce(SqlMatchingStats::add).orElseGet(SqlMatchingStats::new));
+			setAndAggregate(groupValueToStats, treeConcept.getChildren());
 
 			return null;
 		}
@@ -456,7 +443,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 							 .from(connectorTable);
 		}
 
-		private void setAndAggregate(final List<ConceptTreeChild> children, final Map<String, SqlMatchingStats> groupValueToStats) {
+		private void setAndAggregate(final Map<String, SqlMatchingStats> groupValueToStats, final List<ConceptTreeChild> children) {
 			children.forEach(child -> {
 				final SqlMatchingStats nodeStats = new SqlMatchingStats();
 				// node is leaf
@@ -469,22 +456,55 @@ public class SqlUpdateMatchingStatsJob extends Job {
 						collectByCondition(groupValueToStats, child, nodeStats);
 					}
 					// recursively collect matching stats of children
-					setAndAggregate(child.getChildren(), groupValueToStats);
+					setAndAggregate(groupValueToStats, child.getChildren());
 				}
 				child.setMatchingStats(nodeStats);
 			});
 		}
 
 		private static void collectByCondition(final Map<String, SqlMatchingStats> groupValueToStats, final ConceptTreeChild node, final SqlMatchingStats nodeStats) {
-			final EqualCondition condition = (EqualCondition) node.getCondition();
-			condition.getValues().forEach(val -> {
-				final SqlMatchingStats statsForCondition = groupValueToStats.get(val);
-				// not all possible conditions must have a corresponding value in database which the results have been grouped by
-				if (statsForCondition == null) {
-					return;
-				}
+
+			// TODO make those methods of CTCondition and call directly on node.condition()
+			if (node.getCondition() instanceof EqualCondition equalCondition) {
+				equalCondition.getValues().forEach(val -> {
+					final SqlMatchingStats statsForCondition = groupValueToStats.getOrDefault(val, new SqlMatchingStats());
+					nodeStats.add(statsForCondition);
+				});
+				return;
+			}
+			else if (node.getCondition() instanceof PrefixCondition prefixCondition) {
+				Arrays.stream(prefixCondition.getPrefixes()).forEach(prefix -> {
+					final SqlMatchingStats statsForCondition = groupValueToStats.entrySet().stream()
+																				.filter(entry -> entry.getKey().startsWith(prefix))
+																				.map(Map.Entry::getValue)
+																				.reduce(SqlMatchingStats::add)
+																				.orElseGet(SqlMatchingStats::new);
+					nodeStats.add(statsForCondition);
+				});
+				return;
+			}
+			else if (node.getCondition() instanceof PrefixRangeCondition prefixRangeCondition) {
+				final SqlMatchingStats statsForCondition = groupValueToStats.entrySet().stream()
+																			.filter(entry -> {
+
+																				final String groupValue = entry.getKey();
+																				final String min = prefixRangeCondition.getMin();
+																				final String max = prefixRangeCondition.getMax();
+
+																				if (groupValue.length() < min.length()) {
+																					return false;
+																				}
+
+																				String pref = groupValue.substring(0, min.length());
+																				return min.compareTo(pref) <= 0 && max.compareTo(pref) >= 0;
+																			})
+																			.map(Map.Entry::getValue)
+																			.reduce(SqlMatchingStats::add)
+																			.orElseGet(SqlMatchingStats::new);
 				nodeStats.add(statsForCondition);
-			});
+				return;
+			}
+			throw new IllegalArgumentException("Unsupported condition type: " + node.getCondition().getClass().getSimpleName());
 		}
 
 	}
