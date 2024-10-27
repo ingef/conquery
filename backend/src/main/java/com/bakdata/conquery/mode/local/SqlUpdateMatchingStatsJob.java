@@ -404,7 +404,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 					}
 			));
 
-			treeConcept.setMatchingStats(groupValueToStats.values().stream().reduce(SqlMatchingStats::add).orElseGet(SqlMatchingStats::new));
+			treeConcept.setMatchingStats(groupValueToStats.values().stream().reduce(SqlMatchingStats::add).orElseGet(SqlMatchingStats::empty));
 			setAndAggregate(groupValueToStats, treeConcept.getChildren());
 
 			return null;
@@ -467,7 +467,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 			// TODO make those methods of CTCondition and call directly on node.condition()
 			if (node.getCondition() instanceof EqualCondition equalCondition) {
 				equalCondition.getValues().forEach(val -> {
-					final SqlMatchingStats statsForCondition = groupValueToStats.getOrDefault(val, new SqlMatchingStats());
+					final SqlMatchingStats statsForCondition = groupValueToStats.getOrDefault(val, SqlMatchingStats.empty());
 					nodeStats.add(statsForCondition);
 				});
 				return;
@@ -478,7 +478,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 																				.filter(entry -> entry.getKey().startsWith(prefix))
 																				.map(Map.Entry::getValue)
 																				.reduce(SqlMatchingStats::add)
-																				.orElseGet(SqlMatchingStats::new);
+																				.orElseGet(SqlMatchingStats::empty);
 					nodeStats.add(statsForCondition);
 				});
 				return;
@@ -500,7 +500,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 																			})
 																			.map(Map.Entry::getValue)
 																			.reduce(SqlMatchingStats::add)
-																			.orElseGet(SqlMatchingStats::new);
+																			.orElseGet(SqlMatchingStats::empty);
 				nodeStats.add(statsForCondition);
 				return;
 			}

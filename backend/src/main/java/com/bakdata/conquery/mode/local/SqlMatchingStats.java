@@ -17,6 +17,10 @@ public class SqlMatchingStats implements MatchingStats {
 	private long numberOfEntities;
 	private CDateRange span;
 
+	public static SqlMatchingStats empty() {
+		return new SqlMatchingStats();
+	}
+
 	@Override
 	public long countEvents() {
 		return numberOfEvents;
