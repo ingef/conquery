@@ -105,7 +105,6 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		final List<TreeConcept> onlyEqualOrPrefixConditions = new ArrayList<>();
 
 		concepts.stream()
-				.parallel()
 				.map(ConceptId::resolve)
 				.filter(SqlUpdateMatchingStatsJob::isTreeConcept)
 				.forEach(concept -> {
@@ -130,7 +129,6 @@ public class SqlUpdateMatchingStatsJob extends Job {
 							  regularApproach.stream().flatMap(concept -> walkAndCollectMatchingStats(concept.getConnectors(), concept)),
 							  onlyEqualOrPrefixConditions.stream().map(AllEqualOrPrefixConditionsTask::new)
 					  )
-					  .parallel()
 					  .map(executors::submit)
 					  .toList();
 
