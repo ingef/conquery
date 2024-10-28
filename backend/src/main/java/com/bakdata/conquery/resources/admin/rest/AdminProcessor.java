@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -25,6 +26,8 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -37,7 +40,6 @@ import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +89,7 @@ public class AdminProcessor {
 	 *
 	 * @param role the role to delete
 	 */
-	public void deleteRole(Role role) {
+	public void deleteRole(RoleId role) {
 		log.info("Deleting {}", role);
 
 		for (User user : storage.getAllUsers()) {
@@ -98,7 +100,7 @@ public class AdminProcessor {
 			group.removeRole(role);
 		}
 
-		storage.removeRole(role.getId());
+		storage.removeRole(role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -132,12 +134,12 @@ public class AdminProcessor {
 		return new TreeSet<>(storage.getAllUsers());
 	}
 
-	public synchronized void deleteUser(User user) {
+	public synchronized void deleteUser(UserId user) {
 		for (Group group : storage.getAllGroups()) {
 			group.removeMember(user);
 		}
-		storage.removeUser(user.getId());
-		log.trace("Removed user {} from the storage.", user.getId());
+		storage.removeUser(user);
+		log.trace("Removed user {} from the storage.", user);
 	}
 
 	public void addUsers(List<User> users) {
@@ -185,7 +187,7 @@ public class AdminProcessor {
 		log.trace("Added user {} to group {}", user, group);
 	}
 
-	public void deleteUserFromGroup(Group group, User user) {
+	public void deleteUserFromGroup(Group group, UserId user) {
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
@@ -195,7 +197,7 @@ public class AdminProcessor {
 		log.trace("Removed group {}", group);
 	}
 
-	public void deleteRoleFrom(RoleOwner owner, Role role) {
+	public void deleteRoleFrom(RoleOwner owner, RoleId role) {
 		owner.removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}
