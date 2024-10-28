@@ -5,7 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,5 +15,5 @@ import lombok.Setter;
 public abstract class HFilters extends HConnectors {
 
 	@PathParam(FILTER)
-	protected Filter<?> filter;
+	protected FilterId filter;
 }

@@ -23,6 +23,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
@@ -41,14 +42,14 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution query,
+			@PathParam(QUERY) ManagedExecutionId query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
 			@QueryParam("limit") OptionalLong limit
 			) {
 
-		checkSingleTableResult(query);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset(), subject.getId(), subject.getName());
+		checkSingleTableResult(query.resolve());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query, query.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, query, pretty, limit);
 	}
 
@@ -78,12 +79,12 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
-		checkSingleTableResult(execution);
+		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}

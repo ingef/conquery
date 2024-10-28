@@ -20,7 +20,7 @@ public interface NamespacedStorage extends NamespacedStorageProvider {
 
 	Import getImport(ImportId id);
 
-	Stream<Import> getAllImports();
+	Stream<ImportId> getAllImports();
 
 	void updateImport(Import imp);
 

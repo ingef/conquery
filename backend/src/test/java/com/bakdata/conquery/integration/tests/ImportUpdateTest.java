@@ -87,7 +87,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId1))
+					.filteredOn(imp -> imp.equals(importId1))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getImport(importId1))
@@ -182,7 +182,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId1))
+					.filteredOn(imp -> imp.equals(importId1))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getImport(importId1))

@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.io.result.parquet.ResultParquetProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
@@ -52,13 +53,13 @@ public class ResultParquetResource {
 	@Produces(PARQUET_MEDIA_TYPE_STRING)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
 
-		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset(), subject.getId(), subject.getName());
+		checkSingleTableResult(execution.resolve());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, execution, pretty, limit);
 	}
 

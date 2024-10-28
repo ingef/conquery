@@ -120,8 +120,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	@Override
-	public Stream<Import> getAllImports() {
-		return imports.getAll();
+	public Stream<ImportId> getAllImports() {
+		return imports.getAllKeys().map(ImportId.class::cast);
 	}
 
 	@Override

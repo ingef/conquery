@@ -3,7 +3,12 @@ package com.bakdata.conquery;
 import jakarta.validation.Validator;
 
 import ch.qos.logback.classic.Level;
-import com.bakdata.conquery.commands.*;
+import com.bakdata.conquery.commands.DistributedStandaloneCommand;
+import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.commands.MigrateCommand;
+import com.bakdata.conquery.commands.PreprocessorCommand;
+import com.bakdata.conquery.commands.RecodeStoreCommand;
+import com.bakdata.conquery.commands.ShardCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.metrics.prometheus.PrometheusBundle;
@@ -19,6 +24,7 @@ import io.dropwizard.core.Application;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -54,6 +60,8 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new MigrateCommand());
 
 		((MutableInjectableValues) confMapper.getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
+
+		bootstrap.addBundle(new MultiPartBundle());
 
 		// do some setup in other classes after initialization but before running a
 		// command
