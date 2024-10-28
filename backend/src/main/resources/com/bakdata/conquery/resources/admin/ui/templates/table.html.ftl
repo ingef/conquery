@@ -25,7 +25,7 @@
             </tr>
           </#if>
           <#list items as item>
-            <tr>
+            <tr ${(cypressId?has_content && item.id?has_content!false )?then('data-cy='+cypressId+'-'+item.id,'')}>
               <#list columns as column>
                 <#if renderers?keys?seq_contains(column)>
                   <td scope="row"><@renderers[column] id="${item.id}" /></td>

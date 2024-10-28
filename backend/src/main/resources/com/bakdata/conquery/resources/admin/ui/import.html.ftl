@@ -2,17 +2,19 @@
 <#import "templates/breadcrumbs.html.ftl" as breadcrumbs>
 <#import "templates/infoCard.html.ftl" as infoCard>
 <#import "templates/accordion.html.ftl" as accordion>
-<#import "templates/table.html.ftl" as table>
+<#import "templates/table.html.ftl" as tableMacro>
 
 <@layout.layout>
+  <#assign table=c.imp.table.resolve() />
+  <#assign dataset=c.imp.dataset.resolve() />
   <@breadcrumbs.breadcrumbs
-    labels=["Datasets", c.imp.table.dataset.label, "Tables", c.imp.table.label, "Tags", c.imp.id]
+    labels=["Datasets", dataset.label, "Tables", table.label, "Tags", c.imp.id]
     links=[
       "/admin-ui/datasets",
-      "/admin-ui/datasets/${c.imp.table.dataset.id}",
-      "/admin-ui/datasets/${c.imp.table.dataset.id}#Tables",
-      "/admin-ui/datasets/${c.imp.table.dataset.id}/tables/${c.imp.table.id}",
-      "/admin-ui/datasets/${c.imp.table.dataset.id}/tables/${c.imp.table.id}#Tags"
+      "/admin-ui/datasets/${c.imp.table.dataset}",
+      "/admin-ui/datasets/${c.imp.table.dataset}#Tables",
+      "/admin-ui/datasets/${c.imp.table.dataset}/tables/${c.imp.table}",
+      "/admin-ui/datasets/${c.imp.table.dataset}/tables/${c.imp.table}#Tags"
     ]
   />
 
@@ -27,7 +29,7 @@
     <#assign idHeader="id" />
     <#assign sizeHeader="size" />
     <#assign typeHeader="type" />
-    <@table.table
+    <@tableMacro.table
       columns=[idHeader, sizeHeader, typeHeader]
       items=c.imp.columns
         ?map( x ->

@@ -22,8 +22,10 @@ const ConceptTreeListItem = ({
 
   const nonFolderChildren = useMemo(
     () =>
-      tree.detailsAvailable ? tree.children : getNonFolderChildren(trees, tree),
-    [trees, tree],
+      tree.detailsAvailable
+        ? tree.children
+        : getNonFolderChildren(trees, tree, conceptId),
+    [trees, tree, conceptId],
   );
 
   if (!isNodeInSearchResult(conceptId, search, nonFolderChildren)) return null;

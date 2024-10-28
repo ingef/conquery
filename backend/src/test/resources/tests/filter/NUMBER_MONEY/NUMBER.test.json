@@ -32,7 +32,7 @@
     }
   },
   "filterValue": {
-    "type": "INTEGER_RANGE",
+    "type": "MONEY_RANGE",
     "value": {
       "min": 10000,
       "max": 20000
