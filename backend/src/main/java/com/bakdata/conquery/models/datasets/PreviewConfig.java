@@ -44,7 +44,7 @@ public class PreviewConfig {
 
 
 	/**
-	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, Dataset, Range)}.
+	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, com.bakdata.conquery.models.identifiable.ids.specific.DatasetId, Range)}.
 	 * To be displayed as additional infos.
 	 *
 	 * @implSpec the order of selects is the order of the output fields.

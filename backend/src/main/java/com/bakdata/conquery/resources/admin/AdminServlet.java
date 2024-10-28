@@ -123,7 +123,7 @@ public class AdminServlet {
 					})
 					.register(AdminPermissionFilter.class)
 					.register(new MultiPartFeature())
-					.register(IdParamConverter.Provider.INSTANCE)
+					.register(new IdParamConverter.Provider())
 					.register(AuthCookieFilter.class)
 					.register(CsrfTokenCheckFilter.class);
 
@@ -139,6 +139,7 @@ public class AdminServlet {
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
+					  .register(new IdParamConverter.Provider())
 					  .register(AdminPermissionFilter.class)
 					  .register(AuthCookieFilter.class)
 					  .register(CsrfTokenSetFilter.class);

@@ -91,7 +91,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final long nImports;
-		try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+		try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 			nImports = allImports.count();
 		}
 
@@ -101,9 +101,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state before deletion");
 
 			// Must contain the import.
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports)
-						.filteredOn(imp -> imp.getId().equals(importId))
+						.filteredOn(imp -> imp.equals(importId))
 						.isNotEmpty();
 			}
 
@@ -162,16 +162,15 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be one less!
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
-				List<Import> imports = allImports.toList();
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
+				List<ImportId> imports = allImports.toList();
 				assertThat(imports.size()).isEqualTo(nImports - 1);
 
 				// The deleted import should not be found.
 				assertThat(imports)
-						.filteredOn(imp -> imp.getId().equals(importId))
+						.filteredOn(imp -> imp.equals(importId))
 						.isEmpty();
 			}
-
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -258,7 +257,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after re-import");
 
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports() ) {
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports() ) {
 				assertThat(allImports.count()).isEqualTo(nImports);
 			}
 
@@ -295,7 +294,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-start");
 
 			{
-				try(Stream<Import> allImports = conquery2.getNamespace().getStorage().getAllImports()) {
+				try(Stream<ImportId> allImports = conquery2.getNamespace().getStorage().getAllImports()) {
 					assertThat(allImports.count()).isEqualTo(2);
 				}
 

@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -87,8 +88,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		TableId thisId = this.getId();
-		return storage.getAllImports().filter(imp -> imp.getTable().equals(thisId));
+		final TableId thisId = getId();
+		return storage.getAllImports()
+					  .filter(imp -> imp.getTable().equals(thisId))
+					  .map(Id::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {

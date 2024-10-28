@@ -25,6 +25,7 @@ import io.dropwizard.core.Application;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,8 @@ public class Conquery extends Application<ConqueryConfig> {
 		MutableInjectableValues injectableValues = (MutableInjectableValues) confMapper.getInjectableValues();
 		injectableValues.add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 		injectableValues.add(MetricRegistry.class, bootstrap.getMetricRegistry());
+
+		bootstrap.addBundle(new MultiPartBundle());
 
 		// do some setup in other classes after initialization but before running a
 		// command

@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class AdminTablesResource {
 	protected Dataset dataset;
 	protected Namespace namespace;
 	@PathParam(TABLE)
-	protected Table table;
+	protected TableId table;
 
 	@PostConstruct
 	public void init() {
@@ -53,7 +54,7 @@ public class AdminTablesResource {
 
 	@GET
 	public Table getTable() {
-		return table;
+		return table.resolve();
 	}
 
 
@@ -84,22 +85,21 @@ public class AdminTablesResource {
 	public List<ImportId> listImports() {
 		return namespace.getStorage()
 						.getAllImports()
-						.filter(imp -> imp.getTable().equals(table.getId()))
-						.map(Import::getId)
+						.filter(imp -> imp.getTable().equals(table))
 						.collect(Collectors.toList());
 	}
 
 	@DELETE
 	@Path("imports/{" + IMPORT_ID + "}")
-	public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
+	public void deleteImport(@PathParam(IMPORT_ID) ImportId imp) {
 		processor.deleteImport(imp);
 	}
 
 
 	@GET
 	@Path("imports/{" + IMPORT_ID + "}")
-	public Import getImport(@PathParam(IMPORT_ID) Import imp) {
-		return imp;
+	public Import getImport(@PathParam(IMPORT_ID) ImportId imp) {
+		return imp.resolve();
 	}
 
 

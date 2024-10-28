@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -227,7 +228,7 @@ public class AdminDatasetResource {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void postprocessNamespace(@PathParam(DATASET) Dataset dataset) {
+	public void postprocessNamespace(@PathParam(DATASET) DatasetId dataset) {
 		processor.postprocessNamespace(dataset);
 	}
 

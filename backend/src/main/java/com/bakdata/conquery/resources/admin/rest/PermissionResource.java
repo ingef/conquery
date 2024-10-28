@@ -10,9 +10,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import lombok.RequiredArgsConstructor;
 
 @Consumes(ExtraMimeTypes.JSON_STRING)
@@ -23,7 +23,7 @@ public class PermissionResource {
 	private final AdminProcessor processor;
 
 	@PathParam(OWNER_ID)
-	private PermissionOwner<?> owner;
+	private PermissionOwnerId owner;
 
 	/**
 	 * We let SHIRO parse the permission from a string, instead of letting Jackson map it directly to an object.

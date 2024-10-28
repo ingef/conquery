@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -48,19 +49,14 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
+	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 
-		subject.authorize(query.getDataset(), Ability.READ);
-		subject.authorize(query, Ability.READ);
-
-		processor.awaitDone(query, 1, TimeUnit.SECONDS);
-
-		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
+		return processor.getQueryFullStatus(queryId, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders, true);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}/statistics")
-	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
+	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query) {
 
 		if (!(query instanceof SingleTableResult)) {
 			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
@@ -73,42 +69,42 @@ public class QueryResource {
 			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 
-		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
+		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query.resolve())))).build();
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders, MetaDataPatch patch) {
+	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders, MetaDataPatch patch) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		processor.patchQuery(subject, query, patch);
 
-		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
+		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders, false);
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution execution) {
-		subject.authorize(execution.getDataset(), Ability.READ);
-		subject.authorize(execution, Ability.DELETE);
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query) {
+		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query, Ability.DELETE);
 
-		processor.deleteQuery(subject, execution.getId());
+		processor.deleteQuery(subject, query);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
+	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
 		processor.reexecute(subject, query);
-		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
+		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders, false);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/cancel")
-	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
+	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query) {
 
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.CANCEL);

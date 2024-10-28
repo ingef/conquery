@@ -184,7 +184,7 @@ public class ClusterImportHandler implements ImportHandler {
 	}
 
 	@Override
-	public void deleteImport(Import imp) {
+	public void deleteImport(ImportId imp) {
 
 		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
@@ -193,8 +193,8 @@ public class ClusterImportHandler implements ImportHandler {
 			clearDependentConcepts(allConcepts, imp.getTable());
 		}
 
-		namespace.getStorage().removeImport(imp.getId());
-		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp.getId()));
+		namespace.getStorage().removeImport(imp);
+		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);

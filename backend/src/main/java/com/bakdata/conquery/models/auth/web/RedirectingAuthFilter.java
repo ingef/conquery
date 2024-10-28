@@ -5,9 +5,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -19,6 +16,9 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -143,7 +143,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 			}
 
 			// Give the user a choice to choose between them.
-			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
+			throw new WebApplicationException(Response.ok(new UIView("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}
 

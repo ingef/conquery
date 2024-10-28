@@ -18,12 +18,12 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -65,7 +65,7 @@ public class FormConfigProcessor {
 	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject subject, Dataset dataset, @NonNull Set<String> requestedFormType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject subject, DatasetId dataset, @NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
@@ -86,7 +86,7 @@ public class FormConfigProcessor {
 		final Set<String> formTypesFinal = requestedFormType;
 
 		final Stream<FormConfig> stream = storage.getAllFormConfigs()
-												 .filter(c -> dataset.getId().equals(c.getDataset()))
+												 .filter(c -> dataset.equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
 
@@ -98,7 +98,8 @@ public class FormConfigProcessor {
 	 * Returns the full configuration of a configuration (meta data + configured values).
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
-	public FormConfigFullRepresentation getConfig(Subject subject, FormConfig form) {
+	public FormConfigFullRepresentation getConfig(Subject subject, FormConfigId formId) {
+		final FormConfig form = formId.resolve();
 
 		subject.authorize(form, Ability.READ);
 		return form.fullRepresentation(storage, subject);
@@ -109,14 +110,14 @@ public class FormConfigProcessor {
 	 * subject has access to (has the READ ability on the Dataset), if the config is
 	 * translatable to those.
 	 */
-	public FormConfig addConfig(Subject subject, Dataset targetDataset, FormConfigAPI config) {
+	public FormConfig addConfig(Subject subject, DatasetId targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
-		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
+		final Namespace namespace = datasetRegistry.get(targetDataset);
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(subject.getId(), targetDataset.getId());
+		final FormConfig internalConfig = config.intern(subject.getId(), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
@@ -129,6 +130,7 @@ public class FormConfigProcessor {
 	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
 
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
+		internalConfig.setMetaStorage(storage); //TODO unify in MetaStorage?
 		storage.addFormConfig(internalConfig);
 
 		return internalConfig.getId();
@@ -137,7 +139,8 @@ public class FormConfigProcessor {
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
-	public FormConfigFullRepresentation patchConfig(Subject subject, FormConfig config, FormConfigPatch patch) {
+	public FormConfigFullRepresentation patchConfig(Subject subject, FormConfigId configId, FormConfigPatch patch) {
+		FormConfig config = configId.resolve();
 
 		patch.applyTo(config, storage, subject);
 
@@ -149,7 +152,8 @@ public class FormConfigProcessor {
 	/**
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
-	public void deleteConfig(Subject subject, FormConfig config) {
+	public void deleteConfig(Subject subject, FormConfigId configId) {
+		FormConfig config = configId.resolve();
 		final User user = storage.getUser(subject.getId());
 
 		user.authorize(config, Ability.DELETE);

@@ -435,5 +435,9 @@
             <version>4.2.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-forms</artifactId>
+        </dependency>
     </dependencies>
 </project>

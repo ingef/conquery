@@ -21,7 +21,6 @@ import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -34,6 +33,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -70,7 +70,6 @@ public class AdminDatasetProcessor {
 	private final Environment environment;
 
 
-
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
@@ -91,7 +90,7 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		try(Stream<Table> tableStream = namespace.getStorage().getTables()) {
+		try (Stream<Table> tableStream = namespace.getStorage().getTables()) {
 			List<Table> tables = tableStream.toList();
 			if (!tables.isEmpty()) {
 				throw new WebApplicationException(
@@ -99,9 +98,9 @@ public class AdminDatasetProcessor {
 								"Cannot delete dataset `%s`, because it still has tables: `%s`",
 								dataset.getId(),
 								tables.stream()
-										 .map(Table::getId)
-										 .map(Objects::toString)
-										 .collect(Collectors.joining(","))
+									  .map(Table::getId)
+									  .map(Objects::toString)
+									  .collect(Collectors.joining(","))
 						),
 						Response.Status.CONFLICT
 				);
@@ -137,11 +136,11 @@ public class AdminDatasetProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents;
-		try(Stream<Table> tables = namespace.getStorage().getTables()) {
+		try (Stream<Table> tables = namespace.getStorage().getTables()) {
 
-												 dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
-												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
-												 .toList();
+			dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
+							   .filter(column -> secondaryId.equals(column.getSecondaryId()))
+							   .toList();
 		}
 
 		if (!dependents.isEmpty()) {
@@ -166,9 +165,9 @@ public class AdminDatasetProcessor {
 	 */
 	@SneakyThrows
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		Dataset dataset = namespace.getDataset();
+		final Dataset dataset = namespace.getDataset();
 
-		DatasetId datasetId = dataset.getId();
+		final DatasetId datasetId = dataset.getId();
 		if (table.getDataset() == null) {
 			table.setDataset(datasetId);
 		}
@@ -246,16 +245,16 @@ public class AdminDatasetProcessor {
 	public void setIdMapping(InputStream data, Namespace namespace) {
 		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
-		CsvParser parser = config.getCsv()
-								 .withSkipHeader(false)
-								 .withParseHeaders(true)
-								 .createParser();
+		final CsvParser parser = config.getCsv()
+									   .withSkipHeader(false)
+									   .withParseHeaders(true)
+									   .createParser();
 
 		try {
 
 			parser.beginParsing(data);
 
-			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds(), namespace.getStorage());
+			final EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds(), namespace.getStorage());
 			namespace.getStorage().updateIdMapping(mapping);
 
 		}
@@ -277,29 +276,28 @@ public class AdminDatasetProcessor {
 	 * Reads an Import partially Importing it if not yet present, then submitting it for full import.
 	 */
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
-		this.importHandler.addImport(namespace, inputStream);
+		importHandler.addImport(namespace, inputStream);
 	}
 
 	/**
 	 * Reads an Import partially Importing it if it is present, then submitting it for full import [Update of an import].
 	 */
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		this.importHandler.updateImport(namespace, inputStream);
+		importHandler.updateImport(namespace, inputStream);
 	}
 
 	/**
 	 * Deletes a table if it has no dependents or not forced to do so.
 	 */
-	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+	public synchronized List<ConceptId> deleteTable(TableId table, boolean force) {
 		final Namespace namespace = datasetRegistry.get(table.getDataset());
 
-		TableId tableId = table.getId();
 		final List<Concept<?>> dependentConcepts;
-		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+		try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 			dependentConcepts = allConcepts.flatMap(c -> c.getConnectors().stream())
-																  .filter(con -> con.getResolvedTableId().equals(tableId))
-																  .map(Connector::getConcept)
-																  .collect(Collectors.toList());
+										   .filter(con -> con.getResolvedTableId().equals(table))
+										   .map(Connector::getConcept)
+										   .collect(Collectors.toList());
 		}
 
 		if (force || dependentConcepts.isEmpty()) {
@@ -307,14 +305,12 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept.getId());
 			}
 
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
-				allImports
-						.filter(imp -> imp.getTable().equals(tableId))
-						.forEach(this::deleteImport);
-			}
+			namespace.getStorage().getAllImports()
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
 
-			namespace.getStorage().removeTable(tableId);
-			storageListener.onRemoveTable(table.getId());
+			namespace.getStorage().removeTable(table);
+			storageListener.onRemoveTable(table);
 		}
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
@@ -323,15 +319,15 @@ public class AdminDatasetProcessor {
 	/**
 	 * Deletes an import.
 	 */
-	public synchronized void deleteImport(Import imp) {
-		this.importHandler.deleteImport(imp);
+	public synchronized void deleteImport(ImportId imp) {
+		importHandler.deleteImport(imp);
 	}
 
 	/**
 	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
 	 */
-	public void postprocessNamespace(Dataset dataset) {
-		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+	public void postprocessNamespace(DatasetId dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset);
 
 		ns.postprocessData();
 	}

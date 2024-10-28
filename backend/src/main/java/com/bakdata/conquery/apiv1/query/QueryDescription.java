@@ -71,11 +71,11 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	default void authorize(Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	static void authorizeQuery(QueryDescription queryDescription, Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 

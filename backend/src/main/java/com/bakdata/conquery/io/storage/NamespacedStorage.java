@@ -21,7 +21,7 @@ public interface NamespacedStorage extends ConqueryStorage, NamespacedStoragePro
 
 	Import getImport(ImportId id);
 
-	Stream<Import> getAllImports();
+	Stream<ImportId> getAllImports();
 
 	Stream<ImportId> getAllImportIds();
 

@@ -122,14 +122,14 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
 
 			// Adding Permissions
-			adminProcessor.createPermission(user, dataset1.createPermission(Ability.READ.asSet()));
-			adminProcessor.createPermission(userToDelete, dataset2.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(user.getId(), dataset1.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(userToDelete.getId(), dataset2.createPermission(Ability.READ.asSet()));
 
-			adminProcessor.createPermission(role, dataset3.createPermission(Ability.READ.asSet()));
-			adminProcessor.createPermission(roleToDelete, dataset4.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(role.getId(), dataset3.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(roleToDelete.getId(), dataset4.createPermission(Ability.READ.asSet()));
 
-			adminProcessor.createPermission(group, dataset5.createPermission(Ability.READ.asSet()));
-			adminProcessor.createPermission(groupToDelete, dataset6.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(group.getId(), dataset5.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(groupToDelete.getId(), dataset6.createPermission(Ability.READ.asSet()));
 
 			// Delete entities
 			//TODO use API

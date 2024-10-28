@@ -30,8 +30,8 @@ public class UserUIResource {
 
 	@GET
 	public View getUsers() {
-		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
-																																			.getAllUsers());
+		return new UIView("users.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
+																																		  .getAllUsers());
 	}
 
 	/**
@@ -43,6 +43,6 @@ public class UserUIResource {
 	@Path("{" + USER_ID + "}")
 	@GET
 	public View getUser(@PathParam(USER_ID) UserId user) {
-		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getUserContent(user));
+		return new UIView("user.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getUserContent(user));
 	}
 }

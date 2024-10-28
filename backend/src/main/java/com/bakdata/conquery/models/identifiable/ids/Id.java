@@ -15,11 +15,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
-@RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
+@NoArgsConstructor
 public abstract class Id<TYPE> {
 
 	/**
@@ -41,10 +42,12 @@ public abstract class Id<TYPE> {
 	/**
 	 * Injected by deserializer for resolving meta Ids
 	 */
+	@NonNull
 	@JsonIgnore
 	@Setter
 	@Getter
 	private MetaStorage metaStorage;
+
 
 	@Override
 	public abstract int hashCode();
@@ -95,7 +98,7 @@ public abstract class Id<TYPE> {
 			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().resolveStorage(namespacedId.getDataset()));
 		}
 		if (this instanceof MetaId) {
-			return metaStorage.resolve((Id<?> & MetaId)this);
+			return metaStorage.resolve((Id<?> & MetaId) this);
 		}
 		throw new IllegalStateException("Tried to resolve an id that is neither NamespacedId not MetaId: %s".formatted(this));
 	}

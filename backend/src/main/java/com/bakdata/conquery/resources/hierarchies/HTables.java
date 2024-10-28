@@ -6,7 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,5 +16,5 @@ import lombok.Setter;
 public abstract class HTables extends HDatasets {
 
 	@PathParam(TABLE)
-	protected Table table;
+	protected TableId table;
 }

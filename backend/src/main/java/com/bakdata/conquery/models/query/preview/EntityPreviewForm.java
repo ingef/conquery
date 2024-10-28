@@ -152,7 +152,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 

@@ -23,6 +23,7 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
@@ -37,15 +38,12 @@ public class ConceptResource extends HAuthorized {
 
 	private final ConceptsProcessor processor;
 
-	@PathParam(CONCEPT)
-	protected Concept<?> concept;
-
 	@GET
-	public Response getNode() {
+	public Response getNode(@PathParam(CONCEPT) ConceptId concept) {
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
-		final FrontendList result = processor.getNode(concept);
+		final FrontendList result = processor.getNode(concept.resolve());
 
 		// check if browser still has this version cached
 		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId()
@@ -58,7 +56,9 @@ public class ConceptResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ConceptsProcessor.ResolvedConceptsResult resolve(@NotNull ConceptResource.ConceptCodeList conceptCodes) {
+	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, @NotNull ConceptResource.ConceptCodeList conceptCodes) {
+		final Concept<?> concept = conceptId.resolve();
+
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 

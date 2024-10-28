@@ -19,7 +19,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -28,6 +27,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -101,8 +101,8 @@ public class AdminProcessor {
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
-		owner.addPermission(permission);
+	public void createPermission(PermissionOwnerId<?> owner, ConqueryPermission permission) throws JSONException {
+		owner.resolve().addPermission(permission);
 	}
 
 	/**
@@ -111,8 +111,8 @@ public class AdminProcessor {
 	 * @param owner      the owner of the permission
 	 * @param permission The permission to delete.
 	 */
-	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
-		owner.removePermission(permission);
+	public void deletePermission(PermissionOwnerId<?> owner, ConqueryPermission permission) {
+		owner.resolve().removePermission(permission);
 	}
 
 

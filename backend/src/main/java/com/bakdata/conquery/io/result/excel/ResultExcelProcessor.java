@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -41,13 +42,15 @@ public class ResultExcelProcessor {
 
 	private final ExcelConfig excelConfig;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, OptionalLong limit) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
+		final E exec = (E) execId.resolve();
+
 		final DatasetId datasetId = exec.getDataset();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 

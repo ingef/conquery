@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -19,6 +20,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@JsonIgnore
 	private transient int cachedHash = Integer.MIN_VALUE;
 
+	@NonNull
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
@@ -65,8 +67,8 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Override
 	public ID getId() {
 		if (cachedId == null) {
-
 			cachedId = createId();
+			cachedId.setMetaStorage(getMetaStorage());
 		}
 		return cachedId;
 	}

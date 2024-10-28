@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -77,7 +78,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final long nImports;
-		try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+		try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 			 nImports = allImports.count();
 		}
 
@@ -155,14 +156,14 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be two less!
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports.count()).isEqualTo(nImports - 1);
 			}
 
 			// The deleted import should not be found.
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports)
-						.filteredOn(imp -> imp.getId().getTable().equals(tableId))
+						.filteredOn(imp -> imp.getTable().equals(tableId))
 						.isEmpty();
 			}
 
@@ -239,7 +240,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Test state after reimport.
 		{
 			log.info("Checking state after re-import");
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports.count()).isEqualTo(nImports);
 			}
 
@@ -278,7 +279,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			{
 				Namespace namespace2 = conquery2.getNamespace();
-				try(Stream<Import> allImports = namespace2.getStorage().getAllImports()) {
+				try(Stream<ImportId> allImports = namespace2.getStorage().getAllImports()) {
 					assertThat(allImports.count()).isEqualTo(2);
 				}
 
