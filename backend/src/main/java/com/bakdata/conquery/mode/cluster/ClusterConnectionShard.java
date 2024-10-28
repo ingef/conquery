@@ -68,20 +68,37 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	public void sessionOpened(IoSession session) {
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
-		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
+		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
+		scheduler.schedule(() -> {
+			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
+			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
-		// Authenticate with ManagerNode
-		context.send(new AddShardNode());
+			// Authenticate with ManagerNode
+			context.send(new AddShardNode());
 
-		for (Worker w : workers.getWorkers().values()) {
-			w.setSession(new NetworkSession(session));
-			WorkerInformation info = w.getInfo();
-			log.info("Sending worker identity '{}'", info.getName());
-			networkSession.send(new RegisterWorker(info));
-		}
+			for (Worker w : workers.getWorkers().values()) {
+				w.setSession(new NetworkSession(session));
+				WorkerInformation info = w.getInfo();
+				log.info("Sending worker identity '{}'", info.getName());
+				networkSession.send(new RegisterWorker(info));
+			}
+		}, 0, TimeUnit.SECONDS);
+
+
 
 		scheduleIdleLogger(scheduler, session, config.getCluster().getIdleTimeOut());
+	}
+
+	private static void scheduleIdleLogger(ScheduledExecutorService scheduler, IoSession session, Duration timeout) {
+		scheduler.scheduleAtFixedRate(
+				() -> {
+					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
+					if (elapsed.compareTo(timeout) > 0) {
+						log.trace("No message sent or received since {}", elapsed);
+					}
+				},
+				timeout.toSeconds(), timeout.toSeconds() / 2, TimeUnit.SECONDS
+		);
 	}
 
 	@Override
@@ -94,56 +111,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		catch (RejectedExecutionException e) {
 			log.trace("Scheduler rejected execution (probably in shutdown). Skipping reconnect attempt", e);
 		}
-	}
-
-	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) {
-		log.trace("Session idle {}.", status);
-	}
-
-	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) {
-		log.error("Exception caught", cause);
-	}
-
-
-	@Override
-	public void messageReceived(IoSession session, Object message) {
-		if (!(message instanceof MessageToShardNode)) {
-			log.error("Unknown message type {} in {}", message.getClass(), message);
-			return;
-		}
-
-		log.trace("{} received {} from {}", environment.getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
-
-		if (message instanceof SlowMessage slowMessage) {
-			slowMessage.setProgressReporter(job.getProgressReporter());
-			jobManager.addSlowJob(job);
-		}
-		else {
-			jobManager.addFastJob(job);
-		}
-	}
-
-
-	@Override
-	public void messageSent(IoSession session, Object message) {
-		log.trace("Message sent: {}", message);
-	}
-
-
-	@Override
-	public void inputClosed(IoSession session) {
-		log.info("Input closed.");
-		session.closeNow();
-		scheduler.schedule(this::disconnectFromCluster, 0, TimeUnit.SECONDS);
-	}
-
-
-	@Override
-	public void event(IoSession session, FilterEvent event) throws Exception {
-		log.trace("Event handled: {}", event);
 	}
 
 	private void connectToCluster() {
@@ -184,7 +151,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		}
 	}
 
-
 	private void disconnectFromCluster() {
 		if (future != null) {
 			future.cancel();
@@ -201,7 +167,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		}
 	}
 
-
 	@NotNull
 	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
 		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
@@ -216,19 +181,65 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		return connector;
 	}
 
-
-	private static void scheduleIdleLogger(ScheduledExecutorService scheduler, IoSession session, Duration timeout) {
-		scheduler.scheduleAtFixedRate(
-				() -> {
-					final Duration elapsed = Duration.milliseconds(System.currentTimeMillis() - session.getLastIoTime());
-					if (elapsed.compareTo(timeout) > 0) {
-						log.trace("No message sent or received since {}", elapsed);
-					}
-				},
-				timeout.toSeconds(), timeout.toSeconds() / 2, TimeUnit.SECONDS
-		);
+	@Override
+	public void sessionIdle(IoSession session, IdleStatus status) {
+		log.trace("Session idle {}.", status);
 	}
 
+	@Override
+	public void exceptionCaught(IoSession session, Throwable cause) {
+		log.error("Exception caught", cause);
+	}
+
+	@Override
+	public void messageReceived(IoSession session, Object message) {
+		if (!(message instanceof MessageToShardNode)) {
+			log.error("Unknown message type {} in {}", message.getClass(), message);
+			return;
+		}
+
+		log.trace("{} received {} from {}", environment.getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
+
+		if (message instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
+		}
+	}
+
+	@Override
+	public void messageSent(IoSession session, Object message) {
+		log.trace("Message sent: {}", message);
+	}
+
+	@Override
+	public void inputClosed(IoSession session) {
+		log.info("Input closed.");
+		session.closeNow();
+		scheduler.schedule(this::disconnectFromCluster, 0, TimeUnit.SECONDS);
+	}
+
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {
+		log.trace("Event handled: {}", event);
+	}
+
+	@Override
+	public void start() throws Exception {
+
+
+		jobManager = new JobManager(environment.getName(), config.isFailOnError());
+
+		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
+		// Connect async as the manager might not be up jet or is started by a test in succession
+		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
+
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
+
+	}
 
 	private void reportJobManagerStatus() {
 		if (context == null || !context.isConnected()) {
@@ -255,20 +266,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void start() throws Exception {
-
-
-		jobManager = new JobManager(environment.getName(), config.isFailOnError());
-
-		scheduler = environment.lifecycle().scheduledExecutorService("cluster-connection-shard").build();
-		// Connect async as the manager might not be up jet or is started by a test in succession
-		scheduler.schedule(this::connectToCluster, 0, TimeUnit.MINUTES);
-
-		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
-
 	}
 
 	public boolean isBusy() {
