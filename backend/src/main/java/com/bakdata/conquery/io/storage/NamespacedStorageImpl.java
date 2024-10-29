@@ -77,22 +77,24 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
+		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
+		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
-
+		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateImportStore(IdentifiableStore<Import> store) {
-		// Intentionally left blank
+		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
 		store.onAdd(concept -> {
+			concept.setNamespacedStorageProvider(this);
 
 			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
 				throw new IllegalStateException("Concept is not for this dataset.");
@@ -120,8 +122,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	@Override
-	public Stream<Import> getAllImports() {
-		return imports.getAll();
+	public Stream<ImportId> getAllImports() {
+		return imports.getAllKeys().map(ImportId.class::cast);
 	}
 
 	@Override
@@ -143,11 +145,14 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		return (VALUE) id.get(this);
 	}
-@Override
+
+	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this).
-					 add(NamespacedStorage.class, this);
-	}@Override
+		return values.add(NamespacedStorageProvider.class, this)
+					 .add(NamespacedStorage.class, this);
+	}
+
+	@Override
 	public Dataset getDataset() {
 		return dataset.get();
 	}

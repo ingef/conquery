@@ -19,6 +19,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -56,7 +58,7 @@ public class DatasetsUIResource {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public View listDatasetsUI() {
-		return new UIView<>(
+		return new UIView(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				uiProcessor.getDatasetRegistry().getAllDatasets()
@@ -66,9 +68,9 @@ public class DatasetsUIResource {
 
 	@GET
 	@Path("{" + DATASET + "}")
-	public View getDataset(@PathParam(DATASET) Dataset dataset) {
-		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
-		return new UIView<>(
+	public View getDataset(@PathParam(DATASET) DatasetId dataset) {
+		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
+		return new UIView(
 				"dataset.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				new DatasetInfos(
@@ -98,7 +100,7 @@ public class DatasetsUIResource {
 								))
 								.sum(),
 						// total size of entries
-						namespace.getStorage().getAllImports().mapToLong(Import::estimateMemoryConsumption).sum()
+						namespace.getStorage().getAllImports().map(Id::resolve).mapToLong(Import::estimateMemoryConsumption).sum()
 				)
 		);
 	}
@@ -106,15 +108,15 @@ public class DatasetsUIResource {
 
 	@GET
 	@Path("{" + DATASET + "}/mapping")
-	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
-		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
+	public View getIdMapping(@PathParam(DATASET) DatasetId dataset) {
+		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
 		final EntityIdMap mapping = namespace.getStorage().getIdMapping();
 		final UIContext uiContext = uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext));
 
 		if (mapping != null && mapping.getInternalToPrint() != null) {
-			return new UIView<>("idmapping.html.ftl", uiContext, mapping.getInternalToPrint());
+			return new UIView("idmapping.html.ftl", uiContext, mapping.getInternalToPrint());
 		}
-		return new UIView<>("add_idmapping.html.ftl", uiContext, namespace.getDataset().getId());
+		return new UIView("add_idmapping.html.ftl", uiContext, namespace.getDataset().getId());
 	}
 
 	@Data

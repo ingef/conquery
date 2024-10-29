@@ -19,7 +19,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -27,6 +26,10 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -88,14 +91,14 @@ public class AdminProcessor {
 	 *
 	 * @param role the role to delete
 	 */
-	public void deleteRole(Role role) {
+	public void deleteRole(RoleId role) {
 		log.info("Deleting {}", role);
 
 		storage.getAllUsers().forEach(user -> user.removeRole(role));
 
 		storage.getAllGroups().forEach(group -> group.removeRole(role));
 
-		storage.removeRole(role.getId());
+		storage.removeRole(role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -110,8 +113,8 @@ public class AdminProcessor {
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
-		owner.addPermission(permission);
+	public void createPermission(PermissionOwnerId<?> owner, ConqueryPermission permission) throws JSONException {
+		owner.resolve().addPermission(permission);
 	}
 
 	/**
@@ -120,8 +123,8 @@ public class AdminProcessor {
 	 * @param owner      the owner of the permission
 	 * @param permission The permission to delete.
 	 */
-	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
-		owner.removePermission(permission);
+	public void deletePermission(PermissionOwnerId<?> owner, ConqueryPermission permission) {
+		owner.resolve().removePermission(permission);
 	}
 
 
@@ -129,10 +132,10 @@ public class AdminProcessor {
 		return storage.getAllUsers().collect(Collectors.toCollection(TreeSet::new));
 	}
 
-	public synchronized void deleteUser(User user) {
+	public synchronized void deleteUser(UserId user) {
 		storage.getAllGroups().forEach(group -> group.removeMember(user));
-		storage.removeUser(user.getId());
-		log.trace("Removed user {} from the storage.", user.getId());
+		storage.removeUser(user);
+		log.trace("Removed user {} from the storage.", user);
 	}
 
 	public void addUsers(List<User> users) {
@@ -175,27 +178,30 @@ public class AdminProcessor {
 
 	}
 
-	public void addUserToGroup(Group group, User user) {
+	public void addUserToGroup(GroupId groupId, UserId user) {
+		final Group group = storage.getGroup(groupId);
 		group.addMember(user);
 		log.trace("Added user {} to group {}", user, group);
 	}
 
-	public void deleteUserFromGroup(Group group, User user) {
+	public void deleteUserFromGroup(GroupId groupId, UserId user) {
+		final Group group = storage.getGroup(groupId);
+
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
 
-	public void deleteGroup(Group group) {
-		storage.removeGroup(group.getId());
+	public void deleteGroup(GroupId group) {
+		storage.removeGroup(group);
 		log.trace("Removed group {}", group);
 	}
 
-	public void deleteRoleFrom(RoleOwner owner, Role role) {
+	public void deleteRoleFrom(RoleOwner owner, RoleId role) {
 		owner.removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}
 
-	public void addRoleTo(RoleOwner owner, Role role) {
+	public void addRoleTo(RoleOwner owner, RoleId role) {
 		owner.addRole(role);
 		log.trace("Added role {} to {}", role, owner);
 	}
@@ -255,7 +261,8 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(Group group) {
+	public String getPermissionOverviewAsCSV(GroupId groupId) {
+		final Group group = storage.getGroup(groupId);
 		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser));
 	}
 

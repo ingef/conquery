@@ -167,8 +167,4 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@Override
 	public abstract T createId();
 
-	@Override
-	public T getId() {
-		return super.getId();
-	}
 }

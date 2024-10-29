@@ -191,6 +191,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return super.inject(values).add(NamespaceStorage.class, this);
+		return super.inject(values)
+					.add(NamespaceStorage.class, this);
 	}
 }

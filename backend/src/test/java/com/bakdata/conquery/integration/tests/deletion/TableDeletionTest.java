@@ -148,7 +148,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().getTable().equals(tableId))
+					.filteredOn(imp -> imp.getTable().equals(tableId))
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {

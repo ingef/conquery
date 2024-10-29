@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.identifiable;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -40,4 +41,9 @@ public interface NamespacedStorageProvider extends Injectable {
 	 * @implNote Don't call {@link Dataset#getNamespacedStorageProvider()} as it is probably not yet set.
 	 */
 	NamespacedStorage getStorage(DatasetId datasetId);
+
+	@Override
+	default MutableInjectableValues inject(MutableInjectableValues values){
+		return values.add(NamespacedStorageProvider.class, this);
+	}
 }

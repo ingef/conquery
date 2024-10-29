@@ -109,7 +109,7 @@ public abstract class ExecutionManager {
 
 	public final void execute(ManagedExecution execution, ConqueryConfig config) {
 
-		clearQueryResults(execution);
+		clearQueryResults(execution.getId());
 
 		try {
 			execution.initExecutable(config);
@@ -160,14 +160,14 @@ public abstract class ExecutionManager {
 		return managed;
 	}
 
-	public void clearQueryResults(ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
+	public void clearQueryResults(ManagedExecutionId executionId) {
+		executionStates.invalidate(executionId);
 	}
 
 	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
 
 	public final void cancelQuery(final ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
+		clearQueryResults(execution.getId());
 
 		if (execution instanceof ExternalExecution externalExecution) {
 			externalExecution.cancel();

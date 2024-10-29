@@ -7,7 +7,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
@@ -148,8 +147,4 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		return dataset2Worker.get(datasetId).getStorage();
 	}
 
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this);
-	}
 }

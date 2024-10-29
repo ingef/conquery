@@ -104,7 +104,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			//TODO use api
 			conquery.getNamespace().getStorage().getTables()
-					.forEach(tableId -> conquery.getAdminDatasetsProcessor().deleteTable(tableId, true));
+					.forEach(table -> conquery.getAdminDatasetsProcessor().deleteTable(table.getId(), true));
 
 			conquery.waitUntilWorkDone();
 
@@ -125,7 +125,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset.getId()))
+					.filteredOn(imp -> imp.getTable().getDataset().equals(dataset.getId()))
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {

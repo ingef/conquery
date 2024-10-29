@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
@@ -29,9 +28,6 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +52,7 @@ public class IntegrationUtils {
 			final RoleId[] rolesInjected = rUser.getRolesInjected();
 
 			for (RoleId mandatorId : rolesInjected) {
-				user.addRole(storage.getRole(mandatorId));
+				user.addRole(mandatorId);
 			}
 		}
 	}

@@ -23,6 +23,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
@@ -49,18 +50,18 @@ public class ResultCsvResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public <E extends ManagedExecution & SingleTableResult> Response getAsCsv(
+	public Response getAsCsv(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
 
-		checkSingleTableResult(execution);
+		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 
-		return processor.createResult(subject, (E) execution, pretty, determineCharset(userAgent, queryCharset), limit);
+		return processor.createResult(subject, execution, pretty, determineCharset(userAgent, queryCharset), limit);
 	}
 }

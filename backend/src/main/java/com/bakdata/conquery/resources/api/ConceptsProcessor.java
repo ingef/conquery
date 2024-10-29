@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -159,16 +160,17 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedFilterValues resolveFilterValues(SelectFilter<?> searchable, List<String> searchTerms) {
+	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
+		SelectFilter filter = (SelectFilter) filterId.resolve();
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset());
+		final Namespace namespace = namespaces.get(filter.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
-		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
+		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
 			for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 				final String searchTerm = iterator.next();
@@ -183,13 +185,13 @@ public class ConceptsProcessor {
 			}
 		}
 
-		final ConnectorId connectorId = searchable.getConnector().getId();
+		final ConnectorId connectorId = filter.getConnector().getId();
 
-		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
+		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, filter.getId().toString(), out), openSearchTerms);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(
-			SelectFilter<?> searchable,
+			FilterId filterId,
 			Optional<String> maybeText,
 			OptionalInt pageNumberOpt,
 			OptionalInt itemsPerPageOpt
@@ -200,7 +202,9 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, searchable.getId(), pageNumber, itemsPerPage);
+		final SelectFilter filter = (SelectFilter) filterId.resolve();
+
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filterId, pageNumber, itemsPerPage);
 
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
@@ -209,13 +213,13 @@ public class ConceptsProcessor {
 
 			// If we have none or a blank query string we list all values.
 			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
-				final CursorAndLength cursorAndLength = listResults.get(searchable);
+				final CursorAndLength cursorAndLength = listResults.get(filter);
 				final Cursor<FrontendValue> cursor = cursorAndLength.values();
 
 				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
 			}
 
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
 
 			if (startIncl >= fullResult.size()) {
 				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());

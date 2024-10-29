@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
@@ -53,7 +52,6 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 
 		jersey.register(CORSPreflightRequestFilter.class);
 		jersey.register(CORSResponseFilter.class);
-		jersey.register(IdRefPathParamConverterProvider.class);
 
 		jersey.register(ActiveUsersFilter.class);
 
@@ -67,7 +65,10 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
 
-		jersey.register(IdParamConverter.Provider.INSTANCE);
+		jersey.register(new IdParamConverter.Provider(
+				manager.getDatasetRegistry(),
+				manager.getMetaStorage()
+		));
 
 		jersey.register(QueryResource.class);
 		jersey.register(DatasetQueryResource.class);

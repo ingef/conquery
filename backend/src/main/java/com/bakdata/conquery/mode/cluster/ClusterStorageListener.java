@@ -5,6 +5,8 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
@@ -34,8 +36,8 @@ class ClusterStorageListener implements StorageListener {
 	}
 
 	@Override
-	public void onDeleteSecondaryId(SecondaryIdDescription secondaryId) {
-		datasetRegistry.get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId.getId()));
+	public void onDeleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
+		datasetRegistry.get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId));
 	}
 
 	@Override
@@ -44,8 +46,8 @@ class ClusterStorageListener implements StorageListener {
 	}
 
 	@Override
-	public void onRemoveTable(Table table) {
-		datasetRegistry.get(table.getDataset()).getWorkerHandler().sendToAll(new RemoveTable(table.getId()));
+	public void onRemoveTable(TableId table) {
+		datasetRegistry.get(table.getDataset()).getWorkerHandler().sendToAll(new RemoveTable(table));
 	}
 
 	@Override

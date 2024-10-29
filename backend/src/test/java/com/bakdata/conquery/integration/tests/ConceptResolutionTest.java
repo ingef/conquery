@@ -7,6 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -21,9 +24,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResu
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -70,6 +70,11 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 										  .post(Entity.entity(new ConceptResource.ConceptCodeList(
 												  List.of("A1", "unknown")
 										  ), MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily())
+				.isEqualTo(Response.Status.Family.SUCCESSFUL)
+				.describedAs(() -> response.readEntity(String.class));
 
 
 		ResolvedConceptsResult resolved = response.readEntity(ResolvedConceptsResult.class);

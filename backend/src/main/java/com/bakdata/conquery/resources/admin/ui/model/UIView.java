@@ -6,16 +6,16 @@ import io.dropwizard.views.common.View;
 import lombok.Getter;
 
 @Getter
-public class UIView<CONTENT_TYPE> extends View {
+public class UIView extends View {
 	
 	private final UIContext ctx;
-	private final CONTENT_TYPE c;
+	private final Object c;
 	
 	public UIView(String templateName, UIContext ctx) {
 		this(templateName, ctx, null);
 	}
 	
-	public UIView(String templateName, UIContext ctx, CONTENT_TYPE content) {
+	public UIView(String templateName, UIContext ctx, Object content) {
 		super(resolve(templateName), StandardCharsets.UTF_8);
 		this.c = content;
 		this.ctx = ctx;

@@ -31,6 +31,10 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -95,7 +99,10 @@ public class UIProcessor {
 		return adminProcessor.getStorage();
 	}
 
-	public FrontendRoleContent getRoleContent(Role role) {
+	public FrontendRoleContent getRoleContent(RoleId roleId) {
+
+		final Role role = getStorage().getRole(roleId);
+
 		return FrontendRoleContent.builder()
 								  .permissions(wrapInFEPermission(role.getPermissions()))
 								  .permissionTemplateMap(preparePermissionTemplate())
@@ -141,14 +148,16 @@ public class UIProcessor {
 
 	private List<Group> getGroups(Role role) {
 		return getStorage().getAllGroups()
-					 .filter(g -> g.getRoles().contains(role.getId()))
-					 .sorted()
-					 .collect(Collectors.toList());
+						   .filter(g -> g.getRoles().contains(role.getId()))
+						   .sorted()
+						   .collect(Collectors.toList());
 	}
 
-	public FrontendUserContent getUserContent(User user) {
+	public FrontendUserContent getUserContent(UserId userId) {
+		User user = getStorage().getUser(userId);
+
 		final Collection<Group> availableGroups = getStorage().getAllGroups()
-															  .filter(group -> !group.containsMember(user))
+															  .filter(group -> !group.containsUser(userId))
 															  .toList();
 
 		return FrontendUserContent
@@ -163,7 +172,9 @@ public class UIProcessor {
 				.build();
 	}
 
-	public FrontendGroupContent getGroupContent(Group group) {
+	public FrontendGroupContent getGroupContent(GroupId groupId) {
+		Group group = getStorage().getGroup(groupId);
+
 		Set<UserId> memberIds = group.getMembers();
 		Set<User> members = memberIds.stream().map(getStorage()::getUser).collect(Collectors.toCollection(TreeSet::new));
 		Collection<User>
@@ -182,7 +193,9 @@ public class UIProcessor {
 				.build();
 	}
 
-	public TableStatistics getTableStatistics(Table table) {
+	public TableStatistics getTableStatistics(TableId tableId) {
+		Table table = tableId.resolve();
+
 		final NamespaceStorage storage = getDatasetRegistry().get(table.getDataset()).getStorage();
 		List<Import> imports = table.findImports(storage).collect(Collectors.toList());
 
@@ -203,7 +216,7 @@ public class UIProcessor {
 				storage.getAllConcepts()
 					   .map(Concept::getConnectors)
 					   .flatMap(Collection::stream)
-					   .filter(conn -> conn.getResolvedTableId().equals(table.getId()))
+					   .filter(conn -> conn.getResolvedTableId().equals(tableId))
 					   .map(Connector::getConcept).collect(Collectors.toSet())
 
 		);
@@ -218,23 +231,25 @@ public class UIProcessor {
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
 		return concepts
-					   .filter(TreeConcept.class::isInstance)
-					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-					   .filter(con -> con.getResolvedTableId().equals(imp.getTable()))
-					   .mapToLong(con -> {
-						   // Per event an int array is stored marking the path to the concept child.
-						   final double avgDepth = con.getConcept()
-													  .getAllChildren()
-													  .mapToInt(ConceptTreeNode::getDepth)
-													  .average()
-													  .orElse(1d);
+				.filter(TreeConcept.class::isInstance)
+				.flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+				.filter(con -> con.getResolvedTableId().equals(imp.getTable()))
+				.mapToLong(con -> {
+					// Per event an int array is stored marking the path to the concept child.
+					final double avgDepth = con.getConcept()
+											   .getAllChildren()
+											   .mapToInt(ConceptTreeNode::getDepth)
+											   .average()
+											   .orElse(1d);
 
-						   return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
-					   })
-					   .sum();
+					return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
+				})
+				.sum();
 	}
 
-	public ImportStatistics getImportStatistics(Import imp) {
+	public ImportStatistics getImportStatistics(ImportId importId) {
+		Import imp = importId.resolve();
+
 		final NamespaceStorage storage = getDatasetRegistry().get(imp.getDataset()).getStorage();
 
 		final long cBlockSize = calculateCBlocksSizeBytes(imp, storage.getAllConcepts());

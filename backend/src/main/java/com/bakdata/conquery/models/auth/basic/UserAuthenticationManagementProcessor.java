@@ -41,7 +41,7 @@ public class UserAuthenticationManagementProcessor {
 		return true;
 	}
 
-	public void remove(User user) {
+	public void remove(UserId user) {
 		realm.removeUser(user);
 	}
 

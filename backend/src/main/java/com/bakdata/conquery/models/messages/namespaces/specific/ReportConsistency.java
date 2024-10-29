@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -42,7 +41,7 @@ public class ReportConsistency extends NamespaceMessage {
 
     @Override
     public void react(DistributedNamespace context) throws Exception {
-        Set<ImportId> managerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
+        Set<ImportId> managerImports = context.getStorage().getAllImports().collect(Collectors.toSet());
 
         Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 

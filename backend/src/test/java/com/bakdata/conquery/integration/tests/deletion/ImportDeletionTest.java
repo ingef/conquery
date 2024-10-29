@@ -97,7 +97,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId))
+					.filteredOn(imp -> imp.equals(importId))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getImport(importId))
@@ -159,7 +159,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId))
+					.filteredOn(imp -> imp.equals(importId))
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {

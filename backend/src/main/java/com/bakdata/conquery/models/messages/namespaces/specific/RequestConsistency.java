@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -24,7 +23,7 @@ public class RequestConsistency extends WorkerMessage {
     @Override
     public void react(Worker context) throws Exception {
         // Gather ImportIds
-        Set<ImportId> workerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
+        Set<ImportId> workerImports = context.getStorage().getAllImports().collect(Collectors.toSet());
 
         // Gather BucketIds
         Set<BucketId> workerBuckets = context.getStorage().getAllBuckets().map(Bucket::getId).collect(Collectors.toSet());

@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -129,7 +130,8 @@ public class ModificationShieldedWorkerStorage implements WorkerStorage, Injecta
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(WorkerStorageImpl.class, this);
+		return values.add(NamespacedStorageProvider.class, this)
+					 .add(WorkerStorageImpl.class, this);
 	}
 
 }
