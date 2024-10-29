@@ -123,8 +123,8 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		indexService.inject(values);
 		// Make this class also available under DatasetRegistry
-		return values.add(NamespacedStorageProvider.class, this)
-					 .add(this.getClass(), this);
+		return NamespacedStorageProvider.super.inject(values)
+											  .add(getClass(), this);
 	}
 
 	public void resetIndexService() {

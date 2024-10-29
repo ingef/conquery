@@ -25,6 +25,12 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@JsonIgnore
 	private transient MetaStorage metaStorage;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	private transient NamespacedStorageProvider namespacedStorageProvider;
+
 	@Override
 	public int hashCode() {
 		if(cachedHash == Integer.MIN_VALUE) {
@@ -63,10 +69,11 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@ToString.Include
 	@JsonIgnore
 	@Override
-	public ID getId() {
+	public final ID getId() {
 		if (cachedId == null) {
-
 			cachedId = createId();
+			cachedId.setNamespacedStorageProvider(namespacedStorageProvider);
+			cachedId.setMetaStorage(metaStorage);
 		}
 		return cachedId;
 	}

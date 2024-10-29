@@ -20,7 +20,9 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper=false)
 public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId, Authorized {
 
 	private final DatasetId dataset;

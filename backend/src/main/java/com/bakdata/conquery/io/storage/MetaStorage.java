@@ -82,6 +82,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	public void addExecution(ManagedExecution query) {
 		executions.add(query);
+		query.setMetaStorage(this);
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId id) {
@@ -94,6 +95,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	public synchronized void updateExecution(ManagedExecution query) {
 		executions.update(query);
+		query.setMetaStorage(this);
 	}
 
 	public synchronized void removeExecution(ManagedExecutionId id) {
@@ -105,6 +107,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	public synchronized void addGroup(Group group) {
 		log.info("Adding group = {}", group.getId());
 		authGroup.add(group);
+		group.setMetaStorage(this);
 	}
 
 	public Group getGroup(GroupId groupId) {
@@ -125,6 +128,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	public synchronized void updateGroup(Group group) {
 		log.info("Updating group = {}", group.getId());
 		authGroup.update(group);
+		group.setMetaStorage(this);
+
 	}
 
 	// User
@@ -132,6 +137,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	public synchronized void addUser(User user) {
 		log.info("Adding user = {}", user.getId());
 		authUser.add(user);
+		user.setMetaStorage(this);
+
 	}
 
 	public User getUser(UserId userId) {
@@ -152,12 +159,16 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	public synchronized void updateUser(User user) {
 		log.info("Updating user = {}", user.getId());
 		authUser.update(user);
+		user.setMetaStorage(this);
+
 	}
 
 	// Roles
 
 	public synchronized void addRole(Role role) {
 		authRole.add(role);
+		role.setMetaStorage(this);
+
 	}
 
 	public Role getRole(RoleId roleId) {
@@ -178,6 +189,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	public synchronized void updateRole(Role role) {
 		log.info("Updating role = {}", role.getId());
 		authRole.update(role);
+		role.setMetaStorage(this);
+
 	}
 
 	// FormConfigs
@@ -197,11 +210,13 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@SneakyThrows
 	public synchronized void updateFormConfig(FormConfig formConfig) {
 		formConfigs.update(formConfig);
+		formConfig.setMetaStorage(this);
 	}
 
 	@SneakyThrows
 	public synchronized void addFormConfig(FormConfig formConfig) {
 		formConfigs.add(formConfig);
+		formConfig.setMetaStorage(this);
 	}
 
 	// Utility
