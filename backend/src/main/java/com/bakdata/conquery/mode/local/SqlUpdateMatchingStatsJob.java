@@ -75,6 +75,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	private final SqlFunctionProvider functionProvider;
 	private final Set<ConceptId> concepts;
 	private final ExecutorService executors;
+	private final AtomicInteger counter;
 
 	public SqlUpdateMatchingStatsJob(
 			DatabaseConfig databaseConfig,
@@ -89,6 +90,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		this.functionProvider = functionProvider;
 		this.concepts = concepts;
 		this.executors = executors;
+		this.counter = new AtomicInteger(0);
 	}
 
 	@Override
@@ -138,7 +140,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		}
 
 		final long timeElapsed = System.currentTimeMillis() - startTime;
-		log.info("DONE collecting matching stats. Elapsed time: {} ms", timeElapsed);
+		log.info("DONE collecting matching stats. Elapsed time: {} ms. Executed standard queries: {}", timeElapsed, counter.get());
 
 		runningQueries.forEach(SqlUpdateMatchingStatsJob::checkForError);
 	}
@@ -208,6 +210,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 			final SqlMatchingStats matchingStats = new SqlMatchingStats(events, entities, span);
 			treeNode.setMatchingStats(matchingStats);
+			counter.incrementAndGet();
 
 			return null;
 		}
@@ -442,7 +445,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		}
 
 		private void setAndAggregate(final Map<String, SqlMatchingStats> groupValueToStats, final List<ConceptTreeChild> children) {
-			children.forEach(child -> {
+			children.stream().parallel().forEach(child -> {
 				final SqlMatchingStats nodeStats = new SqlMatchingStats();
 				// node is leaf
 				if (child.getChildren().isEmpty()) {
