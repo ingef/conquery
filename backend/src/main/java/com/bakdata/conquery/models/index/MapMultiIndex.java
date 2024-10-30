@@ -39,6 +39,6 @@ public class MapMultiIndex implements Index<String> {
 
 	@Override
 	public Collection<String> externalMultiple(String key, String defaultValue) {
-		return Set.of(external(key, defaultValue));
+		return delegate.getOrDefault(key, Set.of(defaultValue));
 	}
 }

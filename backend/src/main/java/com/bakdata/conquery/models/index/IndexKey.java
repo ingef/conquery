@@ -5,12 +5,11 @@ import java.util.List;
 
 /**
  * Interface which is used by {@link IndexService} to create and cache a new {@link Index}.
- * For concrete implementations please use {@link AbstractIndexKey} and look out for correct
  * {@link Object#equals(Object)} and {@link Object#hashCode()} functions.
  *
- * @param <I> The type of Index that is indexed by this key
+ * @param <V> The value type handled by the index
  */
-public interface IndexKey<I extends Index<V>, V> {
+public interface IndexKey<V> {
 
 	/**
 	 * An url, or a part of it, that points to the referenced csv file.
@@ -24,6 +23,6 @@ public interface IndexKey<I extends Index<V>, V> {
 
 	List<String> getExternalTemplates();
 
-	I createIndex(String defaultEmptyLabel);
+	Index<V> createIndex(String defaultEmptyLabel);
 
 }

@@ -64,7 +64,7 @@ public class UIProcessor {
 		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
 	}
 
-	public Set<IndexKey<?, ?>> getLoadedIndexes() {
+	public Set<IndexKey<?>> getLoadedIndexes() {
 		return getAdminProcessor().getLoadedIndexes();
 	}
 

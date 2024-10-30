@@ -3,20 +3,17 @@ package com.bakdata.conquery.models.index;
 import java.net.URI;
 import java.util.List;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Data;
 
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class MapIndexKey extends AbstractIndexKey<MapIndex, String> {
+@Data
+public class MapIndexKey implements IndexKey<String> {
 
+	private final URI csv;
+	private final String internalColumn;
 	private final String externalTemplate;
+	private final boolean allowMultiple;
 
 
-	public MapIndexKey(URI csv, String internalColumn, String externalTemplate) {
-		super(csv, internalColumn);
-		this.externalTemplate = externalTemplate;
-	}
 
 	@Override
 	public List<String> getExternalTemplates() {
@@ -24,7 +21,10 @@ public class MapIndexKey extends AbstractIndexKey<MapIndex, String> {
 	}
 
 	@Override
-	public MapIndex createIndex(String defaultEmptyLabel) {
+	public Index<String> createIndex(String defaultEmptyLabel) {
+		if (allowMultiple){
+			return new MapMultiIndex(externalTemplate);
+		}
 		return new MapIndex(externalTemplate);
 	}
 

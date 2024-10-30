@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.index.Index;
 import com.bakdata.conquery.models.index.IndexService;
-import com.bakdata.conquery.models.index.MapIndex;
 import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
@@ -165,7 +165,7 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext().get();
+		final Index<String> mappingBeforeEvict = mapInternToExternMapper.getInt2ext().get();
 
 		indexService.evictCache();
 
@@ -174,7 +174,7 @@ public class IndexServiceTest {
 
 		mapInternToExternMapper.init();
 
-		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
+		final Index<String> mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")

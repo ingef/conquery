@@ -80,7 +80,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
 	@EqualsAndHashCode.Exclude
-	private CompletableFuture<MapIndex> int2ext;
+	private CompletableFuture<Index<String>> int2ext;
 
 
 	@Override
@@ -96,11 +96,11 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
 		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
 
-		final MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
+		final IndexKey<String> key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiple);
 
 		int2ext = CompletableFuture.supplyAsync(() -> {
 									   try {
-										   return mapIndex.<MapIndex, String>getIndex(key);
+										   return mapIndex.<Index<String>, String>getIndex(key);
 									   }
 									   catch (IndexCreationException e) {
 										   throw new IllegalStateException(e);
@@ -115,25 +115,30 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public Collection<String> externalMultiple(String internalValue) {
-		if (!initialized()) {
-			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
-			return List.of(internalValue);
-		}
-
-		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
-			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
-			return List.of(internalValue);
-		}
-
-		try {
-			return int2ext.get().externalMultiple(internalValue, internalValue);
-		}
-		catch (InterruptedException | ExecutionException e) {
-			// Should never be reached
-			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+		if (indexAvailable()) {
+			try {
+				return int2ext.get().externalMultiple(internalValue, internalValue);
+			}
+			catch (InterruptedException | ExecutionException e) {
+				// Should never be reached
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+			}
 		}
 
 		return List.of(internalValue);
+	}
+
+	private boolean indexAvailable() {
+		if (!initialized()) {
+			log.trace("Skip mapping {}, because mapper is not yet initialized", getId());
+			return false;
+		}
+
+		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
+			log.trace("Skip mapping {} because mapper could not be initialized", getId());
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -143,22 +148,14 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
-		if (!initialized()) {
-			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
-			return internalValue;
-		}
-
-		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
-			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
-			return internalValue;
-		}
-
-		try {
-			return int2ext.get().external(internalValue, internalValue);
-		}
-		catch (InterruptedException | ExecutionException e) {
-			// Should never be reached
-			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+		if (indexAvailable()) {
+			try {
+				return int2ext.get().external(internalValue, internalValue);
+			}
+			catch (InterruptedException | ExecutionException e) {
+				// Should never be reached
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+			}
 		}
 
 		return internalValue;
