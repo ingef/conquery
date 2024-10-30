@@ -40,6 +40,8 @@ public class IndexServiceTest {
 	@RegisterExtension
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
 
+	public static final String MAPPING_PATH = "/tests/aggregator/MAPPED/mapping.csv";
+
 	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
@@ -49,7 +51,7 @@ public class IndexServiceTest {
 	private static void initRefServer(ClientAndServer mockServer) {
 		log.info("Test loading of mapping");
 
-		try (InputStream inputStream = In.resource("/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv").asStream()) {
+		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
 			mockServer.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
@@ -74,14 +76,14 @@ public class IndexServiceTest {
 	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException, ExecutionException, InterruptedException {
 		log.info("Test loading of mapping");
 
-		try (InputStream inputStream = In.resource("/tests/aggregator/MAPPED/FIRST/mapping.csv").asStream()) {
+		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
 			REF_SERVER.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
 
 		final MapInternToExternMapper mapper = new MapInternToExternMapper(
 				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				new URI("classpath:"+MAPPING_PATH),
 				"internal",
 				"{{external}}",
 				false
@@ -149,7 +151,7 @@ public class IndexServiceTest {
 		log.info("Test evicting of mapping on mapper");
 		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
 				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				new URI("classpath:"+MAPPING_PATH),
 				"internal",
 				"{{external}}",
 				false
