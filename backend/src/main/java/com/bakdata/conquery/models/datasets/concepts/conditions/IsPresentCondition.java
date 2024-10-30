@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -17,10 +20,11 @@ import org.jooq.impl.DSL;
 /**
  * This condition requires that the selected Column has a value.
  */
-@CPSType(id="PRESENT", base=CTCondition.class)
+@CPSType(id = "PRESENT", base = CTCondition.class)
 public class IsPresentCondition implements CTCondition {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@NonNull
 	private String column;
 
@@ -33,5 +37,10 @@ public class IsPresentCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Condition condition = DSL.field(DSL.name(context.getConnectorTable().getName(), column)).isNotNull();
 		return new WhereConditionWrapper(condition, ConditionType.PREPROCESSING);
+	}
+
+	@Override
+	public Set<String> getColumns(Connector connector) throws ConfigurationException {
+		return Set.of(column);
 	}
 }

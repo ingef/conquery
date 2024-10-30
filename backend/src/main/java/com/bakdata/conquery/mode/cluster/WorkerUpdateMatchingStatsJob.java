@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -51,7 +52,7 @@ public class WorkerUpdateMatchingStatsJob extends Job {
 						.collect(Collectors.toMap(Functions.identity(),
 												  concept -> CompletableFuture.runAsync(() -> {
 													  final Concept<?> resolved = concept.resolve();
-													  final Map<ConceptElementId<?>, WorkerMatchingStats.Entry> matchingStats = new HashMap<>(resolved.countElements());
+													  final Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>(resolved.countElements());
 
 													  calculateConceptMatches(resolved, matchingStats, worker);
 													  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
@@ -100,7 +101,7 @@ public class WorkerUpdateMatchingStatsJob extends Job {
 		return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
 	}
 
-	private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, WorkerMatchingStats.Entry> results, Worker worker) {
+	private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 		log.debug("BEGIN calculating for `{}`", concept.getId());
 
 		for (CBlock cBlock : worker.getStorage().getAllCBlocks().toList()) {
@@ -123,7 +124,7 @@ public class WorkerUpdateMatchingStatsJob extends Job {
 
 
 						if (!(concept instanceof TreeConcept) || localIds == null) {
-							results.computeIfAbsent(concept.getId(), (ignored) -> new WorkerMatchingStats.Entry()).addEvent(table, bucket, event, entity);
+							results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
 							continue;
 						}
 
@@ -134,7 +135,7 @@ public class WorkerUpdateMatchingStatsJob extends Job {
 						ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 						while (element != null) {
-							results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new WorkerMatchingStats.Entry())
+							results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
 								   .addEvent(table, bucket, event, entity);
 							element = element.getParent();
 						}

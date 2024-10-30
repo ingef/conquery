@@ -2,15 +2,19 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.exceptions.ConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -46,5 +50,14 @@ public class PrefixCondition implements CTCondition {
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
 		Condition condition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new WhereConditionWrapper(condition, ConditionType.PREPROCESSING);
+	}
+
+	@Override
+	public Set<String> getColumns(Connector connector) throws ConfigurationException {
+		final ColumnId column = connector.getColumn();
+		if (column == null) {
+			throw new ConfigurationException("A PREFIX condition requires a connector column");
+		}
+		return Set.of(column.getColumn());
 	}
 }

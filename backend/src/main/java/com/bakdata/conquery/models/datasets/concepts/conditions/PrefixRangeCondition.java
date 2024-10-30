@@ -1,9 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
+import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.exceptions.ConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
@@ -59,6 +63,15 @@ public class PrefixRangeCondition implements CTCondition {
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new WhereConditionWrapper(regexCondition, ConditionType.PREPROCESSING);
+	}
+
+	@Override
+	public Set<String> getColumns(Connector connector) throws ConfigurationException {
+		final ColumnId column = connector.getColumn();
+		if (column == null) {
+			throw new ConfigurationException("A PREFIX_RANGE condition requires a connector column");
+		}
+		return Set.of(column.getColumn());
 	}
 
 	private String buildSqlRegexPattern(SqlFunctionProvider functionProvider) {

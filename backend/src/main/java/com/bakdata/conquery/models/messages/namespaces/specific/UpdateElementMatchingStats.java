@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.mode.cluster.WorkerMatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -30,14 +30,14 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final WorkerId source;
 
 	@ToString.Exclude
-	private final Map<ConceptElementId<?>, WorkerMatchingStats.Entry> values;
+	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
 		// We collect the concepts outside the loop to update the storage afterward
 		Map<ConceptId, Concept<?>> conceptsToUpdate = new HashMap<>();
 
-		for (Entry<ConceptElementId<?>, WorkerMatchingStats.Entry> entry : values.entrySet()) {
+		for (Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
 				ConceptElementId<?> element = entry.getKey();
 				ConceptId conceptId = element.findConcept();
@@ -48,16 +48,16 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 
 				final ConceptElement<?> target = concept.findById(element);
 
-				final WorkerMatchingStats.Entry value = entry.getValue();
+				final MatchingStats.Entry value = entry.getValue();
 
 				conceptsToUpdate.put(conceptId, concept);
 
-				WorkerMatchingStats matchingStats = (WorkerMatchingStats) target.getMatchingStats();
+				MatchingStats matchingStats = target.getMatchingStats();
 				if (matchingStats == null) {
-					matchingStats = new WorkerMatchingStats();
+					matchingStats = new MatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
-				matchingStats.putEntry(source, value);
+				matchingStats.putEntry(source.getWorker(), value);
 			}
 			catch (Exception e) {
 				log.error("Failed to set matching stats for '{}' (enable TRACE for exception)", entry.getKey(), (Exception) (log.isTraceEnabled() ? e : null));
