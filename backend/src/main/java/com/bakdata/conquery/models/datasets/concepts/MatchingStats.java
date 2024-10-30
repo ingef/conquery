@@ -12,8 +12,12 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class MatchingStats {
 
 	private final Map<String, MatchingStats.Entry> entries = new HashMap<>();
