@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.index;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,19 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MapIndex implements Index<MapIndexKey> {
+public class MapIndex implements Index<String> {
 
 	private final String externalTemplate;
-	private final HashMap<String, Set<String>> delegate = new HashMap<>();
+	private final HashMap<String, String> delegate = new HashMap<>();
 
 	@Override
 	public void put(String key, Map<String, String> templateToConcrete) {
-		delegate.computeIfAbsent(key, (ignored) -> new HashSet<>())
-				.add(templateToConcrete.get(externalTemplate));
-	}
-
-	public boolean containsKey(Object key) {
-		return delegate.containsKey(key);
+		final String prior = delegate.putIfAbsent(key, templateToConcrete.get(externalTemplate));
+		if (prior != null) {
+			throw new IllegalArgumentException("Duplicate entry for key %s".formatted(key));
+		}
 	}
 
 	@Override
@@ -36,7 +33,13 @@ public class MapIndex implements Index<MapIndexKey> {
 		// Nothing to finalize
 	}
 
-	public Collection<String> getOrDefault(Object key, String defaultValue) {
-		return delegate.getOrDefault(key, Set.of(defaultValue));
+	@Override
+	public Collection<String> externalMultiple(String key, String defaultValue) {
+		return Set.of(external(key, defaultValue));
+	}
+
+	@Override
+	public String external(String key, String defaultValue) {
+		return delegate.getOrDefault(key, defaultValue);
 	}
 }

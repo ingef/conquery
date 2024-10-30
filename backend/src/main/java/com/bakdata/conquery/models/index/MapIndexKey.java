@@ -8,7 +8,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class MapIndexKey extends AbstractIndexKey<MapIndex> {
+public class MapIndexKey extends AbstractIndexKey<MapIndex, String> {
 
 	private final String externalTemplate;
 

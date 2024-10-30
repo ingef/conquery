@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @param <I> The type of Index that is indexed by this key
  */
-public interface IndexKey<I extends Index<? extends IndexKey<I>>> {
+public interface IndexKey<I extends Index<V>, V> {
 
 	/**
 	 * An url, or a part of it, that points to the referenced csv file.

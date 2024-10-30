@@ -10,7 +10,7 @@ import lombok.Data;
  * @param <I> The type of Index that is indexed by this key
  */
 @Data
-public abstract class AbstractIndexKey<I extends Index<? extends IndexKey<I>>> implements IndexKey<I> {
+public abstract class AbstractIndexKey<I extends Index<V>, V> implements IndexKey<I, V> {
 	private final URI csv;
 	private final String internalColumn;
 }

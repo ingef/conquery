@@ -3,13 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.INDEX_SERVICE_PATH_ELEMENT;
 
 import java.util.Set;
-
-import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
-import com.bakdata.conquery.models.index.IndexKey;
-import com.bakdata.conquery.resources.admin.rest.UIProcessor;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import com.google.common.cache.CacheStats;
-import io.dropwizard.views.common.View;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -17,6 +10,13 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
+import com.bakdata.conquery.models.index.IndexKey;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.google.common.cache.CacheStats;
+import io.dropwizard.views.common.View;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +42,6 @@ public class IndexServiceUIResource {
 	@Data
 	public static class IndexServiceUIContent {
 		private final CacheStats stats;
-		private final Set<IndexKey<?>> indexes;
+		private final Set<IndexKey<?, ?>> indexes;
 	}
 }

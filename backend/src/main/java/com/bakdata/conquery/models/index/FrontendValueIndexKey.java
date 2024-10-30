@@ -4,12 +4,13 @@ import java.net.URI;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> {
+public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex, FrontendValue> {
 
 
 	private final int suffixCutoff;
