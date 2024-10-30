@@ -83,7 +83,8 @@ public class IndexServiceTest {
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 
@@ -91,14 +92,16 @@ public class IndexServiceTest {
 				"testUrlAbsolute",
 				new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 		final MapInternToExternMapper mapperUrlRelative = new MapInternToExternMapper(
 				"testUrlRelative",
 				new URI("./mapping.csv"),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 
@@ -148,7 +151,8 @@ public class IndexServiceTest {
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 		injectComponents(mapInternToExternMapper, indexService);

@@ -36,7 +36,7 @@ public class MapIndex implements Index<MapIndexKey> {
 		// Nothing to finalize
 	}
 
-	public Collection<String> get(Object key, String defaultValue) {
+	public Collection<String> getOrDefault(Object key, String defaultValue) {
 		return delegate.getOrDefault(key, Set.of(defaultValue));
 	}
 }

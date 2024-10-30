@@ -10,10 +10,12 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedMultiPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -42,11 +44,14 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		if (mapping.isAllowMultiple()) {
-			return new MultiMappedPrinter(getMapping()).andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
+		final InternToExternMapper resolvedMapping = mapping.resolve();
+
+		if (resolvedMapping.isAllowMultiple()) {
+			return new MappedMultiPrinter(resolvedMapping)
+					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
 
-		return new MappedPrinter(getMapping());
+		return new MappedPrinter(resolvedMapping);
 	}
 
 	@Override

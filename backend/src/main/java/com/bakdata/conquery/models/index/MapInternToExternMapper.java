@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import jakarta.validation.constraints.NotEmpty;
@@ -79,6 +81,8 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@NotEmpty
 	private final String externalTemplate;
 
+	private final boolean allowMultiple;
+
 
 	//Manager only
 	@JsonIgnore
@@ -123,15 +127,15 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	}
 
 	@Override
-	public String external(String internalValue) {
+	public Collection<String> externalMultiple(String internalValue) {
 		if(!initialized()){
 			log.trace("Skip mapping for value '{}', because mapper is not initialized", internalValue);
-			return internalValue;
+			return List.of(internalValue);
 		}
 
 		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
 			log.trace("Skip mapping for value '{}', because mapper could not be initialized", internalValue);
-			return internalValue;
+			return List.of(internalValue);
 		}
 
 		try {
@@ -139,8 +143,13 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		} catch (InterruptedException | ExecutionException e) {
 			// Should never be reached
 			log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, (Exception) (log.isTraceEnabled() ? e : null));
-			return internalValue;
+			return List.of(internalValue);
 		}
+	}
+
+	@Override
+	public String external(String internalValue) {
+		return externalMultiple(internalValue).iterator().next();
 	}
 
 	@Override

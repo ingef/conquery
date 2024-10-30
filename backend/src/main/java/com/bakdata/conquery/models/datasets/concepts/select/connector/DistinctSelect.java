@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -25,8 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
-	public DistinctSelect(ColumnId column,
-						  InternToExternMapperId mapping) {
+	public DistinctSelect(ColumnId column, InternToExternMapperId mapping) {
 		super(column, mapping);
 	}
 
@@ -46,7 +44,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new MappedPrinter(getMapping().resolve())
+		return new MultiMappedDistinctPrinter(getMapping().resolve())
 				.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 	}
 
