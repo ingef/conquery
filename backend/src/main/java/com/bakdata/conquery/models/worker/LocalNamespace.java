@@ -65,7 +65,7 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		final Set<ConceptId> concepts = collectConcepts();
+		final Set<ConceptId> concepts = collectConceptsWithoutMatchingStats();
 		ExecutorService executorService = Executors.newFixedThreadPool(sqlConnectorConfig.getBackgroundThreads());
 		Job job = new SqlUpdateMatchingStatsJob(
 				databaseConfig,

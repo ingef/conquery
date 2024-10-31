@@ -4,17 +4,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,7 +57,7 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getColumns(Connector connector) throws ConfigurationException {
+	public Set<String> getColumns(Connector connector) {
 		final Set<String> columns = new HashSet<>();
 		for (CTCondition ctCondition : conditions) {
 			columns.addAll(ctCondition.getColumns(connector));

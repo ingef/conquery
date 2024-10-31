@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -27,6 +26,6 @@ public interface CTCondition {
 
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
-	Set<String> getColumns(final Connector connector) throws ConfigurationException;
+	Set<String> getColumns(Connector connector);
 
 }
