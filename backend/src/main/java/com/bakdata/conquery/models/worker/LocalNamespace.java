@@ -12,7 +12,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
-import com.bakdata.conquery.mode.local.SqlUpdateMatchingStatsJob;
+import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -65,9 +65,9 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		final Set<ConceptId> concepts = collectConceptsWithoutMatchingStats();
+		final Set<ConceptId> concepts = getConceptsWithoutMatchingStats();
 		ExecutorService executorService = Executors.newFixedThreadPool(sqlConnectorConfig.getBackgroundThreads());
-		Job job = new SqlUpdateMatchingStatsJob(
+		Job job = new UpdateMatchingStatsSqlJob(
 				databaseConfig,
 				sqlExecutionService,
 				sqlDialect.getFunctionProvider(),

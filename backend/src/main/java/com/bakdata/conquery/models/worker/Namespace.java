@@ -142,7 +142,7 @@ public abstract class Namespace {
 
 	}
 
-	protected Set<ConceptId> collectConceptsWithoutMatchingStats() {
+	protected Set<ConceptId> getConceptsWithoutMatchingStats() {
 		return getStorage().getAllConcepts()
 						   .filter(concept -> concept.getMatchingStats() == null)
 						   .map(Concept::getId)

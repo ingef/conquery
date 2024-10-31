@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.Map;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 
-import com.bakdata.conquery.mode.local.SqlUpdateMatchingStatsJob;
+import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +39,7 @@ public class SqlConnectorConfig {
 	private boolean withPrettyPrinting;
 
 	/**
-	 * The amount of threads for background tasks like calculating matching stats {@link SqlUpdateMatchingStatsJob}.
+	 * The amount of threads for background tasks like calculating matching stats {@link UpdateMatchingStatsSqlJob}.
 	 */
 	@Min(1)
 	@Builder.Default

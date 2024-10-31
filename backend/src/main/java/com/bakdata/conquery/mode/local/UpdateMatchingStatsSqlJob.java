@@ -57,7 +57,7 @@ import org.jooq.Select;
 import org.jooq.Table;
 
 @Slf4j
-public class SqlUpdateMatchingStatsJob extends Job {
+public class UpdateMatchingStatsSqlJob extends Job {
 
 	private static final Name CONNECTOR_COLUMN = name("connector_column");
 	private static final Name EVENTS = name("events");
@@ -71,7 +71,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 	private final Set<ConceptId> concepts;
 	private final ExecutorService executors;
 
-	public SqlUpdateMatchingStatsJob(
+	public UpdateMatchingStatsSqlJob(
 			DatabaseConfig databaseConfig,
 			SqlExecutionService executionService,
 			SqlFunctionProvider functionProvider,
@@ -101,7 +101,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 
 		final List<Future<?>> runningQueries = concepts.stream()
 													   .map(ConceptId::resolve)
-													   .filter(SqlUpdateMatchingStatsJob::isTreeConcept)
+													   .filter(UpdateMatchingStatsSqlJob::isTreeConcept)
 													   .map(TreeConcept.class::cast)
 													   .map(treeConcept -> (Runnable) () -> calculateMatchingStats(treeConcept))
 													   .map(executors::submit)
@@ -115,7 +115,7 @@ public class SqlUpdateMatchingStatsJob extends Job {
 		stopWatch.stop();
 		log.debug("DONE collecting matching stats. Elapsed time: {} ms.", stopWatch.getTime());
 
-		runningQueries.forEach(SqlUpdateMatchingStatsJob::checkForError);
+		runningQueries.forEach(UpdateMatchingStatsSqlJob::checkForError);
 	}
 
 	@Override
