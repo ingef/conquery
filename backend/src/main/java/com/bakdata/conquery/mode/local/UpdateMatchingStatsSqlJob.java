@@ -17,9 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,6 +44,9 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jooq.Condition;
@@ -69,14 +70,14 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final Set<ConceptId> concepts;
-	private final ExecutorService executors;
+	private final ListeningExecutorService executors;
 
 	public UpdateMatchingStatsSqlJob(
 			DatabaseConfig databaseConfig,
 			SqlExecutionService executionService,
 			SqlFunctionProvider functionProvider,
 			Set<ConceptId> concepts,
-			ExecutorService executors
+			ListeningExecutorService executors
 	) {
 		this.databaseConfig = databaseConfig;
 		this.executionService = executionService;
@@ -95,27 +96,21 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	public void execute() throws Exception {
 
 		log.debug("BEGIN update Matching stats for {} Concepts.", concepts.size());
-
 		final StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		final List<Future<?>> runningQueries = concepts.stream()
-													   .map(ConceptId::resolve)
-													   .filter(UpdateMatchingStatsSqlJob::isTreeConcept)
-													   .map(TreeConcept.class::cast)
-													   .map(treeConcept -> (Runnable) () -> calculateMatchingStats(treeConcept))
-													   .map(executors::submit)
-													   .collect(Collectors.toList());
+		final List<ListenableFuture<?>> runningQueries = concepts.stream()
+																 .map(ConceptId::resolve)
+																 .filter(UpdateMatchingStatsSqlJob::isTreeConcept)
+																 .map(TreeConcept.class::cast)
+																 .map(treeConcept -> executors.submit(() -> calculateMatchingStats(treeConcept)))
+																 .collect(Collectors.toList());
 
-		executors.shutdown();
-		while (!executors.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for executors to set matching stats for all concepts...");
-		}
-
-		stopWatch.stop();
-		log.debug("DONE collecting matching stats. Elapsed time: {} ms.", stopWatch.getTime());
-
-		runningQueries.forEach(UpdateMatchingStatsSqlJob::checkForError);
+		Futures.whenAllComplete(runningQueries).run(() -> {
+			stopWatch.stop();
+			log.debug("DONE collecting matching stats. Elapsed time: {} ms.", stopWatch.getTime());
+			runningQueries.forEach(UpdateMatchingStatsSqlJob::checkForError);
+		}, executors);
 	}
 
 	@Override

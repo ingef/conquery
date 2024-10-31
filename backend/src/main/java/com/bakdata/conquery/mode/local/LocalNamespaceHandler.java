@@ -64,6 +64,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		return new LocalNamespace(
 				namespaceData.getPreprocessMapper(),
 				namespaceStorage,
+				config.getQueries().getExecutionPool(),
 				sqlConnectorConfig,
 				databaseConfig,
 				sqlDialect,

@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,6 +13,7 @@ import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -25,6 +24,8 @@ import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LocalNamespace extends Namespace {
 
+	private final ThreadPoolDefinition executionPool;
 	private final SqlConnectorConfig sqlConnectorConfig;
 	private final DatabaseConfig databaseConfig;
 	private final SqlDialect sqlDialect;
@@ -42,6 +44,7 @@ public class LocalNamespace extends Namespace {
 	public LocalNamespace(
 			ObjectMapper preprocessMapper,
 			NamespaceStorage storage,
+			ThreadPoolDefinition executionPool,
 			SqlConnectorConfig sqlConnectorConfig,
 			DatabaseConfig databaseConfig,
 			SqlDialect sqlDialect,
@@ -55,6 +58,7 @@ public class LocalNamespace extends Namespace {
 			List<Injectable> injectables
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver, injectables);
+		this.executionPool = executionPool;
 		this.sqlConnectorConfig = sqlConnectorConfig;
 		this.databaseConfig = databaseConfig;
 		this.sqlDialect = sqlDialect;
@@ -66,7 +70,7 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		final Set<ConceptId> concepts = getConceptsWithoutMatchingStats();
-		ExecutorService executorService = Executors.newFixedThreadPool(sqlConnectorConfig.getBackgroundThreads());
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executionPool.createService("sql-matching-stats"));
 		Job job = new UpdateMatchingStatsSqlJob(
 				databaseConfig,
 				sqlExecutionService,
