@@ -15,8 +15,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedMultiPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Getter;
@@ -46,12 +44,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 		final InternToExternMapper resolvedMapping = mapping.resolve();
 
-		if (resolvedMapping.isAllowMultiple()) {
-			return new MappedMultiPrinter(resolvedMapping)
-					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
-		}
-
-		return new MappedPrinter(resolvedMapping);
+		return resolvedMapping.createPrinter(printerFactory, printSettings);
 	}
 
 	@Override

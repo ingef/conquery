@@ -9,12 +9,12 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
-import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedMultiPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -40,11 +40,11 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Printer<?> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
-		if(getMapping() == null){
+		if (getMapping() == null) {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new MultiMappedDistinctPrinter(getMapping().resolve())
+		return new FlatMappingPrinter(new MappedMultiPrinter(getMapping().resolve()))
 				.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 	}
 
@@ -56,14 +56,14 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	/**
 	 * Ensures that mapped values are still distinct.
 	 */
-	private record MultiMappedDistinctPrinter(InternToExternMapper mapper) implements Printer<Collection<String>> {
+	private record FlatMappingPrinter(MappedMultiPrinter mapper) implements Printer<Collection<String>> {
 
 		@Override
 		public Collection<String> apply(Collection<String> values) {
 			final Set<String> out = new HashSet<>();
 
 			for (String value : values) {
-				out.addAll(mapper.externalMultiple(value));
+				mapper.apply(value).forEach(out::add);
 			}
 
 			return out;
