@@ -46,12 +46,11 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 	@Override
 	public void react(Worker worker) throws Exception {
-		worker.getJobManager().addSlowJob(new UpdateMatchingStatsWorkerJob(worker, concepts));
+		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker, concepts));
 	}
 
-	@Slf4j
 	@RequiredArgsConstructor
-	public static class UpdateMatchingStatsWorkerJob extends Job {
+	private static class UpdateMatchingStatsJob extends Job {
 		private final Worker worker;
 		private final Collection<ConceptId> concepts;
 
@@ -70,17 +69,19 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			final Map<? extends ConceptId, CompletableFuture<Void>>
 					subJobs =
 					concepts.stream()
-							.collect(Collectors.toMap(
-									Functions.identity(),
-									concept -> CompletableFuture.runAsync(() -> {
-										final Concept<?> resolved = concept.resolve();
-										final Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>(resolved.countElements());
+							.collect(Collectors.toMap(Functions.identity(),
+													  concept -> CompletableFuture.runAsync(() -> {
+														  final Concept<?> resolved = concept.resolve();
+														  final Map<ConceptElementId<?>, MatchingStats.Entry>
+																  matchingStats =
+																  new HashMap<>(resolved.countElements());
 
-										calculateConceptMatches(resolved, matchingStats, worker);
-										worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  calculateConceptMatches(resolved, matchingStats, worker);
 
-										progressReporter.report(1);
-									}, worker.getJobsExecutorService())
+														  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+
+														  progressReporter.report(1);
+													  }, worker.getJobsExecutorService())
 							));
 
 
