@@ -128,8 +128,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 			// Delete entities
 			//TODO use API
-			adminProcessor.deleteUser(userToDelete);
-			adminProcessor.deleteRole(roleToDelete);
+			adminProcessor.deleteUser(userToDelete.getId());
+			adminProcessor.deleteRole(roleToDelete.getId());
 			adminProcessor.deleteGroup(groupToDelete);
 		}
 

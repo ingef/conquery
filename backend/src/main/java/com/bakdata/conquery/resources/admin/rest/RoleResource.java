@@ -4,9 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMEN
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import java.util.Collection;
-
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -17,6 +14,10 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import lombok.RequiredArgsConstructor;
 
 @Consumes(MediaType.APPLICATION_JSON)
@@ -46,7 +47,7 @@ public class RoleResource {
 
 	@Path("{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+	public Response deleteRole(@PathParam(ROLE_ID) RoleId role) throws JSONException {
 		processor.deleteRole(role);
 		return Response.ok().build();
 	}
