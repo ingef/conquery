@@ -103,18 +103,18 @@ public class UIProcessor {
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 
 		List<FrontendUserContent> members = membersIds.stream()
-												   .map(id -> {
-													   User user = getStorage().getUser(id);
-													   if (user != null) {
-														   return getUserContent(user);
-													   }
-													   return FrontendUserContent.builder().id(id).build();
-												   })
-												   .toList();
+													  .map(id -> {
+														  User user = getStorage().getUser(id);
+														  if (user != null) {
+															  return getUserContent(user);
+														  }
+														  return FrontendUserContent.builder().id(id).build();
+													  })
+													  .toList();
 
 		List<FrontendRoleContent> roles = group.getRoles().stream()
-								.map(this::getFrontendRoleContent)
-							   .toList();
+											   .map(this::getFrontendRoleContent)
+											   .toList();
 
 		return FrontendGroupContent
 				.builder()

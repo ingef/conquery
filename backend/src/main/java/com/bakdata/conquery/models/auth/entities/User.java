@@ -80,6 +80,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
+	public void updateStorage() {
+		storage.updateUser(this);
+	}
+
+	@Override
 	public synchronized void removeRole(RoleId role) {
 		if (roles.remove(role)) {
 			log.trace("Removed role {} from user {}", role, getId());
@@ -92,13 +97,66 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	public void updateStorage() {
-		storage.updateUser(this);
+	public UserId createId() {
+		return new UserId(name);
+	}
+
+	public void authorize(Set<? extends Authorized> objects, Ability ability) {
+		for (Authorized object : objects) {
+			authorize(object, ability);
+		}
+	}
+
+	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
+		if (isOwner(object)) {
+			return;
+		}
+
+		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public boolean isOwner(Authorized object) {
+		return object instanceof Owned && equals(((Owned) object).getOwner());
+	}
+
+	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
+		return authorized.stream().allMatch(auth -> isPermitted(auth, ability));
+	}
+
+	public boolean isPermitted(Authorized object, Ability ability) {
+		if (isOwner(object)) {
+			return true;
+		}
+
+		return shiroUserAdapter.isPermitted(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
+		return authorizeds.stream().map(auth -> isPermitted(auth, ability)).collect(Collectors.toCollection(BooleanArrayList::new)).toBooleanArray();
+	}
+
+	@JsonIgnore
+	@Override
+	public boolean isDisplayLogout() {
+		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
+	}
+
+	@JsonIgnore
+	@Override
+	public ConqueryAuthenticationInfo getAuthenticationInfo() {
+		return shiroUserAdapter.getAuthenticationInfo().get();
+	}
+
+	@JsonIgnore
+	@Override
+	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
+		shiroUserAdapter.getAuthenticationInfo().set(info);
 	}
 
 	@Override
-	public UserId createId() {
-		return new UserId(name);
+	@JsonIgnore
+	public User getUser() {
+		return this;
 	}
 
 	/**
@@ -114,19 +172,21 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		@Override
 		public Object getPrincipal() {
 			return getId();
-		}		@Override
+		}
+
+		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {
 			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
 		}
 
 		@Override
-		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+		public PrincipalCollection getPrincipals() {
+			return authenticationInfo.get().getPrincipals();
 		}
 
 		@Override
-		public PrincipalCollection getPrincipals() {
-			return authenticationInfo.get().getPrincipals();
+		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
 		}
 
 		@Override
@@ -145,75 +205,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		}
 
 
-
-
-
-	}	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
-		if (isOwner(object)) {
-			return;
-		}
-
-		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
 	}
-
-	public void authorize(Set<? extends Authorized> objects, Ability ability) {
-		for (Authorized object : objects) {
-			authorize(object, ability);
-		}
-	}
-
-	public boolean isPermitted(Authorized object, Ability ability) {
-		if (isOwner(object)) {
-			return true;
-		}
-
-		return shiroUserAdapter.isPermitted(object.createPermission(EnumSet.of(ability)));
-	}
-
-
-	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
-		return authorized.stream()
-						 .allMatch(auth -> isPermitted(auth, ability));
-	}
-
-
-	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
-		return authorizeds.stream()
-						  .map(auth -> isPermitted(auth, ability))
-						  .collect(Collectors.toCollection(BooleanArrayList::new))
-						  .toBooleanArray();
-	}
-
-
-	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
-	}
-
-	@JsonIgnore
-	@Override
-	public boolean isDisplayLogout() {
-		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
-	}
-
-	@JsonIgnore
-	@Override
-	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
-		shiroUserAdapter.getAuthenticationInfo().set(info);
-	}
-
-
-	@JsonIgnore
-	@Override
-	public ConqueryAuthenticationInfo getAuthenticationInfo() {
-		return shiroUserAdapter.getAuthenticationInfo().get();
-	}
-
-	@Override
-	@JsonIgnore
-	public User getUser() {
-		return this;
-	}
-
 
 
 }

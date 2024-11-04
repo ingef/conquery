@@ -85,7 +85,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		}, 0, TimeUnit.SECONDS);
 
 
-
 		scheduleIdleLogger(scheduler, session, config.getCluster().getIdleTimeOut());
 	}
 

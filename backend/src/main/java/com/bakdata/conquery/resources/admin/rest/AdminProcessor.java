@@ -113,6 +113,7 @@ public class AdminProcessor {
 	 *
 	 * @param owner      to which the permission is assigned
 	 * @param permission The permission to create.
+	 *
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
