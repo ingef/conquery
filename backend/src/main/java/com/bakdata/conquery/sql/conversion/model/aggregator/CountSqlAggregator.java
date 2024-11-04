@@ -39,7 +39,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		CountType countType = CountType.fromBoolean(countSelect.isDistinct());
-		Column countColumn = countSelect.getColumn();
+		Column countColumn = countSelect.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(countSelect);
 
 		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, countType, alias, tables);
@@ -59,7 +59,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 
 		ConnectorSqlTables tables = filterContext.getTables();
 		CountType countType = CountType.fromBoolean(countFilter.isDistinct());
-		Column countColumn = countFilter.getColumn();
+		Column countColumn = countFilter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(countFilter);
 
 		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, countType, alias, tables);

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
@@ -28,6 +29,9 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,7 +63,7 @@ public class IntegrationUtils {
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
+		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
 	}
 
 	/**
@@ -82,8 +86,9 @@ public class IntegrationUtils {
 										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
-															.isEqualTo(expectedResponseCode);
+		assertThat(response.getStatusInfo().getStatusCode())
+				.as(() -> response.readEntity(String.class))
+				.isEqualTo(expectedResponseCode);
 
 		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
 			return null;

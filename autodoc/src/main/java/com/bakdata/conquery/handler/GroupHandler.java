@@ -267,16 +267,7 @@ public class GroupHandler {
 		final TypeSignature typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		final Ctx ctx = new Ctx().withField(field);
 
-		final String type;
-		if (ID_REF.stream().anyMatch(field::hasAnnotation)) {
-			type = ID_OF + printType(ctx.withIdOf(true), typeSignature);
-		}
-		else if (ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
-			type = LIST_OF + ID_OF + StringUtils.removeStart(printType(ctx.withIdOf(true), typeSignature), LIST_OF);
-		}
-		else {
-			type = printType(ctx, typeSignature);
-		}
+		final String type = printType(ctx, typeSignature);
 
 		out.table(
 				editLink(introspec),

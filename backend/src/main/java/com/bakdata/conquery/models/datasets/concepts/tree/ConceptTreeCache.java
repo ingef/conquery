@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,15 +35,13 @@ public class ConceptTreeCache {
 	 * @implNote ConcurrentHashMap does not allow null values, but we want to have null values in the map. So we wrap the values in Optional.
 	 */
 	@JsonIgnore
-	private final Map<String, Optional<ConceptElement<?>>> cached = new ConcurrentHashMap<>();;
+	private final Map<String, Optional<ConceptTreeChild>> cached = new ConcurrentHashMap<>();;
 
 
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
-	 *
-	 * @param value
 	 */
-	public ConceptElement<?> findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
 		if(cached.containsKey(value)) {
 			hits++;
@@ -53,7 +50,7 @@ public class ConceptTreeCache {
 
 		misses++;
 
-		final ConceptElement<?> child = treeConcept.findMostSpecificChild(value, rowMap);
+		final ConceptTreeChild child = treeConcept.findMostSpecificChild(value, rowMap);
 
 		if(!rowMap.isCalculated()) {
 			cached.put(value, Optional.ofNullable(child));

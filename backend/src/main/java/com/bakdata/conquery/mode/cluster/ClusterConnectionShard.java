@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -70,7 +69,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
-			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment.getValidator());
+			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
 			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 			// Authenticate with ManagerNode
@@ -113,7 +112,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	private void connectToCluster() {
-		InetSocketAddress address = new InetSocketAddress(
+		final InetSocketAddress address = new InetSocketAddress(
 				config.getCluster().getManagerURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
@@ -167,12 +166,12 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(IdResolveContext workers) {
+	private NioSocketConnector getClusterConnector(ShardWorkers workers) {
 		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
-		NioSocketConnector connector = new NioSocketConnector();
+		final NioSocketConnector connector = new NioSocketConnector();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
+		final BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
 		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
@@ -267,15 +266,15 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		}
 	}
 
-	public boolean isBusy() {
-		return jobManager.isSlowWorkerBusy();
-	}
-
 	@Override
 	public void stop() throws Exception {
 		// close scheduler before disconnect to avoid scheduled reconnects
 		scheduler.shutdown();
 		disconnectFromCluster();
 		jobManager.close();
+	}
+
+	public boolean isBusy() {
+		return jobManager.isSlowWorkerBusy();
 	}
 }

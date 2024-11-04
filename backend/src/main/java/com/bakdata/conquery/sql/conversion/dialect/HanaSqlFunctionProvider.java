@@ -132,9 +132,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
 		String tableName = daterangeSelectOrFilter.getTable().getName();
 		if (daterangeSelectOrFilter.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn(), daterangeSelectOrFilter.getEndColumn());
+			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
 		}
-		return ofStartAndEnd(tableName, daterangeSelectOrFilter.getColumn(), daterangeSelectOrFilter.getColumn());
+		Column column = daterangeSelectOrFilter.getColumn().resolve();
+		return ofStartAndEnd(tableName, column, column);
 	}
 
 	@Override
@@ -313,19 +314,20 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
-		String tableName = validityDate.getConnector().getTable().getName();
+		String tableName = validityDate.getConnector().getResolvedTableId().getTable();
 
 		Column startColumn;
 		Column endColumn;
 
 		// if no end column is present, the only existing column is both start and end of the date range
 		if (validityDate.getEndColumn() == null) {
-			startColumn = validityDate.getColumn();
-			endColumn = validityDate.getColumn();
+			Column column = validityDate.getColumn().resolve();
+			startColumn = column;
+			endColumn = column;
 		}
 		else {
-			startColumn = validityDate.getStartColumn();
-			endColumn = validityDate.getEndColumn();
+			startColumn = validityDate.getStartColumn().resolve();
+			endColumn = validityDate.getEndColumn().resolve();
 		}
 
 		return ofStartAndEnd(tableName, startColumn, endColumn);

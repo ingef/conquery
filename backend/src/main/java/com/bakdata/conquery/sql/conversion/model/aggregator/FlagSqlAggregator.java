@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
@@ -99,7 +100,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 						 .entrySet().stream()
 						 .collect(Collectors.toMap(
 								 Map.Entry::getKey,
-								 entry -> new ExtractingSqlSelect<>(rootTable, entry.getValue().getName(), Boolean.class)
+								 entry -> new ExtractingSqlSelect<>(rootTable, entry.getValue().resolve().getName(), Boolean.class)
 						 ));
 	}
 
@@ -170,9 +171,10 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	/**
 	 * @return Columns names of a given flags map that match the selected flags of the filter value.
 	 */
-	private static List<Column> getRequiredColumns(Map<String, Column> flags, Set<String> selectedFlags) {
+	private static List<Column> getRequiredColumns(Map<String, ColumnId> flags, Set<String> selectedFlags) {
 		return selectedFlags.stream()
 							.map(flags::get)
+							.map(ColumnId::resolve)
 							.toList();
 	}
 

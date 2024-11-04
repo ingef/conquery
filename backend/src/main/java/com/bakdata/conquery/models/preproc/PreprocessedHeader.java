@@ -6,17 +6,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,41 +28,44 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Data
 @Getter @Setter
-@NoArgsConstructor(onConstructor_ = {@JsonCreator})
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class PreprocessedHeader {
 	/**
 	 * The name/tag of an import.
 	 */
-	private String name;
+	private final String name;
 
 	/**
 	 * The specific table id to be loaded into.
 	 */
-	private String table;
+	private final String table;
 
 	/**
 	 * Number of rows in the Preprocessed file.
 	 */
-	private long rows;
-	private long numberOfEntities;
+	private final long rows;
+	private final long numberOfEntities;
 
 	//TODO use Set<Integer> to track actually included buckets,to split phase bucket assignment.
-	private int numberOfBuckets;
+	private final int numberOfBuckets;
 
 	/**
 	 * The specific columns and their associated MajorType for validation.
 	 */
-	private PPColumn[] columns;
+	private final PPColumn[] columns;
 
 	/**
 	 * A hash to check if any of the underlying files for generating this CQPP has changed.
 	 */
-	private int validityHash;
+	private final int validityHash;
+
+	@JsonIgnore
+	@JacksonInject
+	private NamespaceStorage namespaceStorage;
 
 	public Import createImportDescription(Table table, Map<String, ColumnStore> stores) {
-		final Import imp = new Import(table);
+		final Import imp = new Import(table.getId());
 
 		imp.setName(getName());
 		imp.setNumberOfEntries(getRows());
@@ -87,8 +91,6 @@ public class PreprocessedHeader {
 
 	/**
 	 * Verify that the supplied table matches the preprocessed' data in shape.
-	 *
-	 * @return
 	 */
 	public List<String> assertMatch(Table table) {
 		final List<String> errors = new ArrayList<>();

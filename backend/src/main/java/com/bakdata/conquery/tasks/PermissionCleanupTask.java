@@ -2,10 +2,12 @@ package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
@@ -50,11 +52,12 @@ public class PermissionCleanupTask extends Task {
      *
      * @return The number of deleted permissions.
      */
-    public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
+    public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Stream<? extends PermissionOwner<?>> owners) {
         int countDeleted = 0;
         // Do the loop-di-loop
-        for (PermissionOwner<?> owner : owners) {
-            Set<ConqueryPermission> permissions = owner.getPermissions();
+		for (Iterator<? extends PermissionOwner<?>> it = owners.iterator(); it.hasNext(); ) {
+			PermissionOwner<?> owner = it.next();
+			Set<ConqueryPermission> permissions = owner.getPermissions();
 			for (Permission permission : permissions) {
 				WildcardPermission wpermission = getAsWildcardPermission(permission);
 				if (wpermission == null) {
@@ -90,7 +93,7 @@ public class PermissionCleanupTask extends Task {
 				countDeleted++;
 
 			}
-        }
+		}
         return countDeleted;
     }
 
@@ -113,7 +116,8 @@ public class PermissionCleanupTask extends Task {
 	 */
 	public static <E extends IdentifiableImpl<ID> & Owned, ID extends Id<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IdUtil.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
 		int countDeleted = 0;
-		for (User user : storage.getAllUsers()) {
+		for (Iterator<User> it = storage.getAllUsers().iterator(); it.hasNext(); ) {
+			User user = it.next();
 			Set<ConqueryPermission> permissions = user.getPermissions();
 			for (Permission permission : permissions) {
 				WildcardPermission wpermission = getAsWildcardPermission(permission);
@@ -157,7 +161,7 @@ public class PermissionCleanupTask extends Task {
 
 
 			}
-        }
+		}
 
         return countDeleted;
 

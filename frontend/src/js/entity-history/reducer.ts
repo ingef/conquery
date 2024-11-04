@@ -113,7 +113,11 @@ export default function reducer(
     case getType(resetHistory):
       return {
         ...state,
-        defaultParams: initialState.defaultParams,
+        ...(action.payload.includingDefaultParams
+          ? {
+              defaultParams: initialState.defaultParams,
+            }
+          : {}),
         label: "",
         columns: {},
         columnDescriptions: [],

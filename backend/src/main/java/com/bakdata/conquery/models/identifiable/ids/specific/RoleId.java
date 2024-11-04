@@ -1,19 +1,22 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+@Getter
 @EqualsAndHashCode(callSuper=false)
 public class RoleId extends PermissionOwnerId<Role> {
 	public static final String TYPE = "role";
 	
-	@Getter
 	private final String role;
 	
 	public RoleId(String mandator) {
@@ -24,6 +27,16 @@ public class RoleId extends PermissionOwnerId<Role> {
 	public void collectComponents(List<Object> components) {
 		components.add(TYPE);
 		components.add(role);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+	}
+
+	@Override
+	public Identifiable<?> get(MetaStorage storage) {
+		return storage.getRole(this);
 	}
 
 	enum Parser implements IdUtil.Parser<RoleId> {

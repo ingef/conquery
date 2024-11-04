@@ -43,12 +43,12 @@ public class AdminConceptsResource {
 	}
 
 	@GET
-	public Concept getConcept() {
+	public Concept<?> getConcept() {
 		return concept;
 	}
 
 	@DELETE
 	public void removeConcept() {
-		processor.deleteConcept(concept);
+		processor.deleteConcept(concept.getId());
 	}
 }

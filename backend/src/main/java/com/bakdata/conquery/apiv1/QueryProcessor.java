@@ -19,6 +19,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -52,16 +58,16 @@ import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -73,6 +79,7 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -81,12 +88,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,17 +108,17 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
+		final Stream<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Stream<ManagedExecution> allQueries, boolean allProviders) {
 
-		return allQueries.stream()
+		return allQueries
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
 						 // one dataset.
-						 .filter(q -> q.getDataset().getId().equals(datasetId))
+						 .filter(q -> q.getDataset().equals(datasetId))
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(Predicate.not(ManagedExecution::isSystem))
@@ -128,7 +129,7 @@ public class QueryProcessor {
 						 )
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
 
 							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
@@ -199,10 +200,10 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(Subject subject, Dataset dataset, ManagedExecution query) {
+	public void cancel(Subject subject, ManagedExecution query) {
 
 		// Does not make sense to cancel a query that isn't running.
-		ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		ExecutionManager executionManager = datasetRegistry.get(query.getDataset()).getExecutionManager();
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			return;
 		}
@@ -220,20 +221,19 @@ public class QueryProcessor {
 		if (patch.getGroups() != null && !patch.getGroups().isEmpty()) {
 
 
-			for (ManagedExecutionId managedExecutionId : execution.getSubmitted().collectRequiredQueries()) {
-				final ManagedExecution subQuery = storage.getExecution(managedExecutionId);
+			for (ManagedExecutionId subExecutionId : execution.getSubmitted().collectRequiredQueries()) {
 
-				if (!subject.isPermitted(subQuery, Ability.READ)) {
-					log.warn("Not sharing {} as User {} is not allowed to see it themselves.", subQuery.getId(), subject);
+				if (!subject.isPermitted(subExecutionId, Ability.READ)) {
+					log.warn("Not sharing {} as User {} is not allowed to see it themselves.", subExecutionId, subject);
 					continue;
 				}
 
-				final ConqueryPermission canReadQuery = subQuery.createPermission(Set.of(Ability.READ));
+				final ConqueryPermission canReadQuery = subExecutionId.createPermission(Set.of(Ability.READ));
 
 				final Set<GroupId> groupsToShareWith = new HashSet<>(patch.getGroups());
 
 				// Find all groups the query is already shared with, so we do not remove them, as patch is absolute
-				for (Group group : storage.getAllGroups()) {
+				for (Group group : storage.getAllGroups().toList()) {
 					if (groupsToShareWith.contains(group.getId())) {
 						continue;
 					}
@@ -249,7 +249,7 @@ public class QueryProcessor {
 															  .groups(new ArrayList<>(groupsToShareWith))
 															  .build();
 
-				patchQuery(subject, subQuery, sharePatch);
+				patchQuery(subject, subExecutionId.resolve(), sharePatch);
 			}
 		}
 
@@ -260,18 +260,17 @@ public class QueryProcessor {
 	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
-		ExecutionManager executionManager = datasetRegistry.get(query.getDataset().getId()).getExecutionManager();
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			final Namespace namespace = query.getNamespace();
 
-			namespace.getExecutionManager().execute(namespace, query, config);
+			namespace.getExecutionManager().execute(query, config);
 		}
 	}
 
 	public void deleteQuery(Subject subject, ManagedExecution execution) {
 		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
 
-		datasetRegistry.get(execution.getDataset().getId())
+		datasetRegistry.get(execution.getDataset())
 					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
 					   .clearQueryResults(execution);
 
@@ -279,12 +278,12 @@ public class QueryProcessor {
 	}
 
 	public ExecutionState awaitDone(ManagedExecution query, int time, TimeUnit unit) {
-		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(query.getDataset());
 		return namespace.getExecutionManager().awaitDone(query, time, unit);
 	}
 
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
-		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
+		final Namespace namespace = datasetRegistry.get(query.getDataset());
 
 		query.initExecutable(config);
 
@@ -325,7 +324,7 @@ public class QueryProcessor {
 				execution =
 				((ManagedQuery) namespace
 						.getExecutionManager()
-						.createExecution(query, subject.getUser(), namespace, false));
+						.createExecution(query, subject.getId(), namespace, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -341,7 +340,7 @@ public class QueryProcessor {
 	/**
 	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
-	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<ConnectorId> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
@@ -437,7 +436,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(namespace, query, subject.getUser(), config, system);
+		return executionManager.runQuery(namespace, query, subject.getId(), config, system);
 	}
 
 	/**
@@ -459,8 +458,8 @@ public class QueryProcessor {
 
 		// If SecondaryIds differ from selected and prior, we cannot reuse them.
 		if (query instanceof SecondaryIdQuery) {
-			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
-			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
+			final SecondaryIdDescriptionId selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
+			final SecondaryIdDescriptionId reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
 
 			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
@@ -471,7 +470,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(execution.getSubmitted(), user, namespace, false);
+					executionManager.createExecution(execution.getSubmitted(), user.getId(), namespace, false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -486,7 +485,7 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		executionManager.execute(namespace, execution, config);
+		executionManager.execute(execution, config);
 
 		return execution;
 
@@ -585,7 +584,7 @@ public class QueryProcessor {
 				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
-		final List<ResultInfo> resultInfos = managedQuery.getResultInfos(printSettings);
+		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
 
 		final Optional<ResultInfo>
 				dateInfo =
@@ -593,7 +592,15 @@ public class QueryProcessor {
 
 		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
-		return ResultStatistics.collectResultStatistics(managedQuery, resultInfos, dateInfo, dateIndex, printSettings, uniqueNamer, config);
+		return ResultStatistics.collectResultStatistics(managedQuery,
+														resultInfos,
+														dateInfo,
+														dateIndex,
+														printSettings,
+														uniqueNamer,
+														config,
+														new JavaResultPrinters()
+		);
 	}
 
 }

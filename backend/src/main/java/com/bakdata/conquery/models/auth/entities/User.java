@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,19 +57,22 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = storage.getRole(roleId);
+			Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Iterator<Group> it = getMetaStorage().getAllGroups().iterator(); it.hasNext(); ) {
+			Group group = it.next();
 			if (!group.containsMember(this)) {
 				continue;
 			}
 			permissions = Sets.union(permissions, group.getEffectivePermissions());
 		}
+
 		return permissions;
 	}
 
@@ -81,7 +85,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public void updateStorage() {
-		storage.updateUser(this);
+		getMetaStorage().updateUser(this);
 	}
 
 	@Override
@@ -94,11 +98,6 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
-	}
-
-	@Override
-	public UserId createId() {
-		return new UserId(name);
 	}
 
 	public void authorize(Set<? extends Authorized> objects, Ability ability) {
@@ -116,7 +115,14 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
+		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
+	}
+
+	@Override
+	public UserId createId() {
+		UserId userId = new UserId(name);
+		userId.setMetaStorage(getMetaStorage());
+		return userId;
 	}
 
 	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
@@ -132,7 +138,10 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
-		return authorizeds.stream().map(auth -> isPermitted(auth, ability)).collect(Collectors.toCollection(BooleanArrayList::new)).toBooleanArray();
+		return authorizeds.stream()
+						  .map(auth -> isPermitted(auth, ability))
+						  .collect(Collectors.toCollection(BooleanArrayList::new))
+						  .toBooleanArray();
 	}
 
 	@JsonIgnore
@@ -160,12 +169,12 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	/**
-	 * This class is non-static so it's a fixed part of the enclosing User object.
+	 * This class is non-static, so it's a fixed part of the enclosing User object.
 	 * It's protected for testing purposes only.
 	 */
+	@Getter
 	public class ShiroUserAdapter extends FilteredUser {
 
-		@Getter
 		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
 				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
 

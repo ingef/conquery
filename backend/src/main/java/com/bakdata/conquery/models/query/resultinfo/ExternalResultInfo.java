@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.Collections;
-import java.util.Set;
 
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -16,28 +15,30 @@ public class ExternalResultInfo extends ResultInfo {
 
 	private final String name;
 	private final ResultType type;
-	private final String description;
-	private final ResultPrinters.Printer printer;
 
-	public ExternalResultInfo(String name, ResultType type, PrintSettings settings) {
-		this(name, type, null, ResultPrinters.printerFor(type, settings), Collections.emptySet(), settings);
-	}
-	public ExternalResultInfo(String name, ResultType type, String description, ResultPrinters.Printer printer, Set<SemanticType> semantics, PrintSettings settings) {
-		super(semantics, settings);
+	public ExternalResultInfo(String name, ResultType type) {
+		super(Collections.emptySet());
 		this.name = name;
 		this.type = type;
-		this.description = description;
-		this.printer = printer;
 	}
 
-
 	@Override
-	public String userColumnName() {
+	public String userColumnName(PrintSettings printSettings) {
 		return null;
 	}
 
 	@Override
-	public String defaultColumnName() {
+	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
+	}
+
+	@Override
+	public String getDescription() {
+		return null;
+	}
+
+	@Override
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		return printerFactory.printerFor(type, printSettings);
 	}
 }

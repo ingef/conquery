@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
@@ -115,8 +115,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public Collection<VALUE> getAll() {
-		return cache.values();
+	public Stream<VALUE> getAll() {
+		return cache.values().stream();
 	}
 
 	@Override
@@ -125,8 +125,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public Collection<KEY> getAllKeys() {
-		return cache.keySet();
+	public Stream<KEY> getAllKeys() {
+		return cache.keySet().stream();
 	}
 
 	@Override

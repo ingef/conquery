@@ -24,12 +24,12 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorageImpl;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.EnvironmentRegistry;
@@ -51,7 +51,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -65,7 +64,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -117,50 +115,31 @@ public class XodusStoreFactory implements StoreFactory {
 					C_BLOCKS.storeInfo().getName()
 			)
 	);
-
+	@JsonIgnore
+	private final transient Multimap<Environment, XodusStore>
+			openStoresInEnv =
+			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 	private Path directory = Path.of("storage");
-
 	private boolean validateOnWrite = false;
 	@NotNull
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
-
 	@JsonIgnore
 	private EnvironmentRegistry registry = new EnvironmentRegistry();
-
 	/**
 	 * Number of threads reading from XoduStore.
+	 *
 	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
 	 */
 	@Min(1)
 	private int readerWorkers = Runtime.getRuntime().availableProcessors();
-
 	/**
 	 * How many slots of buffering to use before the IO thread is put to sleep.
 	 */
 	@Min(1)
 	private int bufferPerWorker = 20;
-
 	@JsonIgnore
 	private ExecutorService readerExecutorService;
-
-	public ExecutorService getReaderExecutorService() {
-		if (readerExecutorService == null){
-			readerExecutorService = new ThreadPoolExecutor(
-					1, getReaderWorkers(),
-					5, TimeUnit.MINUTES,
-					new ArrayBlockingQueue<>(getReaderWorkers() * getBufferPerWorker()),
-					new ThreadPoolExecutor.CallerRunsPolicy()
-			);
-		}
-
-		return readerExecutorService;
-	}
-
-	private boolean useWeakDictionaryCaching;
-	@NotNull
-	private Duration weakCacheDuration = Duration.hours(48);
-
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
 	 */
@@ -182,23 +161,244 @@ public class XodusStoreFactory implements StoreFactory {
 	@JsonIgnore
 	private transient Validator validator;
 
-	@JsonIgnore
-	private final transient Multimap<Environment, XodusStore>
-			openStoresInEnv =
-			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
-
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
 		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
-	public Collection<WorkerStorage> discoverWorkerStorages() {
-		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, storePath), WORKER_STORES);
+	public Collection<? extends WorkerStorage> discoverWorkerStorages() {
+		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorageImpl(this, validator, storePath), WORKER_STORES);
 	}
 
+	@Override
+	public SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, DATASET, objectMapper));
+	}
 
-	private <T extends NamespacedStorage> List<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
+	@Override
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Import> createImportStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<CBlock> createCBlockStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Bucket> createBucketStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, objectMapper));
+	}
+
+	@Override
+	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER, objectMapper));
+	}
+
+	@Override
+	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName, ObjectMapper objectMapper) {
+		final Environment environment = findEnvironment(pathName);
+
+		synchronized (openStoresInEnv) {
+			final BigStore<Boolean, EntityIdMap> bigStore =
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper, getReaderExecutorService());
+
+			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
+			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
+			return new SingletonStore<>(bigStore);
+		}
+	}
+
+	@Override
+	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER_TO_BUCKETS, objectMapper));
+	}
+
+	@Override
+	public SingletonStore<StructureNode[]> createStructureStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<ManagedExecution> createExecutionsStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<FormConfig> createFormConfigStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<User> createUserStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Role> createRoleStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<Group> createGroupStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, objectMapper));
+	}
+
+	@Override
+	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, objectMapper));
+	}
+
+	@Override
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, objectMapper));
+	}
+
+	@Override
+	public Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper);
+	}
+
+	private Environment findEnvironment(File path) {
+		return registry.findOrCreateEnvironment(path, getXodus());
+	}
+
+	private File resolveSubDir(String... subdirs) {
+		Path current = getDirectory();
+
+		for (String dir : subdirs) {
+			current = current.resolve(dir);
+		}
+
+		return current.toFile();
+	}
+
+	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreMappings storeId, ObjectMapper objectMapper) {
+		final StoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
+		synchronized (openStoresInEnv) {
+
+			if (openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))) {
+				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
+			}
+
+			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+
+			openStoresInEnv.put(environment, store);
+
+			return new CachedStore<>(
+					new SerializingStore<>(
+							store,
+							validator,
+							objectMapper,
+							storeInfo.getKeyType(),
+							storeInfo.getValueType(),
+							isValidateOnWrite(),
+							isRemoveUnreadableFromStore(),
+							getUnreadableDataDumpDirectory(),
+							getReaderExecutorService()
+					));
+		}
+	}
+
+	private Environment findEnvironment(String pathName) {
+		final File path = getStorageDir(pathName);
+		return registry.findOrCreateEnvironment(path, getXodus());
+	}
+
+	private void closeStore(XodusStore store) {
+		final Environment env = store.getEnvironment();
+		synchronized (openStoresInEnv) {
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
+			stores.remove(store);
+			log.info("Closed XodusStore: {}", store);
+
+			if (!stores.isEmpty()) {
+				return;
+			}
+		}
+		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
+
+		env.close();
+	}
+
+	private void removeStore(XodusStore store) {
+		final Environment env = store.getEnvironment();
+		synchronized (openStoresInEnv) {
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
+
+			stores.remove(store);
+
+			if (!stores.isEmpty()) {
+				return;
+			}
+		}
+
+		removeEnvironment(env);
+	}
+
+	public ExecutorService getReaderExecutorService() {
+		if (readerExecutorService == null) {
+			readerExecutorService = new ThreadPoolExecutor(
+					1, getReaderWorkers(),
+					5, TimeUnit.MINUTES,
+					new ArrayBlockingQueue<>(getReaderWorkers() * getBufferPerWorker()),
+					new ThreadPoolExecutor.CallerRunsPolicy()
+			);
+		}
+
+		return readerExecutorService;
+	}
+
+	/**
+	 * Returns this.directory if the list is empty.
+	 */
+	@NonNull
+	@JsonIgnore
+	private File getStorageDir(String pathName) {
+		return getDirectory().resolve(pathName).toFile();
+	}
+
+	private void removeEnvironment(Environment env) {
+		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", env.getLocation());
+
+		final List<String> xodusStore = env.computeInReadonlyTransaction(env::getAllStoreNames);
+
+		if (!xodusStore.isEmpty()) {
+			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);
+		}
+
+		env.close();
+
+		try {
+			FileUtil.deleteRecursive(Path.of(env.getLocation()));
+		}
+		catch (IOException e) {
+			log.error("Cannot delete directory of removed Environment[{}]", env.getLocation(), e);
+		}
+	}
+
+	private <T extends NamespacedStorageImpl> List<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
 		final File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
@@ -248,222 +448,4 @@ public class XodusStoreFactory implements StoreFactory {
 			return loadEnvironmentWithMissingStores;
 		});
 	}
-
-	@Override
-	public SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, DATASET, objectMapper));
-	}
-
-	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, objectMapper));
-	}
-
-	@Override
-	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
-	}
-
-	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER, objectMapper));
-	}
-
-	@Override
-	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName, ObjectMapper objectMapper) {
-		final Environment environment = findEnvironment(pathName);
-
-		synchronized (openStoresInEnv) {
-			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper, getReaderExecutorService());
-
-			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
-			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-			return new SingletonStore<>(new CachedStore<>(bigStore));
-		}
-	}
-
-	@Override
-	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER_TO_BUCKETS, objectMapper));
-	}
-
-	@Override
-	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, objectMapper));
-	}
-
-	@Override
-	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, objectMapper), centralRegistry);
-	}
-
-
-	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper), centralRegistry);
-	}
-
-	private File resolveSubDir(String... subdirs) {
-		Path current = getDirectory();
-
-		for (String dir : subdirs) {
-			current = current.resolve(dir);
-		}
-
-		return current.toFile();
-	}
-
-	/**
-	 * Returns this.directory if the list is empty.
-	 */
-	@NonNull
-	@JsonIgnore
-	private File getStorageDir(String pathName) {
-		return getDirectory().resolve(pathName).toFile();
-	}
-
-
-
-	private Environment findEnvironment(String pathName) {
-		final File path = getStorageDir(pathName);
-		return registry.findOrCreateEnvironment(path, getXodus());
-	}
-
-	private Environment findEnvironment(File path) {
-		return registry.findOrCreateEnvironment(path, getXodus());
-	}
-
-	private void closeStore(XodusStore store) {
-		final Environment env = store.getEnvironment();
-		synchronized (openStoresInEnv) {
-			final Collection<XodusStore> stores = openStoresInEnv.get(env);
-			stores.remove(store);
-			log.info("Closed XodusStore: {}", store);
-
-			if (!stores.isEmpty()) {
-				return;
-			}
-		}
-		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
-
-		env.close();
-	}
-
-	private void removeStore(XodusStore store) {
-		final Environment env = store.getEnvironment();
-		synchronized (openStoresInEnv){
-			final Collection<XodusStore> stores = openStoresInEnv.get(env);
-
-			stores.remove(store);
-
-			if (!stores.isEmpty()) {
-				return;
-			}
-		}
-
-		removeEnvironment(env);
-	}
-
-	private void removeEnvironment(Environment env) {
-		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", env.getLocation());
-
-		final List<String> xodusStore= env.computeInReadonlyTransaction(env::getAllStoreNames);
-
-		if (!xodusStore.isEmpty()){
-			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);
-		}
-
-		env.close();
-
-		try {
-			FileUtil.deleteRecursive(Path.of(env.getLocation()));
-		}
-		catch (IOException e) {
-			log.error("Cannot delete directory of removed Environment[{}]", env.getLocation(), e);
-		}
-	}
-
-	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreMappings storeId, ObjectMapper objectMapper) {
-		final StoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
-		synchronized (openStoresInEnv) {
-
-			if(openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))){
-				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
-			}
-
-			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
-
-			openStoresInEnv.put(environment, store);
-
-			return new CachedStore<>(
-					new SerializingStore<>(
-							store,
-							validator,
-							objectMapper,
-							storeInfo.getKeyType(),
-							storeInfo.getValueType(),
-							isValidateOnWrite(),
-							isRemoveUnreadableFromStore(),
-							getUnreadableDataDumpDirectory(),
-							getReaderExecutorService()
-					));
-		}
-	}
-
 }

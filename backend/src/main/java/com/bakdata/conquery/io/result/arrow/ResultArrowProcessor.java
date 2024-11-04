@@ -11,26 +11,27 @@ import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.function.Function;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -83,15 +84,15 @@ public class ResultArrowProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final Dataset dataset = exec.getDataset();
+		final DatasetId datasetId = exec.getDataset();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", datasetId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Get the locale extracted by the LocaleFilter
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(datasetId);
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
@@ -99,8 +100,8 @@ public class ResultArrowProcessor {
 
 
 		// Collect ResultInfos for id columns and result columns
-		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos(settings);
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos(settings);
+		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		StreamingOutput out = output -> {
 			try {
@@ -110,7 +111,7 @@ public class ResultArrowProcessor {
 						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
-						exec.streamResults(limit)
+						exec.streamResults(limit), new ArrowResultPrinters()
 				);
 			}
 			finally {

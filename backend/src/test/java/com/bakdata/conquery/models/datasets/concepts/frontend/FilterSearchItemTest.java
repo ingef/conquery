@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -15,42 +16,49 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class FilterSearchItemTest {
+
+	@RegisterExtension
+	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
+	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
 
 	@Test
 	public void sortedValidityDates() {
 
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
+		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		Table table = new Table();
-		table.setDataset(dataset);
+		table.setDataset(dataset.getId());
 		table.setName("testTable");
+		NAMESPACED_STORAGE.addTable(table);
 
 		Column column = new Column();
 		column.setName("testColumn");
 		column.setTable(table);
 
 		Column dateColumn1 = new Column();
-		column.setName("dateColumn1");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn1.setName("dateColumn1");
+		dateColumn1.setType(MajorTypeId.DATE);
+		dateColumn1.setTable(table);
 
 		Column dateColumn2 = new Column();
-		column.setName("dateColumn2");
-		column.setType(MajorTypeId.DATE);
-		column.setTable(table);
+		dateColumn2.setName("dateColumn2");
+		dateColumn2.setType(MajorTypeId.DATE);
+		dateColumn2.setTable(table);
 
-
+		TreeConcept concept = new TreeConcept();
+		concept.setDataset(dataset.getId());
+		concept.setName("testConcept");
 
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setName("testConnector");
-
-		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
-		concept.setName("testConcept");
 
 		ValidityDate val0 = ValidityDate.create(dateColumn1);
 		val0.setName("val0");
@@ -65,11 +73,12 @@ public class FilterSearchItemTest {
 		val2.setConnector(connector);
 
 		List<ValidityDate> validityDates = List.of(val0, val1, val2);
-		connector.setColumn(column);
+		connector.setColumn(column.getId());
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
+
 		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);
-		
+
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
 				new FrontendValue(val0.getId().toString(), "val0"),
 				new FrontendValue(val1.getId().toString(), "val1"),

@@ -58,14 +58,14 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
-		// Id of the lone concept that is used in the test.
-		Concept<?> conceptId = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		// The lone concept that is used in the test.
+		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 
 		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
 
 		// Add the necessary Permission
 		{
-			final ConqueryPermission permission = conceptId.createPermission(Ability.READ.asSet());
+			final ConqueryPermission permission = concept.createPermission(Ability.READ.asSet());
 			log.info("Adding the Permission[{}] to User[{}]", permission, user);
 			user.addPermission(permission);
 		}
