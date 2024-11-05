@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -47,6 +48,7 @@ import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jooq.Condition;
@@ -77,14 +79,15 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			SqlExecutionService executionService,
 			SqlFunctionProvider functionProvider,
 			Set<ConceptId> concepts,
-			ListeningExecutorService executors
+			ExecutorService executors
 	) {
 		this.databaseConfig = databaseConfig;
 		this.executionService = executionService;
 		this.dslContext = executionService.getDslContext();
 		this.functionProvider = functionProvider;
 		this.concepts = concepts;
-		this.executors = executors;
+		this.executors = MoreExecutors.listeningDecorator(executors);
+		;
 	}
 
 	@Override
@@ -106,17 +109,14 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																 .map(treeConcept -> executors.submit(() -> calculateMatchingStats(treeConcept)))
 																 .collect(Collectors.toList());
 
-		Futures.whenAllComplete(runningQueries).run(() -> {
-			stopWatch.stop();
-			log.debug("DONE collecting matching stats. Elapsed time: {} ms.", stopWatch.getTime());
-			runningQueries.forEach(UpdateMatchingStatsSqlJob::checkForError);
-		}, executors);
-	}
+		final ListenableFuture<List<Object>> futureList = Futures.allAsList(runningQueries);
+		while (!futureList.isDone()) {
+			log.debug("Waiting for executors collect matching stats...");
+		}
 
-	@Override
-	public void cancel() {
-		super.cancel();
-		executors.shutdownNow();
+		stopWatch.stop();
+		log.debug("DONE collecting matching stats. Elapsed time: {} ms.", stopWatch.getTime());
+		runningQueries.forEach(UpdateMatchingStatsSqlJob::checkForError);
 	}
 
 	private static boolean isTreeConcept(final Concept<?> concept) {
@@ -196,31 +196,22 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	}
 
 	private Set<String> collectRelevantColumns(final Connector connector, final List<ConceptTreeChild> children) {
-		final Set<String> relevantColumns = new HashSet<>();
+		return children.stream().flatMap(child -> collectRelevantColumns(connector, child).stream()).collect(Collectors.toSet());
+	}
 
-		for (ConceptTreeChild child : children) {
-			if (child.getCondition() == null && child.getChildren().isEmpty()) {
-				continue;
-			}
-
-			final Set<String> childColumns = new HashSet<>();
-
-			// Recursively collect columns from the current child's children, if they exist
-			if (!child.getChildren().isEmpty()) {
-				final Set<String> childrenColumns = collectRelevantColumns(connector, child.getChildren());
-				childColumns.addAll(childrenColumns);
-			}
-
-			// Add columns from the child's condition, if it exists
-			if (child.getCondition() != null) {
-				final Set<String> conditionColumns = child.getCondition().getColumns(connector);
-				childColumns.addAll(conditionColumns);
-			}
-
-			relevantColumns.addAll(childColumns);
+	private Set<String> collectRelevantColumns(final Connector connector, final ConceptTreeChild child) {
+		final Set<String> childColumns = new HashSet<>();
+		// Recursively collect columns from the current child's children, if they exist
+		if (!child.getChildren().isEmpty()) {
+			final Set<String> childrenColumns = collectRelevantColumns(connector, child.getChildren());
+			childColumns.addAll(childrenColumns);
 		}
-
-		return relevantColumns;
+		// Add columns from the child's condition, if it exists
+		if (child.getCondition() != null) {
+			final Set<String> conditionColumns = child.getCondition().getColumns(connector);
+			childColumns.addAll(conditionColumns);
+		}
+		return childColumns;
 	}
 
 	private Map<Connector, List<ColumnDateRange>> createColumnDateRanges(final TreeConcept treeConcept) {

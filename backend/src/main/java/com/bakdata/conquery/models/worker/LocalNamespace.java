@@ -24,8 +24,6 @@ import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +68,7 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		final Set<ConceptId> concepts = getConceptsWithoutMatchingStats();
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executionPool.createService("sql-matching-stats"));
+		
 		Job job = new UpdateMatchingStatsSqlJob(
 				databaseConfig,
 				sqlExecutionService,
