@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class FrontendUserContent extends FrontendPermissionOwnerContent<User> implements FrontendRoleOwner {
 
-	public final Collection<Role> roles;
+	public final Collection<FrontendRoleContent> roles;
 	public final Collection<Role> availableRoles;
 	public final Collection<Group> groups;
 	public final Collection<Group> availableGroups;
