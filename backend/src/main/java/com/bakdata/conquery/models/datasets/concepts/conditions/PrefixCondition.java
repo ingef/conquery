@@ -1,18 +1,18 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -51,7 +51,7 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getColumns(Connector connector) {
-		return Set.of(connector.getColumn().getColumn());
+	public Set<String> getAuxillaryColumns() {
+		return Collections.emptySet();
 	}
 }

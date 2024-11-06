@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -39,7 +38,7 @@ public class IsPresentCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getColumns(Connector connector) {
+	public Set<String> getAuxillaryColumns() {
 		return Set.of(column);
 	}
 }

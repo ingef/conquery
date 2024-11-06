@@ -1,17 +1,17 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +47,7 @@ public class EqualCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getColumns(Connector connector) {
-		return Set.of(connector.getColumn().getColumn());
+	public Set<String> getAuxillaryColumns() {
+		return Collections.emptySet();
 	}
 }

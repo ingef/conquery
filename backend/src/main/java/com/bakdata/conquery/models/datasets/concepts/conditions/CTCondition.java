@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
@@ -26,6 +25,6 @@ public interface CTCondition {
 
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
-	Set<String> getColumns(Connector connector);
+	Set<String> getAuxillaryColumns();
 
 }

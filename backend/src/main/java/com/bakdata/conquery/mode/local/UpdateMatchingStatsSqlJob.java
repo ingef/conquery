@@ -1,22 +1,13 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.countDistinct;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.max;
-import static org.jooq.impl.DSL.min;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.noCondition;
-import static org.jooq.impl.DSL.noField;
-import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +84,22 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		this.executors = MoreExecutors.listeningDecorator(executors);
 	}
 
+	private static boolean isTreeConcept(final Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
+			return false;
+		}
+		return true;
+	}
+
+	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
+		if (mostSpecificChild.getMatchingStats() == null) {
+			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
+		}
+
+		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
+	}
+
 	@Override
 	public String getLabel() {
 		return "Calculating Matching Stats for %s.".formatted(executionService);
@@ -137,14 +144,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		super.cancel();
 	}
 
-	private static boolean isTreeConcept(final Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
-			return false;
-		}
-		return true;
-	}
-
 	public void calculateMatchingStats(final TreeConcept treeConcept) {
 
 		final Map<Connector, Set<Field<?>>> relevantColumns = collectRelevantColumns(treeConcept);
@@ -152,7 +151,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		// union of all connectors of the concept
 		final Select<?> unioned = treeConcept.getConnectors().stream()
-											 .map(connector -> this.createConnectorQuery(connector, relevantColumns, validityDateMap))
+											 .map(connector -> createConnectorQuery(connector, relevantColumns, validityDateMap))
 											 .reduce(Select::unionAll)
 											 .orElseThrow(IllegalStateException::new);
 
@@ -177,7 +176,8 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		final Select<Record> finalQuery = relevantColumnsAliased.isEmpty() ? query : query.groupBy(relevantColumnsAliased);
 
 		final ConceptTreeCache treeCache = new ConceptTreeCache(treeConcept);
-		executionService.fetchStream(finalQuery).forEach(record -> mapRecordToConceptElements(treeConcept, record, relevantColumnsAliased, treeCache));
+		executionService.fetchStream(finalQuery)
+						.forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
 	}
 
 	/**
@@ -185,37 +185,41 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	 * {@link CTCondition} which is part of any child of a concept, or it's a concept's connector column.
 	 */
 	private Map<Connector, Set<Field<?>>> collectRelevantColumns(final TreeConcept treeConcept) {
-		return treeConcept.getConnectors().stream().collect(Collectors.toMap(
-				Function.identity(),
-				connector -> collectRelevantColumns(connector, treeConcept.getChildren())
-						.stream()
-						.map(column -> {
-							final Field<Object> field = field(name(column));
-							// connector columns are unioned, thus they need the same alias
-							if (connector.getColumn() != null && connector.getColumn().resolve().getName().equals(column)) {
-								return field.as(CONNECTOR_COLUMN);
-							}
-							// a condition which does not operate on the connector column MUST have the same name in all connector's tables
-							return field;
-						})
-						.collect(Collectors.toSet())
-		));
+		return treeConcept.getConnectors().stream()
+						  .collect(Collectors.toMap(
+								  Function.identity(),
+								  connector -> collectRelevantColumns(connector, treeConcept)
+						  ));
 	}
 
-	private Set<String> collectRelevantColumns(final Connector connector, final List<ConceptTreeChild> children) {
-		return children.stream().flatMap(child -> collectRelevantColumns(connector, child).stream()).collect(Collectors.toSet());
+	private Set<Field<?>> collectRelevantColumns(final Connector connector, TreeConcept concept) {
+		final Set<Field<?>> out = new HashSet<>();
+
+		if (connector.getColumn() != null) {
+			out.add(field(name(connector.getColumn().resolve().getName())).as(CONNECTOR_COLUMN));
+		}
+
+		for (String name : collectRelevantColumns(concept.getChildren())) {
+			out.add(field(name(name)));
+		}
+
+		return out;
 	}
 
-	private Set<String> collectRelevantColumns(final Connector connector, final ConceptTreeChild child) {
+	private Set<String> collectRelevantColumns(final List<ConceptTreeChild> children) {
+		return children.stream().flatMap(child -> collectRelevantColumns(child).stream()).collect(Collectors.toSet());
+	}
+
+	private Set<String> collectRelevantColumns(final ConceptTreeChild child) {
 		final Set<String> childColumns = new HashSet<>();
 		// Recursively collect columns from the current child's children, if they exist
 		if (!child.getChildren().isEmpty()) {
-			final Set<String> childrenColumns = collectRelevantColumns(connector, child.getChildren());
+			final Set<String> childrenColumns = collectRelevantColumns(child.getChildren());
 			childColumns.addAll(childrenColumns);
 		}
 		// Add columns from the child's condition, if it exists
 		if (child.getCondition() != null) {
-			final Set<String> conditionColumns = child.getCondition().getColumns(connector);
+			final Set<String> conditionColumns = child.getCondition().getAuxillaryColumns();
 			childColumns.addAll(conditionColumns);
 		}
 		return childColumns;
@@ -249,17 +253,27 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		final Set<Field<?>> connectorColumns = relevantColumns.get(connector);
 		final Field<Object> primaryKey = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), databaseConfig).as(ENTITIES);
 
-		// we have to select all possible validity dates of all connectors because we have to union multiple connectors
-		final List<Field<?>> validityDates =
-				validityDateMap.entrySet().stream()
-							   .flatMap(entry -> entry.getValue().stream().map(columnDateRange -> entry.getKey() == connector
-																								  ? columnDateRange
-																								  : functionProvider.nulled(columnDateRange))
-													  .flatMap(columnDateRange -> columnDateRange.toFields().stream()))
-							   .toList();
+		final List<Field<?>> validityDates = new ArrayList<>();
+
+		for (Map.Entry<Connector, List<ColumnDateRange>> entry : validityDateMap.entrySet()) {
+			for (ColumnDateRange columnDateRange : entry.getValue()) {
+
+				// we have to select all possible validity dates of all connectors because we have to union multiple connectors
+				ColumnDateRange dateRange = columnDateRange;
+
+				// Therefore we usually select null
+				if (entry.getKey() != connector) {
+					dateRange = functionProvider.nulled(columnDateRange);
+				}
+
+				validityDates.addAll(dateRange.toFields());
+			}
+		}
 
 		// connector might have a condition
-		final Condition connectorCondition = toJooqCondition(connector, Optional.ofNullable(connector.getCondition()));
+		final Condition connectorCondition = connector.getCondition() == null
+											 ? noCondition()
+											 : toJooqCondition(connector, connector.getCondition());
 
 		return dslContext.select(primaryKey)
 						 .select(connectorColumns)
@@ -268,11 +282,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 						 .where(connectorCondition);
 	}
 
-	private Condition toJooqCondition(final Connector connector, final Optional<CTCondition> childCondition) {
+	private Condition toJooqCondition(final Connector connector, CTCondition childCondition) {
 		final CTConditionContext context = CTConditionContext.create(connector, functionProvider);
-		return childCondition.or(() -> Optional.ofNullable(connector.getCondition()))
-							 .map(condition -> condition.convertToSqlCondition(context).condition())
-							 .orElse(noCondition());
+		return childCondition.convertToSqlCondition(context).condition();
 	}
 
 	/**
@@ -286,12 +298,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
 
-	private void mapRecordToConceptElements(
-			final TreeConcept treeConcept,
-			final Record record,
-			final List<Field<?>> relevantColumns,
-			final ConceptTreeCache treeCache
-	) {
+	private void mapRecordToConceptElements(final TreeConcept treeConcept, final Record record, final ConceptTreeCache treeCache) {
 		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(record::intoMap);
 		final MatchingStats.Entry entry = toMatchingStatsEntry(record);
 
@@ -300,53 +307,44 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			return;
 		}
 
-		relevantColumns.stream().map(field -> record.get(field, String.class)).forEach(relevantColumnValue -> {
-			try {
-				final ConceptTreeChild mostSpecificChild = treeCache.findMostSpecificChild(relevantColumnValue, rowMap);
+		try {
+			final String columnValue = record.get(CONNECTOR_COLUMN, String.class);
 
-				//  database value did not match any node of the concept
-				if (mostSpecificChild == null) {
-					return;
-				}
+			final ConceptTreeChild mostSpecificChild = treeCache.findMostSpecificChild(columnValue, rowMap);
 
-				// add stats for most specific child
-				addEntryToConceptElement(mostSpecificChild, relevantColumnValue, entry);
-
-				// add child stats to all parents till concept root
-				ConceptTreeNode<?> current = mostSpecificChild.getParent();
-				while (current != null) {
-					addEntryToConceptElement(current, relevantColumnValue, entry);
-					current = current.getParent();
-				}
+			//  database value did not match any node of the concept
+			if (mostSpecificChild == null) {
+				return;
 			}
-			catch (ConceptConfigurationException e) {
-				throw new RuntimeException(e);
+
+			// add child stats to all parents till concept root
+			ConceptTreeNode<?> current = mostSpecificChild;
+			while (current != null) {
+				addEntryToConceptElement(current, columnValue, entry);
+				current = current.getParent();
 			}
-		});
+		}
+		catch (ConceptConfigurationException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private MatchingStats.Entry toMatchingStatsEntry(Record record) {
 		final long events = record.get(EVENTS, Integer.class).longValue();
 		final long entities = record.get(ENTITIES, Integer.class).longValue();
 		final CDateRange dateSpan = toDateRange(record.get(DATES, String.class));
+
 		return new MatchingStats.Entry(events, entities, dateSpan.getMinValue(), dateSpan.getMaxValue());
 	}
 
 	private CDateRange toDateRange(final String validityDateExpression) {
 		final List<Integer> dateRange = executionService.getResultSetProcessor().getCDateSetParser().toEpochDayRange(validityDateExpression);
-		return !dateRange.isEmpty() ? CDateRange.fromList(dateRange) : CDateRange.all();
-	}
 
-	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
-		final MatchingStats childMatchingStats;
-		if (mostSpecificChild.getMatchingStats() == null) {
-			childMatchingStats = new MatchingStats();
-			((ConceptElement<?>) mostSpecificChild).setMatchingStats(childMatchingStats);
+		if (dateRange.isEmpty()) {
+			return CDateRange.all();
 		}
-		else {
-			childMatchingStats = mostSpecificChild.getMatchingStats();
-		}
-		childMatchingStats.putEntry(columnKey, entry);
+
+		return CDateRange.fromList(dateRange);
 	}
 
 }
