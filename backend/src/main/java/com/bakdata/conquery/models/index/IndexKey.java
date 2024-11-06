@@ -7,9 +7,8 @@ import java.util.List;
  * Interface which is used by {@link IndexService} to create and cache a new {@link Index}.
  * {@link Object#equals(Object)} and {@link Object#hashCode()} functions.
  *
- * @param <V> The value type handled by the index
  */
-public interface IndexKey<V> {
+public interface IndexKey {
 
 	/**
 	 * An url, or a part of it, that points to the referenced csv file.
@@ -23,6 +22,6 @@ public interface IndexKey<V> {
 
 	List<String> getExternalTemplates();
 
-	Index<V> createIndex(String defaultEmptyLabel);
+	Index<?> createIndex(String defaultEmptyLabel);
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class MapIndexKey implements IndexKey<String> {
+public class MapIndexKey implements IndexKey {
 
 	private final URI csv;
 	private final String internalColumn;

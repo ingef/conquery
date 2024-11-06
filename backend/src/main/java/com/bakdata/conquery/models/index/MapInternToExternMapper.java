@@ -96,11 +96,11 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
 		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
 
-		final IndexKey<String> key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiple);
+		final IndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiple);
 
 		int2ext = CompletableFuture.supplyAsync(() -> {
 									   try {
-										   return mapIndex.<Index<String>, String>getIndex(key);
+										   return mapIndex.<Index<String>>getIndex(key);
 									   }
 									   catch (IndexCreationException e) {
 										   throw new IllegalStateException(e);

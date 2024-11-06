@@ -42,6 +42,6 @@ public class IndexServiceUIResource {
 	@Data
 	public static class IndexServiceUIContent {
 		private final CacheStats stats;
-		private final Set<IndexKey<?>> indexes;
+		private final Set<IndexKey> indexes;
 	}
 }
