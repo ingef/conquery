@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +39,7 @@ public class LocalNamespace extends Namespace {
 	private final SqlExecutionService sqlExecutionService;
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
+	private final ThreadPoolExecutor executorService;
 
 	public LocalNamespace(
 			ObjectMapper preprocessMapper,
@@ -63,12 +65,13 @@ public class LocalNamespace extends Namespace {
 		this.sqlExecutionService = sqlExecutionService;
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
+		// TODO FK: hoist into Namespace and use at other places && is this the correct way to name them?
+		this.executorService = this.executionPool.createService("namespace %s worker".formatted(storage.getPathName()));
 	}
 
 	@Override
 	void updateMatchingStats() {
 		final Set<ConceptId> concepts = getConceptsWithoutMatchingStats();
-		
 		Job job = new UpdateMatchingStatsSqlJob(
 				databaseConfig,
 				sqlExecutionService,
