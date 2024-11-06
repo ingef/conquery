@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -95,13 +97,75 @@ public class UIProcessor {
 		return adminProcessor.getStorage();
 	}
 
+	public FrontendGroupContent getGroupContent(Group group) {
+
+		Set<UserId> membersIds = group.getMembers();
+		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers().toList());
+		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
+
+		List<FrontendUserContent> members = membersIds.stream()
+													  .map(id -> {
+														  User user = getStorage().getUser(id);
+														  if (user != null) {
+															  return getUserContent(user);
+														  }
+														  return FrontendUserContent.builder().id(id).build();
+													  })
+													  .toList();
+
+		List<FrontendRoleContent> roles = group.getRoles().stream()
+											   .map(this::getFrontendRoleContent)
+											   .toList();
+
+		return FrontendGroupContent
+				.builder()
+				.resolvable(true)
+				.label(group.getLabel())
+				.id(group.getId())
+				.members(members)
+				.availableMembers(availableMembers)
+				.roles(roles)
+				.availableRoles(getStorage().getAllRoles().toList())
+				.permissions(wrapInFEPermission(group.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
+	}
+
+	private FrontendRoleContent getFrontendRoleContent(RoleId id) {
+		Role role = getStorage().getRole(id);
+		if (role != null) {
+			return getRoleContent(role);
+		}
+		return FrontendRoleContent.builder().id(id).build();
+	}
+
+	public FrontendUserContent getUserContent(User user) {
+		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups().toList());
+		availableGroups.removeIf(g -> g.containsMember(user));
+
+		return FrontendUserContent
+				.builder()
+				.resolvable(true)
+				.label(user.getLabel())
+				.id(user.getId())
+				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
+				.availableGroups(availableGroups)
+				.roles(user.getRoles().stream().map(this::getFrontendRoleContent).collect(Collectors.toList()))
+				.availableRoles(getStorage().getAllRoles().toList())
+				.permissions(wrapInFEPermission(user.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
+	}
+
 	public FrontendRoleContent getRoleContent(Role role) {
 		return FrontendRoleContent.builder()
+								  .resolvable(true)
 								  .permissions(wrapInFEPermission(role.getPermissions()))
 								  .permissionTemplateMap(preparePermissionTemplate())
 								  .users(getUsers(role))
 								  .groups(getGroups(role))
-								  .owner(role)
+								  .id(role.getId())
+								  .label(role.getLabel())
 								  .build();
 	}
 
@@ -144,42 +208,6 @@ public class UIProcessor {
 					 .filter(g -> g.getRoles().contains(role.getId()))
 					 .sorted()
 					 .collect(Collectors.toList());
-	}
-
-	public FrontendUserContent getUserContent(User user) {
-		final Collection<Group> availableGroups = getStorage().getAllGroups()
-															  .filter(group -> !group.containsMember(user))
-															  .toList();
-
-		return FrontendUserContent
-				.builder()
-				.owner(user)
-				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
-				.availableGroups(availableGroups)
-				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles().collect(Collectors.toCollection(TreeSet::new)))
-				.permissions(wrapInFEPermission(user.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
-	}
-
-	public FrontendGroupContent getGroupContent(Group group) {
-		Set<UserId> memberIds = group.getMembers();
-		Set<User> members = memberIds.stream().map(getStorage()::getUser).collect(Collectors.toCollection(TreeSet::new));
-		Collection<User>
-				availableMembers =
-				getStorage().getAllUsers().filter(user -> !memberIds.contains(user.getId())).collect(Collectors.toCollection(TreeSet::new));
-
-		return FrontendGroupContent
-				.builder()
-				.owner(group)
-				.members(members)
-				.availableMembers(availableMembers)
-				.roles(group.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles().collect(Collectors.toCollection(TreeSet::new)))
-				.permissions(wrapInFEPermission(group.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
 	}
 
 	public TableStatistics getTableStatistics(Table table) {
