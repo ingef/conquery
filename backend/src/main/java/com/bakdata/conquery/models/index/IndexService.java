@@ -149,7 +149,7 @@ public class IndexService implements Injectable {
 	/**
 	 * Returns an index mapping from the information in the given key.
 	 * If the index is not yet present, it is loaded.
-	 *
+	 * <p/>
 	 * @param key the key describing the requested index
 	 * @return the index mapping
 	 * @throws IndexCreationException if the index mapping could not be loaded.
