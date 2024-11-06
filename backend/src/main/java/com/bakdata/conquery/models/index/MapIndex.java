@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.index;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +34,16 @@ public class MapIndex implements Index<String> {
 	}
 
 	@Override
-	public Collection<String> externalMultiple(String key, String defaultValue) {
-		return Set.of(external(key, defaultValue));
+	public Collection<String> externalMultiple(String key) {
+		if (delegate.containsKey(key)) {
+			return Collections.singleton(delegate.get(key));
+		}
+
+		return null;
 	}
 
 	@Override
-	public String external(String key, String defaultValue) {
-		return delegate.getOrDefault(key, defaultValue);
+	public String external(String key) {
+		return delegate.get(key);
 	}
 }

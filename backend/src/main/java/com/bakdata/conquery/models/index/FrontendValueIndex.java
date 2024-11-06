@@ -64,19 +64,29 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 	}
 
 	@Override
-	public Collection<FrontendValue> externalMultiple(String key, FrontendValue defaultValue) {
-		return delegate.findExact(Set.of(key), Integer.MAX_VALUE);
+	public Collection<FrontendValue> externalMultiple(String key) {
+		final List<FrontendValue> matches = delegate.findExact(Set.of(key), Integer.MAX_VALUE);
+		if (matches.isEmpty()) {
+			return null;
+		}
+		return matches;
 	}
 
 	@Override
-	public FrontendValue external(String key, FrontendValue defaultValue) {
-		return delegate.findExact(Set.of(key), 1).iterator().next();
+	public FrontendValue external(String key) {
+		final List<FrontendValue> matches = delegate.findExact(Set.of(key), 1);
+
+		if (matches.isEmpty()) {
+			return null;
+		}
+
+		return matches.iterator().next();
 	}
 
 	@Override
 	public void finalizer() {
 
-		StopWatch timer = StopWatch.createStarted();
+		final StopWatch timer = StopWatch.createStarted();
 
 		// If no empty label was provided by the mapping, we insert the configured default-label
 		if (delegate.findExact(List.of(""), 1).isEmpty()) {

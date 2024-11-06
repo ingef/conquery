@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import jakarta.validation.constraints.NotEmpty;
@@ -117,7 +117,13 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	public Collection<String> externalMultiple(String internalValue) {
 		if (indexAvailable()) {
 			try {
-				return int2ext.get().externalMultiple(internalValue, internalValue);
+				final Collection<String> mapped = int2ext.get().externalMultiple(internalValue);
+
+				if (mapped == null) {
+					return Collections.singleton(internalValue);
+				}
+
+				return mapped;
 			}
 			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
@@ -125,7 +131,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 			}
 		}
 
-		return List.of(internalValue);
+		return Collections.singleton(internalValue);
 	}
 
 	private boolean indexAvailable() {
@@ -150,7 +156,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	public String external(String internalValue) {
 		if (indexAvailable()) {
 			try {
-				return int2ext.get().external(internalValue, internalValue);
+				return int2ext.get().external(internalValue);
 			}
 			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached

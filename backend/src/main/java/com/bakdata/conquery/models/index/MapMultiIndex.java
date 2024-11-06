@@ -33,12 +33,20 @@ public class MapMultiIndex implements Index<String> {
 	}
 
 	@Override
-	public String external(String key, String defaultValue) {
-		return externalMultiple(key, defaultValue).iterator().next();
+	public String external(String key) {
+		if (!delegate.containsKey(key)) {
+			return null;
+		}
+
+		return delegate.get(key).iterator().next();
 	}
 
 	@Override
-	public Collection<String> externalMultiple(String key, String defaultValue) {
-		return delegate.getOrDefault(key, Set.of(defaultValue));
+	public Collection<String> externalMultiple(String key) {
+		if (!delegate.containsKey(key)) {
+			return null;
+		}
+
+		return delegate.get(key);
 	}
 }

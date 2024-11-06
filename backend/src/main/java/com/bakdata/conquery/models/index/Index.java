@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.index;
 
 import java.util.Collection;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 public interface Index<V> {
 
@@ -11,8 +12,10 @@ public interface Index<V> {
 
 	void finalizer();
 
-	V external(String key, V defaultValue);
+	@CheckForNull
+	V external(String key);
 
-	Collection<V> externalMultiple(String key, V defaultValue);
+	@CheckForNull
+	Collection<V> externalMultiple(String key);
 
 }
