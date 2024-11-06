@@ -136,12 +136,12 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	private boolean indexAvailable() {
 		if (!initialized()) {
-			log.trace("Skip mapping {}, because mapper is not yet initialized", getId());
+			log.trace("Mapping {} not available, because mapper is not yet initialized", getId());
 			return false;
 		}
 
 		if (int2ext.isCompletedExceptionally() || int2ext.isCancelled()) {
-			log.trace("Skip mapping {} because mapper could not be initialized", getId());
+			log.trace("Mapping {} not available, because mapper could not be initialized", getId());
 			return false;
 		}
 		return true;
