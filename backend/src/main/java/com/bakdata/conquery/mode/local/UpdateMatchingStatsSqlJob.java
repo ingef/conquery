@@ -8,9 +8,11 @@ import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.min;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.noField;
 import static org.jooq.impl.DSL.table;
 
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,13 +53,13 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
-import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Select;
+import org.jooq.SelectJoinStep;
 import org.jooq.Table;
 
 @Slf4j
@@ -67,8 +69,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	private static final Name EVENTS = name("events");
 	private static final Name ENTITIES = name("entities");
 	private static final Name DATES = name("dates");
-	private static final Name MIN_DATE = name("min_date");
-	private static final Name MAX_DATE = name("max_date");
 
 	private final DatabaseConfig databaseConfig;
 	private final SqlExecutionService executionService;
@@ -156,31 +156,28 @@ public class UpdateMatchingStatsSqlJob extends Job {
 											 .reduce(Select::unionAll)
 											 .orElseThrow(IllegalStateException::new);
 
-		// select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors
-		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
-		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
-		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
-		final AggregateFunction<Date> minDate = min(functionProvider.least(allStarts));
-		final AggregateFunction<Date> maxDate = max(functionProvider.greatest((allEnds)));
-
 		// all connectors need the same columns originating from the concept definition - they might have different names in the respective connector tables,
 		// but as we aliased them already, we can just use the unified aliases in the final query
 		final List<Field<?>> relevantColumnsAliased = relevantColumns.get(treeConcept.getConnectors().get(0)).stream()
 																	 .map(field -> field(field.getUnqualifiedName()))
 																	 .collect(Collectors.toList());
 
-		final Select<? extends Record> query = dslContext.select(relevantColumnsAliased)
-														 .select(
-																 count(asterisk()).as(EVENTS),
-																 countDistinct(field(ENTITIES)).as(ENTITIES),
-																 minDate.as(MIN_DATE),
-																 maxDate.as(MAX_DATE)
-														 )
-														 .from(unioned)
-														 .groupBy(relevantColumnsAliased);
+		// if there is no validity date at all, we select no field
+		final Field<?> validityDateExpression = validityDateMap.isEmpty() ? noField() : toValidityDateExpression(validityDateMap);
+
+		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
+													   .select(
+															   count(asterisk()).as(EVENTS),
+															   countDistinct(field(ENTITIES)).as(ENTITIES),
+															   validityDateExpression.as(DATES)
+													   )
+													   .from(unioned);
+
+		// not all dialects accept an empty group by () clause
+		final Select<Record> finalQuery = relevantColumnsAliased.isEmpty() ? query : query.groupBy(relevantColumnsAliased);
 
 		final ConceptTreeCache treeCache = new ConceptTreeCache(treeConcept);
-		executionService.fetchStream(query).forEach(record -> mapRecordToConceptElements(treeConcept, record, relevantColumnsAliased, treeCache));
+		executionService.fetchStream(finalQuery).forEach(record -> mapRecordToConceptElements(treeConcept, record, relevantColumnsAliased, treeCache));
 	}
 
 	/**
@@ -225,11 +222,15 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	}
 
 	private Map<Connector, List<ColumnDateRange>> createColumnDateRanges(final TreeConcept treeConcept) {
+		final Map<Connector, List<ColumnDateRange>> map = new HashMap<>();
 		final AtomicInteger counter = new AtomicInteger(0);
-		return treeConcept.getConnectors().stream().collect(Collectors.toMap(
-				Function.identity(),
-				connector -> createColumnDateRanges(connector, counter)
-		));
+		for (final ConceptTreeConnector connector : treeConcept.getConnectors()) {
+			if (connector.getValidityDates().isEmpty()) {
+				continue;
+			}
+			map.put(connector, createColumnDateRanges(connector, counter));
+		}
+		return map;
 	}
 
 	private List<ColumnDateRange> createColumnDateRanges(final Connector connector, final AtomicInteger counter) {
@@ -274,6 +275,17 @@ public class UpdateMatchingStatsSqlJob extends Job {
 							 .orElse(noCondition());
 	}
 
+	/**
+	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
+	 */
+	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap) {
+		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
+		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
+		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
+		final ColumnDateRange minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
+		return functionProvider.daterangeStringExpression(minAndMax);
+	}
+
 	private void mapRecordToConceptElements(
 			final TreeConcept treeConcept,
 			final Record record,
@@ -313,30 +325,16 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		});
 	}
 
-	private MatchingStats.Entry toMatchingStatsEntry(final Record record) {
+	private MatchingStats.Entry toMatchingStatsEntry(Record record) {
 		final long events = record.get(EVENTS, Integer.class).longValue();
 		final long entities = record.get(ENTITIES, Integer.class).longValue();
-
-		final int minDate = record.get(MIN_DATE, Date.class) == null
-							? CDateRange.NEGATIVE_INFINITY
-							: toValidInt(record.get(MIN_DATE, Date.class));
-
-		final int maxDate = record.get(MAX_DATE, Date.class) == null
-							? CDateRange.POSITIVE_INFINITY
-							: toValidInt(record.get(MAX_DATE, Date.class));
-
-		return new MatchingStats.Entry(events, entities, minDate, maxDate);
+		final CDateRange dateSpan = toDateRange(record.get(DATES, String.class));
+		return new MatchingStats.Entry(events, entities, dateSpan.getMinValue(), dateSpan.getMaxValue());
 	}
 
-	private static int toValidInt(final Date date) {
-		final long epochDay = date.toLocalDate().toEpochDay();
-		if (epochDay < Integer.MIN_VALUE) {
-			return Integer.MIN_VALUE;
-		}
-		else if (epochDay > Integer.MAX_VALUE) {
-			return Integer.MAX_VALUE;
-		}
-		return Math.toIntExact(epochDay);
+	private CDateRange toDateRange(final String validityDateExpression) {
+		final List<Integer> dateRange = executionService.getResultSetProcessor().getCDateSetParser().toEpochDayRange(validityDateExpression);
+		return !dateRange.isEmpty() ? CDateRange.fromList(dateRange) : CDateRange.all();
 	}
 
 	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
