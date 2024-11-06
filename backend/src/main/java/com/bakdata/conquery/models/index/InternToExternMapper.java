@@ -9,8 +9,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMappe
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedMultiPrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToOneMappingPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @CPSBase
@@ -30,11 +30,11 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	default Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAllowMultiple()) {
-			return new MappedMultiPrinter(this)
+			return new OneToManyMappingPrinter(this)
 					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
 
-		return new MappedPrinter(this)
+		return new OneToOneMappingPrinter(this)
 				.andThen(printerFactory.getStringPrinter(printSettings));
 	}
 

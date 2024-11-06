@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedMultiPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -44,7 +44,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new FlatMappingPrinter(new MappedMultiPrinter(getMapping().resolve()))
+		return new FlatMappingPrinter(new OneToManyMappingPrinter(getMapping().resolve()))
 				.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 	}
 
@@ -56,7 +56,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	/**
 	 * Ensures that mapped values are still distinct.
 	 */
-	private record FlatMappingPrinter(MappedMultiPrinter mapper) implements Printer<Collection<String>> {
+	private record FlatMappingPrinter(OneToManyMappingPrinter mapper) implements Printer<Collection<String>> {
 
 		@Override
 		public Collection<String> apply(Collection<String> values) {

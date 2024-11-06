@@ -22,8 +22,6 @@ public class SecondaryIdResultInfo extends ResultInfo {
 		super(Set.of(new SemanticType.SecondaryIdT(secondaryId.getId())));
 		this.secondaryId = secondaryId;
 		type = ResultType.Primitive.STRING;
-
-
 	}
 
 	@Override

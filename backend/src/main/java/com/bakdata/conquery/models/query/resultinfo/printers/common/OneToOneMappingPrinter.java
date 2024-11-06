@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import org.jetbrains.annotations.NotNull;
 
-public record MappedPrinter(InternToExternMapper mapper) implements Printer<String> {
+public record OneToOneMappingPrinter(InternToExternMapper mapper) implements Printer<String> {
 
 	@Override
 	public String apply(@NotNull String f) {
