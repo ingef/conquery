@@ -6,8 +6,8 @@
 <div class="container">
 	<div class="row">
 		<div class="col">
-		<h2>Group ${c.owner.label}</h2>
-		<small class="text-muted">${c.owner.id}</small>
+		<h2>Group ${c.label}</h2>
+		<small class="text-muted">${c.id}</small>
 		</div>
 	</div>
 	<div class="row pt-3">
@@ -29,10 +29,10 @@
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="ownedPermissions" role="tabpanel" aria-labelledby="ownedPermissions-tab">
-                    <@permissionTable.permissionTable ownerId=c.owner.getId() permissions=c.permissions />
+                    <@permissionTable.permissionTable ownerId=c.id permissions=c.permissions />
                 </div>
                 <div class="tab-pane fade" id="createPermission" role="tabpanel" aria-labelledby="createPermission-tab">
-                    <@permissionCreator.permissionCreator ownerId=c.owner.getId() permissionTemplateMap=c.permissionTemplateMap />
+                    <@permissionCreator.permissionCreator ownerId=c.id permissionTemplateMap=c.permissionTemplateMap />
                 </div>
                 <div class="tab-pane fade" id="member" role="tabpanel" aria-labelledby="member-tab">
 
@@ -65,9 +65,14 @@
                             <tbody>
                             <#list c.members as member>
                                 <tr>
-                                    <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
-                                    <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.id}</a></td>
-                                    <td><a href="#" onclick="removeMember('/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
+                                    <#if member.resolvable>
+                                        <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
+                                        <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.id}</a></td>
+                                    <#else>
+                                        <td colspan="2" class="table-warning">Unresolvable Member: ${member.id}</td>
+                                    </#if>
+
+                                    <td><a href="#" onclick="removeMember('/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}')">Remove from ${c.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
                                 </tr>
                             </#list>
                             </tbody>
@@ -85,7 +90,7 @@
 	function addMember() {
 		event.preventDefault(); 
 		rest(
-			'/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/'+document.getElementById('member_id').value,
+			'/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/'+document.getElementById('member_id').value,
 			{
 				method: 'post',
 			})
