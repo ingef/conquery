@@ -47,7 +47,7 @@ public class FormShardResult extends ShardResult {
 			);
 		}
 
-		if (managedInternalForm.allSubQueriesDone(executionManager)) {
+		if (managedInternalForm.allSubQueriesDone()) {
 			managedInternalForm.finish(ExecutionState.DONE);
 		}
 

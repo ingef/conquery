@@ -23,7 +23,7 @@ public class SelectResultInfo extends ResultInfo {
 	private final CQConcept cqConcept;
 
 	public SelectResultInfo(Select select, CQConcept cqConcept, Set<SemanticType> semantics) {
-		super(Sets.union(semantics, Set.of(new SemanticType.SelectResultT(select))));
+		super(Sets.union(semantics, Set.of(new SemanticType.SelectResultT(select.getId()))));
 		this.select = select;
 		this.cqConcept = cqConcept;
 	}

@@ -200,13 +200,16 @@ public class AdminDatasetResource {
 	@GET
 	@Path("tables")
 	public List<TableId> listTables() {
-		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
+		return namespace.getStorage().getTables().map(Table::getId).collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("concepts")
 	public List<ConceptId> listConcepts() {
-		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+		return namespace.getStorage()
+						.getAllConcepts()
+						.map(Concept::getId)
+						.collect(Collectors.toList());
 	}
 
 	@DELETE

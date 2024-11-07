@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -36,43 +36,8 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public abstract class ExecutionManager {
 
-	/**
-	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
-	 */
-	public interface State {
-
-		/**
-		 * The current {@link ExecutionState} of the execution.
-		 */
-		@NotNull
-		ExecutionState getState();
-
-		void setState(ExecutionState state);
-
-		/**
-		 * Synchronization barrier for web requests.
-		 * Barrier is activated upon starting an execution so request can wait for execution completion.
-		 * When the execution is finished the barrier is removed.
-		 */
-		CountDownLatch getExecutingLock();
-	}
-
-	public interface InternalState extends State{
-		Stream<EntityResult> streamQueryResults();
-	}
-
 	private final MetaStorage storage;
-
 	private final DatasetRegistry<?> datasetRegistry;
-
-	/**
-	 * Cache for execution states.
-	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -95,7 +60,6 @@ public abstract class ExecutionManager {
 		}
 	}
 
-
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
 		return storage.getExecution(execution);
 	}
@@ -109,7 +73,14 @@ public abstract class ExecutionManager {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
 		}
 		return (R) state;
-	}
+	}	/**
+	 * Cache for execution states.
+	 */
+	private final Cache<ManagedExecutionId, State> executionStates =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
 
 	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
 		return Optional.ofNullable((R) executionStates.getIfPresent(id));
@@ -123,16 +94,20 @@ public abstract class ExecutionManager {
 		executionStates.put(id, result);
 	}
 
-	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, ConqueryConfig config, boolean system) {
+	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, ConqueryConfig config, boolean system) {
 		final ManagedExecution execution = createExecution(query, user, namespace, system);
 
-		execute(namespace, execution, config);
+		execute(execution, config);
 
 		return execution;
 	}
 
+	// Visible for testing
+	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
+		return createExecution(query, UUID.randomUUID(), user, namespace, system);
+	}
 
-	public final void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
+	public final void execute(ManagedExecution execution, ConqueryConfig config) {
 
 		clearQueryResults(execution);
 
@@ -158,7 +133,7 @@ public abstract class ExecutionManager {
 
 			execution.start();
 
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), storage).map(Group::getName).orElse("none");
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 			if (execution instanceof InternalExecution internalExecution) {
@@ -172,16 +147,9 @@ public abstract class ExecutionManager {
 		}
 	}
 
-	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
-
-	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, User user, Namespace namespace, boolean system) {
-		return createExecution(query, UUID.randomUUID(), user, namespace, system);
-	}
-
-	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, User user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset(), storage, datasetRegistry);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 		managed.setMetaStorage(storage);
@@ -191,6 +159,12 @@ public abstract class ExecutionManager {
 
 		return managed;
 	}
+
+	public void clearQueryResults(ManagedExecution execution) {
+		executionStates.invalidate(execution.getId());
+	}
+
+	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
 
 	public final void cancelQuery(final ManagedExecution execution) {
 		executionStates.invalidate(execution.getId());
@@ -202,6 +176,7 @@ public abstract class ExecutionManager {
 		doCancelQuery(execution);
 	}
 
+	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
 		State state = executionStates.getIfPresent(id);
@@ -211,13 +186,6 @@ public abstract class ExecutionManager {
 		}
 
 		log.warn("Could not update execution state of {} to {}, because it had no state.", id, execState);
-	}
-
-
-	public abstract void doCancelQuery(final ManagedExecution execution);
-
-	public void clearQueryResults(ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
 	}
 
 	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
@@ -262,4 +230,31 @@ public abstract class ExecutionManager {
 		}
 		return stateAfterWait.getState();
 	}
+
+	/**
+	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
+	 */
+	public interface State {
+
+		/**
+		 * The current {@link ExecutionState} of the execution.
+		 */
+		@NotNull
+		ExecutionState getState();
+
+		void setState(ExecutionState state);
+
+		/**
+		 * Synchronization barrier for web requests.
+		 * Barrier is activated upon starting an execution so request can wait for execution completion.
+		 * When the execution is finished the barrier is removed.
+		 */
+		CountDownLatch getExecutingLock();
+	}
+
+	public interface InternalState extends State{
+		Stream<EntityResult> streamQueryResults();
+	}
+
+
 }

@@ -40,19 +40,9 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, storage.getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
-	}
-
-	@Override
-	public void updateStorage() {
-		storage.updateGroup(this);
-	}
-
-	@Override
-	public GroupId createId() {
-		return new GroupId(name);
 	}
 
 	public synchronized void addMember(User user) {
@@ -62,9 +52,19 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		}
 	}
 
-	public synchronized void removeMember(User user) {
-		if (members.remove(user.getId())) {
-			log.trace("Removed user {} from group {}", user.getId(), getId());
+	@Override
+	public void updateStorage() {
+		getMetaStorage().updateGroup(this);
+	}
+
+	@Override
+	public GroupId createId() {
+		return new GroupId(name);
+	}
+
+	public synchronized void removeMember(UserId user) {
+		if (members.remove(user)) {
+			log.trace("Removed user {} from group {}", user, getId());
 			updateStorage();
 		}
 	}
@@ -84,9 +84,9 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		}
 	}
 
-	public synchronized void removeRole(Role role) {
-		if (roles.remove(role.getId())) {
-			log.trace("Removed role {} from group {}", role.getId(), getId());
+	public synchronized void removeRole(RoleId role) {
+		if (roles.remove(role)) {
+			log.trace("Removed role {} from group {}", role, getId());
 			updateStorage();
 		}
 	}

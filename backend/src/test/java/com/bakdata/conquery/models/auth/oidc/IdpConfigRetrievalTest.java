@@ -5,29 +5,29 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import java.net.URI;
-
 import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.models.auth.OIDCMockServer;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
+import com.bakdata.conquery.util.extensions.MockServerExtension;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.JsonBody;
 
 public class IdpConfigRetrievalTest {
+	@RegisterExtension
+	private static final MockServerExtension OIDC_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IdpConfigRetrievalTest::init);
 
-	private static final OIDCMockServer OIDC_MOCK_SERVER = new OIDCMockServer();
 	private static final JwtPkceVerifyingRealmFactory REALM_FACTORY = new JwtPkceVerifyingRealmFactory();
 
 	private static final Client CLIENT = new JerseyClientBuilder(new Environment("oidc-test")).build("oidc-test-client");
 
 
-	@BeforeAll
-	static void init() {
-		OIDC_MOCK_SERVER.init((server) -> {
+	private static void init(ClientAndServer mockServer) {
+		OIDCMockServer.init(mockServer, (server) -> {
 			// MOCK JWK Endpoint (1 signing + 1 encryption key)
 			server.when(request().withMethod("GET").withPath("/realms/" + OIDCMockServer.REALM_NAME + "/protocol/openid-connect/certs"))
 				  .respond(
@@ -36,13 +36,8 @@ public class IdpConfigRetrievalTest {
 								  )));
 		});
 
-		REALM_FACTORY.setWellKnownEndpoint(URI.create(OIDCMockServer.MOCK_SERVER_URL
+		REALM_FACTORY.setWellKnownEndpoint(URI.create(OIDC_SERVER.baseUrl()
 													  + "/realms/" + OIDCMockServer.REALM_NAME + "/.well-known/uma2-configuration"));
-	}
-
-	@AfterAll
-	static void deinit() {
-		OIDC_MOCK_SERVER.deinit();
 	}
 
 	@Test

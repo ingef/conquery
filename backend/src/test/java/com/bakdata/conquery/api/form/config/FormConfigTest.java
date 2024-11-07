@@ -2,7 +2,8 @@ package com.bakdata.conquery.api.form.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
 import java.time.ZoneId;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
-import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -39,11 +39,12 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -59,6 +60,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.Mockito;
 
 
 /**
@@ -69,14 +71,11 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 public class FormConfigTest {
 
 	private final ConqueryConfig config = new ConqueryConfig();
-
-	private MetaStorage storage;
-
-	private FormConfigProcessor processor;
-	private Validator validator = Validators.newValidatorFactory().getValidator();
-
+	private final Validator validator = Validators.newValidatorFactory().getValidator();
 	private final Dataset dataset = new Dataset("test");
 	private final Dataset dataset1 = new Dataset("test1");
+	private MetaStorage storage;
+	private FormConfigProcessor processor;
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
@@ -90,22 +89,16 @@ public class FormConfigTest {
 		datasetId1 = dataset1.getId();
 
 		// Mock DatasetRegistry for translation
-		DatasetRegistry<?> namespacesMock = mock(DatasetRegistry.class);
-
-		doAnswer(invocation -> {
-			throw new UnsupportedOperationException("Not yet implemented");
-		}).when(namespacesMock).getOptional(any());
+		DatasetRegistry<?> namespacesMock = Mockito.mock(DatasetRegistry.class);
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
-			Namespace namespaceMock = mock(LocalNamespace.class);
+			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
-			}
-			else if (id.equals(datasetId1)) {
+			} else if (id.equals(datasetId1)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset1);
-			}
-			else {
+			} else {
 				throw new IllegalStateException("Unknown dataset id.");
 			}
 			return namespaceMock;
@@ -117,20 +110,17 @@ public class FormConfigTest {
 		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues())
-				.add(IdResolveContext.class, namespacesMock);
+				.add(NamespacedStorageProvider.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);
 		AuthorizationController controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
 		controller.start();
+
 	}
 
 	@BeforeEach
 	public void setupTest() {
 
-
-		user = new User("test", "test", storage);
-		storage.addUser(user);
-
-		final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), user, dataset, null, null);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset.getId(), storage, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();
@@ -138,6 +128,11 @@ public class FormConfigTest {
 		form.setTimeMode(mode);
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
+
+
+		user = new User("test", "test", storage);
+		user.setMetaStorage(storage);
+		storage.addUser(user);
 	}
 
 	@AfterEach
@@ -157,7 +152,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset, formConfig);
 
-		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset.getId()));
+		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user.getId(), dataset.getId()));
 	}
 
 	@Test
@@ -168,6 +163,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
 		formConfig.setDataset(dataset.getId());
+		formConfig.setOwner(user.getId());
 
 		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
@@ -190,7 +186,7 @@ public class FormConfigTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset.getId());
-		formConfig.setOwner(user);
+		formConfig.setOwner(user.getId());
 		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 
@@ -338,13 +334,16 @@ public class FormConfigTest {
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[]{"tag1", "tag2"});
-		patchedFormExpected.setOwner(user);
+		patchedFormExpected.setOwner(user.getId());
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))));
 
+		final String[] fieldsToIgnore = new String[] {FormConfig.Fields.creationTime, "cachedId", "metaStorage", "nsIdResolver"};
 		final FormConfigId formId = config.getId();
-		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-												 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
-												 .isEqualTo(patchedFormExpected);
+		assertThat(storage.getFormConfig(formId))
+				.usingRecursiveComparison()
+				.usingOverriddenEquals()
+				.ignoringFields(fieldsToIgnore)
+				.isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
@@ -363,7 +362,7 @@ public class FormConfigTest {
 		patchedFormExpected.setShared(false);
 
 		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-												 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
+												 .ignoringFields(fieldsToIgnore)
 												 .isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));

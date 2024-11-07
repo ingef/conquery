@@ -4,6 +4,7 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Objects;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,10 +48,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
-		final Concept<?> concept;
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test2 = JsonIntegrationTest.readJson(dataset, testJson2);
 
 		// Manually import data, so we can do our own work.
 		{
@@ -84,8 +83,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getConcept(conceptId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -94,12 +93,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					}
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
-					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-							.isNotEmpty();
+					assertThat(workerStorage.getConcept(conceptId))
+							.isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -114,13 +113,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// To perform the update, the old concept will be deleted first and the new concept will be added. That means the deletion of concept is also covered here
 		{
 			log.info("Executing  update");
-
 			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL);
 			conquery.waitUntilWorkDone();
-
 			log.info("Update executed");
-
-
 		}
 
 
@@ -133,8 +128,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getConcept(conceptId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -144,12 +139,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-							.isNotEmpty();
+					assertThat(workerStorage.getConcept(conceptId))
+							.isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -182,8 +177,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isNotEmpty();
 
-				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-						.isNotEmpty();
+				assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+						.isNotNull();
 
 				for (ShardNode node : conquery.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -193,12 +188,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-								.isNotEmpty();
+						assertThat(workerStorage.getConcept(conceptId))
+								.isNotNull();
 
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
+								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
 								.isNotEmpty();
 					}
 				}
@@ -214,8 +209,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// Delete the Concept.
 		{
 			log.info("Issuing deletion of import {}", conceptId);
-			concept = Objects.requireNonNull(conquery.getNamespace().getStorage().getConcept(conceptId));
-			conquery.getDatasetsProcessor().deleteConcept(concept);
+			Concept<?> concept = Objects.requireNonNull(conquery.getNamespace().getStorage().getConcept(conceptId));
+			conquery.getAdminDatasetsProcessor().deleteConcept(conceptId);
 
 			conquery.waitUntilWorkDone();
 		}
@@ -229,8 +224,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.filteredOn(con -> con.getId().equals(conceptId))
 					.isEmpty();
 
-			assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-					.isEmpty();
+			assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+					.isNull();
 
 			assertThat(
 					conquery.getShardNodes().stream()
@@ -242,8 +237,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .stream()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
@@ -271,8 +265,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isEmpty();
 
-				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
-						.isEmpty();
+				assertThat(conquery.getNamespace().getStorage().getConcept(conceptId))
+						.isNull();
 
 				assertThat(
 						conquery.getShardNodes().stream()
@@ -284,8 +278,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 						// CBlocks of Concept are deleted on Workers
 						.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-																 .stream()
-																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
 				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");

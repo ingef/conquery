@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 
@@ -14,17 +14,17 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
 	public void update(KEY key, VALUE value);
-	
+
 	public void remove(KEY key);
 
 
 	public int count();
 
-	public Collection<VALUE> getAll();
+	public Stream<VALUE> getAll();
 
-	public Collection<KEY> getAllKeys();
+	public Stream<KEY> getAllKeys();
 
-    /**
+	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
 	 */
 	@FunctionalInterface

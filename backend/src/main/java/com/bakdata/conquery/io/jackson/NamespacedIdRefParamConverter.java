@@ -21,7 +21,7 @@ public class NamespacedIdRefParamConverter<ID extends Id<VALUE> & NamespacedId, 
 	public VALUE fromString(String value) {
 		final ID id = idParser.parse(value);
 
-		return registry.resolve(id);
+		return (VALUE) id.get(registry.getStorage(id.getDataset()));
 	}
 
 	@Override

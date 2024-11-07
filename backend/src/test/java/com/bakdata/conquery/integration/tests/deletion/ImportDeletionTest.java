@@ -9,6 +9,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -39,8 +41,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -65,7 +65,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();
@@ -88,7 +88,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
-		final int nImports = namespace.getStorage().getAllImports().size();
+		final long nImports = namespace.getStorage().getAllImports().count();
 
 
 		// State before deletion.
@@ -100,8 +100,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getImport(importId))
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -113,7 +113,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 					assertThat(workerStorage.getAllBuckets())
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
@@ -155,7 +155,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be one less!
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 1);
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(nImports - 1);
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
@@ -173,19 +173,19 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
+							.filteredOn(bucket -> bucket.getImp().equals(importId))
 							.isEmpty();
 
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getId().getImp().equals(importId))
+							.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(importId))
 							.isEmpty();
-					
+
 					// Import should not exists anymore
 					assertThat(workerStorage.getImport(importId))
-					.describedAs("Import for Worker %s", worker.getInfo().getId())
-					.isNull();
+							.describedAs("Import for Worker %s", worker.getInfo().getId())
+							.isNull();
 				}
 			}
 
@@ -239,10 +239,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
-			conquery.waitUntilWorkDone();
-
-
+			conquery.getAdminDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
 			conquery.waitUntilWorkDone();
 		}
 
@@ -250,7 +247,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after re-import");
 
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(nImports);
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -262,7 +259,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
+							.filteredOn(bucket -> bucket.getImp().equals(importId))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 				}
@@ -285,7 +282,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-start");
 
 			{
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
+				assertThat(conquery2.getNamespace().getStorage().getAllImports().count()).isEqualTo(2);
 
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -298,7 +295,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						assertThat(workerStorage.getAllBuckets())
 								.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 								.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
-								.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
+								.filteredOn(bucket -> bucket.getImp().equals(importId))
 								.isNotEmpty();
 					}
 				}

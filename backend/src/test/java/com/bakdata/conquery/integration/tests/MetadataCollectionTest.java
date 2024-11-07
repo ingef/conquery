@@ -8,6 +8,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -34,7 +35,8 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 
 		//ensure the metadata is collected
 		DistributedNamespace namespace = (DistributedNamespace) conquery.getNamespace();
-		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
+		namespace.getWorkerHandler()
+				 .sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts().map(Concept::getId).toList()));
 
 		conquery.waitUntilWorkDone();
 

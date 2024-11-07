@@ -4,6 +4,7 @@ import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
@@ -29,35 +30,35 @@ class ClusterStorageListener implements StorageListener {
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
-		datasetRegistry.get(secondaryId.getDataset().getId()).getWorkerHandler().sendToAll(new UpdateSecondaryId(secondaryId));
+		datasetRegistry.get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
 	@Override
 	public void onDeleteSecondaryId(SecondaryIdDescription secondaryId) {
-		datasetRegistry.get(secondaryId.getDataset().getId()).getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId));
+		datasetRegistry.get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId.getId()));
 	}
 
 	@Override
 	public void onAddTable(Table table) {
-		datasetRegistry.get(table.getDataset().getId()).getWorkerHandler().sendToAll(new UpdateTable(table));
+		datasetRegistry.get(table.getDataset()).getWorkerHandler().sendToAll(new UpdateTable(table));
 	}
 
 	@Override
 	public void onRemoveTable(Table table) {
-		datasetRegistry.get(table.getDataset().getId()).getWorkerHandler().sendToAll(new RemoveTable(table));
+		datasetRegistry.get(table.getDataset()).getWorkerHandler().sendToAll(new RemoveTable(table.getId()));
 	}
 
 	@Override
 	public void onAddConcept(Concept<?> concept) {
-		WorkerHandler handler = datasetRegistry.get(concept.getDataset().getId()).getWorkerHandler();
+		WorkerHandler handler = datasetRegistry.get(concept.getDataset()).getWorkerHandler();
 		SimpleJob simpleJob = new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> handler.sendToAll(new UpdateConcept(concept)));
 		jobManager.addSlowJob(simpleJob);
 	}
 
 	@Override
-	public void onDeleteConcept(Concept<?> concept) {
-		WorkerHandler handler = datasetRegistry.get(concept.getDataset().getId()).getWorkerHandler();
-		SimpleJob simpleJob = new SimpleJob("sendToAll: remove " + concept.getId(), () -> handler.sendToAll(new RemoveConcept(concept)));
+	public void onDeleteConcept(ConceptId concept) {
+		WorkerHandler handler = datasetRegistry.get(concept.getDataset()).getWorkerHandler();
+		SimpleJob simpleJob = new SimpleJob("sendToAll: remove " + concept, () -> handler.sendToAll(new RemoveConcept(concept)));
 		jobManager.addSlowJob(simpleJob);
 	}
 }

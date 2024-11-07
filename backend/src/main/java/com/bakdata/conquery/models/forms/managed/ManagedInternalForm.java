@@ -12,23 +12,21 @@ import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -50,6 +48,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 
 	/**
+	 * Subqueries that are sent to the workers.
+	 */
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
+	/**
 	 * Mapping of a result table name to a set of queries.
 	 * This is required by forms that have multiple results (CSVs) as output.
 	 */
@@ -57,14 +61,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@EqualsAndHashCode.Exclude
 	private Map<String, ManagedQuery> subQueries;
 
-	/**
-	 * Subqueries that are sent to the workers.
-	 */
-	@JsonIgnore
-	@EqualsAndHashCode.Exclude
-	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
-
-	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
 		super(form, user, submittedDataset, storage, datasetRegistry);
 	}
 
@@ -94,23 +91,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 				));
 	}
 
-
-	@Override
-	public void start() {
-		synchronized (this) {
-			subQueries.values().forEach(flatSubQueries::add);
-		}
-		flatSubQueries.values().forEach(ManagedExecution::start);
-		super.start();
-	}
-
-	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
-		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
-	}
-
-
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status, Namespace namespace) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
@@ -131,6 +112,20 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void cancel() {
 		subQueries.values().forEach(ManagedQuery::cancel);
+	}
+
+	@Override
+	public void start() {
+		synchronized (this) {
+			subQueries.values().forEach(flatSubQueries::add);
+		}
+		flatSubQueries.values().forEach(ManagedExecution::start);
+		super.start();
+	}
+
+	@Override
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, config);
 	}
 
 	@Override
@@ -160,7 +155,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return subQueries.values().iterator().next().resultRowCount();
 	}
 
-	public boolean allSubQueriesDone(ExecutionManager executionManager) {
+	public boolean allSubQueriesDone() {
 		synchronized (this) {
 			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}

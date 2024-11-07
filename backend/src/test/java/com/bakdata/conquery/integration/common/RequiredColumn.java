@@ -1,17 +1,17 @@
 package com.bakdata.conquery.integration.common;
 
 import javax.annotation.Nullable;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.assertj.core.util.Strings;
@@ -43,7 +43,7 @@ public class RequiredColumn {
 		return out;
 	}
 
-	public Column toColumn(Table table, CentralRegistry storage) {
+	public Column toColumn(Table table, NamespacedStorageProvider idResolver) {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
@@ -51,9 +51,10 @@ public class RequiredColumn {
 		col.setDescription(description);
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
-			final SecondaryIdDescription description = storage.resolve(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));
+			SecondaryIdDescriptionId secondaryIdDescriptionId = new SecondaryIdDescriptionId(table.getDataset(), secondaryId);
+			final SecondaryIdDescription description = secondaryIdDescriptionId.get(idResolver.getStorage(table.getDataset()));
 
-			col.setSecondaryId(description);
+			col.setSecondaryId(description.getId());
 		}
 
 		return col;

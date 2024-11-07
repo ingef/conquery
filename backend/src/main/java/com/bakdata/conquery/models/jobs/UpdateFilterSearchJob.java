@@ -138,7 +138,7 @@ public class UpdateFilterSearchJob extends Job {
 
 	@NotNull
 	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
-		return storage.getAllConcepts().stream()
+		return storage.getAllConcepts()
 					  .flatMap(c -> c.getConnectors().stream())
 					  .flatMap(co -> co.collectAllFilters().stream())
 					  .filter(SelectFilter.class::isInstance)

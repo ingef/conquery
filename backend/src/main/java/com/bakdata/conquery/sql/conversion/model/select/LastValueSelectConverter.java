@@ -8,7 +8,7 @@ public class LastValueSelectConverter implements SelectConverter<LastValueSelect
 	@Override
 	public ConnectorSqlSelects connectorSelect(LastValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
-				select.getColumn(),
+				select.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(select),
 				(valueField, orderByFields) -> selectContext.getFunctionProvider().last(valueField, orderByFields),
 				selectContext

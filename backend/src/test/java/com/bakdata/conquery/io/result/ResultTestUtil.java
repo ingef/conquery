@@ -8,12 +8,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -34,8 +38,7 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-	public static final User OWNER = new User("user", "User", null);
-	public static final Dataset DATASET = new Dataset("dataset");
+	public static final DatasetId DATASET = new DatasetId("test_dataset");
 	private static final TreeConcept CONCEPT;
 
 	static {
@@ -54,7 +57,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, OWNER, DATASET, null, null) {
+		return new ManagedQuery(null, new UserId("test_user"), DATASET, null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
@@ -136,7 +139,7 @@ public class ResultTestUtil {
 
 		@Nullable
 		@Override
-		public List<Column> getRequiredColumns() {
+		public List<ColumnId> getRequiredColumns() {
 			return Collections.emptyList();
 		}
 

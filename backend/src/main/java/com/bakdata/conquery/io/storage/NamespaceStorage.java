@@ -1,11 +1,9 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -16,14 +14,13 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ToString
-public class NamespaceStorage extends NamespacedStorage implements Injectable {
+public class NamespaceStorage extends NamespacedStorageImpl {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
 	protected IdentifiableStore<SearchIndex> searchIndexes;
@@ -32,7 +29,7 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Integer> entity2Bucket;
+	protected Store<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
@@ -44,18 +41,24 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
-	@Override
-	public void openStores(ObjectMapper objectMapper) {
-		super.openStores(objectMapper);
+	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
+		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
+	}
 
-		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
+
+	@Override
+	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+		super.openStores(objectMapper, metricRegistry);
+
+		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
-		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
+		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
@@ -83,16 +86,17 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 	}
 
 
-
+	// IdMapping
 
 	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
-
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
+
+	// Bucket to Worker Assignment
 
 	public void setWorkerToBucketsMap(WorkerToBucketsMap map) {
 		workerToBuckets.update(map);
@@ -115,6 +119,7 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		entity2Bucket.update(entity, bucket);
 	}
 
+	// Structure
 
 	public StructureNode[] getStructure() {
 		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
@@ -124,7 +129,13 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		this.structure.update(structure);
 	}
 
+	// InternToExternMappers
+
 	public InternToExternMapper getInternToExternMapper(InternToExternMapperId id) {
+		return getInternToExternMapperFromStorage(id);
+	}
+
+	private InternToExternMapper getInternToExternMapperFromStorage(InternToExternMapperId id) {
 		return internToExternMappers.get(id);
 	}
 
@@ -136,25 +147,33 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		internToExternMappers.remove(id);
 	}
 
-	public Collection<InternToExternMapper> getInternToExternMappers() {
+	public Stream<InternToExternMapper> getInternToExternMappers() {
 		return internToExternMappers.getAll();
+	}
+
+	// SearchIndices
+
+	public SearchIndex getSearchIndex(SearchIndexId id) {
+		return getSearchIndexFromStorage(id);
+	}
+
+	private SearchIndex getSearchIndexFromStorage(SearchIndexId id) {
+		return searchIndexes.get(id);
 	}
 
 	public void removeSearchIndex(SearchIndexId id) {
 		searchIndexes.remove(id);
 	}
 
-	public SearchIndex getSearchIndex(SearchIndexId id) {
-		return searchIndexes.get(id);
-	}
-
 	public void addSearchIndex(SearchIndex searchIndex) {
 		searchIndexes.add(searchIndex);
 	}
 
-	public Collection<SearchIndex> getSearchIndices() {
+	public Stream<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
 	}
+
+	// PreviewConfig
 
 	public void setPreviewConfig(PreviewConfig previewConfig){
 		preview.update(previewConfig);
@@ -168,6 +187,7 @@ public class NamespaceStorage extends NamespacedStorage implements Injectable {
 		preview.remove();
 	}
 
+	// Utilities
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {

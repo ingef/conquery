@@ -5,8 +5,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -33,8 +32,7 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	private WorkerId workerId;
 
-	@NsIdRef
-	private final Column column;
+	private final ColumnId column;
 
 	@ToString.Exclude
 	private final Collection<String> values;
@@ -48,13 +46,13 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
 		if (log.isTraceEnabled()) {
-			log.trace("Registering {} values for column '{}': {}", size(), column.getId(), Arrays.toString(values.toArray()));
+			log.trace("Registering {} values for column '{}': {}", size(), column, Arrays.toString(values.toArray()));
 		}
 		else {
-			log.debug("Registering {} values for column '{}'", size(), column.getId());
+			log.debug("Registering {} values for column '{}'", size(), column);
 		}
 
-		context.getFilterSearch().registerValues(column, values);
+		context.getFilterSearch().registerValues(column.resolve(), values);
 	}
 
 	@Override

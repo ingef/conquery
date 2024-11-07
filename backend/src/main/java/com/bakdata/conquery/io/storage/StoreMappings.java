@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -50,7 +48,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @Getter
-@ToString(of = {"name", "keyType", "valueType"})
+@ToString(of = {"keyType", "valueType"})
 public enum StoreMappings {
 
 	AUTH_GROUP(Group.class, GroupId.class),
@@ -79,24 +77,10 @@ public enum StoreMappings {
 	private final Class<?> keyType;
 
 	/**
-	 * Store for identifiable values, with injectors. Store is also cached.
+	 * Store for identifiable values, with injectors.
 	 */
-	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore, CentralRegistry centralRegistry) {
-		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
-	}
-
-	/**
-	 * General Key-Value store with caching.
-	 */
-	public static <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
-		return new CachedStore<>(baseStore);
-	}
-
-	/**
-	 * Identifiable store, that lazy registers items in the central registry.
-	 */
-	public static <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store<Id<T>, T> baseStore, CentralRegistry centralRegistry) {
-		return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
+	public static <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
+		return new IdentifiableStore<>(baseStore);
 	}
 
 	/**

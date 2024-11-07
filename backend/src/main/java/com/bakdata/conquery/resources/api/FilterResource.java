@@ -5,7 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.FILTER;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
@@ -44,7 +43,7 @@ public class FilterResource extends HAuthorized {
 	@POST
 	@Path("resolve")
 	public ConceptsProcessor.ResolvedFilterValues resolveFilterValues(FilterValues filterValues) {
-		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getDataset().resolve(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
 		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.values());
@@ -54,7 +53,7 @@ public class FilterResource extends HAuthorized {
 	@POST
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
-		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getDataset().resolve(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
 		if (!(filter instanceof SelectFilter)) {
