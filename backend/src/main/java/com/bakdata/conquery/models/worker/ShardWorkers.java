@@ -61,13 +61,13 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment, boolean loadStorage) {
 
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(storage);
 		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(storage);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment, loadStorage);
 
 		addWorker(worker);
 

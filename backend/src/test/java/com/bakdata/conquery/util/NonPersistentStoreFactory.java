@@ -66,6 +66,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 
 
 	@Override
+	public boolean isLoadStoresOnStart() {
+		return false;
+	}
+
+	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
 		return Collections.emptyList();
 	}

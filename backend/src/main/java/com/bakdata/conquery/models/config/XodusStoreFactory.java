@@ -171,6 +171,8 @@ public class XodusStoreFactory implements StoreFactory {
 	@ValidCaffeineSpec
 	private String caffeineSpec = "softValues";
 
+	private boolean loadStoresOnStart = false;
+
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private transient Validator validator;

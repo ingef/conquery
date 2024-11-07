@@ -59,7 +59,6 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
 		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)), environment.metrics());
-		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
 		datasetStorage.setPreviewConfig(new PreviewConfig());

@@ -67,14 +67,19 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			ObjectMapper persistenceMapper,
 			ObjectMapper communicationMapper,
 			int secondaryIdSubPlanLimit,
-			Environment environment) {
+			Environment environment,
+			boolean loadStorage
+	) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 		this.communicationMapper = communicationMapper;
 
 
 		storage.openStores(persistenceMapper, environment.metrics());
-		storage.loadData();
+
+		if (loadStorage) {
+			storage.loadData();
+		}
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -105,17 +110,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setDataset(dataset.getId());
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
-		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-
-
-
 		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(workerStorage);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, environment);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, environment,
+						  config.isLoadStoresOnStart());
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {

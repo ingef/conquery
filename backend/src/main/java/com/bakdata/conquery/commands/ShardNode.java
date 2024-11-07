@@ -74,7 +74,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment, config.getStorage().isLoadStoresOnStart()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);
