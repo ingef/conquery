@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,8 @@
         <apache-poi.version>5.2.2</apache-poi.version>
 		<apache-arrow.version>16.0.0</apache-arrow.version>
         <apache-parquet.version>1.12.3</apache-parquet.version>
+        <prometheus-metrics.version>1.2.1</prometheus-metrics.version>
+        <openapi-generator.version>7.9.0</openapi-generator.version>
     </properties>
 
     <build>
@@ -71,6 +73,31 @@
                                 <ignoredUnusedDeclaredDependency>io.dropwizard:dropwizard-http2
                                 </ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.json</inputSpec>
+                            <generatorName>jaxrs-jersey</generatorName>
+                            <modelsToGenerate>ApiResponse</modelsToGenerate>
+                            <packageName>com.bakdata.conquery</packageName>
+                            <modelPackage>com.bakdata.conquery.models.config</modelPackage>
+                            <configOptions>
+                                <library>jersey3</library>
+                                <sourceFolder>src/main/java</sourceFolder>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>
@@ -383,17 +410,32 @@
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-simpleclient-bridge</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-exporter-servlet-jakarta</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-core</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-maven-plugin</artifactId>
+            <version>${openapi-generator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-integration-jakarta</artifactId>
+            <version>2.2.25</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2-jakarta</artifactId>
+            <version>2.2.25</version>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>

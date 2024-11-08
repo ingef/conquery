@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import jakarta.servlet.ServletRegistration;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminConfigProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
@@ -52,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.openapitools.api.ConfigApi;
 
 /**
  * Organizational class to provide a single implementation point for configuring
@@ -77,14 +80,17 @@ public class AdminServlet {
 		RESTServer.configure(manager.getConfig(), jerseyConfigUI);
 
 		final AdminEnvironment admin = manager.getEnvironment().admin();
-		admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
+
+		ServletRegistration.Dynamic adminServlet = admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig));
+		adminServlet.addMapping("/" + ADMIN_SERVLET_PATH + "/*");
 		admin.addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
 		// Register static asset servlet for admin end
 		admin.addServlet(ADMIN_ASSETS_PATH, new AssetServlet(ADMIN_ASSETS_PATH, "/" + ADMIN_ASSETS_PATH, null, StandardCharsets.UTF_8))
 			 .addMapping("/" + ADMIN_ASSETS_PATH + "/*");
 
+		adminServlet.setInitParameter("ConfigApi.implementation", AdminConfigProcessor.class.getName());
+
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
-		// freemarker support
 
 		adminProcessor = new AdminProcessor(
 				manager,
@@ -110,6 +116,7 @@ public class AdminServlet {
 		jerseyConfig.register(new AbstractBinder() {
 						@Override
 						protected void configure() {
+							bind(manager).to(ManagerNode.class);
 							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 							bind(manager.getMetaStorage()).to(MetaStorage.class);
 							bind(manager.getValidator()).to(Validator.class);
@@ -159,7 +166,8 @@ public class AdminServlet {
 				.register(GroupResource.class)
 				.register(PermissionResource.class)
 				.register(AuthOverviewResource.class)
-				.register(AdminResource.class);
+				.register(AdminResource.class)
+				.register(ConfigApi.class);
 
 		jerseyConfigUI
 				.register(AdminUIResource.class)
