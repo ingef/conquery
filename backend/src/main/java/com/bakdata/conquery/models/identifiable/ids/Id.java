@@ -25,7 +25,7 @@ public abstract class Id<TYPE> {
 	/**
 	 * Holds the cached escaped value.
 	 *
-	 * @implNote needs to be initialized. Otherwise SerializationTests fail, because assertj checks ignored types.
+	 * @implNote needs to be initialized. Otherwise, SerializationTests fail, because assertj checks ignored types.
 	 */
 	@JsonIgnore
 	private WeakReference<String> escapedId = new WeakReference<>(null);

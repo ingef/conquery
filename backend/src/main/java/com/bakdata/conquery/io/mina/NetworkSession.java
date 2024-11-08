@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.DefaultWriteFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 import org.jetbrains.annotations.NotNull;
@@ -50,11 +51,16 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			}
 		}
 		catch (InterruptedException e) {
-			log.error("Unexpected interruption", e);
-			return send(message);
+			log.error("Unexpected interruption, while trying to queue: {}", message, e);
+			return DefaultWriteFuture.newNotWrittenFuture(session, e);
 		}
 		WriteFuture future = session.write(message);
-		future.addListener(f -> log.trace("Sending message {} {} ({} -> {})", message, ((WriteFuture)f).isWritten() ? "was successful" : "failed", session.getLocalAddress(), session.getRemoteAddress() ));
+    
+		future.addListener(f -> {
+			if(f instanceof WriteFuture writeFuture && ! writeFuture.isWritten()) {
+				log.error("Could not write message: {} ({} -> {})", message, session.getLocalAddress(), session.getRemoteAddress(), writeFuture.getException());
+			}
+		});
 		future.addListener(f -> queuedMessages.remove(message));
 
 		return future;

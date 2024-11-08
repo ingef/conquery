@@ -27,6 +27,8 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -88,14 +90,14 @@ public class AdminProcessor {
 	 *
 	 * @param role the role to delete
 	 */
-	public void deleteRole(Role role) {
+	public void deleteRole(RoleId role) {
 		log.info("Deleting {}", role);
 
 		storage.getAllUsers().forEach(user -> user.removeRole(role));
 
 		storage.getAllGroups().forEach(group -> group.removeRole(role));
 
-		storage.removeRole(role.getId());
+		storage.removeRole(role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -108,6 +110,7 @@ public class AdminProcessor {
 	 *
 	 * @param owner      to which the permission is assigned
 	 * @param permission The permission to create.
+	 *
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
@@ -129,10 +132,10 @@ public class AdminProcessor {
 		return storage.getAllUsers().collect(Collectors.toCollection(TreeSet::new));
 	}
 
-	public synchronized void deleteUser(User user) {
+	public synchronized void deleteUser(UserId user) {
 		storage.getAllGroups().forEach(group -> group.removeMember(user));
-		storage.removeUser(user.getId());
-		log.trace("Removed user {} from the storage.", user.getId());
+		storage.removeUser(user);
+		log.trace("Removed user {} from the storage.", user);
 	}
 
 	public void addUsers(List<User> users) {
@@ -180,7 +183,7 @@ public class AdminProcessor {
 		log.trace("Added user {} to group {}", user, group);
 	}
 
-	public void deleteUserFromGroup(Group group, User user) {
+	public void deleteUserFromGroup(Group group, UserId user) {
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
@@ -190,7 +193,7 @@ public class AdminProcessor {
 		log.trace("Removed group {}", group);
 	}
 
-	public void deleteRoleFrom(RoleOwner owner, Role role) {
+	public void deleteRoleFrom(RoleOwner owner, RoleId role) {
 		owner.removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}

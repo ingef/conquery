@@ -4,9 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
 import java.util.List;
-
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,6 +15,11 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 
 @Path(USERS_PATH_ELEMENT)
@@ -53,14 +55,14 @@ public class UserResource {
 
 	@Path("{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUser(@PathParam(USER_ID) User user) {
+	public Response deleteUser(@PathParam(USER_ID) UserId user) {
 		processor.deleteUser(user);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
+	public Response deleteRoleFromUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) RoleId role) {
 		processor.deleteRoleFrom(user, role);
 		return Response.ok().build();
 	}

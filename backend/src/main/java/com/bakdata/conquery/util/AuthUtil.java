@@ -45,7 +45,7 @@ public class AuthUtil {
 
 		for (Group group : storage.getAllGroups().toList()) {
 			if (group.containsMember(user)) {
-				group.removeMember(user);
+				group.removeMember(user.getId());
 				group.updateStorage();
 				log.debug("Removed user '{}' from group '{}'", user.getId(), group.getId());
 			}
