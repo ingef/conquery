@@ -75,7 +75,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.communicationMapper = communicationMapper;
 
 
-		storage.openStores(persistenceMapper, environment.metrics());
+		storage.openStores(persistenceMapper);
 
 		if (loadStorage) {
 			storage.loadData();
@@ -101,7 +101,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
-		workerStorage.openStores(persistenceMapper, environment.metrics());
+		workerStorage.openStores(persistenceMapper);
 
 		dataset.setNamespacedStorageProvider(workerStorage);
 

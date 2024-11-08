@@ -39,7 +39,6 @@ import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinter
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -76,7 +75,7 @@ public class ExcelResultRenderTest {
 		final List<EntityResult> results = getTestEntityResults();
 
 		MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
-		metaStorage.openStores(null, new MetricRegistry());
+		metaStorage.openStores(null);
 
 		ManagedQuery mquery = getManagedQuery(metaStorage, results);
 

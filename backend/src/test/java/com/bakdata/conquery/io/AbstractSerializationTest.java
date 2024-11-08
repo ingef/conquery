@@ -51,14 +51,14 @@ public abstract class AbstractSerializationTest {
 		MetricRegistry metricRegistry = new MetricRegistry();
 
 		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
-		metaStorage.openStores(managerInternalMapper, metricRegistry);
+		metaStorage.openStores(managerInternalMapper);
 
 
 		namespaceInternalMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage);
-		namespaceStorage.openStores(namespaceInternalMapper, metricRegistry);
+		namespaceStorage.openStores(namespaceInternalMapper);
 
 		// Prepare worker persistence mapper
-		workerStorage.openStores(shardInternalMapper, metricRegistry);
+		workerStorage.openStores(shardInternalMapper);
 		ShardWorkers workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,

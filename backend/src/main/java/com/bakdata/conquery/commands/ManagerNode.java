@@ -26,9 +26,9 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
+import com.bakdata.conquery.tasks.LoadStorageTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
-import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
@@ -171,15 +171,15 @@ public class ManagerNode implements Managed {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = registry.getDatasets().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
-																												  - coundLoaded);
+			final int countLoaded = registry.getNamespaces().size();
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																												  - countLoaded);
 		}
 	}
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
 		if (getConfig().getStorage().isLoadStoresOnStart()) {
 			log.info("Loading MetaStorage");
 			getMetaStorage().loadData();
@@ -197,7 +197,7 @@ public class ManagerNode implements Managed {
 
 		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
+		environment.admin().addTask(new LoadStorageTask(getName(), getMetaStorage(), getDatasetRegistry()));
 
 		final ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

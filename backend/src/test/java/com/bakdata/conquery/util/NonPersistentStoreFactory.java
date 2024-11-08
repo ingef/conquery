@@ -34,7 +34,6 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
@@ -186,7 +185,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 */
 	public MetaStorage createMetaStorage() {
 		final MetaStorage metaStorage = new MetaStorage(this);
-		metaStorage.openStores(null, new MetricRegistry());
+		metaStorage.openStores(null);
 		return metaStorage;
 	}
 
@@ -195,7 +194,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 */
 	public NamespaceStorage createNamespaceStorage() {
 		final NamespaceStorage storage = new NamespaceStorage(this, "_");
-		storage.openStores(null, new MetricRegistry());
+		storage.openStores(null);
 		return storage;
 	}
 }

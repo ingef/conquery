@@ -271,7 +271,7 @@ public class AdminProcessor {
 
 		out.add(new JobManagerStatus("Manager", null, getJobManager().getJobStatus()));
 
-		for (Namespace namespace : getDatasetRegistry().getDatasets()) {
+		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
 			out.add(new JobManagerStatus(
 					"Manager", namespace.getDataset().getId(),
 					namespace.getJobManager().getJobStatus()

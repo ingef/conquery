@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.ToString;
@@ -44,8 +43,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
-		super.openStores(objectMapper, metricRegistry);
+	public void openStores(ObjectMapper objectMapper) {
+		super.openStores(objectMapper);
 
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);

@@ -45,7 +45,7 @@ public interface NamespaceHandler<N extends Namespace> {
 
 
 		// Each store needs its own mapper because each injects its own registry
-		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper), environment.metrics());
+		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
 		if (config.getStorage().isLoadStoresOnStart()) {
 			storage.loadData();
 		}

@@ -433,7 +433,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final VALUE value;
 
 		try {
-			result.incrTotalProcessed();
 
 			// Try to read the key first
 			key =
@@ -454,6 +453,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 			log.error("Failed processing key/value", e);
 			return keyRaw;
+		}
+		finally {
+			result.incrTotalProcessed();
 		}
 
 		// Apply the consumer to key and value

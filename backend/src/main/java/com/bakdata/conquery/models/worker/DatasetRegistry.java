@@ -58,7 +58,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
-		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)), environment.metrics());
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
 		datasetStorage.setPreviewConfig(new PreviewConfig());
@@ -94,7 +94,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
 	}
 
-	public Collection<N> getDatasets() {
+	public Collection<N> getNamespaces() {
 		return datasets.values();
 	}
 
@@ -133,5 +133,10 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	@Override
 	public NamespacedStorage getStorage(DatasetId datasetId) {
 		return datasets.get(datasetId).getStorage();
+	}
+
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return datasets.keySet();
 	}
 }

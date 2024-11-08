@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -15,10 +17,10 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -34,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorageImpl extends ConqueryStorage implements Injectable, NamespacedStorage {
+public abstract class NamespacedStorageImpl implements Injectable, NamespacedStorage {
 
 	@Getter
 	@ToString.Include
@@ -58,7 +60,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
 	}
 
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper objectMapper) {
 		if (objectMapper != null) {
 			injectInto(objectMapper);
 		}
@@ -69,29 +71,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		imports = storageFactory.createImportStore(pathName, objectMapper);
 		concepts = storageFactory.createConceptStore(pathName, objectMapper);
 
-		decorateDatasetStore(dataset);
-		decorateSecondaryIdDescriptionStore(secondaryIds);
-		decorateTableStore(tables);
-		decorateImportStore(imports);
 		decorateConceptStore(concepts);
 	}
 
-	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-	}
-
-	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateTableStore(IdentifiableStore<Table> store) {
-
-	}
-
-	private void decorateImportStore(IdentifiableStore<Import> store) {
-		// Intentionally left blank
-	}
-
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
+		// TODO check if still necessary
 		store.onAdd(concept -> {
 
 			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
@@ -140,18 +124,21 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
+
 	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		return (VALUE) id.get(this);
 	}
-@Override
+
+	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(NamespacedStorageProvider.class, this).
 					 add(NamespacedStorage.class, this);
-	}@Override
+	}
+
+	@Override
 	public Dataset getDataset() {
 		return dataset.get();
 	}
-
 
 
 	// Tables
@@ -243,6 +230,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	// Utility
 
 
-
-
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return List.of(dataset.get().getId());
+	}
 }
