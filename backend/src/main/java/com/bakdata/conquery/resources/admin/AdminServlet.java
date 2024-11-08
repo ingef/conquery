@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
-import com.bakdata.conquery.resources.admin.rest.AdminConfigProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
@@ -29,6 +28,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
+import com.bakdata.conquery.resources.admin.rest.ConfigApiProcessor;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
@@ -54,7 +54,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.openapitools.api.ConfigApi;
 
 /**
  * Organizational class to provide a single implementation point for configuring
@@ -87,8 +86,6 @@ public class AdminServlet {
 		// Register static asset servlet for admin end
 		admin.addServlet(ADMIN_ASSETS_PATH, new AssetServlet(ADMIN_ASSETS_PATH, "/" + ADMIN_ASSETS_PATH, null, StandardCharsets.UTF_8))
 			 .addMapping("/" + ADMIN_ASSETS_PATH + "/*");
-
-		adminServlet.setInitParameter("ConfigApi.implementation", AdminConfigProcessor.class.getName());
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 
@@ -167,7 +164,7 @@ public class AdminServlet {
 				.register(PermissionResource.class)
 				.register(AuthOverviewResource.class)
 				.register(AdminResource.class)
-				.register(ConfigApi.class);
+				.register(ConfigApiProcessor.class);
 
 		jerseyConfigUI
 				.register(AdminUIResource.class)

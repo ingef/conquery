@@ -88,12 +88,13 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.json</inputSpec>
-                            <generatorName>jaxrs-jersey</generatorName>
+                            <generatorName>jaxrs-spec</generatorName>
                             <modelsToGenerate>ApiResponse</modelsToGenerate>
                             <packageName>com.bakdata.conquery</packageName>
                             <modelPackage>com.bakdata.conquery.models.config</modelPackage>
                             <configOptions>
-                                <library>jersey3</library>
+<!--                                <library>jersey3</library>-->
+                                <interfaceOnly>true</interfaceOnly>
                                 <sourceFolder>src/main/java</sourceFolder>
                                 <generateSupportingFiles>false</generateSupportingFiles>
                                 <useJakartaEe>true</useJakartaEe>
