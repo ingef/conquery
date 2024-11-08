@@ -28,7 +28,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
-import com.bakdata.conquery.resources.admin.rest.ConfigApiProcessor;
+import com.bakdata.conquery.resources.admin.rest.ConfigApiResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
@@ -164,7 +164,7 @@ public class AdminServlet {
 				.register(PermissionResource.class)
 				.register(AuthOverviewResource.class)
 				.register(AdminResource.class)
-				.register(ConfigApiProcessor.class);
+				.register(ConfigApiResource.class);
 
 		jerseyConfigUI
 				.register(AdminUIResource.class)

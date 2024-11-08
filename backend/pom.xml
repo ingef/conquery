@@ -83,17 +83,21 @@
                 <version>${openapi-generator.version}</version>
                 <executions>
                     <execution>
+                        <id>openapi-admin</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.json</inputSpec>
+                            <!-- Don't use jaxrs-jersey here because it does not allow dependency injection -->
                             <generatorName>jaxrs-spec</generatorName>
                             <modelsToGenerate>ApiResponse</modelsToGenerate>
                             <packageName>com.bakdata.conquery</packageName>
+                            <!-- This package name is used by EndpointTestHelper to filter out openapi specs -->
+                            <apiPackage>com.bakdata.conquery.models.api.openapi</apiPackage>
                             <modelPackage>com.bakdata.conquery.models.config</modelPackage>
                             <configOptions>
-<!--                                <library>jersey3</library>-->
+                                <!-- The implementation of these interfaces actually allows us to use DI (not possible with jaxrs-jersey) -->
                                 <interfaceOnly>true</interfaceOnly>
                                 <sourceFolder>src/main/java</sourceFolder>
                                 <generateSupportingFiles>false</generateSupportingFiles>
