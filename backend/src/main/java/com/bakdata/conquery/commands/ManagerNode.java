@@ -53,12 +53,11 @@ public class ManagerNode implements Managed {
 	public static final String DEFAULT_NAME = "manager";
 
 	private final String name;
-
+	private final List<ResourcesProvider> providers = new ArrayList<>();
 	private Validator validator;
 	private AdminServlet admin;
 	private AuthorizationController authController;
 	private ScheduledExecutorService maintenanceService;
-	private final List<ResourcesProvider> providers = new ArrayList<>();
 	@Delegate(excludes = Managed.class)
 	private Manager manager;
 
@@ -88,7 +87,8 @@ public class ManagerNode implements Managed {
 		formScanner = new FormScanner(config);
 
 
-		config.initialize(this);
+		// Init all plugins
+		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
 
 
 		// Initialization of internationalization
@@ -138,23 +138,6 @@ public class ManagerNode implements Managed {
 		registerTasks(manager, environment, config);
 	}
 
-	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
-		environment.admin().addTask(formScanner);
-		environment.admin().addTask(
-				new QueryCleanupTask(getMetaStorage(), Duration.of(
-						config.getQueries().getOldQueriesTime().getQuantity(),
-						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
-				)));
-
-		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
-		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
-
-		final ShutdownTask shutdown = new ShutdownTask();
-		environment.admin().addTask(shutdown);
-		environment.lifecycle().addServerLifecycleListener(shutdown);
-	}
-
 	private void configureApiServlet(ConqueryConfig config, Environment environment) {
 		ResourceConfig jerseyConfig = environment.jersey().getResourceConfig();
 		RESTServer.configure(config, jerseyConfig);
@@ -169,14 +152,6 @@ public class ManagerNode implements Managed {
 		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
 
 		jerseyConfig.register(PathParamInjector.class);
-	}
-
-	private void loadMetaStorage() {
-		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
-		log.info("Loading MetaStorage");
-		getMetaStorage().loadData();
-		log.info("MetaStorage loaded {}", getMetaStorage());
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -201,6 +176,31 @@ public class ManagerNode implements Managed {
 			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
 																												  - coundLoaded);
 		}
+	}
+
+	private void loadMetaStorage() {
+		log.info("Opening MetaStorage");
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
+		log.info("Loading MetaStorage");
+		getMetaStorage().loadData();
+		log.info("MetaStorage loaded {}", getMetaStorage());
+	}
+
+	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
+		environment.admin().addTask(formScanner);
+		environment.admin().addTask(
+				new QueryCleanupTask(getMetaStorage(), Duration.of(
+						config.getQueries().getOldQueriesTime().getQuantity(),
+						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
+				)));
+
+		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
+		manager.getAdminTasks().forEach(environment.admin()::addTask);
+		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
+
+		final ShutdownTask shutdown = new ShutdownTask();
+		environment.admin().addTask(shutdown);
+		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
 	@Override

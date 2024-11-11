@@ -22,7 +22,7 @@
 				"tags": [
 					"config"
 				],
-				"summary": "adds a form backend configurations",
+				"summary": "adds a form backend configurations (change is not persisted)",
 				"operationId": "registerFormBackend",
 				"consumes": [
 					"application/json"
@@ -78,7 +78,7 @@
 				"tags": [
 					"config"
 				],
-				"summary": "unegister form backend configuration",
+				"summary": "unegister form backend configuration (change is not persisted)",
 				"operationId": "deleteFormBackend",
 				"parameters": [
 					{
