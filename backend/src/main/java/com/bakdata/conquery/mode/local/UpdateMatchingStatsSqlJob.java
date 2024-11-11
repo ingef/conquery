@@ -184,12 +184,11 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			executionService.fetchStream(finalQuery)
 							.forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
 
+			log.debug("DONE fetching results for {}", treeConcept.getId());
 		}
 		catch (RuntimeException exception) {
 			log.error("FAILED collecting results for {}", treeConcept.getId(), exception);
 		}
-
-		log.debug("DONE fetching results for {}", treeConcept.getId());
 	}
 
 	/**

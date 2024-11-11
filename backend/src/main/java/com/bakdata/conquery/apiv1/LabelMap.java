@@ -10,20 +10,19 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.BiMap;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.StopWatch;
 
-@Getter
-@RequiredArgsConstructor
 @Slf4j
-@EqualsAndHashCode
+@Data
+@ToString(onlyExplicitlyIncluded = true)
 public class LabelMap implements Searchable {
 
+	@ToString.Include
 	private final FilterId id;
+
 	@Delegate
 	private final BiMap<String, String> delegate;
 	private final int minSuffixLength;
@@ -42,19 +41,9 @@ public class LabelMap implements Searchable {
 			log.trace("Labels for {}: `{}`", getId(), collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
-		StopWatch timer = StopWatch.createStarted();
-		log.trace("START-SELECT ADDING_ITEMS for {}", getId());
-
 		collected.forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), timer);
-
-		timer.reset();
-		log.trace("START-SELECT SHRINKING for {}", getId());
-
 		search.shrinkToFit();
-
-		log.trace("DONE-SELECT SHRINKING for {} in {}", getId(), timer);
 
 		return search;
 	}
