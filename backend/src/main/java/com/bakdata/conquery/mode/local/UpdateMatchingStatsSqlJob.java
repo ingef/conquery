@@ -146,6 +146,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 	public void calculateMatchingStats(final TreeConcept treeConcept) {
 
+		log.info("BEGIN fetching results for {}", treeConcept.getId());
+
+
 		final Map<Connector, Set<Field<?>>> relevantColumns = collectRelevantColumns(treeConcept);
 		final Map<Connector, List<ColumnDateRange>> validityDateMap = createColumnDateRanges(treeConcept);
 
@@ -175,10 +178,18 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		// not all dialects accept an empty group by () clause
 		final Select<Record> finalQuery = relevantColumnsAliased.isEmpty() ? query : query.groupBy(relevantColumnsAliased);
-
 		final ConceptTreeCache treeCache = new ConceptTreeCache(treeConcept);
-		executionService.fetchStream(finalQuery)
-						.forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
+
+		try {
+			executionService.fetchStream(finalQuery)
+							.forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
+
+		}
+		catch (RuntimeException exception) {
+			log.error("FAILED collecting results for {}", treeConcept.getId(), exception);
+		}
+
+		log.debug("DONE fetching results for {}", treeConcept.getId());
 	}
 
 	/**
@@ -292,7 +303,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
 	 */
 	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap) {
-		if (validityDateMap.isEmpty()){
+		if (validityDateMap.isEmpty()) {
 			return noField(String.class);
 		}
 
@@ -304,6 +315,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
 
+		//HANA does not like lest/greatest if a singleton
 		final Field<Date> startField = allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0);
 		final Field<Date> endField = allEnds.size() > 1 ? functionProvider.greatest(allEnds) : allEnds.get(0);
 
