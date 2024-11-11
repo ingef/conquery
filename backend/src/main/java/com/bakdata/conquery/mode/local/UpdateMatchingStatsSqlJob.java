@@ -163,7 +163,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		// if there is no validity date at all, we select no field
 
-		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap, !relevantColumns.isEmpty());
+		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap);
 
 		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
 													   .select(
@@ -291,23 +291,23 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	/**
 	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
 	 */
-	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap, boolean grouped) {
+	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap) {
 		if (validityDateMap.isEmpty()){
 			return noField(String.class);
 		}
 
-		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
+		final List<ColumnDateRange> validityDates = validityDateMap.values().stream()
+																   .flatMap(List::stream)
+																   .map(functionProvider::toDualColumn)
+																   .toList();
+
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
 
-		final ColumnDateRange minAndMax;
+		final Field<Date> startField = allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0);
+		final Field<Date> endField = allEnds.size() > 1 ? functionProvider.greatest(allEnds) : allEnds.get(0);
 
-		if (grouped){
-			minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
-		}
-		else {
-			minAndMax = ColumnDateRange.of(functionProvider.least(allStarts), functionProvider.greatest(allEnds));
-		}
+		final ColumnDateRange minAndMax = ColumnDateRange.of(min(startField), max(endField));
 
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
