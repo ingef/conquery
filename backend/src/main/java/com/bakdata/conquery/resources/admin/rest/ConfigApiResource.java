@@ -27,18 +27,14 @@ public class ConfigApiResource implements ConfigApi {
 				iterator.remove();
 
 				// Close client, healthcheck, ...
-				backendConfig.deinitialize();
+				backendConfig.close();
 				break;
 			}
 		}
 
 		// Run FormScanner
-		try {
-			managerNode.getFormScanner().execute(null, null);
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		managerNode.getFormScanner().execute(null, null);
+
 		return configId;
 	}
 
@@ -53,12 +49,9 @@ public class ConfigApiResource implements ConfigApi {
 		config.getPlugins().add(pluginConfig);
 
 		pluginConfig.initialize(managerNode);
-		try {
-			managerNode.getFormScanner().execute(null, null);
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+
+		managerNode.getFormScanner().execute(null, null);
+
 		return pluginConfig.getId();
 	}
 }

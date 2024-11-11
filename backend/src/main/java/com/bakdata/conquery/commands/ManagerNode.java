@@ -30,7 +30,6 @@ import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
@@ -127,13 +126,7 @@ public class ManagerNode implements Managed {
 			}
 		}
 
-		try {
-			formScanner.execute(null, null);
-		}
-		catch (Exception e) {
-			Throwables.throwIfUnchecked(e);
-			throw new RuntimeException(e);
-		}
+		formScanner.execute(null, null);
 
 		registerTasks(manager, environment, config);
 	}

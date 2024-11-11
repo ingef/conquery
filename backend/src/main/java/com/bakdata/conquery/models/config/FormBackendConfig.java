@@ -200,7 +200,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	}
 
 	@Override
-	public void deinitialize() {
+	public void close() {
 		log.info("Unregister {}", this);
 		managerNode.getEnvironment().healthChecks().unregister(getId());
 		managerNode.getFormScanner().unregisterFrontendFormConfigProvider(getId());

@@ -10,5 +10,5 @@ public interface PluginConfig {
 
 	default void initialize(ManagerNode managerNode){}
 
-	default void deinitialize(){}
+	default void close(){}
 }

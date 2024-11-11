@@ -72,8 +72,9 @@ public class FormScanner extends Task {
 		return formConfigProviders.keySet();
 	}
 
+	@SneakyThrows(Exception.class)
 	@Override
-	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) {
 		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 
 		if (output == null) {
