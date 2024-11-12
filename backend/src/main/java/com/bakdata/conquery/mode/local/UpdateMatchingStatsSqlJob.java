@@ -1,6 +1,13 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.countDistinct;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.noField;
+import static org.jooq.impl.DSL.table;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -52,6 +59,7 @@ import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @Slf4j
 public class UpdateMatchingStatsSqlJob extends Job {
@@ -162,7 +170,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																	 .collect(Collectors.toList());
 
 		// if there is no validity date at all, we select no field
-
 		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap, !relevantColumns.isEmpty());
 
 		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
@@ -193,7 +200,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 						  ));
 	}
 
-	private Set<Field<?>> collectRelevantColumns(final Connector connector, TreeConcept concept) {
+	private Set<Field<?>> collectRelevantColumns(final Connector connector, final TreeConcept concept) {
 		final Set<Field<?>> out = new HashSet<>();
 
 		if (connector.getColumn() != null) {
@@ -283,7 +290,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 						 .where(connectorCondition);
 	}
 
-	private Condition toJooqCondition(final Connector connector, CTCondition childCondition) {
+	private Condition toJooqCondition(final Connector connector, final CTCondition childCondition) {
 		final CTConditionContext context = CTConditionContext.create(connector, functionProvider);
 		return childCondition.convertToSqlCondition(context).condition();
 	}
@@ -291,8 +298,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	/**
 	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
 	 */
-	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap, boolean grouped) {
-		if (validityDateMap.isEmpty()){
+	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap, final boolean grouped) {
+
+		if (validityDateMap.isEmpty()) {
 			return noField(String.class);
 		}
 
@@ -300,16 +308,26 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
 
-		final ColumnDateRange minAndMax;
-
-		if (grouped){
-			minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
-		}
-		else {
-			minAndMax = ColumnDateRange.of(functionProvider.least(allStarts), functionProvider.greatest(allEnds));
-		}
+		final ColumnDateRange minAndMax = ColumnDateRange.of(
+				toAggregatedDateField(allStarts, functionProvider::least, DSL::min, grouped),
+				toAggregatedDateField(allEnds, functionProvider::greatest, DSL::max, grouped)
+		);
 
 		return functionProvider.daterangeStringExpression(minAndMax);
+	}
+
+	private Field<Date> toAggregatedDateField(
+			final List<Field<Date>> dates,
+			final Function<List<Field<Date>>, Field<Date>> multiFieldFunction,
+			final Function<Field<Date>, Field<Date>> aggregator,
+			final boolean grouped
+	) {
+		// multi field function like LEAST() or GREATEST() is only applied if there are multiple fields
+		final Field<Date> field = dates.size() == 1
+								  ? dates.get(0)
+								  : multiFieldFunction.apply(dates);
+
+		return grouped ? aggregator.apply(field) : field;
 	}
 
 	private void mapRecordToConceptElements(final TreeConcept treeConcept, final Record record, final ConceptTreeCache treeCache) {
