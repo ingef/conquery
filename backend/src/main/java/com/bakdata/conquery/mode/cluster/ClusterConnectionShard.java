@@ -173,7 +173,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		final BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
 		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(config.getCluster(), coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 		return connector;

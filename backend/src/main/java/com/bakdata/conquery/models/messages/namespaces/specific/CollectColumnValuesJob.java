@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -34,6 +36,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
@@ -43,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
 public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 
+	public static final int COLUM_VALUE_CHUNK_SIZE = 1000;
 	@Getter
 	private final Set<ColumnId> columns;
 
@@ -63,21 +67,47 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final AtomicInteger done = new AtomicInteger();
 
+		// We use a semaphore here to pace the allocation and sending of messages (the number of permits is magic)
+		final Semaphore semaphore = new Semaphore(4);
+
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
 					   .filter(column -> table2Buckets.get(column.getTable()) != null)
 					   .map(ColumnId::resolve)
-					   .map(column ->
-									jobsExecutorService.submit(() -> {
+					   .map(column -> {
+								try {
+									// Acquire before submitting, so we don't spam the executor with waiting threads
+									semaphore.acquire();
+									return jobsExecutorService.submit(() -> {
 										final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
 
 										final Set<String> values = buckets.stream()
 																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																		  .collect(Collectors.toSet());
-										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), values));
 										log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
-									})
+
+										// Chunk values, to produce smaller messages
+										Iterable<List<String>> partition = Iterables.partition(values, COLUM_VALUE_CHUNK_SIZE);
+										int countChunks = (int) Math.ceil((float) values.size() / COLUM_VALUE_CHUNK_SIZE);
+										log.trace("Sending column values for {} in {} chunks", column.getId(), countChunks);
+										for( List<String> chunk : partition) {
+											// Send values to manager
+											RegisterColumnValues message =
+													new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+											WriteFuture send = context.send(message);
+
+											send.awaitUninterruptibly();
+										}
+									});
+								}
+								catch (InterruptedException e) {
+									throw new RuntimeException(e);
+								}
+								finally {
+									semaphore.release();
+								}
+							}
 					   )
 					   .collect(Collectors.toList());
 

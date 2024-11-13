@@ -111,7 +111,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
 
 		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(config.getCluster(), coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
