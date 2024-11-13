@@ -162,8 +162,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																	 .collect(Collectors.toList());
 
 		// if there is no validity date at all, we select no field
-
-		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap, !relevantColumns.isEmpty());
+		final Field<?> validityDateExpression = validityDateMap.isEmpty() ? noField() : toValidityDateExpression(validityDateMap);
 
 		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
 													   .select(
@@ -291,24 +290,11 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	/**
 	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
 	 */
-	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap, boolean grouped) {
-		if (validityDateMap.isEmpty()){
-			return noField(String.class);
-		}
-
+	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap) {
 		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
-
-		final ColumnDateRange minAndMax;
-
-		if (grouped){
-			minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
-		}
-		else {
-			minAndMax = ColumnDateRange.of(functionProvider.least(allStarts), functionProvider.greatest(allEnds));
-		}
-
+		final ColumnDateRange minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
 
