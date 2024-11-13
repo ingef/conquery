@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
@@ -64,6 +65,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<String, Integer>> entity2Bucket = new ConcurrentHashMap<>();
 
 
+	@JsonIgnore
 	@Override
 	public boolean isLoadStoresOnStart() {
 		return false;
