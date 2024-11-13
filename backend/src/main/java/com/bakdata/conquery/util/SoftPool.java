@@ -31,11 +31,24 @@ public class SoftPool<T> {
 
 	/**
 	 * Offer/return a reusable object to the pool.
+	 *
 	 * @param v the object to return to the pool.
 	 */
 	public void offer(T v) {
 		pool.addLast(new SoftReference<>(v));
 		log.trace("Pool size: {} (offer)", poolSize.incrementAndGet());
+	}
+
+	private void cleanPool() {
+		while (true) {
+			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
+
+			log.trace("Running pool cleaner");
+			while (poolSize.get() > config.getSoftPoolBaselineSize()) {
+				// Poll until we reached the baseline
+				borrow();
+			}
+		}
 	}
 
 	/**
@@ -44,7 +57,6 @@ public class SoftPool<T> {
 	 */
 	public T borrow() {
 		SoftReference<T> result;
-
 
 		// First check the pool for available/returned elements
 		while ((result = pool.poll()) != null) {
@@ -59,17 +71,5 @@ public class SoftPool<T> {
 		}
 		// Pool was empty -- request a new element
 		return supplier.get();
-	}
-
-	private void cleanPool() {
-		while(true) {
-			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
-
-			log.trace("Running pool cleaner");
-			while(poolSize.get() > config.getSoftPoolBaselineSize()) {
-				// Poll until we reached the baseline
-				borrow();
-			}
-		}
 	}
 }
