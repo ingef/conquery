@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SoftPool<T> {
 
-	public static final int POOL_BASE_SIZE = 10;
-	public static final int POOL_CLEANER_SLEEP_SECONDS = 10;
 	private final ConcurrentLinkedDeque<SoftReference<T>> pool = new ConcurrentLinkedDeque<>();
 	private final AtomicLong poolSize = new AtomicLong(0);
 	private final Supplier<T> supplier;
@@ -37,7 +35,7 @@ public class SoftPool<T> {
 	 */
 	public void offer(T v) {
 		pool.addLast(new SoftReference<>(v));
-		log.info("Pool size: {} (offer)", poolSize.incrementAndGet());
+		log.trace("Pool size: {} (offer)", poolSize.incrementAndGet());
 	}
 
 	/**
@@ -50,7 +48,7 @@ public class SoftPool<T> {
 
 		// First check the pool for available/returned elements
 		while ((result = pool.poll()) != null) {
-			log.info("Pool size: {} (borrow)", poolSize.decrementAndGet());
+			log.trace("Pool size: {} (borrow)", poolSize.decrementAndGet());
 			// The pool had an element, inspect if it is still valid
 			final T elem = result.get();
 			if (elem != null) {
@@ -67,7 +65,7 @@ public class SoftPool<T> {
 		while(true) {
 			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
 
-			log.info("Running pool cleaner");
+			log.trace("Running pool cleaner");
 			while(poolSize.get() > config.getSoftPoolBaselineSize()) {
 				// Poll until we reached the baseline
 				borrow();
