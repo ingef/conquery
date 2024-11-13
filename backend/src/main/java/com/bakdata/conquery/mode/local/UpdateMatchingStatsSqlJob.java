@@ -1,6 +1,15 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.countDistinct;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.min;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.noField;
+import static org.jooq.impl.DSL.table;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -84,27 +93,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		this.executors = MoreExecutors.listeningDecorator(executors);
 	}
 
-	private static boolean isTreeConcept(final Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
-			return false;
-		}
-		return true;
-	}
-
-	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
-		if (mostSpecificChild.getMatchingStats() == null) {
-			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
-		}
-
-		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
-	}
-
-	@Override
-	public String getLabel() {
-		return "Calculating Matching Stats for %s.".formatted(executionService);
-	}
-
 	@Override
 	public void execute() throws Exception {
 
@@ -144,7 +132,28 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		super.cancel();
 	}
 
-	public void calculateMatchingStats(final TreeConcept treeConcept) {
+	@Override
+	public String getLabel() {
+		return "Calculating Matching Stats for %s.".formatted(executionService);
+	}
+
+	private static boolean isTreeConcept(final Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
+			return false;
+		}
+		return true;
+	}
+
+	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
+		if (mostSpecificChild.getMatchingStats() == null) {
+			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
+		}
+
+		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
+	}
+
+	private void calculateMatchingStats(final TreeConcept treeConcept) {
 
 		final Map<Connector, Set<Field<?>>> relevantColumns = collectRelevantColumns(treeConcept);
 		final Map<Connector, List<ColumnDateRange>> validityDateMap = createColumnDateRanges(treeConcept);
@@ -161,8 +170,8 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																	 .map(field -> field(field.getUnqualifiedName()))
 																	 .collect(Collectors.toList());
 
-		// if there is no validity date at all, we select no field
-		final Field<?> validityDateExpression = validityDateMap.isEmpty() ? noField() : toValidityDateExpression(validityDateMap);
+		// if there is no validity date at all, no field is selected
+		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap);
 
 		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
 													   .select(
@@ -291,10 +300,19 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	 * Select the minimum of the least start date and the maximum of the greatest end date of all validity dates of all connectors.
 	 */
 	private Field<String> toValidityDateExpression(final Map<Connector, List<ColumnDateRange>> validityDateMap) {
+
+		if (validityDateMap.isEmpty()) {
+			return noField(String.class);
+		}
+
 		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
-		final ColumnDateRange minAndMax = ColumnDateRange.of(min(functionProvider.least(allStarts)), max(functionProvider.greatest((allEnds))));
+
+		final ColumnDateRange minAndMax = ColumnDateRange.of(
+				min(allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0)),
+				max(allEnds.size() > 1 ? functionProvider.greatest(allEnds) : allEnds.get(0))
+		);
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
 
