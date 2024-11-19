@@ -34,8 +34,7 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
 
-		return new OneToOneMappingPrinter(this)
-				.andThen(printerFactory.getStringPrinter(printSettings));
+		return new OneToOneMappingPrinter(this, printerFactory.getStringPrinter(printSettings));
 	}
 
 	boolean isAllowMultiple();

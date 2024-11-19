@@ -60,6 +60,11 @@ public class JavaResultPrinters extends PrinterFactory {
 			final List<Object> out = new ArrayList<>(value.size());
 
 			for (T elt : value) {
+				if (elt == null){
+					// Printers do not handle null.
+					continue;
+				}
+
 				out.add(elementPrinter.apply(elt));
 			}
 
