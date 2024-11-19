@@ -18,12 +18,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -32,28 +34,29 @@ import org.jetbrains.annotations.TestOnly;
 
 @Slf4j
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
-@RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
 @Getter
 @JsonDeserialize(converter = MapInternToExternMapper.Initializer.class)
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
+@Setter
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, Initializing {
 
 
 	@ToString.Include
 	@NotEmpty
-	private final String name;
+	private String name;
 	@ToString.Include
 	@NotNull
-	private final URI csv;
+	private URI csv;
 	@ToString.Include
 	@NotEmpty
-	private final String internalColumn;
+	private String internalColumn;
 	@ToString.Include
 	@NotEmpty
-	private final String externalTemplate;
-	private final boolean allowMultiple;
+	private String externalTemplate;
+	private boolean allowMultiple;
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -81,6 +84,14 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@Getter(onMethod_ = {@TestOnly})
 	@EqualsAndHashCode.Exclude
 	private CompletableFuture<Index<String>> int2ext;
+
+	public MapInternToExternMapper(@NotEmpty String name, @NotNull URI csv, @NotEmpty String internalColumn, @NotEmpty String externalTemplate, boolean allowMultiple) {
+		this.name = name;
+		this.csv = csv;
+		this.internalColumn = internalColumn;
+		this.externalTemplate = externalTemplate;
+		this.allowMultiple = allowMultiple;
+	}
 
 
 	@Override
