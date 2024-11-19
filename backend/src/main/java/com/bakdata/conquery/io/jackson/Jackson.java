@@ -51,7 +51,7 @@ public class Jackson {
 					.enable(Feature.ALLOW_COMMENTS)
 					.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS)
 					.enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
-					.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+					.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
 					.enable(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS)
 					.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
 					.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
