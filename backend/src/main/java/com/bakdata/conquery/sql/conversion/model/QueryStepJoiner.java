@@ -175,7 +175,12 @@ public class QueryStepJoiner {
 							.map(Selects::getStratificationDate)
 							.filter(Optional::isPresent)
 							.map(Optional::get)
-							.reduce(ColumnDateRange::coalesce);
+							.reduce(ColumnDateRange::coalesce)
+							.flatMap(columnDateRange -> {
+								String alias = queriesToJoin.get(0).getSelects().getStratificationDate().get().getAlias();
+								ColumnDateRange qualified = columnDateRange.as(alias);
+								return Optional.of(qualified);
+							});
 	}
 
 	@FunctionalInterface
