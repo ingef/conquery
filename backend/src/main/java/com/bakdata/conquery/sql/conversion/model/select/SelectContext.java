@@ -8,6 +8,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.AccessLevel;
@@ -43,6 +44,19 @@ public class SelectContext<T extends SqlTables> implements Context {
 
 	public SqlFunctionProvider getFunctionProvider() {
 		return getSqlDialect().getFunctionProvider();
+	}
+
+	public SqlIdColumns getIds(CteStep cteStep) {
+		if (!conversionContext.isWithStratification()) {
+			return ids;
+		}
+		return conversionContext.getStratificationTable().getQualifiedSelects().getIds().qualify(tables.cteName(cteStep));
+	}
+
+	public Optional<ColumnDateRange> getStratificationDate(CteStep cteStep) {
+		return Optional.ofNullable(conversionContext.getStratificationTable())
+					   .flatMap(stratificationTable -> stratificationTable.getQualifiedSelects().getStratificationDate())
+					   .map(stratificationDate -> stratificationDate.qualify(tables.cteName(cteStep)));
 	}
 
 }
