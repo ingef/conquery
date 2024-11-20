@@ -21,7 +21,7 @@ import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
-import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
+import com.bakdata.conquery.sql.conversion.query.RelativeFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
@@ -69,7 +69,7 @@ public interface SqlDialect {
 				new SecondaryIdQueryConverter(),
 				new AbsoluteFormQueryConverter(formConversionUtil),
 				new EntityDateQueryConverter(formConversionUtil),
-				new RelativFormQueryConverter(formConversionUtil),
+				new RelativeFormQueryConverter(formConversionUtil),
 				new TableExportQueryConverter(queryStepTransformer)
 		);
 	}

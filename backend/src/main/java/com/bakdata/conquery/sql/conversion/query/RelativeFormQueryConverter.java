@@ -9,7 +9,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class RelativFormQueryConverter implements NodeConverter<RelativeFormQuery> {
+public class RelativeFormQueryConverter implements NodeConverter<RelativeFormQuery> {
 
 	private final FormConversionHelper formHelper;
 
