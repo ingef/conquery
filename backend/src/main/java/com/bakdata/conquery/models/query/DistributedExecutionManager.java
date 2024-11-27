@@ -42,49 +42,12 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class DistributedExecutionManager extends ExecutionManager {
 
-	@Data
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class DistributedState implements InternalState {
-		@Setter
-		@NonNull
-		private ExecutionState state;
-		private Map<WorkerId, List<EntityResult>> results;
-		private CountDownLatch executingLock;
-
-		public DistributedState() {
-			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
-		}
-
-		@NotNull
-		@Override
-		public ExecutionState getState() {
-			return state;
-		}
-
-		@Override
-		public Stream<EntityResult> streamQueryResults() {
-			return results.values().stream().flatMap(Collection::stream);
-		}
-
-		@Override
-		public CountDownLatch getExecutingLock() {
-			return executingLock;
-		}
-
-		public boolean allResultsArrived(Set<WorkerId> allWorkers) {
-			Set<WorkerId> finishedWorkers = results.keySet();
-			return finishedWorkers.equals(allWorkers);
-		}
-	}
-
 	private final ClusterState clusterState;
-
 
 	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state) {
 		super(storage, datasetRegistry);
 		clusterState = state;
 	}
-
 
 	@Override
 	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
@@ -102,6 +65,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 		workerHandler.sendToAll(createExecutionMessage(execution));
 	}
 
+	private WorkerHandler getWorkerHandler(DatasetId datasetId) {
+		return clusterState.getWorkerHandlers().get(datasetId);
+	}
+
 	private WorkerMessage createExecutionMessage(ManagedExecution execution) {
 		if (execution instanceof ManagedQuery mq) {
 			return new ExecuteQuery(mq.getId(), mq.getQuery());
@@ -116,8 +83,12 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	}
 
-	private WorkerHandler getWorkerHandler(DatasetId datasetId) {
-		return clusterState.getWorkerHandlers().get(datasetId);
+	@Override
+	public void doCancelQuery(ManagedExecution execution) {
+		log.debug("Sending cancel message to all workers.");
+
+		execution.cancel();
+		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
 	}
 
 	/**
@@ -152,7 +123,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			distributedState.results.put(result.getWorkerId(), result.getResults());
 
 			// If all known workers have returned a result, the query is DONE.
-			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset().getId()).getAllWorkerIds())) {
+			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
 
 				execution.finish(ExecutionState.DONE);
 
@@ -162,7 +133,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		// State changed to DONE or FAILED
 		ExecutionState execStateAfterResultCollect = getResult(id).getState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), getStorage()).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(execStateAfterResultCollect, primaryGroupName).inc();
@@ -175,12 +146,39 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	}
 
-	@Override
-	public void doCancelQuery(ManagedExecution execution) {
-		log.debug("Sending cancel message to all workers.");
+	@Data
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class DistributedState implements InternalState {
+		@Setter
+		@NonNull
+		private ExecutionState state;
+		private Map<WorkerId, List<EntityResult>> results;
+		private CountDownLatch executingLock;
 
-		execution.cancel();
-		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
+		public DistributedState() {
+			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
+		}
+
+		@NotNull
+		@Override
+		public ExecutionState getState() {
+			return state;
+		}
+
+		@Override
+		public CountDownLatch getExecutingLock() {
+			return executingLock;
+		}
+
+		@Override
+		public Stream<EntityResult> streamQueryResults() {
+			return results.values().stream().flatMap(Collection::stream);
+		}
+
+		public boolean allResultsArrived(Set<WorkerId> allWorkers) {
+			Set<WorkerId> finishedWorkers = results.keySet();
+			return finishedWorkers.equals(allWorkers);
+		}
 	}
 
 }

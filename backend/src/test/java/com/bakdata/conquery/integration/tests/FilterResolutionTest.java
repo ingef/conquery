@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -19,6 +18,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -66,8 +66,10 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		conquery.waitUntilWorkDone();
 
+		// Prepare the concept by injecting a filter template
 
-		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
+		final Concept<?> concept = namespaceStorage.getAllConcepts().iterator().next();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
@@ -79,7 +81,14 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "HEADER", "", "",  2, true, indexService));
+		final FilterTemplate
+				filterTemplate =
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+		filter.setTemplate(filterTemplate.getId());
+
+		// We need to persist the modification before we submit the update matching stats request
+		namespaceStorage.addSearchIndex(filterTemplate);
+		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")
@@ -101,7 +110,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 									   Map.of(
 											   DATASET, conquery.getDataset().getId(),
 											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getTable().getId(),
+											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
 									   )
 							   );

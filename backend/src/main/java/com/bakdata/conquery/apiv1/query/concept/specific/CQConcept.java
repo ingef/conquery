@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -13,18 +16,22 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -45,9 +52,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -67,8 +71,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 */
 	@JsonProperty("ids")
 	@NotEmpty
-	@NsIdRefCollection
-	private List<ConceptElement<?>> elements = Collections.emptyList();
+	private List<ConceptElementId<?>> elements = Collections.emptyList();
 
 	@Valid
 	@NotEmpty
@@ -77,8 +80,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private List<CQTable> tables = Collections.emptyList();
 
 	@NotNull
-	@NsIdRefCollection
-	private List<Select> selects = new ArrayList<>();
+	private List<SelectId> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation;
 
@@ -91,15 +93,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	public static CQConcept forSelect(Select select) {
 		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(select.getHolder().findConcept()));
+		// TODO transform to use only ids here
+		cqConcept.setElements(List.of(select.getHolder().findConcept().getId()));
 
 		if (select.getHolder() instanceof Connector) {
 			final CQTable table = new CQTable();
 			cqConcept.setTables(List.of(table));
 
-			table.setConnector(((Connector) select.getHolder()));
+			table.setConnector(((Connector) select.getHolder()).getId());
 
-			table.setSelects(List.of(select));
+			table.setSelects(List.of((ConnectorSelectId) select.getId()));
 			table.setConcept(cqConcept);
 		}
 		else {
@@ -107,11 +110,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 										.getConnectors().stream()
 										.map(conn -> {
 											final CQTable table = new CQTable();
-											table.setConnector(conn);
+											table.setConnector(conn.getId());
 											return table;
 										}).toList());
 
-			cqConcept.setSelects(List.of(select));
+			cqConcept.setSelects(List.of(select.getId()));
 		}
 
 		return cqConcept;
@@ -119,10 +122,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	public static CQConcept forConnector(Connector source) {
 		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(source.getConcept()));
+		// TODO transform to use only ids here
+		cqConcept.setElements(List.of(source.getConcept().getId()));
 		final CQTable cqTable = new CQTable();
 		cqTable.setConcept(cqConcept);
-		cqTable.setConnector(source);
+		cqTable.setConnector(source.getId());
 		cqConcept.setTables(List.of(cqTable));
 
 		return cqConcept;
@@ -134,7 +138,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			return null;
 		}
 
-		if (elements.size() == 1 && elements.get(0).equals(getConcept())) {
+		if (elements.size() == 1 && elements.get(0).equals(getConceptId())) {
 			return getConcept().getLabel();
 		}
 
@@ -143,11 +147,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		builder.append(getConcept().getLabel());
 		builder.append(" ");
 
-		for (ConceptElement<?> id : elements) {
-			if (id.equals(getConcept())) {
+		for (ConceptElementId<?> id : elements) {
+			ConceptElement<?> conceptElement = id.resolve();
+			if (conceptElement.equals(getConcept())) {
 				continue;
 			}
-			builder.append(id.getLabel()).append("+");
+			builder.append(conceptElement.getLabel()).append("+");
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
@@ -156,34 +161,19 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@JsonIgnore
+	public ConceptId getConceptId() {
+		return elements.get(0).findConcept();
+	}
+
+	@JsonIgnore
 	public Concept<?> getConcept() {
-		return elements.get(0).getConcept();
+		return getConceptId().resolve();
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Not all Selects belong to the Concept.")
-	public boolean isAllSelectsForConcept() {
-		final Concept<?> concept = getConcept();
-
-		if (!getSelects().stream().map(Select::getHolder).allMatch(concept::equals)) {
-			log.error("Not all selects belong to Concept[{}]", concept);
-			return false;
-		}
-
-		return true;
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Not all elements belong to the same Concept.")
-	public boolean isAllElementsForConcept() {
-		final Concept<?> concept = getConcept();
-
-		if (!getElements().stream().map(ConceptElement::getConcept).allMatch(concept::equals)) {
-			log.error("Not all elements belong to Concept[{}]", concept);
-			return false;
-		}
-
-		return true;
+	@Override
+	public void resolve(QueryResolveContext context) {
+		aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
+		tables.forEach(t -> t.resolve(context));
 	}
 
 	@Override
@@ -199,9 +189,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 													 .collect(Collectors.toList());
 
 			//add filter to children
-			final List<Aggregator<?>> aggregators = new ArrayList<>();
 
-			aggregators.addAll(conceptAggregators);
+			final List<Aggregator<?>> aggregators = new ArrayList<>(conceptAggregators);
 
 			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects());
 
@@ -219,7 +208,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 
 			final List<Aggregator<CDateSet>> eventDateUnionAggregators =
-					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())))
+					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().<Connector>resolve().getResolvedTable())))
 										: Collections.emptyList();
 
 			aggregators.addAll(eventDateUnionAggregators);
@@ -236,7 +225,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final ConceptNode node = new ConceptNode(
 					conceptSpecificNode,
-					elements,
+					elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList(),
 					table,
 					// if the node is excluded, don't pass it into the Node.
 					!excludeFromSecondaryId && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
@@ -261,41 +250,19 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	}
 
-	/**
-	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
-	 * query plan that contribute to columns the result.
-	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> selects) {
-		return selects.stream()
-					  .map(Select::createAggregator)
-					  .peek(plan::registerAggregator)
-					  .collect(Collectors.toList());
-	}
-
-	private ValidityDate selectValidityDate(CQTable table) {
-		if (table.getDateColumn() != null) {
-			return table.getDateColumn().getValue();
-		}
-
-		//else use this first defined validity date column
-		if (!table.getConnector().getValidityDates().isEmpty()) {
-			return table.getConnector().getValidityDates().get(0);
-		}
-
-		return null;
-	}
-
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		for (Select select : selects) {
-			resultInfos.add(select.getResultInfo(this, settings));
+		for (SelectId select : selects) {
+			Select resolved = select.resolve();
+			resultInfos.add(resolved.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
-			for (Select sel : table.getSelects()) {
-				resultInfos.add(sel.getResultInfo(this, settings));
+			for (SelectId sel : table.getSelects()) {
+				Select resolved = sel.resolve();
+				resultInfos.add(resolved.getResultInfo(this));
 			}
 		}
 
@@ -303,16 +270,75 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public void collectNamespacedObjects(Set<NamespacedIdentifiable<?>> identifiables) {
-		identifiables.addAll(elements);
-		identifiables.addAll(selects);
-		tables.forEach(table -> identifiables.add(table.getConnector()));
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		final Set<ConnectorId> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
+
+		return new RequiredEntities(context.getBucketManager()
+										   .getEntitiesWithConcepts(getElements().stream()
+																				 .<ConceptElement<?>>map(ConceptElementId::resolve)
+																				 .toList(),
+																	connectors, context.getDateRestriction()));
+	}
+
+	/**
+	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
+	 * query plan that contribute to columns the result.
+	 */
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
+		return selects.stream()
+					  .map(SelectId::<Select>resolve)
+					  .map(Select::createAggregator)
+					  .peek(plan::registerAggregator)
+					  .collect(Collectors.toList());
+	}
+
+	private ValidityDate selectValidityDate(CQTable table) {
+		if (table.getDateColumn() != null) {
+			return table.getDateColumn().getValue().resolve();
+		}
+
+		//else use this first defined validity date column
+		final Connector connector = table.getConnector().resolve();
+		if (!connector.getValidityDates().isEmpty()) {
+			return connector.getValidityDates().get(0);
+		}
+
+		return null;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all Selects belong to the Concept.")
+	public boolean isAllSelectsForConcept() {
+		final ConceptId concept = getConceptId();
+
+		if (!getSelects().stream().map(SelectId::findConcept).allMatch(concept::equals)) {
+			log.error("Not all selects belong to Concept[{}]", concept);
+			return false;
+		}
+
+		return true;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all elements belong to the same Concept.")
+	public boolean isAllElementsForConcept() {
+
+		final ConceptId concept = getConceptId();
+
+		if (!getElements().stream().map(ConceptElementId::findConcept).allMatch(concept::equals)) {
+			log.error("Not all elements belong to Concept[{}]", concept);
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
-	public void resolve(QueryResolveContext context) {
-		aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
-		tables.forEach(t -> t.resolve(context));
+	public void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables) {
+		final List<ConceptElement<?>> list = elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
+		identifiables.addAll(list);
+		identifiables.addAll(selects.stream().map(Id::resolve).toList());
+		tables.forEach(table -> identifiables.add(table.getConnector().resolve()));
 	}
 
 	@Override
@@ -326,22 +352,15 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			return;
 		}
 
-		final List<Select> cSelects = new ArrayList<>(getSelects());
-		cSelects.addAll(getConcept().getDefaultSelects());
+		final List<SelectId> cSelects = new ArrayList<>(getSelects());
+		cSelects.addAll(getConcept().getDefaultSelects().stream().map(Select::getId).toList());
 
 		setSelects(cSelects);
 
 		for (CQTable t : getTables()) {
-			final List<Select> conSelects = new ArrayList<>(t.getSelects());
-			conSelects.addAll(t.getConnector().getDefaultSelects());
+			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
+			conSelects.addAll(t.getConnector().resolve().getDefaultSelects().stream().map(Select::getId).map(ConnectorSelectId.class::cast).toList());
 			t.setSelects(conSelects);
 		}
-	}
-
-	@Override
-	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		final Set<Connector> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
-
-		return new RequiredEntities(context.getBucketManager().getEntitiesWithConcepts(getElements(), connectors, context.getDateRestriction()));
 	}
 }

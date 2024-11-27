@@ -20,32 +20,22 @@ import lombok.experimental.Accessors;
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedData> {
+	private final JsonParser parser;
+	@Getter
+	private LastRead lastRead = LastRead.BEGIN;
+	private int bucketsRemaining;
+	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
+
+		parser = objectMapper
+				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+				.getFactory()
+				.createParser(inputStream);
+	}
+
 	@Override
 	public void close() throws IOException {
 		parser.close();
 	}
-
-	@Accessors(fluent = true)
-	@RequiredArgsConstructor
-	public enum LastRead {
-		DATA(null), HEADER(DATA), BEGIN(HEADER);
-
-		@Getter
-		private final LastRead next;
-	}
-
-	@Getter
-	private LastRead lastRead = LastRead.BEGIN;
-	private int bucketsRemaining;
-	private final JsonParser parser;
-
-	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
-
-		parser = objectMapper.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-							 .getFactory()
-							 .createParser(inputStream);
-	}
-
 
 	public PreprocessedHeader readHeader() throws IOException {
 		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
@@ -56,7 +46,6 @@ public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedD
 		lastRead = lastRead.next();
 		return header;
 	}
-
 
 	@Override
 	public boolean hasNext() {
@@ -69,6 +58,15 @@ public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedD
 		bucketsRemaining--;
 
 		return parser.readValueAs(PreprocessedData.class);
+	}
+
+	@Accessors(fluent = true)
+	@RequiredArgsConstructor
+	public enum LastRead {
+		DATA(null), HEADER(DATA), BEGIN(HEADER);
+
+		@Getter
+		private final LastRead next;
 	}
 
 }

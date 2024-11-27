@@ -24,22 +24,19 @@ import io.dropwizard.core.setup.Environment;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);
-
-	void removeNamespace(DatasetId id, N namespace);
-
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry, Environment environment) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(datasetRegistry);
 		injectables.add(storage);
 
-		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetRegistry);
-		ObjectMapper communicationMapper = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
-		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(datasetRegistry);
+		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage);
+		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage);
+		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage);
 
+		// Todo remove these
 		injectables.forEach(i -> {
 			i.injectInto(persistenceMapper);
 			i.injectInto(communicationMapper);
@@ -48,7 +45,7 @@ public interface NamespaceHandler<N extends Namespace> {
 
 
 		// Each store needs its own mapper because each injects its own registry
-		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
+		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper), environment.metrics());
 		storage.loadData();
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
@@ -56,5 +53,9 @@ public interface NamespaceHandler<N extends Namespace> {
 		FilterSearch filterSearch = new FilterSearch(config.getIndex());
 		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}
+
+	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);
+
+	void removeNamespace(DatasetId id, N namespace);
 
 }

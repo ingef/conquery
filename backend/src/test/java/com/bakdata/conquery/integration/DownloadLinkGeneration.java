@@ -2,12 +2,15 @@ package com.bakdata.conquery.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -32,8 +35,8 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(conquery.getDataset(), testJson);
+		final InputStream testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().asStream();
+		final QueryTest test = (QueryTest) new JsonIntegrationTest(testJson).getTestSpec();
 
 		storage.updateUser(user);
 
@@ -41,8 +44,11 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		test.importRequiredData(conquery);
 
+		// Parse the query in the context of the conquery instance, not the test, to have the IdResolver properly set
+		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, false);
+
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage, conquery.getDatasetRegistry());
+		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset().getId(), storage, conquery.getDatasetRegistry());
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);

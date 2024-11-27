@@ -1,7 +1,6 @@
 package com.bakdata.conquery.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,8 +13,8 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class QueryCleanupTaskTest {
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	private final Duration queryExpiration = Duration.ofDays(30);
 
@@ -36,16 +36,16 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE, null);
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new Dataset("test").getId(), STORAGE, null);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
 		STORAGE.addExecution(managedQuery);
+		managedQuery.setMetaStorage(STORAGE);
 
 		return managedQuery;
 	}
 
-	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 
 	@AfterEach
@@ -77,7 +77,8 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setLabel("test");
 
-		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
+		QueryCleanupTask queryCleanupTask = new QueryCleanupTask(STORAGE, queryExpiration);
+		queryCleanupTask.execute(Map.of(), null);
 
 		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQuery);
 	}

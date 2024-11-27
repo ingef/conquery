@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -33,7 +32,7 @@ public class CQYes extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		return Collections.emptyList();
 	}
 }

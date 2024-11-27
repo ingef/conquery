@@ -82,7 +82,9 @@ export const useLoadDefaultHistoryParams = () => {
 export const resetCurrentEntity = createAction(
   "history/RESET_CURRENT_ENTITY",
 )();
-export const resetHistory = createAction("history/RESET")();
+export const resetHistory = createAction("history/RESET")<{
+  includingDefaultParams?: boolean;
+}>();
 
 export const loadHistoryData = createAsyncAction(
   "history/LOAD_START",

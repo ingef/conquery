@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -215,7 +214,7 @@ public class CQExternal extends CQElement {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings settings) {
+	public List<ResultInfo> getResultInfos() {
 		if (extra == null) {
 			return Collections.emptyList();
 		}
@@ -228,7 +227,7 @@ public class CQExternal extends CQElement {
 			final String column = headers[col];
 
 			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(ResultType.Primitive.STRING);
-			resultInfos.add(new ExternalResultInfo(column, type, settings));
+			resultInfos.add(new ExternalResultInfo(column, type));
 		}
 
 		return resultInfos;

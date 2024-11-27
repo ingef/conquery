@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.worker;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
@@ -14,8 +13,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
@@ -31,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
-public abstract class Namespace extends IdResolveContext {
+public abstract class Namespace {
 
 	private final ObjectMapper preprocessMapper;
 
@@ -80,10 +77,6 @@ public abstract class Namespace extends IdResolveContext {
 		storage.removeStorage();
 	}
 
-	public CentralRegistry getCentralRegistry() {
-		return getStorage().getCentralRegistry();
-	}
-
 	public int getNumberOfEntities() {
 		return getStorage().getNumberOfEntities();
 	}
@@ -92,25 +85,17 @@ public abstract class Namespace extends IdResolveContext {
 		return getStorage().getPreviewConfig();
 	}
 
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
-		if (!this.getDataset().getId().equals(dataset)) {
-			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
-		}
-		return storage.getCentralRegistry();
-	}
-
 	public void updateInternToExternMappings() {
-		storage.getAllConcepts().stream()
-				.flatMap(c -> c.getConnectors().stream())
-				.flatMap(con -> con.getSelects().stream())
-				.filter(MappableSingleColumnSelect.class::isInstance)
-				.map(MappableSingleColumnSelect.class::cast)
-				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+		storage.getAllConcepts()
+			   .flatMap(c -> c.getConnectors().stream())
+			   .flatMap(con -> con.getSelects().stream())
+			   .filter(MappableSingleColumnSelect.class::isInstance)
+			   .map(MappableSingleColumnSelect.class::cast)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
-		storage.getSecondaryIds().stream()
-				.filter(desc -> desc.getMapping() != null)
-				.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
+		storage.getSecondaryIds()
+			   .filter(desc -> desc.getMapping() != null)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
 	}
 
 	/**

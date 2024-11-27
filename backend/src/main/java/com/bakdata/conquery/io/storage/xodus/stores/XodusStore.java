@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -75,6 +77,18 @@ public class XodusStore {
 				}
 			});
 		}
+	}
+
+	public List<ByteIterable> getAllKeys() {
+		return environment.computeInReadonlyTransaction(txn -> {
+			List<ByteIterable> keys = new ArrayList<>();
+			try (Cursor c = store.openCursor(txn)) {
+				while (c.getNext()) {
+					keys.add(c.getKey());
+				}
+				return keys;
+			}
+		});
 	}
 
 	public boolean update(ByteIterable key, ByteIterable value) {

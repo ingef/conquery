@@ -14,7 +14,11 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,7 +42,7 @@ public class ReportConsistency extends NamespaceMessage {
 
     @Override
     public void react(DistributedNamespace context) throws Exception {
-        Set<ImportId> managerImports = context.getStorage().getAllImports().stream().map(Import::getId).collect(Collectors.toSet());
+        Set<ImportId> managerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
 
         Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 

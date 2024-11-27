@@ -19,9 +19,8 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.RecursiveComparisonAssert;
@@ -53,13 +51,12 @@ public class SerializationTestUtil<T> {
 					User.ShiroUserAdapter.class,
 					Validator.class,
 					WeakReference.class,
-					CompletableFuture.class
+					CompletableFuture.class,
+					NamespacedStorageProvider.class
 			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
-	@Setter
-	private CentralRegistry registry;
 	private List<ObjectMapper> objectMappers = Collections.emptyList();
 	@NonNull
 	private Injectable[] injectables = {};
@@ -100,6 +97,10 @@ public class SerializationTestUtil<T> {
 		return this;
 	}
 
+	public void test(T value) throws JSONException, IOException {
+		test(value, value);
+	}
+
 	public void test(T value, T expected) throws JSONException, IOException {
 		if (objectMappers.isEmpty()) {
 			fail("No objectmappers were set");
@@ -112,22 +113,15 @@ public class SerializationTestUtil<T> {
 						expected,
 						objectMapper
 				);
-			} catch (Exception e) {
+			} catch (Exception|Error e) {
 				Class<?> activeView = objectMapper.getSerializationConfig().getActiveView();
 				throw new IllegalStateException("Serdes failed with object mapper using view '" + activeView + "'", e);
 			}
 		}
 	}
 
-	public void test(T value) throws JSONException, IOException {
-		test(value, value);
-	}
-
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 
-		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry).injectInto(mapper);
-		}
 		for (Injectable injectable : injectables) {
 			mapper = injectable.injectInto(mapper);
 		}
@@ -157,7 +151,8 @@ public class SerializationTestUtil<T> {
 				.as("Unequal after copy.")
 				.usingRecursiveComparison()
 				.usingOverriddenEquals()
-				.ignoringFieldsOfTypes(TYPES_TO_IGNORE);
+				.ignoringFieldsOfTypes(TYPES_TO_IGNORE)
+				.ignoringFields("metaStorage", "namespacedStorageProvider");
 
 		// Apply assertion customizations
 		ass = assertCustomizer.apply(ass);

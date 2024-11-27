@@ -2,12 +2,14 @@ package com.bakdata.conquery.models.types;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
@@ -73,8 +75,7 @@ public abstract class SemanticType {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class SecondaryIdT extends SemanticType {
-		@NsIdRef
-		private final SecondaryIdDescription secondaryId;
+		private final SecondaryIdDescriptionId secondaryId;
 	}
 
 	/**
@@ -102,8 +103,7 @@ public abstract class SemanticType {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class SelectResultT extends SemanticType {
-		@NsIdRef
-		private final Select select;
+		private final SelectId select;
 	}
 
 	/**
@@ -115,8 +115,7 @@ public abstract class SemanticType {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ConceptColumnT extends SemanticType {
-		@NsIdRef
-		private final Concept<?> concept;
+		private final ConceptId concept;
 
 	}
 
@@ -130,8 +129,7 @@ public abstract class SemanticType {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ColumnT extends SemanticType {
-		@NsIdRef
-		private final Column column;
+		private final ColumnId column;
 
 	}
 }

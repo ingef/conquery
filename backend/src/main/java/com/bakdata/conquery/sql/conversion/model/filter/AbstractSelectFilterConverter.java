@@ -17,7 +17,7 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 
 		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
 				filterContext.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
-				filter.getColumn().getName(),
+				filter.getColumn().getColumn(),
 				String.class
 		);
 
@@ -39,7 +39,7 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 
 	@Override
 	public Condition convertForTableExport(F filter, FilterContext<T> filterContext) {
-		Column column = filter.getColumn();
+		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<String> field = DSL.field(DSL.name(tableName, columnName), String.class);

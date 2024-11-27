@@ -40,7 +40,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, storage.getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
 	}
@@ -54,7 +54,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@Override
 	public void updateStorage() {
-		storage.updateGroup(this);
+		getMetaStorage().updateGroup(this);
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,6 +39,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, metadata and takes care of query distribution to
@@ -94,7 +94,7 @@ public class ManagerNode implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		configureApiServlet(config, environment.jersey().getResourceConfig());
+		configureApiServlet(config, environment);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
@@ -155,7 +155,8 @@ public class ManagerNode implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
-	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
+	private void configureApiServlet(ConqueryConfig config, Environment environment) {
+		ResourceConfig jerseyConfig = environment.jersey().getResourceConfig();
 		RESTServer.configure(config, jerseyConfig);
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
@@ -165,12 +166,14 @@ public class ManagerNode implements Managed {
 			}
 		});
 
+		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
+
 		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
 		log.info("Loading MetaStorage");
 		getMetaStorage().loadData();
 		log.info("MetaStorage loaded {}", getMetaStorage());

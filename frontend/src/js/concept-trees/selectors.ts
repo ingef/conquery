@@ -15,7 +15,7 @@ const isChildWithinResults = (children: ConceptIdT[], search: SearchT) => {
 export const isNodeInSearchResult = (
   id: ConceptIdT,
   search: SearchT,
-  children?: ConceptIdT[],
+  children?: ConceptIdT[], // actual concept tree ids, not folder ids
 ) => {
   if (!search.result) return true;
 
