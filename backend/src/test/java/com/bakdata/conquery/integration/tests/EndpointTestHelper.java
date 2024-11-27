@@ -1,45 +1,33 @@
 package com.bakdata.conquery.integration.tests;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.databind.ObjectReader;
-
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
  * The following functions are adapted from dropwizards
  * {@link DropwizardResourceConfig.EndpointLogger } class.
  */
+@Slf4j
 public class EndpointTestHelper {
 
 	public static final ObjectReader READER = Jackson.MAPPER
 		.readerFor(Jackson.MAPPER.getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
 
 	private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
-
-	@AllArgsConstructor
-	@Getter
-	@EqualsAndHashCode
-	public static class EndPoint {
-
-		private String method;
-		private String path;
-		private String clazz;
-
-		public String toString() {
-			return String.format("%-8s%-25s%s", method, clazz, path);
-		}
-	}
 
 	public static void populate(Class<?> klass, List<EndPoint> endpointLogLines) {
 		populate("/", klass, false, endpointLogLines);
@@ -102,16 +90,40 @@ public class EndpointTestHelper {
 		List<Class<?>> allResourcesClasses = new ArrayList<>();
 		List<EndPoint> resources = new ArrayList<>();
 		for (Class<?> clazz : classes) {
+			// We filter openapi specs because they are contract first
+			List<String> openApiInterfaces = Arrays.stream(clazz.getInterfaces())
+												   .filter(interfaceClazz -> interfaceClazz.getPackageName().startsWith("com.bakdata.conquery.models.api.openapi"))
+												   .map(Class::getName)
+												   .toList();
+			if (!openApiInterfaces.isEmpty()) {
+				log.info("Skipping resource {}, because it is implementing these OpenAPI interfaces: {}", clazz, openApiInterfaces);
+				continue;
+			}
+
 			if (!clazz.isInterface() && Resource.from(clazz) != null) {
 				allResourcesClasses.add(clazz);
 			}
 		}
 
 		// Prepare endpoints for comparison
-		allResourcesClasses.sort((e1, e2) -> e1.getName().compareTo(e2.getName()));
+		allResourcesClasses.sort(Comparator.comparing(Class::getName));
 		for (Class<?> clazz : allResourcesClasses) {
 			EndpointTestHelper.populate(clazz, resources);
 		}
 		return resources;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@EqualsAndHashCode
+	public static class EndPoint {
+
+		private String method;
+		private String path;
+		private String clazz;
+
+		public String toString() {
+			return String.format("%-8s%-25s%s", method, clazz, path);
+		}
 	}
 }

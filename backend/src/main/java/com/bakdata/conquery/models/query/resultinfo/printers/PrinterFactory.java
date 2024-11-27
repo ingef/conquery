@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -32,7 +33,7 @@ public abstract class PrinterFactory {
 		};
 	}
 
-	public abstract <T> Printer<List<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings);
+	public abstract <T> Printer<Collection<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings);
 
 	public abstract Printer<Boolean> getBooleanPrinter(PrintSettings printSettings);
 
