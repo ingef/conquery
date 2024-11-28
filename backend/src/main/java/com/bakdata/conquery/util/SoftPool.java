@@ -36,19 +36,8 @@ public class SoftPool<T> {
 	 */
 	public void offer(T v) {
 		pool.addLast(new SoftReference<>(v));
-		log.trace("Pool size: {} (offer)", poolSize.incrementAndGet());
-	}
-
-	private void cleanPool() {
-		while (true) {
-			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
-
-			log.trace("Running pool cleaner");
-			while (poolSize.get() > config.getSoftPoolBaselineSize()) {
-				// Poll until we reached the baseline
-				borrow();
-			}
-		}
+		long poolSize = this.poolSize.incrementAndGet();
+		log.trace("Pool size: {} (offer)", poolSize);
 	}
 
 	/**
@@ -60,7 +49,8 @@ public class SoftPool<T> {
 
 		// First check the pool for available/returned elements
 		while ((result = pool.poll()) != null) {
-			log.trace("Pool size: {} (borrow)", poolSize.decrementAndGet());
+			long poolSize = this.poolSize.decrementAndGet();
+			log.trace("Pool size: {} (borrow)", poolSize);
 			// The pool had an element, inspect if it is still valid
 			final T elem = result.get();
 			if (elem != null) {
@@ -71,5 +61,20 @@ public class SoftPool<T> {
 		}
 		// Pool was empty -- request a new element
 		return supplier.get();
+	}
+
+	/**
+	 * Trims the pool in a custom interval so that soft references get purged earlier
+	 */
+	private void cleanPool() {
+		while (true) {
+			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
+
+			log.trace("Running pool cleaner");
+			while (poolSize.get() > config.getSoftPoolBaselineSize()) {
+				// Poll until we reached the baseline
+				borrow();
+			}
+		}
 	}
 }
