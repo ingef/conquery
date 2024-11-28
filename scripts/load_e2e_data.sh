@@ -37,8 +37,12 @@ sleep 3
 echo "Creating tables"
 curl --fail -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.table.json"
 sleep 3
+
 echo "Creating concepts"
-curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.concept.json"
+for concept_json in `ls ./cypress/support/test_data/*.concept.json`
+do
+    curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$concept_json"
+done
 
 echo "Upload test data"
 curl --fail -X POST --compressed "$admin_api/datasets/dataset1/cqpp" -H "content-type:application/octet-stream" -H "$h_auth" --data-binary "@./cypress/support/test_data/table.cqpp"

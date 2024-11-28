@@ -152,6 +152,7 @@ const useDropdownOptions = () => {
                   conceptId,
                   concept,
                   tableId: table.id,
+                  table,
                   filter,
                   filterIdx: idx + 1,
                 };
@@ -192,6 +193,7 @@ const useDropdownOptions = () => {
               displayLabel: (
                 <DropdownOption
                   conceptLabel={opt.concept.label}
+                  connectorLabel={opt.table.label}
                   filterLabel={opt.filter.label}
                   filterIdx={filterIdx}
                 />

@@ -1,0 +1,76 @@
+{
+    "label": "MultiConnector",
+    "description": "Concept with multiple connector that each have a filter that allows file drop.",
+    "type": "TREE",
+    "connectors": [
+        {
+            "name": "connector0",
+            "column": "table.STRING",
+            "validityDatesDescription": "Tooltip for the available validity dates",
+            "validityDates": [
+                {
+                    "label": "DATE",
+                    "column": "table.DATE"
+                },
+                {
+                    "label": "DATE_RANGE",
+                    "column": "table.DATE_RANGE"
+                }
+            ],
+            "filters": [
+                {
+                    "label": "BIG_MULTI_SELECT",
+                    "column": "table.STRING",
+                    "type": "BIG_MULTI_SELECT",
+                    "allowDropFile": true
+                }
+            ],
+            "selects": []
+        },
+        {
+            "name": "connector1",
+            "column": "table.STRING",
+            "validityDatesDescription": "Tooltip for the available validity dates",
+            "validityDates": [
+                {
+                    "label": "DATE",
+                    "column": "table.DATE"
+                },
+                {
+                    "label": "DATE_RANGE",
+                    "column": "table.DATE_RANGE"
+                }
+            ],
+            "filters": [
+                {
+                    "label": "BIG_MULTI_SELECT",
+                    "column": "table.STRING",
+                    "type": "BIG_MULTI_SELECT",
+                    "allowDropFile": true
+                }
+            ],
+            "selects": []
+        }
+    ],
+    "children": {
+        "name": "a1",
+        "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+        }
+    },
+    "selects": [
+        {
+            "label": "EXISTS",
+            "type": "EXISTS"
+        },
+        {
+            "label": "EVENT_DATE_UNION",
+            "type": "EVENT_DATE_UNION"
+        },
+        {
+            "label": "EVENT_DURATION_SUM",
+            "type": "EVENT_DURATION_SUM"
+        }
+    ]
+}
