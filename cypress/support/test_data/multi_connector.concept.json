@@ -6,17 +6,6 @@
         {
             "name": "connector0",
             "column": "table.STRING",
-            "validityDatesDescription": "Tooltip for the available validity dates",
-            "validityDates": [
-                {
-                    "label": "DATE",
-                    "column": "table.DATE"
-                },
-                {
-                    "label": "DATE_RANGE",
-                    "column": "table.DATE_RANGE"
-                }
-            ],
             "filters": [
                 {
                     "label": "BIG_MULTI_SELECT",
@@ -29,24 +18,17 @@
         },
         {
             "name": "connector1",
-            "column": "table.STRING",
-            "validityDatesDescription": "Tooltip for the available validity dates",
-            "validityDates": [
-                {
-                    "label": "DATE",
-                    "column": "table.DATE"
-                },
-                {
-                    "label": "DATE_RANGE",
-                    "column": "table.DATE_RANGE"
-                }
-            ],
+            "column": "table1.STRING",
             "filters": [
                 {
                     "label": "BIG_MULTI_SELECT",
-                    "column": "table.STRING",
+                    "column": "table1.STRING",
                     "type": "BIG_MULTI_SELECT",
-                    "allowDropFile": true
+                    "allowDropFile": true,
+                    "labels": {
+                        "Value A": "a",
+                        "Value A1": "a1"
+                    }
                 }
             ],
             "selects": []
