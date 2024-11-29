@@ -1,0 +1,13 @@
+{
+    "name": "table1",
+    "columns": [
+        {
+            "name": "id",
+            "type": "STRING"
+        },
+        {
+            "name": "STRING",
+            "type": "STRING"
+        }
+    ]
+}
