@@ -53,11 +53,25 @@
         }
     ],
     "children": {
-        "name": "a1",
+        "name": "a",
         "condition": {
             "type": "EQUAL",
-            "values": "A1"
-        }
+            "values": [
+                "a",
+                "a1"
+            ]
+        },
+        "children": [
+            {
+                "name": "a1",
+                "condition": {
+                    "type": "EQUAL",
+                    "values": [
+                        "a1"
+                    ]
+                }
+            }
+        ]
     },
     "selects": [
         {

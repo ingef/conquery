@@ -123,7 +123,7 @@ const QueryGroup = ({
         />
       </SxWithTooltip>
       <QueryOrConnector>{t("common.or")}</QueryOrConnector>
-      <Group excluded={group.exclude}>
+      <Group excluded={group.exclude} data-test-id="query-group">
         <QueryGroupActions
           excludeActive={!!group.exclude}
           dateActive={isDateActive(group.dateRange)}

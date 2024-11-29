@@ -285,6 +285,7 @@ const InputSelect = ({
         <DropdownToggleButton
           disabled={disabled}
           icon={faChevronDown}
+           data-test-id="selection-dropdown"
           {...getToggleButtonProps()}
         />
       </Control>
@@ -300,7 +301,7 @@ const InputSelect = ({
             }}
             ref={(instance) => menuPropsRef(instance)}
           >
-            <List small={smallMenu}>
+            <List small={smallMenu} data-test-id="select-options">
               {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
               {filteredOptions.map((option, index) => {
                 const { ref: itemPropsRef, ...itemProps } = getItemProps({

@@ -511,7 +511,7 @@ const UploadConceptListModal = ({
   );
 
   return (
-    <Modal onClose={onClose} headline={t("uploadConceptListModal.headline")}>
+    <Modal onClose={onClose} headline={t("uploadConceptListModal.headline")} dataTestId="uploadConceptListModal">
       <Root>
         <SxInputSelect
           label={t("uploadConceptListModal.selectConceptRootNode")}
@@ -550,10 +550,11 @@ const UploadConceptListModal = ({
                       resolvedConcepts?.unknownCodes ||
                       []
                     }
+                    dataTestId="unresolvable-list"
                   />
                 </div>
               )}
-              <ResolvedItemsForm onSubmit={onSubmit}>
+              <ResolvedItemsForm onSubmit={onSubmit} data-test-id="insert-form">
                 <div>
                   {hasResolvedItems && (
                     <>
@@ -588,7 +589,7 @@ const UploadConceptListModal = ({
                     label={t("uploadConceptListModal.includeUnresolved")}
                   />
                 )}
-                <SxPrimaryButton type="submit">
+                <SxPrimaryButton type="submit" data-test-id="insert">
                   {mustIncludeUnresolved
                     ? t("uploadConceptListModal.insertRegardless")
                     : t("uploadConceptListModal.insertNode")}
