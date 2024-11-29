@@ -9,6 +9,6 @@ i18next.addResourceBundle("de", "translation", translationsDe, true, true);
 i18next.addResourceBundle("en", "translation", translationsEn, true, true);
 i18next.changeLanguage(language);
 // Set html language
-document.documentElement.lang = language
+document.documentElement.lang = language;
 
 conquery({ theme });
