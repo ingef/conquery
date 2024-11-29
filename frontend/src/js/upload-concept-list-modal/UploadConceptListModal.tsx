@@ -511,7 +511,11 @@ const UploadConceptListModal = ({
   );
 
   return (
-    <Modal onClose={onClose} headline={t("uploadConceptListModal.headline")} dataTestId="uploadConceptListModal">
+    <Modal
+      onClose={onClose}
+      headline={t("uploadConceptListModal.headline")}
+      dataTestId="uploadConceptListModal"
+    >
       <Root>
         <SxInputSelect
           label={t("uploadConceptListModal.selectConceptRootNode")}

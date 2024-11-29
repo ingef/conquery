@@ -7,7 +7,7 @@ interface PropsType {
   items: ReactNode[];
   maxVisibleItems: number;
   fullWidth?: boolean;
-  dataTestId?: string
+  dataTestId?: string;
 }
 
 // With the number of visible items specified here,
@@ -44,7 +44,12 @@ const Item = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const ScrollableList = ({ items, maxVisibleItems, fullWidth, dataTestId }: PropsType) => {
+const ScrollableList = ({
+  items,
+  maxVisibleItems,
+  fullWidth,
+  dataTestId,
+}: PropsType) => {
   const renderItem = (index: number, key: string | number) => {
     return (
       <Item key={key} className="scrollable-list-item">
@@ -54,7 +59,11 @@ const ScrollableList = ({ items, maxVisibleItems, fullWidth, dataTestId }: Props
   };
 
   return (
-    <Root maxVisibleItems={maxVisibleItems} fullWidth={!!fullWidth} data-test-id={dataTestId}>
+    <Root
+      maxVisibleItems={maxVisibleItems}
+      fullWidth={!!fullWidth}
+      data-test-id={dataTestId}
+    >
       <ReactList
         itemRenderer={renderItem}
         length={items ? items.length : 0}

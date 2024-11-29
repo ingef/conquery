@@ -285,7 +285,7 @@ const InputSelect = ({
         <DropdownToggleButton
           disabled={disabled}
           icon={faChevronDown}
-           data-test-id="selection-dropdown"
+          data-test-id="selection-dropdown"
           {...getToggleButtonProps()}
         />
       </Control>
