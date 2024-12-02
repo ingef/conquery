@@ -13,6 +13,7 @@ import com.codahale.metrics.caffeine.MetricsStatsCounter;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.stats.StatsCounter;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
@@ -33,12 +34,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.store = store;
 
-		Caffeine<Object, Object> caffeine = Caffeine.from(caffeineSpec);
-		if (metricRegistry != null) {
-			caffeine // No need to reassign variable here (caffine is stateful)
-					// Store specific metrics
-					.recordStats(() -> new MetricsStatsCounter(metricRegistry, "cache." + store.toString()));
-		}
+		StatsCounter statsCounter = metricRegistry != null ? new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) : StatsCounter.disabledStatsCounter();
+
+		Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
+												.recordStats(() -> statsCounter)
+												.evictionListener((k, v, cause) -> log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
 
 		cache = caffeine.build(this.store::get);
 	}
