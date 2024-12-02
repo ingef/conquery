@@ -20,24 +20,16 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	public static final int MAX_MESSAGE_LENGTH = 30;
-	public static final int MAX_QUEUE_LENGTH = 20;
+	public final int maxQueueLength;
 	@Getter
 	private final IoSession session;
-	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(MAX_QUEUE_LENGTH);
+	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(maxQueueLength);
 
 	@Override
 	public WriteFuture send(final NetworkMessage<?> message) {
 		try {
 			while (!queuedMessages.offer(message, 2, TimeUnit.MINUTES)) {
-				log.debug("Waiting for full writing queue for {} currently filled by:\n\t- {}",
-						  message,
-						  log.isTraceEnabled()
-						  ? new ArrayList<>(queuedMessages).stream()
-														   .map(Objects::toString)
-														   .map(NetworkSession::shorten)
-														   .collect(Collectors.joining("\n\t\t- "))
-						  : "%s messages".formatted(queuedMessages.size())
-				);
+				logWaitingMessages(message);
 			}
 		}
 		catch (InterruptedException e) {
@@ -45,14 +37,30 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			return DefaultWriteFuture.newNotWrittenFuture(session, e);
 		}
 		WriteFuture future = session.write(message);
+
 		future.addListener(f -> {
-			if(f instanceof WriteFuture writeFuture && ! writeFuture.isWritten()) {
+			if (f instanceof WriteFuture writeFuture && !writeFuture.isWritten()) {
 				log.error("Could not write message: {}", message, writeFuture.getException());
 			}
 			queuedMessages.remove(message);
 		});
 
 		return future;
+	}
+
+	private void logWaitingMessages(NetworkMessage<?> message) {
+		final String waiting;
+		if (log.isTraceEnabled()) {
+			waiting = new ArrayList<>(queuedMessages).stream()
+													 .map(Objects::toString)
+													 .map(NetworkSession::shorten)
+													 .collect(Collectors.joining("\n\t\t- "));
+		}
+		else {
+			waiting = "%s messages".formatted(queuedMessages.size());
+		}
+
+		log.debug("Waiting for full writing queue for {} currently filled by:\n\t- {}", message, waiting);
 	}
 
 	@NotNull

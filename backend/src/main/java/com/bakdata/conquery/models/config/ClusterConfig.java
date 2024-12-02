@@ -31,6 +31,11 @@ public class ClusterConfig extends Configuration {
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**
+	 * Maximum number of messages allowed to wait for writing before writer-threads are blocked.
+	 */
+	private int networkSessionMaxQueueLength = 5;
+
+	/**
 	 * {@link org.apache.mina.core.buffer.IoBuffer} size, that mina allocates.
 	 * We assume a pagesize of 4096 bytes == 4 kibibytes
 	 */
