@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
@@ -10,7 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
@@ -20,8 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
-	public DistinctSelect(ColumnId column,
-						  InternToExternMapperId mapping) {
+	public DistinctSelect(ColumnId column, InternToExternMapperId mapping) {
 		super(column, mapping);
 	}
 
@@ -37,15 +40,33 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Printer<?> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
-		if(getMapping() == null){
+		if (getMapping() == null) {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return printerFactory.getListPrinter(new MappedPrinter(getMapping().resolve()), printSettings);
+		return new FlatMappingPrinter(new OneToManyMappingPrinter(getMapping().resolve()))
+				.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 	}
 
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT<>(super.getResultType());
+	}
+
+	/**
+	 * Ensures that mapped values are still distinct.
+	 */
+	private record FlatMappingPrinter(OneToManyMappingPrinter mapper) implements Printer<Collection<String>> {
+
+		@Override
+		public Collection<String> apply(Collection<String> values) {
+			final Set<String> out = new HashSet<>();
+
+			for (String value : values) {
+				mapper.apply(value).forEach(out::add);
+			}
+
+			return out;
+		}
 	}
 }
