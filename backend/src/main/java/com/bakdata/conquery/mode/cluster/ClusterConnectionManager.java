@@ -76,7 +76,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 		if (shardNodeInformation == null) {
 			// In case the shard is not yet registered, we wont have a shardNodeInformation to pull the session from
-			nwSession = new NetworkSession(config.getCluster().getNetworkSessionMaxQueueLength(), session);
+			nwSession = new NetworkSession(session, config.getCluster().getNetworkSessionMaxQueueLength());
 		}
 		else {
 			nwSession = shardNodeInformation.getSession();

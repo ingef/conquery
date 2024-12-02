@@ -51,7 +51,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	 */
 	private final int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors(), 5);
 
-	public static final int COLUM_VALUE_CHUNK_SIZE = 1000;
+	public final int columValueChunkSize;
 	@Getter
 	private final Set<ColumnId> columns;
 
@@ -87,9 +87,11 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
 
 									// Chunk values, to produce smaller messages
-									Iterable<List<String>> partition = Iterables.partition(values, COLUM_VALUE_CHUNK_SIZE);
+									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
 
-									log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches", column.getId(), values.size(), COLUM_VALUE_CHUNK_SIZE);
+									log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
+											  column.getId(), values.size(), columValueChunkSize
+									);
 
 									for (List<String> chunk : partition) {
 										// Send values to manager

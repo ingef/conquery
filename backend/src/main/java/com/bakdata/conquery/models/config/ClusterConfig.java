@@ -31,6 +31,15 @@ public class ClusterConfig extends Configuration {
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**
+	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
+	 *
+	 * Number of values to batch for chunking of unique column-values. Lower numbers reduce relative performance but reduce memory demand, avoiding OOM issues.
+	 */
+	private int columnValuesPerChunk = 1000;
+
+	/**
+	 * @see com.bakdata.conquery.io.mina.NetworkSession
+	 *
 	 * Maximum number of messages allowed to wait for writing before writer-threads are blocked.
 	 */
 	private int networkSessionMaxQueueLength = 5;
