@@ -31,11 +31,12 @@ public class ClusterConfig extends Configuration {
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**
-	 * {@link org.apache.mina.core.buffer.IoBuffer} size, that mina allocates
+	 * {@link org.apache.mina.core.buffer.IoBuffer} size, that mina allocates.
+	 * We assume a pagesize of 4096 bytes == 4 kibibytes
 	 */
 	@NotNull
 	@Valid
-	private DataSize messageChunkSize = DataSize.kilobytes(2);
+	private DataSize messageChunkSize = DataSize.kibibytes(4);
 
 	/**
 	 * How long the soft pool cleaner waits before reducing the pool size down to softPoolBaselineSize.
