@@ -31,6 +31,7 @@ import com.google.common.base.Functions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * For each {@link com.bakdata.conquery.models.query.queryplan.specific.ConceptNode} calculate the number of matching events and the span of date-ranges.
@@ -78,7 +79,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 														  calculateConceptMatches(resolved, matchingStats, worker);
 
-														  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  final WriteFuture writeFuture = worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  writeFuture.awaitUninterruptibly();
 
 														  progressReporter.report(1);
 													  }, worker.getJobsExecutorService())

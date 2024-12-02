@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import com.bakdata.conquery.models.config.ClusterConfig;
 import com.bakdata.conquery.util.SoftPool;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.DataSize;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -23,13 +21,15 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final int HEADER_SIZE = Integer.BYTES + Byte.BYTES + 2 * Long.BYTES;
 	public static final byte LAST_MESSAGE = 1;
 	public static final byte CONTINUED_MESSAGE = 0;
-
-	@Getter
-	@Setter
-	private int bufferSize = Ints.checkedCast(DataSize.megabytes(2).toBytes());
-	private final SoftPool<IoBuffer> bufferPool = new SoftPool<>(() -> IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
+	private final SoftPool<IoBuffer> bufferPool;
+
+	public ChunkWriter(ClusterConfig config, CQCoder coder) {
+		this.coder = coder;
+		int bufferSize = Ints.checkedCast(config.getMessageChunkSize().toBytes());
+		bufferPool = new SoftPool<>(config, () -> IoBuffer.allocate(bufferSize));
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -46,6 +46,15 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 		private final ProtocolEncoderOutput out;
 		private IoBuffer buffer = null;
 		private boolean closed = false;
+
+		@Override
+		public void write(int b) throws IOException {
+			if (closed) {
+				throw new IllegalStateException();
+			}
+			newBuffer(1);
+			buffer.put((byte) b);
+		}
 
 		private void newBuffer(int required) {
 			if (buffer == null || buffer.remaining() < required) {
@@ -73,15 +82,6 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 				bufferPool.offer(currentBuffer);
 			});
 			buffer = null;
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			if (closed) {
-				throw new IllegalStateException();
-			}
-			newBuffer(1);
-			buffer.put((byte) b);
 		}
 
 		@Override
