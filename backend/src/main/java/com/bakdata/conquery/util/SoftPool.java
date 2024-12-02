@@ -16,15 +16,24 @@ public class SoftPool<T> {
 	private final ConcurrentLinkedDeque<SoftReference<T>> pool = new ConcurrentLinkedDeque<>();
 	private final AtomicLong poolSize = new AtomicLong(0);
 	private final Supplier<T> supplier;
-	private final ClusterConfig config;
-	private final Thread poolCleaner = new Thread(this::cleanPool, "SoftPool Cleaner");
+	private final Thread poolCleaner;
+	private final long softPoolBaselineSize;
+	private final long cleanerPauseSeconds;
 
 	public SoftPool(ClusterConfig config, Supplier<T> supplier) {
-		this.config = config;
 		this.supplier = supplier;
 
-		// Should not prevent the JVM shutdown -> daemon
+		softPoolBaselineSize = config.getSoftPoolBaselineSize();
+		cleanerPauseSeconds = config.getSoftPoolCleanerPause().toSeconds();
 
+		if (softPoolBaselineSize <= 0 || cleanerPauseSeconds <= 0) {
+			log.debug("Not creating a Cleaner.");
+			poolCleaner = null;
+			return;
+		}
+
+		poolCleaner = new Thread(this::cleanPool, "SoftPool Cleaner");
+		// Should not prevent the JVM shutdown -> daemon
 		poolCleaner.setDaemon(true);
 		poolCleaner.start();
 	}
@@ -36,8 +45,10 @@ public class SoftPool<T> {
 	 */
 	public void offer(T v) {
 		pool.addLast(new SoftReference<>(v));
-		long poolSize = this.poolSize.incrementAndGet();
-		log.trace("Pool size: {} (offer)", poolSize);
+
+		final long currentPoolSize = poolSize.incrementAndGet();
+
+		log.trace("Pool size: {} (offer)", currentPoolSize);
 	}
 
 	/**
@@ -49,8 +60,10 @@ public class SoftPool<T> {
 
 		// First check the pool for available/returned elements
 		while ((result = pool.poll()) != null) {
-			long poolSize = this.poolSize.decrementAndGet();
-			log.trace("Pool size: {} (borrow)", poolSize);
+			final long currentPoolSize = poolSize.decrementAndGet();
+
+			log.trace("Pool size: {} (borrow)", currentPoolSize);
+
 			// The pool had an element, inspect if it is still valid
 			final T elem = result.get();
 			if (elem != null) {
@@ -68,10 +81,10 @@ public class SoftPool<T> {
 	 */
 	private void cleanPool() {
 		while (true) {
-			Uninterruptibles.sleepUninterruptibly(config.getSoftPoolCleanerPause().toSeconds(), TimeUnit.SECONDS);
+			Uninterruptibles.sleepUninterruptibly(cleanerPauseSeconds, TimeUnit.SECONDS);
 
 			log.trace("Running pool cleaner");
-			while (poolSize.get() > config.getSoftPoolBaselineSize()) {
+			while (poolSize.get() > softPoolBaselineSize) {
 				// Poll until we reached the baseline
 				borrow();
 			}
