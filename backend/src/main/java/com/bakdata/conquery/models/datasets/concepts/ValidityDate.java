@@ -57,6 +57,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		// JsonCreator was not happy, and I could not figure out why. This is probably the most performant implementation that's not two classes.
 
 		if (getColumn() != null) {
+			// TODO resolve in hot loop
 			final Column resolvedColumn = getColumn().resolve();
 			if (bucket.has(event, resolvedColumn)) {
 				return bucket.getAsDateRange(event, resolvedColumn);

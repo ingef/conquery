@@ -12,13 +12,12 @@ import java.util.stream.Stream;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
-import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -61,11 +60,12 @@ public class ExcelRenderer {
 		this.settings = settings;
 	}
 
-	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings,
+																				MetaStorage storage)
 			throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
-		setMetaData(exec);
+		setMetaData(exec, storage);
 
 		final SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
 		try {
@@ -91,12 +91,21 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final UserId owner = exec.getOwner();
-		coreProperties.setCreator(owner != null ? owner.resolve().getLabel() : config.getApplicationName());
+		String creator = config.getApplicationName();
+
+		if (exec.getOwner() != null){
+			final User user = metaStorage.get(exec.getOwner());
+
+			if (user != null){
+				creator = user.getLabel();
+			}
+		}
+
+		coreProperties.setCreator(creator);
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());
