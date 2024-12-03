@@ -53,6 +53,7 @@ public class ExcelRenderer {
 	private final ExcelConfig config;
 	private final PrintSettings settings;
 	private final ImmutableMap<String, CellStyle> styles;
+
 	public ExcelRenderer(ExcelConfig config, PrintSettings settings) {
 		workbook = new SXSSFWorkbook();
 		this.config = config;
@@ -60,8 +61,8 @@ public class ExcelRenderer {
 		this.settings = settings;
 	}
 
-	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings,
-																				MetaStorage storage)
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
+			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
 			throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
@@ -97,10 +98,10 @@ public class ExcelRenderer {
 
 		String creator = config.getApplicationName();
 
-		if (exec.getOwner() != null){
+		if (exec.getOwner() != null) {
 			final User user = metaStorage.get(exec.getOwner());
 
-			if (user != null){
+			if (user != null) {
 				creator = user.getLabel();
 			}
 		}
@@ -189,7 +190,8 @@ public class ExcelRenderer {
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
 
-		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
+		final TypeWriter[] writers =
+				infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
 		final PrintIdMapper idMapper = settings.getIdMapper();
 
 		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
@@ -224,10 +226,32 @@ public class ExcelRenderer {
 		sheet.createFreezePane(size, 1);
 	}
 
+	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
+		if (type instanceof ResultType.ListT<?>) {
+			//Excel cannot handle LIST types so we just toString them.
+			return (value, cell, styles) -> writeStringCell(cell, value, printer);
+		}
+
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
+			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
+			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
+			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
+			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
+			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
+		};
+	}
+
 	/**
 	 * Writes the result lines for each entity.
 	 */
-	private int writeRowsForEntity(List<ResultInfo> infos, EntityResult internalRow, final AtomicInteger currentRow, SXSSFSheet sheet, TypeWriter[] writers, PrintIdMapper idMapper) {
+	private int writeRowsForEntity(
+			List<ResultInfo> infos,
+			EntityResult internalRow,
+			final AtomicInteger currentRow,
+			SXSSFSheet sheet,
+			TypeWriter[] writers,
+			PrintIdMapper idMapper) {
 
 		final String[] ids = idMapper.map(internalRow).getExternalId();
 
@@ -293,22 +317,6 @@ public class ExcelRenderer {
 			// Disable auto sizing so we don't have a performance penalty
 			sheet.untrackColumnForAutoSizing(columnIndex);
 		}
-	}
-
-	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
-		if (type instanceof ResultType.ListT<?>) {
-			//Excel cannot handle LIST types so we just toString them.
-			return (value, cell, styles) -> writeStringCell(cell, value, printer);
-		}
-
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
-			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
-			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
-			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
-			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
-			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
-		};
 	}
 
 	// Type specific cell writers
