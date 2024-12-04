@@ -306,8 +306,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		}
 
 		final List<ColumnDateRange> validityDates = validityDateMap.values().stream().flatMap(List::stream).map(functionProvider::toDualColumn).toList();
-		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
-		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
+		// Need to use distinct as some ValidityDates overlap when using first/last day but also daterange
+		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).distinct().toList();
+		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).distinct().toList();
 
 		final ColumnDateRange minAndMax = ColumnDateRange.of(
 				min(allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0)),
