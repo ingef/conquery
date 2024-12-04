@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import io.dropwizard.core.Configuration;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
@@ -28,6 +29,41 @@ public class ClusterConfig extends Configuration {
 	private Duration idleTimeOut =  Duration.minutes(5);
 	private Duration heartbeatTimeout = Duration.minutes(1);
 	private Duration connectRetryTimeout = Duration.seconds(30);
+
+	/**
+	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
+	 *
+	 * Number of values to batch for chunking of unique column-values. Lower numbers reduce relative performance but reduce memory demand, avoiding OOM issues.
+	 */
+	private int columnValuesPerChunk = 1000;
+
+	/**
+	 * @see com.bakdata.conquery.io.mina.NetworkSession
+	 *
+	 * Maximum number of messages allowed to wait for writing before writer-threads are blocked.
+	 */
+	private int networkSessionMaxQueueLength = 5;
+
+	/**
+	 * {@link org.apache.mina.core.buffer.IoBuffer} size, that mina allocates.
+	 * We assume a pagesize of 4096 bytes == 4 kibibytes
+	 */
+	@NotNull
+	@Valid
+	private DataSize messageChunkSize = DataSize.kibibytes(4);
+
+	/**
+	 * How long the soft pool cleaner waits before reducing the pool size down to softPoolBaselineSize.
+	 */
+	@NotNull
+	@Valid
+	private Duration softPoolCleanerPause = Duration.seconds(10);
+
+	/**
+	 * The number of soft references the soft pool should retain after cleaning.
+	 * The actual number of {@link org.apache.mina.core.buffer.IoBuffer}
+	 */
+	private long softPoolBaselineSize = 100;
 
 	/**
 	 * Amount of backpressure before jobs can volunteer to block to send messages to their shards.

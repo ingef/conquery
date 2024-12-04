@@ -37,7 +37,8 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 				namespaceData.getFilterSearch(),
 				new ClusterEntityResolver(),
 				namespaceData.getInjectables(),
-				workerHandler
+				workerHandler,
+				config.getCluster()
 		);
 
 		for (ShardNodeInformation node : clusterState.getShardNodes().values()) {
