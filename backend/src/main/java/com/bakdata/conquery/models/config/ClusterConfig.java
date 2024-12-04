@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -42,6 +43,24 @@ public class ClusterConfig extends Configuration {
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**
+	 * Defines the maximum buffer size inclusive 4 bytes for a header. Objects larger than this size cannot be sent over the cluster.
+	 * <p/>
+	 * May only touch this for testing purposes.
+	 */
+	@Max(Integer.MAX_VALUE - 4)
+	@Min(64) // not practical
+	private int maxIoBufferSizeBytes = Integer.MAX_VALUE - 4;
+
+	/**
+	 * Defines the starting buffer allocation size. Larger can reduce reallocations, but can cause a greater memory demand.
+	 * <p/>
+	 * May only touch this for testing purposes.
+	 */
+	@Max(Integer.MAX_VALUE - 4)
+	@Min(64) // Header (4) + 1 byte (not practically)
+	private int initialIoBufferSizeBytes = 8192; // 8kb
+
+	/**
 	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
 	 *
 	 * Number of values to batch for chunking of unique column-values. Lower numbers reduce relative performance but reduce memory demand, avoiding OOM issues.
@@ -64,30 +83,41 @@ public class ClusterConfig extends Configuration {
 	private int backpressure = 1500;
 
 	@JsonIgnore
-	public NioSocketConnector getClusterConnector(ObjectMapper om, IoHandler ioHandler, String mdcLocationFmt) {
+	public NioSocketConnector getClusterConnector(ObjectMapper om, IoHandler ioHandler, String mdcLocation) {
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
+		JacksonProtocolEncoder encoder = new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class));
+		encoder.setMaxObjectSize(maxIoBufferSizeBytes);
+		encoder.setInitialBufferCapacityBytes(initialIoBufferSizeBytes);
+
 		ProtocolCodecFilter codecFilter = new ProtocolCodecFilter(
-				new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class)),
+				encoder,
 				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
 		);
-		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocationFmt));
+		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		connector.getFilterChain().addLast("codec", codecFilter);
 		connector.setHandler(ioHandler);
 		connector.getSessionConfig().setAll(getMina());
+
 		return connector;
 	}
 
 	@JsonIgnore
-	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocationFmt) throws IOException {
+	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocation) throws IOException {
 		NioSocketAcceptor acceptor = new NioSocketAcceptor();
 
-		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocationFmt));
+
+		JacksonProtocolEncoder encoder = new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class));
+		encoder.setMaxObjectSize(maxIoBufferSizeBytes);
+		encoder.setInitialBufferCapacityBytes(initialIoBufferSizeBytes);
+
 		ProtocolCodecFilter codecFilter = new ProtocolCodecFilter(
-				new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class)),
+				encoder,
 				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
 		);
+
+		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		acceptor.getFilterChain().addLast("codec", codecFilter);
 
 		acceptor.setHandler(ioHandler);

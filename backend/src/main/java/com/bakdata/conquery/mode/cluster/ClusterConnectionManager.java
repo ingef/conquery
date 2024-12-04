@@ -100,7 +100,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	public void start() throws IOException {
 		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
 
-		acceptor = config.getCluster().getClusterAcceptor(om, this, "Manager[%s]");
+		acceptor = config.getCluster().getClusterAcceptor(om, this, "Manager");
 
 		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}

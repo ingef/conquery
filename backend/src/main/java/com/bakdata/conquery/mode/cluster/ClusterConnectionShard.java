@@ -164,7 +164,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	private NioSocketConnector getClusterConnector() {
 		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
-		return config.getCluster().getClusterConnector(om, this, "Shard[%s]");
+		return config.getCluster().getClusterConnector(om, this, "Shard");
 	}
 
 	@Override

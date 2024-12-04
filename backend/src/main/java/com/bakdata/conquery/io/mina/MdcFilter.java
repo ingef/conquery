@@ -10,7 +10,7 @@ public class MdcFilter extends CommonEventFilter {
 
 	private final ThreadLocal<Integer> callDepth = ThreadLocal.withInitial(() -> 0);
 
-	private final String locationFmt;
+	private final String location;
 
 	/**
 	 * Adapted from {@link org.apache.mina.filter.logging.MdcInjectionFilter}
@@ -25,7 +25,7 @@ public class MdcFilter extends CommonEventFilter {
 
 		if (currentCallDepth == 0) {
 			/* copy context to the MDC when necessary. */
-			ConqueryMDC.setLocation(String.format(locationFmt, event.getSession().getLocalAddress().toString()));
+			ConqueryMDC.setLocation(location + String.format("[%s]", event.getSession().getLocalAddress().toString()));
 		}
 
 		try {
