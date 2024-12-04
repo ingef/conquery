@@ -65,7 +65,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		NetworkSession networkSession = new NetworkSession(session);
+		NetworkSession networkSession = new NetworkSession(session, config.getCluster().getNetworkSessionMaxQueueLength());
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
@@ -76,7 +76,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 			context.send(new AddShardNode());
 
 			for (Worker w : workers.getWorkers().values()) {
-				w.setSession(new NetworkSession(session));
+				w.setSession(networkSession);
 				WorkerInformation info = w.getInfo();
 				log.info("Sending worker identity '{}'", info.getName());
 				networkSession.send(new RegisterWorker(info));

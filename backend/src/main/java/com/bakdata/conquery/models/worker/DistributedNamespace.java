@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.cluster.ClusterEntityResolver;
+import com.bakdata.conquery.models.config.ClusterConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -36,6 +37,7 @@ public class DistributedNamespace extends Namespace {
 
 	private final WorkerHandler workerHandler;
 	private final DistributedExecutionManager executionManager;
+	private final ClusterConfig clusterConfig;
 
 	public DistributedNamespace(
 			ObjectMapper preprocessMapper,
@@ -45,11 +47,12 @@ public class DistributedNamespace extends Namespace {
 			FilterSearch filterSearch,
 			ClusterEntityResolver clusterEntityResolver,
 			List<Injectable> injectables,
-			WorkerHandler workerHandler
-	) {
+			WorkerHandler workerHandler,
+			ClusterConfig clusterConfig) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, clusterEntityResolver, injectables);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
+		this.clusterConfig = clusterConfig;
 	}
 
 	@Override
@@ -64,7 +67,13 @@ public class DistributedNamespace extends Namespace {
 	@Override
 	void registerColumnValuesInSearch(Set<Column> columns) {
 		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
-		getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns.stream().map(Column::getId).collect(Collectors.toSet()), this));
+
+		final CollectColumnValuesJob columnValuesJob = new CollectColumnValuesJob(
+				clusterConfig.getColumnValuesPerChunk(),
+				columns.stream().map(Column::getId).collect(Collectors.toSet()), this
+		);
+
+		getWorkerHandler().sendToAll(columnValuesJob);
 	}
 
 }
