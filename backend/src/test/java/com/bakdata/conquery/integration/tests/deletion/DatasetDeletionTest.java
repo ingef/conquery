@@ -145,7 +145,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().resolve().getTable().getDataset().equals(dataset.getId()))
+							.filteredOn(cBlock -> cBlock.getBucket().getDataset().equals(dataset.getId()))
 							.isEmpty();
 				}
 			}
