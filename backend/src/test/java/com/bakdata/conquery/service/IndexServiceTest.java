@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.index.Index;
 import com.bakdata.conquery.models.index.IndexService;
-import com.bakdata.conquery.models.index.MapIndex;
 import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
@@ -40,6 +40,8 @@ public class IndexServiceTest {
 	@RegisterExtension
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
 
+	public static final String MAPPING_PATH = "/tests/aggregator/MAPPED/mapping.csv";
+
 	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
@@ -49,7 +51,7 @@ public class IndexServiceTest {
 	private static void initRefServer(ClientAndServer mockServer) {
 		log.info("Test loading of mapping");
 
-		try (InputStream inputStream = In.resource("/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv").asStream()) {
+		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
 			mockServer.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
@@ -71,13 +73,20 @@ public class IndexServiceTest {
 
 	@Test
 	@Order(0)
-	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
+	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException, ExecutionException, InterruptedException {
+		log.info("Test loading of mapping");
+
+		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
+			REF_SERVER.when(request().withPath("/mapping.csv"))
+					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
+		}
 
 		final MapInternToExternMapper mapper = new MapInternToExternMapper(
 				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				new URI("classpath:"+MAPPING_PATH),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 
@@ -85,14 +94,16 @@ public class IndexServiceTest {
 				"testUrlAbsolute",
 				new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 		final MapInternToExternMapper mapperUrlRelative = new MapInternToExternMapper(
 				"testUrlRelative",
 				new URI("./mapping.csv"),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 
@@ -140,9 +151,10 @@ public class IndexServiceTest {
 		log.info("Test evicting of mapping on mapper");
 		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
 				"test1",
-				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+				new URI("classpath:"+MAPPING_PATH),
 				"internal",
-				"{{external}}"
+				"{{external}}",
+				false
 		);
 
 		injectComponents(mapInternToExternMapper, indexService);
@@ -153,7 +165,7 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext().get();
+		final Index<String> mappingBeforeEvict = mapInternToExternMapper.getInt2ext().get();
 
 		indexService.evictCache();
 
@@ -162,7 +174,7 @@ public class IndexServiceTest {
 
 		mapInternToExternMapper.init();
 
-		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
+		final Index<String> mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
