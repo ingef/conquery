@@ -30,7 +30,7 @@ public class JacksonProtocolDecoder extends CumulativeProtocolDecoder {
 			throw new BufferDataException("Object length should be greater than 4: " + length);
 		}
 
-		// Resize limit to the frame only the object that we want to read now
+		// Resize limit to frame only the object that we want to read now
 		int oldLimit = in.limit();
 		int beforeReadPosition = in.position();
 		in.limit(in.position() + length);

@@ -16,6 +16,8 @@ public class MinaStackTest {
 
 	@Test
 	void test() throws IOException {
+
+		// Server
 		NioSocketAcceptor acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
 
@@ -34,5 +36,41 @@ public class MinaStackTest {
 		acceptor.getSessionConfig().setAll(minaConfig);
 		InetSocketAddress inboundAddress = new InetSocketAddress(0);
 		acceptor.bind(inboundAddress);
+
+		// Client
+//		final InetSocketAddress address = new InetSocketAddress(
+//				config.getCluster().getManagerURL().getHostAddress(),
+//				config.getCluster().getPort()
+//		);
+//
+//
+//		connector = getClusterConnector();
+//
+//		while (true) {
+//			try {
+//				log.info("Trying to connect to {}", address);
+//
+//				// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
+//				future = connector.connect(address);
+//
+//				future.awaitUninterruptibly();
+//
+//				if (future.isConnected()) {
+//					break;
+//				}
+//
+//				future.cancel();
+//				// Sleep thirty seconds then retry.
+//				TimeUnit.SECONDS.sleep(config.getCluster().getConnectRetryTimeout().toSeconds());
+//
+//			}
+//			catch (RuntimeIoException e) {
+//				log.warn("Failed to connect to {}", address, e);
+//			}
+//			catch (InterruptedException e) {
+//				log.warn("Interrupted while trying to connector to cluster, giving up.", e);
+//				break;
+//			}
+//		}
 	}
 }

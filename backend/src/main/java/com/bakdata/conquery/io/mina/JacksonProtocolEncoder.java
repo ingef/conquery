@@ -25,8 +25,7 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
 		int objectSize = buf.position() - 4;
 		if (objectSize > getMaxObjectSize()) {
-			throw new IllegalArgumentException("The encoded object is too big: " + objectSize + " (> " + getMaxObjectSize()
-											   + ')');
+			throw new IllegalArgumentException("The encoded object is too big: " + objectSize + " (> " + getMaxObjectSize() + ')');
 		}
 
 		// Fill the length field
