@@ -139,6 +139,15 @@ public class UIProcessor {
 		return FrontendRoleContent.builder().id(id).build();
 	}
 
+
+	public FrontendUserContent getUserContent(UserId id) {
+		User user = getStorage().getUser(id);
+		if (user != null) {
+			return getUserContent(user);
+		}
+		return FrontendUserContent.builder().id(id).build();
+	}
+
 	public FrontendUserContent getUserContent(User user) {
 		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups().toList());
 		availableGroups.removeIf(g -> g.containsMember(user));
