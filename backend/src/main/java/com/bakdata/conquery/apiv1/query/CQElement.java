@@ -11,7 +11,6 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -79,7 +78,7 @@ public abstract class CQElement implements Visitable {
 	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) ;
 
 	@JsonIgnore
-	public abstract List<ResultInfo> getResultInfos(PrintSettings settings);
+	public abstract List<ResultInfo> getResultInfos();
 
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

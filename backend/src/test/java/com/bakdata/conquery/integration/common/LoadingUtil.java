@@ -18,10 +18,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -48,6 +50,7 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -64,7 +67,21 @@ import org.assertj.core.description.LazyTextDescription;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException, JSONException {
+	public static void importDataset(Client client, UriBuilder adminUriBuilder, Dataset dataset) {
+
+		final URI uri = HierarchyHelper.hierarchicalPath(adminUriBuilder, AdminDatasetsResource.class, "addDataset")
+									   .build();
+
+		final Invocation.Builder request = client.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+		try (final Response response = request.post(Entity.json(dataset))) {
+
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
+	}
+
+	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -76,7 +93,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -87,11 +104,13 @@ public class LoadingUtil {
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 
-			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, false);
+
+			// Since we don't submit the query but injecting it into the manager we need to set the id resolver
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user, support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -109,13 +128,13 @@ public class LoadingUtil {
 	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
-			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
+			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage());
 			uploadTable(support, table);
 
 			if (autoConcept) {
 				final TreeConcept concept = AutoConceptUtil.createConcept(table);
 
-				uploadConcept(support, table.getDataset(), concept);
+				uploadConcept(support, table.getDataset().resolve(), concept);
 			}
 		}
 	}
@@ -131,6 +150,25 @@ public class LoadingUtil {
 					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
 					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
+	}
+
+	public static void uploadConcept(StandaloneSupport support, Dataset dataset, Concept<?> concept) {
+		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
+
+		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+		try (final Response response = request.post(Entity.json(concept))) {
+
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
+	}
+
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		List<File> cqpps = generateCqpp(support, tables);
+
+		importCqppFiles(support, cqpps);
 	}
 
 	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
@@ -174,6 +212,16 @@ public class LoadingUtil {
 		return preprocessedFiles;
 	}
 
+	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
+		for (File cqpp : cqppFiles) {
+			uploadCqpp(support, cqpp, false, Response.Status.Family.SUCCESSFUL);
+		}
+
+		support.waitUntilWorkDone();
+
+
+	}
+
 	public static void uploadCqpp(StandaloneSupport support, File cqpp, boolean update, Response.Status.Family expectedResponseFamily) {
 		if(update) {
 			assertThat(cqpp).exists();
@@ -210,22 +258,6 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
-		for (File cqpp : cqppFiles) {
-			uploadCqpp(support, cqpp, false, Response.Status.Family.SUCCESSFUL);
-		}
-
-		support.waitUntilWorkDone();
-
-
-	}
-
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		List<File> cqpps = generateCqpp(support, tables);
-
-		importCqppFiles(support, cqpps);
-	}
-
 	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
 		Dataset dataset = support.getDataset();
 
@@ -233,35 +265,12 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> c.setDataset(support.getDataset().getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {
 			uploadConcept(support, dataset, concept);
 		}
-	}
-
-	public static void uploadConcept(StandaloneSupport support, Dataset dataset, Concept<?> concept) {
-		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
-
-		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
-		try (final Response response = request.post(Entity.json(concept))) {
-
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
-		}
-	}
-
-
-	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws IOException {
-		return ConqueryTestSpec.parseSubTreeList(
-				support,
-				rawConcepts,
-				Concept.class,
-				c -> c.setDataset(support.getDataset())
-		);
 	}
 
 	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
@@ -272,6 +281,15 @@ public class LoadingUtil {
 		}
 
 
+	}
+
+	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws IOException {
+		return ConqueryTestSpec.parseSubTreeList(
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset().getDataset())
+		);
 	}
 
 	private static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
@@ -300,7 +318,7 @@ public class LoadingUtil {
 		}
 
 		try (InputStream in = content.getIdMapping().stream()) {
-			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+			support.getAdminDatasetsProcessor().setIdMapping(in, support.getNamespace());
 		}
 	}
 
@@ -309,15 +327,35 @@ public class LoadingUtil {
 
 		for (RequiredSecondaryId required : secondaryIds) {
 			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
+					required.toSecondaryId(support.getDataset());
 
-			support.getDatasetsProcessor()
-				   .addSecondaryId(support.getNamespace(), description);
+			uploadSecondaryId(support, description);
 
 			out.put(description.getName(), description);
 		}
 
 		return out;
+	}
+
+	private static void uploadSecondaryId(@NonNull StandaloneSupport support, @NonNull SecondaryIdDescription secondaryIdDescription) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Invocation.Builder request = support.getClient()
+												  .target(conceptURI)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.post(Entity.entity(secondaryIdDescription, MediaType.APPLICATION_JSON_TYPE))) {
+
+
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {

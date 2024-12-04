@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,19 +57,22 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			Role role = storage.getRole(roleId);
+			Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
-		for (Group group : storage.getAllGroups()) {
+
+		for (Iterator<Group> it = getMetaStorage().getAllGroups().iterator(); it.hasNext(); ) {
+			Group group = it.next();
 			if (!group.containsMember(this)) {
 				continue;
 			}
 			permissions = Sets.union(permissions, group.getEffectivePermissions());
 		}
+
 		return permissions;
 	}
 
@@ -77,6 +81,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage();
 		}
+	}
+
+	@Override
+	public void updateStorage() {
+		getMetaStorage().updateUser(this);
 	}
 
 	@Override
@@ -91,42 +100,102 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return Collections.unmodifiableSet(roles);
 	}
 
-	@Override
-	public void updateStorage() {
-		storage.updateUser(this);
+	public void authorize(Set<? extends Authorized> objects, Ability ability) {
+		for (Authorized object : objects) {
+			authorize(object, ability);
+		}
+	}
+
+	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
+		if (isOwner(object)) {
+			return;
+		}
+
+		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public boolean isOwner(Authorized object) {
+		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
 	}
 
 	@Override
 	public UserId createId() {
-		return new UserId(name);
+		UserId userId = new UserId(name);
+		userId.setMetaStorage(getMetaStorage());
+		return userId;
+	}
+
+	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
+		return authorized.stream().allMatch(auth -> isPermitted(auth, ability));
+	}
+
+	public boolean isPermitted(Authorized object, Ability ability) {
+		if (isOwner(object)) {
+			return true;
+		}
+
+		return shiroUserAdapter.isPermitted(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
+		return authorizeds.stream()
+						  .map(auth -> isPermitted(auth, ability))
+						  .collect(Collectors.toCollection(BooleanArrayList::new))
+						  .toBooleanArray();
+	}
+
+	@JsonIgnore
+	@Override
+	public boolean isDisplayLogout() {
+		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
+	}
+
+	@JsonIgnore
+	@Override
+	public ConqueryAuthenticationInfo getAuthenticationInfo() {
+		return shiroUserAdapter.getAuthenticationInfo().get();
+	}
+
+	@JsonIgnore
+	@Override
+	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
+		shiroUserAdapter.getAuthenticationInfo().set(info);
+	}
+
+	@Override
+	@JsonIgnore
+	public User getUser() {
+		return this;
 	}
 
 	/**
-	 * This class is non-static so it's a fixed part of the enclosing User object.
+	 * This class is non-static, so it's a fixed part of the enclosing User object.
 	 * It's protected for testing purposes only.
 	 */
+	@Getter
 	public class ShiroUserAdapter extends FilteredUser {
 
-		@Getter
 		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
 				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
 
 		@Override
 		public Object getPrincipal() {
 			return getId();
-		}		@Override
+		}
+
+		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {
 			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
 		}
 
 		@Override
-		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+		public PrincipalCollection getPrincipals() {
+			return authenticationInfo.get().getPrincipals();
 		}
 
 		@Override
-		public PrincipalCollection getPrincipals() {
-			return authenticationInfo.get().getPrincipals();
+		public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
 		}
 
 		@Override
@@ -145,75 +214,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		}
 
 
-
-
-
-	}	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
-		if (isOwner(object)) {
-			return;
-		}
-
-		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
 	}
-
-	public void authorize(Set<? extends Authorized> objects, Ability ability) {
-		for (Authorized object : objects) {
-			authorize(object, ability);
-		}
-	}
-
-	public boolean isPermitted(Authorized object, Ability ability) {
-		if (isOwner(object)) {
-			return true;
-		}
-
-		return shiroUserAdapter.isPermitted(object.createPermission(EnumSet.of(ability)));
-	}
-
-
-	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
-		return authorized.stream()
-						 .allMatch(auth -> isPermitted(auth, ability));
-	}
-
-
-	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
-		return authorizeds.stream()
-						  .map(auth -> isPermitted(auth, ability))
-						  .collect(Collectors.toCollection(BooleanArrayList::new))
-						  .toBooleanArray();
-	}
-
-
-	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && equals(((Owned) object).getOwner());
-	}
-
-	@JsonIgnore
-	@Override
-	public boolean isDisplayLogout() {
-		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
-	}
-
-	@JsonIgnore
-	@Override
-	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
-		shiroUserAdapter.getAuthenticationInfo().set(info);
-	}
-
-
-	@JsonIgnore
-	@Override
-	public ConqueryAuthenticationInfo getAuthenticationInfo() {
-		return shiroUserAdapter.getAuthenticationInfo().get();
-	}
-
-	@Override
-	@JsonIgnore
-	public User getUser() {
-		return this;
-	}
-
 
 
 }

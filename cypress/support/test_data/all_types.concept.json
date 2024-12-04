@@ -79,7 +79,8 @@
             {
                 "label": "BIG_MULTI_SELECT",
                 "column": "table.STRING",
-                "type": "BIG_MULTI_SELECT"
+                "type": "BIG_MULTI_SELECT",
+                "allowDropFile": true
             },
             {
                 "label": "DURATION_SUM",
@@ -158,12 +159,6 @@
                 "label": "RANDOM",
                 "type": "RANDOM",
                 "column": "table.INTEGER"
-            },
-            {
-                "label": "COUNT_OCCURENCES",
-                "type": "COUNT_OCCURENCES",
-                "column": "table.STRING",
-                "selection": []
             },
             {
                 "label": "FIRST",

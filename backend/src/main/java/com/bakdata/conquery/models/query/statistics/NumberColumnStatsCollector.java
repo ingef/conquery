@@ -10,7 +10,6 @@ import java.util.Map;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.Range;
 import lombok.Getter;
@@ -101,13 +100,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return;
 		}
 
-		Number number = (Number) value;
-
-		if (ResultType.Primitive.MONEY.equals(getType())) {
-			number = ResultPrinters.readMoney(getPrintSettings(), number);
-		}
-
-		statistics.addValue(number.doubleValue());
+		statistics.addValue(((Number) value).doubleValue());
 	}
 
 	@Override

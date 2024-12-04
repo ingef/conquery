@@ -31,9 +31,10 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		if (getColumn().getType() != MajorTypeId.DATE_RANGE) {
+		MajorTypeId type = getColumn().resolve().getType();
+		if (type != MajorTypeId.DATE_RANGE) {
 			throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type "
-																	+ getColumn().getType());
+																	+ type);
 		}
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
@@ -42,6 +43,6 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		return new RangeFilterNode(value, new DurationSumAggregator(getColumn()));
+		return new RangeFilterNode(value, new DurationSumAggregator(getColumn().resolve()));
 	}
 }

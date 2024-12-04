@@ -1,12 +1,21 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +23,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class ManagedExecutionId extends Id<ManagedExecution> {
+public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, Authorized {
 
 	private final DatasetId dataset;
 	private final UUID execution;
@@ -23,6 +32,22 @@ public class ManagedExecutionId extends Id<ManagedExecution> {
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(execution);
+	}
+
+	@Override
+	public void collectIds(Collection<? super Id<?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
+	}
+
+	@Override
+	public Identifiable<?> get(MetaStorage storage) {
+		return storage.getExecution(this);
+	}
+
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return ExecutionPermission.onInstance(abilities, this);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ManagedExecutionId> {

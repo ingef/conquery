@@ -5,18 +5,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -34,6 +36,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
@@ -43,9 +46,14 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
 public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 
+	/**
+	 * Trying to rate-limit how many threads are actively allocating column-values.
+	 */
+	private final int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors(), 5);
+
+	public final int columValueChunkSize;
 	@Getter
-	@NsIdRefCollection
-	private final Set<Column> columns;
+	private final Set<ColumnId> columns;
 
 	/**
 	 * This exists only on the manager for the afterAllReaction.
@@ -56,28 +64,45 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<Table, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets().stream()
-															  .collect(Collectors.groupingBy(Bucket::getTable));
+		final Map<TableId, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
+																.collect(Collectors.groupingBy(Bucket::getTable));
 
-
-		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(context.getJobsExecutorService());
+		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS));
 
 		final AtomicInteger done = new AtomicInteger();
-
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
 					   .filter(column -> table2Buckets.get(column.getTable()) != null)
-					   .map(column ->
-									jobsExecutorService.submit(() -> {
-										final List<Bucket> buckets = table2Buckets.get(column.getTable());
+					   .map(ColumnId::resolve)
+					   .map(column -> {
+								// Acquire before submitting, so we don't spam the executor with waiting threads
+								return jobsExecutorService.submit(() -> {
+									final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
 
-										final Set<String> values = buckets.stream()
-																		  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-																		  .collect(Collectors.toSet());
-										context.send(new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column, values));
-										log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
-									})
+									final Set<String> values = buckets.stream()
+																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+																	  .collect(Collectors.toSet());
+
+									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
+
+									// Chunk values, to produce smaller messages
+									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
+
+									log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
+											  column.getId(), values.size(), columValueChunkSize
+									);
+
+									for (List<String> chunk : partition) {
+										// Send values to manager
+										RegisterColumnValues message =
+												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+										WriteFuture send = context.send(message);
+
+										send.awaitUninterruptibly();
+									}
+								});
+							}
 					   )
 					   .collect(Collectors.toList());
 
@@ -96,6 +121,9 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
 			}
 		}
+
+		// We may do this, because we own this specific ExecutorService.
+		jobsExecutorService.shutdown();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
@@ -120,7 +148,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 			log.debug("{} shrinking searches", this);
 
-			for (Column column : columns) {
+			for (ColumnId columnId : columns) {
+				Column column = columnId.resolve();
 				try {
 					filterSearch.shrinkSearch(column);
 				}

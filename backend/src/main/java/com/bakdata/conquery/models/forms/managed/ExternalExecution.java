@@ -24,6 +24,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ExternalStateImpl;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -55,7 +57,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	private UUID externalTaskId;
 
-	public ExternalExecution(ExternalForm form, User user, Dataset dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
+	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
 		super(form, user, dataset, metaStorage, datasetRegistry);
 	}
 
@@ -85,7 +87,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			// Create service user
 			final Dataset dataset = getNamespace().getDataset();
-			final User originalUser = getOwner();
+			final User originalUser = getOwner().resolve();
 			final FormBackendConfig formBackendConfig = getConfig().getPluginConfigs(FormBackendConfig.class)
 																   .filter(c -> c.supportsFormType(getSubmittedForm().getFormType()))
 																   .collect(MoreCollectors.onlyElement());

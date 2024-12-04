@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.excel;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
@@ -11,15 +12,19 @@ import java.util.stream.Stream;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableMap;
@@ -42,60 +47,37 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 public class ExcelRenderer {
 
 	public static final int MAX_LINES = 1_048_576;
-
-	private static TypeWriter writer(ResultType type) {
-		if(!(type instanceof ResultType.Primitive)){
-			//Excel cannot handle complex types so we just toString them.
-			return (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
-		}
-
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> (info, settings, cell, value, styles) -> writeBooleanCell(info, cell, value, styles);
-			case INTEGER -> ExcelRenderer::writeIntegerCell;
-			case MONEY -> ExcelRenderer::writeMoneyCell;
-			case NUMERIC -> ExcelRenderer::writeNumericCell;
-			case DATE -> ExcelRenderer::writeDateCell;
-			default -> (info, settings, cell, value, styles) -> writeStringCell(info, cell, value, styles);
-		};
-	}
-
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
-
 	private final SXSSFWorkbook workbook;
 	private final ExcelConfig config;
-	private final PrintSettings cfg;
+	private final PrintSettings settings;
 	private final ImmutableMap<String, CellStyle> styles;
 
-
-	public ExcelRenderer(ExcelConfig config, PrintSettings cfg) {
+	public ExcelRenderer(ExcelConfig config, PrintSettings settings) {
 		workbook = new SXSSFWorkbook();
 		this.config = config;
-		styles = config.generateStyles(workbook, cfg);
-		this.cfg = cfg;
+		styles = config.generateStyles(workbook, settings);
+		this.settings = settings;
 	}
 
-	@FunctionalInterface
-	private interface TypeWriter {
-		void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
-	}
-
-	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
+			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
 			throws IOException {
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos(printSettings);
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
-		setMetaData(exec);
+		setMetaData(exec, storage);
 
-		SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
+		final SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
 		try {
 			sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
 			// Create a table environment inside the excel sheet
-			XSSFTable table = createTableEnvironment(exec, sheet);
+			final XSSFTable table = createTableEnvironment(exec, sheet);
 
-			writeHeader(sheet, idHeaders, resultInfosExec, table);
+			writeHeader(sheet, idHeaders, resultInfosExec, table, printSettings);
 
-			int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
+			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))), new ExcelResultPrinters());
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
@@ -110,37 +92,24 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final User owner = exec.getOwner();
-		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
+		String creator = config.getApplicationName();
+
+		if (exec.getOwner() != null) {
+			final User user = metaStorage.get(exec.getOwner());
+
+			if (user != null) {
+				creator = user.getLabel();
+			}
+		}
+
+		coreProperties.setCreator(creator);
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());
-	}
-
-	/**
-	 * Do postprocessing on the result to improve the visuals:
-	 * - Set the area of the table environment
-	 * - Freeze the id columns
-	 * - Add autofilters (not for now)
-	 */
-	private void postProcessTable(SXSSFSheet sheet, XSSFTable table, int writtenLines, int size) {
-		// Extend the table area to the added data
-		CellReference topLeft = new CellReference(0, 0);
-
-		// The area must be at least a header row and a data row. If no line was written we include an empty data row so POI is happy
-		CellReference bottomRight = new CellReference(Math.max(1, writtenLines), table.getColumnCount() - 1);
-		AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
-		table.setArea(newArea);
-
-		// Add auto filters. This must be done on the lower level CTTable. Using SXSSFSheet::setAutoFilter will corrupt the table
-		table.getCTTable().addNewAutoFilter();
-
-		// Freeze Header and id columns
-		sheet.createFreezePane(size, 1);
 	}
 
 	/**
@@ -148,13 +117,13 @@ public class ExcelRenderer {
 	 */
 	@NotNull
 	private XSSFTable createTableEnvironment(ManagedExecution exec, SXSSFSheet sheet) {
-		XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
+		final XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
 
-		CTTable cttable = table.getCTTable();
+		final CTTable cttable = table.getCTTable();
 		table.setName(exec.getLabelWithoutAutoLabelSuffix());
 		cttable.setTotalsRowShown(false);
 
-		CTTableStyleInfo styleInfo = cttable.addNewTableStyleInfo();
+		final CTTableStyleInfo styleInfo = cttable.addNewTableStyleInfo();
 		// Not sure how important this name is
 		styleInfo.setName("TableStyleMedium2");
 		styleInfo.setShowColumnStripes(false);
@@ -170,24 +139,24 @@ public class ExcelRenderer {
 			SXSSFSheet sheet,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> infos,
-			XSSFTable table) {
+			XSSFTable table, PrintSettings printSettings) {
 
-		CTTableColumns columns = table.getCTTable().addNewTableColumns();
+		final CTTableColumns columns = table.getCTTable().addNewTableColumns();
 		columns.setCount(idHeaders.size() + infos.size());
-		UniqueNamer uniqueNamer = new UniqueNamer(cfg);
+		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
 
 		{
-			Row header = sheet.createRow(0);
+			final Row header = sheet.createRow(0);
 			// First to create the columns and track them for auto size before the first row is written
 			int currentColumn = 0;
 			for (ResultInfo idHeader : idHeaders) {
-				CTTableColumn column = columns.addNewTableColumn();
+				final CTTableColumn column = columns.addNewTableColumn();
 				// Table column ids MUST be set and MUST start at 1, excel will fail otherwise
 				column.setId(currentColumn + 1);
-				final String uniqueName = uniqueNamer.getUniqueName(idHeader);
+				final String uniqueName = uniqueNamer.getUniqueName(idHeader, printSettings);
 				column.setName(uniqueName);
 
-				Cell headerCell = header.createCell(currentColumn);
+				final Cell headerCell = header.createCell(currentColumn);
 				headerCell.setCellValue(uniqueName);
 
 				// Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
@@ -198,12 +167,12 @@ public class ExcelRenderer {
 			}
 
 			for (ResultInfo info : infos) {
-				final String columnName = uniqueNamer.getUniqueName(info);
-				CTTableColumn column = columns.addNewTableColumn();
+				final String columnName = uniqueNamer.getUniqueName(info, printSettings);
+				final CTTableColumn column = columns.addNewTableColumn();
 				column.setId(currentColumn + 1);
 				column.setName(columnName);
 
-				Cell headerCell = header.createCell(currentColumn);
+				final Cell headerCell = header.createCell(currentColumn);
 				headerCell.setCellValue(columnName);
 
 				sheet.trackColumnForAutoSizing(currentColumn);
@@ -216,11 +185,16 @@ public class ExcelRenderer {
 	private int writeBody(
 			SXSSFSheet sheet,
 			List<ResultInfo> infos,
-			Stream<EntityResult> resultLines) {
+			Stream<EntityResult> resultLines, PrinterFactory printerFactory) {
 
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
-		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, currentRow, cfg, sheet)).sum();
+
+		final TypeWriter[] writers =
+				infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
+		final PrintIdMapper idMapper = settings.getIdMapper();
+
+		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()) {
@@ -231,43 +205,86 @@ public class ExcelRenderer {
 	}
 
 	/**
+	 * Do postprocessing on the result to improve the visuals:
+	 * - Set the area of the table environment
+	 * - Freeze the id columns
+	 * - Add autofilters (not for now)
+	 */
+	private void postProcessTable(SXSSFSheet sheet, XSSFTable table, int writtenLines, int size) {
+		// Extend the table area to the added data
+		final CellReference topLeft = new CellReference(0, 0);
+
+		// The area must be at least a header row and a data row. If no line was written we include an empty data row so POI is happy
+		final CellReference bottomRight = new CellReference(Math.max(1, writtenLines), table.getColumnCount() - 1);
+		final AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+		table.setArea(newArea);
+
+		// Add auto filters. This must be done on the lower level CTTable. Using SXSSFSheet::setAutoFilter will corrupt the table
+		table.getCTTable().addNewAutoFilter();
+
+		// Freeze Header and id columns
+		sheet.createFreezePane(size, 1);
+	}
+
+	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
+		if (type instanceof ResultType.ListT<?>) {
+			//Excel cannot handle LIST types so we just toString them.
+			return (value, cell, styles) -> writeStringCell(cell, value, printer);
+		}
+
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
+			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
+			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
+			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
+			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
+			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
+		};
+	}
+
+	/**
 	 * Writes the result lines for each entity.
 	 */
 	private int writeRowsForEntity(
 			List<ResultInfo> infos,
 			EntityResult internalRow,
 			final AtomicInteger currentRow,
-			PrintSettings settings,
-			SXSSFSheet sheet) {
-		String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
+			SXSSFSheet sheet,
+			TypeWriter[] writers,
+			PrintIdMapper idMapper) {
+
+		final String[] ids = idMapper.map(internalRow).getExternalId();
 
 		int writtenLines = 0;
 
-		for (Object[] resultValues : internalRow.listResultLines()) {
+		for (Object[] line : internalRow.listResultLines()) {
 			final int thisRow = currentRow.getAndIncrement();
-			Row row = sheet.createRow(thisRow);
+			final Row row = sheet.createRow(thisRow);
+
 			// Write id cells
 			int currentColumn = 0;
+
 			for (String id : ids) {
-				Cell idCell = row.createCell(currentColumn);
+				final Cell idCell = row.createCell(currentColumn);
 				idCell.setCellValue(id);
 				currentColumn++;
 			}
 
 			// Write data cells
-			for (int i = 0; i < infos.size(); i++) {
-				ResultInfo resultInfo = infos.get(i);
-				Object resultValue = resultValues[i];
-				Cell dataCell = row.createCell(currentColumn);
+			for (int index = 0; index < infos.size(); index++) {
+				final Object value = line[index];
+				final Cell dataCell = row.createCell(currentColumn);
 				currentColumn++;
-				if (resultValue == null) {
+
+				if (value == null) {
 					continue;
 				}
 
-				// Fallback to string if type is not explicitly registered
-				TypeWriter typeWriter = writer(resultInfo.getType());
 
-				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
+				// Fallback to string if type is not explicitly registered
+				final TypeWriter typeWriter = writers[index];
+
+				typeWriter.writeCell(value, dataCell, styles);
 			}
 
 			if (thisRow == config.getLastRowToAutosize()) {
@@ -303,56 +320,49 @@ public class ExcelRenderer {
 	}
 
 	// Type specific cell writers
-	private static void writeStringCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(
-				info.printNullable(
-						value
-				));
+	private static void writeStringCell(Cell cell, Object value, Printer printer) {
+		cell.setCellValue((String) printer.apply(value));
 	}
 
 	/**
 	 * This writer is only used on Columns with the result type {@link ResultType.Primitive#BOOLEAN}, not on complex types such as `LIST[BOOLEAN]`,
 	 * because MS Excel can only represent those as strings
 	 */
-	private static void writeBooleanCell(ResultInfo info, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (value instanceof Boolean aBoolean) {
-			cell.setCellValue(aBoolean);
-			return;
-		}
-		cell.setCellValue(info.printNullable(value));
+	private static void writeBooleanCell(Object value, Cell cell, Printer printer) {
+		cell.setCellValue((Boolean) printer.apply(value));
 	}
 
-	private static void writeDateCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (!(value instanceof Number)) {
-			throw new IllegalStateException(String.format("`%s` Expected an Number but got an '%s' with the value: %s",
-														  info,
-														  value != null ? value.getClass().getName() : "no type", value
-			));
-		}
-		cell.setCellValue(CDate.toLocalDate(((Number) value).intValue()));
-		cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
-	}
-
-	public static void writeIntegerCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(((Number) value).longValue());
+	public static void writeIntegerCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
+		cell.setCellValue(((Number) printer.apply(value)).longValue());
 		cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
 	}
 
-	public static void writeNumericCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(((Number) value).doubleValue());
-		cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
-	}
+	public static void writeMoneyCell(Object valueRaw, Cell cell, Printer printer, PrintSettings settings, Map<String, CellStyle> styles) {
 
-	public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
+		final BigDecimal value = (BigDecimal) printer.apply(valueRaw);
+
+		final CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
 		if (currencyStyle == null) {
-			// Print as cents or what ever the minor currency unit is
-			cell.setCellValue(value.toString());
+			// Print as cents or whatever the minor currency unit is
+			cell.setCellValue(value.movePointRight(settings.getCurrency().getDefaultFractionDigits()).intValue());
 			return;
 		}
 		cell.setCellStyle(currencyStyle);
-		cell.setCellValue(
-				new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
-		);
+		cell.setCellValue(value.doubleValue());
+	}
+
+	public static void writeNumericCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
+		cell.setCellValue(((Number) printer.apply(value)).doubleValue());
+		cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
+	}
+
+	private static void writeDateCell(Object value, Cell cell, Printer printer, Map<String, CellStyle> styles) {
+		cell.setCellValue((LocalDate) printer.apply(value));
+		cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
+	}
+
+	@FunctionalInterface
+	private interface TypeWriter {
+		void writeCell(Object value, Cell cell, Map<String, CellStyle> styles);
 	}
 }

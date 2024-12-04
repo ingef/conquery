@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -20,6 +19,8 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -27,8 +28,10 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Functions;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * For each {@link com.bakdata.conquery.models.query.queryplan.specific.ConceptNode} calculate the number of matching events and the span of date-ranges.
@@ -38,8 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class UpdateMatchingStatsMessage extends WorkerMessage {
 
-	@NsIdRefCollection
-	private final Collection<Concept<?>> concepts;
+	@Getter
+	private final Collection<ConceptId> concepts;
 
 
 	@Override
@@ -50,16 +53,11 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 	@RequiredArgsConstructor
 	private static class UpdateMatchingStatsJob extends Job {
 		private final Worker worker;
-		private final Collection<Concept<?>> concepts;
-
-		@Override
-		public String getLabel() {
-			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
-		}
+		private final Collection<ConceptId> concepts;
 
 		@Override
 		public void execute() throws Exception {
-			if (worker.getStorage().getAllCBlocks().isEmpty()) {
+			if (worker.getStorage().getAllCBlocks().findAny().isEmpty()) {
 				log.debug("Worker {} is empty, skipping.", worker);
 				return;
 			}
@@ -69,18 +67,20 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 			log.info("BEGIN update Matching stats for {} Concepts", concepts.size());
 
-			final Map<? extends Concept<?>, CompletableFuture<Void>>
+			final Map<? extends ConceptId, CompletableFuture<Void>>
 					subJobs =
 					concepts.stream()
 							.collect(Collectors.toMap(Functions.identity(),
 													  concept -> CompletableFuture.runAsync(() -> {
-														  final Map<ConceptElement<?>, MatchingStats.Entry>
+														  final Concept<?> resolved = concept.resolve();
+														  final Map<ConceptElementId<?>, MatchingStats.Entry>
 																  matchingStats =
-																  new HashMap<>(concept.countElements());
+																  new HashMap<>(resolved.countElements());
 
-														  calculateConceptMatches(concept, matchingStats, worker);
+														  calculateConceptMatches(resolved, matchingStats, worker);
 
-														  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  final WriteFuture writeFuture = worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  writeFuture.awaitUninterruptibly();
 
 														  progressReporter.report(1);
 													  }, worker.getJobsExecutorService())
@@ -110,7 +110,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								return;
 							}
 
-							log.trace("Still waiting for `{}`", concept.getId());
+							log.trace("Still waiting for `{}`", concept);
 
 						});
 					}
@@ -121,19 +121,23 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		}
 
+		@Override
+		public String getLabel() {
+			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
+		}
 
-		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
-			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
+			for (CBlock cBlock : worker.getStorage().getAllCBlocks().toList()) {
 
-				if (!cBlock.getConnector().getConcept().equals(concept)) {
+				if (!cBlock.getConnector().getConcept().equals(concept.getId())) {
 					continue;
 				}
 
 				try {
-					final Bucket bucket = cBlock.getBucket();
-					final Table table = bucket.getTable();
+					final Bucket bucket = cBlock.getBucket().resolve();
+					final Table table = bucket.getTable().resolve();
 
 					for (String entity : bucket.entities()) {
 
@@ -145,9 +149,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 							if (!(concept instanceof TreeConcept) || localIds == null) {
-
-								results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
-
+								results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
 								continue;
 							}
 
@@ -158,7 +160,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 							while (element != null) {
-								results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
+								results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
 									   .addEvent(table, bucket, event, entity);
 								element = element.getParent();
 							}

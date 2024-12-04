@@ -4,12 +4,12 @@ import java.util.Set;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -34,35 +34,28 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class FixedLabelResultInfo extends ResultInfo {
+public abstract class FixedLabelResultInfo extends ResultInfo {
 
-	@NonNull
-	private final String localizedLabel;
-	@NonNull
-	private final String localizedDefaultLabel;
+
 	@Getter
 	private final ResultType type;
 
-	@Getter
-	private final ResultPrinters.Printer printer;
-
-	public FixedLabelResultInfo(String label, String defaultLabel, ResultType type, Set<SemanticType> semantics, PrintSettings settings, ResultPrinters.Printer printer) {
-		super(semantics, settings);
-		this.localizedLabel = label;
-		this.localizedDefaultLabel = defaultLabel;
+	public FixedLabelResultInfo(ResultType type, Set<SemanticType> semantics) {
+		super(semantics);
 		this.type = type;
-		this.printer = printer;
-	}
-
-
-	@Override
-	public String userColumnName() {
-		return localizedLabel;
 	}
 
 	@Override
-	public String defaultColumnName() {
-		return localizedDefaultLabel;
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		return printerFactory.printerFor(getType(), printSettings);
+	}
+
+	@Override
+	public abstract String userColumnName(PrintSettings printSettings);
+
+	@Override
+	public String defaultColumnName(PrintSettings printSettings) {
+		return userColumnName(printSettings);
 	}
 
 	@Override

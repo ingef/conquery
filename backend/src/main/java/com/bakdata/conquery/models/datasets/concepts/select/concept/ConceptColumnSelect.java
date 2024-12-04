@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -13,7 +12,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptElementsAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.ResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.ConceptIdPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
@@ -44,21 +45,21 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultPrinters.Printer createPrinter(PrintSettings printSettings) {
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAsIds()) {
-			return new ResultPrinters.ListPrinter(new ResultPrinters.ConceptIdPrinter(getHolder().findConcept(), printSettings), printSettings);
+			return printerFactory.getListPrinter(new ConceptIdPrinter(getHolder().findConcept(), printSettings), printSettings);
 		}
 
-		return new ResultPrinters.ListPrinter(new ResultPrinters.StringPrinter(), printSettings);
+		return printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings);
 	}
 
 	@Override
-	public SelectResultInfo getResultInfo(CQConcept cqConcept, PrintSettings settings) {
-		if (!isAsIds()) {
-			return new SelectResultInfo(this, cqConcept, Collections.emptySet(), settings);
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+		if (isAsIds()) {
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept().getId())));
 		}
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept())), settings);
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept().getId())));
 	}
 
 	@JsonIgnore
@@ -74,6 +75,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public SelectConverter<ConceptColumnSelect> createConverter() {
+		//TODO bind Select to converter here
 		return new ConceptColumnSelectConverter();
 	}
 }

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "inlineSourceMap": false,
     "inlineSources": false,
@@ -34,7 +34,10 @@
   },
   "include": [
     "src",
-    "node_modules/**/*/*.d.ts"
+    "node_modules/**/*/*.d.ts",
+    ".storybook/main.ts",
+    ".storybook/manager.js",
+    ".storybook/preview.tsx"
   ],
   "exclude": [
     "node_modules",

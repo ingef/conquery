@@ -133,7 +133,7 @@ export const Navigation = memo(
 
     const onReset = useCallback(() => {
       onResetHistory();
-      dispatch(resetHistory());
+      dispatch(resetHistory({ includingDefaultParams: false }));
     }, [dispatch, onResetHistory]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);

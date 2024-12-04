@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
@@ -47,8 +49,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -143,12 +143,12 @@ public class ConceptsProcessor {
 		return new FrontendPreviewConfig(
 				previewConfig.getAllConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
 
 				previewConfig.getDefaultConnectors()
 							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
 				previewConfig.resolveSearchFilters(),
 				previewConfig.resolveSearchConcept()
@@ -164,7 +164,7 @@ public class ConceptsProcessor {
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
@@ -230,7 +230,7 @@ public class ConceptsProcessor {
 	}
 
 	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -255,7 +255,7 @@ public class ConceptsProcessor {
 	}
 
 	private int countAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}
@@ -265,7 +265,7 @@ public class ConceptsProcessor {
 	 * Is used by the serach cache to load missing items
 	 */
 	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
-		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we exploit:

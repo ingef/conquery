@@ -11,7 +11,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -93,9 +92,9 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos(PrintSettings printSettings) {
+	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
-		ResultInfo dateInfo = ResultHeaders.datesInfo(printSettings);
+		ResultInfo dateInfo = ResultHeaders.datesInfo();
 
 		if(getResolvedDateAggregationMode() != DateAggregationMode.NONE){
 			// Add one DateInfo for the whole Query
@@ -103,7 +102,7 @@ public class ArrayConceptQuery extends Query {
 		}
 		int lastIndex = resultInfos.size();
 
-		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos(printSettings)));
+		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
 
 		if(!resultInfos.isEmpty()) {
 			// Remove DateInfo from each childQuery			

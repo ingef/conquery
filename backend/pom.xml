@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,8 @@
         <apache-poi.version>5.2.2</apache-poi.version>
 		<apache-arrow.version>16.0.0</apache-arrow.version>
         <apache-parquet.version>1.12.3</apache-parquet.version>
+        <prometheus-metrics.version>1.2.1</prometheus-metrics.version>
+        <openapi-generator.version>7.9.0</openapi-generator.version>
     </properties>
 
     <build>
@@ -75,6 +77,36 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <executions>
+                    <execution>
+                        <id>openapi-admin</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.json</inputSpec>
+                            <!-- Don't use jaxrs-jersey here because it does not allow dependency injection -->
+                            <generatorName>jaxrs-spec</generatorName>
+                            <modelsToGenerate>ApiResponse</modelsToGenerate>
+                            <packageName>com.bakdata.conquery</packageName>
+                            <!-- This package name is used by EndpointTestHelper to filter out openapi specs -->
+                            <apiPackage>com.bakdata.conquery.models.api.openapi</apiPackage>
+                            <modelPackage>com.bakdata.conquery.models.config</modelPackage>
+                            <configOptions>
+                                <!-- The implementation of these interfaces actually allows us to use DI (not possible with jaxrs-jersey) -->
+                                <interfaceOnly>true</interfaceOnly>
+                                <sourceFolder>src/main/java</sourceFolder>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -123,7 +155,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>2.18.0</version>
         </dependency>
         <dependency>
             <groupId>com.univocity</groupId>
@@ -383,17 +415,32 @@
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-simpleclient-bridge</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-exporter-servlet-jakarta</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-core</artifactId>
-            <version>1.2.1</version>
+            <version>${prometheus-metrics.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-maven-plugin</artifactId>
+            <version>${openapi-generator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-integration-jakarta</artifactId>
+            <version>2.2.25</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2-jakarta</artifactId>
+            <version>2.2.25</version>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>

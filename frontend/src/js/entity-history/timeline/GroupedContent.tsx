@@ -172,7 +172,7 @@ const Cell = memo(
         <SxNumericFormat
           {...currencyConfig}
           displayType="text"
-          value={parseInt(cell as string) / 100}
+          value={parseFloat(cell as string)}
         />
       );
     }

@@ -3,6 +3,7 @@ package com.bakdata.conquery.mode;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 
 /**
  * Listener for updates of stored entities in ConQuery.
@@ -19,6 +20,6 @@ public interface StorageListener {
 
 	void onAddConcept(Concept<?> concept);
 
-	void onDeleteConcept(Concept<?> concept);
+	void onDeleteConcept(ConceptId concept);
 
 }

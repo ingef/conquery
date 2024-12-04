@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
@@ -14,22 +13,17 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+@Setter
+@Getter
 @EqualsAndHashCode(callSuper = true)
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> implements NamespacedIdentifiable<ID> {
 
-	@Getter
-	@Setter
 	private String description;
-	@Getter
-	@Setter
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 
 	/**
 	 * Initialize this only when needed. It is not needed
 	 */
-	@Getter
-	@Setter
-	@JsonIgnore
 	@CheckForNull
 	private MatchingStats matchingStats;
 

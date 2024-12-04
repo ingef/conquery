@@ -30,9 +30,7 @@ import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,6 +38,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, metadata and takes care of query distribution to
@@ -53,12 +52,11 @@ public class ManagerNode implements Managed {
 	public static final String DEFAULT_NAME = "manager";
 
 	private final String name;
-
+	private final List<ResourcesProvider> providers = new ArrayList<>();
 	private Validator validator;
 	private AdminServlet admin;
 	private AuthorizationController authController;
 	private ScheduledExecutorService maintenanceService;
-	private final List<ResourcesProvider> providers = new ArrayList<>();
 	@Delegate(excludes = Managed.class)
 	private Manager manager;
 
@@ -88,13 +86,14 @@ public class ManagerNode implements Managed {
 		formScanner = new FormScanner(config);
 
 
-		config.initialize(this);
+		// Init all plugins
+		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
 
 
 		// Initialization of internationalization
 		I18n.init();
 
-		configureApiServlet(config, environment.jersey().getResourceConfig());
+		configureApiServlet(config, environment);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
@@ -127,35 +126,13 @@ public class ManagerNode implements Managed {
 			}
 		}
 
-		try {
-			formScanner.execute(null, null);
-		}
-		catch (Exception e) {
-			Throwables.throwIfUnchecked(e);
-			throw new RuntimeException(e);
-		}
+		formScanner.execute(null, null);
 
 		registerTasks(manager, environment, config);
 	}
 
-	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
-		environment.admin().addTask(formScanner);
-		environment.admin().addTask(
-				new QueryCleanupTask(getMetaStorage(), Duration.of(
-						config.getQueries().getOldQueriesTime().getQuantity(),
-						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
-				)));
-
-		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
-		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
-
-		final ShutdownTask shutdown = new ShutdownTask();
-		environment.admin().addTask(shutdown);
-		environment.lifecycle().addServerLifecycleListener(shutdown);
-	}
-
-	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
+	private void configureApiServlet(ConqueryConfig config, Environment environment) {
+		ResourceConfig jerseyConfig = environment.jersey().getResourceConfig();
 		RESTServer.configure(config, jerseyConfig);
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
@@ -165,15 +142,9 @@ public class ManagerNode implements Managed {
 			}
 		});
 
-		jerseyConfig.register(PathParamInjector.class);
-	}
+		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
 
-	private void loadMetaStorage() {
-		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
-		log.info("Loading MetaStorage");
-		getMetaStorage().loadData();
-		log.info("MetaStorage loaded {}", getMetaStorage());
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	@SneakyThrows(InterruptedException.class)
@@ -198,6 +169,31 @@ public class ManagerNode implements Managed {
 			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
 																												  - coundLoaded);
 		}
+	}
+
+	private void loadMetaStorage() {
+		log.info("Opening MetaStorage");
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
+		log.info("Loading MetaStorage");
+		getMetaStorage().loadData();
+		log.info("MetaStorage loaded {}", getMetaStorage());
+	}
+
+	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
+		environment.admin().addTask(formScanner);
+		environment.admin().addTask(
+				new QueryCleanupTask(getMetaStorage(), Duration.of(
+						config.getQueries().getOldQueriesTime().getQuantity(),
+						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
+				)));
+
+		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
+		manager.getAdminTasks().forEach(environment.admin()::addTask);
+		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
+
+		final ShutdownTask shutdown = new ShutdownTask();
+		environment.admin().addTask(shutdown);
+		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
 	@Override

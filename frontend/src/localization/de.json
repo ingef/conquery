@@ -274,7 +274,7 @@
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
       "invalidDateRange": "Enddatum liegt vor Startdatum",
-      "validSelectRequired": "Kompatibler Ausgabewert erforderlich"
+      "validSelectRequired": "Für folgende Konzepte ist ein kompatibler Ausgabewert erforderlich"
     },
     "default": {
       "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",

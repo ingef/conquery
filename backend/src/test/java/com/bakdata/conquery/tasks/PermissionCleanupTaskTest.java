@@ -3,7 +3,6 @@ package com.bakdata.conquery.tasks;
 import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
 import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -42,7 +42,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, mock(User.class), new Dataset("test"), STORAGE, null);
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test_user"), new Dataset("test").getId(), STORAGE, null);
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 
@@ -121,7 +121,7 @@ class PermissionCleanupTaskTest {
         STORAGE.updateUser(user);
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
 
-        managedQueryOwned.setOwner(user);
+        managedQueryOwned.setOwner(user.getId());
         STORAGE.updateExecution(managedQueryOwned);
 
         // Created not owned execution
@@ -130,7 +130,7 @@ class PermissionCleanupTaskTest {
         user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
         // Set owner
-        managedQueryNotOwned.setOwner(user2);
+        managedQueryNotOwned.setOwner(user2.getId());
         STORAGE.updateExecution(managedQueryNotOwned);
 
         deletePermissionsOfOwnedInstances(STORAGE, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, STORAGE::getExecution);

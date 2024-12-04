@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -33,8 +35,8 @@ import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.worker.ShardWorkers;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -51,18 +53,21 @@ public class ColumnStoreSerializationTests {
 	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(CompoundDateRangeStore.class);
 
-	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
+	private static final NamespaceStorage STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), "ColumnStoreSerializationTests");
 
 	private static ObjectMapper shardInternalMapper;
+	private static ConqueryConfig config;
 
 	@BeforeAll
 	public static void setupRegistry() {
-		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
+		STORAGE.openStores(null, new MetricRegistry());
+		STORAGE.updateDataset(Dataset.PLACEHOLDER);
 
 
 		// Prepare shard node internal mapper
-		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
-		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(ShardWorkers.class));
+		config = new ConqueryConfig();
+		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, Validators.newValidator());
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(WorkerStorageImpl.class));
 	}
 
 	@Test
@@ -88,7 +93,7 @@ public class ColumnStoreSerializationTests {
 
 		return Arrays.asList(
 				new ScaledDecimalStore(13, IntArrayStore.create(10)),
-				new MoneyIntStore(IntArrayStore.create(10)),
+				new MoneyIntStore(IntArrayStore.create(10), 2).config(config),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),
@@ -113,7 +118,6 @@ public class ColumnStoreSerializationTests {
 		SerializationTestUtil
 				.forType(ColumnStore.class)
 				.objectMappers(shardInternalMapper)
-				.registry(CENTRAL_REGISTRY)
 				.test(type);
 	}
 }

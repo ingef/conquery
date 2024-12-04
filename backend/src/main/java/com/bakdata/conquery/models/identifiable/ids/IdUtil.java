@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -21,29 +20,8 @@ public final class IdUtil {
 	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
 	private static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 
-	public static <ID extends Id<?>> ID intern(ID id) {
-		@SuppressWarnings("unchecked")
-		ID old = IIdInterner.forParser((Parser<ID>) createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
-		if (old == null) {
-			return id;
-		}
-		checkConflict(id, old);
-		return old;
-	}
-
 	public static <T extends Id<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>) idClass.getDeclaredClasses()[0].getEnumConstants()[0];
-	}
-
-	public static void checkConflict(Id<?> id, Id<?> cached) {
-		if (!cached.equals(id)) {
-			throw new IllegalStateException("The cached id '"
-											+ cached
-											+ "'("
-											+ cached.getClass().getSimpleName()
-											+ ") conflicted with a new entry of "
-											+ id.getClass().getSimpleName());
-		}
 	}
 
 	public static <T extends Id<?>> Class<T> findIdClass(Class<?> cl) {
@@ -80,12 +58,8 @@ public final class IdUtil {
 
 	public interface Parser<ID extends Id<?>> {
 
-		default ID parse(String id) {
-			return parse(split(id));
-		}
-
-		default ID parse(String... id) {
-			return parse(Arrays.asList(id));
+		static List<String> asComponents(String id) {
+			return Arrays.asList(split(id));
 		}
 
 		static String[] split(String id) {
@@ -98,18 +72,17 @@ public final class IdUtil {
 			return parts;
 		}
 
+		default ID parse(String id) {
+			return parse(split(id));
+		}
+
+		default ID parse(String... id) {
+			return parse(Arrays.asList(id));
+		}
+
 		default ID parse(List<String> parts) {
 			//first check if we get the result with the list (which might be a sublist)
-			ID result = IIdInterner.forParser(this).get(parts);
-			if (result == null) {
-				result = createId(parts);
-				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(parts), result);
-				if (secondResult != null) {
-					checkConflict(result, secondResult);
-					return secondResult;
-				}
-			}
+			ID result = createId(parts);
 			return result;
 		}
 
@@ -137,28 +110,27 @@ public final class IdUtil {
 
 		default ID parse(IdIterator parts) {
 			//first check if we get the result with the list (which might be a sublist)
-			List<String> input = parts.getRemaining();
-			ID result = IIdInterner.forParser(this).get(input);
-			if (result == null) {
-				parts.internNext();
-				result = parseInternally(parts);
-				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(input), result);
-				if (secondResult != null) {
-					checkConflict(result, secondResult);
-					return secondResult;
-				}
-				return result;
-			}
-			parts.consumeAll();
+
+			parts.internNext();
+			ID result = parseInternally(parts);
 			return result;
 		}
 
 		default ID parsePrefixed(String dataset, String id) {
+			List<String> result = asComponents(dataset, id);
+			return parse(result);
+		}
+
+		static List<String> asComponents(String dataset, String id) {
 			String[] result;
 			String[] split = split(id);
-			//if already prefixed
+
+			if (dataset == null) {
+				return Arrays.asList(split);
+			}
+
 			if (split.length > 0 && split[0].equals(dataset)) {
+				//if already prefixed
 				result = split;
 			}
 			else {
@@ -166,7 +138,7 @@ public final class IdUtil {
 				result[0] = dataset;
 				System.arraycopy(split, 0, result, 1, split.length);
 			}
-			return parse(Arrays.asList(result));
+			return Arrays.asList(result);
 		}
 	}
 

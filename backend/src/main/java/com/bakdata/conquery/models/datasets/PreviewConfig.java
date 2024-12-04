@@ -3,17 +3,20 @@ package com.bakdata.conquery.models.datasets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -28,18 +31,11 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * @implNote I am using ids as references here instead of {@link NsIdRef} because I want the PreviewConfig to be pretty soft, instead of having to manage it as a dependent for Concepts and Tables.
- */
 @Data
 @Slf4j
 @AllArgsConstructor
@@ -54,7 +50,6 @@ public class PreviewConfig {
 	 * @implSpec the order of selects is the order of the output fields.
 	 */
 	@Valid
-	@NotNull
 	private List<InfoCardSelect> infoCardSelects = List.of();
 
 	@Valid
@@ -63,13 +58,11 @@ public class PreviewConfig {
 	/**
 	 * Columns that should not be displayed to users in entity preview.
 	 */
-	@NotNull
 	private Set<ColumnId> hidden = Collections.emptySet();
 
 	/**
 	 * SecondaryIds where the columns should be grouped together.
 	 */
-	@NotNull
 	private Set<SecondaryIdDescriptionId> grouping = Collections.emptySet();
 
 	/**
@@ -77,13 +70,11 @@ public class PreviewConfig {
 	 *
 	 * @implNote This is purely for the frontend, the backend can theoretically be queried for all Connectors.
 	 */
-	@NotNull
 	private Set<ConnectorId> allConnectors = Collections.emptySet();
 
 	/**
 	 * Connectors that shall be selected by default by the frontend.
 	 */
-	@NotNull
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
 	/**
@@ -93,7 +84,6 @@ public class PreviewConfig {
 	 * <p>
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
-	@NotNull
 	private Set<FilterId> searchFilters = Collections.emptySet();
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -120,19 +110,21 @@ public class PreviewConfig {
 	/**
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
 	 */
-	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects) {
 	}
 
 	@ValidationMethod(message = "Selects may be referenced only once.")
 	@JsonIgnore
 	public boolean isSelectsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
 	@JsonIgnore
 	public boolean isLabelsUnique() {
-		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@JsonIgnore
@@ -186,31 +178,32 @@ public class PreviewConfig {
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
-								   .flatMap(Optional::stream)
+								   .map(SelectId::<Select>resolve)
 								   .collect(Collectors.toList());
 	}
 
-	public List<Filter<?>> resolveSearchFilters() {
-		return getSearchFilters().stream()
-							.map(filterId -> getDatasetRegistry().findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+	public List<FilterId> resolveSearchFilters() {
+		if (searchFilters == null) {
+			return Collections.emptyList();
+		}
+
+		return searchFilters.stream()
+							.map(FilterId::resolve)
+							.map(Filter::getId)
 							.toList();
 	}
 
-	public Concept<?> resolveSearchConcept() {
-		if (getSearchFilters().isEmpty()) {
+	public ConceptId resolveSearchConcept() {
+		if (searchFilters == null) {
 			return null;
 		}
 
-		return getSearchFilters().stream()
-							.map(filterId -> getDatasetRegistry().findRegistry(filterId.getDataset()).getOptional(filterId))
-							.flatMap(Optional::stream)
+
+		return searchFilters.stream()
+							.map(FilterId::<Filter<?>>resolve)
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()
+							.map(Concept::getId)
 							.collect(MoreCollectors.onlyElement());
 	}
-
-
-
 }

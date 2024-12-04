@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
@@ -31,8 +32,6 @@ import com.google.common.collect.MultimapBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -147,10 +146,6 @@ public class ConqueryConfig extends Configuration implements Injectable {
 			}
 		}
 		return true;
-	}
-
-	public void initialize(ManagerNode node) {
-		plugins.forEach(config -> config.initialize((node)));
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {

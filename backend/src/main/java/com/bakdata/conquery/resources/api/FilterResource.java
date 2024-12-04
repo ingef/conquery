@@ -5,7 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.FILTER;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
