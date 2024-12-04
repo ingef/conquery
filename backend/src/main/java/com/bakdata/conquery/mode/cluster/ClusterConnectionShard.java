@@ -5,10 +5,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.JacksonProtocolDecoder;
+import com.bakdata.conquery.io.mina.JacksonProtocolEncoder;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -17,6 +15,7 @@ import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
+import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
@@ -36,6 +35,7 @@ import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jetbrains.annotations.NotNull;
 
@@ -119,7 +119,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		disconnectFromCluster();
 
-		connector = getClusterConnector(workers);
+		connector = getClusterConnector();
 
 		while (true) {
 			try {
@@ -166,14 +166,17 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(ShardWorkers workers) {
+	private NioSocketConnector getClusterConnector() {
 		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
-		final BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
+		ProtocolCodecFilter codecfilter = new ProtocolCodecFilter(
+				new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class)),
+				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
+		);
 		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		connector.getFilterChain().addLast("codec", codecfilter);
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 		return connector;

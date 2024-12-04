@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import jakarta.validation.Validator;
 
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
+import com.bakdata.conquery.io.mina.JacksonProtocolDecoder;
+import com.bakdata.conquery.io.mina.JacksonProtocolEncoder;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -17,6 +15,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
+import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -29,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 /**
@@ -110,8 +110,11 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
 
-		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
+		ProtocolCodecFilter codecfilter = new ProtocolCodecFilter(
+				new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class)),
+				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
+		);
+		acceptor.getFilterChain().addLast("codec", codecfilter);
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
