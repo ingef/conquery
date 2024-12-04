@@ -311,8 +311,8 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																   .map(functionProvider::toDualColumn)
 																   .toList();
 
-		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).toList();
-		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).toList();
+		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).distinct().toList();
+		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).distinct().toList();
 
 		//HANA does not like lest/greatest if a singleton
 		final Field<Date> startField = allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0);
