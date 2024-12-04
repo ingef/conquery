@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.SneakyThrows;
 
-public interface NamespacedStorage extends NamespacedStorageProvider {
+public interface NamespacedStorage extends ConqueryStorage, NamespacedStorageProvider {
 	void addImport(Import imp);
 
 	Import getImport(ImportId id);

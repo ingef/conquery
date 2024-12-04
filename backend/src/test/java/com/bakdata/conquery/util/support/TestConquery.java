@@ -199,13 +199,13 @@ public class TestConquery {
 	private boolean isBusy() {
 		boolean busy;
 		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
-		busy |= standaloneCommand.getManager().getDatasetRegistry().getDatasets().stream()
+		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
 								 .map(Namespace::getExecutionManager)
 								 .flatMap(e -> e.getExecutionStates().asMap().values().stream())
 								 .map(ExecutionManager.State::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
-		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getDatasets()) {
+		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();
 		}
 

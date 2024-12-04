@@ -38,6 +38,7 @@ public abstract class ExecutionManager {
 
 	private final MetaStorage storage;
 	private final DatasetRegistry<?> datasetRegistry;
+	private final ConqueryConfig config;
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -56,12 +57,31 @@ public abstract class ExecutionManager {
 
 		// The query might already be deleted
 		if (execution != null) {
-			execution.reset();
+			reset(executionId);
 		}
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
 		return storage.getExecution(execution);
+	}
+
+	//// Shortcut helper methods
+	// TODO move to execution manager
+	public void reset(ManagedExecutionId id) {
+		// This avoids endless loops with already reset queries
+		if (!isResultPresent(id)) {
+			return;
+		}
+
+		clearQueryResults(id);
+	}
+
+	public boolean isResultPresent(ManagedExecutionId id) {
+		return executionStates.getIfPresent(id) != null;
+	}
+
+	public void clearQueryResults(ManagedExecutionId execution) {
+		executionStates.invalidate(execution);
 	}
 
 	/**
@@ -73,7 +93,21 @@ public abstract class ExecutionManager {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
 		}
 		return (R) state;
-	}	/**
+	}
+
+		public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
+		return Optional.ofNullable((R) executionStates.getIfPresent(id));
+	}
+	public void addState(ManagedExecutionId id, State result) {
+		executionStates.put(id, result);
+	}
+public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
+		final ManagedExecution execution = createExecution(query, user, namespace, system);
+
+		execute(execution);
+
+		return execution;
+	}/**
 	 * Cache for execution states.
 	 */
 	private final Cache<ManagedExecutionId, State> executionStates =
@@ -82,37 +116,17 @@ public abstract class ExecutionManager {
 						.removalListener(this::executionRemoved)
 						.build();
 
-	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
-		return Optional.ofNullable((R) executionStates.getIfPresent(id));
-	}
-
-	public boolean isResultPresent(ManagedExecutionId id) {
-		return executionStates.getIfPresent(id) != null;
-	}
-
-	public void addState(ManagedExecutionId id, State result) {
-		executionStates.put(id, result);
-	}
-
-	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, ConqueryConfig config, boolean system) {
-		final ManagedExecution execution = createExecution(query, user, namespace, system);
-
-		execute(execution, config);
-
-		return execution;
-	}
-
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final void execute(ManagedExecution execution, ConqueryConfig config) {
+	public final void execute(ManagedExecution execution) {
 
-		clearQueryResults(execution);
+		clearQueryResults(execution.getId());
 
 		try {
-			execution.initExecutable(config);
+			execution.initExecutable();
 		}
 		catch (Exception e) {
 			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
@@ -149,7 +163,7 @@ public abstract class ExecutionManager {
 
 	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 		managed.setMetaStorage(storage);
@@ -160,19 +174,15 @@ public abstract class ExecutionManager {
 		return managed;
 	}
 
-	public void clearQueryResults(ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
-	}
-
 	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
 
-	public final void cancelQuery(final ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
+	public final void cancelExecution(final ManagedExecution execution) {
 
 		if (execution instanceof ExternalExecution externalExecution) {
 			externalExecution.cancel();
 			return;
 		}
+		executionStates.invalidate(execution.getId());
 		doCancelQuery(execution);
 	}
 
@@ -252,9 +262,14 @@ public abstract class ExecutionManager {
 		CountDownLatch getExecutingLock();
 	}
 
-	public interface InternalState extends State{
+	public interface InternalState extends State {
 		Stream<EntityResult> streamQueryResults();
 	}
+
+
+
+
+
 
 
 }
