@@ -307,7 +307,7 @@ public class AdminProcessor {
 		}
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return datasetRegistry.getLoadedIndexes();
 	}
 

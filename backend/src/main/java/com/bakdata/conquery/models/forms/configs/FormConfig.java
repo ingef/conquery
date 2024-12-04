@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -94,7 +93,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * actual form field values.
 	 */
 	public FormConfigOverviewRepresentation overview(MetaStorage storage, Subject subject) {
-		String ownerName = getOwnerName();
+		String ownerName = getOwnerName(storage);
 
 		return FormConfigOverviewRepresentation.builder()
 											   .id(getId())
@@ -110,15 +109,26 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	@JsonIgnore
-	private @Nullable String getOwnerName() {
-		return Optional.ofNullable(owner).map(UserId::resolve).map(User.class::cast).map(User::getLabel).orElse(null);
+	@Nullable
+	private String getOwnerName(MetaStorage metaStorage) {
+		if (owner == null){
+			return null;
+		}
+
+		User resolved = metaStorage.get(owner);
+
+		if (resolved == null){
+			return null;
+		}
+
+		return resolved.getLabel();
 	}
 
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
-		String ownerName = getOwnerName();
+		String ownerName = getOwnerName(storage);
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.

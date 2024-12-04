@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -194,8 +195,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static Optional<WhereCondition> convertConnectorCondition(CQTable cqTable, SqlFunctionProvider functionProvider) {
-		return Optional.ofNullable(cqTable.getConnector().resolve().getCondition())
-					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(cqTable.getConnector().resolve(), functionProvider)));
+		final Connector connector = cqTable.getConnector().resolve();
+
+		return Optional.ofNullable(connector.getCondition())
+					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
 	}
 
 	private static Optional<SqlFilters> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {

@@ -10,7 +10,7 @@ import { Icon } from "../icon/FaIcon";
 
 const Container = styled("div")`
   display: grid;
-  grid-template-columns: 110px 30px auto 1fr;
+  grid-template-columns: 110px 30px auto auto auto auto 1fr;
   align-items: flex-start;
   gap: 0 8px;
   padding: 3px 0;
@@ -43,10 +43,12 @@ const Right = styled("div")`
 export const DropdownOption = memo(
   ({
     conceptLabel,
+    connectorLabel,
     filterLabel,
     filterIdx,
   }: {
     conceptLabel: string;
+    connectorLabel?: string;
     filterLabel?: string;
     filterIdx?: number;
   }) => {
@@ -74,6 +76,9 @@ export const DropdownOption = memo(
         <Text bold={!hasDifferentFilterLabel}>{conceptLabel}</Text>
         {hasDifferentFilterLabel && (
           <>
+            <Text>&gt;</Text>
+            <Text>{connectorLabel}</Text>
+            <Text>&gt;</Text>
             <Text bold>{filterLabel}</Text>
           </>
         )}

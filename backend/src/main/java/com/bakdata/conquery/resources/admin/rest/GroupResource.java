@@ -45,9 +45,8 @@ public class GroupResource {
 
 	@Path("{" + GROUP_ID + "}")
 	@DELETE
-	public Response deleteGroup(@PathParam(GROUP_ID) Group group) {
+	public void deleteGroup(@PathParam(GROUP_ID) Group group) {
 		processor.deleteGroup(group);
-		return Response.ok().build();
 	}
 
 	@POST
@@ -57,29 +56,25 @@ public class GroupResource {
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@POST
-	public Response addUserToGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) User user) {
+	public void addUserToGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) User user) {
 		processor.addUserToGroup(group, user);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUserFromGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) UserId user) {
+	public void deleteUserFromGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) UserId user) {
 		processor.deleteUserFromGroup(group, user);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) RoleId role) {
+	public void deleteRoleFromUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) RoleId role) {
 		processor.deleteRoleFrom(group, role);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) Role role) {
+	public void addRoleToUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) Role role) {
 		processor.addRoleTo(group, role);
-		return Response.ok().build();
 	}
 }

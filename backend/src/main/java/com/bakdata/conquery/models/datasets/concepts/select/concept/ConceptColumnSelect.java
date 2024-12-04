@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -76,6 +75,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public SelectConverter<ConceptColumnSelect> createConverter() {
+		//TODO bind Select to converter here
 		return new ConceptColumnSelectConverter();
 	}
 }

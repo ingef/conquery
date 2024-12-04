@@ -122,10 +122,12 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
 		String tableName = daterangeSelectOrFilter.getTable().getName();
-		if (daterangeSelectOrFilter.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
+
+		if (daterangeSelectOrFilter.getColumn() != null) {
+			return ofSingleColumn(tableName, daterangeSelectOrFilter.getColumn().resolve());
 		}
-		return ofSingleColumn(tableName, daterangeSelectOrFilter.getColumn().resolve());
+
+		return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
 	}
 
 	@Override
@@ -311,10 +313,12 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 		String tableName = validityDate.getConnector().getResolvedTableId().getTable();
-		if (validityDate.getEndColumn() != null) {
-			return ofStartAndEnd(tableName, validityDate.getStartColumn().resolve(), validityDate.getEndColumn().resolve());
+
+		if (validityDate.getColumn() != null) {
+			return ofSingleColumn(tableName, validityDate.getColumn().resolve());
 		}
-		return ofSingleColumn(tableName, validityDate.getColumn().resolve());
+
+		return ofStartAndEnd(tableName, validityDate.getStartColumn().resolve(), validityDate.getEndColumn().resolve());
 	}
 
 	private ColumnDateRange ofSingleColumn(String tableName, Column column) {
