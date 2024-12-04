@@ -31,4 +31,5 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 	public SelectConverter<FirstValueSelect> createConverter() {
 		return new FirstValueSelectConverter();
 	}
+
 }

@@ -99,7 +99,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		return datasets.values();
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return indexService.getLoadedIndexes();
 	}
 

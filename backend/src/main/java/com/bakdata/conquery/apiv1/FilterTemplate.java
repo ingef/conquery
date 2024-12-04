@@ -90,7 +90,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) throws IndexCreationException {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
-		log.trace("Resolved filter template reference url for search '{}': {}", this.getId(), resolvedURI);
+		log.trace("Resolved filter template reference url for search '{}': {}", getId(), resolvedURI);
 
 		final FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
 				resolvedURI,
@@ -101,7 +101,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 				config.getSearchSplitChars()
 		));
 
-		return search;
+		return search.getDelegate();
 	}
 
 	@Override

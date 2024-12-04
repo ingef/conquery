@@ -77,6 +77,7 @@ const Modal = ({
   subtitle,
   doneButton,
   scrollable,
+  dataTestId,
   onClose,
 }: {
   className?: string;
@@ -85,6 +86,7 @@ const Modal = ({
   subtitle?: ReactNode;
   doneButton?: boolean;
   scrollable?: boolean;
+  dataTestId?: string;
   onClose: () => void;
 }) => {
   const { t } = useTranslation();
@@ -92,7 +94,7 @@ const Modal = ({
   useHotkeys("esc", onClose);
 
   return (
-    <Root className={className}>
+    <Root className={className} data-test-id={dataTestId}>
       <ModalContent onClose={onClose} scrollable={scrollable}>
         <TopRow>
           <Heading3>{headline}</Heading3>
