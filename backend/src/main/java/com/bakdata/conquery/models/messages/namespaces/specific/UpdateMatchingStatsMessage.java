@@ -80,7 +80,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 														  calculateConceptMatches(resolved, matchingStats, worker);
 
 														  final WriteFuture writeFuture = worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
-														  writeFuture.awaitUninterruptibly();
 
 														  progressReporter.report(1);
 													  }, worker.getJobsExecutorService())
