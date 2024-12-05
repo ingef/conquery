@@ -57,7 +57,7 @@ public class ClusterConfig extends Configuration {
 	 * May only touch this for testing purposes.
 	 */
 	@Max(Integer.MAX_VALUE - 4)
-	@Min(64) // Header (4) + 1 byte (not practically)
+	@Min(64) // Mina's default
 	private int initialIoBufferSizeBytes = 8192; // 8kb
 
 	/**
