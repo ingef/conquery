@@ -43,5 +43,7 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
 		buf.flip();
 		out.write(buf);
+
+		out.flush();
 	}
 }
