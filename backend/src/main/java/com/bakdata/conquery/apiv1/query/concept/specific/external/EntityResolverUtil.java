@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.util.DateReader;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class EntityResolverUtil {
@@ -41,7 +42,7 @@ public class EntityResolverUtil {
 		 but can also don't contribute to any date aggregation.
 		 */
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
-			// Initialize empty
+			// Initialize empty, so all lines appear als resolved
 			for (int row = 0; row < values.length; row++) {
 				out[row] = CDateSet.createEmpty();
 			}
@@ -59,10 +60,19 @@ public class EntityResolverUtil {
 					if (dateFormat == null) {
 						continue;
 					}
-					dateFormat.readDates(values[row][col], dateReader, dates);
+					String value = values[row][col];
+
+					if (StringUtils.isBlank(value)) {
+						log.trace("Found blank/null value in {}/{} (row/col)", row,col);
+						continue;
+					}
+
+					dateFormat.readDates(value, dateReader, dates);
 				}
 
 				if (dates.isEmpty()) {
+					// Don't set an empty dateset here be this flags the line as: unresolvedDate
+					// TODO It might be better to set an empty dateset nonetheless, because it seems to be intentionally empty, as we had no problem while parsing a value
 					continue;
 				}
 
@@ -73,7 +83,9 @@ public class EntityResolverUtil {
 				out[row].addAll(dates);
 			}
 			catch (Exception e) {
-				log.warn("Failed to parse Date from {}", row, e);
+				// If a value is not parsable it is included in the cause message  (see DateReader)
+				log.trace("Failed to parse Date in row {}", row, e);
+				// This catch leaves out[row] = null which later flags this line as: unresolvedDate
 			}
 		}
 
@@ -142,6 +154,7 @@ public class EntityResolverUtil {
 	 */
 	public static Map<String, String>[] readExtras(String[][] values, List<String> format) {
 		final String[] names = values[0];
+		@SuppressWarnings("unchecked")
 		final Map<String, String>[] extrasByRow = new Map[values.length];
 
 
