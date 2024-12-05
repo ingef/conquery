@@ -36,6 +36,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.mina.core.future.WriteFuture;
 
 /**
@@ -67,7 +68,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		final Map<TableId, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
 																.collect(Collectors.groupingBy(Bucket::getTable));
 
-		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS));
+		BasicThreadFactory threadFactory = (new BasicThreadFactory.Builder()).namingPattern(this.getClass().getSimpleName() + "-Worker-%d").build();
+		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 		final AtomicInteger done = new AtomicInteger();
 
