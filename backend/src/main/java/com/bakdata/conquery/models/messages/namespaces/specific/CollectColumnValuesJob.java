@@ -102,7 +102,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
 										WriteFuture send = context.send(message);
 
-										send.awaitUninterruptibly();
 										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
 									}
 
