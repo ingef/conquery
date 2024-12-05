@@ -84,7 +84,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																	  .collect(Collectors.toSet());
 
-									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
+									log.trace("Finished collecting {} values for column {}", values.size(), column);
 
 									// Chunk values, to produce smaller messages
 									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
@@ -93,6 +93,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 											  column.getId(), values.size(), columValueChunkSize
 									);
 
+									int i = 0;
 									for (List<String> chunk : partition) {
 										// Send values to manager
 										RegisterColumnValues message =
@@ -100,7 +101,11 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 										WriteFuture send = context.send(message);
 
 										send.awaitUninterruptibly();
+										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
 									}
+
+									getProgressReporter().report(1);
+									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
 								});
 							}
 					   )
@@ -124,6 +129,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
+		getProgressReporter().done();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
