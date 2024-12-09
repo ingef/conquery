@@ -89,7 +89,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		if (daterange.hasUpperBound()) {
 			// end date is expected to be handled as exclusive, but if it's already the maximum date, we can't add +1 day
 			if (Objects.equals(daterange.getMax(), LocalDate.ofEpochDay(CDateRange.POSITIVE_INFINITY))) {
-				throw new UnsupportedOperationException("Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
+				throw new UnsupportedOperationException(
+						"Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
 			}
 			LocalDate exclusiveMaxDate = daterange.getMax().plusDays(1);
 			endDateExpression = exclusiveMaxDate.toString();
@@ -145,6 +146,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 									  DSL.max(columnDateRange.getEnd())
 							  )
 							  .as(columnDateRange.getAlias());
+	}
+
+	@Override
+	public ColumnDateRange nulled(ColumnDateRange columnDateRange) {
+		return ColumnDateRange.of(toDateField(null), toDateField(null)).as(columnDateRange.getAlias());
 	}
 
 	@Override

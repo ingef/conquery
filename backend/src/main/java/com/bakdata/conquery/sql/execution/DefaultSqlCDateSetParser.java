@@ -12,6 +12,11 @@ import com.google.common.base.Preconditions;
 
 public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 
+	/**
+	 * Postgres daterange function creates this expression when called with null-arguments instead of null.
+	 */
+	public static final String POSTGRES_NULL_RANGE = "(,)";
+
 	public static final String EMPTY_RANGE_BRACES = "{}";
 	public static final String DATE_SEPARATOR = ",";
 	public static final char INCLUDED_START_CHAR = '[';
@@ -37,12 +42,12 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 	@Override
 	public List<Integer> toEpochDayRange(String daterange) {
 
-		if (daterange == null) {
+		if (daterange == null || daterange.equals(POSTGRES_NULL_RANGE)) {
 			return Collections.emptyList();
 		}
 
 		String[] dates = daterange.split(DATE_SEPARATOR);
-		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end.");
+		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end. Input was: %s".formatted(daterange));
 
 		// the dateranges have always an included start date marked by a [
 		String startDateExpression = dates[0];
