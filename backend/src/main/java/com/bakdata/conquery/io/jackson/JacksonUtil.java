@@ -1,31 +1,17 @@
 package com.bakdata.conquery.io.jackson;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 
-import com.bakdata.conquery.io.mina.ChunkedMessage;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.apache.mina.core.buffer.IoBuffer;
 
 @Slf4j @UtilityClass
 public class JacksonUtil {
-
-	public static String toJsonDebug(byte[] bytes) {
-		return toJsonDebug(IoBuffer.wrap(bytes));
-	}
-
-	public static String toJsonDebug(IoBuffer buffer) {
-		return toJsonDebug(stream(buffer));
-	}
 
 	/**
 	 *	Partially read and parse InputStream as Json, directly storing it into String, just for debugging purposes.
@@ -72,7 +58,7 @@ public class JacksonUtil {
 						sb.append('"').append(value).append("\",");
 						break;
 					default:
-						sb.append(t.toString());
+						sb.append(t);
 						log.warn("I don't know how to handle {}", t);
 						break;
 				}
@@ -83,35 +69,6 @@ public class JacksonUtil {
 			log.warn("Failed to create the debug json", e);
 			sb.append("DEBUG_JSON_ERROR");
 			return sb.toString();
-		}
-	}
-
-	public static InputStream stream(IoBuffer buffer) {
-		return new ByteArrayInputStream(
-				buffer.array(),
-				buffer.position() + buffer.arrayOffset(),
-				buffer.remaining()
-		);
-	}
-
-	public static InputStream stream(Iterable<IoBuffer> list) {
-		return new SequenceInputStream(
-				IteratorUtils.asEnumeration(
-						IteratorUtils.transformedIterator(
-								list.iterator(),
-								JacksonUtil::stream
-						)
-				)
-		);
-	}
-
-	public static String toJsonDebug(ChunkedMessage msg) {
-		return toJsonDebug(msg.createInputStream());
-	}
-
-	public static void expect(Class<?> parseTargetType, DeserializationContext ctxt, JsonToken token, JsonToken expected) throws JsonMappingException {
-		if (token != expected) {
-			ctxt.reportInputMismatch(parseTargetType, "Expected " + expected + " but found " + token);
 		}
 	}
 }
