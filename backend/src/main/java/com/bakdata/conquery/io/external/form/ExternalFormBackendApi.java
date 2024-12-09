@@ -6,6 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -16,16 +23,11 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dropwizard.health.check.http.HttpHealthCheck;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class ExternalFormBackendApi {
 
 	public final static String TASK_ID = "task-id";
