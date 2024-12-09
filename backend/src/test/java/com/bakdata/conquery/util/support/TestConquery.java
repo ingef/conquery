@@ -16,7 +16,6 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
@@ -230,10 +229,10 @@ public class TestConquery {
 		// define server
 		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
 			if (config.getSqlConnectorConfig().isEnabled()) {
-				standaloneCommand = new SqlStandaloneCommand((Conquery) app);
+				standaloneCommand = new SqlStandaloneCommand();
 			}
 			else {
-				standaloneCommand = new DistributedStandaloneCommand((Conquery) app);
+				standaloneCommand = new DistributedStandaloneCommand();
 			}
 			return (Command) standaloneCommand;
 		});
