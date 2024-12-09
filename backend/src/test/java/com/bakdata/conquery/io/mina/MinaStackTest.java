@@ -34,6 +34,7 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -198,7 +199,8 @@ public class MinaStackTest {
 				Arguments.of(DataSize.bytes(10), true),
 				Arguments.of(DataSize.kibibytes(10), true),
 				Arguments.of(DataSize.mebibytes(9), true),
-				Arguments.of(DataSize.mebibytes(10), false) // See beforeAll() setting
+				Arguments.of(DataSize.mebibytes(10), false), // See beforeAll() setting
+				Arguments.of(DataSize.mebibytes(1100), false) // See beforeAll() setting
 		);
 	}
 
@@ -228,9 +230,14 @@ public class MinaStackTest {
 
 			WriteFuture write = clientSession.write(input);
 
-			write.addListener(f -> assertThat(((WriteFuture) f).isWritten()).isEqualTo(shouldPass));
-
 			write.awaitUninterruptibly();
+
+			assertThat(write.isWritten()).isEqualTo(shouldPass);
+
+			Assertions.setMaxStackTraceElementsDisplayed(200);
+			if (!shouldPass) {
+				assertThat(write.getException()).hasCauseInstanceOf(IllegalArgumentException.class);
+			}
 
 			clientSession.closeNow().awaitUninterruptibly();
 		}

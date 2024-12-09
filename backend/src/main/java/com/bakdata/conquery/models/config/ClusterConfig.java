@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.mina.ChunkingFilter;
 import com.bakdata.conquery.io.mina.JacksonProtocolDecoder;
 import com.bakdata.conquery.io.mina.JacksonProtocolEncoder;
 import com.bakdata.conquery.io.mina.MdcFilter;
@@ -21,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
@@ -34,7 +36,7 @@ public class ClusterConfig extends Configuration {
 	private InetAddress managerURL = InetAddress.getLoopbackAddress();
 	@Valid
 	@NotNull
-	private MinaConfig mina = new MinaConfig();
+	private DefaultSocketSessionConfig mina = new DefaultSocketSessionConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
 
@@ -96,7 +98,11 @@ public class ClusterConfig extends Configuration {
 				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
 		);
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
+		if (mina.getSendBufferSize() > 0) {
+			connector.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
+		}
 		connector.getFilterChain().addLast("codec", codecFilter);
+
 		connector.setHandler(ioHandler);
 		connector.getSessionConfig().setAll(getMina());
 
@@ -118,6 +124,9 @@ public class ClusterConfig extends Configuration {
 		);
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
+		if (mina.getSendBufferSize() > 0) {
+			acceptor.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
+		}
 		acceptor.getFilterChain().addLast("codec", codecFilter);
 
 		acceptor.setHandler(ioHandler);
