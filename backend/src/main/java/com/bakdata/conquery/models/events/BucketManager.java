@@ -83,18 +83,18 @@ public class BucketManager {
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
 		log.info("BEGIN Register buckets for {}", worker.getInfo().getId());
-		storage.forEachBucket((bucketId, bucket, _unused) -> {
-			log.trace("Processing bucket {}", bucketId);
+		storage.getAllBuckets().forEach((bucket) -> {
+			log.trace("Processing bucket {}", bucket.getId());
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
-				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucketId);
+				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			registerBucket(bucket, entity2Bucket, tableBuckets);
 		});
-		log.trace("FINISHED Register buckets for {}", worker.getInfo().getId());
+		log.debug("FINISHED Register buckets for {}", worker.getInfo().getId());
 
 		log.info("BEGIN Register cblocks for {}", worker.getInfo().getId());
-		storage.forEachCBlock((cBlockId, cBlock, _unused) -> registerCBlock(cBlock, connectorCBlocks));
-		log.trace("FINISHED Register cblocks for {}", worker.getInfo().getId());
+		storage.getAllCBlocks().forEach((cBlock) -> registerCBlock(cBlock, connectorCBlocks));
+		log.debug("FINISHED Register cblocks for {}", worker.getInfo().getId());
 
 		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
