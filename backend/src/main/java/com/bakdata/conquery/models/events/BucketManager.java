@@ -133,9 +133,11 @@ public class BucketManager {
 	public void fullUpdate() {
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
+		final List<BucketId> bucketIds = storage.getAllBucketIds().toList();
+
 		storage.getAllConcepts().filter(TreeConcept.class::isInstance).flatMap(concept -> concept.getConnectors().stream().map(ConceptTreeConnector.class::cast))
 
-			   .forEach(connector -> storage.getAllBucketIds().forEach(bucketId -> {
+			   .forEach(connector -> bucketIds.forEach(bucketId -> {
 
 				   final CBlockId cBlockId = new CBlockId(bucketId, connector.getId());
 
