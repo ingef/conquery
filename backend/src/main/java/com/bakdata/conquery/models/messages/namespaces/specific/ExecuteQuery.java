@@ -43,7 +43,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 		log.info("Started {} {}", query.getClass().getSimpleName(), executionId);
 
-		// Execution might have been cancelled before so we uncancel it here.
+		// Execution might have been cancelled before, so we unset cancellation here.
 		final QueryExecutor queryExecutor = worker.getQueryExecutor();
 
 		queryExecutor.unsetQueryCancelled(executionId);

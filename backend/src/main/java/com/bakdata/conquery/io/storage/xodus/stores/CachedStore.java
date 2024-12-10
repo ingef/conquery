@@ -65,8 +65,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		store.getAllKeys().forEach( k -> consumer.accept(k, cache.get(k), 0 /*Leaky?*/));
-		return null;
+		// There is currently no good way to use the cache here
+		return store.forEach(consumer);
 	}
 
 	@Override

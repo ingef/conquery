@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -144,6 +145,16 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
+	}
+
+	@Override
+	public void forEachBucket(Store.StoreEntryConsumer<Id<Bucket>, Bucket> consumer) {
+		buckets.forEach(consumer);
+	}
+
+	@Override
+	public void forEachCBlock(Store.StoreEntryConsumer<Id<CBlock>, CBlock> consumer) {
+		cBlocks.forEach(consumer);
 	}
 
 	// Utilities
