@@ -89,11 +89,11 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId executionId) {
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution executionId) {
 		subject.authorize(executionId.getDataset(), Ability.READ);
 		subject.authorize(executionId, Ability.DELETE);
 
-		processor.deleteQuery(subject, executionId);
+		processor.deleteQuery(subject, executionId.getId());
 	}
 
 	@POST
