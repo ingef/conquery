@@ -42,6 +42,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jooq.Condition;
@@ -61,12 +62,18 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	private static final Name ENTITIES = name("entities");
 	private static final Name DATES = name("dates");
 
+	@ToString.Exclude
 	private final DatabaseConfig databaseConfig;
+	@ToString.Exclude
 	private final SqlExecutionService executionService;
+	@ToString.Exclude
 	private final DSLContext dslContext;
+	@ToString.Exclude
 	private final SqlFunctionProvider functionProvider;
 	private final Set<ConceptId> concepts;
+	@ToString.Exclude
 	private final ListeningExecutorService executors;
+	@ToString.Exclude
 	private ListenableFuture<?> all;
 
 	public UpdateMatchingStatsSqlJob(
@@ -98,11 +105,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		}
 
 		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
-	}
-
-	@Override
-	public String getLabel() {
-		return "Calculating Matching Stats for %s.".formatted(executionService);
 	}
 
 	@Override
@@ -144,7 +146,12 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		super.cancel();
 	}
 
-	public void calculateMatchingStats(final TreeConcept treeConcept) {
+	@Override
+	public String getLabel() {
+		return "Calculating Matching Stats for %s.".formatted(executionService);
+	}
+
+	private void calculateMatchingStats(final TreeConcept treeConcept) {
 
 		log.info("BEGIN fetching results for {}", treeConcept.getId());
 
@@ -164,8 +171,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																	 .map(field -> field(field.getUnqualifiedName()))
 																	 .collect(Collectors.toList());
 
-		// if there is no validity date at all, we select no field
-
+		// if there is no validity date at all, no field is selected
 		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap);
 
 		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
@@ -311,15 +317,14 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																   .map(functionProvider::toDualColumn)
 																   .toList();
 
+		// Need to use distinct as some ValidityDates overlap when using first/last day but also daterange
 		final List<Field<Date>> allStarts = validityDates.stream().map(ColumnDateRange::getStart).distinct().toList();
 		final List<Field<Date>> allEnds = validityDates.stream().map(ColumnDateRange::getEnd).distinct().toList();
 
-		//HANA does not like lest/greatest if a singleton
-		final Field<Date> startField = allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0);
-		final Field<Date> endField = allEnds.size() > 1 ? functionProvider.greatest(allEnds) : allEnds.get(0);
-
-		final ColumnDateRange minAndMax = ColumnDateRange.of(min(startField), max(endField));
-
+		final ColumnDateRange minAndMax = ColumnDateRange.of(
+				min(allStarts.size() > 1 ? functionProvider.least(allStarts) : allStarts.get(0)),
+				max(allEnds.size() > 1 ? functionProvider.greatest(allEnds) : allEnds.get(0))
+		);
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
 
@@ -334,6 +339,10 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		try {
 			final String columnValue = record.get(CONNECTOR_COLUMN, String.class);
+
+			if (columnValue == null) {
+				return;
+			}
 
 			final ConceptTreeChild mostSpecificChild = treeCache.findMostSpecificChild(columnValue, rowMap);
 
