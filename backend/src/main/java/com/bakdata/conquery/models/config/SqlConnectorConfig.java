@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.Map;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
