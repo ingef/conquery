@@ -1,15 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.countDistinct;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.max;
-import static org.jooq.impl.DSL.min;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.noCondition;
-import static org.jooq.impl.DSL.noField;
-import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -51,6 +42,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jooq.Condition;
@@ -70,12 +62,18 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	private static final Name ENTITIES = name("entities");
 	private static final Name DATES = name("dates");
 
+	@ToString.Exclude
 	private final DatabaseConfig databaseConfig;
+	@ToString.Exclude
 	private final SqlExecutionService executionService;
+	@ToString.Exclude
 	private final DSLContext dslContext;
+	@ToString.Exclude
 	private final SqlFunctionProvider functionProvider;
 	private final Set<ConceptId> concepts;
+	@ToString.Exclude
 	private final ListeningExecutorService executors;
+	@ToString.Exclude
 	private ListenableFuture<?> all;
 
 	public UpdateMatchingStatsSqlJob(
@@ -91,6 +89,22 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		this.functionProvider = functionProvider;
 		this.concepts = concepts;
 		this.executors = MoreExecutors.listeningDecorator(executors);
+	}
+
+	private static boolean isTreeConcept(final Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
+			return false;
+		}
+		return true;
+	}
+
+	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
+		if (mostSpecificChild.getMatchingStats() == null) {
+			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
+		}
+
+		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
 	}
 
 	@Override
@@ -135,22 +149,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	@Override
 	public String getLabel() {
 		return "Calculating Matching Stats for %s.".formatted(executionService);
-	}
-
-	private static boolean isTreeConcept(final Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
-			return false;
-		}
-		return true;
-	}
-
-	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
-		if (mostSpecificChild.getMatchingStats() == null) {
-			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
-		}
-
-		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
 	}
 
 	private void calculateMatchingStats(final TreeConcept treeConcept) {
@@ -328,6 +326,10 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		try {
 			final String columnValue = record.get(CONNECTOR_COLUMN, String.class);
+
+			if (columnValue == null) {
+				return;
+			}
 
 			final ConceptTreeChild mostSpecificChild = treeCache.findMostSpecificChild(columnValue, rowMap);
 
