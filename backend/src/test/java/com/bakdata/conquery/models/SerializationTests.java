@@ -217,6 +217,8 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Tag("OBJECT_2_INT_MAP") // Bucket uses Object2IntMap
 	public void bucketCompoundDateRange() throws JSONException, IOException {
 		Dataset dataset = new Dataset();
+		dataset.setNamespacedStorageProvider(getNamespaceStorage());
+
 		dataset.setName("datasetName");
 
 		Table table = new Table();
@@ -401,6 +403,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset.getId());
+		formConfig.setMetaStorage(getMetaStorage());
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
@@ -607,7 +610,10 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void testFormQuery() throws IOException, JSONException {
 		CQConcept concept = new CQConcept();
 		final TreeConcept testConcept = new TreeConcept();
+
 		Dataset dataset = new Dataset();
+		dataset.setNamespacedStorageProvider(getNamespaceStorage());
+
 		dataset.setName("testDataset");
 		testConcept.setDataset(dataset.getId());
 		testConcept.setName("concept");

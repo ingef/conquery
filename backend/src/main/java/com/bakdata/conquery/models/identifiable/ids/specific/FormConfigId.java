@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -18,7 +16,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FormConfigId extends Id<FormConfig> implements MetaId {
+public class FormConfigId extends MetaId<FormConfig> {
 
 
 	private final DatasetId dataset;
@@ -40,8 +38,8 @@ public class FormConfigId extends Id<FormConfig> implements MetaId {
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
-		return storage.getFormConfig(this);
+	public FormConfig get() {
+		return getStorage().getFormConfig(this);
 	}
 
 	public static enum Parser implements IdUtil.Parser<FormConfigId> {

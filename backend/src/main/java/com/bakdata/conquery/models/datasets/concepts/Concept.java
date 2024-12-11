@@ -94,7 +94,9 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(dataset, getName());
+		ConceptId id = new ConceptId(dataset, getName());
+
+		return id;
 	}
 
 	public int countElements() {

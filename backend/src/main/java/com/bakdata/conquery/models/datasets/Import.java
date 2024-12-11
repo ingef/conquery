@@ -41,7 +41,9 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 
 	@Override
 	public ImportId createId() {
-		return new ImportId(table, getName());
+		ImportId importId = new ImportId(table, getName());
+
+		return importId;
 	}
 
 	public long estimateMemoryConsumption() {

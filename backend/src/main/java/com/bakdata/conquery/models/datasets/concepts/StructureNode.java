@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
@@ -20,7 +21,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @ToString(callSuper=true,of={"children"})
-public class StructureNode extends Labeled<StructureNodeId> {
+public class StructureNode extends Labeled<StructureNodeId> implements NamespacedIdentifiable<StructureNodeId> {
 
 	public static final String MANAGED_STRUCTURE_STRUCTURE = "structure_structure";
 	public static final String MANAGED_DATASET_STRUCTURE = "dataset_structure";
@@ -39,7 +40,9 @@ public class StructureNode extends Labeled<StructureNodeId> {
 
 	@Override
 	public StructureNodeId createId() {
-		return new StructureNodeId(dataset, parent != null ? parent.getId() : null, getName());
+		StructureNodeId id = new StructureNodeId(dataset, parent != null ? parent.getId() : null, getName());
+
+		return id;
 	}
 
 	public Stream<StructureNode> stream() {

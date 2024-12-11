@@ -100,7 +100,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@Override
 	public BucketId createId() {
-		return new BucketId(imp, bucket);
+		BucketId bucketId = new BucketId(imp, bucket);
+		return bucketId;
 	}
 
 	/**

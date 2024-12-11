@@ -17,12 +17,14 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@Slf4j
 class QueryCleanupTaskTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
@@ -31,6 +33,8 @@ class QueryCleanupTaskTest {
 
 
 	private ManagedQuery createManagedQuery() {
+
+
 		final CQAnd root = new CQAnd();
 		root.setChildren(new ArrayList<>());
 
@@ -42,6 +46,7 @@ class QueryCleanupTaskTest {
 
 		STORAGE.addExecution(managedQuery);
 		managedQuery.setMetaStorage(STORAGE);
+
 
 		return managedQuery;
 	}

@@ -36,7 +36,9 @@ public class ImportColumn extends NamedImpl<ImportColumnId> implements Namespace
 
 	@Override
 	public ImportColumnId createId() {
-		return new ImportColumnId(parent.getId(), getName());
+		ImportColumnId id = new ImportColumnId(parent.getId(), getName());
+
+		return id;
 	}
 
 	@Override

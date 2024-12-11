@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -35,8 +34,8 @@ public class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
-		return storage.getRole(this);
+	public Role get() {
+		return getStorage().getRole(this);
 	}
 
 	enum Parser implements IdUtil.Parser<RoleId> {

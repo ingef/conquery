@@ -145,7 +145,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			cqTable.setConcept(cqConcept);
 
 			ConnectorId connector1 = new ConnectorId(conceptId, "connector1");
-			final Connector connector = connector1.get(namespaceStorage);
+			final Connector connector = connector1.get();
 			cqTable.setConnector(connector.getId());
 			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(new FilterId(connector.getId(), "filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 

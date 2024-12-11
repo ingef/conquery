@@ -12,8 +12,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -34,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorageImpl extends ConqueryStorage implements Injectable, NamespacedStorage {
+public abstract sealed class NamespacedStorageImpl extends ConqueryStorage implements Injectable, NamespacedStorage permits NamespaceStorage, WorkerStorageImpl {
 
 	@Getter
 	@ToString.Include
@@ -81,20 +79,16 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
-		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateImportStore(IdentifiableStore<Import> store) {
-		store.onAdd((obj) -> obj.setNamespacedStorageProvider(this));
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
 		store.onAdd(concept -> {
-			concept.setNamespacedStorageProvider(this);
 
 			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
 				throw new IllegalStateException("Concept is not for this dataset.");
@@ -142,9 +136,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
-	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
+
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {

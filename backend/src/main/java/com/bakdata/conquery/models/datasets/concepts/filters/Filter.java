@@ -102,6 +102,8 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 
 	@Override
 	public FilterId createId() {
-		return new FilterId(connector.getId(), getName());
+		FilterId id = new FilterId(connector.getId(), getName());
+
+		return id;
 	}
 }

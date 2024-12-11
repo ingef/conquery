@@ -84,7 +84,9 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	@Override
 	public TableId createId() {
-		return new TableId(dataset, getName());
+		TableId id = new TableId(dataset, getName());
+
+		return id;
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {

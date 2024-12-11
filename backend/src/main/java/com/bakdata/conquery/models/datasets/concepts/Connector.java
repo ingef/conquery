@@ -107,7 +107,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@Override
 	public ConnectorId createId() {
-		return new ConnectorId(concept.getId(), getName());
+		ConnectorId id = new ConnectorId(concept.getId(), getName());
+
+		return id;
 	}
 
 	public abstract Table getResolvedTable();

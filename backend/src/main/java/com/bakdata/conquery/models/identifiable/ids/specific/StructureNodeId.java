@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class StructureNodeId extends Id<StructureNode> {
+public class StructureNodeId extends NamespacedId<StructureNode> {
 
 	private final DatasetId dataset;
 	private final StructureNodeId parent;
@@ -34,6 +34,11 @@ public class StructureNodeId extends Id<StructureNode> {
 	}
 
 	@Override
+	public StructureNode get() {
+		throw new IllegalStateException("Cannot be resolved");
+	}
+
+	@Override
 	public void collectIds(Collection<? super Id<?>> collect) {
 		collect.add(this);
 		if (parent != null) {
@@ -42,11 +47,6 @@ public class StructureNodeId extends Id<StructureNode> {
 		else {
 			dataset.collectIds(collect);
 		}
-	}
-
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
 	}
 
 	public static enum Parser implements IdUtil.Parser<StructureNodeId> {

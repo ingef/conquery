@@ -128,9 +128,15 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 	@Override
 	public SelectId createId() {
+		SelectId id;
 		if (holder instanceof Connector) {
-			return new ConnectorSelectId(((Connector) holder).getId(), getName());
+			id = new ConnectorSelectId(((Connector) holder).getId(), getName());
 		}
-		return new ConceptSelectId(holder.findConcept().getId(), getName());
+		else {
+			id = new ConceptSelectId(holder.findConcept().getId(), getName());
+		}
+
+
+		return id;
 	}
 }

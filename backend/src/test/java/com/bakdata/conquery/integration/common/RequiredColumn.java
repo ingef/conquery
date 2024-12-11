@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -43,7 +42,7 @@ public class RequiredColumn {
 		return out;
 	}
 
-	public Column toColumn(Table table, NamespacedStorageProvider idResolver) {
+	public Column toColumn(Table table) {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
@@ -52,7 +51,7 @@ public class RequiredColumn {
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
 			SecondaryIdDescriptionId secondaryIdDescriptionId = new SecondaryIdDescriptionId(table.getDataset(), secondaryId);
-			final SecondaryIdDescription description = secondaryIdDescriptionId.get(idResolver.getStorage(table.getDataset()));
+			final SecondaryIdDescription description = secondaryIdDescriptionId.get();
 
 			col.setSecondaryId(description.getId());
 		}

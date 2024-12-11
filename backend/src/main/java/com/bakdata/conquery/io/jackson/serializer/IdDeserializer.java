@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -77,24 +78,20 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 			return id;
 		}
 		catch (Exception e) {
-			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
+			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `%s` from `%s`: %s", idClass.getSimpleName(), text, e.getMessage());
 		}
 	}
 
 	public static void setResolver(Id<?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
 		// Set resolvers in this id and subIds
-		final HashSet<Id<?>> ids = new HashSet<>();
+		final Set<Id<?>> ids = new HashSet<>();
 		id.collectIds(ids);
 		for (Id<?> subId : ids) {
-			if (subId.getNamespacedStorageProvider() != null || subId.getMetaStorage() != null) {
-				// Ids are constructed of other ids that might already have a resolver set
-				continue;
-			}
-			if (subId instanceof NamespacedId) {
-				subId.setNamespacedStorageProvider(namespacedStorageProvider);
+			if (subId instanceof DatasetId) {
+				((DatasetId) subId).setNamespacedStorageProvider(namespacedStorageProvider);
 			}
 			else if (subId instanceof MetaId) {
-				subId.setMetaStorage(metaStorage);
+				((MetaId<?>) subId).setMetaStorage(metaStorage);
 			}
 		}
 	}

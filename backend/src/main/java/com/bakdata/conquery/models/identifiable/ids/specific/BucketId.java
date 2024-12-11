@@ -1,18 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import static com.bakdata.conquery.models.identifiable.ids.NamespacedId.assertWorkerStorage;
-
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BucketId extends Id<Bucket> implements NamespacedId {
+public class BucketId extends NamespacedId<Bucket> {
 
 	private final ImportId imp;
 	private final int bucket;
@@ -31,8 +26,8 @@ public class BucketId extends Id<Bucket> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return assertWorkerStorage(storage).getBucket(this);
+	public Bucket get() {
+		return assertWorkerStorage(getStorage()).getBucket(this);
 	}
 
 	@Override
@@ -45,11 +40,6 @@ public class BucketId extends Id<Bucket> implements NamespacedId {
 	public void collectIds(Collection<? super Id<?>> collect) {
 		collect.add(this);
 		imp.collectIds(collect);
-	}
-
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return imp.getNamespacedStorageProvider();
 	}
 
 	public static enum Parser implements IdUtil.Parser<BucketId> {

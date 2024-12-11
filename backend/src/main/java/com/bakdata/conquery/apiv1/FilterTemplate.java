@@ -106,6 +106,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 
 	@Override
 	public SearchIndexId createId() {
-		return new SearchIndexId(dataset, name);
+		SearchIndexId searchIndexId = new SearchIndexId(dataset, name);
+		return searchIndexId;
 	}
 }

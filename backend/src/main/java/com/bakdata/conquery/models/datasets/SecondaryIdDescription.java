@@ -31,7 +31,9 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 
 	@Override
 	public SecondaryIdDescriptionId createId() {
-		return new SecondaryIdDescriptionId(dataset, getName());
+		SecondaryIdDescriptionId id = new SecondaryIdDescriptionId(dataset, getName());
+
+		return id;
 	}
 
 	@Override

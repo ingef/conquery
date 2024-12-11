@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(of = "worker")
-public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
+public final class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> buckets;

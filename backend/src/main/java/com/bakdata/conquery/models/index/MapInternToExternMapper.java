@@ -145,7 +145,9 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public InternToExternMapperId createId() {
-		return new InternToExternMapperId(getDataset(), getName());
+		InternToExternMapperId id = new InternToExternMapperId(getDataset(), getName());
+
+		return id;
 	}
 
 	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {}

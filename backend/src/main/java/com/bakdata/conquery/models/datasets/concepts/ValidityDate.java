@@ -108,6 +108,8 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 
 	@Override
 	public ValidityDateId createId() {
-		return new ValidityDateId(connector.getId(), getName());
+		ValidityDateId id = new ValidityDateId(connector.getId(), getName());
+
+		return id;
 	}
 }

@@ -10,22 +10,37 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
+@EqualsAndHashCode(callSuper = false, doNotUseGetters = true, onlyExplicitlyIncluded = true)
+public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 
+	@ToString.Include
 	private final String name;
+
+	/**
+	 * Injected by deserializer
+	 */
+	@JsonIgnore
+	@Setter(onParam_ = {@NonNull})
+	@Getter
+	private NamespacedStorageProvider namespacedStorageProvider;
 
 	@JsonIgnore
 	@Override
@@ -34,8 +49,13 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getDataset();
+	public Dataset get() {
+		return getStorage().getDataset();
+	}
+
+	@Override
+	public NamespacedStorage getStorage() {
+		return getNamespacedStorageProvider().getStorage(this);
 	}
 
 	@Override

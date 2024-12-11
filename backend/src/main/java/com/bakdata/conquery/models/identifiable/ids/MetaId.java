@@ -1,12 +1,24 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Marker interface for Ids that are resolvable in a {@link com.bakdata.conquery.io.storage.MetaStorage}
  */
-public interface MetaId {
+public abstract class MetaId<T> extends Id<T> {
+	/**
+	 * Injected by deserializer for resolving meta Ids
+	 */
+	@JsonIgnore
+	@Setter(onParam_ = {@NonNull})
+	private MetaStorage metaStorage;
 
-	Identifiable<?> get(MetaStorage storage);
+
+	@Override
+	public MetaStorage getStorage() {
+		return metaStorage;
+	}
 }

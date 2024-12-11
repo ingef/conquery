@@ -93,7 +93,9 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@Override
 	public ConceptTreeChildId createId() {
-		return new ConceptTreeChildId(parent.getId(), getName());
+		ConceptTreeChildId id = new ConceptTreeChildId(parent.getId(), getName());
+
+		return id;
 	}
 
 	/**

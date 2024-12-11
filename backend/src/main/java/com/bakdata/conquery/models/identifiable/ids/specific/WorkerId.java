@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -20,9 +21,19 @@ public class WorkerId extends Id<WorkerInformation> {
 	private final String worker;
 
 	@Override
+	public NamespacedStorage getStorage() {
+		return dataset.getStorage();
+	}
+
+	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(worker);
+	}
+
+	@Override
+	public WorkerInformation get() {
+		throw new IllegalStateException("Cannot be resolved");
 	}
 
 	@Override

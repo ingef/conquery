@@ -72,8 +72,6 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	public final ID getId() {
 		if (cachedId == null) {
 			cachedId = createId();
-			cachedId.setNamespacedStorageProvider(namespacedStorageProvider);
-			cachedId.setMetaStorage(metaStorage);
 		}
 		return cachedId;
 	}

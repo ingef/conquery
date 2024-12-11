@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -23,7 +21,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, Authorized {
+public class ManagedExecutionId extends MetaId<ManagedExecution> implements Authorized {
 
 	private final DatasetId dataset;
 	private final UUID execution;
@@ -41,8 +39,8 @@ public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, 
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
-		return storage.getExecution(this);
+	public ManagedExecution get() {
+		return getStorage().getExecution(this);
 	}
 
 	@Override

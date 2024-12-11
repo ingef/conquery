@@ -33,8 +33,8 @@ public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
 	public T fromString(String value) {
 		final T parsed = parser.parse(value);
 
-		parsed.setMetaStorage(metaStorage);
-		parsed.setNamespacedStorageProvider(namespacedStorageProvider);
+//		parsed.setMetaStorage(metaStorage);
+//		parsed.setNamespacedStorageProvider(namespacedStorageProvider);
 
 		return parsed;
 	}
@@ -60,6 +60,6 @@ public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
 			}
 			return null;
 		}
-		
 	}
 }
+

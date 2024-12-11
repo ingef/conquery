@@ -83,6 +83,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@Override
 	public ColumnId createId() {
-		return new ColumnId(table.getId(), getName());
+		ColumnId columnId = new ColumnId(table.getId(), getName());
+		return columnId;
 	}
 }

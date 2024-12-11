@@ -3,14 +3,11 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class ImportId extends Id<Import> implements NamespacedId {
+public class ImportId extends NamespacedId<Import> {
 
 	private final TableId table;
 	private final String tag;
@@ -29,8 +26,8 @@ public class ImportId extends Id<Import> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getImport(this);
+	public Import get() {
+		return getStorage().getImport(this);
 	}
 
 	@Override
@@ -44,12 +41,7 @@ public class ImportId extends Id<Import> implements NamespacedId {
 		collect.add(this);
 		table.collectIds(collect);
 	}
-
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return table.getNamespacedStorageProvider();
-	}
-
+	
 	public static enum Parser implements IdUtil.Parser<ImportId> {
 		INSTANCE;
 

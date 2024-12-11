@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.io.storage.Storage;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -19,8 +20,18 @@ public class TableImportDescriptorId extends Id<TableImportDescriptor> {
 	private final String importDescriptor;
 
 	@Override
+	public <T extends Storage> T getStorage() {
+		throw new IllegalStateException("Cannot be resolved, therefore has no storage.");
+	}
+
+	@Override
 	public void collectComponents(List<Object> components) {
 		components.add(importDescriptor);
+	}
+
+	@Override
+	public TableImportDescriptor get() {
+		throw new IllegalStateException("Cannot be resolved");
 	}
 
 	@Override

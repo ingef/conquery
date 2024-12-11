@@ -10,9 +10,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -34,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class MetaStorage extends ConqueryStorage implements Injectable {
+public non-sealed class MetaStorage extends ConqueryStorage implements Injectable, Storage {
 
 	private final StoreFactory storageFactory;
 	private IdentifiableStore<ManagedExecution> executions;
@@ -226,27 +223,5 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		return values.add(MetaStorage.class, this);
 	}
 
-	/**
-	 * Almost identical to {@link MetaStorage#get(Id)}, but throws an IdResolvingException if no object could be resolved.
-	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
-	 */
-	public <ID extends Id<?> & MetaId, VALUE> VALUE resolve(ID id) {
-		try {
-			VALUE o = get(id);
-			if (o == null) {
-				throw new IdResolvingException(id);
-			}
-			return o;
-		}
-		catch (IdResolvingException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw new IdResolvingException(id, e);
-		}
-	}
 
-	public <ID extends Id<?> & MetaId, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
 }

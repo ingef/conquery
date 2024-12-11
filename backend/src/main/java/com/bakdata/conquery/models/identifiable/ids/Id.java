@@ -7,16 +7,13 @@ import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
-import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.Storage;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
@@ -30,21 +27,7 @@ public abstract class Id<TYPE> {
 	@JsonIgnore
 	private WeakReference<String> escapedId = new WeakReference<>(null);
 
-	/**
-	 * Injected by deserializer
-	 */
-	@JsonIgnore
-	@Setter
-	@Getter
-	private NamespacedStorageProvider namespacedStorageProvider;
-
-	/**
-	 * Injected by deserializer for resolving meta Ids
-	 */
-	@JsonIgnore
-	@Setter
-	@Getter
-	private MetaStorage metaStorage;
+	public abstract <T extends Storage> T getStorage();
 
 	@Override
 	public abstract int hashCode();
@@ -90,14 +73,16 @@ public abstract class Id<TYPE> {
 		return result;
 	}
 
+	public abstract TYPE get();
+
 	public TYPE resolve() {
-		if (this instanceof NamespacedId namespacedId) {
-			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().getStorage(namespacedId.getDataset()));
+		TYPE out = get();
+
+		if (out == null){
+			throw newIdResolveException();
 		}
-		if (this instanceof MetaId) {
-			return metaStorage.resolve((Id<?> & MetaId)this);
-		}
-		throw new IllegalStateException("Tried to resolve an id that is neither NamespacedId not MetaId: %s".formatted(this));
+
+		return out;
 	}
 
 	public IdResolvingException newIdResolveException() {

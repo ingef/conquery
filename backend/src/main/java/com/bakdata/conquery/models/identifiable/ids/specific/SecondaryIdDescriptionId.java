@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -17,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> implements NamespacedId {
+public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescription> {
 
 	private final DatasetId dataset;
 	private final String name;
@@ -35,13 +33,8 @@ public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> impleme
 	}
 
 	@Override
-	public SecondaryIdDescription get(NamespacedStorage storage) {
-		return storage.getSecondaryId(this);
-	}
-
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
+	public SecondaryIdDescription get() {
+		return getStorage().getSecondaryId(this);
 	}
 
 	public static enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {

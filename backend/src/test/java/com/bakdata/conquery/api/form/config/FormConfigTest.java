@@ -23,6 +23,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -83,7 +84,12 @@ public class FormConfigTest {
 
 	@BeforeAll
 	public void setupTestClass() throws Exception {
+		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
+
 		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
+		NamespaceStorage namespaceStorage = storeFactory.createNamespaceStorage();
+		
+		dataset.setNamespacedStorageProvider(namespaceStorage);
 
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();
@@ -109,7 +115,7 @@ public class FormConfigTest {
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new NonPersistentStoreFactory().createMetaStorage();
+		storage = storeFactory.createMetaStorage();
 
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues()).add(NamespacedStorageProvider.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage, namespacesMock);

@@ -123,10 +123,11 @@ public class IdTests {
 	
 	@Test
 	public void testJacksonSerialization() throws IOException {
+		DatasetId dataset = new DatasetId("1");
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new DatasetId("1"),
+						dataset,
 					"2"
 				),
 				"3"

@@ -51,11 +51,11 @@ public class RequiredTable {
 
 	public Table toTable(Dataset dataset, NamespacedStorageProvider idResolver) {
 		Table table = new Table();
-		table.setPrimaryColumn(primaryColumn.toColumn(table, idResolver));
+		table.setPrimaryColumn(primaryColumn.toColumn(table));
 		table.setDataset(dataset.getId());
 		table.setName(name);
 		table.setColumns(Arrays.stream(columns)
-							   .map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
+							   .map(col -> col.toColumn(table)).toArray(Column[]::new));
 
 		return table;
 	}

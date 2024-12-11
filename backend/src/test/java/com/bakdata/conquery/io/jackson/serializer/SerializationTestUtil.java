@@ -144,7 +144,9 @@ public class SerializationTestUtil<T> {
 
 		// Preliminary check that ids of identifiables are equal
 		if (value instanceof IdentifiableImpl<?> identifiableValue) {
-			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
+			assertThat(((IdentifiableImpl<?>) copy).getId())
+					.as("the serialized value")
+					.isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)

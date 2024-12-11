@@ -37,6 +37,7 @@ public class FilterSearchItemTest {
 		Table table = new Table();
 		table.setDataset(dataset.getId());
 		table.setName("testTable");
+
 		NAMESPACED_STORAGE.addTable(table);
 
 		Column column = new Column();

@@ -344,7 +344,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(bucket, connector);
+		CBlockId id = new CBlockId(bucket, connector);
+
+		return id;
 	}
 
 	public boolean isConceptIncluded(String entity, long requiredBits) {

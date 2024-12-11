@@ -1,18 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import static com.bakdata.conquery.models.identifiable.ids.NamespacedId.assertWorkerStorage;
-
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class CBlockId extends Id<CBlock> implements NamespacedId {
+public class CBlockId extends NamespacedId<CBlock> {
 
 	private final BucketId bucket;
 	private final ConnectorId connector;
@@ -31,8 +26,8 @@ public class CBlockId extends Id<CBlock> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return assertWorkerStorage(storage).getCBlock(this);
+	public CBlock get() {
+		return assertWorkerStorage(getStorage()).getCBlock(this);
 	}
 
 	@Override
@@ -46,11 +41,6 @@ public class CBlockId extends Id<CBlock> implements NamespacedId {
 		collect.add(this);
 		bucket.collectIds(collect);
 		connector.collectIds(collect);
-	}
-
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return bucket.getNamespacedStorageProvider();
 	}
 
 	public static enum Parser implements IdUtil.Parser<CBlockId> {
