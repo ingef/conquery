@@ -104,6 +104,11 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	}
 
 	@Override
+	public Stream<ImportId> getAllImportIds() {
+		return imports.getAllKeys().map(ImportId.class::cast);
+	}
+
+	@Override
 	public Stream<Import> getAllImports() {
 		return imports.getAll();
 	}
