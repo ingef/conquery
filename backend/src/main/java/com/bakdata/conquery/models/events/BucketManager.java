@@ -131,8 +131,9 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+		log.info("Performing full update for cblocks");
 
+		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 		final List<BucketId> bucketIds = storage.getAllBucketIds().toList();
 
 		storage.getAllConcepts().filter(TreeConcept.class::isInstance).flatMap(concept -> concept.getConnectors().stream().map(ConceptTreeConnector.class::cast))
@@ -154,9 +155,14 @@ public class BucketManager {
 				   job.addCBlock(bucketId.resolve(), connector);
 			   }));
 
-		if (!job.isEmpty()) {
-			jobManager.addSlowJob(job);
+		log.info("Gathered all infos for full update for cblocks job");
+
+		if (job.isEmpty()) {
+			log.info("No Concepts/CBlocks need to be updated, skipping job.");
+			return;
 		}
+		log.info("Found {} tasks, queuing job", job.getTasks().size());
+		jobManager.addSlowJob(job);
 	}
 
 	public boolean hasCBlock(CBlockId id) {
