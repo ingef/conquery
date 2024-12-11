@@ -348,6 +348,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 			//  database value did not match any node of the concept
 			if (mostSpecificChild == null) {
+				addEntryToConceptElement(treeConcept, treeConcept.getName(), entry);
 				return;
 			}
 
