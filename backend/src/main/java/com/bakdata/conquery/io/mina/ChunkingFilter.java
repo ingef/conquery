@@ -5,7 +5,6 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.buffer.BufferDataException;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.future.DefaultWriteFuture;
@@ -30,29 +29,21 @@ public class ChunkingFilter extends IoFilterAdapter {
 	@Override
 	public void filterWrite(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
 		if (!(writeRequest.getMessage() instanceof IoBuffer ioBuffer)) {
-			throw new IllegalStateException("Filter was added at the wrong place in the filterchain. Only expecting IoBuffers here. Got: " + writeRequest.getMessage());
+			throw new IllegalStateException("Filter was added at the wrong place in the filter chain. Only expecting IoBuffers here. Got: " + writeRequest.getMessage());
 		}
 
-		try {
-			if (ioBuffer.prefixedDataAvailable(4, socketSendBufferSize)) {
-				// IoBuffer is shorter than socket buffer, we can just send it.
-				log.trace("Sending buffer without chunking");
-				super.filterWrite(nextFilter, session, writeRequest);
-				return;
-			}
+		// The first 4 bytes hold the object length in bytes
+		int objectLength = ioBuffer.getInt(ioBuffer.position());
 
-			throw new IllegalArgumentException("Got an incomplete IoBuffer on the sender side.");
-		}
-		catch (BufferDataException e) {
-			// The IoBuffer is larger than the socketSendBuffer
-			log.trace("Sending buffer with chunking: {}", e.getMessage());
+
+		if (objectLength < socketSendBufferSize) {
+			// IoBuffer is shorter than socket buffer, we can just send it.
+			log.info("Sending buffer without chunking");
+			super.filterWrite(nextFilter, session, writeRequest);
+			return;
 		}
 
 		// Split buffers
-
-		byte[] bufferArray = ioBuffer.array();
-		int arrayOffset = ioBuffer.arrayOffset();
-
 		int oldPos = ioBuffer.position();
 		int oldLimit = ioBuffer.limit();
 
@@ -60,7 +51,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 		ioBuffer.limit(oldPos + socketSendBufferSize);
 		int newLimit = ioBuffer.limit();
 
-		// Send the first resized (original) buffer, do not work on this ioBuffer pos and limit from here on
+		// Send the first resized (original) buffer
 		int chunkCount = 1;
 		log.trace("Sending {}. chunk: {} byte", chunkCount, newLimit - oldPos);
 		DefaultWriteFuture future = new DefaultWriteFuture(session);
@@ -72,12 +63,11 @@ public class ChunkingFilter extends IoFilterAdapter {
 		int remainingBytes = oldLimit - newLimit;
 
 		do {
-			int newArrayPos = arrayOffset + (newLimit - oldPos);
-
-			// Size and allocate new Buffer
+			// Size a new Buffer
 			int nextBufSize = Math.min(remainingBytes, socketSendBufferSize);
-			IoBuffer nextBuffer = IoBuffer.allocate(nextBufSize);
-			System.arraycopy(bufferArray, newArrayPos, nextBuffer.array(), nextBuffer.arrayOffset(), nextBufSize);
+			IoBuffer nextBuffer = ioBuffer.duplicate();
+			nextBuffer.limit(newLimit + nextBufSize);
+			nextBuffer.position(newLimit);
 
 			// Write chunked buffer
 			log.trace("Sending {}. chunk: {} byte", chunkCount, nextBufSize);
@@ -92,13 +82,26 @@ public class ChunkingFilter extends IoFilterAdapter {
 
 		} while(remainingBytes > 0);
 
-		// Wait for our self produced write request to get through
-		futures.forEach(WriteFuture::awaitUninterruptibly);
+		try {
+			// Wait for our self produced write request to get through
+			futures.forEach(WriteFuture::awaitUninterruptibly);
 
-		// Set the original request as written
-		writeRequest.getFuture().setWritten();
-		ioBuffer.free();
+			for (WriteFuture writeFuture : futures) {
+				Throwable exception = writeFuture.getException();
+				if (exception == null) {
+					continue;
+				}
+				writeRequest.getFuture().setException(new IllegalStateException("Failed to write a chunked ioBuffer", exception));
+				break;
+			}
 
-		log.trace("Send all chunks");
+			// Set the original request as written
+			writeRequest.getFuture().setWritten();
+		}
+		finally {
+			ioBuffer.free();
+		}
+
+		log.info("Sent all chunks");
 	}
 }
