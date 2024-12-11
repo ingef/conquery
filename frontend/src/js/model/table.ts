@@ -58,7 +58,7 @@ export function tableIsIncludedInIds(
   tableIds: string[],
 ) {
   return tableIds.some(
-    (id) => table.id.toLowerCase().indexOf(id.toLowerCase()) !== -1,
+    (id) => table.connectorId.toLowerCase().indexOf(id.toLowerCase()) !== -1,
   );
 }
 

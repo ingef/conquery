@@ -38,10 +38,10 @@ public class IndexService implements Injectable {
 	private final CsvParserSettings csvParserSettings;
 	private final String emptyDefaultLabel;
 
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
+	private final LoadingCache<IndexKey, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@NotNull
 		@Override
-		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
+		public Index<?> load(@NotNull IndexKey key) throws Exception {
 
 			final StopWatch timer = StopWatch.createStarted();
 
@@ -103,7 +103,7 @@ public class IndexService implements Injectable {
 	}
 
 	@Nullable
-	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?> key, CsvParser csvParser, Record row) {
+	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey key, CsvParser csvParser, Record row) {
 		final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		final String internalValue = row.getString(key.getInternalColumn());
@@ -133,7 +133,7 @@ public class IndexService implements Injectable {
 								.collect(Collectors.toMap(Functions.identity(), value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
 	}
 
-	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {
+	private Map<String, String> computeEmptyDefaults(IndexKey key) {
 		final StringSubstitutor substitutor = new StringSubstitutor((ignored) -> "", "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		final List<String> externalTemplates = key.getExternalTemplates();
@@ -149,13 +149,14 @@ public class IndexService implements Injectable {
 	/**
 	 * Returns an index mapping from the information in the given key.
 	 * If the index is not yet present, it is loaded.
+	 * <p/>
 	 * @param key the key describing the requested index
 	 * @return the index mapping
 	 * @throws IndexCreationException if the index mapping could not be loaded.
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public <K extends IndexKey<I>, I extends Index<K>> I getIndex(@NotNull K key) throws IndexCreationException {
+	public <I extends Index<?>> I getIndex(@NotNull IndexKey key) throws IndexCreationException {
 		try {
 			return (I) mappings.get(key);
 		}
@@ -168,7 +169,7 @@ public class IndexService implements Injectable {
 		return mappings.stats();
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return mappings.asMap().keySet();
 	}
 

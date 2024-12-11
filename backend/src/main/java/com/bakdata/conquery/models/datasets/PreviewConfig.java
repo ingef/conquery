@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
@@ -180,7 +179,6 @@ public class PreviewConfig {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
 								   .map(SelectId::<Select>resolve)
-								   .filter(Objects::nonNull)
 								   .collect(Collectors.toList());
 	}
 
@@ -191,7 +189,6 @@ public class PreviewConfig {
 
 		return searchFilters.stream()
 							.map(FilterId::resolve)
-							.filter(Objects::nonNull)
 							.map(Filter::getId)
 							.toList();
 	}
