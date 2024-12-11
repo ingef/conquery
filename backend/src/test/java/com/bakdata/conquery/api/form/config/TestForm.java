@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -25,8 +26,8 @@ import org.jetbrains.annotations.Nullable;
 public abstract class TestForm extends Form implements InternalForm {
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override

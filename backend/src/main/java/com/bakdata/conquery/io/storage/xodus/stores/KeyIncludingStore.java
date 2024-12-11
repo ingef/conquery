@@ -54,6 +54,10 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, Manag
 		return store.getAllKeys();
 	}
 
+	public SerializingStore.IterationStatistic forEach(Store.StoreEntryConsumer<KEY, VALUE> consumer) {
+		return store.forEach(consumer);
+	}
+	
 	@Override
 	public String toString() {
 		return store.toString();

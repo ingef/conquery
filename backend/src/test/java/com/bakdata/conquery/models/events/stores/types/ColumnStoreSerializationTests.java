@@ -36,7 +36,6 @@ import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import io.dropwizard.jersey.validation.Validators;
@@ -60,7 +59,7 @@ public class ColumnStoreSerializationTests {
 
 	@BeforeAll
 	public static void setupRegistry() {
-		STORAGE.openStores(null, new MetricRegistry());
+		STORAGE.openStores(null);
 		STORAGE.updateDataset(Dataset.PLACEHOLDER);
 
 

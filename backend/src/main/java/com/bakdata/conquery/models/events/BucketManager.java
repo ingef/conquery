@@ -82,15 +82,19 @@ public class BucketManager {
 		final IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
-		storage.getAllBuckets().forEach(bucket -> {
+		log.info("BEGIN Register buckets for {}", worker.getInfo().getId());
+		storage.getAllBuckets().forEach((bucket) -> {
 			log.trace("Processing bucket {}", bucket.getId());
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			registerBucket(bucket, entity2Bucket, tableBuckets);
 		});
+		log.debug("FINISHED Register buckets for {}", worker.getInfo().getId());
 
-		storage.getAllCBlocks().forEach(cBlock -> registerCBlock(cBlock, connectorCBlocks));
+		log.info("BEGIN Register cblocks for {}", worker.getInfo().getId());
+		storage.getAllCBlocks().forEach((cBlock) -> registerCBlock(cBlock, connectorCBlocks));
+		log.debug("FINISHED Register cblocks for {}", worker.getInfo().getId());
 
 		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
@@ -127,11 +131,14 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
+		log.info("Performing full update for cblocks");
+
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+		final List<BucketId> bucketIds = storage.getAllBucketIds().toList();
 
 		storage.getAllConcepts().filter(TreeConcept.class::isInstance).flatMap(concept -> concept.getConnectors().stream().map(ConceptTreeConnector.class::cast))
 
-			   .forEach(connector -> storage.getAllBucketIds().forEach(bucketId -> {
+			   .forEach(connector -> bucketIds.forEach(bucketId -> {
 
 				   final CBlockId cBlockId = new CBlockId(bucketId, connector.getId());
 
@@ -148,9 +155,14 @@ public class BucketManager {
 				   job.addCBlock(bucketId.resolve(), connector);
 			   }));
 
-		if (!job.isEmpty()) {
-			jobManager.addSlowJob(job);
+		log.info("Gathered all infos for full update for cblocks job");
+
+		if (job.isEmpty()) {
+			log.info("No Concepts/CBlocks need to be updated, skipping job.");
+			return;
 		}
+		log.info("Found {} tasks, queuing job", job.getTasks().size());
+		jobManager.addSlowJob(job);
 	}
 
 	public boolean hasCBlock(CBlockId id) {

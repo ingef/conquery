@@ -5,9 +5,6 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.error.ErrorMessages;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 
-/**
- * TODO as {@link com.bakdata.conquery.models.error.ConqueryError} ?
- */
 @CPSType(base = ConqueryError.class, id = "CQ_ID_RESOLVE_ERROR")
 public class IdResolvingException extends ConqueryError {
 

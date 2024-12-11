@@ -10,9 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -29,14 +26,15 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
@@ -52,8 +50,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -115,6 +111,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
@@ -137,9 +136,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
-	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		this.owner = owner;
 		this.dataset = dataset;
+		this.config = config;
 		this.metaStorage = metaStorage;
 		this.datasetRegistry = datasetRegistry;
 	}
@@ -162,7 +162,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(ConqueryConfig config) {
+	public final void initExecutable() {
 
 		synchronized (this) {
 			if (initialized) {
@@ -173,7 +173,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				// IdMapper is not necessary here
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
 			}
-			this.config = config;
 
 			doInitExecutable();
 
@@ -240,7 +239,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 		else {
 			this.error = error;
-			// Log the error, so its id is atleast once in the logs
+			// Log the error, so its id is at least once in the logs
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
@@ -249,14 +248,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public synchronized void finish(ExecutionState executionState) {
 
+		// Modify state
 		finishTime = LocalDateTime.now();
 		progress = null;
 
-		// Set execution state before acting on the latch to prevent a race condition
-		// Not sure if also the storage needs an update first
-		getMetaStorage().updateExecution(this);
-
+		// Set execution state before acting on the latch (to prevent a race condition - should not happen as the CachedStore uses softValues)
 		getExecutionManager().updateState(getId(), executionState);
+
+		// Persist state of this execution
+		metaStorage.updateExecution(this);
 
 		// Signal to waiting threads that the execution finished
 		getExecutionManager().clearBarrier(getId());
@@ -418,17 +418,4 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
-
-	//// Shortcut helper methods
-
-	public void reset() {
-		// This avoids endless loops with already reset queries
-		if (getState().equals(ExecutionState.NEW)) {
-			return;
-		}
-
-		getExecutionManager().clearQueryResults(this);
-	}
-
-	public abstract void cancel();
 }

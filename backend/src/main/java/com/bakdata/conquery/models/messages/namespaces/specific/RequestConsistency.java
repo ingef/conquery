@@ -23,13 +23,15 @@ public class RequestConsistency extends WorkerMessage {
 
     @Override
     public void react(Worker context) throws Exception {
+		log.info("BEGIN Gather consistency information");
         // Gather ImportIds
-        Set<ImportId> workerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
+        Set<ImportId> workerImports = context.getStorage().getAllImportIds().collect(Collectors.toSet());
 
         // Gather BucketIds
-        Set<BucketId> workerBuckets = context.getStorage().getAllBuckets().map(Bucket::getId).collect(Collectors.toSet());
+        Set<BucketId> workerBuckets = context.getStorage().getAllBucketIds().collect(Collectors.toSet());
 
         // Send report
         context.send(new ReportConsistency(context.getInfo().getId(), workerImports, workerBuckets));
+		log.debug("FINISHED Gather consistency information");
     }
 }

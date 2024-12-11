@@ -419,7 +419,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		metaStorage.updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry());
+		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
 		execution.setTags(new String[]{"test-tag"});
 
 		// Trigger UUID creation
@@ -456,7 +456,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry());
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
 		execution.setTags(new String[]{"test-tag"});
 
 		// Trigger UUID creation
@@ -483,7 +483,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Dataset dataset = createDataset(namespaceStorage);
 		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry());
+		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
 
 		// Trigger UUID creation
 		execution.getId();

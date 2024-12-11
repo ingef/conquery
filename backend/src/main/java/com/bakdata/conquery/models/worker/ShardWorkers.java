@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -61,13 +62,13 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment, boolean loadStorage) {
 
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(storage);
 		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(storage);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment, loadStorage);
 
 		addWorker(worker);
 
@@ -146,6 +147,11 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	@Override
 	public NamespacedStorage getStorage(DatasetId datasetId) {
 		return dataset2Worker.get(datasetId).getStorage();
+	}
+
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return dataset2Worker.keySet();
 	}
 
 	@Override
