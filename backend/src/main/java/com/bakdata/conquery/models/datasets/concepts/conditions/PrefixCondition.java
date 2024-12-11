@@ -51,7 +51,7 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getAuxillaryColumns() {
+	public Set<String> getAuxiliaryColumns() {
 		return Collections.emptySet();
 	}
 }

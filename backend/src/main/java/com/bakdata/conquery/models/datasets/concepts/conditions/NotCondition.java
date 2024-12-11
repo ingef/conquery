@@ -41,7 +41,7 @@ public class NotCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getAuxillaryColumns() {
-		return condition.getAuxillaryColumns();
+	public Set<String> getAuxiliaryColumns() {
+		return condition.getAuxiliaryColumns();
 	}
 }

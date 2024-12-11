@@ -236,7 +236,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		}
 		// Add columns from the child's condition, if it exists
 		if (child.getCondition() != null) {
-			final Set<String> conditionColumns = child.getCondition().getAuxillaryColumns();
+			final Set<String> conditionColumns = child.getCondition().getAuxiliaryColumns();
 			childColumns.addAll(conditionColumns);
 		}
 		return childColumns;

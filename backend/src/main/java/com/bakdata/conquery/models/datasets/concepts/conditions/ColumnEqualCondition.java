@@ -55,7 +55,7 @@ public class ColumnEqualCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getAuxillaryColumns() {
+	public Set<String> getAuxiliaryColumns() {
 		return Set.of(column);
 	}
 }

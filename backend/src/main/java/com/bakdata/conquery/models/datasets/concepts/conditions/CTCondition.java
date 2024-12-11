@@ -27,6 +27,6 @@ public interface CTCondition {
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
 	@JsonIgnore
-	Set<String> getAuxillaryColumns();
+	Set<String> getAuxiliaryColumns();
 
 }

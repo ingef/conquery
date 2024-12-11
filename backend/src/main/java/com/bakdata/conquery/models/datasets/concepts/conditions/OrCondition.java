@@ -56,10 +56,10 @@ public class OrCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> getAuxillaryColumns() {
+	public Set<String> getAuxiliaryColumns() {
 		final Set<String> columns = new HashSet<>();
 		for (CTCondition ctCondition : conditions) {
-			columns.addAll(ctCondition.getAuxillaryColumns());
+			columns.addAll(ctCondition.getAuxiliaryColumns());
 		}
 		return columns;
 	}
