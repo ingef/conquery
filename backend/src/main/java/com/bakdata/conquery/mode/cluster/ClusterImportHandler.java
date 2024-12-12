@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 /**
  * Handler of {@link Import} requests that realizes them both on the manager and the cluster's shards.
@@ -48,10 +49,10 @@ public class ClusterImportHandler implements ImportHandler {
 	@SneakyThrows
 	@Override
 	public void updateImport(Namespace namespace, InputStream inputStream) {
-		handleImport(namespace, inputStream, true, datasetRegistry);
+		handleImport(namespace, inputStream, true);
 	}
 
-	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update, DatasetRegistry<?> datasetRegistry) throws IOException {
+	private static void handleImport(Namespace namespace, InputStream inputStream, boolean update) throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 			// We parse semi-manually as the incoming file consist of multiple documents we read progressively:
 			// 1) the header to check metadata
@@ -61,7 +62,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final Table table = validateImportable(((DistributedNamespace) namespace), header, update);
 
-			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser, datasetRegistry);
+			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
 			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
 		}
@@ -108,7 +109,7 @@ public class ClusterImportHandler implements ImportHandler {
 		return table;
 	}
 
-	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader, DatasetRegistry<?> datasetRegistry) {
+	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
 		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
 		final ImportId importId = new ImportId(tableId, header.getName());
 
@@ -117,6 +118,9 @@ public class ClusterImportHandler implements ImportHandler {
 		Import imp = null;
 
 		final Map<Integer, Collection<String>> collectedEntities = new HashMap<>();
+
+		// sendBucket is non-blocking, so we make sure we do not allocate to much memory but also keep all workers busy
+		Semaphore semaphore = new Semaphore(namespace.getWorkerHandler().getWorkers().size());
 
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
@@ -135,7 +139,13 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucket.getId());
 
-			sendBucket(bucket, responsibleWorker);
+			try {
+				semaphore.acquire();
+				sendBucket(bucket, responsibleWorker).addListener((f) -> semaphore.release());
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 
 			// NOTE: I want the bucket to be GC'd as early as possible, so I just store the part(s) I need later.
 
@@ -161,20 +171,19 @@ public class ClusterImportHandler implements ImportHandler {
 	/**
 	 * select, then send buckets.
 	 */
-	public static WorkerId sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
+	public static WriteFuture sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
 
 		responsibleWorker.awaitFreeJobQueue();
 
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
-		responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
+		return responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
 
-		return responsibleWorker.getId();
 	}
 
 	@SneakyThrows
 	@Override
 	public void addImport(Namespace namespace, InputStream inputStream) {
-		handleImport(namespace, inputStream, false, datasetRegistry);
+		handleImport(namespace, inputStream, false);
 	}
 
 	@Override
