@@ -177,7 +177,7 @@ public class TestConquery {
 
 				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
 					started = System.nanoTime();
-					log.warn("waiting for done work for a long time");
+					log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we ar waiting."));
 				}
 
 			} while (true);

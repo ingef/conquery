@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.mina;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.dropwizard.util.DataSize;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -38,7 +39,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 
 		if (objectLength < socketSendBufferSize) {
 			// IoBuffer is shorter than socket buffer, we can just send it.
-			log.info("Sending buffer without chunking");
+			log.trace("Sending buffer without chunking: {} (limit = {})", DataSize.bytes(objectLength), DataSize.bytes(socketSendBufferSize));
 			super.filterWrite(nextFilter, session, writeRequest);
 			return;
 		}
@@ -53,7 +54,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 
 		// Send the first resized (original) buffer
 		int chunkCount = 1;
-		log.trace("Sending {}. chunk: {} byte", chunkCount, newLimit - oldPos);
+		log.trace("Sending {}. chunk: {} byte", chunkCount, ioBuffer.remaining());
 		DefaultWriteFuture future = new DefaultWriteFuture(session);
 		nextFilter.filterWrite(session, new DefaultWriteRequest(ioBuffer, future));
 
@@ -91,17 +92,19 @@ public class ChunkingFilter extends IoFilterAdapter {
 				if (exception == null) {
 					continue;
 				}
+
+				log.warn("Failed to send all {} chunks", chunkCount, exception);
 				writeRequest.getFuture().setException(new IllegalStateException("Failed to write a chunked ioBuffer", exception));
 				break;
 			}
 
+
+			log.trace("Sent all {} chunks", chunkCount);
 			// Set the original request as written
 			writeRequest.getFuture().setWritten();
 		}
 		finally {
 			ioBuffer.free();
 		}
-
-		log.info("Sent all chunks");
 	}
 }
