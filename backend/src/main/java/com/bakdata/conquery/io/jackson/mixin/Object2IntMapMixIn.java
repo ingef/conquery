@@ -1,4 +1,4 @@
-package com.bakdata.conquery.io.jackson.serializer;
+package com.bakdata.conquery.io.jackson.mixin;
 
 import java.io.IOException;
 import java.util.Map;
@@ -25,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * (De-)Serialization Mixin for {@link Object2IntMap}.
  */
-@JsonDeserialize(using = Object2IntMapMixin.Deserializer.class)
+@JsonDeserialize(using = Object2IntMapMixIn.Deserializer.class)
 @Slf4j
-public class Object2IntMapMixin {
+public class Object2IntMapMixIn {
 
 	public static class Deserializer<K> extends StdDeserializer<Object2IntMap<K>> implements ContextualDeserializer {
 

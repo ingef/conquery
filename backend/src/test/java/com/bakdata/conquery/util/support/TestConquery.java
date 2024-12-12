@@ -177,12 +177,12 @@ public class TestConquery {
 
 				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
 					started = System.nanoTime();
-					log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we ar waiting."));
+					log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we are waiting."));
 				}
 
 			} while (true);
 		}
-		log.trace("all jobs finished");
+		log.trace("All jobs finished");
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
