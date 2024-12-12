@@ -2,7 +2,8 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
-import com.bakdata.conquery.io.jackson.serializer.Object2IntMapMixin;
+import com.bakdata.conquery.io.jackson.mixin.DefaultSocketSessionConfigMixIn;
+import com.bakdata.conquery.io.jackson.mixin.Object2IntMapMixIn;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 import org.apache.shiro.authz.Permission;
 
 public class Jackson {
@@ -72,7 +74,8 @@ public class Jackson {
 					//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 					.setInjectableValues(new MutableInjectableValues())
 					.addMixIn(Permission.class, ConqueryPermission.class)
-					.addMixIn(Object2IntMap.class, Object2IntMapMixin.class);
+					.addMixIn(Object2IntMap.class, Object2IntMapMixIn.class)
+					.addMixIn(DefaultSocketSessionConfig.class, DefaultSocketSessionConfigMixIn.class);
 
 		return objectMapper;
 	}
