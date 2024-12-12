@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.mina;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.dropwizard.util.DataSize;
 import lombok.RequiredArgsConstructor;
@@ -9,10 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.future.DefaultWriteFuture;
+import org.apache.mina.core.future.IoFuture;
+import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.DefaultWriteRequest;
 import org.apache.mina.core.write.WriteRequest;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Chunks messages to fit them in the socket send buffer size, iff they are larger than the socket send buffer.
@@ -47,6 +51,11 @@ public class ChunkingFilter extends IoFilterAdapter {
 		// Split buffers
 		int oldPos = ioBuffer.position();
 		int oldLimit = ioBuffer.limit();
+		int totalSize = ioBuffer.remaining();
+
+		// TODO unsure if Atomic is needed here
+		final AtomicInteger writtenChunks = new AtomicInteger();
+		final int totalChunks = divideAndRoundUp(totalSize, socketSendBufferSize);
 
 
 		ioBuffer.limit(oldPos + socketSendBufferSize);
@@ -56,10 +65,10 @@ public class ChunkingFilter extends IoFilterAdapter {
 		int chunkCount = 1;
 		log.trace("Sending {}. chunk: {} byte", chunkCount, ioBuffer.remaining());
 		DefaultWriteFuture future = new DefaultWriteFuture(session);
-		nextFilter.filterWrite(session, new DefaultWriteRequest(ioBuffer, future));
 
-		List<WriteFuture> futures = new ArrayList<>();
-		futures.add(future);
+		IoFutureListener<IoFuture> listener = handleWrittenChunk(writeRequest, writtenChunks, totalChunks);
+		future.addListener(listener);
+		nextFilter.filterWrite(session, new DefaultWriteRequest(ioBuffer, future));
 
 		int remainingBytes = oldLimit - newLimit;
 
@@ -74,37 +83,41 @@ public class ChunkingFilter extends IoFilterAdapter {
 			chunkCount++;
 			log.trace("Sending {}. chunk: {} byte", chunkCount, nextBufSize);
 			future = new DefaultWriteFuture(session);
-			futures.add(future);
+
 			nextFilter.filterWrite(session, new DefaultWriteRequest(nextBuffer, future));
+
+			future.addListener(listener);
 
 			// Recalculate for next iteration
 			newLimit = newLimit + nextBufSize;
 			remainingBytes = remainingBytes - nextBufSize;
 
 		} while(remainingBytes > 0);
+	}
 
-		try {
-			// Wait for our self produced write request to get through
-			futures.forEach(WriteFuture::awaitUninterruptibly);
+	private static @NotNull IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
+		return f -> {
+			// Count written chunk and notify original writeRequest on error or success
 
-			for (WriteFuture writeFuture : futures) {
-				Throwable exception = writeFuture.getException();
-				if (exception == null) {
-					continue;
+			WriteFuture chunkFuture = (WriteFuture) f;
+			WriteFuture originalFuture = writeRequest.getFuture();
+			if (!chunkFuture.isWritten()) {
+				log.warn("Failed to write chunk");
+				if (!originalFuture.isDone()) {
+					originalFuture.setException(new IllegalStateException("Failed to write a chunked ioBuffer", chunkFuture.getException()));
 				}
-
-				log.warn("Failed to send all {} chunks", chunkCount, exception);
-				writeRequest.getFuture().setException(new IllegalStateException("Failed to write a chunked ioBuffer", exception));
-				break;
+				return;
 			}
+			int writtenChunk = writtenChunks.incrementAndGet();
+			if (writtenChunk >= totalChunks) {
+				log.trace("Sent all {} chunks", writtenChunk);
+				originalFuture.setWritten();
+			}
+		};
+	}
 
-
-			log.trace("Sent all {} chunks", chunkCount);
-			// Set the original request as written
-			writeRequest.getFuture().setWritten();
-		}
-		finally {
-			ioBuffer.free();
-		}
+	public static int divideAndRoundUp(int num, int divisor) {
+		// only for positive values
+		return (num + divisor - 1) / divisor;
 	}
 }

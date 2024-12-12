@@ -201,8 +201,8 @@ public class MinaStackTest {
 		return Stream.of(
 				Arguments.of(DataSize.bytes(10), true),
 				Arguments.of(DataSize.kibibytes(10), true),
-				Arguments.of(DataSize.mebibytes(9), true),
-				Arguments.of(DataSize.mebibytes(10), false) // See beforeAll() setting
+				Arguments.of(DataSize.mebibytes(9), true), // Uses chunking
+				Arguments.of(DataSize.mebibytes(10), false) // Is too large for jackson encoder
 		);
 	}
 

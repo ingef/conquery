@@ -35,7 +35,6 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.trace("BEGIN Encoding message");
 		objectWriter.writeValue(buf.asOutputStream(), message);
-		log.trace("FINISHED Encoding message in {}. Buffersize: ", stopwatch);
 
 		int objectSize = buf.position() - 4;
 		if (objectSize > getMaxObjectSize()) {
@@ -49,7 +48,7 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 		buf.position(newPos);
 
 		buf.flip();
-		log.trace("FINISHED Encoding message in {}. Buffersize: {}", stopwatch, DataSize.bytes(buf.remaining()));
+		log.trace("FINISHED Encoding message in {}. Buffer size: {}", stopwatch, DataSize.bytes(buf.remaining()));
 
 		out.write(buf);
 	}
