@@ -71,6 +71,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 			nextBuffer.position(newLimit);
 
 			// Write chunked buffer
+			chunkCount++;
 			log.trace("Sending {}. chunk: {} byte", chunkCount, nextBufSize);
 			future = new DefaultWriteFuture(session);
 			futures.add(future);
@@ -79,7 +80,6 @@ public class ChunkingFilter extends IoFilterAdapter {
 			// Recalculate for next iteration
 			newLimit = newLimit + nextBufSize;
 			remainingBytes = remainingBytes - nextBufSize;
-			chunkCount++;
 
 		} while(remainingBytes > 0);
 

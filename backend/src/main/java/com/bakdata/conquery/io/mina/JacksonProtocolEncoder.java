@@ -1,14 +1,18 @@
 package com.bakdata.conquery.io.mina;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Stopwatch;
+import io.dropwizard.util.DataSize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.apache.mina.filter.codec.serialization.ObjectSerializationEncoder;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
@@ -21,14 +25,17 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		IoBuffer buf = IoBuffer.allocate(initialBufferCapacityBytes);
+		IoBuffer buf = IoBuffer.allocate(initialBufferCapacityBytes, false);
 		buf.setAutoExpand(true);
 
 
 		int oldPos = buf.position();
 		buf.skip(4); // Make a room for the length field.
 
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		log.trace("BEGIN Encoding message");
 		objectWriter.writeValue(buf.asOutputStream(), message);
+		log.trace("FINISHED Encoding message in {}. Buffersize: ", stopwatch);
 
 		int objectSize = buf.position() - 4;
 		if (objectSize > getMaxObjectSize()) {
@@ -42,6 +49,8 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 		buf.position(newPos);
 
 		buf.flip();
+		log.trace("FINISHED Encoding message in {}. Buffersize: {}", stopwatch, DataSize.bytes(buf.remaining()));
+
 		out.write(buf);
 	}
 }

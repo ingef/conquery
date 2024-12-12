@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.BufferDataException;
@@ -38,7 +39,11 @@ public class JacksonProtocolDecoder extends CumulativeProtocolDecoder {
 
 		try {
 			// Read the object we are interested in
+			Stopwatch stopwatch = Stopwatch.createStarted();
+			log.trace("BEGIN Decoding message");
 			Object o = objectReader.readValue(in.asInputStream());
+			log.trace("FINISHED Decoding message in {}", stopwatch);
+
 			out.write(o);
 		}
 		catch (IOException e) {
