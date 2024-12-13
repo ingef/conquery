@@ -48,7 +48,7 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 		buf.position(newPos);
 
 		buf.flip();
-		log.trace("FINISHED Encoding message in {}. Buffer size: {}", stopwatch, DataSize.bytes(buf.remaining()));
+		log.trace("FINISHED Encoding message in {}. Buffer size: {}. Message: {}", stopwatch, DataSize.bytes(buf.remaining()), message);
 
 		out.write(buf);
 	}
