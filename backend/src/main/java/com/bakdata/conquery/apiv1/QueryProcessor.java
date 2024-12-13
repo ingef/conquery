@@ -107,35 +107,41 @@ public class QueryProcessor {
 	private Validator validator;
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
+	public Stream<? extends ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Stream<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Stream<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<? extends ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Stream<ManagedExecution> allQueries, boolean allProviders) {
 
 		return allQueries
-						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
-						 // one dataset.
-						 .filter(q -> q.getDataset().equals(datasetId))
-						 // to exclude subtypes from somewhere else
-						 .filter(QueryProcessor::canFrontendRender)
-						 .filter(Predicate.not(ManagedExecution::isSystem))
-						 .filter(q -> {
-							 ExecutionState state = q.getState();
-									 return state == ExecutionState.NEW || state == ExecutionState.DONE;
-								 }
-						 )
-						 .filter(q -> subject.isPermitted(q, Ability.READ))
-						 .map(mq -> {
-							 final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
+				// The following only checks the dataset, under which the query was submitted, but a query can target more that
+				// one dataset.
+				.filter(q -> q.getDataset().equals(datasetId))
+				// to exclude subtypes from somewhere else
+				.filter(QueryProcessor::canFrontendRender)
+				.filter(Predicate.not(ManagedExecution::isSystem))
+				.filter(q -> {
+							ExecutionState state = q.getState();
+							return state == ExecutionState.NEW || state == ExecutionState.DONE;
+						})
+				.filter(q -> subject.isPermitted(q, Ability.READ))
+				.map(mq -> {
+					try {
+						final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
 
-							 if (mq.isReadyToDownload()) {
-								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
-							 }
-							 return status;
-						 });
+						if (mq.isReadyToDownload()) {
+							status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
+						}
+						return status;
+					}
+					catch (Exception e) {
+						log.error("FAILED building status for {}", mq, e);
+					}
+					return null;
+				})
+				.filter(Objects::nonNull);
 	}
 
 	/**
