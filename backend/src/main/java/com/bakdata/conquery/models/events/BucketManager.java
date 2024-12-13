@@ -261,9 +261,9 @@ public class BucketManager {
 
 			for (Map<BucketId, CBlockId> bucketCBlockMap : connectorToCblocks.get(connector).values()) {
 				for (CBlockId cBlockId : bucketCBlockMap.values()) {
-					for (String entity : cBlockId.getBucket().resolve().entities()) {
+					CBlock cBlock = cBlockId.resolve();
+					for (String entity : cBlock.getEntities()) {
 
-						CBlock cBlock = cBlockId.resolve();
 						if (cBlock.isConceptIncluded(entity, requiredBits) && restriction.intersects(cBlock.getEntityDateRange(entity))) {
 							out.add(entity);
 						}
@@ -285,8 +285,8 @@ public class BucketManager {
 		final int bucketId = getBucket(entity.getId());
 		final Map<BucketId, CBlockId> cblocks = connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap()).getOrDefault(bucketId, Collections.emptyMap());
 
-		for (BucketId bucket : cblocks.keySet()) {
-			if (bucket.resolve().containsEntity(entity.getId())) {
+		for (CBlockId cblock : cblocks.values()) {
+			if (cblock.resolve().containsEntity(entity.getId())) {
 				return true;
 			}
 		}

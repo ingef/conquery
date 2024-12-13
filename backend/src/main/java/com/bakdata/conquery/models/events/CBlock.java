@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.IntFunction;
 import jakarta.validation.constraints.NotNull;
 
@@ -29,6 +30,7 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -100,6 +102,22 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
 		return cBlock;
+	}
+
+	/**
+	 *
+	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
+	 *
+	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
+	 */
+	@JsonIgnore
+	Set<String> getEntities() {
+		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
+	}
+
+
+	public boolean containsEntity(String entity) {
+		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	/**
