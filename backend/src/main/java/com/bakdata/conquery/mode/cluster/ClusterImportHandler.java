@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -19,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -119,9 +119,6 @@ public class ClusterImportHandler implements ImportHandler {
 
 		final Map<Integer, Collection<String>> collectedEntities = new HashMap<>();
 
-		// sendBucket is non-blocking, so we make sure we do not allocate to much memory but also keep all workers busy
-		Semaphore semaphore = new Semaphore(namespace.getWorkerHandler().getWorkers().size());
-
 		for (PreprocessedData container : (Iterable<? extends PreprocessedData>) () -> reader) {
 
 			if (imp == null) {
@@ -135,20 +132,20 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final Bucket bucket = Bucket.fromPreprocessed(table, container, imp);
 
-			log.trace("DONE reading bucket `{}`, contains {} entities.", bucket.getId(), bucket.entities().size());
+			final BucketId bucketId = bucket.getId();
+			log.trace("DONE reading bucket `{}`, contains {} entities.", bucketId, bucket.entities().size());
 
-			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucket.getId());
+			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
 
-			try {
-				semaphore.acquire();
-				sendBucket(bucket, responsibleWorker).addListener((f) -> semaphore.release());
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+			sendBucket(bucket, responsibleWorker).addListener((f) ->  {
+				if(((WriteFuture)f).isWritten()) {
+					log.trace("Sent Bucket {}", bucketId);
+					return;
+				}
+				log.warn("Failed to send Bucket {}", bucketId);
+			});
 
 			// NOTE: I want the bucket to be GC'd as early as possible, so I just store the part(s) I need later.
-
 			collectedEntities.put(bucket.getBucket(), bucket.entities());
 		}
 
