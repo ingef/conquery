@@ -46,7 +46,7 @@ public class JacksonProtocolDecoder extends CumulativeProtocolDecoder {
 
 			out.write(o);
 		}
-		catch (IOException e) {
+		catch (IOException e) { // Includes JacksonException
 			String debuggedMessage = "enable TRACE for Message";
 			if (log.isTraceEnabled()) {
 				// Rewind ordinary read attempt
@@ -54,14 +54,15 @@ public class JacksonProtocolDecoder extends CumulativeProtocolDecoder {
 
 				debuggedMessage = JacksonUtil.toJsonDebug(in.asInputStream());
 
-				// If for some reason the debugging decoder did not read all bytes: forward the position to this object's supposed end
-				in.position(objectEndLimit);
 			}
 			log.error("Failed to decode message: {}", debuggedMessage , e);
 		}
 		finally {
 			// Set back the old limit, as the in buffer might already have data for a new object
 			in.limit(oldLimit);
+
+			// If the debugging decoder did not read all bytes: forward the position to this object's supposed end
+			in.position(objectEndLimit);
 		}
 
 		return true;
