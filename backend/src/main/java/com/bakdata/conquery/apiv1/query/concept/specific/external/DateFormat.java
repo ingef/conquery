@@ -58,7 +58,11 @@ public enum DateFormat {
 	DATE_SET {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
-			out.addAll(dateReader.parseToCDateSet(value));
+			CDateSet parsed = dateReader.parseToCDateSet(value);
+			if (parsed == null ) {
+				return;
+			}
+			out.addAll(parsed);
 		}
 	},
 	ALL {

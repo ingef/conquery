@@ -98,14 +98,18 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		Column sumColumn = sumSelect.getColumn().resolve();
-		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
-		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		NameGenerator nameGenerator = selectContext.getNameGenerator();
 		String alias = nameGenerator.selectName(sumSelect);
+
+		Column sumColumn = sumSelect.getColumn().resolve();
+		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
+
+		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
+
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
+
 		if (!distinctByColumns.isEmpty()) {
 			SqlIdColumns ids = selectContext.getIds();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);

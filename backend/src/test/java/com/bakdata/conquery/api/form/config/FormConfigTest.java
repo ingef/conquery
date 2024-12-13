@@ -297,6 +297,7 @@ public class FormConfigTest {
 
 	@Test
 	public void patchConfig() {
+
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1", "test1", storage);

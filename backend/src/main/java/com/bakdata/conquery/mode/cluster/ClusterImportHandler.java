@@ -64,7 +64,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
-			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table);
+			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table.getId());
 		}
 	}
 
@@ -157,10 +157,10 @@ public class ClusterImportHandler implements ImportHandler {
 
 	}
 
-	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, Table table) {
+	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, TableId table) {
 		allConcepts.map(Concept::getConnectors)
 				   .flatMap(List::stream)
-				   .filter(con -> con.getResolvedTableId().equals(table.getId()))
+				   .filter(con -> con.getResolvedTableId().equals(table))
 				   .map(Connector::getConcept)
 				   .forEach(Concept::clearMatchingStats);
 	}
@@ -189,7 +189,7 @@ public class ClusterImportHandler implements ImportHandler {
 		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable().resolve());
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
 
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp.getId()));
