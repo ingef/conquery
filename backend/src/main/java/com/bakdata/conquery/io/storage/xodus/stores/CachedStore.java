@@ -34,13 +34,15 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.store = store;
 
-		StatsCounter statsCounter = metricRegistry != null ? new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) : StatsCounter.disabledStatsCounter();
+		StatsCounter statsCounter = metricRegistry != null ?
+									new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) :
+									StatsCounter.disabledStatsCounter();
 
 		Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
 												.recordStats(() -> statsCounter)
 												.evictionListener((k, v, cause) -> log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
 
-		cache = caffeine.build(this.store::get);
+		cache = caffeine.build(this::getFromStore);
 	}
 
 	@Override
@@ -157,5 +159,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void close() throws IOException {
 		store.close();
+	}
+
+	private VALUE getFromStore(KEY key) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		VALUE value = store.get(key);
+		log.trace("Loaded {} from store in {}", key, stopwatch);
+		return value;
 	}
 }

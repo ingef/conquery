@@ -194,7 +194,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects());
 
-			// Exists aggregators hold a reference to their parent FiltersNode so they need to be treated separately.
+			// Exists aggregators hold a reference to their parent FiltersNode, so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
 			final List<ExistsAggregator> existsAggregators =
 					connectorAggregators.stream()
@@ -208,7 +208,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 
 			final List<Aggregator<CDateSet>> eventDateUnionAggregators =
-					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().<Connector>resolve().getResolvedTable())))
+					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().resolve().getResolvedTable())))
 										: Collections.emptyList();
 
 			aggregators.addAll(eventDateUnionAggregators);
@@ -286,7 +286,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 */
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
 		return selects.stream()
-					  .map(SelectId::<Select>resolve)
+					  .map(SelectId::resolve)
 					  .map(Select::createAggregator)
 					  .peek(plan::registerAggregator)
 					  .collect(Collectors.toList());
