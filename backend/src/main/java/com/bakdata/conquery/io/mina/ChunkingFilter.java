@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.mina;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.dropwizard.util.DataSize;
@@ -29,8 +27,6 @@ public class ChunkingFilter extends IoFilterAdapter {
 	private final int socketSendBufferSize;
 
 
-
-
 	@Override
 	public void filterWrite(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
 		if (!(writeRequest.getMessage() instanceof IoBuffer ioBuffer)) {
@@ -39,7 +35,6 @@ public class ChunkingFilter extends IoFilterAdapter {
 
 		// The first 4 bytes hold the object length in bytes
 		int objectLength = ioBuffer.getInt(ioBuffer.position());
-
 
 		if (objectLength < socketSendBufferSize) {
 			// IoBuffer is shorter than socket buffer, we can just send it.
@@ -75,9 +70,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 		do {
 			// Size a new Buffer
 			int nextBufSize = Math.min(remainingBytes, socketSendBufferSize);
-			IoBuffer nextBuffer = ioBuffer.duplicate();
-			nextBuffer.limit(newLimit + nextBufSize);
-			nextBuffer.position(newLimit);
+			IoBuffer nextBuffer = ioBuffer.getSlice(newLimit, nextBufSize);
 
 			// Write chunked buffer
 			chunkCount++;
@@ -89,10 +82,15 @@ public class ChunkingFilter extends IoFilterAdapter {
 			future.addListener(listener);
 
 			// Recalculate for next iteration
-			newLimit = newLimit + nextBufSize;
-			remainingBytes = remainingBytes - nextBufSize;
+			newLimit += nextBufSize;
+			remainingBytes -= nextBufSize;
 
-		} while(remainingBytes > 0);
+		} while (remainingBytes > 0);
+	}
+
+	public static int divideAndRoundUp(int num, int divisor) {
+		// only for positive values
+		return (num + divisor - 1) / divisor;
 	}
 
 	private static @NotNull IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
@@ -114,10 +112,5 @@ public class ChunkingFilter extends IoFilterAdapter {
 				originalFuture.setWritten();
 			}
 		};
-	}
-
-	public static int divideAndRoundUp(int num, int divisor) {
-		// only for positive values
-		return (num + divisor - 1) / divisor;
 	}
 }

@@ -16,6 +16,7 @@ import org.apache.mina.filter.codec.serialization.ObjectSerializationEncoder;
 @RequiredArgsConstructor
 public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
+	private final int SIZE_PREFIX_LENGTH = Integer.BYTES;
 
 	private final ObjectWriter objectWriter;
 
@@ -25,27 +26,25 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		IoBuffer buf = IoBuffer.allocate(initialBufferCapacityBytes, false);
+		final IoBuffer buf = IoBuffer.allocate(initialBufferCapacityBytes, false);
 		buf.setAutoExpand(true);
 
+		buf.position();
+		buf.skip(SIZE_PREFIX_LENGTH); // Make a room for the length field.
 
-		int oldPos = buf.position();
-		buf.skip(4); // Make a room for the length field.
-
-		Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		log.trace("BEGIN Encoding message");
+
 		objectWriter.writeValue(buf.asOutputStream(), message);
 
-		int objectSize = buf.position() - 4;
+		final int objectSize = buf.position() - SIZE_PREFIX_LENGTH;
+
 		if (objectSize > getMaxObjectSize()) {
 			throw new IllegalArgumentException("The encoded object is too big: " + objectSize + " (> " + getMaxObjectSize() + ')');
 		}
 
 		// Fill the length field
-		int newPos = buf.position();
-		buf.position(oldPos);
-		buf.putInt(newPos - oldPos - 4);
-		buf.position(newPos);
+		buf.putInt(0, objectSize);
 
 		buf.flip();
 		log.trace("FINISHED Encoding message in {}. Buffer size: {}. Message: {}", stopwatch, DataSize.bytes(buf.remaining()), message);
