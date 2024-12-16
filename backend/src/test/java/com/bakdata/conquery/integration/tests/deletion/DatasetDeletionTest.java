@@ -19,6 +19,8 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -69,7 +71,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final long nImports = namespace.getStorage().getAllImports().count();
+		final long nImports;
+		try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			nImports = allImports.count();
+		}
 
 		log.info("Checking state before deletion");
 
@@ -111,8 +116,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
-			conquery.getNamespace().getStorage().getTables()
-					.forEach(tableId -> conquery.getAdminDatasetsProcessor().deleteTable(tableId, true));
+			try(Stream<Table> tables = conquery.getNamespace().getStorage().getTables()){
+				tables.forEach(tableId -> conquery.getAdminDatasetsProcessor().deleteTable(tableId, true));
+			}
 
 			conquery.waitUntilWorkDone();
 
@@ -128,8 +134,12 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 
-			// We have deleted an import now there should be two less!
-			assertThatThrownBy(() -> namespace.getStorage().getAllImports().count())
+			// We have deleted the dataset, the environment should be inoperable
+			assertThatThrownBy(() -> {
+				try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+					allImports.count();
+				}
+			})
 					.isInstanceOf(ExodusException.class)
 					.hasCauseInstanceOf(EnvironmentClosedException.class);
 
@@ -170,7 +180,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.describedAs("Dataset after re-import.")
 					.isNotNull();
 
-			assertThat(conqueryReimport.getNamespace().getStorage().getAllImports().count()).isEqualTo(nImports);
+			try(Stream<Import> allImports = conqueryReimport.getNamespace().getStorage().getAllImports()) {
+				assertThat(allImports.count()).isEqualTo(nImports);
+			}
 
 			for (ShardNode node : conqueryReimport.getShardNodes()) {
 				assertThat(node.getWorkers().getWorkers().values())
@@ -197,7 +209,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Checking state after re-start");
 
-			assertThat(conqueryRestart.getNamespace().getStorage().getAllImports().count()).isEqualTo(2);
+			try(Stream<Import> allImports = conqueryRestart.getNamespace().getStorage().getAllImports()) {
+				assertThat(allImports.count()).isEqualTo(2);
+			}
 
 			for (ShardNode node : conqueryRestart.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {

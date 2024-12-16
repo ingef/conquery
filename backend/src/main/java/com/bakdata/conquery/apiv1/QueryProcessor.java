@@ -107,10 +107,10 @@ public class QueryProcessor {
 	private Validator validator;
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		final Stream<ManagedExecution> allQueries = storage.getAllExecutions();
-
-		return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
+	public List<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
+		try(Stream<ManagedExecution> allQueries = storage.getAllExecutions()) {
+			return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders).toList();
+		}
 	}
 
 	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Stream<ManagedExecution> allQueries, boolean allProviders) {

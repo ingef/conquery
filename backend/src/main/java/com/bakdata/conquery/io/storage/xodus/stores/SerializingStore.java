@@ -98,7 +98,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * The underlying store to write the values to.
 	 */
-	private final XodusStore store;
+	private final Store<ByteIterable, ByteIterable> store;
 
 	/**
 	 *
@@ -122,7 +122,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ExecutorService executor;
 
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(
-			XodusStore store,
+			Store<ByteIterable, ByteIterable> store,
 			Validator validator,
 			ObjectMapper objectMapper,
 			CLASS_K keyType,
@@ -225,7 +225,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 
 			if (unreadableValuesDumpDir != null) {
-				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, getName(), objectMapper);
 			}
 
 			if (removeUnreadablesFromUnderlyingStore) {
@@ -300,9 +300,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void remove(KEY key) {
-		log.trace("Removing value to key {} from Store[{}]", key, store.getName());
-		store.remove(writeKey(key));
+	public boolean remove(KEY key) {
+		log.trace("Removing value to key {} from Store[{}]", key, getName());
+		return store.remove(writeKey(key));
 	}
 
 	/**
@@ -381,7 +381,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final Queue<ListenableFuture<ByteIterable>> jobs = new ConcurrentLinkedQueue<>();
 
 		// We read in  single thread, and deserialize and dispatch in multiple threads.
-		store.forEach((k, v) -> jobs.add(executorService.submit(() -> handle(consumer, result, k, v))));
+		store.forEach((k, v, c) -> jobs.add(executorService.submit(() -> handle(consumer, result, k, v))));
 
 		final ListenableFuture<List<ByteIterable>> allJobs = Futures.allAsList(jobs);
 
@@ -496,7 +496,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
@@ -505,7 +505,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
-		store.update(writeKey(key), writeValue(value));
+		return store.update(writeKey(key), writeValue(value));
 	}
 
 	@Override
@@ -519,12 +519,12 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<VALUE> getAll() {
-		return store.getAllKeys().stream().map(store::get).map(this::readValue);
+		return store.getAllKeys().map(store::get).map(this::readValue);
 	}
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		return store.getAllKeys().stream().map(this::readKey);
+		return store.getAllKeys().map(this::readKey);
 	}
 
 	/**
@@ -540,12 +540,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void removeStore() {
-		store.deleteStore();
+	public String getName() {
+		return store.getName();
 	}
 
 	@Override
-	public void close() {
+	public void removeStore() {
+		store.removeStore();
+	}
+
+	@Override
+	public void close() throws IOException {
 		store.close();
 	}
 

@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -64,8 +65,11 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<TableId, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
-																.collect(Collectors.groupingBy(Bucket::getTable));
+		Map<TableId, List<Bucket>> table2Buckets;
+		try(Stream<Bucket> allBuckets = context.getStorage().getAllBuckets();) {
+			table2Buckets = allBuckets
+					.collect(Collectors.groupingBy(Bucket::getTable));
+		}
 
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS));
 

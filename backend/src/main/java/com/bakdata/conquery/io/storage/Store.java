@@ -17,9 +17,9 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 	IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
-	void update(KEY key, VALUE value);
+	boolean update(KEY key, VALUE value);
 
-	void remove(KEY key);
+	boolean remove(KEY key);
 
 
 	int count();
@@ -29,6 +29,8 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 	Stream<KEY> getAllKeys();
 
 	void clear();
+
+	String getName();
 
 	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.

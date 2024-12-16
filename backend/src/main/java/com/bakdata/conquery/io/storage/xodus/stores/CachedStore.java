@@ -55,9 +55,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public synchronized void update(KEY key, VALUE value) {
-		store.update(key, value);
+	public synchronized boolean update(KEY key, VALUE value) {
+		boolean update = store.update(key, value);
 		cache.put(key, value);
+		return update;
 	}
 
 	@Override
@@ -72,9 +73,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void remove(KEY key) {
-		store.remove(key);
+	public boolean remove(KEY key) {
+		boolean remove = store.remove(key);
 		cache.invalidate(key);
+		return remove;
 	}
 
 	@Override
@@ -148,6 +150,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void clear() {
 		store.clear();
 		cache.invalidateAll();
+	}
+
+	@Override
+	public String getName() {
+		return store.getName();
 	}
 
 	@Override

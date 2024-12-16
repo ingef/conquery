@@ -1,11 +1,12 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
@@ -13,11 +14,12 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
+import jetbrains.exodus.env.Transaction;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class XodusStore {
+public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIterable, ByteIterable> {
 	private final Store store;
 	@Getter
 	private final Environment environment;
@@ -53,7 +55,8 @@ public class XodusStore {
 	 *
 	 * @param consumer function called for-each key-value pair.
 	 */
-	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
+	@Override
+	public SerializingStore.IterationStatistic forEach(StoreEntryConsumer<ByteIterable, ByteIterable> consumer) {
 		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		AtomicBoolean done = new AtomicBoolean(false);
 		while (!done.get()) {
@@ -72,23 +75,19 @@ public class XodusStore {
 							return;
 						}
 						lastKey.set(c.getKey());
-						consumer.accept(lastKey.get(), c.getValue());
+						ByteIterable value = c.getValue();
+						consumer.accept(lastKey.get(), value, value.getLength());
 					}
 				}
 			});
 		}
+
+		return null;
 	}
 
-	public List<ByteIterable> getAllKeys() {
-		return environment.computeInReadonlyTransaction(txn -> {
-			List<ByteIterable> keys = new ArrayList<>();
-			try (Cursor c = store.openCursor(txn)) {
-				while (c.getNext()) {
-					keys.add(c.getKey());
-				}
-				return keys;
-			}
-		});
+	public Stream<ByteIterable> getAllKeys() {
+		XodusIterator spliterator = new XodusIterator(environment, store);
+		return StreamSupport.stream(spliterator, false).onClose(spliterator::onClose);
 	}
 
 	public boolean update(ByteIterable key, ByteIterable value) {
@@ -103,6 +102,11 @@ public class XodusStore {
 		return Ints.checkedCast(environment.computeInReadonlyTransaction(store::count));
 	}
 
+	@Override
+	public Stream<ByteIterable> getAll() {
+		return Stream.empty();
+	}
+
 
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
@@ -114,10 +118,15 @@ public class XodusStore {
 		});
 	}
 
-	public void deleteStore() {
+	public void removeStore() {
 		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		storeRemoveHook.accept(this);
+	}
+
+	@Override
+	public void loadData() {
+
 	}
 
 	public void close() {
@@ -131,5 +140,36 @@ public class XodusStore {
 	@Override
 	public String toString() {
 		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
+	}
+
+	private static class XodusIterator extends Spliterators.AbstractSpliterator<ByteIterable> {
+
+		private Transaction transaction;
+		private Cursor cursor;
+
+		protected XodusIterator(Environment environment, Store store) {
+			super(Long.MAX_VALUE, Spliterator.ORDERED);
+
+			transaction = environment.beginReadonlyTransaction();
+			cursor = store.openCursor(transaction);
+		}
+
+		@Override
+		public boolean tryAdvance(Consumer<? super ByteIterable> action) {
+			if (cursor.getNext()) {
+				action.accept(cursor.getKey());
+				return true;
+			}
+			else {
+				cursor.close();
+				return false;
+			}
+		}
+
+		public void onClose() {
+			if (!transaction.isFinished()) {
+				transaction.abort();
+			}
+		}
 	}
 }

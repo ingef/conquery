@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -69,7 +70,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		// Prepare the concept by injecting a filter template
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().iterator().next();
+		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
+		final Concept<?> concept = allConcepts.iterator().next();
+		allConcepts.close();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 

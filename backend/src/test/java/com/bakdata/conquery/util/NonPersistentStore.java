@@ -43,13 +43,15 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		map.put(key, value);
+		return true;
 	}
 
 	@Override
-	public void remove(KEY key) {
-		map.remove(key);
+	public boolean remove(KEY key) {
+		VALUE remove = map.remove(key);
+		return remove != null;
 	}
 
 	@Override
@@ -85,5 +87,10 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void clear() {
 		map.clear();
+	}
+
+	@Override
+	public String getName() {
+		return this.getClass().getSimpleName();
 	}
 }

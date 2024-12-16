@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -382,10 +383,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : getMetaStorage().getAllGroups().toList()) {
-			for (Permission perm : group.getPermissions()) {
-				if (perm.implies(createPermission(Ability.READ.asSet()))) {
-					permittedGroups.add(group.getId());
+
+		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
+			for (Group group : allGroups.toList()) {
+				for (Permission perm : group.getPermissions()) {
+					if (perm.implies(createPermission(Ability.READ.asSet()))) {
+						permittedGroups.add(group.getId());
+					}
 				}
 			}
 		}

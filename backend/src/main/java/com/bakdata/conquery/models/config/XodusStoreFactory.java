@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -70,6 +71,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Environment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -173,6 +175,8 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private boolean loadStoresOnStart = false;
 
+	private Map<StoreMappings, Boolean> cacheBinaryStore = Map.of(BUCKETS, true);
+
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private transient Validator validator;
@@ -256,13 +260,25 @@ public class XodusStoreFactory implements StoreFactory {
 				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
 			}
 
-			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+			final XodusStore xodusStoretore = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+			openStoresInEnv.put(environment, xodusStoretore);
 
-			openStoresInEnv.put(environment, store);
+			boolean cacheBinary = cacheBinaryStore.getOrDefault(storeId, Boolean.FALSE);
+
+			CaffeineSpec binaryCacheSpec = CaffeineSpec.parse("");
+			Store<ByteIterable, ByteIterable> binaryStore = cacheBinary ? new CachedStore<>(xodusStoretore, binaryCacheSpec, metricRegistry) : xodusStoretore;
+
+			if (cacheBinary) {
+				// Start caching of binary data in the background
+				Thread loadStoreThread = new Thread(binaryStore::loadData, "Cache binary store %s from %s".formatted(storeId, environment.getLocation()));
+				loadStoreThread.setDaemon(true);
+				loadStoreThread.start();
+			}
+
 
 			return new CachedStore<>(
 					new SerializingStore<>(
-							store,
+							binaryStore,
 							validator,
 							objectMapper,
 							storeInfo.getKeyType(),

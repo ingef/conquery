@@ -5,7 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -92,7 +91,7 @@ public class DatasetQueryResource {
 
 		subject.authorize(dataset, Ability.READ);
 
-		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false)).collect(Collectors.toList());
+		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false));
 	}
 
 	@POST

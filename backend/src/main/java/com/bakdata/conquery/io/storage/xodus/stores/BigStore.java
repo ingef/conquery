@@ -122,23 +122,23 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		remove(key);
-		add(key, value);
+		return add(key, value);
 	}
 
 	@Override
-	public void remove(KEY key) {
+	public boolean remove(KEY key) {
 		BigStoreMetaKeys meta = metaStore.get(key);
 
 		if (meta == null) {
-			return;
+			return false;
 		}
 
 		for (UUID id : meta.getParts()) {
 			dataStore.remove(id);
 		}
-		metaStore.remove(key);
+		return metaStore.remove(key);
 	}
 
 	@Override
@@ -217,6 +217,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	public void clear() {
 		metaStore.clear();
 		dataStore.clear();
+	}
+
+	@Override
+	public String getName() {
+		return storeInfo.getName();
 	}
 
 	@Override

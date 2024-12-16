@@ -93,10 +93,10 @@ public class AdminProcessor {
 	public void deleteRole(RoleId role) {
 		log.info("Deleting {}", role);
 
-		storage.getAllUsers().forEach(user -> user.removeRole(role));
-
-		storage.getAllGroups().forEach(group -> group.removeRole(role));
-
+		try (Stream<User> allUsers = storage.getAllUsers(); Stream<Group> allGroups = storage.getAllGroups()) {
+			allUsers.forEach(user -> user.removeRole(role));
+			allGroups.forEach(group -> group.removeRole(role));
+		}
 		storage.removeRole(role);
 	}
 
@@ -133,7 +133,9 @@ public class AdminProcessor {
 	}
 
 	public synchronized void deleteUser(UserId user) {
-		storage.getAllGroups().forEach(group -> group.removeMember(user));
+		try(Stream<Group> allGroups = storage.getAllGroups()) {
+			allGroups.forEach(group -> group.removeMember(user));
+		}
 		storage.removeUser(user);
 		log.trace("Removed user {} from the storage.", user);
 	}
