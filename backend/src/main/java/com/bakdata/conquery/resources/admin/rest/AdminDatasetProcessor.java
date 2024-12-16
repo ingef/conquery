@@ -77,7 +77,7 @@ public class AdminDatasetProcessor {
 
 		final String name = dataset.getName();
 
-		if (datasetRegistry.get(new DatasetId(name)) != null) {
+		if (datasetRegistry.get(new DatasetId(name, getDatasetRegistry())) != null) {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 

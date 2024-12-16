@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -38,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-	public static final DatasetId DATASET = new DatasetId("test_dataset");
+	public static final DatasetId DATASET = new DatasetId("test_dataset", null); //TODO
 	private static final TreeConcept CONCEPT;
 
 	static {

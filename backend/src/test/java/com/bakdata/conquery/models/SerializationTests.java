@@ -175,8 +175,8 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void user() throws IOException, JSONException {
 		User user = new User("user", "user", getMetaStorage());
 		user.setMetaStorage(getMetaStorage());
-		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test", getNamespaceStorage())));
+		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset", getNamespaceStorage()), UUID.randomUUID())));
 		Role role = new Role("company", "company", getMetaStorage());
 
 		getMetaStorage().addRole(role);
@@ -193,8 +193,8 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void group() throws IOException, JSONException {
 		Group group = new Group("group", "group", getMetaStorage());
-		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test", getNamespaceStorage())));
+		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset", getNamespaceStorage()), UUID.randomUUID())));
 		RoleId roleId = new RoleId("company");
 		group.addRole(roleId);
 
@@ -568,7 +568,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void executionCreationResolveError() throws JSONException, IOException {
-		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
+		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test", getNamespaceStorage()));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -595,7 +595,7 @@ public class SerializationTests extends AbstractSerializationTest {
 																				  .userName(user.getLabel())
 																				  .hideLogoutButton(false)
 																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"),
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset", getNamespaceStorage()),
 																										   new MeProcessor.FrontendDatasetAbility(true, true, true)
 																				  ))
 																				  .build();

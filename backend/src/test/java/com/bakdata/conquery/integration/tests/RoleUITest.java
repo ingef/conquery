@@ -39,7 +39,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 		UserId userId = user.getId();
 		try {
 
-			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
+			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId", conquery.getNamespaceStorage()));
 
 			storage.addRole(mandator);
 			storage.addUser(user);

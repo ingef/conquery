@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -16,17 +17,19 @@ public class CopyUserTest {
 
 	@Test
 	void testUserCopy(){
-		MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
+		NonPersistentStoreFactory nonPersistentStoreFactory = new NonPersistentStoreFactory();
+		MetaStorage storage = nonPersistentStoreFactory.createMetaStorage();
+		NamespaceStorage namespaceStorage = nonPersistentStoreFactory.createNamespaceStorage();
 
 		// Create test role
 		Role role = new Role("role", "role", storage);
 		storage.addRole(role);
-		role.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0")));
+		role.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0", namespaceStorage)));
 
 		// Create test group
 		Group group = new Group("group", "group", storage);
 		storage.addGroup(group);
-		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset1")));
+		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset1", namespaceStorage)));
 
 		// Create original user with role and group mapping
 		User originUser = new User("user", "user", storage);

@@ -35,22 +35,22 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 			storage.addRole(role);
 			storage.addUser(user1);
 			storage.addGroup(group1);
-			role.addPermission(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")));
+			role.addPermission(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset", conquery.getNamespaceStorage())));
 
 			//// Add user to group
 			group1.addMember(user1.getId());
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
+			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset", conquery.getNamespaceStorage())))).isFalse();
 			
 			//// Add role to group
 			group1.addRole(role.getId());
 			assertThat(group1.getRoles()).containsExactlyInAnyOrder(role.getId());
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isTrue();
+			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset", conquery.getNamespaceStorage())))).isTrue();
 
 			
 			//// Remove role from group
 			group1.removeRole(role.getId());
 			assertThat(group1.getRoles()).isEmpty();
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
+			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset", conquery.getNamespaceStorage())))).isFalse();
 
 		}
 		finally {

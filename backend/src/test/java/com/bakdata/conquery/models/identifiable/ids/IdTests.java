@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -22,12 +23,20 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdTests {
+
+	private NamespaceStorage storage;
+
+	@BeforeEach
+	public void setup() {
+		storage = new NonPersistentStoreFactory().createNamespaceStorage();
+	}
 
 	public static Stream<Arguments> reflectionTest() {
 		return CPSTypeIdResolver
@@ -77,7 +86,7 @@ public class IdTests {
 		ConceptTreeChildId idA = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new DatasetId("1"),
+					new DatasetId("1", storage),
 					"2"
 				),
 				"3"
@@ -88,7 +97,7 @@ public class IdTests {
 		ConceptTreeChildId idB = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new DatasetId("1"),
+					new DatasetId("1", storage),
 					"2"
 				),
 				"3"
@@ -106,7 +115,7 @@ public class IdTests {
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new DatasetId("1"),
+					new DatasetId("1", storage),
 					"2"
 				),
 				"3"
@@ -123,7 +132,7 @@ public class IdTests {
 	
 	@Test
 	public void testJacksonSerialization() throws IOException {
-		DatasetId dataset = new DatasetId("1");
+		DatasetId dataset = new DatasetId("1", storage);
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
@@ -135,7 +144,8 @@ public class IdTests {
 			"4"
 		);
 
-		ObjectMapper mapper = Jackson.MAPPER;
+		ObjectMapper mapper = storage.injectInto(Jackson.MAPPER);
+
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 
 		assertThat(copy).isEqualTo(id);
@@ -147,7 +157,7 @@ public class IdTests {
 	public void testInterning() throws IOException {
 
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
-		ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		ObjectMapper objectMapper = storage.injectInto(Jackson.copyMapperAndInjectables(Jackson.MAPPER));
 		internalMapperFactory.customizeApiObjectMapper(objectMapper, mock(DatasetRegistry.class), new NonPersistentStoreFactory().createMetaStorage());
 
 		ObjectReader objectReader = objectMapper.readerFor(ConceptTreeChildId.class);
@@ -168,7 +178,7 @@ public class IdTests {
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new DatasetId("1"),
+					new DatasetId("1", storage),
 					"2"
 				),
 				"3"

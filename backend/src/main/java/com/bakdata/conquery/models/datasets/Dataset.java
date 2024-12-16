@@ -71,8 +71,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 
 	@Override
 	public DatasetId createId() {
-		DatasetId datasetId = new DatasetId(getName());
-		datasetId.setNamespacedStorageProvider(getNamespacedStorageProvider());
+		DatasetId datasetId = new DatasetId(getName(), getNamespacedStorageProvider());
 		return datasetId;
 	}
 
