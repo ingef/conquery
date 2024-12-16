@@ -234,7 +234,9 @@ public class MinaStackTest {
 
 			write.awaitUninterruptibly();
 
-			assertThat(write.isWritten()).isEqualTo(shouldPass);
+			assertThat(write.isWritten())
+					.describedAs(() -> write.getException().getMessage())
+					.isEqualTo(shouldPass);
 
 			Assertions.setMaxStackTraceElementsDisplayed(200);
 			if (!shouldPass) {

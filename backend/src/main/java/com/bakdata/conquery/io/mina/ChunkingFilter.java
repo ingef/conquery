@@ -27,6 +27,8 @@ public class ChunkingFilter extends IoFilterAdapter {
 	private final int socketSendBufferSize;
 
 
+
+
 	@Override
 	public void filterWrite(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
 		if (!(writeRequest.getMessage() instanceof IoBuffer ioBuffer)) {
@@ -36,6 +38,7 @@ public class ChunkingFilter extends IoFilterAdapter {
 		// The first 4 bytes hold the object length in bytes
 		int objectLength = ioBuffer.getInt(ioBuffer.position());
 
+
 		if (objectLength < socketSendBufferSize) {
 			// IoBuffer is shorter than socket buffer, we can just send it.
 			log.trace("Sending buffer without chunking: {} (limit = {})", DataSize.bytes(objectLength), DataSize.bytes(socketSendBufferSize));
@@ -44,56 +47,45 @@ public class ChunkingFilter extends IoFilterAdapter {
 		}
 
 		// Split buffers
-		int oldPos = ioBuffer.position();
-		int oldLimit = ioBuffer.limit();
-		int totalSize = ioBuffer.remaining();
+		final int totalSize = ioBuffer.remaining();
 
 		// TODO unsure if Atomic is needed here
 		final AtomicInteger writtenChunks = new AtomicInteger();
 		final int totalChunks = divideAndRoundUp(totalSize, socketSendBufferSize);
 
-
-		ioBuffer.limit(oldPos + socketSendBufferSize);
-		int newLimit = ioBuffer.limit();
-
 		// Send the first resized (original) buffer
-		int chunkCount = 1;
-		log.trace("Sending {}. chunk: {} byte", chunkCount, ioBuffer.remaining());
-		DefaultWriteFuture future = new DefaultWriteFuture(session);
+		int chunkCount = 0;
 
 		IoFutureListener<IoFuture> listener = handleWrittenChunk(writeRequest, writtenChunks, totalChunks);
-		future.addListener(listener);
-		nextFilter.filterWrite(session, new DefaultWriteRequest(ioBuffer, future));
 
-		int remainingBytes = oldLimit - newLimit;
+		DefaultWriteFuture future;
+
+		int position = ioBuffer.position();
+		int remainingBytes = totalSize;
 
 		do {
 			// Size a new Buffer
 			int nextBufSize = Math.min(remainingBytes, socketSendBufferSize);
-			IoBuffer nextBuffer = ioBuffer.getSlice(newLimit, nextBufSize);
+			IoBuffer slice = ioBuffer.getSlice(position, nextBufSize);
 
 			// Write chunked buffer
 			chunkCount++;
 			log.trace("Sending {}. chunk: {} byte", chunkCount, nextBufSize);
 			future = new DefaultWriteFuture(session);
 
-			nextFilter.filterWrite(session, new DefaultWriteRequest(nextBuffer, future));
+			nextFilter.filterWrite(session, new DefaultWriteRequest(slice, future));
 
 			future.addListener(listener);
 
 			// Recalculate for next iteration
-			newLimit += nextBufSize;
+			position += nextBufSize;
 			remainingBytes -= nextBufSize;
 
-		} while (remainingBytes > 0);
+		} while(remainingBytes > 0);
 	}
 
-	public static int divideAndRoundUp(int num, int divisor) {
-		// only for positive values
-		return (num + divisor - 1) / divisor;
-	}
-
-	private static @NotNull IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
+	@NotNull
+	private static IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
 		return f -> {
 			// Count written chunk and notify original writeRequest on error or success
 
@@ -112,5 +104,10 @@ public class ChunkingFilter extends IoFilterAdapter {
 				originalFuture.setWritten();
 			}
 		};
+	}
+
+	public static int divideAndRoundUp(int num, int divisor) {
+		// only for positive values
+		return (num + divisor - 1) / divisor;
 	}
 }
