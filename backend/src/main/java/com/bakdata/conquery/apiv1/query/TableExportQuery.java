@@ -200,7 +200,7 @@ public class TableExportQuery extends Query {
 				for (Column column : table.getConnector().resolve().getResolvedTable().getColumns()) {
 
 					// ValidityDates are handled separately in column=0
-					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column))) {
+					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column.getId()))) {
 						continue;
 					}
 

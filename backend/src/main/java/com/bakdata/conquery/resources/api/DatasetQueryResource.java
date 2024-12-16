@@ -87,7 +87,7 @@ public class DatasetQueryResource {
 
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<? extends ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(dataset, Ability.READ);
 

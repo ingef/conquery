@@ -133,7 +133,7 @@ public class PermissionCleanupTask extends Task {
 				if (wpermission.getInstances().size() != 1) {
 					log.trace("Skipping permission {} because it refers to multiple instances.", wpermission);
 				}
-				ID executionId = null;
+				ID executionId;
 				try {
 					executionId = idParser.parse(wpermission.getInstances().iterator().next());
 				}
@@ -144,14 +144,17 @@ public class PermissionCleanupTask extends Task {
 
 				E execution = instanceStorageExtractor.apply(executionId);
 				if (execution == null) {
-					log.trace("The execution referenced in permission {} does not exist. Skipping permission");
+					log.trace("The execution referenced in permission {} does not exist. Skipping permission", wpermission);
 					continue;
 				}
 
 				if (!user.isOwner(execution)) {
-					log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}", user.getId(), execution
-																																										.getOwner(), execution
-																																															 .getId(), wpermission);
+					log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}",
+							  user.getId(),
+							  execution.getOwner(),
+							  execution.getId(),
+							  wpermission
+					);
 					continue;
 				}
 

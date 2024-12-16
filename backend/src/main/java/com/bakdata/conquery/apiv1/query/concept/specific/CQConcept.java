@@ -148,10 +148,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		builder.append(" ");
 
 		for (ConceptElementId<?> id : elements) {
-			ConceptElement<?> conceptElement = id.resolve();
-			if (conceptElement.equals(getConcept())) {
+			if (id.equals(getConceptId())) {
 				continue;
 			}
+
+			ConceptElement<?> conceptElement = id.resolve();
 			builder.append(conceptElement.getLabel()).append("+");
 		}
 
@@ -274,9 +275,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		final Set<ConnectorId> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
 		return new RequiredEntities(context.getBucketManager()
-										   .getEntitiesWithConcepts(getElements().stream()
-																				 .<ConceptElement<?>>map(ConceptElementId::resolve)
-																				 .toList(),
+										   .getEntitiesWithConcepts(getElements(),
 																	connectors, context.getDateRestriction()));
 	}
 

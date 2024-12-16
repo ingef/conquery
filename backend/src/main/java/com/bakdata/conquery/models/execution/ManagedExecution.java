@@ -314,9 +314,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = owner.resolve();
-			status.setOwner(user.getId());
-			status.setOwnerName(user.getLabel());
+			User user = metaStorage.get(owner);
+
+			if(user != null) {
+				status.setOwner(user.getId());
+				status.setOwnerName(user.getLabel());
+			}
 		}
 	}
 

@@ -16,7 +16,6 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
@@ -177,12 +176,12 @@ public class TestConquery {
 
 				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
 					started = System.nanoTime();
-					log.warn("waiting for done work for a long time", new Exception());
+					log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we are waiting."));
 				}
 
 			} while (true);
 		}
-		log.trace("all jobs finished");
+		log.trace("All jobs finished");
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
@@ -230,10 +229,10 @@ public class TestConquery {
 		// define server
 		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
 			if (config.getSqlConnectorConfig().isEnabled()) {
-				standaloneCommand = new SqlStandaloneCommand((Conquery) app);
+				standaloneCommand = new SqlStandaloneCommand();
 			}
 			else {
-				standaloneCommand = new DistributedStandaloneCommand((Conquery) app);
+				standaloneCommand = new DistributedStandaloneCommand();
 			}
 			return (Command) standaloneCommand;
 		});

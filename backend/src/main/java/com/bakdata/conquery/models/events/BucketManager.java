@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -276,8 +277,12 @@ public class BucketManager {
 	/**
 	 * Collects all Entites, that have any of the concepts on the connectors in a specific time.
 	 */
-	public Set<String> getEntitiesWithConcepts(Collection<ConceptElement<?>> concepts, Set<ConnectorId> connectors, CDateSet restriction) {
-		final long requiredBits = ConceptNode.calculateBitMask(concepts);
+	public Set<String> getEntitiesWithConcepts(Collection<ConceptElementId<?>> concepts, Set<ConnectorId> connectors, CDateSet restriction) {
+		List<ConceptElement<?>> resolvedConcepts = concepts.stream()
+											   .<ConceptElement<?>>map(ConceptElementId::resolve)
+											   .toList();
+
+		final long requiredBits = ConceptNode.calculateBitMask(resolvedConcepts);
 
 		final Set<String> out = new HashSet<>();
 

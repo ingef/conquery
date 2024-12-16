@@ -27,7 +27,6 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -38,8 +37,6 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
-	@Setter
-	private ManagerNode managerNode;
 
 	public Conquery() {
 		this("Conquery");
@@ -59,7 +56,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		bootstrap.addCommand(new ShardCommand());
 		bootstrap.addCommand(new PreprocessorCommand());
-		bootstrap.addCommand(new DistributedStandaloneCommand(this));
+		bootstrap.addCommand(new DistributedStandaloneCommand());
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());
 
@@ -104,13 +101,10 @@ public class Conquery extends Application<ConqueryConfig> {
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
 								   new LocalManagerProvider() : new ClusterManagerProvider();
-		run(provider.provideManager(configuration, environment));
-	}
+		Manager manager = provider.provideManager(configuration, environment);
 
-	public void run(Manager manager) throws InterruptedException {
-		if (managerNode == null) {
-			managerNode = new ManagerNode();
-		}
+		ManagerNode managerNode = new ManagerNode();
+
 		managerNode.run(manager);
 	}
 }

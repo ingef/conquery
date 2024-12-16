@@ -42,8 +42,8 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.CredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.lang.util.Destroyable;
 import org.apache.shiro.realm.AuthenticatingRealm;
-import org.apache.shiro.util.Destroyable;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -53,7 +53,7 @@ import org.apache.shiro.util.Destroyable;
  * authorization related user information that is saved in the
  * {@link MetaStorage}. So adding or removing a user in this realm does
  * not change the {@link MetaStorage}. {@link Conquery} interacts with
- * this realm using the Shiro frame work. However, endusers can interface it
+ * this realm using the Shiro framework. However, endusers can interface it
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
