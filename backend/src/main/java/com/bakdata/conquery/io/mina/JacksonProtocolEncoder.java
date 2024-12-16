@@ -29,7 +29,6 @@ public class JacksonProtocolEncoder extends ObjectSerializationEncoder {
 		final IoBuffer buf = IoBuffer.allocate(initialBufferCapacityBytes, false);
 		buf.setAutoExpand(true);
 
-		buf.position();
 		buf.skip(SIZE_PREFIX_LENGTH); // Make a room for the length field.
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
