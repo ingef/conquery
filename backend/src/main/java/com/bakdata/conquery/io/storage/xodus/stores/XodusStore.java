@@ -86,7 +86,7 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 	}
 
 	public Stream<ByteIterable> getAllKeys() {
-		XodusIterator spliterator = new XodusIterator(environment, store);
+		XodusKeyIterator spliterator = new XodusKeyIterator(environment, store, timeoutHalfMillis);
 		return StreamSupport.stream(spliterator, false).onClose(spliterator::onClose);
 	}
 
@@ -142,26 +142,56 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
 	}
 
-	private static class XodusIterator extends Spliterators.AbstractSpliterator<ByteIterable> {
+	private static class XodusKeyIterator extends Spliterators.AbstractSpliterator<ByteIterable> {
 
+		private final long timeoutHalfMillis;
+		private final Environment environment;
+		private final Store store;
 		private Transaction transaction;
 		private Cursor cursor;
+		private long start;
 
-		protected XodusIterator(Environment environment, Store store) {
+		private final AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
+
+		protected XodusKeyIterator(Environment environment, Store store, long timeoutHalfMillis) {
 			super(Long.MAX_VALUE, Spliterator.ORDERED);
+			this.timeoutHalfMillis = timeoutHalfMillis;
+			this.environment = environment;
+			this.store = store;
 
+			refreshCursor();
+		}
+
+		private void refreshCursor() {
+			if (transaction != null && !transaction.isFinished()) {
+				transaction.abort();
+			}
+
+			start = System.currentTimeMillis();
 			transaction = environment.beginReadonlyTransaction();
 			cursor = store.openCursor(transaction);
+
+			if (lastKey.get() != null) {
+				cursor.getSearchKey(lastKey.get());
+			}
 		}
 
 		@Override
 		public boolean tryAdvance(Consumer<? super ByteIterable> action) {
+			if (System.currentTimeMillis() - start >= timeoutHalfMillis) {
+				// refresh transaction after half of the timeout
+				refreshCursor();
+			}
+
 			if (cursor.getNext()) {
-				action.accept(cursor.getKey());
+				ByteIterable key = cursor.getKey();
+				lastKey.set(key);
+				action.accept(key);
 				return true;
 			}
 			else {
 				cursor.close();
+				onClose();
 				return false;
 			}
 		}
