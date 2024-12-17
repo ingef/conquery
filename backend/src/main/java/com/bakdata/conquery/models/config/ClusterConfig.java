@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,7 +16,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.util.DataSize;
+import io.dropwizard.util.DataSizeUnit;
 import io.dropwizard.util.Duration;
+import io.dropwizard.validation.MaxDataSize;
+import io.dropwizard.validation.MinDataSize;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,8 +52,8 @@ public class ClusterConfig extends Configuration {
 	 * <p/>
 	 * May only touch this for testing purposes.
 	 */
-	@Max(Integer.MAX_VALUE - 4)
-	@Min(64) // not practical
+	@MaxDataSize(value = Integer.MAX_VALUE - 4, unit = DataSizeUnit.BYTES)
+	@MinDataSize(value = 64, unit = DataSizeUnit.BYTES)
 	private DataSize maxIoBufferSize = DataSize.bytes(Integer.MAX_VALUE - 4);
 
 	/**
@@ -59,8 +61,8 @@ public class ClusterConfig extends Configuration {
 	 * <p/>
 	 * May only touch this for testing purposes.
 	 */
-	@Max(Integer.MAX_VALUE - 4)
-	@Min(64) // Mina's default
+	@MaxDataSize(value = Integer.MAX_VALUE - 4, unit = DataSizeUnit.BYTES)
+	@MinDataSize(value = 64, unit = DataSizeUnit.BYTES)
 	private DataSize initialIoBufferSize = DataSize.bytes(8192); // 8kb
 
 	/**
