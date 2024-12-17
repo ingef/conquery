@@ -175,7 +175,15 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private boolean loadStoresOnStart = false;
 
-	private Map<StoreMappings, Boolean> cacheBinaryStore = Map.of(BUCKETS, true);
+	/**
+	 * Map of flags for each {@link StoreMappings}, whether its binary store should be fully cached.
+	 * This allows for faster store access as the {@link SerializingStore} can deserialize values in parallel.
+	 *
+	 */
+	private Map<StoreMappings, Boolean> cacheBinaryStore = Map.of(
+			BUCKETS, true,
+			C_BLOCKS, true
+	);
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
