@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           overwrite-settings: false
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
