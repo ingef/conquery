@@ -164,9 +164,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <artifactId>groovy</artifactId>
             <version>4.0.24</version>
-<!--            <classifier>indy</classifier>-->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
