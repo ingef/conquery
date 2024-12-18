@@ -103,7 +103,7 @@ public abstract class ExecutionManager {
 	}
 
 	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
+	public final <T extends  ManagedExecution> T createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
@@ -147,7 +147,7 @@ public abstract class ExecutionManager {
 		}
 	}
 
-	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
+	public final <T extends  ManagedExecution> T createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry);
 		managed.setSystem(system);
@@ -157,7 +157,7 @@ public abstract class ExecutionManager {
 		// Store the execution
 		storage.addExecution(managed);
 
-		return managed;
+		return (T) managed;
 	}
 
 	public void clearQueryResults(ManagedExecutionId executionId) {

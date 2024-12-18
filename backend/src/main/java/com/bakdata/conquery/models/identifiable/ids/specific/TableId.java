@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -28,18 +27,14 @@ public class TableId extends NamespacedId<Table> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		dataset.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		dataset.collectIds(into);
 	}
 
 	@Override
 	public Table get() {
 		return getStorage().getTable(this);
-	}
-
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
 	}
 
 	public static enum Parser implements IdUtil.Parser<TableId> {

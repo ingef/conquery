@@ -74,7 +74,7 @@ public abstract class ConqueryTestSpec {
 
 		support.getConfig().injectInto(mapper);
 		support.getDataset().injectInto(mapper);
-		if (usePlaceholderResolvers) {
+		if (false) {
 			FailingProvider.INSTANCE.injectInto(mapper);
 			FailingMetaStorage.INSTANCE.injectInto(mapper);
 		}
@@ -109,8 +109,10 @@ public abstract class ConqueryTestSpec {
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
 		support.getNamespace().getDataset().injectInto(mapper);
-		FailingProvider.INSTANCE.injectInto(mapper);
-		FailingMetaStorage.INSTANCE.injectInto(mapper);
+		support.getNamespaceStorage().injectInto(mapper);
+		support.getMetaStorage().injectInto(mapper);
+//		FailingProvider.INSTANCE.injectInto(mapper);
+//		FailingMetaStorage.INSTANCE.injectInto(mapper);
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 
@@ -179,7 +181,7 @@ public abstract class ConqueryTestSpec {
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) {
-			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?>>>createParser((Class) targetType);
+			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?>, ?>>createParser((Class) targetType);
 			return parser.parsePrefixed(support.getDataset().getId().getName(), valueToConvert);
 		}
 	}

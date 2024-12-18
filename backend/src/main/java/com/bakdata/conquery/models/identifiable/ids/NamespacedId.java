@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Marker interface for {@link Id}s that are bound to a {@link com.bakdata.conquery.models.worker.Namespace}/{@link com.bakdata.conquery.models.datasets.Dataset}.
  */
-public abstract class NamespacedId<T> extends Id<T> {
+public abstract class NamespacedId<T> extends Id<T, NamespacedStorage> {
 
 	public static WorkerStorage assertWorkerStorage(NamespacedStorage storage) {
 		if (!(storage instanceof WorkerStorage workerStorage)) {

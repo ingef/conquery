@@ -8,8 +8,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +19,9 @@ import lombok.Setter;
 public abstract class HConcepts extends HDatasets {
 
 	@PathParam(CONCEPT)
-	protected Concept<?> concept;
+	protected ConceptId concept;
 	@PathParam(DATASET)
-	protected Dataset dataset;
+	protected DatasetId dataset;
 
 	@PostConstruct
 	@Override

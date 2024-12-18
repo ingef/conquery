@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.Storage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -15,12 +15,12 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class TableImportDescriptorId extends Id<TableImportDescriptor> {
+public class TableImportDescriptorId extends Id<TableImportDescriptor, NamespacedStorage> {
 
 	private final String importDescriptor;
 
 	@Override
-	public <T extends Storage> T getStorage() {
+	public NamespacedStorage getStorage() {
 		throw new IllegalStateException("Cannot be resolved, therefore has no storage.");
 	}
 
@@ -35,8 +35,8 @@ public class TableImportDescriptorId extends Id<TableImportDescriptor> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
 	}
 
 	public static enum Parser implements IdUtil.Parser<TableImportDescriptorId> {

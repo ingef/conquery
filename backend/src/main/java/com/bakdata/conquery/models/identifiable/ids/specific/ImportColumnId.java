@@ -37,9 +37,9 @@ public class ImportColumnId extends NamespacedId<ImportColumn> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		imp.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		imp.collectIds(into);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ImportColumnId> {

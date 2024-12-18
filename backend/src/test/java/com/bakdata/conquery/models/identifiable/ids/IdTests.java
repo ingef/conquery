@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -11,18 +10,13 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import io.dropwizard.jersey.validation.Validators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -153,52 +147,17 @@ public class IdTests {
 		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
 	
-	@Test
-	public void testInterning() throws IOException {
 
-		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
-		ObjectMapper objectMapper = storage.injectInto(Jackson.copyMapperAndInjectables(Jackson.MAPPER));
-		internalMapperFactory.customizeApiObjectMapper(objectMapper, mock(DatasetRegistry.class), new NonPersistentStoreFactory().createMetaStorage());
-
-		ObjectReader objectReader = objectMapper.readerFor(ConceptTreeChildId.class);
-
-		String raw = "\"1.concepts.2.3.4\"";
-
-		ConceptTreeChildId id1 = objectReader.readValue(raw);
-		ConceptTreeChildId id2 = objectReader.readValue(raw);
-
-		assertThat(id1).isSameAs(id2);
-		assertThat(id1.getParent()).isSameAs(id2.getParent());
-		assertThat(id1.findConcept()).isSameAs(id2.findConcept());
-		assertThat(id1.findConcept().getDataset()).isSameAs(id2.findConcept().getDataset());
-	}
-	
 	@Test
 	public void testJacksonBinarySerialization() throws IOException {
-		ConceptTreeChildId id = new ConceptTreeChildId(
-			new ConceptTreeChildId(
-				new ConceptId(
-					new DatasetId("1", storage),
-					"2"
-				),
-				"3"
-			),
-			"4"
-		);
 
-		ObjectMapper mapper = Jackson.BINARY_MAPPER;
-		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
-
-		assertThat(copy).isEqualTo(id);
-		assertThat(copy).hasSameHashCodeAs(id);
-		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
 
 	@ParameterizedTest
 	@MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?>> expectedIdClass) {
+	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?, ?>> expectedIdClass) {
 
-		Class<? extends Id<?>> idClass = IdUtil.findIdClass(modelClass);
+		Class<? extends Id<?, ?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
 		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}

@@ -64,7 +64,7 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 
 	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
 		if (mapper != null) {
-			this.injectInto(mapper);
+			injectInto(mapper);
 		}
 		authUser = storageFactory.createUserStore("meta", mapper);
 		authRole = storageFactory.createRoleStore("meta", mapper);
@@ -126,7 +126,6 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 		log.info("Updating group = {}", group.getId());
 		authGroup.update(group);
 		group.setMetaStorage(this);
-
 	}
 
 	// User
@@ -135,7 +134,6 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 		log.info("Adding user = {}", user.getId());
 		authUser.add(user);
 		user.setMetaStorage(this);
-
 	}
 
 	public User getUser(UserId userId) {
@@ -157,7 +155,6 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 		log.info("Updating user = {}", user.getId());
 		authUser.update(user);
 		user.setMetaStorage(this);
-
 	}
 
 	// Roles
@@ -165,7 +162,6 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 	public synchronized void addRole(Role role) {
 		authRole.add(role);
 		role.setMetaStorage(this);
-
 	}
 
 	public Role getRole(RoleId roleId) {
@@ -187,7 +183,6 @@ public non-sealed class MetaStorage extends ConqueryStorage implements Injectabl
 		log.info("Updating role = {}", role.getId());
 		authRole.update(role);
 		role.setMetaStorage(this);
-
 	}
 
 	// FormConfigs

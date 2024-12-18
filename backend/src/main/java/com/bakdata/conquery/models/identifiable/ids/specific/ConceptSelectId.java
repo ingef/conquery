@@ -21,9 +21,9 @@ public class ConceptSelectId extends SelectId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		concept.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		concept.collectIds(into);
 	}
 
 	@Override

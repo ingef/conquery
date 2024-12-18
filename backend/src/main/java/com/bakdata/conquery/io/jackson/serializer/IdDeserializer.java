@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
@@ -31,7 +32,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
+public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
@@ -46,8 +47,8 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
-		Class<Id<?>> idClass = (Class<Id<?>>) type.getRawClass();
-		IdUtil.Parser<Id<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
+		Class<Id<?, ?>> idClass = (Class<Id<?, ?>>) type.getRawClass();
+		IdUtil.Parser<Id<Identifiable<?>, ?>> parser = IdUtil.createParser((Class) idClass);
 
 		return new IdDeserializer(
 				idClass,
@@ -77,26 +78,38 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 			return id;
 		}
-		catch (Exception e) {
-			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `%s` from `%s`: %s", idClass.getSimpleName(), text, e.getMessage());
+		catch (IllegalStateException e){
+			throw e;
 		}
+//		catch (Exception e) {
+//			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `%s` from `%s`: %s", idClass.getSimpleName(), text, e.getMessage());
+//		}
 	}
 
-	public static void setResolver(Id<?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
+	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
 		// Set resolvers in this id and subIds
-		final Set<Id<?>> ids = new HashSet<>();
+		final Set<Id> ids = new HashSet<>();
 		id.collectIds(ids);
-		for (Id<?> subId : ids) {
-			if (subId instanceof DatasetId) {
-				((DatasetId) subId).setNamespacedStorageProvider(namespacedStorageProvider);
+		for (Id<?, ?> subId : ids) {
+			if (subId instanceof DatasetId dsId) {
+				NamespacedStorage storage = namespacedStorageProvider.getStorage(dsId);
+
+				if(storage == null){
+					throw new IllegalStateException("Could not provide storage for dataset %s".formatted(dsId));
+				}
+
+				dsId.setStorage(storage);
 			}
-			else if (subId instanceof MetaId) {
-				((MetaId<?>) subId).setMetaStorage(metaStorage);
+			else if (subId instanceof MetaId<?> metaId) {
+				if (metaStorage == null){
+					throw new IllegalStateException("Could not provide %s".formatted(MetaStorage.class.getSimpleName()));
+				}
+				metaId.setMetaStorage(metaStorage);
 			}
 		}
 	}
 
-	public static <ID extends Id<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+	public static <ID extends Id<?, ?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 
 		List<String> components = checkForInjectedPrefix ?

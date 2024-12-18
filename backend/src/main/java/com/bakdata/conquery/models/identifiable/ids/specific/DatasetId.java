@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -26,12 +25,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 @AllArgsConstructor
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 @Getter
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true, onlyExplicitlyIncluded = true)
 public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 
 	@ToString.Include
+	@EqualsAndHashCode.Include
 	private final String name;
 
 	/**
@@ -40,7 +40,7 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 	@JsonIgnore
 	@Setter(onParam_ = {@NonNull})
 	@Getter
-	private NamespacedStorageProvider namespacedStorageProvider;
+	private NamespacedStorage storage;
 
 	@JsonIgnore
 	@Override
@@ -53,10 +53,6 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 		return getStorage().getDataset();
 	}
 
-	@Override
-	public NamespacedStorage getStorage() {
-		return getNamespacedStorageProvider().getStorage(this);
-	}
 
 	@Override
 	public void collectComponents(List<Object> components) {
@@ -64,8 +60,8 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
 	}
 
 	@Override

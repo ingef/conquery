@@ -77,7 +77,7 @@ public class AdminDatasetProcessor {
 
 		final String name = dataset.getName();
 
-		if (datasetRegistry.get(new DatasetId(name, getDatasetRegistry())) != null) {
+		if (datasetRegistry.get(new DatasetId(name)) != null) {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
@@ -87,14 +87,14 @@ public class AdminDatasetProcessor {
 	/**
 	 * Delete dataset if it is empty.
 	 */
-	public synchronized void deleteDataset(Dataset dataset) {
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+	public synchronized void deleteDataset(DatasetId dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset);
 
 		if (namespace.getStorage().getTables().findAny().isPresent()) {
 			throw new WebApplicationException(
 					String.format(
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
-							dataset.getId(),
+							dataset,
 							namespace.getStorage().getTables()
 									 .map(Table::getId)
 									 .map(Objects::toString)
@@ -104,7 +104,7 @@ public class AdminDatasetProcessor {
 			);
 		}
 
-		datasetRegistry.removeNamespace(dataset.getId());
+		datasetRegistry.removeNamespace(dataset);
 
 	}
 
@@ -328,6 +328,7 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
+
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 
 		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {

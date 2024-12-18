@@ -44,9 +44,9 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		parent.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		parent.collectIds(into);
 	}
 
 

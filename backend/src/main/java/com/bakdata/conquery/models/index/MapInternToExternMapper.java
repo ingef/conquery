@@ -12,7 +12,6 @@ import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -37,7 +36,7 @@ import org.jetbrains.annotations.TestOnly;
 @Getter
 @JsonDeserialize(converter = MapInternToExternMapper.Initializer.class )
 @EqualsAndHashCode(callSuper = true)
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId>, Initializing {
+public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, Initializing {
 
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
@@ -58,12 +57,14 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
-	@Setter(onMethod_ = @TestOnly)
+	@Setter
 	@EqualsAndHashCode.Exclude
 	private NamespaceStorage storage;
 
 	@JsonIgnore
 	@NotNull
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
 	private DatasetId dataset;
 
 	@ToString.Include
@@ -95,10 +96,8 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 			return;
 		}
 
-		dataset = storage.getDataset().getId();
-
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
-		log.trace("Resolved mapping reference csv url '{}': {}", this.getId(), resolvedURI);
+		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
 
 		MapIndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate);
 

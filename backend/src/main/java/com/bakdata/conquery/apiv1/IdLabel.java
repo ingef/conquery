@@ -16,7 +16,7 @@ import lombok.ToString;
 @Getter
 @RequiredArgsConstructor
 @ToString
-public class IdLabel<I extends Id<?>> implements Comparable<IdLabel<I>> {
+public class IdLabel<I extends Id<?, ?>> implements Comparable<IdLabel<I>> {
 	@NotEmpty
 	private final I id;
 	@NotEmpty

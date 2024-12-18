@@ -140,10 +140,12 @@ public class SerializationTests extends AbstractSerializationTest {
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
 		dataset.setLabel("Dataset");
-		dataset.setNamespacedStorageProvider(getDatasetRegistry());
+
+		getNamespaceStorage().updateDataset(dataset);
 
 		SerializationTestUtil
 				.forType(Dataset.class)
+				.injectables(getNamespaceStorage())
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.test(dataset);
 	}
@@ -407,6 +409,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
+				.injectables(namespaceStorage)
 				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(formConfig);
 	}
@@ -433,7 +436,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .injectables(metaStorage)
+							 .injectables(metaStorage, namespaceStorage)
 							 .test(execution);
 	}
 
@@ -447,6 +450,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
 		SerializationTestUtil.forType(QueryDescription.class)
+							 .injectables(namespaceStorage)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
 							 .checkHashCode()
 							 .test(exportForm);
@@ -469,6 +473,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		execution.getId();
 
 		SerializationTestUtil.forType(ManagedExecution.class)
+							 .injectables(namespaceStorage)
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
 							 .test(execution);
 	}
@@ -483,7 +488,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		JsonNodeFactory factory = new JsonNodeFactory(false);
 		ObjectNode node = new ObjectNode(factory, Map.of(
 				"some-other-member", new TextNode("some-other-value")
-		));
+		)
+		);
 
 		ExternalForm form = new ExternalForm(node, subType);
 		final Dataset dataset = createDataset(namespaceStorage);
@@ -495,6 +501,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		execution.getId();
 
 		SerializationTestUtil.forType(ManagedExecution.class)
+							 .injectables(namespaceStorage)
 							 .objectMappers(getManagerInternalMapper())
 							 .test(execution);
 
@@ -510,6 +517,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			SerializationTestUtil
 					.forType(CQConcept.class)
+					.injectables(namespaceStorage)
 					.objectMappers(getManagerInternalMapper(), getApiMapper())
 					.test(cqConcept);
 		}
@@ -521,6 +529,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			SerializationTestUtil
 					.forType(CQConcept.class)
+					.injectables(workerStorage)
 					.objectMappers(getShardInternalMapper())
 					.test(cqConcept);
 		}
@@ -658,6 +667,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(AbsoluteFormQuery.class)
+				.injectables(getNamespaceStorage(), getMetaStorage())
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(query);
 	}
@@ -734,11 +744,13 @@ public class SerializationTests extends AbstractSerializationTest {
 						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-						)),
+						)
+						),
 						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{null, null, null}
-						))
+						)
+						)
 				);
 	}
 

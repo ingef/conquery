@@ -152,7 +152,7 @@ public class TestConquery {
 			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
 
 			// Little detour here, but this way we get the correctly initialized dataset id
-			DatasetId datasetId = getDatasetRegistry().get(new DatasetId(dataset.getName(), getDatasetRegistry())).getDataset().getId();
+			DatasetId datasetId = new DatasetId(dataset.getName()); //TODO storage needed here?
 			waitUntilWorkDone();
 
 			return createSupport(datasetId, name);

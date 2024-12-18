@@ -27,13 +27,15 @@ public interface NamespaceHandler<N extends Namespace> {
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry, Environment environment) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage,
+												   MetaStorage metaStorage,
+												   final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry, Environment environment) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(datasetRegistry);
 		injectables.add(storage);
 
 		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage);
-		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage);
+		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage, metaStorage);
 		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage);
 
 		// Todo remove these

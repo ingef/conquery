@@ -8,7 +8,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public abstract class HDatasets extends HAuthorized {
 	protected DatasetRegistry<?> datasetRegistry;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	private Namespace namespace;
 
@@ -31,7 +31,7 @@ public abstract class HDatasets extends HAuthorized {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = datasetRegistry.get(dataset.getId());
+		this.namespace = datasetRegistry.get(dataset);
 		subject.authorize(dataset, Ability.READ);
 	}
 }

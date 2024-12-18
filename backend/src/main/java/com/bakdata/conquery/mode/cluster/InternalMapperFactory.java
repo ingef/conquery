@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.cluster;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -9,10 +11,10 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.FailingMetaStorage;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import jakarta.validation.Validator;
 
 public record InternalMapperFactory(ConqueryConfig config, Validator validator) {
 
@@ -60,6 +62,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		storage.injectInto(objectMapper);
+		FailingMetaStorage.INSTANCE.injectInto(objectMapper);
 
 		return objectMapper;
 	}
@@ -89,18 +92,20 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createManagerCommunicationMapper(DatasetRegistry<?> datasetRegistry) {
+	public ObjectMapper createManagerCommunicationMapper(DatasetRegistry<?> datasetRegistry, MetaStorage metaStorage) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		datasetRegistry.injectInto(objectMapper);
+		metaStorage.injectInto(objectMapper);
 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage, MetaStorage metaStorage) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		namespaceStorage.injectInto(objectMapper);
+		metaStorage.injectInto(objectMapper);
 
 		return objectMapper;
 	}

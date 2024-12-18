@@ -39,7 +39,10 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	@Override
 	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<LocalNamespace> datasetRegistry, Environment environment) {
 
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage,
+																				 metaStorage,
+																				 config, internalMapperFactory, datasetRegistry, environment
+		);
 
 		IdColumnConfig idColumns = config.getIdColumns();
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();

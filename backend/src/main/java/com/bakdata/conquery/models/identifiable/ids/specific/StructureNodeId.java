@@ -39,13 +39,13 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
 		if (parent != null) {
-			parent.collectIds(collect);
+			parent.collectIds(into);
 		}
 		else {
-			dataset.collectIds(collect);
+			dataset.collectIds(into);
 		}
 	}
 

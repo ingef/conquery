@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
-public abstract class Id<TYPE> {
+public abstract class Id<TYPE, STORAGE extends Storage> {
 
 	/**
 	 * Holds the cached escaped value.
@@ -27,7 +27,7 @@ public abstract class Id<TYPE> {
 	@JsonIgnore
 	private WeakReference<String> escapedId = new WeakReference<>(null);
 
-	public abstract <T extends Storage> T getStorage();
+	public abstract STORAGE getStorage();
 
 	@Override
 	public abstract int hashCode();
@@ -93,5 +93,5 @@ public abstract class Id<TYPE> {
 		return new IdResolvingException(this, e);
 	}
 
-	public abstract void collectIds(Collection<? super Id<?>> collect);
+	public abstract void collectIds(Collection<? super Id> into);
 }

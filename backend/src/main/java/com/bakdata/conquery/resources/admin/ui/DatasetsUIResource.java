@@ -86,7 +86,8 @@ public class DatasetsUIResource {
 										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
 																	 .map(Import::getName)
 																	 .sorted()
-																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
+																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH
+										 ),
 										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),

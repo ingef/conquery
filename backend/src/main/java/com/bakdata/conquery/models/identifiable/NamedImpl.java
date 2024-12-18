@@ -12,7 +12,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public abstract class NamedImpl<ID extends Id<? extends Identifiable<? extends ID>>> extends IdentifiableImpl<ID> implements Named<ID> {
+public abstract class NamedImpl<ID extends Id<? extends Identifiable<? extends ID>, ?>> extends IdentifiableImpl<ID> implements Named<ID> {
 
 	@Getter(onMethod_ = {@Override, @ToString.Include, @NotBlank})
 	@Setter

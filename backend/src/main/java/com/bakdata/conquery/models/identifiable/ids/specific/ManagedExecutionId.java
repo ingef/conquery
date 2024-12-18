@@ -33,9 +33,9 @@ public class ManagedExecutionId extends MetaId<ManagedExecution> implements Auth
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		dataset.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		dataset.collectIds(into);
 	}
 
 	@Override

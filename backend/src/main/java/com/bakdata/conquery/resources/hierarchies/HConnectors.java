@@ -26,7 +26,8 @@ public abstract class HConnectors extends HConcepts {
 	@Override
 	public void init() {
 		super.init();
-		connector = concept.getConnectors()
+		connector = concept.resolve()
+						   .getConnectors()
 						   .stream()
 						   .filter(con -> con.getResolvedTableId().equals(table))
 						   .collect(MoreCollectors.toOptional())

@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -39,6 +40,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
+	private final MetaStorage metaStorage;
 	private final JobManager jobManager;
 	private final Validator validator;
 	private final ConqueryConfig config;
@@ -108,7 +110,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
 
-		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
+		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry, metaStorage);
 
 		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

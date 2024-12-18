@@ -19,10 +19,10 @@ import jakarta.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -42,14 +42,15 @@ public class AdminTablesResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
+	protected DatasetId dataset;
 	@PathParam(TABLE)
 	protected TableId table;
 
+	protected Namespace namespace;
+
 	@PostConstruct
 	public void init() {
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+		this.namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET
@@ -69,24 +70,17 @@ public class AdminTablesResource {
 		final List<ConceptId> dependents = processor.deleteTable(table, force);
 
 		if (!force && !dependents.isEmpty()) {
-			return Response.status(Status.CONFLICT)
-						   .entity(dependents)
-						   .build();
+			return Response.status(Status.CONFLICT).entity(dependents).build();
 		}
 
-		return Response.ok()
-					   .entity(dependents)
-					   .build();
+		return Response.ok().entity(dependents).build();
 	}
 
 	@GET
 	@Path("/imports")
 	@Produces(AdditionalMediaTypes.JSON)
 	public List<ImportId> listImports() {
-		return namespace.getStorage()
-						.getAllImports()
-						.filter(imp -> imp.getTable().equals(table))
-						.collect(Collectors.toList());
+		return namespace.getStorage().getAllImports().filter(imp -> imp.getTable().equals(table)).collect(Collectors.toList());
 	}
 
 	@DELETE
@@ -101,8 +95,6 @@ public class AdminTablesResource {
 	public Import getImport(@PathParam(IMPORT_ID) ImportId imp) {
 		return imp.resolve();
 	}
-
-
 
 
 }

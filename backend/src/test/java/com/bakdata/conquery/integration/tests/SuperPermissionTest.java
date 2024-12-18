@@ -14,43 +14,40 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class SuperPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
-	
-
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		Dataset dataset1 = new Dataset();
-		dataset1.setLabel("dataset1");
+		Dataset dataset = conquery.getDataset();
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role role1 = new Role("company", "company", storage);
-		TestUser user1 = new TestUser(storage);
+		Role role = new Role("company", "company", storage);
+		TestUser user = new TestUser(storage);
 
-		storage.addRole(role1);
-		
+		storage.addRole(role);
+
 		try {
-			user1.addRole(role1.getId());
+			user.addRole(role.getId());
 			// Add SuperPermission to User
-			user1.addPermission(SuperPermission.onDomain());
-		
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
-		
+			user.addPermission(SuperPermission.onDomain());
+
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset.getId()))).isTrue();
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()))).isTrue();
+
 			// Add SuperPermission to mandator and remove from user
-			user1.removePermission(SuperPermission.onDomain());
-			role1.addPermission(SuperPermission.onDomain());
-		
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
-		
+			user.removePermission(SuperPermission.onDomain());
+			role.addPermission(SuperPermission.onDomain());
+
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset.getId()))).isTrue();
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()))).isTrue();
+
 			// Add SuperPermission to mandator and remove from user
-			role1.removePermission(SuperPermission.onDomain());
-		
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isFalse();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
+			role.removePermission(SuperPermission.onDomain());
+
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset.getId()))).isFalse();
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()))).isFalse();
 		}
 		finally {
-			storage.removeUser(user1.getId());
-			storage.removeRole(role1.getId());
+			storage.removeUser(user.getId());
+			storage.removeRole(role.getId());
 		}
 
 	}

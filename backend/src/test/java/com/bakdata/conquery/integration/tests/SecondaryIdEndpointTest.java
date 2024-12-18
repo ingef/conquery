@@ -74,7 +74,9 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				tableNode.put("columns", columnNode);
 
 				final Response response = uploadTable(conquery, tableNode);
-				assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(() -> response.readEntity(String.class))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
 			}
 		}
 		{

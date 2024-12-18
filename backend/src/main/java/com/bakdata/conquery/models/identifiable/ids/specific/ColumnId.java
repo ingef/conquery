@@ -37,9 +37,9 @@ public class ColumnId extends NamespacedId<Column> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		table.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		table.collectIds(into);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ColumnId> {

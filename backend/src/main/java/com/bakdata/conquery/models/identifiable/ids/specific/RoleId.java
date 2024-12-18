@@ -29,8 +29,8 @@ public class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
 	}
 
 	@Override

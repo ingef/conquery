@@ -135,8 +135,8 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 	}
 
-	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
-		final Namespace namespace = namespaces.get(dataset.getId());
+	public FrontendPreviewConfig getEntityPreviewFrontendConfig(DatasetId dataset) {
+		final Namespace namespace = namespaces.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic

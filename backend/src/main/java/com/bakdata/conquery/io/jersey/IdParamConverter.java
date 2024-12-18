@@ -10,10 +10,12 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
+import com.bakdata.conquery.models.identifiable.ids.MetaId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.Data;
 import lombok.NonNull;
 
-public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
+public class IdParamConverter<T extends Id<?, ?>> implements ParamConverter<T> {
 	@NonNull
 
 	private final NamespacedStorageProvider namespacedStorageProvider;
@@ -33,8 +35,14 @@ public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
 	public T fromString(String value) {
 		final T parsed = parser.parse(value);
 
-//		parsed.setMetaStorage(metaStorage);
-//		parsed.setNamespacedStorageProvider(namespacedStorageProvider);
+		if (parsed instanceof MetaId<?> metaId) {
+			metaId.setMetaStorage(metaStorage);
+		}
+
+		if (parsed instanceof NamespacedId<?> nsId) {
+			// TODO this is weird af
+			nsId.getDataset().setStorage(namespacedStorageProvider.getStorage(nsId.getDataset()));
+		}
 
 		return parsed;
 	}
@@ -52,7 +60,7 @@ public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
 		private final MetaStorage metaStorage;
 
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@SuppressWarnings({"rawtypes", "unchecked"})
 		@Override
 		public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
 			if (Id.class.isAssignableFrom(rawType)) {

@@ -122,7 +122,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
-	@NotNull
+	@NonNull
 	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)

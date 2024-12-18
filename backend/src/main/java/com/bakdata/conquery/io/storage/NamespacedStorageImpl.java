@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract sealed class NamespacedStorageImpl extends ConqueryStorage implements Injectable, NamespacedStorage permits NamespaceStorage, WorkerStorageImpl {
+public abstract sealed class NamespacedStorageImpl extends ConqueryStorage implements NamespacedStorage permits NamespaceStorage, WorkerStorageImpl {
 
 	@Getter
 	@ToString.Include

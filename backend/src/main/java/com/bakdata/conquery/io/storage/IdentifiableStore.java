@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Setter
 @Getter
-public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
+public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE, ?>, VALUE> {
 
 	// TODO: 09.01.2020 fk: Consider making these part of a class that is passed on creation instead so they are less loosely bound.
 	@NonNull
@@ -28,14 +28,14 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	protected ThrowingConsumer<VALUE> onRemove = (v) -> {
 	};
 
-	public IdentifiableStore(Store<Id<VALUE>, VALUE> store) {
+	public IdentifiableStore(Store<Id<VALUE, ?>, VALUE> store) {
 		super(store);
 	}
 
 
 	@Override
-	protected Id<VALUE> extractKey(VALUE value) {
-		return (Id<VALUE>) value.getId();
+	protected Id<VALUE, ?> extractKey(VALUE value) {
+		return (Id<VALUE, ?>) value.getId();
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 			if (value == null) {
 				return;
 			}
-			final VALUE old = store.get((Id<VALUE>) value.getId());
+			final VALUE old = store.get((Id<VALUE, ?>) value.getId());
 
 			if (old != null) {
 				onRemove.accept(old);

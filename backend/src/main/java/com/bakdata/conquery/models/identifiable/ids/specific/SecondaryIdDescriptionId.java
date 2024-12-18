@@ -27,9 +27,9 @@ public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescriptio
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		dataset.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		dataset.collectIds(into);
 	}
 
 	@Override

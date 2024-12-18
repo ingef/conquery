@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @NoArgsConstructor
-public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
+public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>, ?>> implements Identifiable<ID> {
 
 	@JsonIgnore
 	protected transient ID cachedId;

@@ -99,7 +99,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getAdminDatasetsProcessor().deleteDataset(dataset))
+			assertThatThrownBy(() -> conquery.getAdminDatasetsProcessor().deleteDataset(dataset.getId()))
 					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
@@ -109,7 +109,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 
 			// Finally delete dataset
-			conquery.getAdminDatasetsProcessor().deleteDataset(dataset);
+			conquery.getAdminDatasetsProcessor().deleteDataset(dataset.getId());
 
 			conquery.waitUntilWorkDone();
 

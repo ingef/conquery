@@ -30,8 +30,8 @@ public class GroupId extends PermissionOwnerId<Group> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
 	}
 
 	@Override

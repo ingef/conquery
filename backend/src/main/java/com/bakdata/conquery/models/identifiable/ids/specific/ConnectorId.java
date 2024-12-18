@@ -37,9 +37,9 @@ public class ConnectorId extends NamespacedId<Connector> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		concept.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		concept.collectIds(into);
 	}
 
 	public static enum Parser implements IdUtil.Parser<ConnectorId> {

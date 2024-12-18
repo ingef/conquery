@@ -6,7 +6,7 @@ import java.util.concurrent.Semaphore;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 
-public class IdMutex<T extends Id<?>> {
+public class IdMutex<T extends Id<?, ?>> {
 	private final ConcurrentHashMap<T, Locked> mutexMap = new ConcurrentHashMap<>();
 
 	public Locked acquire(final T key) {

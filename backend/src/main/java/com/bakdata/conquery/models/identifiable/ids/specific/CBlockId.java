@@ -37,10 +37,10 @@ public class CBlockId extends NamespacedId<CBlock> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
-		collect.add(this);
-		bucket.collectIds(collect);
-		connector.collectIds(collect);
+	public void collectIds(Collection<? super Id> into) {
+		into.add(this);
+		bucket.collectIds(into);
+		connector.collectIds(into);
 	}
 
 	public static enum Parser implements IdUtil.Parser<CBlockId> {

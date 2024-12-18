@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
  */
 public interface NamespacedStorageProvider extends Injectable {
 
+	//TODO minimize the amount of storage providers
 	static NamespacedStorageProvider getResolver(DeserializationContext ctxt) throws JsonMappingException {
 		return (NamespacedStorageProvider) ctxt
 				.findInjectableValue(NamespacedStorageProvider.class.getName(), null, null);
