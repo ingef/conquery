@@ -163,10 +163,10 @@
             <version>2.9.1</version>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>3.0.13</version>
-            <classifier>indy</classifier>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>4.0.24</version>
+<!--            <classifier>indy</classifier>-->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
