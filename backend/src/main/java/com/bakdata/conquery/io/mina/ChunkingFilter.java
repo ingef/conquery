@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.mina;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.dropwizard.util.DataSize;
@@ -49,53 +47,45 @@ public class ChunkingFilter extends IoFilterAdapter {
 		}
 
 		// Split buffers
-		int oldPos = ioBuffer.position();
-		int oldLimit = ioBuffer.limit();
-		int totalSize = ioBuffer.remaining();
+		final int totalSize = ioBuffer.remaining();
 
 		// TODO unsure if Atomic is needed here
 		final AtomicInteger writtenChunks = new AtomicInteger();
 		final int totalChunks = divideAndRoundUp(totalSize, socketSendBufferSize);
 
-
-		ioBuffer.limit(oldPos + socketSendBufferSize);
-		int newLimit = ioBuffer.limit();
-
 		// Send the first resized (original) buffer
-		int chunkCount = 1;
-		log.trace("Sending {}. chunk: {} byte", chunkCount, ioBuffer.remaining());
-		DefaultWriteFuture future = new DefaultWriteFuture(session);
+		int chunkCount = 0;
 
 		IoFutureListener<IoFuture> listener = handleWrittenChunk(writeRequest, writtenChunks, totalChunks);
-		future.addListener(listener);
-		nextFilter.filterWrite(session, new DefaultWriteRequest(ioBuffer, future));
 
-		int remainingBytes = oldLimit - newLimit;
+		DefaultWriteFuture future;
+
+		int position = ioBuffer.position();
+		int remainingBytes = totalSize;
 
 		do {
 			// Size a new Buffer
 			int nextBufSize = Math.min(remainingBytes, socketSendBufferSize);
-			IoBuffer nextBuffer = ioBuffer.duplicate();
-			nextBuffer.limit(newLimit + nextBufSize);
-			nextBuffer.position(newLimit);
+			IoBuffer slice = ioBuffer.getSlice(position, nextBufSize);
 
 			// Write chunked buffer
 			chunkCount++;
 			log.trace("Sending {}. chunk: {} byte", chunkCount, nextBufSize);
 			future = new DefaultWriteFuture(session);
 
-			nextFilter.filterWrite(session, new DefaultWriteRequest(nextBuffer, future));
+			nextFilter.filterWrite(session, new DefaultWriteRequest(slice, future));
 
 			future.addListener(listener);
 
 			// Recalculate for next iteration
-			newLimit = newLimit + nextBufSize;
-			remainingBytes = remainingBytes - nextBufSize;
+			position += nextBufSize;
+			remainingBytes -= nextBufSize;
 
 		} while(remainingBytes > 0);
 	}
 
-	private static @NotNull IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
+	@NotNull
+	private static IoFutureListener<IoFuture> handleWrittenChunk(WriteRequest writeRequest, AtomicInteger writtenChunks, int totalChunks) {
 		return f -> {
 			// Count written chunk and notify original writeRequest on error or success
 
