@@ -18,6 +18,6 @@ public class MetaStorageExtension implements BeforeAllCallback {
 
 	@Override
 	public void beforeAll(ExtensionContext extensionContext) throws Exception {
-		metaStorage.openStores(null, metricRegistry);
+		metaStorage.openStores(null);
 	}
 }

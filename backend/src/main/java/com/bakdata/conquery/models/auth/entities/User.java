@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -65,13 +66,17 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
 
-		for (Iterator<Group> it = getMetaStorage().getAllGroups().iterator(); it.hasNext(); ) {
-			Group group = it.next();
-			if (!group.containsMember(this)) {
-				continue;
+		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()){
+
+			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
+				Group group = it.next();
+				if (!group.containsMember(this)) {
+					continue;
+				}
+				permissions = Sets.union(permissions, group.getEffectivePermissions());
 			}
-			permissions = Sets.union(permissions, group.getEffectivePermissions());
 		}
+
 
 		return permissions;
 	}

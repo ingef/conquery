@@ -34,6 +34,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
 
+	/**
+	 * If true, all values and key of the storages are deserialized upon start of the application.
+	 * This allows to monitor if mapping problems occurred but can also take a significant amount of time.
+	 */
+	boolean isLoadStoresOnStart();
+
 	Collection<NamespaceStorage> discoverNamespaceStorages();
 
 	Collection<? extends WorkerStorage> discoverWorkerStorages();
