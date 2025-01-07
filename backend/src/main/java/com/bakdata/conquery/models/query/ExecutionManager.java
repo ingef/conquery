@@ -41,6 +41,15 @@ public abstract class ExecutionManager {
 	private final ConqueryConfig config;
 
 	/**
+	 * Cache for execution states.
+	 */
+	private final Cache<ManagedExecutionId, State> executionStates =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
+
+	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
 	private void executionRemoved(RemovalNotification<ManagedExecutionId, State> removalNotification) {
@@ -65,8 +74,6 @@ public abstract class ExecutionManager {
 		return storage.getExecution(execution);
 	}
 
-	//// Shortcut helper methods
-	// TODO move to execution manager
 	public void reset(ManagedExecutionId id) {
 		// This avoids endless loops with already reset queries
 		if (!isResultPresent(id)) {
@@ -95,26 +102,21 @@ public abstract class ExecutionManager {
 		return (R) state;
 	}
 
-		public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
+	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
 		return Optional.ofNullable((R) executionStates.getIfPresent(id));
 	}
+
 	public void addState(ManagedExecutionId id, State result) {
 		executionStates.put(id, result);
 	}
-public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
+
+	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
 		final ManagedExecution execution = createExecution(query, user, namespace, system);
 
 		execute(execution);
 
 		return execution;
-	}/**
-	 * Cache for execution states.
-	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
+	}
 
 	// Visible for testing
 	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
@@ -265,9 +267,6 @@ public final ManagedExecution runQuery(Namespace namespace, QueryDescription que
 	public interface InternalState extends State {
 		Stream<EntityResult> streamQueryResults();
 	}
-
-
-
 
 
 

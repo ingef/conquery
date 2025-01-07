@@ -32,6 +32,8 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	String getName();
 
+	void invalidateCache();
+
 	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
 	 */

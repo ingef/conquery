@@ -93,4 +93,9 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public String getName() {
 		return this.getClass().getSimpleName();
 	}
+
+	@Override
+	public void invalidateCache() {
+		/* Do nothing (semantically this is not a cache, although we hold everything in memory) */
+	}
 }

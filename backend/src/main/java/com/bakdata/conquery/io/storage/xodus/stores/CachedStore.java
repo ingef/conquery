@@ -158,6 +158,13 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
+	public synchronized void invalidateCache() {
+		// There might be another cache we delegate to, so we invalidate that too
+		store.invalidateCache();
+		cache.invalidateAll();
+	}
+
+	@Override
 	public void removeStore() {
 		store.removeStore();
 		cache.invalidateAll();
@@ -166,6 +173,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void close() throws IOException {
 		store.close();
+		cache.invalidateAll();
 	}
 
 	private VALUE getFromStore(KEY key) {

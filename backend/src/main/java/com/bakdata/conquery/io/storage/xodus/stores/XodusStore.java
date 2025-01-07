@@ -118,6 +118,11 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		});
 	}
 
+	@Override
+	public void invalidateCache() {
+		/* Do nothing, no caches here */
+	}
+
 	public void removeStore() {
 		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
