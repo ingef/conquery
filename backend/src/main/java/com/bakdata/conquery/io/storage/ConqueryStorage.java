@@ -54,4 +54,13 @@ public interface ConqueryStorage extends Closeable {
 			store.close();
 		}
 	}
+
+	/**
+	 * Invalidates caches.
+	 */
+	default void invalidateCache() {
+		for (ManagedStore store : getStores()) {
+			store.invalidateCache();
+		}
+	}
 }

@@ -550,6 +550,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
+	public void invalidateCache() {
+		store.invalidateCache();
+	}
+
+	@Override
 	public void close() throws IOException {
 		store.close();
 	}

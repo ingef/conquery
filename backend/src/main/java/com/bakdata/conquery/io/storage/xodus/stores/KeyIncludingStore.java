@@ -81,4 +81,9 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, Manag
 	public void close() throws IOException {
 		store.close();
 	}
+
+	@Override
+	public void invalidateCache() {
+		store.invalidateCache();
+	}
 }
