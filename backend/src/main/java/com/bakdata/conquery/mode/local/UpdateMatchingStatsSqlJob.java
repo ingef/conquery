@@ -1,6 +1,15 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.countDistinct;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.min;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.noField;
+import static org.jooq.impl.DSL.table;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -15,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.DatabaseConfig;
@@ -51,7 +61,7 @@ import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Select;
-import org.jooq.SelectJoinStep;
+import org.jooq.SelectHavingStep;
 import org.jooq.Table;
 
 @Slf4j
@@ -168,23 +178,24 @@ public class UpdateMatchingStatsSqlJob extends Job {
 																	 .map(field -> field(field.getUnqualifiedName()))
 																	 .collect(Collectors.toList());
 
+		// group by columns - because the same entity may satisfy guard conditions in multiple nodes, we have to group by primary id and we will deduplicate the
+		// entities in Java
+		final List<Field<?>> groupByColumns = Stream.concat(Stream.of(field(ENTITIES)), relevantColumnsAliased.stream()).toList();
+
 		// if there is no validity date at all, no field is selected
 		final Field<?> validityDateExpression = toValidityDateExpression(validityDateMap);
 
-		final SelectJoinStep<Record> query = dslContext.select(relevantColumnsAliased)
-													   .select(
-															   count(asterisk()).as(EVENTS),
-															   countDistinct(field(ENTITIES)).as(ENTITIES),
-															   validityDateExpression.as(DATES)
-													   )
-													   .from(unioned);
-
-		// not all dialects accept an empty group by () clause
-		final Select<Record> finalQuery = relevantColumnsAliased.isEmpty() ? query : query.groupBy(relevantColumnsAliased);
+		final SelectHavingStep<Record> query = dslContext.select(relevantColumnsAliased)
+														 .select(
+																 count(asterisk()).as(EVENTS),
+																 countDistinct(field(ENTITIES)).as(ENTITIES),
+																 validityDateExpression.as(DATES)
+														 )
+														 .from(unioned)
+														 .groupBy(groupByColumns);
 
 		final ConceptTreeCache treeCache = new ConceptTreeCache(treeConcept);
-		executionService.fetchStream(finalQuery)
-						.forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
+		executionService.fetchStream(query).forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
 	}
 
 	/**
