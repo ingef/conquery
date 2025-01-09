@@ -10,11 +10,11 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.MappedPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Getter;
@@ -42,15 +42,9 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new MappedPrinter(mapping.resolve());
-	}
+		final InternToExternMapper resolvedMapping = mapping.resolve();
 
-	@Override
-	public ResultType getResultType() {
-		if(mapping == null){
-			return ResultType.resolveResultType(getColumn().resolve().getType());
-		}
-		return ResultType.Primitive.STRING;
+		return resolvedMapping.createPrinter(printerFactory, printSettings);
 	}
 
 	@Override
@@ -61,6 +55,14 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
+	}
+
+	@Override
+	public ResultType getResultType() {
+		if(mapping == null){
+			return ResultType.resolveResultType(getColumn().resolve().getType());
+		}
+		return ResultType.Primitive.STRING;
 	}
 
 	public void loadMapping() {

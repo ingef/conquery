@@ -353,8 +353,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
-	private static byte[] debugUnGzip(byte[] bytes) throws IOException {
-		return new GZIPInputStream(new ByteArrayInputStream(bytes)).readAllBytes();
+	private static InputStream debugUnGzip(byte[] bytes) throws IOException {
+		return new GZIPInputStream(new ByteArrayInputStream(bytes));
 	}
 
 	/**

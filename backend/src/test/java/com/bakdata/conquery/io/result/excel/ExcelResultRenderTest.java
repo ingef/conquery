@@ -85,7 +85,7 @@ public class ExcelResultRenderTest {
 
 		final ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
 
-		renderer.renderToStream(ResultTestUtil.getIdFields(), mquery, output, OptionalLong.empty(), printSettings);
+		renderer.renderToStream(ResultTestUtil.getIdFields(), mquery, output, OptionalLong.empty(), printSettings, metaStorage);
 
 		final InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

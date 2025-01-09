@@ -12,4 +12,9 @@ import org.jetbrains.annotations.NotNull;
 @FunctionalInterface
 public interface Printer<T> extends Function<T, Object> {
 	Object apply(@NotNull T value);
+
+	@NotNull
+	default <V> Printer<T> andThen(@NotNull Printer<V> after) {
+		return (T t) -> after.apply((V) apply(t));
+	}
 }

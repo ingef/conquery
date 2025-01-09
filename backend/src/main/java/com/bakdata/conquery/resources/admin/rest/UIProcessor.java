@@ -66,7 +66,7 @@ public class UIProcessor {
 		return new UIContext(adminProcessor.getNodeProvider(), csrfToken);
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return getAdminProcessor().getLoadedIndexes();
 	}
 
@@ -137,6 +137,15 @@ public class UIProcessor {
 			return getRoleContent(role);
 		}
 		return FrontendRoleContent.builder().id(id).build();
+	}
+
+
+	public FrontendUserContent getUserContent(UserId id) {
+		User user = getStorage().getUser(id);
+		if (user != null) {
+			return getUserContent(user);
+		}
+		return FrontendUserContent.builder().id(id).build();
 	}
 
 	public FrontendUserContent getUserContent(User user) {

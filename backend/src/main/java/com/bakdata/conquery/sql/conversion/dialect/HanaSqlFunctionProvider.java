@@ -326,7 +326,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Column endColumn;
 
 		// if no end column is present, the only existing column is both start and end of the date range
-		if (validityDate.getEndColumn() == null) {
+		if (validityDate.getColumn() != null) {
 			Column column = validityDate.getColumn().resolve();
 			startColumn = column;
 			endColumn = column;

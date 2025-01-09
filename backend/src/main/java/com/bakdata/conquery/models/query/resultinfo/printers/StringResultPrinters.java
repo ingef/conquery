@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -19,7 +20,7 @@ public class StringResultPrinters extends PrinterFactory {
 
 
 	@Override
-	public <T> Printer<List<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
+	public <T> Printer<Collection<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
 		return new ListStringPrinter<>(elementPrinter, printSettings);
 	}
 

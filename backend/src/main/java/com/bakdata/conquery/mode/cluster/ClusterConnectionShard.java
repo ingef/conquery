@@ -5,11 +5,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -65,7 +60,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		NetworkSession networkSession = new NetworkSession(session);
+		NetworkSession networkSession = new NetworkSession(session, config.getCluster().getNetworkSessionMaxQueueLength());
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
@@ -76,7 +71,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 			context.send(new AddShardNode());
 
 			for (Worker w : workers.getWorkers().values()) {
-				w.setSession(new NetworkSession(session));
+				w.setSession(networkSession);
 				WorkerInformation info = w.getInfo();
 				log.info("Sending worker identity '{}'", info.getName());
 				networkSession.send(new RegisterWorker(info));
@@ -119,7 +114,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		disconnectFromCluster();
 
-		connector = getClusterConnector(workers);
+		connector = getClusterConnector();
 
 		while (true) {
 			try {
@@ -166,17 +161,10 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	@NotNull
-	private NioSocketConnector getClusterConnector(ShardWorkers workers) {
+	private NioSocketConnector getClusterConnector() {
 		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
 
-		final NioSocketConnector connector = new NioSocketConnector();
-
-		final BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, environment.getValidator(), om);
-		connector.getFilterChain().addFirst("mdc", new MdcFilter("Shard[%s]"));
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
-		connector.setHandler(this);
-		connector.getSessionConfig().setAll(config.getCluster().getMina());
-		return connector;
+		return config.getCluster().getClusterConnector(om, this, "Shard");
 	}
 
 	@Override
