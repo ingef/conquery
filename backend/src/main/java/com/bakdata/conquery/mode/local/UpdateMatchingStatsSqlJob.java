@@ -2,7 +2,6 @@ package com.bakdata.conquery.mode.local;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.countDistinct;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.min;
@@ -101,22 +100,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		this.executors = MoreExecutors.listeningDecorator(executors);
 	}
 
-	private static boolean isTreeConcept(final Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
-			return false;
-		}
-		return true;
-	}
-
-	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
-		if (mostSpecificChild.getMatchingStats() == null) {
-			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
-		}
-
-		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
-	}
-
 	@Override
 	public void execute() throws Exception {
 
@@ -161,6 +144,14 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		return "Calculating Matching Stats for %s.".formatted(executionService);
 	}
 
+	private static boolean isTreeConcept(final Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			log.error("Collecting MatchingStats is currently only supported for TreeConcepts.");
+			return false;
+		}
+		return true;
+	}
+
 	private void calculateMatchingStats(final TreeConcept treeConcept) {
 
 		final Map<Connector, Set<Field<?>>> relevantColumns = collectRelevantColumns(treeConcept);
@@ -187,8 +178,8 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		final SelectHavingStep<Record> query = dslContext.select(relevantColumnsAliased)
 														 .select(
+																 field(ENTITIES),
 																 count(asterisk()).as(EVENTS),
-																 countDistinct(field(ENTITIES)).as(ENTITIES),
 																 validityDateExpression.as(DATES)
 														 )
 														 .from(unioned)
@@ -328,10 +319,16 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 	private void mapRecordToConceptElements(final TreeConcept treeConcept, final Record record, final ConceptTreeCache treeCache) {
 		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(record::intoMap);
-		final MatchingStats.Entry entry = toMatchingStatsEntry(record);
+
+		// as we group by primary id, a record contains the matching stats for a single entity
+		final long events = record.get(EVENTS, Integer.class).longValue();
+		final String entity = record.get(ENTITIES, String.class);
+		final CDateRange dateSpan = toDateRange(record.get(DATES, String.class));
+
+		final MatchingStats.Entry entry = new MatchingStats.Entry(events, 1, dateSpan.getMinValue(), dateSpan.getMaxValue());
 
 		if (treeConcept.getChildren().isEmpty()) {
-			addEntryToConceptElement(treeConcept, treeConcept.getName(), entry);
+			addEntryToConceptElement(treeConcept, entity, entry);
 			return;
 		}
 
@@ -352,21 +349,13 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			// add child stats to all parents till concept root
 			ConceptTreeNode<?> current = mostSpecificChild;
 			while (current != null) {
-				addEntryToConceptElement(current, columnValue, entry);
+				addEntryToConceptElement(current, entity, entry);
 				current = current.getParent();
 			}
 		}
 		catch (ConceptConfigurationException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private MatchingStats.Entry toMatchingStatsEntry(Record record) {
-		final long events = record.get(EVENTS, Integer.class).longValue();
-		final long entities = record.get(ENTITIES, Integer.class).longValue();
-		final CDateRange dateSpan = toDateRange(record.get(DATES, String.class));
-
-		return new MatchingStats.Entry(events, entities, dateSpan.getMinValue(), dateSpan.getMaxValue());
 	}
 
 	private CDateRange toDateRange(final String validityDateExpression) {
@@ -377,6 +366,13 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		}
 
 		return CDateRange.fromList(dateRange);
+	}
+
+	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
+		if (mostSpecificChild.getMatchingStats() == null) {
+			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
+		}
+		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
 	}
 
 }
