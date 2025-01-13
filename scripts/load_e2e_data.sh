@@ -37,7 +37,6 @@ echo "Creating secondary ids"
 curl --fail -X POST  "$admin_api/datasets/dataset1/secondaryId" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/sid.secondaryId.json"
 sleep 1
 
- # TODO secondary ID
 echo "Creating tables"
 for table_json in `ls ./cypress/support/test_data/*.table.json`
 do
