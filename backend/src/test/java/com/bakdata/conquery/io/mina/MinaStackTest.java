@@ -184,8 +184,9 @@ public class MinaStackTest {
 			// Wait until all clients completed writing
 			CompletableFuture.allOf(clientThreads.toArray(new CompletableFuture[0])).join();
 
+			log.info("Waiting to receive all send messages");
 			// Wait until all messages are received
-			await().atMost(10,TimeUnit.SECONDS).until(() -> SERVER_RECEIVED_MESSAGES.size() == messagesWritten.size());
+			await().atMost(10,TimeUnit.SECONDS).alias("Send and received same amount of messages").until(() -> SERVER_RECEIVED_MESSAGES.size() == messagesWritten.size());
 
 			// Check that the messages are correct
 			assertThat(SERVER_RECEIVED_MESSAGES).containsExactlyInAnyOrderElementsOf(messagesWritten);
