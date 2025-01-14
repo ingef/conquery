@@ -61,6 +61,30 @@ describe("Run query", () => {
     cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
     cy.get('@executionList').contains('Anfrage jetzt löschen').click();
   });
+
+  it("Check user error message", () => {
+    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+
+    // Drag concept to editor
+    cy.contains("MultiConnector").trigger("dragstart").trigger("dragleave");
+    cy.get("@queryEditor")
+      .trigger("dragenter")
+      .trigger("dragover")
+      .trigger("drop")
+      .trigger("dragend");
+
+    // Switch to secondary id mode
+    cy.get("@queryEditor").contains("Secondary Id").click()
+
+    // Exclude only concept from secondary id to create an invalid query
+    cy.get("@queryEditor").find('[data-test-id="secondary-id-toggle"]').click()
+
+    // Start query
+    cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
+
+    // Check for specific user error message
+    cy.get('[data-test-id="query-runner"]').contains("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
+  })
 });
 
 describe("Reference list", () => {

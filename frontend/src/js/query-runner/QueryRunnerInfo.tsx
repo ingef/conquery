@@ -20,7 +20,11 @@ interface PropsT {
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
 
-  if (queryRunner.startQuery.error) {
+  const error = queryRunner.startQuery.error;
+  if (error) {
+    // Maybe use type guard here
+    if (typeof error === "string" && error.trim().length > 0)
+      return { type: "error", value: error };
     return { type: "error", value: t("queryRunner.startError") };
   } else if (queryRunner.stopQuery.error) {
     return { type: "error", value: t("queryRunner.stopError") };

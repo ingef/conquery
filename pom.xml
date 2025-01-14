@@ -48,8 +48,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>${java.required}</source>
-					<target>${java.required}</target>
+					<release>${java.required}</release>
 					<parameters>true</parameters>
 				</configuration>
 			</plugin>
