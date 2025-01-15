@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -50,25 +49,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
 		buckets = getStorageFactory().createBucketStore(getPathName(), objectMapper);
 		cBlocks = getStorageFactory().createCBlockStore(getPathName(), objectMapper);
-
-		decorateWorkerStore(worker);
-		decorateBucketStore(buckets);
-		decorateCBlockStore(cBlocks);
 	}
-
-	private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-		// Nothing to decorate
-	}
-
-	private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
-		// Nothing to decorate
-	}
-
-	// CBlocks
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
@@ -146,18 +127,4 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
-
-	@Override
-	public void forEachBucket(Store.StoreEntryConsumer<Id<Bucket>, Bucket> consumer) {
-		buckets.forEach(consumer);
-	}
-
-	@Override
-	public void forEachCBlock(Store.StoreEntryConsumer<Id<CBlock>, CBlock> consumer) {
-		cBlocks.forEach(consumer);
-	}
-
-	// Utilities
-
-
 }

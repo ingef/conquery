@@ -60,7 +60,7 @@ import org.apache.shiro.realm.AuthenticatingRealm;
 public class LocalAuthenticationRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AccessTokenCreator, Destroyable {
 
 	private static final int ENVIRONMENT_CLOSING_RETRIES = 2;
-	private static final int ENVIRONMENT_CLOSING_TIMEOUT = 2; // seconds
+	private static final Duration ENVIRONMENT_CLOSING_TIMEOUT = Duration.seconds(2);
 
 	// Get the path for the storage here, so it is set as soon the first class is instantiated (in the ManagerNode)
 	// In the DistributedStandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
@@ -245,7 +245,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 					log.info("The environment is still working on some transactions. Retry");				
 				}
 				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
-				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT * 1000 /* milliseconds */);
+
+				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT.toJavaDuration());
 			}
 		}
 		// Close the environment with force

@@ -55,7 +55,7 @@ public class ExecuteQuery extends WorkerMessage {
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
-			log.debug("Created query plan in {}", stopwatch);
+			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);

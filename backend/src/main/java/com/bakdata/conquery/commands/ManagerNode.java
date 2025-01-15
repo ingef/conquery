@@ -150,24 +150,24 @@ public class ManagerNode implements Managed {
 	@SneakyThrows(InterruptedException.class)
 	public void loadNamespaces() {
 
+		try(ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
+			DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
-		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
-
-		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
-		for (NamespaceStorage namespaceStorage : namespaceStorages) {
-			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
-			});
-		}
+			// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
+			final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
+			for (NamespaceStorage namespaceStorage : namespaceStorages) {
+				loaders.submit(() -> {
+					registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
+				});
+			}
 
 
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int countLoaded = registry.getNamespaces().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
-																												  - countLoaded);
+			loaders.shutdown();
+			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+				final int countLoaded = registry.getNamespaces().size();
+				log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																													  - countLoaded);
+			}
 		}
 	}
 
@@ -175,9 +175,9 @@ public class ManagerNode implements Managed {
 		log.info("Opening MetaStorage");
 		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
 		if (getConfig().getStorage().isLoadStoresOnStart()) {
-			log.info("Loading MetaStorage");
+			log.info("BEGIN loading MetaStorage");
 			getMetaStorage().loadData();
-			log.trace("MetaStorage loaded {}", getMetaStorage());
+			log.debug("DONE loading MetaStorage {}", getMetaStorage());
 		}
 	}
 

@@ -70,21 +70,6 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		tables = storageFactory.createTableStore(pathName, objectMapper);
 		imports = storageFactory.createImportStore(pathName, objectMapper);
 		concepts = storageFactory.createConceptStore(pathName, objectMapper);
-
-		decorateConceptStore(concepts);
-	}
-
-	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
-		// TODO check if still necessary
-		store.onAdd(concept -> {
-
-			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
-				throw new IllegalStateException("Concept is not for this dataset.");
-			}
-
-			concept.setDataset(dataset.get().getId());
-
-		});
 	}
 
 	// Imports
@@ -136,8 +121,9 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this).
-					 add(NamespacedStorage.class, this);
+		return values
+				.add(NamespacedStorageProvider.class, this)
+				.add(NamespacedStorage.class, this);
 	}
 
 	@Override
