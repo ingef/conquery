@@ -200,6 +200,7 @@ public class BucketManager {
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
+
 			allConcepts
 					.filter(TreeConcept.class::isInstance)
 					.flatMap(concept -> concept.getConnectors().stream())
