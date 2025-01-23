@@ -167,7 +167,7 @@ public class BucketManager {
 							   }
 
 							   log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-							   job.addCBlock(bucketId.resolve(), connector);
+							   job.addCBlock(bucketId, connector);
 						   }));
 
 			}
@@ -205,7 +205,7 @@ public class BucketManager {
 					.flatMap(concept -> concept.getConnectors().stream())
 					.filter(connector -> connector.getResolvedTableId().equals(bucket.getTable()))
 					.filter(connector -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
-					.forEach(connector -> job.addCBlock(bucket, (ConceptTreeConnector) connector));
+					.forEach(connector -> job.addCBlock(bucket.getId(), (ConceptTreeConnector) connector));
 		}
 
 		jobManager.addSlowJob(job);
@@ -363,10 +363,10 @@ public class BucketManager {
 
 		for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
 
-			try(Stream<Bucket> allBuckets = storage.getAllBuckets()) {
+			try(Stream<BucketId> allBuckets = storage.getAllBucketIds()) {
 				allBuckets
-						.filter(bucket -> bucket.getTable().equals(connector.getResolvedTableId()))
-						.filter(bucket -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
+						.filter(bucketId -> bucketId.getImp().getTable().equals(connector.getResolvedTableId()))
+						.filter(bucketId -> !hasCBlock(new CBlockId(bucketId, connector.getId())))
 						.forEach(bucket -> job.addCBlock(bucket, connector));
 			}
 		}

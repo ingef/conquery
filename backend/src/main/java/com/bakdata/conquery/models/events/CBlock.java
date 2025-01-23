@@ -91,9 +91,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
-	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, BucketManager bucketManager) {
+	public static CBlock createCBlock(ConceptTreeConnector connector, BucketId bucketId, BucketManager bucketManager) {
 		final int bucketSize = bucketManager.getEntityBucketSize();
-		final int root = bucket.getBucket() * bucketSize;
+		final int root = bucketId.getBucket() * bucketSize;
+
+		Bucket bucket = bucketId.resolve();
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap

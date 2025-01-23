@@ -167,10 +167,13 @@ public class XodusStoreFactory implements StoreFactory {
 	private boolean loadEnvironmentWithMissingStores;
 
 	/**
-	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeinSpec</a>
+	 * Cache spec for deserialized values.
+	 * Conquery depends currently on <code>softValues</code> to avoid data race conditions.
+	 * So a specification must include this option.
+	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeineSpec</a>
 	 */
 	@NotEmpty
-	@ValidCaffeineSpec
+	@ValidCaffeineSpec(softValue = true)
 	private String caffeineSpec = "softValues";
 
 	private boolean loadStoresOnStart = false;
@@ -197,6 +200,11 @@ public class XodusStoreFactory implements StoreFactory {
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private transient MetricRegistry metricRegistry;
+
+	@JsonIgnore
+	private CaffeineSpec getCaffeineSpecParsed() {
+		return CaffeineSpec.parse(getCaffeineSpec());
+	}
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
@@ -301,7 +309,7 @@ public class XodusStoreFactory implements StoreFactory {
 							getUnreadableDataDumpDirectory(),
 							getReaderExecutorService()
 					),
-					CaffeineSpec.parse(getCaffeineSpec()),
+					getCaffeineSpecParsed(),
 					metricRegistry
 			);
 		}
@@ -429,7 +437,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-			return new SingletonStore<>(bigStore);
+			return new SingletonStore<>(new CachedStore<>(bigStore, getCaffeineSpecParsed(), getMetricRegistry()));
 		}
 	}
 
