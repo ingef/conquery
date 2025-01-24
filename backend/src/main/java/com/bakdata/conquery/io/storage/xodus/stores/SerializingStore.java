@@ -393,8 +393,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				maybeFailed = allJobs.get(30, TimeUnit.SECONDS);
 			}
 			catch (InterruptedException e) {
-				boolean interrupted = Thread.interrupted();
-				log.debug("Thread was interrupted: {}", interrupted);
+				boolean interrupted = Thread.currentThread().isInterrupted();
+				log.debug("Waiting for deserialization was interrupted: {}", interrupted);
+
+				if(interrupted) {
+					// Rethrow to propagate
+					Thread.currentThread().interrupt();
+				}
 			}
 			catch (ExecutionException e) {
 				throw new RuntimeException(e);

@@ -71,9 +71,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
 		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
-		final Concept<?> concept = allConcepts.iterator().next();
+		final Concept<?> concept = allConcepts.findFirst().orElseThrow();
 		allConcepts.close();
-		final Connector connector = concept.getConnectors().iterator().next();
+		final Connector connector = concept.getConnectors().getFirst();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
@@ -119,10 +119,11 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 							   );
 
 		// from csv
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")),
+																		  MediaType.APPLICATION_JSON_TYPE
+													  ))) {
 
 			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
@@ -133,10 +134,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		}
 
 		// from column values
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE))) {
 
 			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 

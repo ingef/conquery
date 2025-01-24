@@ -44,14 +44,12 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		conquery.waitUntilWorkDone();
 
 		allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
-		TreeConcept concept = (TreeConcept) allConcepts.iterator().next();
+		TreeConcept concept = (TreeConcept) allConcepts.findFirst().orElseThrow();
 		allConcepts.close();
 
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
-		assertThat(concept.getChildren()).allSatisfy(c -> {
-			assertThat(c.getMatchingStats().countEvents()).isEqualTo(2);
-		});
+		assertThat(concept.getChildren()).allSatisfy(c -> assertThat(c.getMatchingStats().countEvents()).isEqualTo(2));
 		
 		//check the date ranges
 		assertThat(concept.getMatchingStats().spanEvents())
