@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
@@ -35,20 +34,9 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		super(storageFactory, pathName);
 	}
 
-
-	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
-		idMapping
-				.onAdd(mapping -> mapping.setStorage(this));
-	}
-
-	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
-		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
-	}
-
-
 	@Override
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
-		super.openStores(objectMapper, metricRegistry);
+	public void openStores(ObjectMapper objectMapper) {
+		super.openStores(objectMapper);
 
 		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
 		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
@@ -58,8 +46,12 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
-		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
+	}
+
+	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
+		idMapping
+				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
 	@Override
@@ -175,12 +167,12 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 	// PreviewConfig
 
-	public void setPreviewConfig(PreviewConfig previewConfig){
-		preview.update(previewConfig);
-	}
-
 	public PreviewConfig getPreviewConfig() {
 		return preview.get();
+	}
+
+	public void setPreviewConfig(PreviewConfig previewConfig){
+		preview.update(previewConfig);
 	}
 
 	public void removePreviewConfig() {

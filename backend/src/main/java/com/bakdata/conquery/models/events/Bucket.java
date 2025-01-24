@@ -105,6 +105,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	/**
 	 * Iterate entities
+	 *
+	 * @apiNote If you don't need anything from this bucket besides the entities use {@link CBlock#getEntities()}
 	 */
 	public Collection<String> entities() {
 		return ImmutableSet.copyOf(start.keySet());
