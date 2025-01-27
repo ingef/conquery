@@ -27,7 +27,7 @@ public class FormShardResult extends ShardResult {
 	 * Distribute the result to a sub query.
 	 */
 	@Override
-	public void addResult(DistributedExecutionManager executionManager) {
+	protected void addResult(DistributedExecutionManager executionManager) {
 		final ManagedInternalForm<?> managedInternalForm = (ManagedInternalForm<?>) executionManager.getExecution(getFormId());
 		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getQueryId());
 

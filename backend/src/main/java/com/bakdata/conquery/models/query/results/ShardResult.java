@@ -82,7 +82,7 @@ public class ShardResult  extends NamespaceMessage {
 		worker.send(this);
 	}
 
-	public void addResult(DistributedExecutionManager executionManager) {
+	protected void addResult(DistributedExecutionManager executionManager) {
 		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
 	}
 

@@ -36,6 +36,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.mina.core.future.WriteFuture;
 
 /**
@@ -67,7 +68,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		final Map<TableId, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
 																.collect(Collectors.groupingBy(Bucket::getTable));
 
-		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS));
+		BasicThreadFactory threadFactory = (new BasicThreadFactory.Builder()).namingPattern(this.getClass().getSimpleName() + "-Worker-%d").build();
+		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 		final AtomicInteger done = new AtomicInteger();
 
@@ -84,7 +86,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																	  .collect(Collectors.toSet());
 
-									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
+									log.trace("Finished collecting {} values for column {}", values.size(), column);
 
 									// Chunk values, to produce smaller messages
 									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
@@ -93,14 +95,18 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 											  column.getId(), values.size(), columValueChunkSize
 									);
 
+									int i = 0;
 									for (List<String> chunk : partition) {
 										// Send values to manager
 										RegisterColumnValues message =
 												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
 										WriteFuture send = context.send(message);
 
-										send.awaitUninterruptibly();
+										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
 									}
+
+									getProgressReporter().report(1);
+									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
 								});
 							}
 					   )
@@ -124,6 +130,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
+		getProgressReporter().done();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));

@@ -7,7 +7,7 @@ COPY .git .
 RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 
 # Builder
-FROM maven:3.8-openjdk-17-slim AS builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
 # Runner
-FROM eclipse-temurin:17-jre-alpine AS runner
+FROM eclipse-temurin:21-jre-alpine AS runner
 
 ## Apache POI needs some extra libs to auto-size columns
 RUN apk add --no-cache fontconfig ttf-dejavu
