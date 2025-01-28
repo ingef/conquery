@@ -320,7 +320,7 @@ public class AdminDatasetProcessor {
 		ns.initializeUpdateMatchingStats();
 	}
 
-	public void initializeIndexes(Dataset dataset) {
+	public void initializeIndices(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
 		ns.updateIndexes();

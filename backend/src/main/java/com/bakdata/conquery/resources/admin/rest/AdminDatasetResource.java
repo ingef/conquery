@@ -231,10 +231,10 @@ public class AdminDatasetResource {
 	}
 
 	@POST
-	@Path("/initialize-indexes")
+	@Path("/initialize-indices")
 	@Consumes(MediaType.WILDCARD)
-	public void initializeIndexes(@PathParam(DATASET) Dataset dataset) {
-		processor.initializeIndexes(dataset);
+	public void initializeIndices(@PathParam(DATASET) Dataset dataset) {
+		processor.initializeIndices(dataset);
 	}
 
 	@POST
