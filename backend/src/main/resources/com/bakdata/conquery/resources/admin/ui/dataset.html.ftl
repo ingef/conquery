@@ -84,8 +84,8 @@
       <button
               type="button"
               class="btn btn-secondary"
-              onclick="rest('/admin/datasets/${c.ds.id}/update-indices',{method: 'post'})"
-              data-cy="update-indices"
+              onclick="rest('/admin/datasets/${c.ds.id}/initialize-indices',{method: 'post'})"
+              data-cy="initialize-indices"
             >
               Update Indices
             </button>
