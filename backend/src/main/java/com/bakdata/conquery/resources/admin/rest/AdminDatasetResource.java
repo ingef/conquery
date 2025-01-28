@@ -181,7 +181,9 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public List<ConceptId> deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteInternToExternMapping(
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper,
+			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
@@ -224,8 +226,15 @@ public class AdminDatasetResource {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void postprocessNamespace(@PathParam(DATASET) Dataset dataset) {
-		processor.postprocessNamespace(dataset);
+	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
+		processor.updateMatchingStats(dataset);
+	}
+
+	@POST
+	@Path("/initialize-indexes")
+	@Consumes(MediaType.WILDCARD)
+	public void initializeIndexes(@PathParam(DATASET) Dataset dataset) {
+		processor.initializeIndexes(dataset);
 	}
 
 	@POST

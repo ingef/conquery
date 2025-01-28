@@ -66,7 +66,6 @@ public class AdminDatasetProcessor {
 	private final Environment environment;
 
 
-
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
@@ -315,10 +314,16 @@ public class AdminDatasetProcessor {
 	/**
 	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
 	 */
-	public void postprocessNamespace(Dataset dataset) {
+	public void updateMatchingStats(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
-		ns.postprocessData();
+		ns.initializeUpdateMatchingStats();
+	}
+
+	public void initializeIndexes(Dataset dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.updateIndexes();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
