@@ -55,5 +55,6 @@ done
 
 echo "Init Matching Stats and Search"
 curl --fail -X POST  "$admin_api/datasets/dataset1/update-matching-stats" -H "$h_ct" -H "$h_auth"
+curl --fail -X POST  "$admin_api/datasets/dataset1/initialize-indices" -H "$h_ct" -H "$h_auth"
 
 echo "Done loading data"

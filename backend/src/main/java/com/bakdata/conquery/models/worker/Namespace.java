@@ -123,13 +123,26 @@ public abstract class Namespace {
 	 *
 	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
 	 */
-	public void postprocessData() {
+	public void initializeUpdateMatchingStats() {
 
 		getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and FilterSearch",
+				"Initiate Update Matching Stats",
+				this::updateMatchingStats
+		));
+
+	}
+	/**
+	 * Hook for actions that are best done after all data has been imported and is in a consistent state.
+	 * Such actions are for example search initialization and collection of matching statistics.
+	 *
+	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
+	 */
+	public void updateIndexes() {
+
+		getJobManager().addSlowJob(new SimpleJob(
+				"Initiate FilterSearch",
 				() -> {
 					updateInternToExternMappings();
-					updateMatchingStats();
 					updateFilterSearch();
 				}
 		));
