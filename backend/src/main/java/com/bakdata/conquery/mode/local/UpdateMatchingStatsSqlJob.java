@@ -1,14 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
-import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.max;
-import static org.jooq.impl.DSL.min;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.noCondition;
-import static org.jooq.impl.DSL.noField;
-import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -186,7 +178,20 @@ public class UpdateMatchingStatsSqlJob extends Job {
 														 .groupBy(groupByColumns);
 
 		final ConceptTreeCache treeCache = new ConceptTreeCache(treeConcept);
-		executionService.fetchStream(query).forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache));
+
+		// Collect matching stats entries, then assign them to the actual ConceptElement.
+		final Map<ConceptElement<?>, MatchingStats.Entry> entries = new HashMap<>();
+
+		executionService.fetchStream(query).forEach(record -> mapRecordToConceptElements(treeConcept, record, treeCache, entries));
+
+		for (Map.Entry<ConceptElement<?>, MatchingStats.Entry> entry : entries.entrySet()) {
+			final MatchingStats matchingStats = new MatchingStats();
+
+			// The string has no meaning in SQL mode.
+			matchingStats.putEntry("sql", entry.getValue());
+
+			entry.getKey().setMatchingStats(matchingStats);
+		}
 	}
 
 	/**
@@ -317,18 +322,18 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		return functionProvider.daterangeStringExpression(minAndMax);
 	}
 
-	private void mapRecordToConceptElements(final TreeConcept treeConcept, final Record record, final ConceptTreeCache treeCache) {
+	private void mapRecordToConceptElements(final TreeConcept treeConcept, final Record record, final ConceptTreeCache treeCache,
+											Map<ConceptElement<?>, MatchingStats.Entry> entries) {
+
 		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(record::intoMap);
 
 		// as we group by primary id, a record contains the matching stats for a single entity
-		final long events = record.get(EVENTS, Integer.class).longValue();
+		final int events = record.get(EVENTS, Integer.class);
 		final String entity = record.get(ENTITIES, String.class);
 		final CDateRange dateSpan = toDateRange(record.get(DATES, String.class));
 
-		final MatchingStats.Entry entry = new MatchingStats.Entry(events, 1, dateSpan.getMinValue(), dateSpan.getMaxValue());
-
 		if (treeConcept.getChildren().isEmpty()) {
-			addEntryToConceptElement(treeConcept, entity, entry);
+			registerEvents(treeConcept, entity, events, dateSpan, entries);
 			return;
 		}
 
@@ -336,6 +341,8 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			final String columnValue = record.get(CONNECTOR_COLUMN, String.class);
 
 			if (columnValue == null) {
+				//TODO FK: I am not sure if this is correct. It reduces a discrepancy between legacy and sql
+				registerEvents(treeConcept, entity, events, dateSpan, entries);
 				return;
 			}
 
@@ -343,19 +350,25 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 			//  database value did not match any node of the concept
 			if (mostSpecificChild == null) {
+				registerEvents(treeConcept, entity, events, dateSpan, entries);
 				return;
 			}
 
 			// add child stats to all parents till concept root
 			ConceptTreeNode<?> current = mostSpecificChild;
 			while (current != null) {
-				addEntryToConceptElement(current, entity, entry);
+				registerEvents((ConceptElement<?>) current, entity, events, dateSpan, entries);
 				current = current.getParent();
 			}
 		}
 		catch (ConceptConfigurationException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static void registerEvents(ConceptElement<?> element, String entity, int events, CDateRange dateSpan, Map<ConceptElement<?>, MatchingStats.Entry> entries) {
+		entries.computeIfAbsent(element, ignored -> new MatchingStats.Entry())
+			   .addEvents(entity, events, dateSpan);
 	}
 
 	private CDateRange toDateRange(final String validityDateExpression) {
@@ -366,13 +379,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		}
 
 		return CDateRange.fromList(dateRange);
-	}
-
-	private static void addEntryToConceptElement(final ConceptTreeNode<?> mostSpecificChild, final String columnKey, final MatchingStats.Entry entry) {
-		if (mostSpecificChild.getMatchingStats() == null) {
-			((ConceptElement<?>) mostSpecificChild).setMatchingStats(new MatchingStats());
-		}
-		mostSpecificChild.getMatchingStats().putEntry(columnKey, entry);
 	}
 
 }

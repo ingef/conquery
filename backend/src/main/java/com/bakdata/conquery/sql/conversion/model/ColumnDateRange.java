@@ -24,16 +24,16 @@ public class ColumnDateRange implements SqlSelect {
 	private final String alias;
 
 	protected ColumnDateRange(Field<Date> startColumn, Field<Date> endColumn, String alias) {
-		this.range = null;
-		this.start = startColumn;
-		this.end = endColumn;
+		range = null;
+		start = startColumn;
+		end = endColumn;
 		this.alias = alias;
 	}
 
 	protected ColumnDateRange(Field<?> range, String alias) {
 		this.range = range;
-		this.start = null;
-		this.end = null;
+		start = null;
+		end = null;
 		this.alias = alias;
 	}
 
@@ -54,12 +54,12 @@ public class ColumnDateRange implements SqlSelect {
 	}
 
 	public static ColumnDateRange empty() {
-		Field<String> emptyRange = DSL.field(DSL.val("{}"));
+		final Field<String> emptyRange = DSL.field(DSL.val("{}"));
 		return ColumnDateRange.of(emptyRange);
 	}
 
 	public ColumnDateRange asValidityDateRange(String alias) {
-		return this.as(alias + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
+		return as(alias + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
 	}
 
 	/**
@@ -67,15 +67,15 @@ public class ColumnDateRange implements SqlSelect {
 	 * False if it consists of a start and end field.
 	 */
 	public boolean isSingleColumnRange() {
-		return this.range != null;
+		return range != null;
 	}
 
 	@Override
 	public List<Field<?>> toFields() {
 		if (isSingleColumnRange()) {
-			return List.of(this.range);
+			return List.of(range);
 		}
-		return Stream.of(this.start, this.end)
+		return Stream.of(start, end)
 					 .collect(Collectors.toList());
 	}
 
@@ -98,43 +98,43 @@ public class ColumnDateRange implements SqlSelect {
 
 	public ColumnDateRange as(String alias) {
 		if (isSingleColumnRange()) {
-			return new ColumnDateRange(this.range.as(alias), alias);
+			return new ColumnDateRange(range.as(alias), alias);
 		}
 		return new ColumnDateRange(
-				this.start.as(alias + START_SUFFIX),
-				this.end.as(alias + END_SUFFIX),
+				start.as(alias + START_SUFFIX),
+				end.as(alias + END_SUFFIX),
 				alias
 		);
 	}
 
 	public ColumnDateRange coalesce(ColumnDateRange right) {
-		if (this.isSingleColumnRange() != right.isSingleColumnRange()) {
+		if (isSingleColumnRange() != right.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
 		}
 		if (isSingleColumnRange()) {
-			return ColumnDateRange.of(DSL.coalesce(this.range, right.getRange())).as(this.alias);
+			return ColumnDateRange.of(DSL.coalesce(range, right.getRange())).as(alias);
 		}
 		return ColumnDateRange.of(
-				DSL.coalesce(this.start, right.getStart()),
-				DSL.coalesce(this.end, right.getEnd())
-		).as(this.alias);
+				DSL.coalesce(start, right.getStart()),
+				DSL.coalesce(end, right.getEnd())
+		).as(alias);
 	}
 
 	public Condition join(ColumnDateRange right) {
-		if (this.isSingleColumnRange() != right.isSingleColumnRange()) {
+		if (isSingleColumnRange() != right.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
 		}
-		if (this.isSingleColumnRange()) {
-			return this.range.coerce(Object.class).eq(right.getRange());
+		if (isSingleColumnRange()) {
+			return range.coerce(Object.class).eq(right.getRange());
 		}
-		return this.start.eq(right.getStart()).and(end.eq(right.getEnd()));
+		return start.eq(right.getStart()).and(end.eq(right.getEnd()));
 	}
 
 	public Condition isNotNull() {
-		if (this.isSingleColumnRange()) {
-			return this.range.isNotNull();
+		if (isSingleColumnRange()) {
+			return range.isNotNull();
 		}
-		return this.start.isNotNull().and(this.end.isNotNull());
+		return start.isNotNull().and(end.isNotNull());
 	}
 
 }

@@ -18,71 +18,57 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class MatchingStats {
 
 	private final Map<String, MatchingStats.Entry> entries = new HashMap<>();
 
 	@JsonIgnore
-	private transient CDateRange span;
+	private CDateRange span;
 
 	@JsonIgnore
-	private transient long numberOfEvents = -1L;
+	private long numberOfEvents = -1L;
 
 	@JsonIgnore
-	private transient long numberOfEntities = -1L;
+	private long numberOfEntities = -1L;
 
-	public long countEvents() {
+	public synchronized long countEvents() {
 		if (numberOfEvents == -1L) {
-			synchronized (this) {
-				if (numberOfEvents == -1L) {
-					numberOfEvents = entries.values().stream().mapToLong(MatchingStats.Entry::getNumberOfEvents).sum();
-				}
-			}
+			numberOfEvents = entries.values().stream().mapToLong(MatchingStats.Entry::getNumberOfEvents).sum();
 		}
 		return numberOfEvents;
 	}
 
 
-	public long countEntities() {
+	public synchronized long countEntities() {
 		if (numberOfEntities == -1L) {
-			synchronized (this) {
-				if (numberOfEntities == -1L) {
-					numberOfEntities = entries.values().stream().mapToLong(MatchingStats.Entry::getNumberOfEntities).sum();
-				}
-			}
+			numberOfEntities = entries.values().stream().mapToLong(MatchingStats.Entry::getNumberOfEntities).sum();
 		}
 		return numberOfEntities;
 	}
 
-	public CDateRange spanEvents() {
+	public synchronized CDateRange spanEvents() {
 		if (span == null) {
-			synchronized (this) {
-				if (span == null) {
-					span = entries.values().stream().map(MatchingStats.Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
-				}
-			}
+			span = entries.values().stream().map(MatchingStats.Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
 		}
 		return span;
 
 	}
 
-	public void putEntry(String source, MatchingStats.Entry entry) {
-		synchronized (this) {
-			entries.put(source, entry);
-			span = null;
-			numberOfEntities = -1L;
-			numberOfEvents = -1L;
-		}
+	public synchronized void putEntry(String source, MatchingStats.Entry entry) {
+		entries.put(source, entry);
+		span = null;
+		numberOfEntities = -1L;
+		numberOfEvents = -1L;
 	}
 
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Entry {
-		private long numberOfEvents;
-
 		@JsonIgnore
 		private final Set<String> foundEntities = new HashSet<>();
+		private long numberOfEvents;
 		private long numberOfEntities;
 		private int minDate = Integer.MAX_VALUE;
 		private int maxDate = Integer.MIN_VALUE;
@@ -99,11 +85,28 @@ public class MatchingStats {
 			);
 		}
 
-		public void addEvent(Table table, Bucket bucket, int event, String entityForEvent) {
-			numberOfEvents++;
+		public void addEvents(String entityForEvent, int events, CDateRange time) {
+			numberOfEvents += events;
 			if (foundEntities.add(entityForEvent)) {
 				numberOfEntities++;
 			}
+
+
+			if (time.hasUpperBound()) {
+				maxDate = Math.max(time.getMaxValue(), maxDate);
+			}
+
+			if (time.hasLowerBound()) {
+				minDate = Math.min(time.getMinValue(), minDate);
+			}
+		}
+
+		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event) {
+
+			int maxDate = Integer.MIN_VALUE;
+			int minDate = Integer.MAX_VALUE;
+
+			final Table table = bucket.getTable().resolve();
 
 			for (Column c : table.getColumns()) {
 				if (!c.getType().isDateCompatible()) {
@@ -124,6 +127,8 @@ public class MatchingStats {
 					minDate = Math.min(time.getMinValue(), minDate);
 				}
 			}
+
+			addEvents(entityForEvent, 1, CDateRange.of(minDate, maxDate));
 		}
 	}
 
