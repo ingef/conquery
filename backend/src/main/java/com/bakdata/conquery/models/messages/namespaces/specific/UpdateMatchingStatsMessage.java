@@ -152,7 +152,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
+									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry()).addEventFromBucket(entity, bucket, event);
 									continue;
 								}
 
@@ -164,7 +164,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 								while (element != null) {
 									results.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-										   .addEvent(table, bucket, event, entity);
+										   .addEventFromBucket(entity, bucket, event);
 									element = element.getParent();
 								}
 							}
