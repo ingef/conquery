@@ -85,28 +85,11 @@ public class MatchingStats {
 			);
 		}
 
-		public void addEvents(String entityForEvent, int events, CDateRange time) {
-			numberOfEvents += events;
-			if (foundEntities.add(entityForEvent)) {
-				numberOfEntities++;
-			}
-
-
-			if (time.hasUpperBound()) {
-				maxDate = Math.max(time.getMaxValue(), maxDate);
-			}
-
-			if (time.hasLowerBound()) {
-				minDate = Math.min(time.getMinValue(), minDate);
-			}
-		}
-
-		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event) {
+		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event, Table table) {
 
 			int maxDate = Integer.MIN_VALUE;
 			int minDate = Integer.MAX_VALUE;
 
-			final Table table = bucket.getTable().resolve();
 
 			for (Column c : table.getColumns()) {
 				if (!c.getType().isDateCompatible()) {
@@ -128,7 +111,41 @@ public class MatchingStats {
 				}
 			}
 
-			addEvents(entityForEvent, 1, CDateRange.of(minDate, maxDate));
+			final CDateRange span;
+
+			if (minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
+				span = null;
+			}
+			else if (minDate == Integer.MAX_VALUE) {
+				span = CDateRange.atMost(maxDate);
+			}
+			else if (maxDate == Integer.MIN_VALUE) {
+				span = CDateRange.atLeast(minDate);
+			}
+			else {
+				span = CDateRange.of(minDate, maxDate);
+			}
+
+			addEvents(entityForEvent, 1, span);
+		}
+
+		public void addEvents(String entityForEvent, int events, CDateRange time) {
+			numberOfEvents += events;
+			if (foundEntities.add(entityForEvent)) {
+				numberOfEntities++;
+			}
+
+			if (time == null) {
+				return;
+			}
+
+			if (time.hasUpperBound()) {
+				maxDate = Math.max(time.getMaxValue(), maxDate);
+			}
+
+			if (time.hasLowerBound()) {
+				minDate = Math.min(time.getMinValue(), minDate);
+			}
 		}
 	}
 

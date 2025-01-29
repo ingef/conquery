@@ -44,17 +44,17 @@ public class MatchingStatsTests {
 
 
 		MatchingStats.Entry entry1 = new MatchingStats.Entry();
-		entry1.addEventFromBucket("1", null, 1);
-		entry1.addEventFromBucket("1", null, 2);
+		entry1.addEventFromBucket("1", null, 0, table );
+		entry1.addEventFromBucket("1", null, 0, table );
 
-		entry1.addEventFromBucket("2", null, 3);
-		entry1.addEventFromBucket("2", null, 4);
+		entry1.addEventFromBucket("2", null, 0, table );
+		entry1.addEventFromBucket("2", null, 0, table );
 
-		entry1.addEventFromBucket("3", null, 5);
-		entry1.addEventFromBucket("3", null, 6);
+		entry1.addEventFromBucket("3", null, 0, table );
+		entry1.addEventFromBucket("3", null, 0, table );
 
-		entry1.addEventFromBucket("4", null, 7);
-		entry1.addEventFromBucket("4", null, 8);
+		entry1.addEventFromBucket("4", null, 0, table );
+		entry1.addEventFromBucket("4", null, 0, table );
 
 
 		stats.putEntry(workerId1.getWorker(), entry1);
@@ -64,20 +64,17 @@ public class MatchingStatsTests {
 
 		MatchingStats.Entry entry2 = new MatchingStats.Entry();
 
-		entry2.addEventFromBucket("1", null, 1);
-		entry2.addEventFromBucket("2", null, 2);
+		entry2.addEventFromBucket("1", null, 0, table );
+		entry2.addEventFromBucket("2", null, 0, table );
+		entry2.addEventFromBucket("3", null, 0, table );
+		entry2.addEventFromBucket("4", null, 0, table );
+		entry2.addEventFromBucket("5", null, 0, table );
+		entry2.addEventFromBucket("6", null, 0, table );
+		entry2.addEventFromBucket("7", null, 0, table );
+		entry2.addEventFromBucket("8", null, 0, table );
+		entry2.addEventFromBucket("9", null, 0, table );
+		entry2.addEventFromBucket("10", null, 0, table );
 
-		entry2.addEventFromBucket("3", null, 3);
-		entry2.addEventFromBucket("4", null, 4);
-
-		entry2.addEventFromBucket("5", null, 5);
-		entry2.addEventFromBucket("6", null, 6);
-
-		entry2.addEventFromBucket("7", null, 7);
-		entry2.addEventFromBucket("8", null, 8);
-
-		entry2.addEventFromBucket("9", null, 9);
-		entry2.addEventFromBucket("10", null, 10);
 
 		stats.putEntry(workerId2.getWorker(), entry2);
 		assertThat(stats.countEvents()).isEqualTo(18);
