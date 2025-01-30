@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
+import java.util.Collections;
+
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -36,25 +36,24 @@ public class MatchingStatsTests {
     @Test
     public void addEventTest(){
         MatchingStats stats = new MatchingStats();
-        Table table = new Table();
-        table.setColumns(new Column[0]);
+
 
         assertThat(stats.countEvents()).isEqualTo(0);
         assertThat(stats.countEntities()).isEqualTo(0);
 
 
         MatchingStats.Entry entry1 =  new MatchingStats.Entry();
-        entry1.addEventFromBucket("1", null, 0, table );
-        entry1.addEventFromBucket("1", null, 0, table );
+        entry1.addEventFromBucket("1", null, 0, Collections.emptyList());
+        entry1.addEventFromBucket("1", null, 0, Collections.emptyList());
 
-        entry1.addEventFromBucket("2", null, 0, table );
-        entry1.addEventFromBucket("2", null, 0, table );
+        entry1.addEventFromBucket("2", null, 0, Collections.emptyList());
+        entry1.addEventFromBucket("2", null, 0, Collections.emptyList());
 
-        entry1.addEventFromBucket("3", null, 0, table );
-        entry1.addEventFromBucket("3", null, 0, table );
+        entry1.addEventFromBucket("3", null, 0, Collections.emptyList());
+        entry1.addEventFromBucket("3", null, 0, Collections.emptyList());
 
-        entry1.addEventFromBucket("4", null, 0, table );
-        entry1.addEventFromBucket("4", null, 0, table );
+        entry1.addEventFromBucket("4", null, 0, Collections.emptyList());
+        entry1.addEventFromBucket("4", null, 0, Collections.emptyList());
 
 
 
@@ -65,16 +64,16 @@ public class MatchingStatsTests {
 
         MatchingStats.Entry entry2 =  new MatchingStats.Entry();
 
-        entry2.addEventFromBucket("1", null, 0, table );
-        entry2.addEventFromBucket("2", null, 0, table );
-        entry2.addEventFromBucket("3", null, 0, table );
-        entry2.addEventFromBucket("4", null, 0, table );
-		entry2.addEventFromBucket("5", null, 0, table );
-		entry2.addEventFromBucket("6", null, 0, table );
-		entry2.addEventFromBucket("7", null, 0, table );
-		entry2.addEventFromBucket("8", null, 0, table );
-		entry2.addEventFromBucket("9", null, 0, table );
-		entry2.addEventFromBucket("10", null, 0, table );
+        entry2.addEventFromBucket("1", null, 0, Collections.emptyList());
+        entry2.addEventFromBucket("2", null, 0, Collections.emptyList());
+        entry2.addEventFromBucket("3", null, 0, Collections.emptyList());
+        entry2.addEventFromBucket("4", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("5", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("6", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("7", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("8", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("9", null, 0, Collections.emptyList());
+		entry2.addEventFromBucket("10", null, 0, Collections.emptyList());
 
 
         stats.putEntry(workerId2.toString(), entry2);

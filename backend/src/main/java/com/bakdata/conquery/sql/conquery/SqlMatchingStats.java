@@ -34,6 +34,9 @@ import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Record4;
+import org.jooq.Result;
+import org.jooq.ResultOrRows;
+import org.jooq.Results;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
@@ -147,19 +150,21 @@ public class SqlMatchingStats {
 				)
 						.from(unioned);
 
-		dslContext.fetchStream(records)
-				.forEach(record ->{
-					ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(record.component1());
-					resolvedId.setDomain(concept.getDomain());
+		// Results results = dslContext.fetchMany(records);
 
 
-					String entityId = record.component2();
-					Date min = record.component3();
-					Date max = record.component3();
 
-
-				});
-
+		//		for (Result<Record> result : results) {
+//
+//			ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(result.ge());
+//			resolvedId.setDomain(concept.getDomain());
+//
+//
+//			String entityId = record.component2();
+//			Date min = record.component3();
+//			Date max = record.component3();
+//
+//		}
 
 
 		//TODO might be that grouping in SQL is too complicated because we are interested in the whole tree and this currently only maps to anything that ends up being a leaf

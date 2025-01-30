@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -88,15 +87,12 @@ public class MatchingStats {
 			);
 		}
 
-		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event, Table table) {
+		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event, Iterable<Column> dateColumns) {
 
 			int maxDate = Integer.MIN_VALUE;
 			int minDate = Integer.MAX_VALUE;
 
-			for (Column c : table.getColumns()) {
-				if (!c.getType().isDateCompatible()) {
-					continue;
-				}
+			for (Column c : dateColumns) {
 
 				if (!bucket.has(event, c)) {
 					continue;
@@ -139,21 +135,6 @@ public class MatchingStats {
 
 			if (time == null) {
 				return;
-			}
-
-			if (time.hasUpperBound()) {
-				maxDate = Math.max(time.getMaxValue(), maxDate);
-			}
-
-			if (time.hasLowerBound()) {
-				minDate = Math.min(time.getMinValue(), minDate);
-			}
-		}
-
-		public void addEvents(String entityForEvent, int events, CDateRange time) {
-			numberOfEvents += events;
-			if (foundEntities.add(entityForEvent)) {
-				numberOfEntities++;
 			}
 
 			if (time.hasUpperBound()) {
