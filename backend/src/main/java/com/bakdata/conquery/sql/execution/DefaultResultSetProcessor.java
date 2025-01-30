@@ -11,13 +11,15 @@ import java.util.function.Predicate;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.DateReader;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	private final ConqueryConfig config;
-	private final SqlCDateSetParser sqlCDateSetParser;
+	@Getter
+	private final SqlCDateSetParser cDateSetParser;
 
 	@Override
 	public String getString(ResultSet resultSet, int columnIndex) throws SQLException {
@@ -60,12 +62,12 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
+		return this.cDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
 	}
 
 	@Override
 	public List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
+		return this.cDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
 	}
 
 	@Override
@@ -119,7 +121,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	}
 
 	@FunctionalInterface
-	private interface Getter {
+	private interface GetMethod {
 		Object getFromResultSet(int columnIndex) throws SQLException;
 	}
 
@@ -128,7 +130,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	 * <p>
 	 * For example, calling a primitives' ResultSet getter like getDouble, getInt etc. straightaway will never return null.
 	 */
-	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, Getter getter, Class<T> resultType) throws SQLException {
+	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, GetMethod getter, Class<T> resultType) throws SQLException {
 
 		if (resultSet.getObject(columnIndex) == null) {
 			return null;
