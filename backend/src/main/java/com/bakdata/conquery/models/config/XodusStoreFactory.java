@@ -221,7 +221,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-			return new SingletonStore<>(bigStore);
+			return new SingletonStore<>(new CachedStore<>(bigStore));
 		}
 	}
 
