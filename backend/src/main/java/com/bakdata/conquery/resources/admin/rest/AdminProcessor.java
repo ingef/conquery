@@ -66,18 +66,6 @@ public class AdminProcessor {
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
 
-	public void addRoles(List<Role> roles) {
-
-		for (Role role : roles) {
-			try {
-				addRole(role);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add Role: %s", role), e);
-			}
-		}
-	}
-
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
 		log.trace("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
@@ -296,7 +284,7 @@ public class AdminProcessor {
 		groovy.setProperty("managerNode", getManagerNode());
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
-		groovy.setProperty("config", getConfig());
+		groovy.setProperty("conqueryConfig", getConfig());
 		groovy.setProperty("storage", getStorage());
 
 		try {

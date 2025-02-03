@@ -12,7 +12,7 @@ describe("Run query", () => {
     visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
   });
 
-  it("Can execute query and see it in the queries tab", () => {
+  it("Can execute query, see it in the queries tab and delete it", () => {
     cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
     // Drag concept to editor
@@ -40,18 +40,16 @@ describe("Run query", () => {
     cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
 
     cy.get("@queryEditor").contains("Ergebnisse");
-  });
 
-  it("Can see the executed query in the queries tab", () => {
+    // Lookup executed query in the previous queries tab
     cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
     cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
 
     cy.get("@leftPaneContainer").contains("Ergebnisse");
     cy.get("@leftPaneContainer").contains("Concept1");
-  });
 
-  it("Can delete the query", () => {
+    // Delete the Query
     cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
     cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
@@ -60,6 +58,8 @@ describe("Run query", () => {
     
     cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
     cy.get('@executionList').contains('Anfrage jetzt löschen').click();
+
+    cy.get('@leftPaneContainer').contains('Keine Anfragen / Formulare gefunden')
   });
 
   it("Check user error message", () => {
