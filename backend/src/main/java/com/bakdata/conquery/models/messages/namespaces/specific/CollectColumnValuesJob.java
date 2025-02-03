@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -54,6 +55,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	private final int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors(), 5);
 
 	public final int columValueChunkSize;
+
+	@NotNull
 	@Getter
 	private final Set<ColumnId> columns;
 
@@ -67,7 +70,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	@Override
 	public void react(Worker context) throws Exception {
 		Map<TableId, List<Bucket>> table2Buckets;
-		try(Stream<Bucket> allBuckets = context.getStorage().getAllBuckets();) {
+		try(Stream<Bucket> allBuckets = context.getStorage().getAllBuckets()) {
 			table2Buckets = allBuckets
 					.collect(Collectors.groupingBy(Bucket::getTable));
 		}
@@ -76,6 +79,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 		final AtomicInteger done = new AtomicInteger();
+
+		getProgressReporter().setMax(columns.size());
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
@@ -134,7 +139,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
-		getProgressReporter().done();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
@@ -188,7 +192,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				}
 			}
 
-			getProgressReporter().done();
 			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
 		}
 
