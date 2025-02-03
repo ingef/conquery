@@ -16,8 +16,8 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -69,10 +69,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		Map<TableId, List<Bucket>> table2Buckets;
-		try(Stream<Bucket> allBuckets = context.getStorage().getAllBuckets()) {
+		Map<TableId, List<BucketId>> table2Buckets;
+		try(Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
 			table2Buckets = allBuckets
-					.collect(Collectors.groupingBy(Bucket::getTable));
+					.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
 		}
 
 		BasicThreadFactory threadFactory = (new BasicThreadFactory.Builder()).namingPattern(this.getClass().getSimpleName() + "-Worker-%d").build();
@@ -89,9 +89,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 					   .map(column -> {
 								// Acquire before submitting, so we don't spam the executor with waiting threads
 								return jobsExecutorService.submit(() -> {
-									final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
+									final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
 
 									final Set<String> values = buckets.stream()
+																	  .map(BucketId::resolve)
 																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																	  .collect(Collectors.toSet());
 
