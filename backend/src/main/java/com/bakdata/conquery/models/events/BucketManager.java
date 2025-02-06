@@ -175,6 +175,10 @@ public class BucketManager {
 			   .filter(connector -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
 			   .forEach(connector -> job.addCBlock(bucket, (ConceptTreeConnector) connector));
 
+		if (job.isEmpty()){
+			return;
+		}
+
 		jobManager.addSlowJob(job);
 	}
 
