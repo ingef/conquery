@@ -209,6 +209,7 @@ public class BucketManager {
 					.forEach(connector -> job.addCBlock(bucket.getId(), (ConceptTreeConnector) connector));
 		}
 
+
 		jobManager.addSlowJob(job);
 	}
 

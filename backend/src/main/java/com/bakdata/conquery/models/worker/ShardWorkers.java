@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
@@ -62,13 +61,12 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError, Environment environment, boolean loadStorage) {
+	public Worker createWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
 
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(storage);
-		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(storage);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanRetention, environment, loadStorage);
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanRetention, loadStorage);
 
 		addWorker(worker);
 
@@ -81,11 +79,11 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Environment environment, boolean failOnError) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, boolean failOnError) {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, internalMapperFactory, secondaryIdSubPlanRetention, environment);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, internalMapperFactory, secondaryIdSubPlanRetention);
 
 		addWorker(worker);
 

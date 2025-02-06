@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -52,8 +51,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final ExecutorService jobsExecutorService;
 	@Getter
 	private final BucketManager bucketManager;
-	@Getter
-	private final ObjectMapper communicationMapper;
 	@Setter
 	private NetworkSession session;
 
@@ -65,14 +62,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper,
 			int secondaryIdSubPlanLimit,
-			Environment environment,
 			boolean loadStorage
 	) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
-		this.communicationMapper = communicationMapper;
 
 
 		storage.openStores(persistenceMapper);
@@ -96,8 +90,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			InternalMapperFactory internalMapperFactory,
-			int secondaryIdSubPlanLimit,
-			Environment environment) {
+			int secondaryIdSubPlanLimit) {
 
 		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
@@ -114,9 +107,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(workerStorage);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, environment,
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanLimit,
 						  config.isLoadStoresOnStart());
 	}
 
