@@ -27,7 +27,7 @@ import lombok.ToString;
 @CPSType(id = "FORWARD_TO_WORKER", base = NetworkMessage.class)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@ToString(of = {"workerId", "text"})
+@ToString(of = {"workerId", "text"}, callSuper = true)
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	private final WorkerId workerId;
