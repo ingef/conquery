@@ -27,7 +27,7 @@ frontend:
   # service configuration for the frontend
   service:
     ports:
-      - name: ui
+      ui:
         port: 8000
         targetPort: 80
         protocol: TCP

@@ -63,8 +63,8 @@ spec:
             - name: CONQUERY_LOGGING_LEVEL
               value: {{ .Values.backend.logLevel }}
 
-            # hana configuration values
             {{ if .Values.backend.config.sqlConnectorConfig.enabled }}
+            # hana configuration values
             - name: CONQUERY_SQL_USER
               value: {{ .Values.backend.database.username }}
             - name: CONQUERY_SQL_PASSWORD
@@ -123,8 +123,8 @@ spec:
   selector:
     app.kubernetes.io/name: "{{ .Release.Name }}"
   ports:
-    - name: api
-      {{ toYaml .Values.frontend.service.ports | nindent 6 }}
+    - name: ui
+      {{- toYaml .Values.frontend.service.ports.ui | nindent 6 }}
     - name: api
       {{- toYaml .Values.backend.service.ports.api | nindent 6 }}
     - name: admin
