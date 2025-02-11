@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}"
+  labels:
+    app.kubernetes.io/name: "{{ .Release.Name }}"
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  strategy: 
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "{{ .Release.Name }}"
+    spec:
+      imagePullSecrets:
+        {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: "{{ .Release.Name }}-frontend"
+          imagePullPolicy: Always
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          env:
+              - name: COMPOSE_PROJECT_NAME
+                value: conquery
+              - name: PORT
+                value: "80"
+              - name: REACT_APP_BASENAME
+                value: ""
+              - name: REACT_APP_API_URL
+                value: {{ .Values.frontend.publicBaseUrl }}
+              - name: REACT_APP_DISABLE_LOGIN
+                value: {{ .Values.frontend.disableLogin | quote }}
+              - name: REACT_APP_LANG
+                value: {{ .Values.frontend.lang }}
+              - name: REACT_APP_IDP_ENABLE
+                value: {{ .Values.frontend.idp.enabled | quote }}
+              - name: REACT_APP_IDP_URL
+                value: "{{ .Values.frontend.idp.authEndpoint }}"
+              - name: REACT_APP_IDP_REALM
+                value: "{{ .Values.frontend.idp.realm }}"
+              - name: REACT_APP_IDP_CLIENT_ID
+                value: "{{ .Values.frontend.idp.clientId }}"
+          ports:
+          - name: ui
+            containerPort: 80
+          resources:
+            {{ toYaml .Values.frontend.resources | nindent 10 }}
+        - name: "{{ .Release.Name }}-backend"
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: Always
+          command:
+            - java
+            - -jar
+            - conquery.jar
+            - standalone
+            - /config/config.json
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.backend.javaToolOptions }}
+            - name: CONQUERY_LOGGING_LEVEL
+              value: {{ .Values.backend.logLevel }}
+
+            # hana configuration values
+            {{ if .Values.backend.config.sqlConnectorConfig.enabled }}
+            - name: CONQUERY_SQL_USER
+              value: {{ .Values.backend.database.username }}
+            - name: CONQUERY_SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.database.password.secretName}}
+                  key: {{ .Values.backend.database.password.secretKey }}
+            - name: CONQUERY_SQL_HOST
+              value: {{ .Values.backend.database.host }}
+            - name: CONQUERY_SQL_PORT
+              value: {{ .Values.backend.database.port | quote }}
+            - name: CONQUERY_SQL_DATABASE_NAME
+              value: {{ .Values.backend.database.databaseName }}
+            - name: CONQUERY_SQL_VALIDATE_CERTIFICATE
+              value: {{ .Values.backend.database.validateCertificates | quote }}
+            - name: CONQUERY_SQL_ENCRYPTION_ENABLED
+              value: {{ .Values.backend.database.encryptionEnabled | quote }}
+            - name: CONQUERY_SQL_PRIMARY_COLUMN
+              value: {{ .Values.backend.database.primaryColumn }}
+            {{ end }}
+            - name: TZ
+              value: {{ .Values.timeZone }}
+          ports:
+          {{ toYaml .Values.backend.ports | nindent 10 }}
+          resources:
+          {{ toYaml .Values.backend.resources | nindent 12 }}
+
+          volumeMounts:
+        {{ if .Values.storage.enabled }}
+            - name: storage
+              mountPath: {{ .Values.backend.storagePath }}
+        {{ end }}
+            - name: config
+              mountPath: /config
+      volumes:
+      {{ if .Values.storage.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.name }}
+      {{ end }}
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: config.json
+                path: config.json
+            name: {{ .Release.Name }}-config
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}"
+  labels:
+    app.kubernetes.io/name: "{{ .Release.Name }}"
+spec:
+  selector:
+    app.kubernetes.io/name: "{{ .Release.Name }}"
+  ports:
+    - name: api
+      {{ toYaml .Values.frontend.service.ports | nindent 6 }}
+    - name: api
+      {{- toYaml .Values.backend.service.ports.api | nindent 6 }}
+    - name: admin
+      {{- toYaml .Values.backend.service.ports.admin | nindent 6 }}
+    - name: cluster
+      {{- toYaml .Values.backend.service.ports.cluster | nindent 6 }}
+---
