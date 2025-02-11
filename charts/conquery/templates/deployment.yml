@@ -25,8 +25,6 @@ spec:
           env:
               - name: COMPOSE_PROJECT_NAME
                 value: conquery
-              - name: PORT
-                value: "80"
               - name: REACT_APP_BASENAME
                 value: ""
               - name: REACT_APP_API_URL
