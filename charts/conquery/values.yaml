@@ -116,19 +116,22 @@ backend:
   config:
     # SQL mode
     sqlConnectorConfig:
-      # flag to enable the usage of an external database
+      # flag to enable the usage of an external databases
       enabled: false
-      # dialect of the external database: HANA/Postgres
-      dialect: "HANA"
-      # the username for the database user
-      databaseUsername: "$env:CONQUERY_SQL_USER"
-      # the password for the database user: Use a secret that is provided to the pod via environment variable
-      databasePassword: "$env:CONQUERY_SQL_PASSWORD"
-      # connection string for the database
-      jdbcConnectionUrl: "jdbc:sap://$env:CONQUERY_SQL_HOST:$env:CONQUERY_SQL_PORT/?encrypt=$env:CONQUERY_SQL_ENCRYPTION_ENABLED:-true&validateCertificate=$env:CONQUERY_SQL_VALIDATE_CERTIFICATE:-true"
-      # the primary column has to be configured here
-      # this value has to exist for every table that is used in conquery
-      primaryColumn: "$env:CONQUERY_SQL_PRIMARY_COLUMN:-PID"
+      # Mapping of datasets (key) to database configuration
+      databaseConfigs:
+        example_database:
+          # dialect of the external database: HANA/POSTGRESQL
+          dialect: "HANA"
+          # the username for the database user
+          databaseUsername: "$env:CONQUERY_SQL_USER"
+          # the password for the database user: Use a secret that is provided to the pod via environment variable
+          databasePassword: "$env:CONQUERY_SQL_PASSWORD"
+          # connection string for the database
+          jdbcConnectionUrl: "jdbc:sap://$env:CONQUERY_SQL_HOST:$env:CONQUERY_SQL_PORT/?encrypt=$env:CONQUERY_SQL_ENCRYPTION_ENABLED:-true&validateCertificate=$env:CONQUERY_SQL_VALIDATE_CERTIFICATE:-true"
+          # the primary column has to be configured here
+          # this value has to exist for every table that is used in conquery
+          primaryColumn: "$env:CONQUERY_SQL_PRIMARY_COLUMN:-PID"
 
     api:
       # Allow CORS requests to the backend e.g. if there is no reverse-proxy in front of backend and frontend
