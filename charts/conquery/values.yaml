@@ -5,7 +5,6 @@ timeZone: Europe/Berlin
 
 # settings for the frontend service of conquery
 frontend:
-
   # replica count of the frontend
   replicaCount: 1
 
@@ -51,7 +50,6 @@ frontend:
 
 # settings for the backend service of conquery
 backend:
-
   # replica count of the backend
   # for now this should be 1, because the backend is not stateless
   # there is a sharding feature in conquery, but it is not used yet
@@ -158,11 +156,11 @@ backend:
 
     authenticationRealms:
       - type: "JWT_PKCE_REALM"
-      
+
         # the well known endpoint of the keycloak realm
         # the backend uses this to get the configuration of the keycloak realm
         wellKnownEndpoint: "https://auth.example.org/realms/example-realm/.well-known/openid-configuration"
-        
+
         # the public client that represents the frontend in keycloak
         client: *oauth_client
 
@@ -188,8 +186,6 @@ backend:
     # define additional plugins e.g. form backends
     plugins: []
 
-    
-
   # path where the conquery data is stored
   # this is for the internal database as well as the metadata that is stored by conquery
   # this has to be configured even when an external database is used
@@ -201,7 +197,7 @@ storage:
   name: conquery-storage
   accessModes:
     - ReadWriteOnce
-    
+
   volumeMode: Filesystem
   size: 4Gi
   storageClass: ""
