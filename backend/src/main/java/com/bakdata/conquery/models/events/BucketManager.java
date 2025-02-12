@@ -210,6 +210,10 @@ public class BucketManager {
 		}
 
 
+		if (job.isEmpty()){
+			return;
+		}
+
 		jobManager.addSlowJob(job);
 	}
 
@@ -381,7 +385,14 @@ public class BucketManager {
 	}
 
 	public void removeConceptTreeCacheByImport(ConceptId concept, ImportId imp) {
-		treeCaches.get(concept).remove(imp);
+		Map<ImportId, ConceptTreeCache> treeCache = treeCaches.get(concept);
+
+		if(treeCache == null) {
+			// Not all concepts have a cache: only concepts with column-based connectors
+			return;
+		}
+
+		treeCache.remove(imp);
 	}
 
 	public void removeConceptTreeCacheByConcept(ConceptId concept) {

@@ -27,26 +27,21 @@ import lombok.ToString;
 @CPSType(id = "FORWARD_TO_WORKER", base = NetworkMessage.class)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@ToString(of = {"workerId", "text"}, callSuper = true)
+@ToString(of = {"workerId", "message"}, callSuper = true)
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	private final WorkerId workerId;
 	private final WorkerMessage message;
-	// We cache these on the sender side.
+
 	@Getter(onMethod_ = @JsonIgnore(false))
 	private final boolean slowMessage;
-	private final String text;
+
 	@JsonIgnore
 	@Setter
 	private ProgressReporter progressReporter;
 
 	public static ForwardToWorker create(WorkerId worker, WorkerMessage message) {
-		return new ForwardToWorker(
-				worker,
-				message,
-				true,
-				message.toString()
-		);
+		return new ForwardToWorker(worker, message, true);
 	}
 
 	@Override
@@ -57,7 +52,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 
 		// Jobception: this is to ensure that no subsequent message is deserialized before one message is processed
-		worker.getJobManager().addSlowJob(new SimpleJob("Process %s".formatted(getText()), () -> {
+		worker.getJobManager().addSlowJob(new SimpleJob("Process %s".formatted(message), () -> {
 
 			message.setProgressReporter(progressReporter);
 			message.react(worker);
