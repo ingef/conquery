@@ -6,12 +6,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -27,8 +25,6 @@ public abstract class Query implements QueryDescription {
 
 	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 
-	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
-
 	@Override
 	public abstract void resolve(QueryResolveContext context);
 
@@ -38,12 +34,14 @@ public abstract class Query implements QueryDescription {
 		return set;
 	}
 
+	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+
 	@JsonIgnore
 	public abstract List<ResultInfo> getResultInfos();
 
 	@Override
-	public ManagedQuery toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedQuery toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	/**
@@ -59,7 +57,6 @@ public abstract class Query implements QueryDescription {
 	 *
 	 * @param results
 	 * @return the number of results in the result List.
-	 * @see ManagedExecution#finish(ExecutionState, ExecutionManager)  for how it's used.
 	 */
 	public long countResults(Stream<EntityResult> results) {
 		return results.map(EntityResult::listResultLines)

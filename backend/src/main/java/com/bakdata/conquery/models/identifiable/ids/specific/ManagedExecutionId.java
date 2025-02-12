@@ -7,10 +7,10 @@ import java.util.UUID;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -23,7 +23,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, Authorized {
+public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, Owned {
 
 	private final DatasetId dataset;
 	private final UUID execution;
@@ -50,7 +50,12 @@ public class ManagedExecutionId extends Id<ManagedExecution> implements MetaId, 
 		return ExecutionPermission.onInstance(abilities, this);
 	}
 
-	public static enum Parser implements IdUtil.Parser<ManagedExecutionId> {
+	@Override
+	public UserId getOwner() {
+		return resolve().getOwner();
+	}
+
+	public enum Parser implements IdUtil.Parser<ManagedExecutionId> {
 		INSTANCE;
 
 		@Override

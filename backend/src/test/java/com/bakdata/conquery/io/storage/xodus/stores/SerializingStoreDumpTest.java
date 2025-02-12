@@ -38,16 +38,15 @@ public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	// Test data
+	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null, null);
+	private final ConceptQuery cQuery = new ConceptQuery(
+			new CQReusedQuery(managedQuery.getId()));
+	private final User user = new User("username", "userlabel", STORAGE);
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
 	private ObjectMapper objectMapper;
-
-	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null);
-	private final ConceptQuery cQuery = new ConceptQuery(
-			new CQReusedQuery(managedQuery.getId()));
-	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach
 	public void init() {
@@ -61,21 +60,6 @@ public class SerializingStoreDumpTest {
 	public void destroy() throws IOException {
 		env.close();
 		FileUtils.deleteDirectory(tmpDir);
-	}
-
-	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
-		return new SerializingStore<>(
-				new XodusStore(environment, storeId.getName(), (e) -> {
-				}, (e) -> {
-				}),
-				validator,
-				objectMapper,
-				storeId.getKeyType(),
-				storeId.getValueType(),
-				config.isValidateOnWrite(),
-				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
-		);
 	}
 
 	/**
@@ -136,6 +120,21 @@ public class SerializingStoreDumpTest {
 
 
 		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
+	}
+
+	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
+		return new SerializingStore<>(
+				new XodusStore(environment, storeId.getName(), (e) -> {
+				}, (e) -> {
+				}),
+				validator,
+				objectMapper,
+				storeId.getKeyType(),
+				storeId.getValueType(),
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
+		);
 	}
 
 	/**

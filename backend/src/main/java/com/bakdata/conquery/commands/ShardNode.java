@@ -12,6 +12,7 @@ import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.tasks.LoadStorageTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
@@ -60,6 +61,8 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 		lifecycle.manage(workers);
 
+		environment.admin().addTask(new LoadStorageTask(getName(), null, workers));
+
 		clusterConnection =
 				new ClusterConnectionShard(config, environment, workers, internalMapperFactory);
 
@@ -74,7 +77,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), environment));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), config.getStorage().isLoadStoresOnStart()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

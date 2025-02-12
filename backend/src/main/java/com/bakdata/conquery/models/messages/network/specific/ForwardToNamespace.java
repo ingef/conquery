@@ -15,10 +15,12 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @CPSType(id = "FORWARD_TO_NAMESPACE", base = NetworkMessage.class)
 @RequiredArgsConstructor
 @Getter
+@ToString(callSuper = true)
 public class ForwardToNamespace extends MessageToManagerNode implements SlowMessage {
 
 	private final DatasetId datasetId;
@@ -36,11 +38,6 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 		if (message instanceof ReactionMessage reactionMessage) {
 			ns.getWorkerHandler().handleReactionMessage(reactionMessage);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return message.toString() + " for dataset " + datasetId;
 	}
 
 	@Override

@@ -55,6 +55,7 @@ export const ConfirmableTooltip = ({
           small
           bgHover
           red={red}
+          data-test-id="confirm"
         >
           {confirmationText || t("common.confirm")}
         </SxIconButton>
