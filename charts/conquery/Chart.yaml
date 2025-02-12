@@ -1,0 +1,7 @@
+apiVersion: v2
+name: conquery
+description: A Helm chart for deploying Conquery
+type: application
+version: 0.1.0
+appVersion: "latest"
+icon: https://raw.githubusercontent.com/ingef/conquery/refs/heads/master/frontend/public/favicon.png

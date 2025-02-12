@@ -1,0 +1,203 @@
+imagePullSecrets:
+  - name: artifact-registry
+
+timeZone: Europe/Berlin
+
+# settings for the frontend service of conquery
+frontend:
+  # replica count of the frontend
+  replicaCount: 1
+
+  # which image should be used for the frontend
+  image:
+    repository: ghcr.io/ingef/conquery-frontend
+    tag: "develop"
+
+  # resources that are allocated for the frontend
+  # these values can be relatively low, it is just a nginx server
+  resources:
+    limits:
+      cpu: 200m
+      memory: 64Mi
+    requests:
+      cpu: 50m
+      memory: 2Mi
+
+  # service configuration for the frontend
+  service:
+    ports:
+      ui:
+        port: 8000
+        targetPort: 80
+        protocol: TCP
+
+  # some specific configuration values for the frontend
+  # see: https://github.com/ingef/conquery/blob/develop/frontend/.env.example
+  lang: de
+  # defines if a local login should be presented (for backend basic-auth-realm only)
+  disableLogin: true
+  # use external authentication (oauth/openid idp provider)
+  idp:
+    enabled: true
+    clientId: &oauth_client "conquery-example-client"
+    realm: "example-realm"
+    # Redirection endpoint for authentication (must be aligned with the backend configuration at the moment)
+    authEndpoint: "https://auth.example.org/auth/"
+
+  # this values should be modified based on the environment
+  # this is the url that is used by the frontend to access the api of th backend
+  publicBaseUrl: ""
+
+# settings for the backend service of conquery
+backend:
+  # replica count of the backend
+  # for now this should be 1, because the backend is not stateless
+  # there is a sharding feature in conquery, but it is not used yet
+  replicaCount: 1
+
+  # which image should be used for the backend
+  image:
+    repository: ghcr.io/ingef/conquery-backend
+    tag: "develop"
+
+  # JAVA_TOOL_OPTIONS for the JVM that executes conquery
+  javaToolOptions: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED -XX:MaxRAMPercentage=90 -XX:+UseG1GC -Dcq.intern=yes"
+
+  # port configuration for the backend
+  ports:
+    # port for the cluster communication
+    # this is used if the sharding feature of conquery is enabled / used
+    - name: cluster
+      containerPort: 8082
+
+    # port for the admin interface and api
+    - name: admin
+      containerPort: 8081
+
+    # port for the main api
+    # the frontend of conquery communicates with this port
+    - name: api
+      containerPort: 8080
+
+  # resources that are allocated for the backend
+  # if a database connection is used, these values can be relatively low
+  # if not the conquery internal database is used, then the values should be increased
+  resources:
+    limits:
+      cpu: 3
+      memory: 5500M
+    requests:
+      cpu: 1
+      memory: 5500M
+
+  # service configuration for the backend
+  # ports are explained in the ports section of the backend
+  service:
+    ports:
+      api:
+        port: 8280
+        targetPort: 8080
+        protocol: TCP
+
+      admin:
+        port: 8281
+        targetPort: 8081
+        protocol: TCP
+
+      # Used when not in SQL mode
+      cluster:
+        port: 8282
+        targetPort: 8082
+        protocol: TCP
+
+  # Configuration object that becomes the actual config.json for conquery manager (and shard) instances
+  config:
+    # SQL mode
+    sqlConnectorConfig:
+      # flag to enable the usage of an external databases
+      enabled: false
+      # Mapping of datasets (key) to database configuration
+      databaseConfigs:
+        example_database:
+          # dialect of the external database: HANA/POSTGRESQL
+          dialect: "HANA"
+          # the username for the database user
+          databaseUsername: "$env:CONQUERY_SQL_USER"
+          # the password for the database user: Use a secret that is provided to the pod via environment variable
+          databasePassword: "$env:CONQUERY_SQL_PASSWORD"
+          # connection string for the database
+          jdbcConnectionUrl: "jdbc:sap://$env:CONQUERY_SQL_HOST:$env:CONQUERY_SQL_PORT/?encrypt=$env:CONQUERY_SQL_ENCRYPTION_ENABLED:-true&validateCertificate=$env:CONQUERY_SQL_VALIDATE_CERTIFICATE:-true"
+          # the primary column has to be configured here
+          # this value has to exist for every table that is used in conquery
+          primaryColumn: "$env:CONQUERY_SQL_PRIMARY_COLUMN:-PID"
+
+    api:
+      # Allow CORS requests to the backend e.g. if there is no reverse-proxy in front of backend and frontend
+      allowCORSRequests: true
+
+    # set logging level for root logger and individual package/class loggers
+    logging:
+      level: "INFO"
+      loggers:
+        "com.bakdata": "INFO"
+        "io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper": "DEBUG"
+
+    # Configuration that is passed to the frontend
+    frontend:
+      # Link to a help manual
+      manualUrl: "https://example.org"
+      # Address that is prefixed by 'mailto:'
+      contactEmail: "test@example.org"
+
+    # Configuration for the standalone mode
+    standalone:
+      # Number of shard nodes to spin up
+      numberOfShardNodes: 1
+
+    authenticationRealms:
+      - type: "JWT_PKCE_REALM"
+
+        # the well known endpoint of the keycloak realm
+        # the backend uses this to get the configuration of the keycloak realm
+        wellKnownEndpoint: "https://auth.example.org/realms/example-realm/.well-known/openid-configuration"
+
+        # the public client that represents the frontend in keycloak
+        client: *oauth_client
+
+    authorizationRealms:
+      type: "DEFAULT"
+      overviewScope:
+        - "datasets"
+        - "forms"
+        - "admin"
+        - "*"
+      initialRoles:
+        - name: "admin"
+          label: "Admin"
+          permissions:
+            - "admin"
+        - name: "user"
+          label: "User"
+          permissions:
+            - "datasets:*"
+            - "concepts:*"
+            - "forms:*"
+
+    # define additional plugins e.g. form backends
+    plugins: []
+
+  # path where the conquery data is stored
+  # this is for the internal database as well as the metadata that is stored by conquery
+  # this has to be configured even when an external database is used
+  storagePath: /app/storage
+
+# settings for the persistent storage of the conquery backend
+storage:
+  enabled: true
+  name: conquery-storage
+  accessModes:
+    - ReadWriteOnce
+
+  volumeMode: Filesystem
+  size: 4Gi
+  storageClass: ""
