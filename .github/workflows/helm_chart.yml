@@ -1,4 +1,4 @@
-name: Helm Lint and Template Validation
+name: Helm
 
 on:
   pull_request:
