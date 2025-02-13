@@ -14,6 +14,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Set electron language to german so request use "accept-language: de" header
+      ELECTRON_EXTRA_LAUNCH_ARGS: --lang=de
     timeout-minutes: 10
     steps:
       - name: Cache local Maven repository

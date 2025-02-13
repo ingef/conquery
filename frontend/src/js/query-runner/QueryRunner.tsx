@@ -67,7 +67,7 @@ const QueryRunner = ({
   );
 
   return (
-    <Root>
+    <Root data-test-id="query-runner">
       <Left>
         <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
