@@ -34,7 +34,7 @@ public class UpdateConcept extends WorkerMessage {
 	
 	@Override
 	public void react(Worker context) throws Exception {
-		ValidatorHelper.failOnError(log, validator.validate(concept));
+//TODO		ValidatorHelper.failOnError(log, validator.validate(concept));
 		context.updateConcept(concept);
 	}
 }

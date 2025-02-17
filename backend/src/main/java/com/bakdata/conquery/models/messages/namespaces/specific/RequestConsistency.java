@@ -11,13 +11,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="REQUEST_CONSISTENCY", base= NamespacedMessage.class)
-@Setter
-@Getter
+@Data
 @Slf4j
 public class RequestConsistency extends WorkerMessage {
 

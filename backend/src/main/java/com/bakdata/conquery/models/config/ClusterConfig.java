@@ -9,19 +9,19 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.ChunkingFilter;
-import com.bakdata.conquery.io.mina.JacksonProtocolDecoder;
-import com.bakdata.conquery.io.mina.JacksonProtocolEncoder;
 import com.bakdata.conquery.io.mina.MdcFilter;
-import com.bakdata.conquery.models.messages.network.NetworkMessage;
+import com.bakdata.conquery.io.mina.PipedJacksonProtocolFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.mina.core.filterchain.IoFilter;
 import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
@@ -40,7 +40,7 @@ public class ClusterConfig extends Configuration {
 	@Min(1)
 	private int entityBucketSize = 1000;
 
-	private Duration idleTimeOut =  Duration.minutes(5);
+	private Duration idleTimeOut = Duration.minutes(5);
 	private Duration heartbeatTimeout = Duration.minutes(1);
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
@@ -64,14 +64,14 @@ public class ClusterConfig extends Configuration {
 
 	/**
 	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
-	 *
+	 * <p>
 	 * Number of values to batch for chunking of unique column-values. Lower numbers reduce relative performance but reduce memory demand, avoiding OOM issues.
 	 */
 	private int columnValuesPerChunk = 1000;
 
 	/**
 	 * @see com.bakdata.conquery.io.mina.NetworkSession
-	 *
+	 * <p>
 	 * Maximum number of messages allowed to wait for writing before writer-threads are blocked.
 	 */
 	private int networkSessionMaxQueueLength = 5;
@@ -86,17 +86,13 @@ public class ClusterConfig extends Configuration {
 
 	@JsonIgnore
 	public NioSocketConnector getClusterConnector(ObjectMapper om, IoHandler ioHandler, String mdcLocation) {
+		om = om.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
-		JacksonProtocolEncoder encoder = new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class));
-		encoder.setMaxObjectSize(maxIoBufferSizeBytes);
-		encoder.setInitialBufferCapacityBytes(initialIoBufferSizeBytes);
 
-		ProtocolCodecFilter codecFilter = new ProtocolCodecFilter(
-				encoder,
-				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
-		);
+		IoFilter codecFilter = new PipedJacksonProtocolFilter("shard_" + mdcLocation, om);
+
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		if (mina.getSendBufferSize() > 0) {
 			connector.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
@@ -111,17 +107,11 @@ public class ClusterConfig extends Configuration {
 
 	@JsonIgnore
 	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocation) throws IOException {
+		om = om.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE).disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+
 		NioSocketAcceptor acceptor = new NioSocketAcceptor();
 
-
-		JacksonProtocolEncoder encoder = new JacksonProtocolEncoder(om.writerFor(NetworkMessage.class));
-		encoder.setMaxObjectSize(maxIoBufferSizeBytes);
-		encoder.setInitialBufferCapacityBytes(initialIoBufferSizeBytes);
-
-		ProtocolCodecFilter codecFilter = new ProtocolCodecFilter(
-				encoder,
-				new JacksonProtocolDecoder(om.readerFor(NetworkMessage.class))
-		);
+		IoFilter codecFilter = new PipedJacksonProtocolFilter("manager" + mdcLocation, om);
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		if (mina.getSendBufferSize() > 0) {

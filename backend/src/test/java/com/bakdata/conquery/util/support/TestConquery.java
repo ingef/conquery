@@ -131,7 +131,12 @@ public class TestConquery {
 
 		ClusterManager manager = (ClusterManager) standaloneCommand.getManager();
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
-		assertThat(clusterState.getShardNodes()).hasSize(2);
+
+		await()
+			   .atMost(60, TimeUnit.SECONDS)
+			   .until(() -> clusterState.getShardNodes().size() == 2);
+
+		//		assertThat().hasSize(2);
 
 		await().atMost(10, TimeUnit.SECONDS)
 			   .until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());

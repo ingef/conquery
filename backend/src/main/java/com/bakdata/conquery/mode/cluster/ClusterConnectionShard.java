@@ -64,8 +64,9 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
-			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
 			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
+
+			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
 
 			// Authenticate with ManagerNode
 			context.send(new AddShardNode());
