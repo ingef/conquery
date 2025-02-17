@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.cluster;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
@@ -9,15 +11,17 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import jakarta.validation.Validator;
 
 public record InternalMapperFactory(ConqueryConfig config, Validator validator) {
 
-	public ObjectMapper createShardCommunicationMapper() {
-		return createInternalObjectMapper(View.InternalCommunication.class);
+	public ObjectMapper createShardCommunicationMapper(ShardWorkers workers) {
+		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
+		workers.injectInto(objectMapper);
+		return objectMapper;
 	}
 
 	/**
