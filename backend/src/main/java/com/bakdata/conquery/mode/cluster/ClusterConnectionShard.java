@@ -1,6 +1,8 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -178,6 +180,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		log.error("Exception caught", cause);
 	}
 
+	private final List<Object> received = new ArrayList<>();
+
 	@Override
 	public void messageReceived(IoSession session, Object message) {
 		if (!(message instanceof MessageToShardNode)) {
@@ -185,8 +189,10 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 			return;
 		}
 
-		log.trace("{} received {} from {}", environment.getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		log.info("{} received {} from {}", environment.getName(), message, session.getRemoteAddress());
 		ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
+
+
 
 		if (message instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());

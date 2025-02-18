@@ -137,9 +137,9 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
 
-			sendBucket(bucket, responsibleWorker).addListener((f) ->  {
-				if(((WriteFuture)f).isWritten()) {
-					log.trace("Sent Bucket {}", bucketId);
+			sendBucket(bucket, responsibleWorker).addListener((f) -> {
+				if (((WriteFuture) f).isWritten()) {
+					log.info("Sent Bucket {}", bucketId);
 					return;
 				}
 				log.warn("Failed to send Bucket {}", bucketId);
@@ -173,7 +173,7 @@ public class ClusterImportHandler implements ImportHandler {
 		responsibleWorker.awaitFreeJobQueue();
 
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
-		return responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
+		return responsibleWorker.send(new ImportBucket(bucket));
 
 	}
 

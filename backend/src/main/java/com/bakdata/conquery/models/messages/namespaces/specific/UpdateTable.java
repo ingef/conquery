@@ -6,17 +6,16 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_TABLE", base=NamespacedMessage.class) @Slf4j
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@Data
 public class UpdateTable extends WorkerMessage {
 
-	private Table table;
+	private final Table table;
 
 	@Override
 	public void react(Worker context) throws Exception {

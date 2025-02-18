@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
@@ -29,9 +28,6 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -151,7 +147,7 @@ public class IntegrationUtils {
 		final URI queryStatusURI = getQueryStatusURI(conquery, id);
 		// We try at most 5 times, queryStatus waits for 10s, we therefore don't need to timeout here.
 		// Query getQueryStatus until it is no longer running.
-		for (int trial = 0; trial < 5; trial++) {
+		for (int trial = 0; trial < 50; trial++) {
 			log.debug("Trying to get Query result");
 
 			final JsonNode execStatusRaw =

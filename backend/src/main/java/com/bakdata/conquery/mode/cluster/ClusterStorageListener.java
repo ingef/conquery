@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
@@ -51,14 +50,12 @@ class ClusterStorageListener implements StorageListener {
 	@Override
 	public void onAddConcept(Concept<?> concept) {
 		WorkerHandler handler = datasetRegistry.get(concept.getDataset()).getWorkerHandler();
-		SimpleJob simpleJob = new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> handler.sendToAll(new UpdateConcept(concept)));
-		jobManager.addSlowJob(simpleJob);
+		handler.sendToAll(new UpdateConcept(concept));
 	}
 
 	@Override
 	public void onDeleteConcept(ConceptId concept) {
 		WorkerHandler handler = datasetRegistry.get(concept.getDataset()).getWorkerHandler();
-		SimpleJob simpleJob = new SimpleJob("sendToAll: remove " + concept, () -> handler.sendToAll(new RemoveConcept(concept)));
-		jobManager.addSlowJob(simpleJob);
+		handler.sendToAll(new RemoveConcept(concept));
 	}
 }

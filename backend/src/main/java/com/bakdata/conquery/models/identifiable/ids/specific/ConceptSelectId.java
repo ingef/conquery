@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -36,7 +37,7 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 
 	@Override
 	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getConcept(concept).getSelectByName(getSelect());
+		return concept.<Concept>resolve(storage).getSelectByName(getSelect());
 	}
 
 	@Override

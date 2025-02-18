@@ -146,8 +146,4 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
-
-	// Utilities
-
-
 }

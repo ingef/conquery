@@ -37,16 +37,17 @@ public interface NamespacedId {
 
 	/**
 	 * Almost identical to {@link NamespacedId#get(NamespacedStorage)}, but throws an {@link IdResolvingException} if no object could be resolved.
+	 *
 	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
 	 */
 	@NotNull
-	default NamespacedIdentifiable<?> resolve(NamespacedStorage storage) {
+	default <T extends NamespacedIdentifiable<?>> T resolve(NamespacedStorage storage) {
 		try {
 			NamespacedIdentifiable<?> o = get(storage);
 			if (o == null) {
 				throw newIdResolveException();
 			}
-			return o;
+			return (T) o;
 		}
 		catch (IdResolvingException e) {
 			throw e;
@@ -58,6 +59,7 @@ public interface NamespacedId {
 
 	/**
 	 * Return the object identified by the given id from the given storage.
+	 *
 	 * @return the object or null if no object could be resolved. If the id type is not supported
 	 * throws a IllegalArgumentException
 	 */

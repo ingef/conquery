@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id = "IMPORT_BIT", base = NamespacedMessage.class)
@@ -16,21 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
+@ToString
 public class ImportBucket extends WorkerMessage {
-
-	private final String name;
 
 	private final Bucket bucket;
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.debug("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
+		log.info("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
 
 		context.addBucket(bucket);
-	}
-
-	@Override
-	public String toString() {
-		return String.format("Importing Bucket[%s]", getName());
 	}
 }

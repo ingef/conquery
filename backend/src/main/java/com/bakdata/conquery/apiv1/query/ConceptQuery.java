@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -19,11 +21,10 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -31,12 +32,15 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
 @NoArgsConstructor
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class ConceptQuery extends Query {
 
+	@ToString.Include
 	@Valid
 	@NotNull
 	protected CQElement root;
 
+	@ToString.Include
 	@NotNull
 	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 

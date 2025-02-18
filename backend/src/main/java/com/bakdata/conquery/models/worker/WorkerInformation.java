@@ -55,6 +55,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public MessageToShardNode transform(WorkerMessage message) {
-		return ForwardToWorker.create(getId(), message);
+		return ForwardToWorker.create(getId(), message, communicationWriter);
 	}
 }

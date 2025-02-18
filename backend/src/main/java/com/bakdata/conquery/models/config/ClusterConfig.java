@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.mina.ChunkingFilter;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.PipedJacksonProtocolFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -94,9 +93,9 @@ public class ClusterConfig extends Configuration {
 		IoFilter codecFilter = new PipedJacksonProtocolFilter("shard_" + mdcLocation, om);
 
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
-		if (mina.getSendBufferSize() > 0) {
-			connector.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
-		}
+//		if (mina.getSendBufferSize() > 0) {
+//			connector.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
+//		}
 		connector.getFilterChain().addLast("codec", codecFilter);
 
 		connector.setHandler(ioHandler);
@@ -114,9 +113,9 @@ public class ClusterConfig extends Configuration {
 		IoFilter codecFilter = new PipedJacksonProtocolFilter("manager" + mdcLocation, om);
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
-		if (mina.getSendBufferSize() > 0) {
-			acceptor.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
-		}
+//		if (mina.getSendBufferSize() > 0) {
+//			acceptor.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
+//		}
 		acceptor.getFilterChain().addLast("codec", codecFilter);
 
 		acceptor.setHandler(ioHandler);

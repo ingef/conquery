@@ -10,9 +10,11 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.google.common.base.Joiner;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+@Slf4j
 @UtilityClass
 public final class IdUtil {
 
@@ -21,7 +23,12 @@ public final class IdUtil {
 	private static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 
 	public static <T extends Id<?>> Parser<T> createParser(Class<T> idClass) {
-		return (Parser<T>) idClass.getDeclaredClasses()[0].getEnumConstants()[0];
+		try {
+			return (Parser<T>) idClass.getDeclaredClasses()[0].getEnumConstants()[0];
+		}catch (Exception e) {
+			log.error("Failed to resolved parser for {}", idClass.getSimpleName());
+			throw e;
+		}
 	}
 
 	public static <T extends Id<?>> Class<T> findIdClass(Class<?> cl) {

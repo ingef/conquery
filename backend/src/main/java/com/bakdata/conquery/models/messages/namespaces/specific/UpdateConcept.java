@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
@@ -10,8 +12,6 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +35,7 @@ public class UpdateConcept extends WorkerMessage {
 	@Override
 	public void react(Worker context) throws Exception {
 //TODO		ValidatorHelper.failOnError(log, validator.validate(concept));
+		log.info("Received Concept {} on {}", concept.getId(), context.getInfo().getId());
 		context.updateConcept(concept);
 	}
 }

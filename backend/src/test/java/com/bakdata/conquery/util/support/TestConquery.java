@@ -1,6 +1,5 @@
 package com.bakdata.conquery.util.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -172,7 +171,7 @@ public class TestConquery {
 		long started = System.nanoTime();
 		for (int i = 0; i < 5; i++) {
 			do {
-				Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
+				Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
 
 				if (!isBusy()) {
 					break;

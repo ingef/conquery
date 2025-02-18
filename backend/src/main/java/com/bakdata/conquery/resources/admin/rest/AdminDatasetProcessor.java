@@ -196,7 +196,10 @@ public class AdminDatasetProcessor {
 	 * Add the concept to the dataset if it does not exist yet
 	 */
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
+		log.info("Received Concept {} on {}", concept, dataset);
+
 		concept.setDataset(dataset.getId());
+
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.metrics;
 
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.BlockingDeque;
 
 import com.bakdata.conquery.io.storage.ConqueryStorage;
 import com.bakdata.conquery.models.jobs.Job;
@@ -20,7 +20,7 @@ public class JobMetrics {
 		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(JOBS, EXECUTION_TIME, ConqueryStorage.class.getSimpleName())).time();
 	}
 
-	public static void createJobQueueGauge(String name, LinkedBlockingDeque<Job> jobs) {
+	public static void createJobQueueGauge(String name, BlockingDeque<Job> jobs) {
 		SharedMetricRegistries.getDefault().gauge(MetricRegistry.name(JOBS, QUEUE_SIZE, name), () -> jobs::size);
 	}
 

@@ -134,35 +134,24 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		imports.remove(id);
 	}
 
-	// Datasets
 
 	@Override
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
+
 	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
 		return (VALUE) id.get(this);
 	}
-@Override
+
+	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this).
-					 add(NamespacedStorage.class, this);
-	}@Override
+		return values.add(NamespacedStorageProvider.class, this).add(NamespacedStorage.class, this);
+	}
+
+	@Override
 	public Dataset getDataset() {
 		return dataset.get();
-	}
-
-
-
-	// Tables
-
-		@Override
-	public Table getTable(TableId tableId) {
-		return getTableFromStorage(tableId);
-	}
-
-	private Table getTableFromStorage(TableId tableId) {
-		return tables.get(tableId);
 	}
 
 	@Override
@@ -170,6 +159,14 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
 	}
 
+	@Override
+	public Table getTable(TableId tableId) {
+		return getTableFromStorage(tableId);
+	}
+
+	private Table getTableFromStorage(TableId tableId) {
+		return tables.get(tableId);
+	}
 
 	@Override
 	public void addTable(Table table) {
@@ -181,7 +178,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		tables.remove(table);
 	}
 
-	// SecondaryId
+	@Override
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
+	}
 
 	@Override
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
@@ -190,11 +190,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 
 	private SecondaryIdDescription getSecondaryIdFromStorage(SecondaryIdDescriptionId descriptionId) {
 		return secondaryIds.get(descriptionId);
-	}
-
-	@Override
-	public Stream<SecondaryIdDescription> getSecondaryIds() {
-		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
 	}
 
 	@Override
@@ -207,7 +202,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		secondaryIds.remove(secondaryIdDescriptionId);
 	}
 
-	// Concepts
+	@Override
+	public Stream<Concept<?>> getAllConcepts() {
+		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
+	}
 
 	@Override
 	public Concept<?> getConcept(ConceptId id) {
@@ -216,11 +214,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 
 	private Concept<?> getConceptFromStorage(ConceptId id) {
 		return concepts.get(id);
-	}
-
-	@Override
-	public Stream<Concept<?>> getAllConcepts() {
-		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
 	}
 
 	@Override
@@ -242,8 +235,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	// Utility
-
-
 
 
 }

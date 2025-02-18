@@ -17,9 +17,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
+@Slf4j
 public abstract class Id<TYPE> {
 
 	/**
@@ -101,6 +103,7 @@ public abstract class Id<TYPE> {
 	}
 
 	public IdResolvingException newIdResolveException() {
+		log.warn("Unable to resolve {}", this, new Exception("MARKER"));
 		return new IdResolvingException(this);
 	}
 
