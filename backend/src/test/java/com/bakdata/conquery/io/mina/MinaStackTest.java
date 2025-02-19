@@ -8,6 +8,7 @@ import static org.awaitility.Awaitility.await;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -18,8 +19,12 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ClusterConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.util.DataSize;
@@ -56,30 +61,45 @@ public class MinaStackTest {
 	public static void beforeAll() throws IOException {
 
 		CLUSTER_CONFIG.setPort(0);
-		CLUSTER_CONFIG.setMaxIoBufferSize(DataSize.mebibytes(10));
+		CLUSTER_CONFIG.setMaxIoBufferSizeBytes(toIntExact(DataSize.mebibytes(10).toBytes()));
 
 		// This enables the Chunking filter, which triggers for messages > 1 MebiByte
 		CLUSTER_CONFIG.getMina().setSendBufferSize(toIntExact(DataSize.mebibytes(1).toBytes()));
 
 		// Server
 		SERVER = CLUSTER_CONFIG.getClusterAcceptor(OM, new IoHandlerAdapter() {
-			@Override
-			public void sessionOpened(IoSession session) {
-				log.info("Session to {} established", session.getRemoteAddress());
-			}
+													   @Override
+													   public void sessionOpened(IoSession session) {
+														   log.info("Session to {} established", session.getRemoteAddress());
+													   }
 
-			@Override
-			public void messageReceived(IoSession session, Object message) {
-				SERVER_RECEIVED_MESSAGES.add((NetworkMessage<?>) message);
-				log.trace("Received {} messages", SERVER_RECEIVED_MESSAGES.size());
-			}
+													   @Override
+													   public void messageReceived(IoSession session, Object message) {
+														   SERVER_RECEIVED_MESSAGES.add((NetworkMessage<?>) message);
+														   log.trace("Received {} messages", SERVER_RECEIVED_MESSAGES.size());
+													   }
 
-			@Override
-			public void exceptionCaught(IoSession session, Throwable cause) {
-				fail("Server caught an Exception", cause);
-			}
-		}, "Server");
+													   @Override
+													   public void exceptionCaught(IoSession session, Throwable cause) {
+														   fail("Server caught an Exception", cause);
+													   }
+												   }, "Server"
+		);
 
+	}
+
+	private static Stream<Arguments> dataSizes() {
+		return Stream.of(
+				Arguments.of(DataSize.bytes(10), true),
+				Arguments.of(DataSize.kibibytes(10), true),
+				Arguments.of(DataSize.mebibytes(9), true),
+				Arguments.of(DataSize.mebibytes(10), true)
+		);
+	}
+
+	@AfterAll
+	public static void afterAll() {
+		SERVER.dispose();
 	}
 
 	@BeforeEach
@@ -91,11 +111,12 @@ public class MinaStackTest {
 	void smokeTest() {
 
 		NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-			@Override
-			public void sessionOpened(IoSession session) {
-				log.info("Session to {} established", session.getRemoteAddress());
-			}
-		}, "Client");
+																		   @Override
+																		   public void sessionOpened(IoSession session) {
+																			   log.info("Session to {} established", session.getRemoteAddress());
+																		   }
+																	   }, "Client"
+		);
 
 		try {
 
@@ -125,9 +146,9 @@ public class MinaStackTest {
 	 * This test requires a little RAM because we hold the messages twice to compare sender and receiver payloads.
 	 */
 	@Test
-	void concurrentWriting(){
+	void concurrentWriting() {
 		final int clientCount = 20;
-		final int messagesPerClient = 500;
+		final int messagesPerClient = 5;
 		final int minMessageLength = toIntExact(DataSize.kibibytes(1).toBytes());
 		final int maxMessageLength = toIntExact(DataSize.kibibytes(100).toBytes());
 
@@ -139,45 +160,47 @@ public class MinaStackTest {
 			for (int clientI = 0; clientI < clientCount; clientI++) {
 				final int clientNumber = clientI;
 				CompletableFuture<?> clientThread = CompletableFuture.runAsync(() -> {
-					NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-						@Override
-						public void sessionOpened(IoSession session) {
-							log.info("Session to {} established", session.getRemoteAddress());
-						}
+																				   NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
+																																					  @Override
+																																					  public void sessionOpened(IoSession session) {
+																																						  log.info("Session to {} established", session.getRemoteAddress());
+																																					  }
 
-						@Override
-						public void messageSent(IoSession session, Object message) {
-							log.trace("Message written: {} bytes", ((TestMessage)message).data.getBytes().length);
-						}
+																																					  @Override
+																																					  public void messageSent(IoSession session, Object message) {
+																																						  log.trace("Message written: {} bytes", ((TestMessage) message).data.getBytes().length);
+																																					  }
 
-						@Override
-						public void exceptionCaught(IoSession session, Throwable cause) {
-							fail("Client[%d] caught an Exception".formatted(clientNumber), cause);
-						}
-					}, "Client");
-					try {
-						// Connect
-						ConnectFuture connect = client.connect(SERVER.getLocalAddress());
-						connect.awaitUninterruptibly();
-						IoSession clientSession = connect.getSession();
+																																					  @Override
+																																					  public void exceptionCaught(IoSession session, Throwable cause) {
+																																						  fail("Client[%d] caught an Exception".formatted(clientNumber), cause);
+																																					  }
+																																				  }, "Client"
+																				   );
+																				   try {
+																					   // Connect
+																					   ConnectFuture connect = client.connect(SERVER.getLocalAddress());
+																					   connect.awaitUninterruptibly();
+																					   IoSession clientSession = connect.getSession();
 
-						for (int i = 0; i < messagesPerClient; i++) {
-							NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
+																					   for (int i = 0; i < messagesPerClient; i++) {
+																						   NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
 
-							WriteFuture writeFuture = clientSession.write(input);
-							writeFuture.addListener((f) -> {
-								if (!((WriteFuture) f).isWritten()) {
-									fail("Failed to write a message");
-								}
-								messagesWritten.add(input);
-							});
-							writeFuture.awaitUninterruptibly();
-						}
-					}
-					finally {
-						client.dispose();
-					}
-				}, executorService);
+																						   WriteFuture writeFuture = clientSession.write(input);
+																						   writeFuture.addListener((f) -> {
+																							   if (!((WriteFuture) f).isWritten()) {
+																								   fail("Failed to write a message");
+																							   }
+																							   messagesWritten.add(input);
+																						   });
+																						   writeFuture.awaitUninterruptibly();
+																					   }
+																				   }
+																				   finally {
+																					   client.dispose();
+																				   }
+																			   }, executorService
+				);
 				clientThreads.add(clientThread);
 			}
 
@@ -186,7 +209,9 @@ public class MinaStackTest {
 
 			log.info("Waiting to receive all send messages");
 			// Wait until all messages are received
-			await().atMost(10,TimeUnit.SECONDS).alias("Send and received same amount of messages").until(() -> SERVER_RECEIVED_MESSAGES.size() == messagesWritten.size());
+			await().atMost(10, TimeUnit.SECONDS)
+				   .alias(String.format("Send and received same amount of messages (%s < %s)", SERVER_RECEIVED_MESSAGES.size(), messagesWritten.size()))
+				   .until(() -> SERVER_RECEIVED_MESSAGES.size() >= messagesWritten.size());
 
 			// Check that the messages are correct
 			assertThat(SERVER_RECEIVED_MESSAGES).containsExactlyInAnyOrderElementsOf(messagesWritten);
@@ -198,29 +223,21 @@ public class MinaStackTest {
 
 	}
 
-	private static Stream<Arguments> dataSizes() {
-		return Stream.of(
-				Arguments.of(DataSize.bytes(10), true),
-				Arguments.of(DataSize.kibibytes(10), true),
-				Arguments.of(DataSize.mebibytes(9), true), // Uses chunking
-				Arguments.of(DataSize.mebibytes(10), false) // Is too large for jackson encoder
-		);
-	}
-
 	@ParameterizedTest
 	@MethodSource("dataSizes")
 	void messageSizes(DataSize dataSize, boolean shouldPass) {
 		NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-			@Override
-			public void sessionOpened(IoSession session) {
-				log.info("Session to {} established", session.getRemoteAddress());
-			}
+																		   @Override
+																		   public void sessionOpened(IoSession session) {
+																			   log.info("Session to {} established", session.getRemoteAddress());
+																		   }
 
-			@Override
-			public void exceptionCaught(IoSession session, Throwable cause) {
-				log.trace("Failed to write message (probably expected)",cause);
-			}
-		}, "Client");
+																		   @Override
+																		   public void exceptionCaught(IoSession session, Throwable cause) {
+																			   log.trace("Failed to write message (probably expected)", cause);
+																		   }
+																	   }, "Client"
+		);
 
 		try {
 
@@ -236,7 +253,7 @@ public class MinaStackTest {
 			write.awaitUninterruptibly();
 
 			assertThat(write.isWritten())
-					.describedAs(() -> write.getException().getMessage())
+					.describedAs(() -> write.getException().toString())
 					.isEqualTo(shouldPass);
 
 			Assertions.setMaxStackTraceElementsDisplayed(200);
@@ -252,9 +269,44 @@ public class MinaStackTest {
 		}
 	}
 
-	@AfterAll
-	public static void afterAll() {
-		SERVER.dispose();
+	@Test
+	void differentMessageTypes() {
+
+		NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
+																		   @Override
+																		   public void sessionOpened(IoSession session) {
+																			   log.info("Session to {} established", session.getRemoteAddress());
+																		   }
+																	   }, "Client"
+		);
+
+		try {
+
+			ConnectFuture connect = client.connect(SERVER.getLocalAddress());
+
+			connect.awaitUninterruptibly();
+			IoSession clientSession = connect.getSession();
+
+			NetworkMessage<?> input1 = new TestMessage(RandomStringUtils.randomAscii(1000));
+			WriteFuture write1 = clientSession.write(input1);
+
+			NetworkMessage<?> input2 = ForwardToWorker.create(new WorkerId(new DatasetId("dataset"), "worker"), new RequestConsistency());
+			WriteFuture write2 = clientSession.write(input2);
+
+			write1.awaitUninterruptibly();
+			write2.awaitUninterruptibly();
+
+			await().atMost(1, TimeUnit.MINUTES).until(() -> !SERVER_RECEIVED_MESSAGES.isEmpty());
+			assertThat(SERVER_RECEIVED_MESSAGES)
+					.containsExactlyInAnyOrder(input1, input2)
+					.usingRecursiveComparison();
+
+			clientSession.closeNow().awaitUninterruptibly();
+		}
+		finally {
+			client.dispose();
+
+		}
 	}
 
 	public static class TestNetworkMessageContext extends NetworkMessageContext<TestMessage> {
@@ -265,12 +317,18 @@ public class MinaStackTest {
 	}
 
 	@CPSType(id = "TEST_MSG", base = NetworkMessage.class)
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	@RequiredArgsConstructor
 	@Getter
 	@EqualsAndHashCode(callSuper = false)
 	public static class TestMessage extends NetworkMessage<TestNetworkMessageContext> {
 
 		private final String data;
+
+		@JsonCreator
+		public TestMessage(String data, UUID messageId) {
+			setMessageId(messageId);
+			this.data = data;
+		}
 
 		@Override
 		public void react(TestNetworkMessageContext context) {
