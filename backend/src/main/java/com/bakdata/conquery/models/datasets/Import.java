@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
+@ToString
 public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiable<ImportId> {
 
 	@Valid

@@ -173,8 +173,6 @@ public class WorkerHandler {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		info.setCommunicationWriter(communicationMapper.writer());
-
 		workers.add(info);
 
 		for (Integer bucket : info.getIncludedBuckets()) {

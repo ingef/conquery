@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-@ToString
+@ToString(callSuper = false)
 public class ImportBucket extends WorkerMessage {
 
 	private final Bucket bucket;

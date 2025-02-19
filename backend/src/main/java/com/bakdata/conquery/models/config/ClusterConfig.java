@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.PipedJacksonProtocolFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
@@ -85,7 +84,7 @@ public class ClusterConfig extends Configuration {
 
 	@JsonIgnore
 	public NioSocketConnector getClusterConnector(ObjectMapper om, IoHandler ioHandler, String mdcLocation) {
-		om = om.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
+		om = om.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
@@ -93,9 +92,6 @@ public class ClusterConfig extends Configuration {
 		IoFilter codecFilter = new PipedJacksonProtocolFilter("shard_" + mdcLocation, om);
 
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
-//		if (mina.getSendBufferSize() > 0) {
-//			connector.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
-//		}
 		connector.getFilterChain().addLast("codec", codecFilter);
 
 		connector.setHandler(ioHandler);
@@ -106,16 +102,13 @@ public class ClusterConfig extends Configuration {
 
 	@JsonIgnore
 	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocation) throws IOException {
-		om = om.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE).disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+		om = om.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
 
 		NioSocketAcceptor acceptor = new NioSocketAcceptor();
 
 		IoFilter codecFilter = new PipedJacksonProtocolFilter("manager" + mdcLocation, om);
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
-//		if (mina.getSendBufferSize() > 0) {
-//			acceptor.getFilterChain().addLast("chunk", new ChunkingFilter(mina.getSendBufferSize()));
-//		}
 		acceptor.getFilterChain().addLast("codec", codecFilter);
 
 		acceptor.setHandler(ioHandler);

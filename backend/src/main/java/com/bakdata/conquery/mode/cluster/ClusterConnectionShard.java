@@ -1,8 +1,6 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -66,9 +64,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
-			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
-
 			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
+			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 			// Authenticate with ManagerNode
 			context.send(new AddShardNode());
@@ -180,8 +177,6 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 		log.error("Exception caught", cause);
 	}
 
-	private final List<Object> received = new ArrayList<>();
-
 	@Override
 	public void messageReceived(IoSession session, Object message) {
 		if (!(message instanceof MessageToShardNode)) {
@@ -189,10 +184,8 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 			return;
 		}
 
-		log.info("{} received {} from {}", environment.getName(), message, session.getRemoteAddress());
+		log.trace("{} received {} from {}", environment.getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
 		ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>((MessageToShardNode) message, context);
-
-
 
 		if (message instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
