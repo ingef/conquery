@@ -85,6 +85,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 			return buffer;
 		}
 
+		log.debug("Found existing edge-buffer {}, appending {}", DataSize.bytes(edgeBuffer.position()), DataSize.bytes(buffer.limit()));
+
 		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
 
 		return edgeBuffer;
