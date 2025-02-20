@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,14 +30,23 @@ import org.jetbrains.annotations.NotNull;
 public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	private static final AttributeKey READER_KEY = new AttributeKey(PipedJacksonProtocolFilter.class, "reader");
 
-	@ToString.Include
-	private final String name;
 	private final ObjectMapper mapper;
+
+	private final ExecutorService readerThreads = Executors.newCachedThreadPool(
+			(runnable) -> {
+				Thread thread = Thread.ofVirtual()
+									  .name("%s#reader".formatted(getClass().getSimpleName()))
+									  .unstarted(runnable);
+
+				thread.setDaemon(true);
+				return thread;
+			}
+	);
+
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
 		final IoBuffer buffer = (IoBuffer) message;
-
 		while (buffer.hasRemaining()) {
 			synchronized (session) {
 				Reader asyncReader = getAsyncReader(session);
@@ -65,9 +76,9 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	@NotNull
 	private Reader newAsyncReader(int remaining, NextFilter nextFilter, IoSession session) {
 		final Reader reader = new Reader(remaining, mapper, nextFilter, session);
-		reader.start();
 
-		reader.setName("%s.%s/%s".formatted(getClass().getSimpleName(), name, session.toString()));
+		readerThreads.submit(reader::read);
+
 		session.setAttribute(READER_KEY, reader);
 		return reader;
 	}
@@ -99,7 +110,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	}
 
 	@Data
-	private class Reader extends Thread {
+	private class Reader {
 
 		private final ObjectMapper mapper;
 		private final PipedOutputStream outputStream;
@@ -115,44 +126,36 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 			this.session = session;
 			this.remaining = remaining;
 			outputStream = new PipedOutputStream();
-			inputStream = new PipedInputStream(outputStream, ((int) DataSize.megabytes(1).toBytes()));
-			setDaemon(true);
+			inputStream = new PipedInputStream(outputStream, ((int) DataSize.kilobytes(64).toBytes()));
 		}
 
 		public boolean receive(IoBuffer buffer) throws IOException {
-			if (remaining > buffer.remaining()) {
-				remaining -= buffer.remaining();
+			final int reading = Math.min(buffer.remaining(), remaining);
 
-				try (InputStream inputStream = buffer.asInputStream()) {
-					inputStream.transferTo(getOutputStream());
-				}
-
-				return false;
-			}
-			// else remaining <= buffer.remaining()
-
-			final IoBuffer slice = buffer.getSlice(remaining);
+			final IoBuffer slice = buffer.getSlice(reading);
 			try (InputStream inputStream = slice.asInputStream()) {
 				// This stupid method mutates BOTH buffer and slice WTF.
 				final long written = inputStream.transferTo(getOutputStream());
 				remaining -= (int) written;
 			}
 
-			getOutputStream().close();
-			return true;
+			if (remaining <= 0) {
+				getOutputStream().close();
+				return true;
+			}
+
+			return false;
 		}
 
-		@Override
-		public void run() {
+		public void read() {
 			try {
-				// It's important to not reuse the parsers!
 				final NetworkMessage parsed = mapper.readValue(inputStream, NetworkMessage.class);
-				log.trace("{}  Received {}", getName(), parsed);
+				log.trace("Received {}", parsed);
 
 				nextFilter.messageReceived(session, parsed);
 			}
 			catch (IOException e) {
-				log.error("Something went wrong", e);
+				log.error("Something went wrong reading from {}", session, e);
 			}
 		}
 	}
