@@ -6,6 +6,11 @@
             "type": "STRING"
         },
         {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "sid"
+        },
+        {
             "name": "STRING",
             "type": "STRING"
         }

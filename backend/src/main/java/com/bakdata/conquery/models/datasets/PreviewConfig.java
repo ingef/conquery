@@ -117,14 +117,14 @@ public class PreviewConfig {
 	@JsonIgnore
 	public boolean isSelectsUnique() {
 		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
-			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).mapToLong(Collection::size).sum();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
 	@JsonIgnore
 	public boolean isLabelsUnique() {
 		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count()
-			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).mapToLong(Collection::size).sum();
 	}
 
 	@JsonIgnore
@@ -178,7 +178,7 @@ public class PreviewConfig {
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(SelectId::<Select>resolve)
+								   .map(SelectId::resolve)
 								   .collect(Collectors.toList());
 	}
 
@@ -200,10 +200,10 @@ public class PreviewConfig {
 
 
 		return searchFilters.stream()
-							.map(FilterId::<Filter<?>>resolve)
+							.map(FilterId::resolve)
 							.map(filter -> filter.getConnector().getConcept())
 							.distinct()
 							.map(Concept::getId)
-							.collect(MoreCollectors.onlyElement());
+							.collect(MoreCollectors.toOptional()).orElse(null);
 	}
 }
