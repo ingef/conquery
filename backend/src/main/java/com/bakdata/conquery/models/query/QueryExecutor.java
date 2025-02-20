@@ -57,7 +57,8 @@ public class QueryExecutor implements Closeable {
 		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker, secondaryIdSubPlanLimit)));
 
 		if (entities.isEmpty()) {
-			log.warn("Entities for query are empty");
+			// This is quite common for the entity preview, as only single entities are requested
+			log.trace("Entities for query are empty");
 		}
 
 		try {

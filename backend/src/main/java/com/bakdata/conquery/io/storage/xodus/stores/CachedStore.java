@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
 	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;

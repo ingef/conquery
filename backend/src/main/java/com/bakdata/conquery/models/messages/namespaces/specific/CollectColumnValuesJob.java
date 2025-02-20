@@ -73,42 +73,42 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final AtomicInteger done = new AtomicInteger();
 
+		// Might be too much because they get filtered, but no problem
+		getProgressReporter().setMax(columns.size());
+
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
 					   .filter(column -> table2Buckets.get(column.getTable()) != null)
 					   .map(ColumnId::resolve)
-					   .map(column -> {
-								// Acquire before submitting, so we don't spam the executor with waiting threads
-								return jobsExecutorService.submit(() -> {
-									final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
+					   .map(column -> jobsExecutorService.submit(() -> {
+								final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
 
-									final Set<String> values = buckets.stream()
-																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-																	  .collect(Collectors.toSet());
+								final Set<String> values = buckets.stream()
+																  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+																  .collect(Collectors.toSet());
 
-									log.trace("Finished collecting {} values for column {}", values.size(), column);
+								log.trace("Finished collecting {} values for column {}", values.size(), column);
 
-									// Chunk values, to produce smaller messages
-									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
+								// Chunk values, to produce smaller messages
+								Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
 
-									log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
-											  column.getId(), values.size(), columValueChunkSize
-									);
+								log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
+										  column.getId(), values.size(), columValueChunkSize
+								);
 
-									int i = 0;
-									for (List<String> chunk : partition) {
-										// Send values to manager
-										RegisterColumnValues message =
-												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
-										WriteFuture send = context.send(message);
+								int i = 0;
+								for (List<String> chunk : partition) {
+									// Send values to manager
+									RegisterColumnValues message =
+											new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+									WriteFuture send = context.send(message);
 
-										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
-									}
+									log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
+								}
 
-									getProgressReporter().report(1);
-									log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
-								});
-							}
+								getProgressReporter().report(1);
+								log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
+							})
 					   )
 					   .collect(Collectors.toList());
 
@@ -130,7 +130,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
-		getProgressReporter().done();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
@@ -184,7 +183,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				}
 			}
 
-			getProgressReporter().done();
 			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
 		}
 

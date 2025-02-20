@@ -1,12 +1,13 @@
 package com.bakdata.conquery.util.io;
 
-import java.io.PrintStream;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 //TODO replace with https://github.com/vdurmont/etaprinter
+@Slf4j
 public class ProgressBar {
 	
 	private static final int CHARACTERS = 50;
@@ -21,12 +22,10 @@ public class ProgressBar {
 	@Getter
 	private final AtomicLong maxValue;
 	private final AtomicLong lastPercentage = new AtomicLong(0);
-	private final PrintStream out;
 	private final long startTime;
-	
-	public ProgressBar(long maxValue, PrintStream out) {
+
+	public ProgressBar(long maxValue) {
 		this.maxValue = new AtomicLong(Math.max(1, maxValue));
-		this.out = out;
 		this.startTime = System.nanoTime();
 	}
 	
@@ -45,11 +44,9 @@ public class ProgressBar {
 	
 	public void done() {
 		StringBuilder sb = new StringBuilder();
-		for(int i=0;i<CHARACTERS;i++) {
-			sb.append(BAR_CHARACTERS[2]);
-		}
+		sb.append(String.valueOf(BAR_CHARACTERS[2]).repeat(CHARACTERS));
 		sb.append(" 100% DONE");
-		out.println(sb.toString());
+		log.info(sb.toString());
 	}
 	
 	private void print() {
@@ -80,6 +77,6 @@ public class ProgressBar {
             .toLowerCase()
 		);
 		sb.append('\r');
-		out.print(sb.toString());
+		log.info(sb.toString());
 	}
 }
