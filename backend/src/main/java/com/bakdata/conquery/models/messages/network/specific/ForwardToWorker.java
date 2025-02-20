@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import lombok.ToString;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString(of = {"workerId", "message"})
+@EqualsAndHashCode
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	private final WorkerId workerId;

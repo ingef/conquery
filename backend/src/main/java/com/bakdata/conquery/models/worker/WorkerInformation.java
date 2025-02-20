@@ -27,8 +27,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	private IntArraySet includedBuckets = new IntArraySet();
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
-	@JsonIgnore
-	private transient ObjectWriter communicationWriter;
 
 	@Min(0)
 	private int entityBucketSize;
