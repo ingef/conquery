@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(onlyExplicitlyIncluded = true)
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
 	private final LoadingCache<KEY, VALUE> cache;
 	@ToString.Include

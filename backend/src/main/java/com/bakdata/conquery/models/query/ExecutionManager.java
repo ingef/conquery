@@ -60,7 +60,7 @@ public abstract class ExecutionManager {
 
 		final ManagedExecutionId executionId = removalNotification.getKey();
 
-		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
+		log.trace("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
 
 		final ManagedExecution execution = getExecution(executionId);
 
