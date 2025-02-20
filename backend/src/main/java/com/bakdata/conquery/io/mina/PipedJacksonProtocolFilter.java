@@ -89,6 +89,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
 
+		session.setAttribute(EDGE_BUFFER, null);
+
 		return edgeBuffer;
 	}
 
