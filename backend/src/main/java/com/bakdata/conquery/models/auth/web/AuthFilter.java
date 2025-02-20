@@ -60,7 +60,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 		}
 
 		if (tokens.isEmpty()) {
-			log.warn("No tokens could be parsed from the request");
+			log.trace("No tokens could be parsed from the request");
 		}
 
 		int failedTokens = 0;
@@ -87,7 +87,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 
 			}
 		}
-		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
+		log.trace("Non of the configured realms was able to successfully authenticate the extracted token(s).");
 		log.trace("The {} tokens failed.", failedTokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
