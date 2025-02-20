@@ -29,30 +29,36 @@ import org.jetbrains.annotations.NotNull;
 @ToString(onlyExplicitlyIncluded = true)
 public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	private static final AttributeKey READER_KEY = new AttributeKey(PipedJacksonProtocolFilter.class, "reader");
+	private static final AttributeKey EDGE_BUFFER = new AttributeKey(PipedJacksonProtocolFilter.class, "edge");
+
 
 	private final ObjectMapper mapper;
 
-	private final ExecutorService readerThreads = Executors.newCachedThreadPool(
-			(runnable) -> {
-				Thread thread = Thread.ofVirtual()
-									  .name("%s#reader".formatted(getClass().getSimpleName()))
-									  .unstarted(runnable);
+	private final ExecutorService readerThreads = Executors.newCachedThreadPool((runnable) -> {
+		Thread thread = Thread.ofVirtual().name("%s#reader".formatted(getClass().getSimpleName())).unstarted(runnable);
 
-				thread.setDaemon(true);
-				return thread;
-			}
-	);
+		thread.setDaemon(true);
+		return thread;
+	});
 
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
-		final IoBuffer buffer = (IoBuffer) message;
-		while (buffer.hasRemaining()) {
-			synchronized (session) {
+		IoBuffer buffer = (IoBuffer) message;
+		synchronized (session) {
+
+			buffer = handleExistingEdgeBuffer(session, buffer);
+
+			while (buffer.hasRemaining()) {
 				Reader asyncReader = getAsyncReader(session);
 
 				if (asyncReader == null) {
+					if (requiresEdgeBuffering(session, buffer)) {
+						break;
+					}
+
 					final int remaining = buffer.getInt();
+
 					asyncReader = newAsyncReader(remaining, nextFilter, session);
 					log.trace("Starting new reader for {}", DataSize.bytes(remaining));
 				}
@@ -69,8 +75,43 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		}
 	}
 
+	/**
+	 * If a prior edge-buffer exists, we need to join the incoming buffer with it.
+	 */
+	private IoBuffer handleExistingEdgeBuffer(IoSession session, IoBuffer buffer) throws IOException {
+		final IoBuffer edgeBuffer = (IoBuffer) session.getAttribute(EDGE_BUFFER);
+
+		if (edgeBuffer == null) {
+			return buffer;
+		}
+
+		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
+
+		return edgeBuffer;
+	}
+
 	private Reader getAsyncReader(IoSession session) {
 		return (Reader) session.getAttribute(READER_KEY);
+	}
+
+	/**
+	 * Test if we have enough contents to read the incoming buffer's length.
+	 * If not, cumulate the remaining buffer into a new buffer. The next incoming buffer will then be appended, ensuring enough content to read a length.
+	 */
+	private boolean requiresEdgeBuffering(IoSession session, IoBuffer buffer) throws IOException {
+		if (buffer.remaining() >= Integer.BYTES) {
+			return false;
+		}
+
+		final IoBuffer edgeBuffer = IoBuffer.allocate(64, false);
+		edgeBuffer.setAutoExpand(true);
+
+		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
+
+		session.setAttribute(EDGE_BUFFER, edgeBuffer);
+
+		log.info("Not enough content in current buffer, resorting to edge-buffering.");
+		return true;
 	}
 
 	@NotNull
@@ -96,8 +137,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 		final Object message = writeRequest.getMessage();
 		try (OutputStream outputStream = buf.asOutputStream()) {
-			mapper.writerFor(NetworkMessage.class)
-				  .writeValue(outputStream, message);
+			mapper.writerFor(NetworkMessage.class).writeValue(outputStream, message);
 		}
 
 		log.trace("FINISHED Encoding message in {}. Buffer size: {}. Message: {}", stopwatch, DataSize.bytes(buf.remaining()), message);
@@ -139,7 +179,9 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 				remaining -= (int) written;
 			}
 
-			if (remaining <= 0) {
+			assert remaining >= 0 : "Transferred more than we required to read the message.";
+
+			if (remaining == 0) {
 				getOutputStream().close();
 				return true;
 			}
