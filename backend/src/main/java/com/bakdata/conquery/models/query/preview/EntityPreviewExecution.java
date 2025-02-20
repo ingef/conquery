@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.MoreCollectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -61,8 +62,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry);
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override
@@ -73,6 +74,38 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
+	}
+
+	@Override
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, config);
+
+		for (ColumnDescriptor descriptor : descriptors) {
+			// Add grouping semantics to secondaryIds to group by
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId().resolve())
+						  )) {
+				descriptor.getSemantics().add(new SemanticType.GroupT());
+			}
+
+			// Add hidden semantics to fields flagged for hiding.
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn().resolve()))) {
+				descriptor.getSemantics().add(new SemanticType.HiddenT());
+			}
+		}
+
+
+		return descriptors;
+	}
+
+	@JsonIgnore
+	private ManagedQuery getValuesQuery() {
+		Preconditions.checkState(isInitialized());
+		return getInitializedSubQueryHardRef().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	@Override
@@ -89,7 +122,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
 
-		initExecutable(getConfig());
+		initExecutable();
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, subject, namespace);
@@ -101,14 +134,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings, printers));
 
 		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), stratifiedSettings, printers));
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, resolvedSubQueries(), stratifiedSettings, printers));
 
 		return status;
-	}
-
-	@JsonIgnore
-	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	/**
@@ -153,7 +181,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
-		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
+		Preconditions.checkState(isInitialized());
+		return getInitializedSubQueryHardRef().get(EntityPreviewForm.INFOS_QUERY_NAME);
 	}
 
 	@NotNull
@@ -163,6 +192,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.label());
+			query.initExecutable();
 
 			final EntityResult entityResult = query.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
 
@@ -346,32 +376,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
-	}
-
-	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(isInitialized, config);
-
-		for (ColumnDescriptor descriptor : descriptors) {
-			// Add grouping semantics to secondaryIds to group by
-			if (descriptor.getSemantics()
-						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
-													&& previewConfig.isGroupingColumn(desc.getSecondaryId().resolve())
-						  )) {
-				descriptor.getSemantics().add(new SemanticType.GroupT());
-			}
-
-			// Add hidden semantics to fields flagged for hiding.
-			if (descriptor.getSemantics()
-						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn().resolve()))) {
-				descriptor.getSemantics().add(new SemanticType.HiddenT());
-			}
-		}
-
-
-		return descriptors;
 	}
 
 	@Override

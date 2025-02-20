@@ -44,17 +44,18 @@ do
 done
 sleep 3
 
-echo "Creating concepts"
-for concept_json in `ls ./cypress/support/test_data/*.concept.json`
-do
-    curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$concept_json"
-done
-
 echo "Upload test data"
 for cqpp in `ls ./cypress/support/test_data/*.cqpp`
 do
     curl --fail -X POST --compressed "$admin_api/datasets/dataset1/cqpp" -H "content-type:application/octet-stream" -H "$h_auth" --data-binary "@$cqpp"
 done
+
+echo "Creating concepts"
+for concept_json in `ls ./cypress/support/test_data/*.concept.json`
+do
+    curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$concept_json"
+done
+sleep 3
 
 echo "Init Matching Stats and Search"
 curl --fail -X POST  "$admin_api/datasets/dataset1/update-matching-stats" -H "$h_ct" -H "$h_auth"

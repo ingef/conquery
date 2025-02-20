@@ -2,8 +2,6 @@ package com.bakdata.conquery.io;
 
 import jakarta.validation.Validator;
 
-import static org.mockito.Mockito.mock;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -20,7 +18,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -47,21 +44,21 @@ public abstract class AbstractSerializationTest {
 		NonPersistentStoreFactory storageFactory = new NonPersistentStoreFactory();
 		metaStorage = new MetaStorage(storageFactory);
 		namespaceStorage = new NamespaceStorage(storageFactory, "");
-		workerStorage = new WorkerStorageImpl(new NonPersistentStoreFactory(), null, "serializationTestWorker");
+		workerStorage = new WorkerStorageImpl(new NonPersistentStoreFactory(), "serializationTestWorker");
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
 		datasetRegistry = new DatasetRegistry<>(0, config, internalMapperFactory, clusterNamespaceHandler, indexService);
 
 		MetricRegistry metricRegistry = new MetricRegistry();
 
 		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
-		metaStorage.openStores(managerInternalMapper, metricRegistry);
+		metaStorage.openStores(managerInternalMapper);
 
 
 		namespaceInternalMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage);
-		namespaceStorage.openStores(namespaceInternalMapper, metricRegistry);
+		namespaceStorage.openStores(namespaceInternalMapper);
 
 		// Prepare worker persistence mapper
-		workerStorage.openStores(shardInternalMapper, metricRegistry);
+		workerStorage.openStores(shardInternalMapper);
 		ShardWorkers workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,

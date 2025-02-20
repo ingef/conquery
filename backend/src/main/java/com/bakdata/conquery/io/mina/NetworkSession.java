@@ -28,6 +28,16 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	}
 
 
+	@NotNull
+	private static String shorten(String desc) {
+		if (desc.length() <= MAX_MESSAGE_LENGTH) {
+			return desc;
+		}
+
+		return desc.substring(0, MAX_MESSAGE_LENGTH) + "…";
+
+	}
+
 	@Override
 	public WriteFuture send(final NetworkMessage<?> message) {
 		try {
@@ -40,13 +50,13 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			return DefaultWriteFuture.newNotWrittenFuture(session, e);
 		}
 		WriteFuture future = session.write(message);
-
+    
 		future.addListener(f -> {
 			if (f instanceof WriteFuture writeFuture && !writeFuture.isWritten()) {
-				log.error("Could not write message: {}", message, writeFuture.getException());
+				log.error("Could not write message: {} ({} -> {})", message, session.getLocalAddress(), session.getRemoteAddress(), writeFuture.getException());
 			}
-			queuedMessages.remove(message);
 		});
+		future.addListener(f -> queuedMessages.remove(message));
 
 		return future;
 	}
@@ -64,16 +74,6 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 		}
 
 		log.debug("Waiting for full writing queue for {} currently filled by:\n\t- {}", message, waiting);
-	}
-
-	@NotNull
-	private static String shorten(String desc) {
-		if (desc.length() <= MAX_MESSAGE_LENGTH) {
-			return desc;
-		}
-
-		return desc.substring(0, MAX_MESSAGE_LENGTH) + "…";
-
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -11,6 +12,8 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -86,16 +89,21 @@ public abstract class Namespace {
 	}
 
 	public void updateInternToExternMappings() {
-		storage.getAllConcepts()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(con -> con.getSelects().stream())
-			   .filter(MappableSingleColumnSelect.class::isInstance)
-			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+			allConcepts
+					.flatMap(c -> c.getConnectors().stream())
+					.flatMap(con -> con.getSelects().stream())
+					.filter(MappableSingleColumnSelect.class::isInstance)
+					.map(MappableSingleColumnSelect.class::cast)
+					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
-		storage.getSecondaryIds()
-			   .filter(desc -> desc.getMapping() != null)
-			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
+		}
+
+		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds();) {
+			secondaryIds
+					.filter(desc -> desc.getMapping() != null)
+					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
+		}
 	}
 
 	/**

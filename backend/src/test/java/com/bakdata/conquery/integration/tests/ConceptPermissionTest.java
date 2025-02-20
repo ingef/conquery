@@ -2,6 +2,8 @@ package com.bakdata.conquery.integration.tests;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -58,16 +60,19 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
-		// The lone concept that is used in the test.
-		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		try(Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts()) {
 
-		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
+			// The lone concept that is used in the test.
+			Concept<?> concept = allConcepts.iterator().next();
 
-		// Add the necessary Permission
-		{
-			final ConqueryPermission permission = concept.createPermission(Ability.READ.asSet());
-			log.info("Adding the Permission[{}] to User[{}]", permission, user);
-			user.addPermission(permission);
+			IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
+
+			// Add the necessary Permission
+			{
+				final ConqueryPermission permission = concept.createPermission(Ability.READ.asSet());
+				log.info("Adding the Permission[{}] to User[{}]", permission, user);
+				user.addPermission(permission);
+			}
 		}
 
 		// Only assert permissions

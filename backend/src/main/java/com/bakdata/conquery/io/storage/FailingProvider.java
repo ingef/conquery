@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Collection;
+
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -20,5 +22,10 @@ public class FailingProvider implements NamespacedStorageProvider {
 	@Override
 	public NamespacedStorage getStorage(DatasetId datasetId) {
 		throw new UnsupportedOperationException(ERROR_MSG.formatted(datasetId));
+	}
+
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		throw new UnsupportedOperationException("Cannot be used in this environment.");
 	}
 }

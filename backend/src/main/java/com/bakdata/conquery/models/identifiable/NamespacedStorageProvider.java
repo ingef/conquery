@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.Collection;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -40,4 +42,6 @@ public interface NamespacedStorageProvider extends Injectable {
 	 * @implNote Don't call {@link Dataset#getNamespacedStorageProvider()} as it is probably not yet set.
 	 */
 	NamespacedStorage getStorage(DatasetId datasetId);
+
+	Collection<DatasetId> getAllDatasetIds();
 }

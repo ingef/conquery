@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Stream;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.MediaType;
@@ -161,7 +162,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
+		final Concept<?> concept = allConcepts.filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		allConcepts.close();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.password4j.BcryptFunction;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Duration;
@@ -56,11 +57,13 @@ public class LocalAuthRealmTest {
 				new LocalAuthenticationRealm(
 						Validators.newValidator(),
 						Jackson.BINARY_MAPPER, conqueryTokenRealm,
-						"localtestRealm",
+						"localTestRealm",
 						tmpDir,
 						new XodusConfig(),
 						Duration.hours(4),
-						BcryptFunction.getInstance(4)
+						BcryptFunction.getInstance(4),
+						CaffeineSpec.parse(""),
+						null // no metrics
 				); // 4 is minimum
 		LifecycleUtils.init(realm);
 	}
@@ -76,7 +79,7 @@ public class LocalAuthRealmTest {
 
 	@AfterEach
 	public void cleanUpEach() {
-		// Well there is an extra test case for this, but lets do it like this for now.
+		// Well there is an extra test case for this, but let's do it like this for now.
 		realm.removeUser(user1);
 	}
 

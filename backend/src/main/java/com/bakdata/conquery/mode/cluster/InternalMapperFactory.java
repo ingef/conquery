@@ -20,8 +20,10 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 
 	public ObjectMapper createShardCommunicationMapper(ShardWorkers workers) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
+		
 		workers.injectInto(objectMapper);
 		return objectMapper;
+		
 	}
 
 	/**
@@ -58,14 +60,6 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		deserializationConfig = deserializationConfig.withView(viewClass);
 
 		objectMapper.setConfig(deserializationConfig);
-	}
-
-	public ObjectMapper createWorkerCommunicationMapper(WorkerStorage storage) {
-		final ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-
-		storage.injectInto(objectMapper);
-
-		return objectMapper;
 	}
 
 	public ObjectMapper createWorkerPersistenceMapper(WorkerStorage storage) {

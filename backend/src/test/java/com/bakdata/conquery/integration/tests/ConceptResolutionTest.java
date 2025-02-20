@@ -7,10 +7,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -21,9 +26,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResu
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,7 +53,9 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 
 		conquery.waitUntilWorkDone();
 
-		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
+		TreeConcept concept = (TreeConcept) allConcepts.iterator().next();
+		allConcepts.close();
 
 		final URI resolveUri =
 				HierarchyHelper.hierarchicalPath(

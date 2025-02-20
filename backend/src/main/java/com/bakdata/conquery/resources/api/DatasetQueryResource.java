@@ -5,23 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.QueryProcessor;
-import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
-import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
-import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.ExternalUpload;
-import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -37,6 +21,21 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.QueryProcessor;
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.query.ExternalUpload;
+import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -88,11 +87,11 @@ public class DatasetQueryResource {
 
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<? extends ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(dataset, Ability.READ);
 
-		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false)).collect(Collectors.toList());
+		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false));
 	}
 
 	@POST

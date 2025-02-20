@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
+import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +44,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 		log.info("Started {} {}", query.getClass().getSimpleName(), executionId);
 
-		// Execution might have been cancelled before so we uncancel it here.
+		// Execution might have been cancelled before, so we unset cancellation here.
 		final QueryExecutor queryExecutor = worker.getQueryExecutor();
 
 		queryExecutor.unsetQueryCancelled(executionId);
@@ -52,7 +53,9 @@ public class ExecuteQuery extends WorkerMessage {
 
 		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
+			Stopwatch stopwatch = Stopwatch.createStarted();
 			query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
+			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);

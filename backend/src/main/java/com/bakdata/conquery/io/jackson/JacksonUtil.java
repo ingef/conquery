@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -17,6 +19,7 @@ public class JacksonUtil {
 	 *	Partially read and parse InputStream as Json, directly storing it into String, just for debugging purposes.
 	 */
 	public static String toJsonDebug(InputStream is) {
+		is.mark(1024);
 		StringBuilder sb = new StringBuilder();
 		try (JsonParser parser = Jackson.BINARY_MAPPER.getFactory().createParser(is)) {
 
@@ -67,8 +70,43 @@ public class JacksonUtil {
 		}
 		catch (Exception e) {
 			log.warn("Failed to create the debug json", e);
-			sb.append("DEBUG_JSON_ERROR");
+			if (!sb.isEmpty()) {
+				sb.append("DEBUG_JSON_ERROR");
+
+			}
+			else {
+				try {
+					is.reset();
+					sb.append(logHex(is));
+				}
+				catch (Exception hexException) {
+					log.error("Unable to generate hex dump of input stream", e);
+					sb.append("HEX_DUMP_ERROR");
+				}
+			}
 			return sb.toString();
 		}
+	}
+
+	public static String logHex(InputStream inputStream) throws IOException {
+		inputStream.mark(1024);  // Mark to allow resetting later
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+		byte[] temp = new byte[16]; // Read chunks of 16 bytes
+		int bytesRead;
+		while ((bytesRead = inputStream.read(temp)) != -1) {
+			buffer.write(temp, 0, bytesRead);
+			if (buffer.size() >= 128) break; // Limit logging to 128 bytes
+		}
+
+		inputStream.reset();  // Reset stream for further processing
+
+		byte[] data = buffer.toByteArray();
+		StringBuilder hexDump = new StringBuilder();
+		for (byte b : data) {
+			hexDump.append(String.format("%02X ", b));
+		}
+
+		return "Hex Dump of InputStream (first 128 bytes): " + hexDump;
 	}
 }

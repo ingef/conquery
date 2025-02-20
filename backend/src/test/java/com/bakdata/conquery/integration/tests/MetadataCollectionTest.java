@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -35,18 +36,20 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 
 		//ensure the metadata is collected
 		DistributedNamespace namespace = (DistributedNamespace) conquery.getNamespace();
+		Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
 		namespace.getWorkerHandler()
-				 .sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts().map(Concept::getId).toList()));
+				 .sendToAll(new UpdateMatchingStatsMessage(allConcepts.map(Concept::getId).toList()));
+		allConcepts.close();
 
 		conquery.waitUntilWorkDone();
 
-		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
+		TreeConcept concept = (TreeConcept) allConcepts.findFirst().orElseThrow();
+		allConcepts.close();
 
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
-		assertThat(concept.getChildren()).allSatisfy(c -> {
-			assertThat(c.getMatchingStats().countEvents()).isEqualTo(2);
-		});
+		assertThat(concept.getChildren()).allSatisfy(c -> assertThat(c.getMatchingStats().countEvents()).isEqualTo(2));
 		
 		//check the date ranges
 		assertThat(concept.getMatchingStats().spanEvents())
