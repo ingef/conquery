@@ -129,7 +129,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	public JavaType typeFromId(DatabindContext context, String id) {
 		Class<?> result = cpsMap.getClassFromId(truncateSubTypeInformation(id));
 		if (result == null) {
-			throw new IllegalStateException("There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds());
+			throw new IllegalArgumentException("There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds());
 		}
 		String subTypeInfo = extractSubTypeInformation(id);
 		if (!Strings.isNullOrEmpty(subTypeInfo)) {

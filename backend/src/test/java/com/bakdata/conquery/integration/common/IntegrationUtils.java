@@ -7,11 +7,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -30,6 +25,7 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
@@ -74,15 +70,10 @@ public class IntegrationUtils {
 	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
-		final String userToken = conquery.getAuthorizationController()
-										 .getConqueryTokenRealm()
-										 .createTokenForUser(user.getId());
-
 		// Submit Query
 		final Response response = conquery.getClient()
 										  .target(postQueryURI)
 										  .request(MediaType.APPLICATION_JSON_TYPE)
-										  .header("Authorization", "Bearer " + userToken)
 										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 
@@ -133,7 +124,7 @@ public class IntegrationUtils {
 		});
 	}
 
-	private static URI getPostQueryURI(StandaloneSupport conquery) {
+	public static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
 									  "dataset", conquery.getDataset().getId()
