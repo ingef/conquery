@@ -1,11 +1,12 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.io.IOException;
-import jakarta.validation.Validator;
+import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
@@ -33,7 +34,6 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private final JobManager jobManager;
-	private final Validator validator;
 	private final ConqueryConfig config;
 	private final InternalMapperFactory internalMapperFactory;
 	@Getter
@@ -86,7 +86,12 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		);
 
 		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
-			datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
+			DatasetId datasetId = nsMesg.getDatasetId();
+			DistributedNamespace namespace = datasetRegistry.get(datasetId);
+			if (namespace == null) {
+				throw new NoSuchElementException("Unable to find namespace with id %s for message: %s".formatted(datasetId, message) );
+			}
+			namespace.getJobManager().addSlowJob(job);
 		}
 		else if (toManagerNode instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
