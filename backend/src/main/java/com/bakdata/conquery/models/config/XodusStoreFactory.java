@@ -173,8 +173,8 @@ public class XodusStoreFactory implements StoreFactory {
 	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeineSpec</a>
 	 */
 	@NotEmpty
-	@ValidCaffeineSpec(softValue = true)
-	private String caffeineSpec = "softValues";
+	@ValidCaffeineSpec()
+	private String caffeineSpec = "softvalues";
 
 	private boolean loadStoresOnStart = false;
 
