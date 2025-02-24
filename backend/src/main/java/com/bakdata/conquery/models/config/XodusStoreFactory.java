@@ -172,7 +172,7 @@ public class XodusStoreFactory implements StoreFactory {
 	 * So a specification must include this option.
 	 * See <a href="https://github.com/ben-manes/caffeine/wiki/Specification">CaffeineSpec</a>
 	 */
-	@NotEmpty
+	@NotNull
 	@ValidCaffeineSpec()
 	private String caffeineSpec = "softValues";
 
