@@ -44,12 +44,11 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
-		IoBuffer buffer = (IoBuffer) message;
+		final IoBuffer buffer = (IoBuffer) message;
+
+
 		synchronized (session) {
-
-			buffer = handleExistingEdgeBuffer(session, buffer);
-
-			while (buffer.hasRemaining()) {
+			do {
 				Reader asyncReader = getAsyncReader(session);
 
 				if (asyncReader == null) {
@@ -57,7 +56,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 						break;
 					}
 
-					final int remaining = buffer.getInt();
+					final int remaining = getBufferLength(session, buffer);
 
 					asyncReader = newAsyncReader(remaining, nextFilter, session);
 					log.trace("Starting new reader for {}", DataSize.bytes(remaining));
@@ -71,28 +70,9 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 				if (finished) {
 					session.setAttribute(READER_KEY, null);
 				}
-			}
+
+			} while (buffer.hasRemaining());
 		}
-	}
-
-	/**
-	 * If a prior edge-buffer exists, we need to join the incoming buffer with it.
-	 */
-	private IoBuffer handleExistingEdgeBuffer(IoSession session, IoBuffer buffer) throws IOException {
-		final IoBuffer edgeBuffer = (IoBuffer) session.getAttribute(EDGE_BUFFER);
-
-		if (edgeBuffer == null) {
-			return buffer;
-		}
-
-		log.debug("Found existing edge-buffer {}, appending {}", DataSize.bytes(edgeBuffer.position()), DataSize.bytes(buffer.limit()));
-
-		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
-		buffer.flip();
-
-		session.setAttribute(EDGE_BUFFER, null);
-
-		return edgeBuffer;
 	}
 
 	private Reader getAsyncReader(IoSession session) {
@@ -101,22 +81,50 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 	/**
 	 * Test if we have enough contents to read the incoming buffer's length.
-	 * If not, cumulate the remaining buffer into a new buffer. The next incoming buffer will then be appended, ensuring enough content to read a length.
+	 * If not, cumulate the remaining buffer into a new buffer.
+	 *
+	 * Incoming buffers will combine their remaining part of the prefix-length.
 	 */
 	private boolean requiresEdgeBuffering(IoSession session, IoBuffer buffer) throws IOException {
 		if (buffer.remaining() >= Integer.BYTES) {
 			return false;
 		}
 
-		final IoBuffer edgeBuffer = IoBuffer.allocate(64, false);
-		edgeBuffer.setAutoExpand(true);
+		log.trace("Not enough content in current buffer ({} bytes), resorting to edge-buffering.", buffer.remaining());
+
+		final IoBuffer edgeBuffer = IoBuffer.allocate(Integer.BYTES, false);
+		edgeBuffer.setAutoExpand(false);
 
 		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
 
 		session.setAttribute(EDGE_BUFFER, edgeBuffer);
 
-		log.info("Not enough content in current buffer, resorting to edge-buffering.");
+		assert !buffer.hasRemaining();
+
 		return true;
+	}
+
+	private static int getBufferLength(IoSession session, IoBuffer buffer) throws IOException {
+		final IoBuffer edgeBuffer;
+		synchronized (session) {
+			edgeBuffer = (IoBuffer) session.setAttribute(EDGE_BUFFER, null);
+
+			if (edgeBuffer == null) {
+				return buffer.getInt();
+			}
+		}
+
+		log.trace("Found existing edge-buffer {}, incoming {}", DataSize.bytes(edgeBuffer.position()), DataSize.bytes(buffer.limit()));
+
+		buffer.getSlice(Integer.BYTES - edgeBuffer.position())
+			  .asInputStream()
+			  .transferTo(edgeBuffer.asOutputStream());
+
+		edgeBuffer.flip();
+
+		assert edgeBuffer.remaining() == Integer.BYTES;
+
+		return edgeBuffer.getInt();
 	}
 
 	@NotNull
