@@ -24,23 +24,48 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * This {@link org.apache.mina.core.filterchain.IoFilter} (de-)serializes POJOs using a Jackson {@link ObjectMapper}.
+ * <p>
+ * Since we can send very large messages we need to handle combination of multiple messages into one.
+ * To avoid costly buffering in memory we instead pass incoming buffers to an asynchronous reader thread, which handles the actual reading.
+ * <p>
+ * In comparison {@link org.apache.mina.filter.codec.CumulativeProtocolDecoder} can end up at exponential runtime when messages become too large.
+ * <p>
+ * brief explanation of the reader implementation:
+ * <p>
+ * 1) {@link PipedJacksonProtocolFilter#filterWrite(NextFilter, IoSession, WriteRequest)} serializes every message using the provided {@link ObjectMapper}, the length of the written contents is prefixed to the contents.
+ * 2) This buffer is then transmitted by the Processor. There are virtually no guarantees about transmission except the buffers will arrive in order! i.e.: You should expect one buffer to contain multiple messages, or just one, or the tail of a message and the head of another etc.
+ * 3) The {@link PipedJacksonProtocolFilter#messageReceived(NextFilter, IoSession, Object)} receives an incoming buffer on a Session,
+ * - If we have no {@link Reader} in the current Session, this is the first message and therefore prefixed by actual length of the message. We then create a new {@link Reader} linking up the IO and storing it in the ongoing session.
+ * - If we have an existing Reader, we pass on the incoming buffer, read as much as necessary, signaling eventual finalization.
+ * - If the buffer does not contain enough data to read a full Integer (i.e. 4 bytes) we spill those into a separate buffer to continue with the next buffer. (There is no handling for cases where the length might be part of more than 2 buffers because I am too lazy and that would be insanity).
+ * - We repeat 3) until {@link IoBuffer#hasRemaining()} returns false, to respect the existence of multiple messages in a single buffer.
+ * 4) If a Reader signals finalization we clear the Sessions reference to it, to force creation of a new one.
+ * 5) The reader receives the {@link IoSession} and {@link org.apache.mina.core.filterchain.IoFilter.NextFilter} as parameters to ensure correct chainig. As a filter can be used by multiple sessions at once.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 public class PipedJacksonProtocolFilter extends IoFilterAdapter {
-	private static final AttributeKey READER_KEY = new AttributeKey(PipedJacksonProtocolFilter.class, "reader");
-	private static final AttributeKey EDGE_BUFFER = new AttributeKey(PipedJacksonProtocolFilter.class, "edge");
+	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual().name("%s#reader".formatted(PipedJacksonProtocolFilter.class.getSimpleName()), 0);
 
+	private static final AttributeKey READER_KEY = new AttributeKey(PipedJacksonProtocolFilter.class, "reader");
+	private static final AttributeKey SPILL_BUFFER = new AttributeKey(PipedJacksonProtocolFilter.class, "spill");
+
+	/**
+	 * Max size of a Buffer on my Windows machine was 64Kibi - to enable effective double buffering, we ... double it.
+	 */
+	private static final DataSize PIPED_IO_BUFFER_SIZE = DataSize.kibibytes(2 * 64);
 
 	private final ObjectMapper mapper;
-
+	private final int initialBufferLength;
 	private final ExecutorService readerThreads = Executors.newCachedThreadPool((runnable) -> {
-		Thread thread = Thread.ofVirtual().name("%s#reader".formatted(getClass().getSimpleName())).unstarted(runnable);
-
+		Thread thread = THREAD_BUILDER.unstarted(runnable);
 		thread.setDaemon(true);
+
 		return thread;
 	});
-
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
@@ -53,6 +78,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 				if (asyncReader == null) {
 					if (requiresEdgeBuffering(session, buffer)) {
+						// Buffer contains only partial length we need to combine with the next buffer.
 						break;
 					}
 
@@ -82,54 +108,64 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	/**
 	 * Test if we have enough contents to read the incoming buffer's length.
 	 * If not, cumulate the remaining buffer into a new buffer.
-	 *
-	 * Incoming buffers will combine their remaining part of the prefix-length.
+	 * <p>
+	 * Incoming buffers will combine their remaining part of the prefixed-length.
 	 */
 	private boolean requiresEdgeBuffering(IoSession session, IoBuffer buffer) throws IOException {
 		if (buffer.remaining() >= Integer.BYTES) {
 			return false;
 		}
 
-		log.trace("Not enough content in current buffer ({} bytes), resorting to edge-buffering.", buffer.remaining());
+		assert session.getAttribute(SPILL_BUFFER) == null;
 
-		final IoBuffer edgeBuffer = IoBuffer.allocate(Integer.BYTES, false);
-		edgeBuffer.setAutoExpand(false);
+		log.trace("Not enough content in current buffer ({} bytes), spilling.", buffer.remaining());
 
-		buffer.asInputStream().transferTo(edgeBuffer.asOutputStream());
+		final IoBuffer spillBuffer = IoBuffer.allocate(Integer.BYTES, false);
+		spillBuffer.setAutoExpand(false);
 
-		session.setAttribute(EDGE_BUFFER, edgeBuffer);
+		buffer.asInputStream().transferTo(spillBuffer.asOutputStream());
+
+		session.setAttribute(SPILL_BUFFER, spillBuffer);
 
 		assert !buffer.hasRemaining();
 
 		return true;
 	}
 
-	private static int getBufferLength(IoSession session, IoBuffer buffer) throws IOException {
-		final IoBuffer edgeBuffer;
-		synchronized (session) {
-			edgeBuffer = (IoBuffer) session.setAttribute(EDGE_BUFFER, null);
+	/**
+	 * Reads the length of the incoming buffer.
+	 * Incoming messages are always prefixed by their length.
+	 *
+	 * @implNote A single {@link IoBuffer} may contain multiple messages or parts of them.
+	 * In very degenerate cases, the messages ends exactly such that the length of the next messages does not fully fit the current buffer and is spilled over into the next buffer.
+	 * In that case we spill the remaining bytes into a separate buffer and append the incoming few bytes (at most 3!) into a separate buffer to calculate the length.
+	 * This avoids costly copying and reallocation but looks really rather funky.
+	 */
+	private int getBufferLength(IoSession session, IoBuffer buffer) throws IOException {
+		final IoBuffer spillBuffer;
 
-			if (edgeBuffer == null) {
+		synchronized (session) {
+			spillBuffer = (IoBuffer) session.setAttribute(SPILL_BUFFER, null);
+
+			if (spillBuffer == null) {
 				return buffer.getInt();
 			}
 		}
 
-		log.trace("Found existing edge-buffer {}, incoming {}", DataSize.bytes(edgeBuffer.position()), DataSize.bytes(buffer.limit()));
+		log.trace("Found existing edge-buffer {}, incoming {}", DataSize.bytes(spillBuffer.position()), DataSize.bytes(buffer.limit()));
 
-		buffer.getSlice(Integer.BYTES - edgeBuffer.position())
-			  .asInputStream()
-			  .transferTo(edgeBuffer.asOutputStream());
+		buffer.getSlice(Integer.BYTES - spillBuffer.position()).asInputStream().transferTo(spillBuffer.asOutputStream());
 
-		edgeBuffer.flip();
+		spillBuffer.flip();
 
-		assert edgeBuffer.remaining() == Integer.BYTES;
+		assert spillBuffer.remaining() == Integer.BYTES;
 
-		return edgeBuffer.getInt();
+		return spillBuffer.getInt();
 	}
 
 	@NotNull
 	private Reader newAsyncReader(int remaining, NextFilter nextFilter, IoSession session) {
-		final Reader reader = new Reader(remaining, mapper, nextFilter, session);
+		final Reader reader = new Reader(remaining, mapper, nextFilter, session, PIPED_IO_BUFFER_SIZE);
 
 		readerThreads.submit(reader::read);
 
@@ -137,13 +173,18 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		return reader;
 	}
 
+	/**
+	 * Serializes {@link WriteRequest#getMessage()} into an {@link IoBuffer} prefixed by the message's length.
+	 */
 	@Override
-	public synchronized void filterWrite(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
+	public void filterWrite(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
 		//TODO use CachedBufferAllocator?
-		final IoBuffer buf = IoBuffer.allocate(64, false);
+		final IoBuffer buf = IoBuffer.allocate(initialBufferLength, false);
 		buf.setAutoExpand(true);
-		buf.putInt(0); //DUMMY
 
+		final int initialPosition = buf.position(); // should always be 0
+
+		buf.putInt(0); //DUMMY
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		log.trace("BEGIN Encoding message");
@@ -154,7 +195,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		}
 
 		log.trace("FINISHED Encoding message in {}. Buffer size: {}. Message: {}", stopwatch, DataSize.bytes(buf.remaining()), message);
-		buf.putInt(0, buf.position() - Integer.BYTES);
+
+		buf.putInt(initialPosition, buf.position() - initialPosition - Integer.BYTES);
 		buf.flip();
 
 		writeRequest.setMessage(buf);
@@ -162,6 +204,11 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		nextFilter.filterWrite(session, writeRequest);
 	}
 
+	/**
+	 * Uses {@link PipedInputStream} / {@link PipedOutputStream} to do the actual reading of incoming values in a separate thread.
+	 * <p>
+	 * Messages may arrive in variable sized chunks therefore we need to track remaining data.
+	 */
 	@Data
 	private class Reader {
 
@@ -173,13 +220,13 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		private int remaining;
 
 		@SneakyThrows
-		public Reader(int remaining, ObjectMapper mapper, NextFilter nextFilter, IoSession session) {
+		public Reader(int remaining, ObjectMapper mapper, NextFilter nextFilter, IoSession session, DataSize bufferSize) {
 			this.mapper = mapper;
 			this.nextFilter = nextFilter;
 			this.session = session;
 			this.remaining = remaining;
 			outputStream = new PipedOutputStream();
-			inputStream = new PipedInputStream(outputStream, ((int) DataSize.kilobytes(64).toBytes()));
+			inputStream = new PipedInputStream(outputStream, ((int) bufferSize.toBytes()));
 		}
 
 		public boolean receive(IoBuffer buffer) throws IOException {
@@ -204,9 +251,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 		public void read() {
 			try {
+				// This thread can and will pause when inputStream does not have enough data.
 				final NetworkMessage parsed = mapper.readValue(inputStream, NetworkMessage.class);
-				log.trace("Received {}", parsed);
-
 				nextFilter.messageReceived(session, parsed);
 			}
 			catch (IOException e) {

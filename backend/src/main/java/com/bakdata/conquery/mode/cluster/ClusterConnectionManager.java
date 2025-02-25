@@ -77,13 +77,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 		log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 
-		final Job job = new ReactingJob<>(toManagerNode,
-										  new NetworkMessageContext.ManagerNodeNetworkContext(nwSession,
-																							  datasetRegistry,
-																							  clusterState,
-																							  config.getCluster().getBackpressure()
-										  )
-		);
+		final Job job = new ReactingJob<>(toManagerNode, new NetworkMessageContext.ManagerNodeNetworkContext(nwSession, datasetRegistry, clusterState));
 
 		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
 			datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);

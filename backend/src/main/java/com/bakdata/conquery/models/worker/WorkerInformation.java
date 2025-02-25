@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,15 +29,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Min(0)
 	private int entityBucketSize;
-
-	public void awaitFreeJobQueue() {
-		try {
-			getConnectedShardNode().waitForFreeJobQueue();
-		}
-		catch (InterruptedException e) {
-			log.error("Interrupted while waiting for worker[{}] to have free space in queue", this, e);
-		}
-	}
 
 
 	@Override

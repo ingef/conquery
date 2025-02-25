@@ -57,7 +57,6 @@ public class MinaStackTest {
 	public static void beforeAll() throws IOException {
 
 		CLUSTER_CONFIG.setPort(0);
-		CLUSTER_CONFIG.setMaxIoBufferSizeBytes(toIntExact(DataSize.mebibytes(10).toBytes()));
 
 		// This enables the Chunking filter, which triggers for messages > 1 MebiByte
 		CLUSTER_CONFIG.getMina().setSendBufferSize(toIntExact(DataSize.mebibytes(1).toBytes()));
@@ -375,7 +374,7 @@ public class MinaStackTest {
 	public static class TestNetworkMessageContext extends NetworkMessageContext<TestMessage> {
 
 		public TestNetworkMessageContext(NetworkSession session) {
-			super(session, 0);
+			super(session);
 		}
 	}
 

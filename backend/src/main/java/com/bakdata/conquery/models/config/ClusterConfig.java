@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,7 +12,9 @@ import com.bakdata.conquery.io.mina.PipedJacksonProtocolFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
+import io.dropwizard.validation.DataSizeRange;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,22 +43,12 @@ public class ClusterConfig extends Configuration {
 	private Duration connectRetryTimeout = Duration.seconds(30);
 
 	/**
-	 * Defines the maximum buffer size inclusive 4 bytes for a header. Objects larger than this size cannot be sent over the cluster.
-	 * <p/>
-	 * May only touch this for testing purposes.
-	 */
-	@Max(Integer.MAX_VALUE - 4)
-	@Min(64) // not practical
-	private int maxIoBufferSizeBytes = Integer.MAX_VALUE - 4;
-
-	/**
 	 * Defines the starting buffer allocation size. Larger can reduce reallocations, but can cause a greater memory demand.
 	 * <p/>
 	 * May only touch this for testing purposes.
 	 */
-	@Max(Integer.MAX_VALUE - 4)
-	@Min(64) // Mina's default
-	private int initialIoBufferSizeBytes = 8192; // 8kb
+	@DataSizeRange(min = 64, max = Integer.MAX_VALUE - 4)
+	private DataSize initialIoBufferSize = DataSize.bytes(64);
 
 	/**
 	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
@@ -73,21 +64,13 @@ public class ClusterConfig extends Configuration {
 	 */
 	private int networkSessionMaxQueueLength = 5;
 
-	/**
-	 * Amount of backpressure before jobs can volunteer to block to send messages to their shards.
-	 * <p>
-	 * Mostly {@link com.bakdata.conquery.models.jobs.ImportJob} is interested in this. Note that an average import should create more than #Entities / {@linkplain #entityBucketSize} jobs (via {@link com.bakdata.conquery.models.jobs.CalculateCBlocksJob}) in short succession, which will cause it to sleep. This field helps alleviate memory pressure on the Shards by slowing down the Manager, should it be sending too fast.
-	 */
-	@Min(0)
-	private int backpressure = 1500;
-
 	@JsonIgnore
 	public NioSocketConnector getClusterConnector(ObjectMapper om, IoHandler ioHandler, String mdcLocation) {
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
+		final IoFilter codecFilter = new PipedJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
 
-		IoFilter codecFilter = new PipedJacksonProtocolFilter(om);
 
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		connector.getFilterChain().addLast("codec", codecFilter);
@@ -101,9 +84,9 @@ public class ClusterConfig extends Configuration {
 	@JsonIgnore
 	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocation) throws IOException {
 
-		NioSocketAcceptor acceptor = new NioSocketAcceptor();
+		final NioSocketAcceptor acceptor = new NioSocketAcceptor();
 
-		IoFilter codecFilter = new PipedJacksonProtocolFilter(om);
+		final IoFilter codecFilter = new PipedJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		acceptor.getFilterChain().addLast("codec", codecFilter);
