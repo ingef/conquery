@@ -19,8 +19,12 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ClusterConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.util.DataSize;
@@ -35,7 +39,6 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,12 +108,15 @@ public class MinaStackTest {
 	@Test
 	void smokeTest() {
 
-		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-																				 @Override
-																				 public void sessionOpened(IoSession session) {
-																					 log.info("Session to {} established", session.getRemoteAddress());
-																				 }
-																			 }, "Client"
+		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(
+				OM,
+				new IoHandlerAdapter() {
+					@Override
+					public void sessionOpened(IoSession session) {
+						log.info("Session to {} established", session.getRemoteAddress());
+					}
+				},
+				"Client"
 		);
 
 		try {
@@ -154,47 +160,51 @@ public class MinaStackTest {
 		try {
 			for (int clientI = 0; clientI < clientCount; clientI++) {
 				final int clientNumber = clientI;
-				final CompletableFuture<?> clientThread = CompletableFuture.runAsync(() -> {
-																						 final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-																																								  @Override
-																																								  public void sessionOpened(IoSession session) {
-																																									  log.info("Session to {} established", session.getRemoteAddress());
-																																								  }
+				final CompletableFuture<?> clientThread = CompletableFuture.runAsync(
+						() -> {
+							final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(
+									OM,
+									new IoHandlerAdapter() {
+										@Override
+										public void sessionOpened(IoSession session) {
+											log.info("Session to {} established", session.getRemoteAddress());
+										}
 
-																																								  @Override
-																																								  public void messageSent(IoSession session, Object message) {
-																																									  log.trace("Message written: {} bytes", ((TestMessage) message).data.getBytes().length);
-																																								  }
+										@Override
+										public void messageSent(IoSession session, Object message) {
+											log.trace("Message written: {} bytes", ((TestMessage) message).data.getBytes().length);
+										}
 
-																																								  @Override
-																																								  public void exceptionCaught(IoSession session, Throwable cause) {
-																																									  fail("Client[%d] caught an Exception".formatted(clientNumber), cause);
-																																								  }
-																																							  }, "Client"
-																						 );
-																						 try {
-																							 // Connect
-																							 final ConnectFuture connect = client.connect(SERVER.getLocalAddress());
-																							 connect.awaitUninterruptibly();
-																							 final IoSession clientSession = connect.getSession();
+										@Override
+										public void exceptionCaught(IoSession session, Throwable cause) {
+											fail("Client[%d] caught an Exception".formatted(clientNumber), cause);
+										}
+									},
+									"Client"
+							);
+							try {
+								// Connect
+								final ConnectFuture connect = client.connect(SERVER.getLocalAddress());
+								connect.awaitUninterruptibly();
+								final IoSession clientSession = connect.getSession();
 
-																							 for (int i = 0; i < messagesPerClient; i++) {
-																								 final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
+								for (int i = 0; i < messagesPerClient; i++) {
+									final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
 
-																								 final WriteFuture writeFuture = clientSession.write(input);
-																								 writeFuture.addListener((f) -> {
-																									 if (!((WriteFuture) f).isWritten()) {
-																										 fail("Failed to write a message");
-																									 }
-																									 messagesWritten.add(input);
-																								 });
-																								 writeFuture.awaitUninterruptibly();
-																							 }
-																						 }
-																						 finally {
-																							 client.dispose();
-																						 }
-																					 }, executorService
+									final WriteFuture writeFuture = clientSession.write(input);
+									writeFuture.addListener((f) -> {
+										if (!((WriteFuture) f).isWritten()) {
+											fail("Failed to write a message");
+										}
+										messagesWritten.add(input);
+									});
+									writeFuture.awaitUninterruptibly();
+								}
+							}
+							finally {
+								client.dispose();
+							}
+						}, executorService
 				);
 				clientThreads.add(clientThread);
 			}
@@ -202,7 +212,8 @@ public class MinaStackTest {
 			// Wait until all clients completed writing
 			CompletableFuture.allOf(clientThreads.toArray(new CompletableFuture[0])).join();
 
-			log.info("Waiting to receive all send messages");
+			log.info("Waiting to receive all sent messages");
+
 			// Wait until all messages are received
 			await().atMost(10, TimeUnit.SECONDS)
 				   .alias(String.format("Send and received same amount of messages (%s < %s)", SERVER_RECEIVED_MESSAGES.size(), messagesWritten.size()))
@@ -220,18 +231,20 @@ public class MinaStackTest {
 
 	@ParameterizedTest
 	@MethodSource("dataSizes")
-	void messageSizes(DataSize dataSize, boolean shouldPass) {
-		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-																				 @Override
-																				 public void sessionOpened(IoSession session) {
-																					 log.info("Session to {} established", session.getRemoteAddress());
-																				 }
+	void messageSizes(DataSize dataSize) {
+		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(
+				OM,
+				new IoHandlerAdapter() {
+					@Override
+					public void sessionOpened(IoSession session) {
+						log.info("Session to {} established", session.getRemoteAddress());
+					}
 
-																				 @Override
-																				 public void exceptionCaught(IoSession session, Throwable cause) {
-																					 log.trace("Failed to write message (probably expected)", cause);
-																				 }
-																			 }, "Client"
+					@Override
+					public void exceptionCaught(IoSession session, Throwable cause) {
+						log.trace("Failed to write message (probably expected)", cause);
+					}
+				}, "Client"
 		);
 
 		try {
@@ -249,12 +262,7 @@ public class MinaStackTest {
 
 			assertThat(write.isWritten())
 					.describedAs(() -> write.getException().toString())
-					.isEqualTo(shouldPass);
-
-			Assertions.setMaxStackTraceElementsDisplayed(200);
-			if (!shouldPass) {
-				assertThat(write.getException()).hasCauseInstanceOf(IllegalArgumentException.class);
-			}
+					.isEqualTo(true);
 
 			clientSession.closeNow().awaitUninterruptibly();
 		}
@@ -264,52 +272,57 @@ public class MinaStackTest {
 		}
 	}
 
-	//	TODO @Test
-	//	void differentMessageTypes() {
-	//
-	//		NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-	//																		   @Override
-	//																		   public void sessionOpened(IoSession session) {
-	//																			   log.info("Session to {} established", session.getRemoteAddress());
-	//																		   }
-	//																	   }, "Client"
-	//		);
-	//
-	//		try {
-	//
-	//			ConnectFuture connect = client.connect(SERVER.getLocalAddress());
-	//
-	//			connect.awaitUninterruptibly();
-	//			IoSession clientSession = connect.getSession();
-	//
-	//			NetworkMessage<?> input1 = new TestMessage(RandomStringUtils.randomAscii(1000));
-	//			WriteFuture write1 = clientSession.write(input1);
-	//
-	//			NetworkMessage<?> input2 = ForwardToWorker.create(new WorkerId(new DatasetId("dataset"), "worker"), new RequestConsistency());
-	//			WriteFuture write2 = clientSession.write(input2);
-	//
-	//			write1.awaitUninterruptibly();
-	//			write2.awaitUninterruptibly();
-	//
-	//			await().atMost(1, TimeUnit.MINUTES).until(() -> !SERVER_RECEIVED_MESSAGES.isEmpty());
-	//			assertThat(SERVER_RECEIVED_MESSAGES)
-	//					.containsExactlyInAnyOrder(input1, input2)
-	//					.usingRecursiveComparison();
-	//
-	//			clientSession.closeNow().awaitUninterruptibly();
-	//		}
-	//		finally {
-	//			client.dispose();
-	//
-	//		}
-	//	}
+	@Test
+	void differentMessageTypes() {
+
+		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(
+				OM,
+				new IoHandlerAdapter() {
+					@Override
+					public void sessionOpened(IoSession session) {
+						log.info("Session to {} established", session.getRemoteAddress());
+					}
+				},
+				"Client"
+		);
+
+		try {
+
+			final ConnectFuture connection = client.connect(SERVER.getLocalAddress());
+
+			connection.awaitUninterruptibly();
+
+			final IoSession session = connection.getSession();
+
+			final NetworkMessage<?> input1 = new TestMessage(RandomStringUtils.randomAscii(1000));
+			final WriteFuture write1 = session.write(input1);
+
+			final NetworkMessage<?> input2 = ForwardToWorker.create(new WorkerId(new DatasetId("dataset"), "worker"), new RequestConsistency());
+			final WriteFuture write2 = session.write(input2);
+
+			write1.awaitUninterruptibly();
+			write2.awaitUninterruptibly();
+
+			await().atMost(1, TimeUnit.MINUTES).until(() -> !SERVER_RECEIVED_MESSAGES.isEmpty());
+			assertThat(SERVER_RECEIVED_MESSAGES)
+					.containsExactlyInAnyOrder(input1, input2)
+					.usingRecursiveComparison();
+
+			session.closeNow().awaitUninterruptibly();
+		}
+		finally {
+			client.dispose();
+		}
+	}
 
 	/**
-	 * This test requires a little RAM because we hold the messages twice to compare sender and receiver payloads.
+	 * Transmit messages that force spilling.
+	 *
+	 * @implNote Even with a relatively well tuned test, the rate of spilling is less than 1%.
 	 */
 	@Test
 	void edgeBufferingTest() {
-		final int messagesPerClient = 5000;
+		final int totalMessages = 5000;
 		// 64Kibi is the max size of a buffer ON MY MACHINE.
 		// 57 is number of bytes in an empty TestMessage.
 		// 7+2 were tested to create the most edge-buffering. It's still well below 1% in this setup.
@@ -318,22 +331,24 @@ public class MinaStackTest {
 
 		final ConcurrentLinkedQueue<NetworkMessage<?>> messagesWritten = new ConcurrentLinkedQueue<>();
 
-		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(OM, new IoHandlerAdapter() {
-																				 @Override
-																				 public void sessionOpened(IoSession session) {
-																					 log.info("Session to {} established", session.getRemoteAddress());
-																				 }
+		final NioSocketConnector client = CLUSTER_CONFIG.getClusterConnector(
+				OM,
+				new IoHandlerAdapter() {
+					@Override
+					public void sessionOpened(IoSession session) {
+						log.info("Session to {} established", session.getRemoteAddress());
+					}
 
-																				 @Override
-																				 public void messageSent(IoSession session, Object message) {
-																					 log.trace("Message written: {} bytes", ((TestMessage) message).data.getBytes().length);
-																				 }
+					@Override
+					public void messageSent(IoSession session, Object message) {
+						log.trace("Message written: {} bytes", ((TestMessage) message).data.getBytes().length);
+					}
 
-																				 @Override
-																				 public void exceptionCaught(IoSession session, Throwable cause) {
-																					 fail("Client caught an Exception", cause);
-																				 }
-																			 }, "Client"
+					@Override
+					public void exceptionCaught(IoSession session, Throwable cause) {
+						fail("Client caught an Exception", cause);
+					}
+				}, "Client"
 		);
 		try {
 
@@ -342,7 +357,7 @@ public class MinaStackTest {
 			connect.awaitUninterruptibly();
 			final IoSession clientSession = connect.getSession();
 
-			for (int i = 0; i < messagesPerClient; i++) {
+			for (int i = 0; i < totalMessages; i++) {
 				final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
 
 				final WriteFuture writeFuture = clientSession.write(input);
@@ -355,7 +370,7 @@ public class MinaStackTest {
 				writeFuture.awaitUninterruptibly();
 			}
 
-			log.info("Waiting to receive all send messages");
+			log.info("Waiting to receive all sent messages");
 			// Wait until all messages are received
 			await().atMost(10, TimeUnit.SECONDS)
 				   .alias(String.format("Send and received same amount of messages (%s < %s)", SERVER_RECEIVED_MESSAGES.size(), messagesWritten.size()))
