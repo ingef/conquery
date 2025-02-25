@@ -17,6 +17,7 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -59,11 +60,20 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new RecodeStoreCommand());
 		bootstrap.addCommand(new MigrateCommand());
 
-		((MutableInjectableValues) confMapper.getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
+		MutableInjectableValues injectableValues = (MutableInjectableValues) confMapper.getInjectableValues();
+		injectableValues.add(Validator.class, bootstrap.getValidatorFactory().getValidator());
+		injectableValues.add(MetricRegistry.class, bootstrap.getMetricRegistry());
 
 		// do some setup in other classes after initialization but before running a
 		// command
 		bootstrap.addBundle(new ConfiguredBundle<>() {
+
+			@Override
+			public void initialize(Bootstrap<?> bootstrap) {
+				// Allow overriding of config from environment variables.
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
+			}
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) {
@@ -76,13 +86,6 @@ public class Conquery extends Application<ConqueryConfig> {
 						bind(configuration).to(ConqueryConfig.class);
 					}
 				});
-			}
-
-			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
-						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
 			}
 		});
 
