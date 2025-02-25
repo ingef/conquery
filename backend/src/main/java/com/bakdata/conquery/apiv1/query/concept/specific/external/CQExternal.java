@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
+import groovyjarjarantlr4.v4.runtime.atn.LexerIndexedCustomAction;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
@@ -260,6 +261,21 @@ public class CQExternal extends CQElement {
 		log.error("Duplicate Headers {}", duplicates);
 
 		return false;
+	}
+
+	@JsonIgnore
+	public boolean isWithExtras() {
+		return extra != null && !extra.isEmpty();
+	}
+
+	public List<Map.Entry<String, List<String>>> getExtrasForId(String id) {
+		Map<String, List<String>> extras = extra.getOrDefault(id, Collections.emptyMap());
+		// we need to bring the extras in the correct order
+		List<Map.Entry<String, List<String>>> inOrder = new ArrayList<>();
+		Arrays.stream(headers)
+			  .filter(extras::containsKey)
+			  .forEach(header -> inOrder.add(Map.entry(header, extras.get(header))));
+		return inOrder;
 	}
 
 }
