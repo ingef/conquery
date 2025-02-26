@@ -2,9 +2,14 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -18,7 +23,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FormConfigId extends Id<FormConfig> implements MetaId {
+public class FormConfigId extends Id<FormConfig> implements MetaId, Owned {
 
 
 	private final DatasetId dataset;
@@ -44,7 +49,17 @@ public class FormConfigId extends Id<FormConfig> implements MetaId {
 		return storage.getFormConfig(this);
 	}
 
-	public static enum Parser implements IdUtil.Parser<FormConfigId> {
+	@Override
+	public UserId getOwner() {
+		return resolve().getOwner();
+	}
+
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return FormConfigPermission.onInstance(abilities, this);
+	}
+
+	public enum Parser implements IdUtil.Parser<FormConfigId> {
 		INSTANCE;
 
 		@Override

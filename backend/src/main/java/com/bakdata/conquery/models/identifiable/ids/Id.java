@@ -92,7 +92,7 @@ public abstract class Id<TYPE> {
 
 	public TYPE resolve() {
 		if (this instanceof NamespacedId namespacedId) {
-			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().getStorage(namespacedId.getDataset()));
+			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().resolveStorage(namespacedId.getDataset()));
 		}
 		if (this instanceof MetaId) {
 			return metaStorage.resolve((Id<?> & MetaId)this);

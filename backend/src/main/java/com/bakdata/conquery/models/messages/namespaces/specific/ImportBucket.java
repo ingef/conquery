@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
@@ -26,7 +27,11 @@ public class ImportBucket extends WorkerMessage {
 	public void react(Worker context) throws Exception {
 		log.debug("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
 
-		context.addBucket(bucket);
+		context.getJobManager().addSlowJob(new SimpleJob("Adding Bucket " + bucket.getId(), () -> {
+			log.debug("BEGIN adding Bucket {}", bucket.getId());
+			context.addBucket(bucket);
+			log.trace("DONE adding Bucket {}", bucket.getId());
+		}));
 	}
 
 	@Override

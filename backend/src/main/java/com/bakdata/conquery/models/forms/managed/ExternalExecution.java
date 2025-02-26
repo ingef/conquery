@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.result.ExternalState;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -57,8 +58,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	private UUID externalTaskId;
 
-	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
-		super(form, user, dataset, metaStorage, datasetRegistry);
+	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(form, user, dataset, metaStorage, datasetRegistry, config);
 	}
 
 
@@ -124,7 +125,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 				state.setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE);
 			}
-			case CANCELLED -> reset();
+			case CANCELLED -> getExecutionManager().reset(getId());
 		}
 	}
 
@@ -173,9 +174,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		super.setStatusBase(subject, status);
 	}
 
-	@Override
 	public void cancel() {
-		//TODO this is no longer called as the ExecutionManager used to call this.
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
 		final ExternalState state = getExecutionManager().getResult(getId());

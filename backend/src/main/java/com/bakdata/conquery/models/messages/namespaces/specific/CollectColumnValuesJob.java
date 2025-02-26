@@ -10,12 +10,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -53,6 +55,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	private final int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors(), 5);
 
 	public final int columValueChunkSize;
+
+	@NotNull
 	@Getter
 	private final Set<ColumnId> columns;
 
@@ -65,13 +69,18 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<TableId, List<Bucket>> table2Buckets = context.getStorage().getAllBuckets()
-																.collect(Collectors.groupingBy(Bucket::getTable));
+		Map<TableId, List<BucketId>> table2Buckets;
+		try(Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
+			table2Buckets = allBuckets
+					.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
+		}
 
 		BasicThreadFactory threadFactory = (new BasicThreadFactory.Builder()).namingPattern(this.getClass().getSimpleName() + "-Worker-%d").build();
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 		final AtomicInteger done = new AtomicInteger();
+
+		getProgressReporter().setMax(columns.size());
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
@@ -80,9 +89,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 					   .map(column -> {
 								// Acquire before submitting, so we don't spam the executor with waiting threads
 								return jobsExecutorService.submit(() -> {
-									final List<Bucket> buckets = table2Buckets.get(column.getTable().getId());
+									final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
 
 									final Set<String> values = buckets.stream()
+																	  .map(BucketId::resolve)
 																	  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
 																	  .collect(Collectors.toSet());
 
@@ -130,7 +140,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
-		getProgressReporter().done();
 
 		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
@@ -184,7 +193,6 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				}
 			}
 
-			getProgressReporter().done();
 			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
 		}
 

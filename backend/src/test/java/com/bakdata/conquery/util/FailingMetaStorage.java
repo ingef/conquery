@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
@@ -34,7 +33,7 @@ public class FailingMetaStorage extends MetaStorage {
 	}
 
 	@Override
-	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper mapper) {
 		throw new UnsupportedOperationException(ERROR_MSG);
 	}
 
