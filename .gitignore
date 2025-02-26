@@ -77,4 +77,3 @@ tutorial/mimic_iii_demo/data/**
 /node_modules
 cypress/screenshots/
 cypress/videos/
-/cypress/support/test_data/table.cqpp

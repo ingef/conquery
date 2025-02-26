@@ -53,6 +53,9 @@ public class ResultCsvProcessor {
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
 
+		// Initialize execution so columns can be correctly accounted
+		exec.initExecutable();
+
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		// Get the locale extracted by the LocaleFilter

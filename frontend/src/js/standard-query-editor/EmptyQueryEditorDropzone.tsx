@@ -62,7 +62,7 @@ export const EmptyQueryEditorDropzone = memo(() => {
   const { t } = useTranslation();
 
   return (
-    <TextInitial>
+    <TextInitial data-test-id="text-initial">
       <Headline className="text-2xl leading-tight font-bold">
         {t("dropzone.explanation")}
       </Headline>
