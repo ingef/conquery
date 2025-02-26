@@ -1,0 +1,14 @@
+{{ if .Values.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.storage.name }}
+spec:
+  accessModes:
+    {{ toYaml .Values.storage.accessModes }}
+  volumeMode: {{ .Values.storage.volumeMode }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+  storageClassName: {{ .Values.storage.storageClass }}
+{{ end }}
