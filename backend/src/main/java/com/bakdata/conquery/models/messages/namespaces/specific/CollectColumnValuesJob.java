@@ -80,8 +80,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final AtomicInteger done = new AtomicInteger();
 
-		// Might be too much because they get filtered, but no problem
-		getProgressReporter().setMax(columns.size());
+		getProgressReporter().setMax(columns.stream()
+					   .filter(column -> table2Buckets.get(column.getTable()) != null).count());
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
