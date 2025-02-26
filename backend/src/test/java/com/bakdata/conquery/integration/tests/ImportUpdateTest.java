@@ -141,7 +141,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			//copy new content of the importTable into the csv-File used by the preprocessor to avoid creating multiple files withe same names
 			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
-											  .asStream(), new File(conquery.getTmpDir(), csvName));
+											  .asStream(), new File(conquery.getTmpDir(), csvName)
+			);
 
 			File descriptionFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
 			File newPreprocessedFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
@@ -170,9 +171,6 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			log.info("updating import");
 			//correct update of the import
 			LoadingUtil.uploadCqpp(conquery, newPreprocessedFile, true, Response.Status.Family.SUCCESSFUL);
-			conquery.waitUntilWorkDone();
-
-
 			conquery.waitUntilWorkDone();
 		}
 
@@ -207,8 +205,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 							.isNotEmpty();
 
 					// Must contain the import.
-					assertThat(workerStorage.getImport(importId1))
-							.isNotNull();
+					assertThat(workerStorage.getImport(importId1)).isNotNull();
 				}
 			}
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(9);

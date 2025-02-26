@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,7 +29,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -112,6 +109,8 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
 										WriteFuture send = context.send(message);
 
+										send.awaitUninterruptibly();
+
 										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
 									}
 
@@ -123,25 +122,14 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 					   .collect(Collectors.toList());
 
 
-		final ListenableFuture<List<Object>> all = Futures.allAsList(futures);
-
-		while (true) {
-			try {
-				all.get(30, TimeUnit.SECONDS);
-				break;
-			}
-			catch (ExecutionException e) {
-				throw new RuntimeException(e);
-			}
-			catch (TimeoutException e) {
-				log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
-			}
-		}
-
 		// We may do this, because we own this specific ExecutorService.
 		jobsExecutorService.shutdown();
 
-		log.info("Finished collecting values from these columns: {}", Arrays.toString(columns.toArray()));
+		while (!jobsExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
+			log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
+		}
+
+		log.info("Finished collecting values from {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}
 
