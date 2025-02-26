@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.cps.SubTyped;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
@@ -133,8 +134,8 @@ public class ExternalForm extends Form implements SubTyped {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new ExternalExecution(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new ExternalExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override

@@ -128,6 +128,11 @@ describe("Reference list", () => {
     // Check that node was inserted in query editor
     cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector")
     cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
+
+    // Clear editor
+    cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
+    cy.get('@queryEditor').find('button[data-test-id="confirm"]').click()
+    cy.get('@queryEditor').find('[data-test-id="text-initial"]')
   })
 
   it("Use reference list to resolve filter values", () =>{

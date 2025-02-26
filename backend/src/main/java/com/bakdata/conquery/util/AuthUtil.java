@@ -1,5 +1,7 @@
 package com.bakdata.conquery.util;
 
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -43,11 +45,13 @@ public class AuthUtil {
 
 		log.debug("Removed {} form configs and {} executions for user '{}'", countForms, countExecs, user);
 
-		for (Group group : storage.getAllGroups().toList()) {
-			if (group.containsMember(user)) {
-				group.removeMember(user.getId());
-				group.updateStorage();
-				log.debug("Removed user '{}' from group '{}'", user.getId(), group.getId());
+		try(Stream<Group> allGroups = storage.getAllGroups()) {
+			for (Group group : allGroups.toList()) {
+				if (group.containsMember(user)) {
+					group.removeMember(user.getId());
+					group.updateStorage();
+					log.debug("Removed user '{}' from group '{}'", user.getId(), group.getId());
+				}
 			}
 		}
 

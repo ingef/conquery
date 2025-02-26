@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -51,10 +52,14 @@ public class FrontEndConceptBuilder {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
-		final List<? extends Concept<?>> allConcepts = storage.getAllConcepts()
-															  // Remove any hidden concepts
-															  .filter(Predicate.not(Concept::isHidden))
-															  .toList();
+		final List<? extends Concept<?>> allConcepts;
+		try(Stream<Concept<?>> conceptStream = storage.getAllConcepts()) {
+
+			allConcepts = conceptStream
+					// Remove any hidden concepts
+					.filter(Predicate.not(Concept::isHidden))
+					.toList();
+		}
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
@@ -83,11 +88,13 @@ public class FrontEndConceptBuilder {
 			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
-		root.getSecondaryIds()
-			.addAll(storage.getSecondaryIds()
-						   .filter(sid -> !sid.isHidden())
-						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
-						   .collect(Collectors.toSet()));
+		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
+			root.getSecondaryIds()
+				.addAll(secondaryIds
+								.filter(sid -> !sid.isHidden())
+								.map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
+								.collect(Collectors.toSet()));
+		}
 
 		return root;
 	}

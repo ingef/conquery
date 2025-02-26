@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -42,20 +43,22 @@ public class ReportConsistency extends NamespaceMessage {
 
     @Override
     public void react(DistributedNamespace context) throws Exception {
-        Set<ImportId> managerImports = context.getStorage().getAllImports().map(Import::getId).collect(Collectors.toSet());
+		try(Stream<Import> allImports = context.getStorage().getAllImports()) {
+			Set<ImportId> managerImports = allImports.map(Import::getId).collect(Collectors.toSet());
 
-        Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
+			Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 
-        boolean importsOkay = isConsistent("Imports", managerImports, workerImports, workerId);
-        boolean bucketsOkay = isConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);
+			boolean importsOkay = isConsistent("Imports", managerImports, workerImports, workerId);
+			boolean bucketsOkay = isConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);
 
-        log.trace("Imports on worker[{}}: {}", workerId, workerImports);
-        log.trace("Buckets on worker[{}}: {}", workerId, workerBuckets);
+			log.trace("Imports on worker[{}}: {}", workerId, workerImports);
+			log.trace("Buckets on worker[{}}: {}", workerId, workerBuckets);
 
-        if (importsOkay && bucketsOkay) {
-            log.info("Consistency check was successful");
-            return;
-        }
+			if (importsOkay && bucketsOkay) {
+				log.info("Consistency check was successful");
+				return;
+			}
+		}
         throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
     }
 

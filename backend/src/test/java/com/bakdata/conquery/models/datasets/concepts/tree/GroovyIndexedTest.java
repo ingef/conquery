@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -41,6 +40,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class GroovyIndexedTest {
 
 	public static final int SEED = 500;
+	private static final String CONCEPT_SOURCE = "groovy.concept.json";
+	private static TreeConcept indexedConcept;
+	private static TreeConcept oldConcept;
 
 	public static Stream<Arguments> getTestKeys() {
 		final Random random = new Random(SEED);
@@ -55,10 +57,6 @@ public class GroovyIndexedTest {
 					 .map(v -> Arguments.of(v, rowMap.get()));
 	}
 
-	private static TreeConcept indexedConcept;
-	private static TreeConcept oldConcept;
-	private static final String CONCEPT_SOURCE = "groovy.concept.json";
-
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
@@ -66,7 +64,7 @@ public class GroovyIndexedTest {
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest");
-		storage.openStores(mapper, new MetricRegistry());
+		storage.openStores(mapper);
 		Table table = new Table();
 
 		table.setName("the_table");

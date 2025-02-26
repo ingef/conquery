@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -87,18 +88,21 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		if (namespace.getStorage().getTables().findAny().isPresent()) {
-			throw new WebApplicationException(
-					String.format(
-							"Cannot delete dataset `%s`, because it still has tables: `%s`",
-							dataset.getId(),
-							namespace.getStorage().getTables()
-									 .map(Table::getId)
-									 .map(Objects::toString)
-									 .collect(Collectors.joining(","))
-					),
-					Response.Status.CONFLICT
-			);
+		try(Stream<Table> tableStream = namespace.getStorage().getTables()) {
+			List<Table> tables = tableStream.toList();
+			if (!tables.isEmpty()) {
+				throw new WebApplicationException(
+						String.format(
+								"Cannot delete dataset `%s`, because it still has tables: `%s`",
+								dataset.getId(),
+								tables.stream()
+										 .map(Table::getId)
+										 .map(Objects::toString)
+										 .collect(Collectors.joining(","))
+						),
+						Response.Status.CONFLICT
+				);
+			}
 		}
 
 		datasetRegistry.removeNamespace(dataset.getId());
@@ -129,10 +133,13 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
-		final List<Column> dependents = namespace.getStorage().getTables()
-												 .map(Table::getColumns).flatMap(Arrays::stream)
+		final List<Column> dependents;
+		try(Stream<Table> tables = namespace.getStorage().getTables()) {
+
+												 dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
 												 .filter(column -> secondaryId.getId().equals(column.getSecondaryId()))
 												 .toList();
+		}
 
 		if (!dependents.isEmpty()) {
 			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
@@ -284,19 +291,24 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(table.getDataset());
 
 		TableId tableId = table.getId();
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().flatMap(c -> c.getConnectors().stream())
-															.filter(con -> con.getResolvedTableId().equals(tableId))
-															.map(Connector::getConcept)
-															.collect(Collectors.toList());
+		final List<Concept<?>> dependentConcepts;
+		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+			dependentConcepts = allConcepts.flatMap(c -> c.getConnectors().stream())
+																  .filter(con -> con.getResolvedTableId().equals(tableId))
+																  .map(Connector::getConcept)
+																  .collect(Collectors.toList());
+		}
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {
 				deleteConcept(concept.getId());
 			}
 
-			namespace.getStorage().getAllImports()
-					 .filter(imp -> imp.getTable().equals(tableId))
-					 .forEach(this::deleteImport);
+			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+				allImports
+						.filter(imp -> imp.getTable().equals(tableId))
+						.forEach(this::deleteImport);
+			}
 
 			namespace.getStorage().removeTable(tableId);
 			storageListener.onRemoveTable(table);

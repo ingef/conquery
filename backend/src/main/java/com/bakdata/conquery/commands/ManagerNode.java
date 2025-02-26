@@ -26,9 +26,9 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
+import com.bakdata.conquery.tasks.LoadStorageTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
-import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
@@ -150,33 +150,35 @@ public class ManagerNode implements Managed {
 	@SneakyThrows(InterruptedException.class)
 	public void loadNamespaces() {
 
+		try(ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
+			DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
 
-		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
-
-		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
-		for (NamespaceStorage namespaceStorage : namespaceStorages) {
-			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
-			});
-		}
+			// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
+			final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
+			for (NamespaceStorage namespaceStorage : namespaceStorages) {
+				loaders.submit(() -> {
+					registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
+				});
+			}
 
 
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = registry.getDatasets().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
-																												  - coundLoaded);
+			loaders.shutdown();
+			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+				final int countLoaded = registry.getNamespaces().size();
+				log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																													  - countLoaded);
+			}
 		}
 	}
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()), getEnvironment().metrics());
-		log.info("Loading MetaStorage");
-		getMetaStorage().loadData();
-		log.info("MetaStorage loaded {}", getMetaStorage());
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
+		if (getConfig().getStorage().isLoadStoresOnStart()) {
+			log.info("BEGIN loading MetaStorage");
+			getMetaStorage().loadData();
+			log.debug("DONE loading MetaStorage {}", getMetaStorage());
+		}
 	}
 
 	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
@@ -189,7 +191,7 @@ public class ManagerNode implements Managed {
 
 		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
+		environment.admin().addTask(new LoadStorageTask(getName(), getMetaStorage(), getDatasetRegistry()));
 
 		final ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
