@@ -41,11 +41,7 @@ public class CalculateCBlocksJob extends Job {
 	private final ExecutorService executorService;
 
 	public void addCBlock(BucketId bucketId, ConceptTreeConnector connector) {
-		tasks.add(createInformationProcessor(connector, bucketId));
-	}
-
-	private CalculationInformationProcessor createInformationProcessor(ConceptTreeConnector connector, BucketId bucketId) {
-		return new CalculationInformationProcessor(connector, bucketId, bucketManager, storage);
+		tasks.add(new CalculationInformationProcessor(connector, bucketId, bucketManager, storage));
 	}
 
 	@Override
