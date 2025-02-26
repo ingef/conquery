@@ -31,6 +31,7 @@ import io.dropwizard.util.DataSize;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.mina.core.future.ConnectFuture;
@@ -126,7 +127,7 @@ public class MinaStackTest {
 			connect.awaitUninterruptibly();
 			final IoSession clientSession = connect.getSession();
 
-			final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(1000));
+			final NetworkMessage<?> input = new TestMessage("smokeTest", RandomStringUtils.randomAscii(1000));
 
 			final WriteFuture write = clientSession.write(input);
 
@@ -189,7 +190,8 @@ public class MinaStackTest {
 								final IoSession clientSession = connect.getSession();
 
 								for (int i = 0; i < messagesPerClient; i++) {
-									final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
+									final NetworkMessage<?> input =
+											new TestMessage("concurrentWrite_" + clientNumber, RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
 
 									final WriteFuture writeFuture = clientSession.write(input);
 									writeFuture.addListener((f) -> {
@@ -254,7 +256,7 @@ public class MinaStackTest {
 			connect.awaitUninterruptibly();
 			final IoSession clientSession = connect.getSession();
 
-			final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(toIntExact(dataSize.toBytes())));
+			final NetworkMessage<?> input = new TestMessage("sizes_" + dataSize, RandomStringUtils.randomAscii(toIntExact(dataSize.toBytes())));
 
 			final WriteFuture write = clientSession.write(input);
 
@@ -262,13 +264,17 @@ public class MinaStackTest {
 
 			assertThat(write.isWritten())
 					.describedAs(() -> write.getException().toString())
-					.isEqualTo(true);
+					.isTrue();
 
 			clientSession.closeNow().awaitUninterruptibly();
+
+			// Wait until all messages are received
+			await().atMost(10, TimeUnit.SECONDS)
+				   .alias(String.format("Receive the message (%s)", SERVER_RECEIVED_MESSAGES.size()))
+				   .until(() -> SERVER_RECEIVED_MESSAGES.size() == 1);
 		}
 		finally {
 			client.dispose();
-
 		}
 	}
 
@@ -294,7 +300,7 @@ public class MinaStackTest {
 
 			final IoSession session = connection.getSession();
 
-			final NetworkMessage<?> input1 = new TestMessage(RandomStringUtils.randomAscii(1000));
+			final NetworkMessage<?> input1 = new TestMessage("messageTypes", RandomStringUtils.randomAscii(1000));
 			final WriteFuture write1 = session.write(input1);
 
 			final NetworkMessage<?> input2 = ForwardToWorker.create(new WorkerId(new DatasetId("dataset"), "worker"), new RequestConsistency());
@@ -358,7 +364,7 @@ public class MinaStackTest {
 			final IoSession clientSession = connect.getSession();
 
 			for (int i = 0; i < totalMessages; i++) {
-				final NetworkMessage<?> input = new TestMessage(RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
+				final NetworkMessage<?> input = new TestMessage("spillBufferTest", RandomStringUtils.randomAscii(minMessageLength, maxMessageLength));
 
 				final WriteFuture writeFuture = clientSession.write(input);
 				writeFuture.addListener((f) -> {
@@ -397,13 +403,17 @@ public class MinaStackTest {
 	@RequiredArgsConstructor
 	@Getter
 	@EqualsAndHashCode(callSuper = false)
+	@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 	public static class TestMessage extends NetworkMessage<TestNetworkMessageContext> {
 
+		@ToString.Include
+		private final String source;
 		private final String data;
 
 		@JsonCreator
-		public TestMessage(String data, UUID messageId) {
+		public TestMessage(String source, String data, UUID messageId) {
 			setMessageId(messageId);
+			this.source = source;
 			this.data = data;
 		}
 
