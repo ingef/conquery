@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
+import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
 import org.apache.arrow.vector.FieldVector;
@@ -181,14 +182,14 @@ public class ArrowRenderer {
 		};
 	}
 
-	private static RowConsumer moneyVectorFiller(IntVector vector) {
+	private static RowConsumer moneyVectorFiller(BigIntVector vector) {
 		return (rowNumber, valueRaw) -> {
 			if (valueRaw == null) {
 				vector.setNull(rowNumber);
 				return;
 			}
 
-			final int value = (int) valueRaw;
+			final long value = (long) valueRaw;
 
 			vector.setSafe(rowNumber, value);
 		};
@@ -308,7 +309,7 @@ public class ArrowRenderer {
 		return switch (((ResultType.Primitive) type)) {
 			case BOOLEAN -> bitVectorFiller(((BitVector) vector));
 			case INTEGER -> intVectorFiller(((IntVector) vector));
-			case MONEY -> moneyVectorFiller(((IntVector) vector));
+			case MONEY -> moneyVectorFiller(((BigIntVector) vector));
 			case DATE -> dateDayVectorFiller(((DateDayVector) vector));
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));
