@@ -26,6 +26,7 @@ import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.session.AttributeKey;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -63,7 +64,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 	private final ObjectMapper mapper;
 	private final int initialBufferLength;
-	private final BlockingQueue<Future<Reader>> readersInOrder = new LinkedBlockingQueue<>();
+
+	private final BlockingQueue<Future<Reader>> readersInArrivalOrder = new LinkedBlockingQueue<>();
 
 	private final ExecutorService readerThreads = Executors.newCachedThreadPool((runnable) -> {
 		Thread thread = THREAD_BUILDER.unstarted(runnable);
@@ -94,7 +96,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	private void publish() {
 		while (true) {
 			try {
-				final Future<Reader> readerFuture = readersInOrder.take();
+				final Future<Reader> readerFuture = readersInArrivalOrder.take();
 				log.trace("BEGIN waiting for {}", readerFuture);
 
 				final Reader reader = readerFuture.get();
@@ -144,13 +146,19 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 	@Nullable
 	private Reader getAsyncReader(NextFilter nextFilter, IoSession session, IoBuffer buffer) throws IOException {
-		Reader asyncReader = (Reader) session.getAttribute(READER_KEY);
+		final Reader asyncReader = (Reader) session.getAttribute(READER_KEY);
 
 		if (asyncReader != null) {
 			return asyncReader;
 		}
 
-		if (requiresEdgeBuffering(session, buffer)) {
+		if (requiresEdgeBuffering(buffer)) {
+
+			final IoBuffer spillBuffer = createSpillBuffer(buffer);
+
+			final Object priorSpill = session.setAttribute(SPILL_BUFFER, spillBuffer);
+			assert priorSpill == null;
+
 			// Buffer contains only partial length we need to combine with the next buffer.
 			return null;
 		}
@@ -162,14 +170,23 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		final Reader reader = new Reader(bufferLength, mapper, nextFilter, session, PIPED_IO_BUFFER_SIZE);
 
 		// Enqueue the reader so that it can be bubbled up in order.
-		readersInOrder.add(reader.getFutureSelf());
+		readersInArrivalOrder.add(reader.getFutureSelf());
 		readerThreads.submit(reader::read);
 
-		asyncReader = reader;
+		session.setAttribute(READER_KEY, reader);
 
-		session.setAttribute(READER_KEY, asyncReader);
+		return reader;
+	}
 
-		return asyncReader;
+	@NotNull
+	private static IoBuffer createSpillBuffer(IoBuffer buffer) throws IOException {
+		log.trace("Not enough content in current buffer ({} bytes), spilling.", buffer.remaining());
+
+		final IoBuffer spillBuffer = IoBuffer.allocate(Integer.BYTES, false);
+		spillBuffer.setAutoExpand(false);
+
+		buffer.asInputStream().transferTo(spillBuffer.asOutputStream());
+		return spillBuffer;
 	}
 
 	/**
@@ -178,23 +195,8 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	 * <p>
 	 * Incoming buffers will combine their remaining part of the prefixed-length.
 	 */
-	private boolean requiresEdgeBuffering(IoSession session, IoBuffer buffer) throws IOException {
-		if (buffer.remaining() >= Integer.BYTES) {
-			return false;
-		}
-
-		assert session.getAttribute(SPILL_BUFFER) == null;
-
-		log.trace("Not enough content in current buffer ({} bytes), spilling.", buffer.remaining());
-
-		final IoBuffer spillBuffer = IoBuffer.allocate(Integer.BYTES, false);
-		spillBuffer.setAutoExpand(false);
-
-		buffer.asInputStream().transferTo(spillBuffer.asOutputStream());
-
-		session.setAttribute(SPILL_BUFFER, spillBuffer);
-
-		return true;
+	private boolean requiresEdgeBuffering(IoBuffer buffer) {
+		return buffer.remaining() < Integer.BYTES;
 	}
 
 	/**
@@ -321,6 +323,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 				futureSelf.complete(this);
 			}
 			catch (IOException e) {
+				futureSelf.completeExceptionally(e);
 				log.error("Something went wrong reading from {}", session, e);
 			}
 		}
