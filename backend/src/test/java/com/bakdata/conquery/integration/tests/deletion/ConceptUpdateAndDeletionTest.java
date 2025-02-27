@@ -141,8 +141,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getConcept(conceptId))
-							.isNotNull();
+					assertThat(workerStorage.getConcept(conceptId)).isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())

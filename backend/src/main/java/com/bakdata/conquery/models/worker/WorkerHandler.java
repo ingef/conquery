@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
@@ -35,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class WorkerHandler {
 
-	private final ObjectMapper communicationMapper;
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
@@ -173,8 +171,6 @@ public class WorkerHandler {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		info.setCommunicationWriter(communicationMapper.writer());
-
 		workers.add(info);
 
 		for (Integer bucket : info.getIncludedBuckets()) {
@@ -206,6 +202,10 @@ public class WorkerHandler {
 		registerBucketForWorker(responsibleWorkerForBucket.getId(), bucket);
 
 		return responsibleWorkerForBucket;
+	}
+
+	public boolean hasPendingMessages() {
+		return !pendingReactions.isEmpty();
 	}
 
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {

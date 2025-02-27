@@ -20,7 +20,7 @@ public class AddShardNode extends MessageToManagerNode {
 
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeNetworkContext context) throws Exception {
-		final ShardNodeInformation nodeInformation = new ShardNodeInformation(context.getSession(), context.getBackpressure());
+		final ShardNodeInformation nodeInformation = new ShardNodeInformation(context.getSession());
 		context.getClusterState().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
 
 		log.info("ShardNode `{}` registered.", context.getRemoteAddress());
