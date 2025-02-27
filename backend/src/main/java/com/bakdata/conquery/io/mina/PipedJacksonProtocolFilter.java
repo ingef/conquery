@@ -278,11 +278,18 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		}
 
 		private void awaitPrior() throws InterruptedException {
-			while (prior != null && !prior.isDone()) {
+			if (prior == null){
+				return;
+			}
+
+			while (!prior.isDone()) {
 				synchronized (prior) {
+					if (prior.isDone()){
+						break;
+					}
 					prior.wait(10_000); // 10s is already a lot.
-					log.warn("{} waiting for prior ({}) for a long time.", this, prior);
 				}
+				log.warn("{} waiting for prior ({}) for a long time.", this, prior);
 			}
 		}
 
