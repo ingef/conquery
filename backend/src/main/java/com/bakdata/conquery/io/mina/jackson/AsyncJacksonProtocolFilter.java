@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
  * - We repeat 3) until {@link IoBuffer#hasRemaining()} returns false, to respect the existence of multiple messages in a single buffer.
  * 4) If a Reader signals finalization we clear the Sessions reference to it, to force creation of a new one.
  * 5) The reader receives the {@link IoSession} and {@link NextFilter} as parameters to ensure correct chainig. As a filter can be used by multiple sessions at once.
+ *
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
@@ -153,16 +154,20 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 		}
 
 		if (requiresSpillBuffer(buffer)) {
-			final IoBuffer spillBuffer = createSpillBuffer(buffer);
-
-			final IoBuffer priorSpill = setSessionSpillBuffer(session, spillBuffer);
-			assert priorSpill == null;
-
+			createSpillBuffer(buffer, session);
 			// Buffer contains only partial length we need to combine with the next buffer.
 			return null;
 		}
 
-		final int bufferLength = calculateMessageLength(session, buffer);
+		final int bufferLength;
+
+		if (sessionHasSpillBuffer(session)) {
+			bufferLength = lengthWithSpillBuffer(session, buffer);
+		}
+		else {
+			// It's simply the prefix
+			bufferLength = buffer.getInt();
+		}
 
 		final AsyncReader reader = newAsyncReader(bufferLength, nextFilter, session);
 
@@ -190,19 +195,21 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	}
 
 	@NotNull
-	private static IoBuffer createSpillBuffer(IoBuffer buffer) throws IOException {
-		log.trace("Not enough content in current buffer ({} bytes), spilling.", buffer.remaining());
+	private static void createSpillBuffer(IoBuffer buffer, IoSession session) throws IOException {
+		synchronized (session) {
+			log.trace("Not enough content in current buffer ({} bytes), spilling.", buffer.remaining());
 
-		final IoBuffer spillBuffer = IoBuffer.allocate(Integer.BYTES, false);
-		spillBuffer.setAutoExpand(false);
+			final IoBuffer spillBuffer = IoBuffer.allocate(Integer.BYTES, false);
+			spillBuffer.setAutoExpand(false);
 
-		buffer.asInputStream().transferTo(spillBuffer.asOutputStream());
-		return spillBuffer;
+			buffer.asInputStream().transferTo(spillBuffer.asOutputStream());
+
+
+			final IoBuffer priorSpill = setSessionSpillBuffer(session, spillBuffer);
+			assert priorSpill == null;
+		}
 	}
 
-	private static IoBuffer setSessionSpillBuffer(IoSession session, IoBuffer spillBuffer) {
-		return (IoBuffer) session.setAttribute(SPILL_BUFFER, spillBuffer);
-	}
 
 	/**
 	 * Reads the length of the incoming buffer.
@@ -213,12 +220,7 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	 * In that case we spill the remaining bytes into a separate buffer and append the incoming few bytes (at most 3!) into a separate buffer to calculate the length.
 	 * This avoids costly copying and reallocation but looks really rather funky.
 	 */
-	private int calculateMessageLength(IoSession session, IoBuffer buffer) throws IOException {
-
-		if (!sessionHasSpillBuffer(session)) {
-			return buffer.getInt();
-		}
-
+	private static int lengthWithSpillBuffer(IoSession session, IoBuffer buffer) throws IOException {
 		final IoBuffer spillBuffer = setSessionSpillBuffer(session, null);
 
 		log.trace("Found existing spill-buffer {}, incoming {}", DataSize.bytes(spillBuffer.position()), DataSize.bytes(buffer.limit()));
@@ -241,6 +243,10 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 
 		readerThreads.submit(reader::read);
 		return reader;
+	}
+
+	private static IoBuffer setSessionSpillBuffer(IoSession session, IoBuffer spillBuffer) {
+		return (IoBuffer) session.setAttribute(SPILL_BUFFER, spillBuffer);
 	}
 
 	private static boolean sessionHasSpillBuffer(IoSession session) {
