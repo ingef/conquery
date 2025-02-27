@@ -109,7 +109,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 									context.send(message);
 
-									log.debug("Finished sending chunk {} for column '{}'", i++, column.getId());
+									log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
 								}
 
 								getProgressReporter().report(1);

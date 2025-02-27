@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -45,12 +44,7 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		if (log.isTraceEnabled()) {
-			log.trace("Registering {} values for column '{}': {}", size(), column, Arrays.toString(values.toArray()));
-		}
-		else {
-			log.debug("Registering {} values for column '{}'", size(), column);
-		}
+		log.trace("Registering {} values for column '{}'", size(), column);
 
 		context.getFilterSearch().registerValues(column.resolve(), values);
 	}
