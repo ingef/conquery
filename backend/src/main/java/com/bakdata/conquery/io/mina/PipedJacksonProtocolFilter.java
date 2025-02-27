@@ -5,15 +5,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import io.dropwizard.util.DataSize;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +26,7 @@ import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.session.AttributeKey;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This {@link org.apache.mina.core.filterchain.IoFilter} (de-)serializes POJOs using a Jackson {@link ObjectMapper}.
@@ -45,7 +49,6 @@ import org.jetbrains.annotations.NotNull;
  * 5) The reader receives the {@link IoSession} and {@link org.apache.mina.core.filterchain.IoFilter.NextFilter} as parameters to ensure correct chainig. As a filter can be used by multiple sessions at once.
  */
 @Slf4j
-@RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual().name("%s#reader".formatted(PipedJacksonProtocolFilter.class.getSimpleName()), 0);
@@ -60,12 +63,60 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 	private final ObjectMapper mapper;
 	private final int initialBufferLength;
+	private final BlockingQueue<Future<Reader>> readersInOrder = new LinkedBlockingQueue<>();
+
 	private final ExecutorService readerThreads = Executors.newCachedThreadPool((runnable) -> {
 		Thread thread = THREAD_BUILDER.unstarted(runnable);
 		thread.setDaemon(true);
 
 		return thread;
 	});
+
+	public PipedJacksonProtocolFilter(ObjectMapper mapper, int initialBufferLength) {
+		this.mapper = mapper;
+		this.initialBufferLength = initialBufferLength;
+
+		startPublisherThread();
+	}
+
+	private void startPublisherThread() {
+		final Thread publisher = new Thread(this::publish);
+
+		publisher.setName("%s#publisher".formatted(getClass().getSimpleName()));
+		publisher.setDaemon(true);
+		publisher.start();
+	}
+
+
+	/**
+	 * Ensures publishing of arrived messages in order, despite potential timing differences in serialization speed.
+	 */
+	private void publish() {
+		while (true) {
+			try {
+				final Future<Reader> readerFuture = readersInOrder.take();
+				log.trace("BEGIN waiting for {}", readerFuture);
+
+				final Reader reader = readerFuture.get();
+				log.trace("RECEIVED {} from {}", reader, reader);
+
+				try {
+					reader.getNextFilter().messageReceived(reader.getSession(), reader.getResult());
+				}
+				catch (Exception e) {
+					log.error("{} FAILED to deliver message {}", reader.getSession(), reader, e);
+				}
+			}
+			catch (InterruptedException e) {
+				Thread.interrupted();
+				log.trace("Interrupted");
+			}
+			catch (ExecutionException e) {
+				log.error("Failed to get reader", e);
+			}
+		}
+	}
+
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
@@ -74,32 +125,51 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 		synchronized (session) {
 			do {
-				Reader asyncReader = getAsyncReader(session);
+				final Reader asyncReader = getAsyncReader(nextFilter, session, buffer);
 
-				if (asyncReader == null || asyncReader.hasEnough()) {
-					if (requiresEdgeBuffering(session, buffer)) {
-						// Buffer contains only partial length we need to combine with the next buffer.
-						break;
-					}
-
-					final int remaining = getBufferLength(session, buffer);
-
-					asyncReader = newAsyncReader(remaining, nextFilter, session);
-					log.trace("Starting new reader for {}", DataSize.bytes(remaining));
-				}
-				else {
-					log.trace("Continuing with {}", DataSize.bytes(asyncReader.getRemaining()));
+				if (asyncReader == null) {
+					// Rare spill-buffer case
+					break;
 				}
 
 				asyncReader.receive(buffer);
 
+				if (asyncReader.hasEnough()) {
+					session.setAttribute(READER_KEY, null);
+				}
 
 			} while (buffer.hasRemaining());
 		}
 	}
 
-	private Reader getAsyncReader(IoSession session) {
-		return (Reader) session.getAttribute(READER_KEY);
+	@Nullable
+	private Reader getAsyncReader(NextFilter nextFilter, IoSession session, IoBuffer buffer) throws IOException {
+		Reader asyncReader = (Reader) session.getAttribute(READER_KEY);
+
+		if (asyncReader != null) {
+			return asyncReader;
+		}
+
+		if (requiresEdgeBuffering(session, buffer)) {
+			// Buffer contains only partial length we need to combine with the next buffer.
+			return null;
+		}
+
+		final int bufferLength = getBufferLength(session, buffer);
+
+		log.trace("Starting new reader for {}", DataSize.bytes(bufferLength));
+
+		final Reader reader = new Reader(bufferLength, mapper, nextFilter, session, PIPED_IO_BUFFER_SIZE);
+
+		// Enqueue the reader so that it can be bubbled up in order.
+		readersInOrder.add(reader.getFutureSelf());
+		readerThreads.submit(reader::read);
+
+		asyncReader = reader;
+
+		session.setAttribute(READER_KEY, asyncReader);
+
+		return asyncReader;
 	}
 
 	/**
@@ -158,18 +228,6 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		return spillBuffer.getInt();
 	}
 
-	@NotNull
-	private Reader newAsyncReader(int remaining, NextFilter nextFilter, IoSession session) {
-		final Reader prior = (Reader) session.getAttribute(READER_KEY);
-
-		final Reader reader = new Reader(prior, remaining, mapper, nextFilter, session, PIPED_IO_BUFFER_SIZE);
-
-		readerThreads.submit(reader::read);
-
-		session.setAttribute(READER_KEY, reader);
-		return reader;
-	}
-
 	/**
 	 * Serializes {@link WriteRequest#getMessage()} into an {@link IoBuffer} prefixed by the message's length.
 	 */
@@ -213,14 +271,15 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 		private final InputStream inputStream;
 		private final NextFilter nextFilter;
 		private final IoSession session;
-		private Reader prior;
-		private int remaining;
 
-		private boolean done;
+		private final CompletableFuture<Reader> futureSelf = new CompletableFuture<>();
+
+		private int remaining;
+		private NetworkMessage result;
+
 
 		@SneakyThrows
-		public Reader(Reader prior, int remaining, ObjectMapper mapper, NextFilter nextFilter, IoSession session, DataSize bufferSize) {
-			this.prior = prior;
+		public Reader(int remaining, ObjectMapper mapper, NextFilter nextFilter, IoSession session, DataSize bufferSize) {
 			this.mapper = mapper;
 			this.nextFilter = nextFilter;
 			this.session = session;
@@ -229,11 +288,7 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 			inputStream = new PipedInputStream(outputStream, ((int) bufferSize.toBytes()));
 		}
 
-		public boolean hasEnough() {
-			return remaining <= 0;
-		}
-
-		public boolean receive(IoBuffer buffer) throws IOException {
+		public void receive(IoBuffer buffer) throws IOException {
 			final int reading = Math.min(buffer.remaining(), remaining);
 
 			final IoBuffer slice = buffer.getSlice(reading);
@@ -245,12 +300,13 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 
 			assert remaining >= 0 : "Transferred more than we required to read the message.";
 
-			if (remaining == 0) {
+			if (hasEnough()) {
 				getOutputStream().close();
-				return true;
 			}
+		}
 
-			return false;
+		public boolean hasEnough() {
+			return remaining <= 0;
 		}
 
 		@SneakyThrows
@@ -259,46 +315,16 @@ public class PipedJacksonProtocolFilter extends IoFilterAdapter {
 				// This thread can and will pause when inputStream does not have enough data.
 				final Stopwatch timer = Stopwatch.createStarted();
 
-				final NetworkMessage parsed = mapper.readValue(inputStream, NetworkMessage.class);
-				log.trace("FINISHED parsing {} within {}", parsed, timer);
+				result = mapper.readValue(inputStream, NetworkMessage.class);
+				log.trace("FINISHED parsing {} within {}", result, timer);
 
-				// If prior is huge or slow(er than us) to deserialize we need to synchronize on its arrival.
-				awaitPrior();
-
-				nextFilter.messageReceived(session, parsed);
+				futureSelf.complete(this);
 			}
 			catch (IOException e) {
 				log.error("Something went wrong reading from {}", session, e);
 			}
-			finally {
-				setDone();
-				// We need to clear prior, otherwise we have a linked list of ALL received messages.
-				prior = null;
-			}
 		}
 
-		private void awaitPrior() throws InterruptedException {
-			if (prior == null){
-				return;
-			}
-
-			while (!prior.isDone()) {
-				synchronized (prior) {
-					if (prior.isDone()){
-						break;
-					}
-					prior.wait(10_000); // 10s is already a lot.
-				}
-				log.warn("{} waiting for prior ({}) for a long time.", this, prior);
-			}
-		}
-
-		private void setDone() {
-			synchronized (this) {
-				done = true;
-				notifyAll();
-			}
-		}
 	}
 
 
