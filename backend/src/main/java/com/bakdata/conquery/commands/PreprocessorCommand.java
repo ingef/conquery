@@ -262,7 +262,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
 
-		final ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
+		final ProgressBar totalProgress = new ProgressBar(totalSize);
 
 		for (PreprocessingJob job : jobs) {
 			pool.submit(() -> {

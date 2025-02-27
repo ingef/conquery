@@ -62,7 +62,8 @@ public class QueryExecutor implements Closeable {
 		log.trace("Created query plan in {}", stopwatch);
 
 		if (entities.isEmpty()) {
-			log.warn("Entities for query are empty");
+			// This is quite common for the entity preview, as only single entities are requested
+			log.trace("Entities for query are empty");
 		}
 
 		try {

@@ -13,6 +13,17 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -35,6 +46,7 @@ import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.RefreshTokenGrant;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
@@ -45,21 +57,9 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Cookie;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.NewCookie;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -73,7 +73,7 @@ import org.keycloak.representations.AccessToken;
 
 /**
  * A realm that verifies oauth tokens using PKCE.
- *
+ * <p>
  * Since the adminEnd-UI mainly works with direct links that do not support setting of the Authorization-header to transport an access token
  * and it also does not support the oauth code flow, this realm proxies the flow.
  * 1. The user/client is redirected to the IDP for authentication and redirected back to the adminEnd
@@ -191,12 +191,15 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 					if (idpConfiguration == null) {
 
 
-						Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-																				.build(this.getClass().getSimpleName());
-						// retrieve the configuration and cache it
-						idpConfiguration = retrieveIdpConfiguration(httpClient);
-
-						httpClient.close();
+						try{
+							Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
+																					.build(this.getClass().getSimpleName());
+							// retrieve the configuration and cache it
+							idpConfiguration = retrieveIdpConfiguration(httpClient);
+						}
+						finally {
+							httpClient.close();
+						}
 					}
 				}
 			}
@@ -310,28 +313,6 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 	}
 
-	@RequiredArgsConstructor
-	private static class LoginInitiator implements RedirectingAuthFilter.LoginInitiator {
-		private final Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
-		private final String client;
-
-		@Override
-		public URI apply(ContainerRequestContext request) {
-			final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
-			if (idpConfigurationOpt.isEmpty()) {
-				log.warn("Unable to initiate authentication, because idp configuration is not available.");
-				return null;
-			}
-			JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
-			return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
-							 .queryParam("response_type", "code")
-							 .queryParam("client_id", client)
-							 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
-							 .queryParam("scope", "openid")
-							 .queryParam("state", UUID.randomUUID()).build();
-		}
-	}
-
 	/**
 	 * Generates the link that forwards the user to the login page.
 	 */
@@ -372,7 +353,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 				redirectedUri);
 
 		// Redeem code
-		AccessTokenResponse tokenResponse = getTokenResponse(request, authzGrant);
+		AccessTokenResponse tokenResponse = getTokenResponse(authzGrant);
 		if (tokenResponse == null) {
 			return null;
 		}
@@ -399,7 +380,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 
 		// Redeem refresh token for a new access token (+  new refresh token)
-		final AccessTokenResponse tokenResponse = getTokenResponse(request, new RefreshTokenGrant(new RefreshToken(refreshToken.getValue())));
+		final AccessTokenResponse tokenResponse = getTokenResponse(new RefreshTokenGrant(new RefreshToken(refreshToken.getValue())));
 		if (tokenResponse == null) {
 			return null;
 		}
@@ -459,7 +440,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 */
 	@Nullable
 	@SneakyThrows({ParseException.class, IOException.class})
-	private AccessTokenResponse getTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant) {
+	private AccessTokenResponse getTokenResponse(AuthorizationGrant authzGrant) {
 
 		// Retrieve the IDP configuration
 		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
@@ -477,12 +458,13 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		);
 
 		// Get the response
-		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
+		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
+		TokenResponse response = TokenResponse.parse(httpRequest.send());
 
 		// Check if the response was valid
 		if (!response.indicatesSuccess()) {
 			HTTPResponse httpResponse = response.toHTTPResponse();
-			log.warn("Unable to retrieve access token from auth server: {}", httpResponse.getContent());
+			log.warn("Unable to retrieve access token from auth server. Request: {} Response: {}", httpRequest.getURL(), httpResponse.getBody());
 			return null;
 		}
 		else if (!(response instanceof AccessTokenResponse)) {
