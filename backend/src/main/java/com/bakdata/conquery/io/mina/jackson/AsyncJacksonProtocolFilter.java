@@ -44,18 +44,19 @@ import org.jetbrains.annotations.Nullable;
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
-	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual()
-															   .name("%s#reader".formatted(AsyncJacksonProtocolFilter.class.getSimpleName()), 0);
-
-	private static final AttributeKey READER_KEY = new AttributeKey(AsyncJacksonProtocolFilter.class, "reader");
-	private static final AttributeKey SPILL_BUFFER_KEY = new AttributeKey(AsyncJacksonProtocolFilter.class, "spill");
-
-	private static final AttributeKey PUBLISHER_KEY = new AttributeKey(AsyncJacksonProtocolFilter.class, "publisher");
 
 	/**
 	 * Max size of a Buffer on my Windows machine was 64Kibi - to enable effective double buffering, we ... double it.
 	 */
 	private static final DataSize PIPED_IO_BUFFER_SIZE = DataSize.kibibytes(2 * 64);
+
+
+	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual().name("%s#reader".formatted(AsyncJacksonProtocolFilter.class.getSimpleName()), 0);
+
+	private static final AttributeKey READER = new AttributeKey(AsyncJacksonProtocolFilter.class, "reader");
+	private static final AttributeKey SPILL_BUFFER = new AttributeKey(AsyncJacksonProtocolFilter.class, "spill");
+	private static final AttributeKey PUBLISHER = new AttributeKey(AsyncJacksonProtocolFilter.class, "publisher");
+
 
 	private final ObjectMapper mapper;
 	private final int initialBufferLength;
@@ -81,7 +82,7 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	}
 
 	private void ensureSessionPublisher(IoSession session) {
-		if (session.containsAttribute(PUBLISHER_KEY)) {
+		if (session.containsAttribute(PUBLISHER)) {
 			return;
 		}
 
@@ -95,7 +96,11 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 		publisherThread.setDaemon(true);
 		publisherThread.start();
 
-		session.setAttribute(PUBLISHER_KEY, publisher);
+		setSessionPublisher(session, publisher);
+	}
+
+	private static void setSessionPublisher(IoSession session, AsyncPublisher publisher) {
+		session.setAttribute(PUBLISHER, publisher);
 	}
 
 	@Override
@@ -104,19 +109,23 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 
 		// close and discard the publisher.
 		getSessionPublisher(session).close();
-		session.setAttribute(PUBLISHER_KEY, null);
+		setSessionPublisher(session, null);
 	}
 
 	private static AsyncPublisher getSessionPublisher(IoSession session) {
-		return (AsyncPublisher) session.getAttribute(PUBLISHER_KEY);
+		return (AsyncPublisher) session.getAttribute(PUBLISHER);
 	}
 
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
 		final IoBuffer buffer = (IoBuffer) message;
 
+		log.trace("Received {}", buffer);
+
 		synchronized (session) {
 			do {
+				log.trace("BEGIN handling {}", buffer);
+
 				final AsyncReader asyncReader = getOrCreateAsyncReader(nextFilter, session, buffer);
 
 				if (asyncReader == null) {
@@ -127,16 +136,17 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 				asyncReader.receive(buffer);
 
 				if (asyncReader.hasEnough()) {
-					session.setAttribute(READER_KEY, null);
+					setSessionReader(session, null);
 				}
 
+				log.trace("DONE handling {}, {} remaining", buffer, buffer.remaining());
 			} while (buffer.hasRemaining());
 		}
 	}
 
 	@Nullable
 	private AsyncReader getOrCreateAsyncReader(NextFilter nextFilter, IoSession session, IoBuffer buffer) throws IOException {
-		final AsyncReader asyncReader = (AsyncReader) session.getAttribute(READER_KEY);
+		final AsyncReader asyncReader = getSessionReader(session);
 
 		if (asyncReader != null) {
 			return asyncReader;
@@ -145,7 +155,7 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 		if (requiresSpillBuffer(buffer)) {
 			final IoBuffer spillBuffer = createSpillBuffer(buffer);
 
-			final Object priorSpill = session.setAttribute(SPILL_BUFFER_KEY, spillBuffer);
+			final IoBuffer priorSpill = setSessionSpillBuffer(session, spillBuffer);
 			assert priorSpill == null;
 
 			// Buffer contains only partial length we need to combine with the next buffer.
@@ -156,9 +166,17 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 
 		final AsyncReader reader = newAsyncReader(bufferLength, nextFilter, session);
 
-		session.setAttribute(READER_KEY, reader);
+		setSessionReader(session, reader);
 
 		return reader;
+	}
+
+	private static void setSessionReader(IoSession session, AsyncReader reader) {
+		session.setAttribute(READER, reader);
+	}
+
+	private static AsyncReader getSessionReader(IoSession session) {
+		return (AsyncReader) session.getAttribute(READER);
 	}
 
 	/**
@@ -182,6 +200,10 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 		return spillBuffer;
 	}
 
+	private static IoBuffer setSessionSpillBuffer(IoSession session, IoBuffer spillBuffer) {
+		return (IoBuffer) session.setAttribute(SPILL_BUFFER, spillBuffer);
+	}
+
 	/**
 	 * Reads the length of the incoming buffer.
 	 * Incoming messages are always prefixed by their length.
@@ -193,11 +215,11 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	 */
 	private int calculateMessageLength(IoSession session, IoBuffer buffer) throws IOException {
 
-		if (!session.containsAttribute(SPILL_BUFFER_KEY)) {
+		if (!sessionHasSpillBuffer(session)) {
 			return buffer.getInt();
 		}
 
-		final IoBuffer spillBuffer = (IoBuffer) session.setAttribute(SPILL_BUFFER_KEY, null);
+		final IoBuffer spillBuffer = setSessionSpillBuffer(session, null);
 
 		log.trace("Found existing spill-buffer {}, incoming {}", DataSize.bytes(spillBuffer.position()), DataSize.bytes(buffer.limit()));
 
@@ -219,6 +241,10 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 
 		readerThreads.submit(reader::read);
 		return reader;
+	}
+
+	private static boolean sessionHasSpillBuffer(IoSession session) {
+		return session.containsAttribute(SPILL_BUFFER);
 	}
 
 	/**

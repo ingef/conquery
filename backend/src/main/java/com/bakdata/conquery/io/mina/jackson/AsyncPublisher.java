@@ -31,6 +31,7 @@ class AsyncPublisher {
 	 * Signals thread to drain queue and close.
 	 */
 	public void close() {
+		log.debug("Closing session publisher");
 		running.set(false);
 	}
 
@@ -40,6 +41,8 @@ class AsyncPublisher {
 	 */
 	public void register(AsyncReader reader) {
 		assert reader.getFutureMessage() == null;
+
+		log.trace("Registering {}", reader);
 
 		final CompletableFuture<FinishedMessage> future = new CompletableFuture<>();
 
@@ -53,6 +56,8 @@ class AsyncPublisher {
 	public void publish() {
 		while (!finishedMessages.isEmpty() || running.get()) {
 			try {
+				log.trace("BEGIN polling for FinishedMessage, currently {} queued.", finishedMessages.size());
+
 				// The timeout ensures we actually see running=false and shutdown.
 				final Future<FinishedMessage> readerFuture = finishedMessages.poll(5, TimeUnit.SECONDS);
 

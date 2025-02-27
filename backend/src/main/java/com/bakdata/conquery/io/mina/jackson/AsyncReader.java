@@ -51,6 +51,8 @@ class AsyncReader {
 	public void receive(IoBuffer buffer) throws IOException {
 		final int reading = Math.min(buffer.remaining(), remaining);
 
+		log.trace("Reading {} from {}", reading, buffer);
+
 		final IoBuffer slice = buffer.getSlice(reading);
 		try (InputStream inputStream = slice.asInputStream()) {
 			// This stupid method mutates BOTH buffer and slice WTF.
@@ -61,6 +63,7 @@ class AsyncReader {
 		assert remaining >= 0 : "Transferred more than we required to read the message.";
 
 		if (hasEnough()) {
+			log.trace("DONE reading message from {}", buffer);
 			getOutputStream().close();
 		}
 	}
@@ -74,8 +77,9 @@ class AsyncReader {
 		try {
 			// This thread can and will pause when inputStream does not have enough data.
 			final Stopwatch timer = Stopwatch.createStarted();
-
+			log.trace("BEGIN reading.");
 			final NetworkMessage result = mapper.readValue(inputStream, NetworkMessage.class);
+
 			log.trace("FINISHED parsing {} within {}", result, timer);
 
 			futureMessage.complete(new AsyncPublisher.FinishedMessage(nextFilter, result));
