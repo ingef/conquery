@@ -167,7 +167,7 @@ public class TestConquery {
 
 			await().atMost(10, TimeUnit.SECONDS)
 				   .pollDelay(1, TimeUnit.MILLISECONDS)
-				   .pollInterval(10, TimeUnit.MILLISECONDS)
+				   .pollInterval(5, TimeUnit.MILLISECONDS)
 				   .until(() -> !isBusy());
 		}
 

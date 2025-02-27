@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MdcFilter;
-import com.bakdata.conquery.io.mina.PipedJacksonProtocolFilter;
+import com.bakdata.conquery.io.mina.jackson.AsyncJacksonProtocolFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
@@ -69,7 +69,7 @@ public class ClusterConfig extends Configuration {
 
 		final NioSocketConnector connector = new NioSocketConnector();
 
-		final IoFilter codecFilter = new PipedJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
+		final IoFilter codecFilter = new AsyncJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
 
 
 		connector.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
@@ -86,7 +86,7 @@ public class ClusterConfig extends Configuration {
 
 		final NioSocketAcceptor acceptor = new NioSocketAcceptor();
 
-		final IoFilter codecFilter = new PipedJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
+		final IoFilter codecFilter = new AsyncJacksonProtocolFilter(om, (int) initialIoBufferSize.toBytes());
 
 		acceptor.getFilterChain().addFirst("mdc", new MdcFilter(mdcLocation));
 		acceptor.getFilterChain().addLast("codec", codecFilter);
