@@ -165,13 +165,10 @@ public class TestConquery {
 		//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
 		for (int i = 0; i < 5; i++) {
 
-			await()
-					.atMost(10, TimeUnit.SECONDS)
-					.pollDelay(100, TimeUnit.MILLISECONDS)
-					.pollInterval(1, TimeUnit.SECONDS)
-					.until(() -> !isBusy());
-
-//			log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we are waiting."));
+			await().atMost(10, TimeUnit.SECONDS)
+				   .pollDelay(1, TimeUnit.MILLISECONDS)
+				   .pollInterval(10, TimeUnit.MILLISECONDS)
+				   .until(() -> !isBusy());
 		}
 
 		log.trace("All jobs finished");
@@ -239,7 +236,7 @@ public class TestConquery {
 		dropwizard.before();
 
 		// create HTTP client for api tests
-		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
+		client = new JerseyClientBuilder(getDropwizard().getEnvironment())
 				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
 				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 				.build("test client");
