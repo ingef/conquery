@@ -36,7 +36,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.mina.core.future.WriteFuture;
 
 /**
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
@@ -46,13 +45,11 @@ import org.apache.mina.core.future.WriteFuture;
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
 public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 
+	public final int columValueChunkSize;
 	/**
 	 * Trying to rate-limit how many threads are actively allocating column-values.
 	 */
 	private final int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors(), 5);
-
-	public final int columValueChunkSize;
-
 	@NotNull
 	@Getter
 	private final Set<ColumnId> columns;
@@ -66,13 +63,16 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 	@Override
 	public void react(Worker context) throws Exception {
-		Map<TableId, List<BucketId>> table2Buckets;
-		try(Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
+		final Map<TableId, List<BucketId>> table2Buckets;
+		try (Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
 			table2Buckets = allBuckets
 					.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
 		}
 
-		BasicThreadFactory threadFactory = (new BasicThreadFactory.Builder()).namingPattern(this.getClass().getSimpleName() + "-Worker-%d").build();
+		final BasicThreadFactory threadFactory =
+				new BasicThreadFactory.Builder()
+						.namingPattern(getClass().getSimpleName() + "-Worker-%d").build();
+
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 		final AtomicInteger done = new AtomicInteger();
@@ -96,22 +96,22 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 									log.trace("Finished collecting {} values for column {}", values.size(), column);
 
 									// Chunk values, to produce smaller messages
-									Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
+									final Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
 
-									log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
-											  column.getId(), values.size(), columValueChunkSize
+									log.trace(
+											"BEGIN Sending column values for {}. {} total values in {} sized batches",
+											column.getId(), values.size(), columValueChunkSize
 									);
 
 									int i = 0;
 									for (List<String> chunk : partition) {
 										// Send values to manager
-										RegisterColumnValues message =
+										final RegisterColumnValues message =
 												new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
-										WriteFuture send = context.send(message);
 
-										send.awaitUninterruptibly();
+										context.send(message);
 
-										log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
+										log.debug("Finished sending chunk {} for column '{}'", i++, column.getId());
 									}
 
 									getProgressReporter().report(1);
@@ -119,7 +119,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 								});
 							}
 					   )
-					   .collect(Collectors.toList());
+					   .toList();
 
 
 		// We may do this, because we own this specific ExecutorService.
@@ -153,7 +153,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 			log.debug("{} shrinking searches", this);
 
 			for (ColumnId columnId : columns) {
-				Column column = columnId.resolve();
+				final Column column = columnId.resolve();
 				try {
 					filterSearch.shrinkSearch(column);
 				}
