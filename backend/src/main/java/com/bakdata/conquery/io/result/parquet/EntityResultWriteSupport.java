@@ -53,16 +53,16 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	 * @param idHeaders        {@link ResultInfo} for the Ids
 	 * @param resultValueInfos {@link ResultInfo} for the result values
 	 * @param uniqueNamer      A column namer for the fields in the schema
-	 * @param printSettings1
+	 * @param printSettings    Print settings for field name generation
 	 * @return the parquet schema
 	 */
-	public static MessageType generateSchema(List<ResultInfo> idHeaders, List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer, PrintSettings printSettings1) {
+	public static MessageType generateSchema(List<ResultInfo> idHeaders, List<ResultInfo> resultValueInfos, UniqueNamer uniqueNamer, PrintSettings printSettings) {
 		/*
 			Because Parquet Schemas rely on primitive types with logical annotations
 			which are tedious to configure, we take the detour over the arrow schema.
 		 */
 		final SchemaMapping schemaMapping =
-				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
+				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings)));
 
 		return schemaMapping.getParquetSchema();
 
@@ -216,7 +216,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	private record MoneyColumnConsumer() implements ColumnConsumer {
 		@Override
 		public void accept(RecordConsumer recordConsumer, Object o) {
-			recordConsumer.addInteger(((Integer) o));
+			recordConsumer.addLong(((Long) o));
 		}
 	}
 
