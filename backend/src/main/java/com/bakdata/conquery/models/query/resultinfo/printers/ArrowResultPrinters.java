@@ -15,17 +15,23 @@ public class ArrowResultPrinters extends JavaResultPrinters {
 
 	@Override
 	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
-		return new MoneyPrinter();
+		return new MoneyPrinter(printSettings.getCurrency().getDefaultFractionDigits());
 	}
 
-	private record MoneyPrinter() implements Printer<Number> {
+	private record MoneyPrinter(int currencyFactionShift) implements Printer<Number> {
+
 		@Override
 		public Object apply(@NotNull Number value) {
 			if (value instanceof BigDecimal bigDecimal){
-				return bigDecimal.unscaledValue().intValueExact();
+				try{
+					// In Arrow, we want to use the currency fractions as the base unit (e.g. cents instead of euros)
+					return bigDecimal.movePointRight(currencyFactionShift).longValueExact();
+				} catch (ArithmeticException e) {
+					throw new IllegalArgumentException("Could not convert BigDecimal of %s (with fraction shift: %s) to currency fraction".formatted(value,currencyFactionShift), e);
+				}
 			}
 
-			return value.intValue();
+			return value.longValue();
 		}
 	}
 }

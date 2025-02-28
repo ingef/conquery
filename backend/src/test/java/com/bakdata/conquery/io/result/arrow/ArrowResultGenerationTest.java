@@ -59,11 +59,13 @@ public class ArrowResultGenerationTest {
 
 	public static String readTSV(InputStream inputStream) throws IOException {
 		StringJoiner stringJoiner = new StringJoiner("\n");
+
 		try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
 			log.info("Reading the produced arrow data.");
 			VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
 			stringJoiner.add(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t")));
 			readRoot.setRowCount(BATCH_SIZE);
+
 			while (arrowReader.loadNextBatch()) {
 				List<FieldVector> vectors = readRoot.getFieldVectors();
 
@@ -120,7 +122,7 @@ public class ArrowResultGenerationTest {
 			return "null";
 		}
 		if (type.equals(ResultType.Primitive.MONEY)) {
-			return Integer.toString(((BigDecimal) obj).unscaledValue().intValueExact());
+			return Long.toString(((BigDecimal) obj).unscaledValue().longValueExact());
 		}
 		if (type.equals(ResultType.Primitive.DATE_RANGE)) {
 			// Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
@@ -199,7 +201,7 @@ public class ArrowResultGenerationTest {
 								  )
 						),
 						new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
-						new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
+						new Field("MONEY", FieldType.nullable(new ArrowType.Int(64, true)), null),
 						new Field("LIST[BOOLEAN]",
 								  FieldType.nullable(ArrowType.List.INSTANCE),
 								  List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))

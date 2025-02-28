@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -122,7 +118,19 @@ public class ResultTestUtil {
 																 null
 														 }
 												 )
-					   )
+					   ),
+					   new SinglelineEntityResult("3", new Object[]{
+							   null,
+							   null,
+							   null,
+							   null,
+							   null,
+							   null,
+							   new BigDecimal("99999999999e-2"),
+							   null,
+							   null,
+							   null
+					   })
 		);
 	}
 
