@@ -6,17 +6,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.search.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.index.IndexCreationException;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
+import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FilterSearch {
+public class InternalFilterSearch implements SearchProcessor {
 
 	@Getter
-	private final IndexConfig indexConfig;
+	private final IndexConfig searchConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -35,7 +45,7 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private ConcurrentMap<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+	private ConcurrentMap<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
 
 	/**
@@ -57,8 +67,8 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
-		final List<? extends Searchable> references = searchable.getSearchReferences();
+	public final List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+		final List<? extends Searchable<FrontendValue>> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
@@ -67,14 +77,14 @@ public class FilterSearch {
 		return references.stream()
 						 .map(searchCache::get)
 						 .filter(Objects::nonNull)
-						 .collect(Collectors.toList());
+						 .toList();
 	}
 
-	public int getTotal(SelectFilter<?> filter) {
+	public long getTotal(SelectFilter<?> filter) {
 		return totals.computeIfAbsent(filter, (f) -> {
 			HashSet<FrontendValue> count = new HashSet<>();
 
-			for (TrieSearch<FrontendValue> search : getSearchesFor(filter)) {
+			for (Search<FrontendValue> search : getSearchesFor(filter)) {
 				search.iterator().forEachRemaining(count::add);
 			}
 
@@ -86,7 +96,7 @@ public class FilterSearch {
 	/**
 	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
 	}
@@ -97,10 +107,10 @@ public class FilterSearch {
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
-	public void registerValues(Searchable searchable, Collection<String> values) {
-		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
+	public void registerValues(Searchable<FrontendValue> searchable, Collection<String> values) {
+		Search<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
 			try {
-				return searchable.createTrieSearch(indexConfig);
+				return searchable.createSearch(searchConfig);
 			}
 			catch (IndexCreationException e) {
 				throw new IllegalStateException(e);
@@ -117,18 +127,39 @@ public class FilterSearch {
 	/**
 	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
 	 */
-	public void shrinkSearch(Searchable searchable) {
-		final TrieSearch<FrontendValue> search = searchCache.get(searchable);
+	public void finalizeSearch(Searchable<FrontendValue> searchable) {
+		final Search<FrontendValue> search = searchCache.get(searchable);
 
 		if (search == null) {
 			log.warn("Searchable has no search associated: {}", searchable);
 			return;
 		}
-		search.shrinkToFit();
+		search.finalizeSearch();
+	}
+
+	@Override
+	public List<FrontendValue> topItems(SelectFilter<?> searchable, String text) {
+		List<Search<FrontendValue>> searches = getSearchesFor(searchable);
+
+		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
+
+		for (Search<FrontendValue> search : searches) {
+
+			final Object2LongMap<FrontendValue> itemWeights = ((TrieSearch<FrontendValue>)search).collectWeights(List.of(text));
+
+			itemWeights.forEach(overlayedWeights::putIfAbsent);
+		}
+
+		return TrieSearch.topItems(Integer.MAX_VALUE, overlayedWeights);
 	}
 
 	public synchronized void clearSearch() {
 		totals = new ConcurrentHashMap<>();
 		searchCache = new ConcurrentHashMap<>();
+	}
+
+	@Override
+	public Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer) {
+		return new UpdateFilterSearchJob(storage, this, searchConfig, columnsConsumer);
 	}
 }

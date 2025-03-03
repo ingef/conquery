@@ -23,9 +23,9 @@ import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Iterables;
@@ -143,7 +143,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		public void execute() {
 
 			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage());
-			final FilterSearch filterSearch = namespace.getFilterSearch();
+			final SearchProcessor filterSearch = namespace.getFilterSearch();
 
 			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
 
@@ -152,7 +152,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 			for (ColumnId columnId : columns) {
 				final Column column = columnId.resolve();
 				try {
-					filterSearch.shrinkSearch(column);
+					filterSearch.finalizeSearch(column);
 				}
 				catch (Exception e) {
 					log.warn("Unable to shrink search for {}", column, e);

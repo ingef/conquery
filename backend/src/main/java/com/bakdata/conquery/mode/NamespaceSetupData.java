@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Value;
 
@@ -17,5 +17,5 @@ public class NamespaceSetupData {
 	ObjectMapper communicationMapper;
 	ObjectMapper preprocessMapper;
 	JobManager jobManager;
-	FilterSearch filterSearch;
+	SearchProcessor filterSearch;
 }

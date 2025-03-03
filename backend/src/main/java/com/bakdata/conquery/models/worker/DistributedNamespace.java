@@ -19,8 +19,8 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.ToString;
@@ -45,7 +45,7 @@ public class DistributedNamespace extends Namespace {
 			NamespaceStorage storage,
 			DistributedExecutionManager executionManager,
 			JobManager jobManager,
-			FilterSearch filterSearch,
+			SearchProcessor filterSearch,
 			ClusterEntityResolver clusterEntityResolver,
 			List<Injectable> injectables,
 			WorkerHandler workerHandler,

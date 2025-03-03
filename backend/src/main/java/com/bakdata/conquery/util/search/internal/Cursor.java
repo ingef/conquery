@@ -1,4 +1,4 @@
-package com.bakdata.conquery.util.search;
+package com.bakdata.conquery.util.search.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;

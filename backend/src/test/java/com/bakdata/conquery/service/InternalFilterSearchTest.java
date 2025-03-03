@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.config.search.IndexConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -15,13 +15,13 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSele
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.index.IndexCreationException;
-import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class FilterSearchTest {
+public class InternalFilterSearchTest {
 
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
@@ -30,7 +30,7 @@ public class FilterSearchTest {
 	@Test
 	public void totals() {
 		final IndexConfig indexConfig = new IndexConfig();
-		FilterSearch search = new FilterSearch(indexConfig);
+		InternalFilterSearch search = new InternalFilterSearch(indexConfig);
 
 		// Column Searchable
 		SelectFilter<String> filter = new SingleSelectFilter();
@@ -67,7 +67,7 @@ public class FilterSearchTest {
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
 			try {
-				search.addSearches(Map.of(searchable, searchable.createTrieSearch(indexConfig)));
+				search.addSearches(Map.of(searchable, searchable.createSearch(indexConfig)));
 			}
 			catch (IndexCreationException e) {
 				throw new RuntimeException(e);
@@ -80,7 +80,7 @@ public class FilterSearchTest {
 				"cc",
 				"mm"
 		));
-		search.shrinkSearch(column);
+		search.finalizeSearch(column);
 
 		assertThat(search.getTotal(filter)).isEqualTo(5);
 	}
@@ -88,7 +88,7 @@ public class FilterSearchTest {
 	@Test
 	public void totalsEmptyFiler() {
 		final IndexConfig indexConfig = new IndexConfig();
-		FilterSearch search = new FilterSearch(indexConfig);
+		InternalFilterSearch search = new InternalFilterSearch(indexConfig);
 
 		// Column Searchable
 		SelectFilter<String> filter = new SingleSelectFilter();
@@ -120,13 +120,13 @@ public class FilterSearchTest {
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
 			try {
-				search.addSearches(Map.of(searchable, searchable.createTrieSearch(indexConfig)));
+				search.addSearches(Map.of(searchable, searchable.createSearch(indexConfig)));
 			}
 			catch (IndexCreationException e) {
 				throw new RuntimeException(e);
 			}
 		});
-		search.shrinkSearch(column);
+		search.finalizeSearch(column);
 
 		assertThat(search.getTotal(filter)).isEqualTo(0);
 	}

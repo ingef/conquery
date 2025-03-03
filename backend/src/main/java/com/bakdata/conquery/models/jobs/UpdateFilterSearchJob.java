@@ -16,13 +16,13 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,20 +43,20 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class UpdateFilterSearchJob extends Job {
 
-	private final Namespace namespace;
+	private final NamespaceStorage storage;
+
+	private final SearchProcessor searchProcessor;
 
 	@NonNull
-	private final IndexConfig indexConfig;
+	private final SearchConfig indexConfig;
 
 	private final Consumer<Set<Column>> registerColumnValuesInSearch;
 
 	@Override
 	public void execute() throws Exception {
 
-		final NamespaceStorage storage = namespace.getStorage();
-
 		log.info("Clearing Search");
-		namespace.getFilterSearch().clearSearch();
+		searchProcessor.clearSearch();
 
 
 		log.info("BEGIN loading SourceSearch");
@@ -67,7 +67,7 @@ public class UpdateFilterSearchJob extends Job {
 
 
 		// Unfortunately the is no ClassToInstanceMultimap yet
-		final Map<Class<?>, Set<Searchable>> collectedSearchables =
+		final Map<Class<?>, Set<Searchable<FrontendValue>>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
@@ -78,11 +78,11 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
-		final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+		final Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		for (Searchable searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
+		for (Searchable<FrontendValue> searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
 			if (searchable instanceof Column) {
 				throw new IllegalStateException("Columns should have been grouped out previously");
 			}
@@ -94,7 +94,7 @@ public class UpdateFilterSearchJob extends Job {
 				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig);
+					final Search<FrontendValue> search = searchable.createSearch(indexConfig);
 
 					searchCache.put(searchable, search);
 
@@ -130,9 +130,9 @@ public class UpdateFilterSearchJob extends Job {
 		}
 
 		// Shrink searches before registering in the filter search
-		searchCache.values().forEach(TrieSearch::shrinkToFit);
+		searchCache.values().forEach(Search::finalizeSearch);
 
-		namespace.getFilterSearch().addSearches(searchCache);
+		searchProcessor.addSearches(searchCache);
 
 		log.info("UpdateFilterSearchJob search finished");
 
@@ -140,7 +140,7 @@ public class UpdateFilterSearchJob extends Job {
 
 	@NotNull
 	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
-		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
 			return allConcepts
 					.flatMap(c -> c.getConnectors().stream())
 					.flatMap(co -> co.collectAllFilters().stream())

@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.util.search.Search;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
@@ -26,7 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable<FrontendValue> {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -68,8 +68,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * We create only an empty search here, because the content is provided through {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues} and filled by the caller.
 	 */
 	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
-		return config.createTrieSearch(isGenerateSuffixes());
+	public Search<FrontendValue> createSearch(SearchConfig config) {
+		return config.createSearch(this);
 	}
 
 	public void init() {

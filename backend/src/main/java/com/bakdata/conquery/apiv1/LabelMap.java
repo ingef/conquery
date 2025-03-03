@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.util.search.Search;
 import com.google.common.collect.BiMap;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,7 +21,7 @@ import org.apache.commons.lang3.time.StopWatch;
 @RequiredArgsConstructor
 @Slf4j
 @EqualsAndHashCode
-public class LabelMap implements Searchable {
+public class LabelMap implements Searchable<FrontendValue> {
 
 	private final FilterId id;
 	@Delegate
@@ -30,13 +30,13 @@ public class LabelMap implements Searchable {
 	private final boolean generateSearchSuffixes;
 
 	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) {
+	public Search<FrontendValue> createSearch(SearchConfig config) {
 
-		final TrieSearch<FrontendValue> search = config.createTrieSearch(true);
+		final Search<FrontendValue> search = config.createSearch(this);
 
 		final List<FrontendValue> collected = delegate.entrySet().stream()
 													  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-													  .collect(Collectors.toList());
+													  .toList();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Labels for {}: `{}`", getId(), collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
@@ -45,14 +45,14 @@ public class LabelMap implements Searchable {
 		StopWatch timer = StopWatch.createStarted();
 		log.trace("START-SELECT ADDING_ITEMS for {}", getId());
 
-		collected.forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+		collected.forEach(feValue -> search.addItem(feValue, InternalFilterSearch.extractKeywords(feValue)));
 
 		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", getId(), timer);
 
 		timer.reset();
 		log.trace("START-SELECT SHRINKING for {}", getId());
 
-		search.shrinkToFit();
+		search.finalizeSearch();
 
 		log.trace("DONE-SELECT SHRINKING for {} in {}", getId(), timer);
 

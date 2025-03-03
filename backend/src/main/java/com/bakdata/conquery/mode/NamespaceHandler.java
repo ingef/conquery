@@ -11,9 +11,9 @@ import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.setup.Environment;
 
@@ -52,7 +52,8 @@ public interface NamespaceHandler<N extends Namespace> {
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
-		FilterSearch filterSearch = new FilterSearch(config.getIndex());
+		SearchProcessor filterSearch = config.getIndex().createSearchProcessor();
+
 		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}
 
