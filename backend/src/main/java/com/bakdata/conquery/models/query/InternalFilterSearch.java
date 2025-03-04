@@ -9,6 +9,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -18,18 +22,19 @@ import com.bakdata.conquery.models.config.search.IndexConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 
 @Slf4j
@@ -45,7 +50,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private ConcurrentMap<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+	private ConcurrentMap<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
 
 	/**
@@ -77,6 +82,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		return references.stream()
 						 .map(searchCache::get)
 						 .filter(Objects::nonNull)
+						 .<Search<FrontendValue>>map(Search.class::cast)
 						 .toList();
 	}
 
@@ -96,7 +102,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void addSearches(Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
 	}
@@ -108,14 +114,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * prevents from adding new values.
 	 */
 	public void registerValues(Searchable<FrontendValue> searchable, Collection<String> values) {
-		Search<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> {
-			try {
-				return searchable.createSearch(searchConfig);
-			}
-			catch (IndexCreationException e) {
-				throw new IllegalStateException(e);
-			}
-		});
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchConfig.createSearch(searchable));
 
 		synchronized (search) {
 			values.stream()
@@ -161,5 +160,59 @@ public class InternalFilterSearch implements SearchProcessor {
 	@Override
 	public Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer) {
 		return new UpdateFilterSearchJob(storage, this, searchConfig, columnsConsumer);
+	}
+
+	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+
+		final Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+		for (Searchable<FrontendValue> searchable : managerSearchables) {
+			if (searchable instanceof Column) {
+				throw new IllegalStateException("Columns should have been grouped out previously");
+			}
+
+			service.submit(() -> {
+
+				final StopWatch watch = StopWatch.createStarted();
+
+				log.info("BEGIN collecting entries for `{}`", searchable);
+
+				try {
+					final TrieSearch<FrontendValue> search = searchConfig.createSearch(searchable);
+
+					searchCache.put(searchable, search);
+
+					log.debug(
+							"DONE collecting {} entries for `{}`, within {}",
+							search.calculateSize(),
+							searchable,
+							watch
+					);
+				}
+				catch (Exception e) {
+					log.error("Failed to create search for {}", searchable, e);
+				}
+
+			});
+		}
+
+		service.shutdown();
+
+
+		while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+			if (cancelledState.get()) {
+				log.info("This job got canceled");
+				service.shutdownNow();
+				return;
+			}
+			log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+		}
+
+		// Shrink searches before registering in the filter search
+		searchCache.values().forEach(Search::finalizeSearch);
+
+
+		addSearches(searchCache);
 	}
 }

@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class Search<K> {
-	public abstract void addItem(K document, List<String> strings);
 
 	public abstract void finalizeSearch();
 

@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -12,7 +11,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.util.search.Search;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
@@ -62,14 +60,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public String toString() {
 		return "Column(id = " + getId() + ", type = " + getType() + ")";
-	}
-
-	/**
-	 * We create only an empty search here, because the content is provided through {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues} and filled by the caller.
-	 */
-	@Override
-	public Search<FrontendValue> createSearch(SearchConfig config) {
-		return config.createSearch(this);
 	}
 
 	public void init() {

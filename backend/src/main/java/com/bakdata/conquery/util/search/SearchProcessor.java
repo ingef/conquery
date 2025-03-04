@@ -2,8 +2,8 @@ package com.bakdata.conquery.util.search;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -18,8 +18,6 @@ public interface SearchProcessor {
 
 	Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer);
 
-	void addSearches(Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache);
-
 	void registerValues(Searchable<FrontendValue> searchable, Collection<String> values);
 
 	long getTotal(SelectFilter<?> filter);
@@ -29,4 +27,6 @@ public interface SearchProcessor {
 	void finalizeSearch(Searchable<FrontendValue> searchable);
 
 	List<FrontendValue> topItems(SelectFilter<?> searchable, String text);
+
+	void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException;
 }

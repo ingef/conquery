@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.util.search.Search;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -81,12 +79,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	public boolean isSearchDisabled() {
 		return false;
-	}
-
-	public Search<FrontendValue> createSearch(SearchConfig config) {
-
-
-		return config.createSearch(this );
 	}
 
 	@Override

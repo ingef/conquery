@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import com.google.common.collect.ImmutableBiMap;
@@ -66,12 +65,7 @@ public class InternalFilterSearchTest {
 
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
-			try {
-				search.addSearches(Map.of(searchable, searchable.createSearch(indexConfig)));
-			}
-			catch (IndexCreationException e) {
-				throw new RuntimeException(e);
-			}
+			search.addSearches(Map.of(searchable, indexConfig.createSearch(searchable)));
 		});
 
 		search.registerValues(column, List.of(
@@ -119,12 +113,7 @@ public class InternalFilterSearchTest {
 
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
-			try {
-				search.addSearches(Map.of(searchable, searchable.createSearch(indexConfig)));
-			}
-			catch (IndexCreationException e) {
-				throw new RuntimeException(e);
-			}
+			search.addSearches(Map.of(searchable, indexConfig.createSearch(searchable)));
 		});
 		search.finalizeSearch(column);
 
