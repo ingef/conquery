@@ -39,7 +39,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 
 	@ToString.Exclude
-	@Getter
 	private final ThreadLocal<Set<Table>> requiredTables = ThreadLocal.withInitial(this::collectRequiredTables);
 
 	private QPNode child;
@@ -52,7 +51,10 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
+	private final boolean aggregateValidityDates;
+
 	public ConceptQueryPlan(boolean generateDateAggregator) {
+		this.aggregateValidityDates = generateDateAggregator;
 		if (generateDateAggregator) {
 			aggregators.add(dateAggregator);
 		}
@@ -180,10 +182,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 
 		return Optional.of(dateAggregator);
-	}
-
-	public boolean isAggregateValidityDates() {
-		return dateAggregator.equals(aggregators.get(0));
 	}
 
 	public boolean isOfInterest(Bucket bucket) {
