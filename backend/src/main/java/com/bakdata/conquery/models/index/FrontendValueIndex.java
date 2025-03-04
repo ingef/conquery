@@ -7,8 +7,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.util.search.internal.TrieSearch;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 				templateToConcrete.get(optionValueTemplate)
 		);
 
-		delegate.addItem(feValue, FilterSearch.extractKeywords(feValue));
+		delegate.addItem(feValue, InternalFilterSearch.extractKeywords(feValue));
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 			return null;
 		}
 
-		return matches.iterator().next();
+		return matches.getFirst();
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 		timer.reset();
 		log.trace("START-FV-FIN SHRINKING");
 
-		delegate.shrinkToFit();
+		delegate.finalizeSearch();
 
 		log.trace("DONE-FV-FIN SHRINKING in {}", timer);
 

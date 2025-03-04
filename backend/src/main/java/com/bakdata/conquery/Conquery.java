@@ -17,6 +17,7 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.configuration.JsonConfigurationFactory;
@@ -90,6 +91,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		});
 
 		bootstrap.addBundle(new PrometheusBundle());
+		bootstrap.addBundle(new SolrBundle());
 	}
 
 	@Override

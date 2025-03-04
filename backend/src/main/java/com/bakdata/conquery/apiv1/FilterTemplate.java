@@ -6,18 +6,12 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
-import com.bakdata.conquery.models.index.FrontendValueIndex;
-import com.bakdata.conquery.models.index.FrontendValueIndexKey;
-import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.util.io.FileUtil;
-import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
-public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
+public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable<FrontendValue>, SearchIndex {
 
 	private static final long serialVersionUID = 1L;
 
@@ -85,23 +79,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	public boolean isSearchDisabled() {
 		return false;
-	}
-
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) throws IndexCreationException {
-
-		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
-		log.trace("Resolved filter template reference url for search '{}': {}", getId(), resolvedURI);
-
-		final FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
-				resolvedURI,
-				columnValue,
-				value,
-				optionValue,
-				isGenerateSuffixes() ? getMinSuffixLength() : Integer.MAX_VALUE,
-				config.getSearchSplitChars()
-		));
-
-		return search.getDelegate();
 	}
 
 	@Override

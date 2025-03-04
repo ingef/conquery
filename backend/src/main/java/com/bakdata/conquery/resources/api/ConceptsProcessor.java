@@ -40,15 +40,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.search.Cursor;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.internal.Cursor;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -168,7 +166,7 @@ public class ConceptsProcessor {
 
 		final List<FrontendValue> out = new ArrayList<>();
 
-		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
+		for (Search<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
 			for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 				final String searchTerm = iterator.next();
@@ -239,13 +237,13 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
+		final List<Search<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
 
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
 						// We are always leading with the empty value.
 						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
-						Iterators.concat(Iterators.transform(searches.iterator(), TrieSearch::iterator))
+						Iterators.concat(Iterators.transform(searches.iterator(), Search::iterator))
 				);
 
 		// Use Set to accomplish distinct values
@@ -254,7 +252,7 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private int countAllValues(SelectFilter<?> searchable) {
+	private long countAllValues(SelectFilter<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset());
 
 		return namespace.getFilterSearch().getTotal(searchable);
@@ -271,18 +269,7 @@ public class ConceptsProcessor {
 		// The different sources might contain duplicate FEValue#values which we exploit:
 		// If a value is already present, it's from a search with higher priority.
 
-		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
-
-		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
-
-		for (TrieSearch<FrontendValue> search : searches) {
-
-			final Object2LongMap<FrontendValue> itemWeights = search.collectWeights(List.of(text));
-
-			itemWeights.forEach(overlayedWeights::putIfAbsent);
-		}
-
-		return TrieSearch.topItems(Integer.MAX_VALUE, overlayedWeights);
+		return namespace.getFilterSearch().topItems(searchable, text);
 
 
 	}
@@ -313,10 +300,10 @@ public class ConceptsProcessor {
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
-	private record CursorAndLength(Cursor<FrontendValue> values, int size) {
+	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
 	}
 
-	public record AutoCompleteResult(List<FrontendValue> values, int total) {
+	public record AutoCompleteResult(List<FrontendValue> values, long total) {
 	}
 
 	public record ResolvedFilterResult(ConnectorId tableId, String filterId, Collection<FrontendValue> value) {
