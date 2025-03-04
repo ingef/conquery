@@ -62,7 +62,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, Manag
 		try {
 			return get(key);
 		} catch (Exception e) {
-			log.warn("Unable to load value for key {}", key, e);
+			log.trace("Unable to load value for key {}", key, e);
 			return null;
 		}
 	}
