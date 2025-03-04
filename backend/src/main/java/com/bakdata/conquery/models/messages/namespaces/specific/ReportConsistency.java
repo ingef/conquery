@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -28,10 +29,8 @@ import lombok.extern.slf4j.Slf4j;
  * inconsistencies.
  */
 @CPSType(id="REPORT_CONSISTENCY", base= NamespacedMessage.class)
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
 @Slf4j
 public class ReportConsistency extends NamespaceMessage {
 

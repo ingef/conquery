@@ -27,6 +27,11 @@ public class ImportBucket extends WorkerMessage {
 	public void react(Worker context) throws Exception {
 		log.debug("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
 
+		if (context.getStorage().getImport(bucket.getImp()) == null){
+			log.error("Received {} with unknown Import `{}`.", bucket, bucket.getImp());
+			return;
+		}
+
 		context.getJobManager().addSlowJob(new SimpleJob("Adding Bucket " + bucket.getId(), () -> {
 			log.debug("BEGIN adding Bucket {}", bucket.getId());
 			context.addBucket(bucket);
