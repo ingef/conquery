@@ -5,7 +5,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +34,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.io.Cloner;
-import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -164,23 +163,14 @@ public class TestConquery {
 	public void waitUntilWorkDone() {
 		log.info("Waiting for jobs to finish");
 		//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-		long started = System.nanoTime();
 		for (int i = 0; i < 5; i++) {
-			do {
-				Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
 
-				if (!isBusy()) {
-					break;
-				}
-
-
-				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
-					started = System.nanoTime();
-					log.warn("Waiting for done work for a long time", new Exception("This Exception marks the stacktrace, to show where we are waiting."));
-				}
-
-			} while (true);
+			await().atMost(10, TimeUnit.SECONDS)
+				   .pollDelay(1, TimeUnit.MILLISECONDS)
+				   .pollInterval(5, TimeUnit.MILLISECONDS)
+				   .until(() -> !isBusy());
 		}
+
 		log.trace("All jobs finished");
 	}
 
@@ -198,14 +188,19 @@ public class TestConquery {
 	private boolean isBusy() {
 		boolean busy;
 		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
-		busy |= standaloneCommand.getManager().getDatasetRegistry().getDatasets().stream()
+
+		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
 								 .map(Namespace::getExecutionManager)
 								 .flatMap(e -> e.getExecutionStates().asMap().values().stream())
 								 .map(ExecutionManager.State::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
-		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getDatasets()) {
+		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();
+
+			if (namespace instanceof DistributedNamespace distributedNamespace) {
+				busy |= distributedNamespace.getWorkerHandler().hasPendingMessages();
+			}
 		}
 
 		for (ShardNode shard : standaloneCommand.getShardNodes()) {
@@ -235,16 +230,16 @@ public class TestConquery {
 				standaloneCommand = new DistributedStandaloneCommand();
 			}
 			return (Command) standaloneCommand;
-		});
+		}
+		);
 		// start server
 		dropwizard.before();
 
 		// create HTTP client for api tests
-		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
+		client = new JerseyClientBuilder(getDropwizard().getEnvironment())
 				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
 				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 				.build("test client");
-
 
 
 		// The test user is recreated after each test, in the storage, but its id stays the same.

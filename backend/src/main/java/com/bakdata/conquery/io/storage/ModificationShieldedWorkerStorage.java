@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -63,7 +62,7 @@ public class ModificationShieldedWorkerStorage implements WorkerStorage, Injecta
 	}
 
 	@Override
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper objectMapper) {
 		throw new UnsupportedOperationException();
 	}
 

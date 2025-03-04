@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -63,8 +65,11 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
-		final long numberOfExecutions = conquery.getMetaStorage().getAllExecutions().count();
-		assertThat(numberOfExecutions).isEqualTo(1);
+		long numberOfExecutions;
+		try(Stream<ManagedExecution> allExecutions = conquery.getMetaStorage().getAllExecutions()) {
+			numberOfExecutions = allExecutions.count();
+			assertThat(numberOfExecutions).isEqualTo(1);
+		}
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
@@ -147,7 +152,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		DatasetRegistry<?> datasetRegistry = support.getDatasetRegistry();
 
-		assertThat(support.getMetaStorage().getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		try(Stream<ManagedExecution> allExecutions = support.getMetaStorage().getAllExecutions()) {
+			assertThat(allExecutions.count()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		}
 
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
 		assertThat(allQueries).size().isEqualTo(1);

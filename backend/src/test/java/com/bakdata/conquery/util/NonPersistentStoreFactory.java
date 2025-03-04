@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
@@ -64,6 +64,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<Group>, Group>> groupStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<String, Integer>> entity2Bucket = new ConcurrentHashMap<>();
 
+
+	@JsonIgnore
+	@Override
+	public boolean isLoadStoresOnStart() {
+		return false;
+	}
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
@@ -181,7 +187,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 */
 	public MetaStorage createMetaStorage() {
 		final MetaStorage metaStorage = new MetaStorage(this);
-		metaStorage.openStores(null, new MetricRegistry());
+		metaStorage.openStores(null);
 		return metaStorage;
 	}
 
@@ -190,7 +196,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 */
 	public NamespaceStorage createNamespaceStorage() {
 		final NamespaceStorage storage = new NamespaceStorage(this, "_");
-		storage.openStores(null, new MetricRegistry());
+		storage.openStores(null);
 		return storage;
 	}
 }
