@@ -167,12 +167,12 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class RemotePostgresContextProvider implements TestContextProvider {
 
-		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "39041");
-		private final static String HOST = System.getenv("CONQUERY_SQL_HOST");
-		private final static String DATABASE = System.getenv("CONQUERY_SQL_DATABASE");
+		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "5432");
+		private final static String HOST = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_HOST"), "localhost");
+		private final static String DATABASE = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_DATABASE"), DATABASE_NAME);
 		private final static String CONNECTION_URL = "jdbc:postgresql://%s:%s/%s".formatted(HOST, PORT, DATABASE);
-		private final static String USERNAME = System.getenv("CONQUERY_SQL_USER");
-		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
+		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), PostgreSqlIntegrationTests.USERNAME);
+		private final static String PASSWORD = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PASSWORD"), PostgreSqlIntegrationTests.PASSWORD);
 		private final DSLContextWrapper dslContextWrapper;
 		private final DatabaseConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
