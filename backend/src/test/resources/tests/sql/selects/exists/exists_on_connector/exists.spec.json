@@ -31,17 +31,21 @@
       "type": "TREE",
       "children": [
         {
-          "type": "EQUALS",
-          "values": [
-            "a"
-          ],
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "a"
+            ]
+          },
           "name": "a"
         },
         {
-          "type": "EQUALS",
-          "values": [
-            "b"
-          ],
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "b"
+            ]
+          },
           "name": "b"
         }
       ],
