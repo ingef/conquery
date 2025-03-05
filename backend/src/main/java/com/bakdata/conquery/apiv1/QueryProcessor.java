@@ -108,14 +108,20 @@ public class QueryProcessor {
 
 
 	public List<? extends ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		try(Stream<ManagedExecution> allQueries = storage.getAllExecutions()) {
+		try (Stream<ManagedExecution> allQueries = storage.getAllExecutions()) {
 			return getQueriesFiltered(dataset.getId(), RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders).toList();
 		}
 	}
 
-	public Stream<? extends ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, Subject subject, Stream<ManagedExecution> allQueries, boolean allProviders) {
+	public Stream<? extends ExecutionStatus> getQueriesFiltered(
+			DatasetId datasetId,
+			UriBuilder uriBuilder,
+			Subject subject,
+			Stream<ManagedExecution> allQueries,
+			boolean allProviders) {
 
 		return allQueries
+				.filter(Objects::nonNull)
 				// The following only checks the dataset, under which the query was submitted, but a query can target more that
 				// one dataset.
 				.filter(q -> q.getDataset().equals(datasetId))
@@ -123,9 +129,9 @@ public class QueryProcessor {
 				.filter(QueryProcessor::canFrontendRender)
 				.filter(Predicate.not(ManagedExecution::isSystem))
 				.filter(q -> {
-							ExecutionState state = q.getState();
-							return state == ExecutionState.NEW || state == ExecutionState.DONE;
-						})
+					ExecutionState state = q.getState();
+					return state == ExecutionState.NEW || state == ExecutionState.DONE;
+				})
 				.filter(q -> subject.isPermitted(q, Ability.READ))
 				.map(mq -> {
 					try {
@@ -346,7 +352,14 @@ public class QueryProcessor {
 	/**
 	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
-	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<ConnectorId> sources, Dataset dataset, Range<LocalDate> dateRange) {
+	public FullExecutionStatus getSingleEntityExport(
+			Subject subject,
+			UriBuilder uriBuilder,
+			String idKind,
+			String entity,
+			List<ConnectorId> sources,
+			Dataset dataset,
+			Range<LocalDate> dateRange) {
 
 		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
 		subject.authorize(dataset, Ability.PRESERVE_ID);

@@ -45,13 +45,6 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
-
-		decorateIdMapping(idMapping);
-	}
-
-	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
-		idMapping
-				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
 	@Override
