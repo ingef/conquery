@@ -560,6 +560,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
+	public void loadKeys() {
+		// Note that this is very unlikely to be called or even do anything.
+		// It's implemented for consistencies sake.
+		store.loadKeys();
+	}
+
+	@Override
 	public void close() throws IOException {
 		store.close();
 	}

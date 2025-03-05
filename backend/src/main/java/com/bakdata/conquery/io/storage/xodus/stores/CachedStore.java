@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -19,6 +20,7 @@ import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.util.ConcurrentHashSet;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -28,36 +30,58 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
 	private final LoadingCache<KEY, VALUE> cache;
+
+	private final Set<KEY> keys = new ConcurrentHashSet<>();
+
 	@ToString.Include
 	private final Store<KEY, VALUE> store;
 
 	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.store = store;
 
-		StatsCounter statsCounter = metricRegistry != null ?
-									new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) :
-									StatsCounter.disabledStatsCounter();
+		final StatsCounter statsCounter =
+				metricRegistry != null ? new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) : StatsCounter.disabledStatsCounter();
 
-		Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
-												.recordStats(() -> statsCounter)
-												.evictionListener((k, v, cause) -> log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
+		final Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
+													  .recordStats(() -> statsCounter)
+													  .evictionListener(
+															  (k, v, cause) ->
+																	  log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
 
 		cache = caffeine.build(this::getFromStore);
 	}
 
+	private VALUE getFromStore(KEY key) {
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final VALUE value = store.get(key);
+		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
+
+		if (value != null) {
+			keys.add(key);
+		}
+
+		return value;
+	}
+
+
 	@Override
 	public synchronized boolean add(KEY key, VALUE value) {
-		boolean added = store.add(key, value);
-		if(added) {
-			cache.put(key, value);
+		final boolean added = store.add(key, value);
+		if (added) {
+			added(key, value);
 		}
 		return added;
 	}
 
+	private void added(KEY key, VALUE value) {
+		cache.put(key, value);
+		keys.add(key);
+	}
+
 	@Override
 	public synchronized boolean update(KEY key, VALUE value) {
-		boolean update = store.update(key, value);
-		cache.put(key, value);
+		final boolean update = store.update(key, value);
+		added(key, value);
 		return update;
 	}
 
@@ -74,9 +98,30 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public boolean remove(KEY key) {
-		boolean remove = store.remove(key);
-		cache.invalidate(key);
+		final boolean remove = store.remove(key);
+		removed(key);
 		return remove;
+	}
+
+	private void removed(KEY key) {
+		cache.invalidate(key);
+		keys.remove(key);
+	}
+
+	public void loadKeys() {
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		log.info("BEGIN loading keys {}", this);
+
+		getAllKeys().forEach(keys::add);
+
+		log.debug("DONE loading keys from {} in {}", this, stopwatch);
+	}
+
+	@Override
+	public Stream<KEY> getAllKeys() {
+		// This creates a humongous copy, but it avoids concurrent modification and simplifies usage.
+		return Set.copyOf(keys).stream();
 	}
 
 	@Override
@@ -103,15 +148,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		store.forEach((key, value, size) -> {
 			try {
 				totalSize.add(size);
-				cache.put(key, value);
+				added(key, value);
 			}
 			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
-					log.warn(
-							"Probably failed to read id '{}' because it is not yet present, skipping",
-							((IdReferenceResolvingException) e.getCause()).getValue(),
-							e
-					);
+					log.warn("Probably failed to read id '{}' because it is not yet present, skipping", ((IdReferenceResolvingException) e.getCause()).getValue(), e);
 				}
 				else {
 					throw e;
@@ -123,12 +164,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.debug("\tloaded store {}: {} entries, {} within {}",
-				this,
-			  	count,
-				BinaryByteUnit.format(totalSize.sum()),
-				timer.stop()
-		);
+		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, BinaryByteUnit.format(totalSize.sum()), timer.stop());
 	}
 
 	@Override
@@ -138,18 +174,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<VALUE> getAll() {
-		return store.getAllKeys().map(cache::get);
-	}
-
-	@Override
-	public Stream<KEY> getAllKeys() {
-		return store.getAllKeys();
+		return getAllKeys().map(cache::get);
 	}
 
 	@Override
 	public void clear() {
 		store.clear();
 		cache.invalidateAll();
+		keys.clear();
 	}
 
 	@Override
@@ -168,18 +200,15 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void removeStore() {
 		store.removeStore();
 		cache.invalidateAll();
+		keys.clear();
 	}
 
 	@Override
 	public void close() throws IOException {
 		store.close();
 		cache.invalidateAll();
+		keys.clear();
 	}
 
-	private VALUE getFromStore(KEY key) {
-		Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
-		VALUE value = store.get(key);
-		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
-		return value;
-	}
+
 }

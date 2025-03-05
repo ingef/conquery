@@ -71,6 +71,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		storage.openStores(persistenceMapper);
 
+		storage.loadKeys();
+
 		if (loadStorage) {
 			storage.loadData();
 		}

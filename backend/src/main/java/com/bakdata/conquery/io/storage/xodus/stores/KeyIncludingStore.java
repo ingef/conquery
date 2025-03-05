@@ -7,16 +7,14 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.ManagedStore;
 import com.bakdata.conquery.io.storage.Store;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, ManagedStore {
 
 	protected final Store<KEY, VALUE> store;
-
-	public KeyIncludingStore(Store<KEY, VALUE> store) {
-		this.store = store;
-	}
 
 	protected abstract KEY extractKey(VALUE value);
 
@@ -29,6 +27,11 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, Manag
 		return store.get(key);
 	}
 
+
+	@Override
+	public void loadKeys() {
+		store.loadKeys();
+	}
 
 
 	public void update(VALUE value) {
