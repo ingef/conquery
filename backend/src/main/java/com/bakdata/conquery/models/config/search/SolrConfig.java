@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.bakdata.conquery.util.search.solr.SolrSearch;
+import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.core.setup.Environment;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -24,7 +25,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.HealthCheckRequest;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.util.NamedList;
 
 @CPSType(id = "SOLR", base = SearchConfig.class)
 @Data
@@ -38,6 +41,7 @@ public class SolrConfig implements SearchConfig {
 	private final String username;
 	private final String password;
 
+	// TODO clarify owner ship (who should close the client)
 	@Setter(AccessLevel.PRIVATE)
 	private SolrClient solrClient;
 
@@ -97,5 +101,21 @@ public class SolrConfig implements SearchConfig {
 		solrClient = client;
 
 		return client;
+	}
+
+	public HealthCheck createHealthCheck(SolrClient client) {
+		return new HealthCheck() {
+			@Override
+			protected Result check() throws Exception {
+				NamedList<Object> response = client.request(new HealthCheckRequest());
+				String status = (String) response.get("status");
+				if ("healthy".equals(status)) {
+					return Result.builder().healthy().build();
+				}
+				else {
+					return Result.unhealthy(status);
+				}
+			}
+		};
 	}
 }
