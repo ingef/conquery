@@ -177,7 +177,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private VALUE getFromStore(KEY key) {
-		Stopwatch stopwatch = Stopwatch.createStarted();
+		Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		VALUE value = store.get(key);
 		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
 		return value;
