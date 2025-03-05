@@ -147,8 +147,7 @@ public class QueryProcessor {
 					}
 					return null;
 				})
-				.filter(Objects::nonNull)
-				;
+				.filter(Objects::nonNull);
 	}
 
 	/**

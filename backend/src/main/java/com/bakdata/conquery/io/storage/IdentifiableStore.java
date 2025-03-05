@@ -18,14 +18,6 @@ import lombok.experimental.Accessors;
 @Getter
 public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
 
-	// TODO: 09.01.2020 fk: Consider making these part of a class that is passed on creation instead so they are less loosely bound.
-//	@NonNull
-//	protected ThrowingConsumer<VALUE> onAdd = (v) -> {
-//	};
-//
-//	@NonNull
-//	protected ThrowingConsumer<VALUE> onRemove = (v) -> {
-//	};
 
 	public IdentifiableStore(Store<Id<VALUE>, VALUE> store) {
 		super(store);
@@ -35,48 +27,5 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	@Override
 	protected Id<VALUE> extractKey(VALUE value) {
 		return (Id<VALUE>) value.getId();
-	}
-
-	@Override
-	protected void removed(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to remove " + value, e);
-		}
-	}
-
-	@Override
-	protected void added(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to add " + value, e);
-		}
-	}
-
-	@Override
-	protected void updated(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-			final VALUE old = store.get((Id<VALUE>) value.getId());
-
-			if (old != null) {
-			}
-
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to add " + value, e);
-		}
 	}
 }
