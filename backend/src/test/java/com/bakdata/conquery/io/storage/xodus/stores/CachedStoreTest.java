@@ -72,6 +72,8 @@ public class CachedStoreTest {
 			backingStore.add("t2_" + i, "%d".formatted(i));
 		}
 
+		cachedStore.loadKeys();
+
 		// Cached Store
 		assertThat(cachedStore.getAllKeys()).as("All expected keys in backing store")
 											.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("t2_%d"::formatted).toArray(String[]::new));

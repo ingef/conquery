@@ -88,7 +88,8 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAllKeys().map(executions::get);
+		return executions.getAllKeys()
+						 .map(executions::get);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {

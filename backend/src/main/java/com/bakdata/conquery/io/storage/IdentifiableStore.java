@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -19,14 +18,6 @@ import lombok.experimental.Accessors;
 @Getter
 public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
 
-	// TODO: 09.01.2020 fk: Consider making these part of a class that is passed on creation instead so they are less loosely bound.
-	@NonNull
-	protected ThrowingConsumer<VALUE> onAdd = (v) -> {
-	};
-
-	@NonNull
-	protected ThrowingConsumer<VALUE> onRemove = (v) -> {
-	};
 
 	public IdentifiableStore(Store<Id<VALUE>, VALUE> store) {
 		super(store);
@@ -36,52 +27,5 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	@Override
 	protected Id<VALUE> extractKey(VALUE value) {
 		return (Id<VALUE>) value.getId();
-	}
-
-	@Override
-	protected void removed(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-
-			onRemove.accept(value);
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to remove " + value, e);
-		}
-	}
-
-	@Override
-	protected void added(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-
-			onAdd.accept(value);
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to add " + value, e);
-		}
-	}
-
-	@Override
-	protected void updated(VALUE value) {
-		try {
-			if (value == null) {
-				return;
-			}
-			final VALUE old = store.get((Id<VALUE>) value.getId());
-
-			if (old != null) {
-				onRemove.accept(old);
-			}
-
-			onAdd.accept(value);
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to add " + value, e);
-		}
 	}
 }
