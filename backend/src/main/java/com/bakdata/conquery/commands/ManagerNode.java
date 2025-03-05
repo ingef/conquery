@@ -174,6 +174,9 @@ public class ManagerNode implements Managed {
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
 		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
+
+		getMetaStorage().loadKeys();
+
 		if (getConfig().getStorage().isLoadStoresOnStart()) {
 			log.info("BEGIN loading MetaStorage");
 			getMetaStorage().loadData();

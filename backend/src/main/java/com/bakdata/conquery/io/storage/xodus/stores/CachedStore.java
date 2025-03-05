@@ -1,6 +1,8 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
@@ -20,7 +22,6 @@ import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.util.ConcurrentHashSet;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,7 +32,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final LoadingCache<KEY, VALUE> cache;
 
-	private final Set<KEY> keys = new ConcurrentHashSet<>();
+	/**
+	 * Do not edit this directly, we have to keep it outside for synchronization purposes.
+	 */
+	private final Set<KEY> backingKeys = new HashSet<>();
+	private final Set<KEY> keys = Collections.synchronizedSet(backingKeys);
 
 	@ToString.Include
 	private final Store<KEY, VALUE> store;
@@ -105,6 +110,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private void removed(KEY key) {
 		cache.invalidate(key);
+
 		keys.remove(key);
 	}
 
@@ -120,8 +126,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		// This creates a humongous copy, but it avoids concurrent modification and simplifies usage.
-		return Set.copyOf(keys).stream();
+		// We need to synchronize around this and mutations to avoid ConcurrentModificationExceptions.
+		synchronized (backingKeys) {
+			// This creates a humongous copy, but avoids concurrent modification and simplifies usage.
+			return Set.copyOf(keys).stream();
+		}
 	}
 
 	@Override
