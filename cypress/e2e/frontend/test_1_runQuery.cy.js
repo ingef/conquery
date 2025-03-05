@@ -12,7 +12,7 @@ describe("Run query", () => {
     visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
   });
 
-  it("Can execute query and see it in the queries tab", () => {
+  it("Can execute query, see it in the queries tab and delete it", () => {
     cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
     // Drag concept to editor
@@ -40,18 +40,16 @@ describe("Run query", () => {
     cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
 
     cy.get("@queryEditor").contains("Ergebnisse");
-  });
 
-  it("Can see the executed query in the queries tab", () => {
+    // Lookup executed query in the previous queries tab
     cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
     cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
 
     cy.get("@leftPaneContainer").contains("Ergebnisse");
     cy.get("@leftPaneContainer").contains("Concept1");
-  });
 
-  it("Can delete the query", () => {
+    // Delete the Query
     cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
     cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
@@ -60,7 +58,33 @@ describe("Run query", () => {
     
     cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
     cy.get('@executionList').contains('Anfrage jetzt löschen').click();
+
+    cy.get('@leftPaneContainer').contains('Keine Anfragen / Formulare gefunden')
   });
+
+  it("Check user error message", () => {
+    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+
+    // Drag concept to editor
+    cy.contains("MultiConnector").trigger("dragstart").trigger("dragleave");
+    cy.get("@queryEditor")
+      .trigger("dragenter")
+      .trigger("dragover")
+      .trigger("drop")
+      .trigger("dragend");
+
+    // Switch to secondary id mode
+    cy.get("@queryEditor").contains("Secondary Id").click()
+
+    // Exclude only concept from secondary id to create an invalid query
+    cy.get("@queryEditor").find('[data-test-id="secondary-id-toggle"]').click()
+
+    // Start query
+    cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
+
+    // Check for specific user error message
+    cy.get('[data-test-id="query-runner"]').contains("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
+  })
 });
 
 describe("Reference list", () => {
@@ -104,6 +128,11 @@ describe("Reference list", () => {
     // Check that node was inserted in query editor
     cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector")
     cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
+
+    // Clear editor
+    cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
+    cy.get('@queryEditor').find('button[data-test-id="confirm"]').click()
+    cy.get('@queryEditor').find('[data-test-id="text-initial"]')
   })
 
   it("Use reference list to resolve filter values", () =>{

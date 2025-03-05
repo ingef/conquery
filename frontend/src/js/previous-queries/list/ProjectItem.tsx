@@ -276,6 +276,8 @@ const ProjectItem = forwardRef<
                 <IconButton
                   icon={isShared ? faUser : faUserRegular}
                   bare
+                  title="share"
+                  data-test-id="share"
                   onClick={onIndicateShare}
                 />
               </WithTooltip>

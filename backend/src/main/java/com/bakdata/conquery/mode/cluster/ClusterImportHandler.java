@@ -64,7 +64,9 @@ public class ClusterImportHandler implements ImportHandler {
 
 			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
-			clearDependentConcepts(namespace.getStorage().getAllConcepts(), table.getId());
+			try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts();) {
+				clearDependentConcepts(allConcepts, table.getId());
+			}
 		}
 	}
 
@@ -170,8 +172,6 @@ public class ClusterImportHandler implements ImportHandler {
 	 */
 	public static WriteFuture sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
 
-		responsibleWorker.awaitFreeJobQueue();
-
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 		return responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
 
@@ -189,7 +189,9 @@ public class ClusterImportHandler implements ImportHandler {
 		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
+		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+			clearDependentConcepts(allConcepts, imp.getTable());
+		}
 
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp.getId()));

@@ -41,6 +41,9 @@ public interface SingleTableResult {
 	}
 
 	@JsonIgnore
+	Namespace getNamespace();
+
+	@JsonIgnore
 	List<ResultInfo> getResultInfos();
 
 	/**
@@ -50,9 +53,6 @@ public interface SingleTableResult {
 
 	@JsonIgnore
 	long resultRowCount();
-
-	@JsonIgnore
-	Namespace getNamespace();
 
 
 }

@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
+import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -17,21 +18,15 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,80 +35,61 @@ import lombok.extern.slf4j.Slf4j;
 public class IntegrationUtils {
 
 
-	/**
-	 * Load the constellation of roles, users and permissions into the provided storage.
-	 */
-	public static void importPermissionConstellation(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
-
-		for (Role role : roles) {
-			storage.addRole(role);
-		}
-
-		for (RequiredUser rUser : rUsers) {
-			final User user = rUser.getUser();
-			storage.addUser(user);
-
-			final RoleId[] rolesInjected = rUser.getRolesInjected();
-
-			for (RoleId mandatorId : rolesInjected) {
-				user.addRole(storage.getRole(mandatorId));
-			}
-		}
-	}
-
-
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
 		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
 	}
 
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
-	 *
-	 * @return
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
-		final String userToken = conquery.getAuthorizationController()
-										 .getConqueryTokenRealm()
-										 .createTokenForUser(user.getId());
 
 		// Submit Query
-		final Response response = conquery.getClient()
-										  .target(postQueryURI)
-										  .request(MediaType.APPLICATION_JSON_TYPE)
-										  .header("Authorization", "Bearer " + userToken)
-										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
+		Invocation.Builder request = conquery.getClient()
+											 .target(postQueryURI)
+											 .request(MediaType.APPLICATION_JSON_TYPE);
 
+		if (user != null) {
+			// Override authentication if user is provided
+			final String userToken = conquery.getAuthorizationController()
+											 .getConqueryTokenRealm()
+											 .createTokenForUser(user.getId());
 
-		assertThat(response.getStatusInfo().getStatusCode())
-				.as(() -> response.readEntity(String.class))
-				.isEqualTo(expectedResponseCode);
-
-		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-			return null;
+			request.header("Authorization", "Bearer " + userToken);
 		}
 
-		final JsonNode jsonNode = response.readEntity(JsonNode.class);
+		try(final Response response = request
+										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE))) {
 
-		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+			assertThat(response.getStatusInfo().getStatusCode())
+					.as(() -> response.readEntity(String.class))
+					.isEqualTo(expectedResponseCode);
 
-		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+			if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+				return null;
+			}
 
-		final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+			// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+			final JsonNode jsonNode = response.readEntity(JsonNode.class);
+			final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
 
-		final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
-		final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
+			final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
 
-		assertThat(status).isEqualTo(expectedState.name());
+			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
+			final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
 
-		if (expectedState == ExecutionState.DONE && expectedSize != -1) {
-			assertThat(numberOfResults)
-					.describedAs("Query results")
-					.isEqualTo(expectedSize);
+			assertThat(status).isEqualTo(expectedState.name());
+
+			if (expectedState == ExecutionState.DONE && expectedSize != -1) {
+				assertThat(numberOfResults)
+						.describedAs("Query results")
+						.isEqualTo(expectedSize);
+			}
+
+			return ManagedExecutionId.Parser.INSTANCE.parse(id);
 		}
-
-		return ManagedExecutionId.Parser.INSTANCE.parse(id);
 	}
 
 	public static List<OverviewExecutionStatus> getAllQueries(StandaloneSupport conquery, int expectedResponseCode) {
@@ -133,7 +109,7 @@ public class IntegrationUtils {
 		});
 	}
 
-	private static URI getPostQueryURI(StandaloneSupport conquery) {
+	public static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
 									  "dataset", conquery.getDataset().getId()
