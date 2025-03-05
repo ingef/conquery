@@ -119,7 +119,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		log.info("BEGIN loading keys {}", this);
 
-		getAllKeys().forEach(keys::add);
+		store.getAllKeys().forEach(keys::add);
 
 		log.debug("DONE loading keys from {} in {}", this, stopwatch);
 	}
