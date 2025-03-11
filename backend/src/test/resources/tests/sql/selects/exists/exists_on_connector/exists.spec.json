@@ -20,6 +20,10 @@
         {
           "id": "concept.connector_2",
           "selects": "concept.connector_2.exists"
+        },
+        {
+          "id": "concept.connector_3",
+          "selects": "concept.connector_3.exists"
         }
       ],
       "selects": "concept.exists"
@@ -71,6 +75,14 @@
             "type": "EXISTS",
             "name": "exists"
           }
+        },
+        {
+          "label": "connector_3",
+          "column": "exists_table_3.value",
+          "selects": {
+            "type": "EXISTS",
+            "name": "exists"
+          }
         }
       ]
     }
@@ -80,6 +92,28 @@
       {
         "csv": "tests/sql/selects/exists/exists_on_connector/content_1.csv",
         "name": "exists_table_1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/selects/exists/exists_on_connector/content_3.csv",
+        "name": "exists_table_3",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
