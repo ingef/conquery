@@ -10,20 +10,22 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="REQUEST_CONSISTENCY", base= NamespacedMessage.class)
+@CPSType(id = "REQUEST_CONSISTENCY", base = NamespacedMessage.class)
 @Setter
 @Getter
 @Slf4j
+@EqualsAndHashCode
 public class RequestConsistency extends WorkerMessage {
 
-    @Override
-    public void react(Worker context) throws Exception {
+	@Override
+	public void react(Worker context) throws Exception {
 		log.info("BEGIN Gather consistency information");
-		try(
+		try (
 				Stream<ImportId> allImportIds = context.getStorage().getAllImportIds();
 				Stream<BucketId> allBucketIds = context.getStorage().getAllBucketIds()
 		) {
@@ -39,5 +41,5 @@ public class RequestConsistency extends WorkerMessage {
 
 
 		log.debug("FINISHED Gather consistency information");
-    }
+	}
 }

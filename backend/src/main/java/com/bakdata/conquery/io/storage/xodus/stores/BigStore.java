@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.util.io.ChunkingOutputStream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -229,6 +229,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		metaStore.invalidateCache();
 		dataStore.invalidateCache();
 	}
+
+	@Override
+	public void loadKeys() {
+		metaStore.loadKeys();
+	}
+
 
 	@Override
 	public void removeStore() {

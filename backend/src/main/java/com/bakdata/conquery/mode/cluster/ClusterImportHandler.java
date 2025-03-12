@@ -172,8 +172,6 @@ public class ClusterImportHandler implements ImportHandler {
 	 */
 	public static WriteFuture sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
 
-		responsibleWorker.awaitFreeJobQueue();
-
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 		return responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
 

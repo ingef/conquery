@@ -3,8 +3,6 @@ package com.bakdata.conquery.util.support;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;
@@ -15,6 +13,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -74,6 +74,12 @@ public class StandaloneSupport implements TestSupport {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
+	/**
+	 * Returns a http client with registered authentication.
+	 * The user is by default the initial user with a super permission.
+	 *
+	 * @return The http client
+	 */
 	public Client getClient() {
 		return testConquery.getClient();
 	}
