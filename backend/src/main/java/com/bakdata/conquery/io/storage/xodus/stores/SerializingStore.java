@@ -98,7 +98,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * The underlying store to write the values to.
 	 */
-	private final XodusStore store;
+	private final Store<ByteIterable, ByteIterable> store;
 
 	/**
 	 *
@@ -121,7 +121,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ObjectMapper objectMapper;
 	private final ExecutorService executor;
 
-	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store, Validator validator, ObjectMapper objectMapper, CLASS_K keyType, CLASS_V valueType, boolean validateOnWrite, boolean removeUnreadableFromStore, File unreadableDataDumpDirectory, ExecutorService executorService) {
+	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(
+			Store<ByteIterable, ByteIterable> store,
+			Validator validator,
+			ObjectMapper objectMapper,
+			CLASS_K keyType,
+			CLASS_V valueType,
+			boolean validateOnWrite,
+			boolean removeUnreadableFromStore,
+			File unreadableDataDumpDirectory,
+			ExecutorService executorService) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -158,45 +167,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return unreadableValuesDumpDir != null;
 	}
 
-	/**
-	 * Generates a valid file name from the key of the dump object, the store and the current time.
-	 * However, it does not ensure that there is no file with such a name.
-	 * <p>
-	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
-	 */
-	@NotNull
-	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
-		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
-								.toFile();
-
-	}
-
-	/**
-	 * Generates a valid file name from the key of the dump object, the store and the current time.
-	 * However, it does not ensure that there is no file with such a name.
-	 * <p>
-	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
-	 */
-	@NotNull
-	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
-		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
-								.toFile();
-
-	}
-
-	private static String sanitiseFileName(@NotNull String name) {
-		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
-	}
-
-
 	@Override
-	public void add(KEY key, VALUE value) {
+	public boolean add(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
@@ -204,7 +176,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
-		store.add(writeKey(key), writeValue(value));
+		return store.add(writeKey(key), writeValue(value));
 	}
 
 	/**
@@ -253,7 +225,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 
 			if (unreadableValuesDumpDir != null) {
-				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, getName(), objectMapper);
 			}
 
 			if (removeUnreadablesFromUnderlyingStore) {
@@ -328,9 +300,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void remove(KEY key) {
-		log.trace("Removing value to key {} from Store[{}]", key, store.getName());
-		store.remove(writeKey(key));
+	public boolean remove(KEY key) {
+		log.trace("Removing value to key {} from Store[{}]", key, getName());
+		return store.remove(writeKey(key));
 	}
 
 	/**
@@ -353,8 +325,44 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
+	/**
+	 * Generates a valid file name from the key of the dump object, the store and the current time.
+	 * However, it does not ensure that there is no file with such a name.
+	 * <p>
+	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
+	 */
+	@NotNull
+	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+		return unreadableDumpDir.toPath()
+								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+								.resolve(storeName)
+								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
+								.toFile();
+
+	}
+
+	/**
+	 * Generates a valid file name from the key of the dump object, the store and the current time.
+	 * However, it does not ensure that there is no file with such a name.
+	 * <p>
+	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
+	 */
+	@NotNull
+	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+		return unreadableDumpDir.toPath()
+								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+								.resolve(storeName)
+								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
+								.toFile();
+
+	}
+
 	private static InputStream debugUnGzip(byte[] bytes) throws IOException {
 		return new GZIPInputStream(new ByteArrayInputStream(bytes));
+	}
+
+	private static String sanitiseFileName(@NotNull String name) {
+		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
 	}
 
 	/**
@@ -373,7 +381,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final Queue<ListenableFuture<ByteIterable>> jobs = new ConcurrentLinkedQueue<>();
 
 		// We read in  single thread, and deserialize and dispatch in multiple threads.
-		store.forEach((k, v) -> jobs.add(executorService.submit(() -> handle(consumer, result, k, v))));
+		store.forEach((k, v, c) -> jobs.add(executorService.submit(() -> handle(consumer, result, k, v))));
 
 		final ListenableFuture<List<ByteIterable>> allJobs = Futures.allAsList(jobs);
 
@@ -385,8 +393,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				maybeFailed = allJobs.get(30, TimeUnit.SECONDS);
 			}
 			catch (InterruptedException e) {
-				Thread.interrupted();
-				log.debug("Thread was interrupted.");
+				boolean interrupted = Thread.currentThread().isInterrupted();
+				log.debug("Waiting for deserialization was interrupted: {}", interrupted);
+
+				if(interrupted) {
+					// Rethrow to propagate
+					Thread.currentThread().interrupt();
+				}
 			}
 			catch (ExecutionException e) {
 				throw new RuntimeException(e);
@@ -425,7 +438,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final VALUE value;
 
 		try {
-			result.incrTotalProcessed();
 
 			// Try to read the key first
 			key =
@@ -446,6 +458,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 			log.error("Failed processing key/value", e);
 			return keyRaw;
+		}
+		finally {
+			result.incrTotalProcessed();
 		}
 
 		// Apply the consumer to key and value
@@ -485,15 +500,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return null;
 	}
 
-	/**
-	 * Deserialize value with {@code keyReader}.
-	 */
-	private KEY readKey(ByteIterable key) {
-		return read(keyReader, key);
-	}
-
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
@@ -502,7 +510,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
-		store.update(writeKey(key), writeValue(value));
+		return store.update(writeKey(key), writeValue(value));
 	}
 
 	@Override
@@ -516,12 +524,19 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<VALUE> getAll() {
-		return store.getAllKeys().stream().map(store::get).map(this::readValue);
+		return store.getAllKeys().map(store::get).map(this::readValue);
 	}
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		return store.getAllKeys().stream().map(this::readKey);
+		return store.getAllKeys().map(this::readKey);
+	}
+
+	/**
+	 * Deserialize value with {@code keyReader}.
+	 */
+	private KEY readKey(ByteIterable key) {
+		return read(keyReader, key);
 	}
 
 	@Override
@@ -530,19 +545,36 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void removeStore() {
-		store.deleteStore();
+	public String getName() {
+		return store.getName();
 	}
 
 	@Override
-	public void close() {
+	public void removeStore() {
+		store.removeStore();
+	}
+
+	@Override
+	public void invalidateCache() {
+		store.invalidateCache();
+	}
+
+	@Override
+	public void loadKeys() {
+		// Note that this is very unlikely to be called or even do anything.
+		// It's implemented for consistencies sake.
+		store.loadKeys();
+	}
+
+	@Override
+	public void close() throws IOException {
 		store.close();
 	}
 
 	@NoArgsConstructor
 	@EqualsAndHashCode
 	@Data
-	@ToString(onlyExplicitlyIncluded = false)
+	@ToString()
 	public static class IterationStatistic {
 		private final AtomicInteger totalProcessed = new AtomicInteger();
 		private final AtomicInteger failedKeys = new AtomicInteger();

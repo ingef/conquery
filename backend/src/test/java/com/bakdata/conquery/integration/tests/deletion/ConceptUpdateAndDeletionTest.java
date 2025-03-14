@@ -4,6 +4,7 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.Query;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -139,8 +141,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getConcept(conceptId))
-							.isNotNull();
+					assertThat(workerStorage.getConcept(conceptId)).isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
@@ -236,8 +237,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					// Concept is deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
-					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
+					.noneMatch(workerStorage -> {
+						try(Stream<CBlock> allCBlocks = workerStorage.getAllCBlocks())
+						{
+							return allCBlocks.anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId));
+						}
+					});
 
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");

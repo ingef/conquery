@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class MetaStorage extends ConqueryStorage implements Injectable {
+public class MetaStorage implements ConqueryStorage,  Injectable {
 
 	private final StoreFactory storageFactory;
 	private IdentifiableStore<ManagedExecution> executions;
@@ -65,7 +64,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		);
 	}
 
-	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper mapper) {
 		if (mapper != null) {
 			this.injectInto(mapper);
 		}
@@ -89,7 +88,8 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAllKeys().map(executions::get);
+		return executions.getAllKeys()
+						 .map(executions::get);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {

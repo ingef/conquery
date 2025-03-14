@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,10 +18,10 @@ import java.util.stream.Stream;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.util.io.ChunkingOutputStream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -47,10 +46,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final ObjectWriter valueWriter;
 	private final XodusStore metaXodusStore;
 	private final XodusStore dataXodusStore;
-	private ObjectReader valueReader;
-
 	private final StoreInfo<KEY, VALUE> storeInfo;
-
+	private final ObjectReader valueReader;
 	@Getter @Setter
 	private int chunkByteSize;
 
@@ -99,15 +96,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void add(KEY key, VALUE value) {
-		if (metaStore.get(key) != null) {
-			throw new IllegalArgumentException("There is already a value associated with " + key);
-		}
-
-		metaStore.update(key, writeValue(value));
-	}
-
-	@Override
 	public VALUE get(KEY key) {
 		BigStoreMetaKeys meta = metaStore.get(key);
 		if (meta == null) {
@@ -116,48 +104,50 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		return createValue(key, meta);
 	}
 
+	private VALUE createValue(KEY key, BigStoreMetaKeys meta) {
+		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore)
+												.map(ByteArrayInputStream::new)
+												.iterator();
+
+		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
+			return valueReader.readValue(in);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read " + key, e);
+		}
+	}
+
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		return metaStore.forEach((key, value, length) -> consumer.accept(key, createValue(key, value), length));
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		remove(key);
-		add(key, value);
+		return add(key, value);
 	}
 
 	@Override
-	public void remove(KEY key) {
+	public boolean remove(KEY key) {
 		BigStoreMetaKeys meta = metaStore.get(key);
 
 		if (meta == null) {
-			return;
+			return false;
 		}
 
 		for (UUID id : meta.getParts()) {
 			dataStore.remove(id);
 		}
-		metaStore.remove(key);
+		return metaStore.remove(key);
 	}
 
 	@Override
-	public void loadData() {
-	}
+	public boolean add(KEY key, VALUE value) {
+		if (metaStore.get(key) != null) {
+			throw new IllegalArgumentException("There is already a value associated with " + key);
+		}
 
-	@Override
-	public int count() {
-		return metaStore.count();
-	}
-
-	@Override
-	public Stream<VALUE> getAll() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Stream<KEY> getAllKeys() {
-		return metaStore.getAllKeys();
+		return metaStore.add(key, writeValue(value));
 	}
 
 	private BigStoreMetaKeys writeValue(VALUE value) {
@@ -181,7 +171,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 					}
 			);
 
-			try (OutputStream os = cos) {
+			try (cos) {
 				valueWriter.writeValue(
 						cos,
 						value
@@ -193,22 +183,63 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		}
 	}
 
-	private VALUE createValue(KEY key, BigStoreMetaKeys meta) {
-		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore)
-												.map(ByteArrayInputStream::new)
-												.iterator();
+	@Override
+	public void loadData() {
+	}
 
-		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
-			return valueReader.readValue(in);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to read " + key, e);
-		}
+	@Override
+	public int count() {
+		return metaStore.count();
+	}
+
+	@Override
+	public Stream<VALUE> getAll() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Stream<KEY> getAllKeys() {
+		return metaStore.getAllKeys();
 	}
 
 	@Override
 	public void close() throws IOException {
 		metaStore.close();
 		dataStore.close();
+	}
+
+	@Override
+	public String toString() {
+		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
+	}
+
+	@Override
+	public void clear() {
+		metaStore.clear();
+		dataStore.clear();
+	}
+
+	@Override
+	public String getName() {
+		return storeInfo.getName();
+	}
+
+	@Override
+	public void invalidateCache() {
+		metaStore.invalidateCache();
+		dataStore.invalidateCache();
+	}
+
+	@Override
+	public void loadKeys() {
+		metaStore.loadKeys();
+	}
+
+
+	@Override
+	public void removeStore() {
+		metaStore.removeStore();
+		dataStore.removeStore();
 	}
 
 	@Getter
@@ -221,23 +252,5 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		public Stream<byte[]> loadData(SerializingStore<UUID, byte[]> dataStore) {
 			return Arrays.stream(parts).map(dataStore::get);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
-	}
-
-
-	@Override
-	public void clear() {
-		metaStore.clear();
-		dataStore.clear();
-	}
-
-	@Override
-	public void removeStore() {
-		metaStore.removeStore();
-		dataStore.removeStore();
 	}
 }
