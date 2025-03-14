@@ -12,13 +12,11 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.util.search.SearchProcessor;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -39,9 +37,6 @@ public class UpdateFilterSearchJob extends Job {
 	private final NamespaceStorage storage;
 
 	private final SearchProcessor searchProcessor;
-
-	@NonNull
-	private final SearchConfig indexConfig;
 
 	private final Consumer<Set<Column>> registerColumnValuesInSearch;
 

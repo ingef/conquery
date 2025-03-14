@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.Cursor;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -166,19 +167,20 @@ public class ConceptsProcessor {
 
 		final List<FrontendValue> out = new ArrayList<>();
 
-		for (Search<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
-			for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
-				final String searchTerm = iterator.next();
-				final List<FrontendValue> results = search.findExact(List.of(searchTerm), Integer.MAX_VALUE);
+		SearchProcessor filterSearch = namespace.getFilterSearch();
 
-				if (results.isEmpty()) {
-					continue;
-				}
+		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
-				iterator.remove();
-				out.addAll(results);
+			final String searchTerm = iterator.next();
+			final List<FrontendValue> results = filterSearch.findExact(searchable, searchTerm);;
+
+			if (results.isEmpty()) {
+				continue;
 			}
+
+			iterator.remove();
+			out.addAll(results);
 		}
 
 		final ConnectorId connectorId = searchable.getConnector().getId();
@@ -260,7 +262,7 @@ public class ConceptsProcessor {
 
 	/**
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
-	 * Is used by the serach cache to load missing items
+	 * Is used by the search cache to load missing items
 	 */
 	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
 		final Namespace namespace = namespaces.get(searchable.getDataset());

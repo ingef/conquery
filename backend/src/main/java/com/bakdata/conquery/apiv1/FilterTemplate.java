@@ -6,12 +6,14 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -72,6 +74,10 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private IndexService indexService;
 
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	private ConqueryConfig config;
+
 	/**
 	 * Does not make sense to distinguish at Filter level since it's only referenced when a template is also set.
 	 */
@@ -84,5 +90,9 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@Override
 	public SearchIndexId createId() {
 		return new SearchIndexId(dataset, name);
+	}
+
+	public URI getResolvedUri() {
+		return FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), filePath);
 	}
 }

@@ -159,7 +159,7 @@ public class InternalFilterSearch implements SearchProcessor {
 
 	@Override
 	public Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer) {
-		return new UpdateFilterSearchJob(storage, this, searchConfig, columnsConsumer);
+		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
 	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
@@ -214,5 +214,17 @@ public class InternalFilterSearch implements SearchProcessor {
 
 
 		addSearches(searchCache);
+	}
+
+	@Override
+	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
+
+		final List<FrontendValue> out = new ArrayList<>();
+
+		for (Search<FrontendValue> search : getSearchesFor(filter)) {
+			List<FrontendValue> subResult = search.findExact(searchTerm, Integer.MAX_VALUE);
+			out.addAll(subResult);
+		}
+		return out;
 	}
 }

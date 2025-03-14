@@ -12,7 +12,6 @@ import org.apache.solr.client.solrj.SolrClient;
 public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 
 	private Environment environment;
-	private SolrClient solrClient;
 	private SolrConfig solrConfig;
 
 	@Override
@@ -24,8 +23,7 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 		}
 		this.solrConfig = config;
 
-		// TODO maybe move to Managed#start
-		solrClient = config.initClient(environment);
+		SolrClient solrClient = config.createManagedClient(environment);
 
 		environment.healthChecks().register(config.getBaseSolrUrl(), config.createHealthCheck(solrClient));
 
@@ -36,8 +34,5 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 	public void stop() throws Exception {
 		log.info("Unregister health check for {}", solrConfig.getBaseSolrUrl());
 		environment.healthChecks().unregister(solrConfig.getBaseSolrUrl());
-
-		log.info("Stopping solr client for {}", solrConfig.getBaseSolrUrl());
-		solrClient.close();
 	}
 }

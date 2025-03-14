@@ -52,7 +52,7 @@ public interface NamespaceHandler<N extends Namespace> {
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
-		SearchProcessor filterSearch = config.getIndex().createSearchProcessor();
+		SearchProcessor filterSearch = config.getIndex().createSearchProcessor(environment);
 
 		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}

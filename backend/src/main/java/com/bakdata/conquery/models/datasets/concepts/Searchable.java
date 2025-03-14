@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts;
 
 import jakarta.validation.constraints.Min;
 
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 
@@ -11,6 +12,8 @@ import com.bakdata.conquery.util.search.internal.TrieSearch;
  * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
  */
 public interface Searchable<T> {
+
+	Id<?> getId();
 
 	/**
 	 * Parameter used in the construction of {@link TrieSearch}, defining the shortest suffix to create.

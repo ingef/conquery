@@ -1,88 +1,227 @@
 package com.bakdata.conquery.util.search.solr;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.search.SolrConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.index.FrontendValueIndex;
+import com.bakdata.conquery.models.index.FrontendValueIndexKey;
+import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
-import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 
+@Slf4j
 @RequiredArgsConstructor
+//TODO Managed -> each Namespace a SolrClient
 public class SolrProcessor implements SearchProcessor {
 
-	private final SolrConfig solrConfig;
+	private final SolrClient solrClient;
+
+	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 
 	@Override
 	public void clearSearch() {
-
+		try {
+			solrClient.deleteByQuery("*:*");
+		}
+		catch (SolrServerException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer) {
-		return null;
+		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
 	@Override
 	public void registerValues(Searchable<FrontendValue> searchable, Collection<String> values) {
-		SolrClient solrClient = solrConfig.getSolrClient();
 
-		Search<FrontendValue> search = solrConfig.createSearch(searchable);
+		SolrSearch search = (SolrSearch) getSearchFor(searchable);
 
-
-		if (searchable instanceof Identifiable<?> identifiable) {
-			String searchableName = identifiable.getId().toString();
-			try {
-
-				// Use searchable's id to for collection.
-				solrClient.addBeans(values.stream().map(value -> new SolrFrontendValue(searchableName, value, value, null)).iterator());
-				return;
-			}
-			catch (SolrServerException | IOException e) {
-				throw new IllegalStateException("Unable to register values for searchable '%s'".formatted(searchable), e);
-			}
-		}
-
-		throw new IllegalStateException("Unable to register values for searchable '%s'. Expected an identifiable".formatted(searchable));
+		search.registerValues(values);
 	}
 
 	@Override
 	public long getTotal(SelectFilter<?> filter) {
-		return 0L;
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
+		return combinedSolrSearch.getTotal();
 	}
+
 
 	@Override
 	public List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
-		return List.of();
+		List<Searchable<FrontendValue>> searchReferences = searchable.getSearchReferences();
+		return searchReferences.stream().map(this::getSearchFor).toList();
 	}
 
+	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
+		return searches.computeIfAbsent(searchable, newRef -> new SolrSearch(solrClient, newRef));
+	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
 
 	}
 
 	@Override
-	public List<FrontendValue> topItems(SelectFilter<?> searchable, String text) {
-		return List.of();
+	public List<FrontendValue> topItems(SelectFilter<?> filter, String text) {
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+
+		return combinedSolrSearch.topItems(text, null, true);
 	}
 
 	@Override
 	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
+		final Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+		for (Searchable<FrontendValue> searchable : managerSearchables) {
+			if (searchable instanceof Column) {
+				throw new IllegalStateException("Columns should have been grouped out previously");
+			}
+
+			service.submit(() -> {
+
+				final StopWatch watch = StopWatch.createStarted();
+
+				log.info("BEGIN collecting entries for `{}`", searchable);
+
+				try {
+					if (searchable instanceof FilterTemplate temp) {
+						indexFilterTemplate(searchable, temp);
+					}
+					else if (searchable instanceof LabelMap labelMap) {
+						indexLabelMap(searchable, labelMap);
+					}
+					else {
+						log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
+						return;
+					}
+
+					final Search<FrontendValue> search = getSearchFor(searchable);
+
+
+					searchCache.put(searchable, search);
+
+					log.debug(
+							"DONE collecting {} entries for `{}`, within {}",
+							search.calculateSize(),
+							searchable,
+							watch
+					);
+				}
+				catch (Exception e) {
+					log.error("Failed to create search for {}", searchable, e);
+				}
+
+			});
+		}
+
+		service.shutdown();
+
+
+		while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+			if (cancelledState.get()) {
+				log.info("This job got canceled");
+				service.shutdownNow();
+				return;
+			}
+			log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+		}
+
+		searchCache.values().forEach(Search::finalizeSearch);
+	}
+
+	private void indexLabelMap(Searchable<FrontendValue> searchable, LabelMap labelMap) {
+		Search<FrontendValue> search = getSearchFor(searchable);
+
+		BiMap<String, String> delegate = labelMap.getDelegate();
+		FilterId id = labelMap.getId();
+
+		final List<FrontendValue> collected = delegate.entrySet().stream()
+													  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+													  .toList();
+
+		if (log.isTraceEnabled()) {
+			log.trace("Labels for {}: `{}`", id, collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
+		}
+
+		StopWatch timer = StopWatch.createStarted();
+		log.trace("START-SELECT ADDING_ITEMS for {}", id);
+
+		collected.forEach(feValue -> search.addItem(feValue, InternalFilterSearch.extractKeywords(feValue)));
+
+		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", id, timer);
+
+		timer.reset();
+		log.trace("START-SELECT SHRINKING for {}", id);
+
+		search.finalizeSearch();
+
+		log.trace("DONE-SELECT SHRINKING for {} in {}", id, timer);
+	}
+
+	private void indexFilterTemplate(Searchable<FrontendValue> searchable, FilterTemplate temp) {
+		final URI resolvedURI = temp.getResolvedUri();
+		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);
+
+		try {
+			final FrontendValueIndex search_ = temp.getIndexService().getIndex(new FrontendValueIndexKey(
+					resolvedURI,
+					temp.getColumnValue(),
+					temp.getValue(),
+					temp.getOptionValue(),
+					() -> getSearchFor(searchable)
+			));
+		}
+		catch (IndexCreationException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+
+		List<FrontendValue> frontendValues = combinedSolrSearch.topItems(searchTerm, 10, false);
+
+		String normalizedTerm = searchTerm.toLowerCase();
+
+		// filter for exact matches in label or value (no exact matches in substrings)
+		List<FrontendValue> exactMatches = frontendValues.stream()
+												 .filter(v -> normalizedTerm.equals(v.getValue().toLowerCase()) || normalizedTerm.equals(v.getLabel().toLowerCase()))
+												 .toList();
+
+		return exactMatches;
 	}
 }

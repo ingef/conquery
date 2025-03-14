@@ -12,8 +12,9 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.Job;
+import io.dropwizard.lifecycle.Managed;
 
-public interface SearchProcessor {
+public interface SearchProcessor extends Managed {
 	void clearSearch();
 
 	Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer);
@@ -29,4 +30,6 @@ public interface SearchProcessor {
 	List<FrontendValue> topItems(SelectFilter<?> searchable, String text);
 
 	void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException;
+
+	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
 }

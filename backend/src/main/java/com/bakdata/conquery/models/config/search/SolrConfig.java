@@ -4,19 +4,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Map;
 
-import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.LabelMap;
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.util.search.SearchProcessor;
+import com.bakdata.conquery.util.search.solr.ManagedSolrClient;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
-import com.bakdata.conquery.util.search.solr.SolrSearch;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.core.setup.Environment;
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Setter;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -41,37 +35,24 @@ public class SolrConfig implements SearchConfig {
 	private final String username;
 	private final String password;
 
-	// TODO clarify owner ship (who should close the client)
-	@Setter(AccessLevel.PRIVATE)
-	private SolrClient solrClient;
-
-	public SolrSearch createSearch(Searchable<FrontendValue> searchable) {
-		if (searchable instanceof FilterTemplate temp) {
-
-			return getFilterTemplateSearch(temp);
-		}
-
-		if (searchable instanceof LabelMap labelMap) {
-			return getLabelMapSearch(labelMap);
-		}
-
-		return new SolrSearch(solrClient);
-	}
-
-	private SolrSearch getLabelMapSearch(LabelMap labelMap) {
-		return null;
-	}
-
-	private SolrSearch getFilterTemplateSearch(FilterTemplate temp) {
-		return null;
-	}
-
 	@Override
-	public SearchProcessor createSearchProcessor() {
-		return new SolrProcessor(this);
+	public SearchProcessor createSearchProcessor(Environment environment) {
+		try {
+			SolrClient client = createManagedClient(environment);
+			return new SolrProcessor(client);
+		}
+		catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	public synchronized SolrClient initClient(Environment environment) throws MalformedURLException {
+	public synchronized ManagedSolrClient createManagedClient(Environment environment) throws MalformedURLException {
+		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createClient());
+		environment.lifecycle().manage(managedSolrClient);
+		return managedSolrClient;
+	}
+
+	public synchronized SolrClient createClient() throws MalformedURLException {
 		ModifiableSolrParams solrParams = new ModifiableSolrParams(params);
 
 
@@ -96,9 +77,7 @@ public class SolrConfig implements SearchConfig {
 				.withSocketTimeout(socketTimeout)
 				.withConnectionTimeout(connectionTimeout);
 
-		HttpSolrClient client = builder.build();
-
-		solrClient = client;
+		SolrClient client = builder.build();
 
 		return client;
 	}

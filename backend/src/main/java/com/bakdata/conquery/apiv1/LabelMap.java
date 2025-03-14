@@ -19,6 +19,7 @@ public class LabelMap implements Searchable<FrontendValue> {
 	private final FilterId id;
 	@Delegate
 	private final BiMap<String, String> delegate;
+
 	private final int minSuffixLength;
 	private final boolean generateSearchSuffixes;
 

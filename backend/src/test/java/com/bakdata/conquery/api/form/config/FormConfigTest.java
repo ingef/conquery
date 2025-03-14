@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-import java.net.URL;
+import java.net.URI;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
@@ -83,7 +83,7 @@ public class FormConfigTest {
 
 	@BeforeAll
 	public void setupTestClass() throws Exception {
-		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
+		config.getFrontend().setManualUrl(new URI("http://example.org/manual/welcome").toURL());
 
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();

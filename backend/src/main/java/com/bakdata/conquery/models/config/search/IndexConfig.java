@@ -20,12 +20,12 @@ import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
-import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.BiMap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ public class IndexConfig implements SearchConfig {
 	@ValidationMethod(message = "Specified baseUrl is not valid")
 	public boolean isValidUrl() {
 		if (baseUrl == null) {
-			// It is okay if no base is specified. Every template needs to specify it's full path then.
+			// It is okay if no base is specified. Every template needs to specify its full path then.
 			return true;
 		}
 		try {
@@ -119,7 +119,7 @@ public class IndexConfig implements SearchConfig {
 	}
 
 	private TrieSearch<FrontendValue> getFilterTemplateSearch(FilterTemplate temp) {
-		final URI resolvedURI = FileUtil.getResolvedUri(getBaseUrl(), temp.getFilePath());
+		final URI resolvedURI = temp.getResolvedUri();
 		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);
 
 		final FrontendValueIndex search;
@@ -129,19 +129,21 @@ public class IndexConfig implements SearchConfig {
 					temp.getColumnValue(),
 					temp.getValue(),
 					temp.getOptionValue(),
-					temp.isGenerateSuffixes() ? temp.getMinSuffixLength() : Integer.MAX_VALUE,
-					getSearchSplitChars()
+					() -> new TrieSearch<>(
+							temp.isGenerateSuffixes() ? temp.getMinSuffixLength() : Integer.MAX_VALUE,
+							getSearchSplitChars()
+					)
 			));
 		}
 		catch (IndexCreationException e) {
 			throw new RuntimeException(e);
 		}
 
-		return search.getDelegate();
+		return (TrieSearch<FrontendValue>) search.getDelegate();
 	}
 
 	@Override
-	public SearchProcessor createSearchProcessor() {
+	public SearchProcessor createSearchProcessor(Environment environment) {
 		return new InternalFilterSearch(this);
 	}
 }

@@ -218,8 +218,8 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		return weight;
 	}
 
-	public List<T> findExact(Collection<String> keywords, int limit) {
-		return keywords.stream()
+	public List<T> findExact(String searchTerm, int limit) {
+		return Stream.of(searchTerm)
 					   .flatMap(this::split)
 					   .map(whole::get)
 					   .filter(Objects::nonNull)
