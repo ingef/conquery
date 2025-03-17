@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -69,7 +68,7 @@ public class BucketManager {
 	/**
 	 * Table -> BucketN -> [Buckets]
 	 */
-	private final Map<TableId, Int2ObjectMap<List<BucketId>>> tableToBuckets;
+	private final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableToBuckets;
 
 	@Getter
 	private final int entityBucketSize;
@@ -78,7 +77,7 @@ public class BucketManager {
 
 	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
 		final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorCBlocks = new HashMap<>();
-		final Map<TableId, Int2ObjectMap<List<BucketId>>> tableBuckets = new HashMap<>();
+		final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableBuckets = new HashMap<>();
 		final Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
 
 		final IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
@@ -107,10 +106,10 @@ public class BucketManager {
 	/**
 	 * register entities, and create query specific indices for bucketId
 	 */
-	private static void generateTableToBuckets(BucketId bucketId, Map<TableId, Int2ObjectMap<List<BucketId>>> tableBuckets) {
+	private static void generateTableToBuckets(BucketId bucketId, Map<TableId, Int2ObjectMap<Set<BucketId>>> tableBuckets) {
 
 		tableBuckets.computeIfAbsent(bucketId.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
-					.computeIfAbsent(bucketId.getBucket(), n -> new ArrayList<>())
+					.computeIfAbsent(bucketId.getBucket(), n -> new HashSet<>())
 					.add(bucketId);
 	}
 
@@ -218,11 +217,11 @@ public class BucketManager {
 	}
 
 	public void removeTable(TableId table) {
-		final Int2ObjectMap<List<BucketId>> removed = tableToBuckets.remove(table);
+		final Int2ObjectMap<Set<BucketId>> removed = tableToBuckets.remove(table);
 
 		// It's possible no buckets were registered yet
 		if (removed != null) {
-			removed.values().stream().flatMap(List::stream).forEach(this::removeBucket);
+			removed.values().stream().flatMap(Set::stream).forEach(this::removeBucket);
 		}
 
 		storage.removeTable(table);
@@ -233,7 +232,7 @@ public class BucketManager {
 			allCBlockIds.filter(cblock -> cblock.getBucket().equals(bucket)).forEach(this::removeCBlock);
 		}
 
-		tableToBuckets.getOrDefault(bucket.getImp().getTable(), Int2ObjectMaps.emptyMap()).getOrDefault(bucket.getBucket(), Collections.emptyList()).remove(bucket);
+		tableToBuckets.getOrDefault(bucket.getImp().getTable(), Int2ObjectMaps.emptyMap()).getOrDefault(bucket.getBucket(), Collections.emptySet()).remove(bucket);
 
 		storage.removeBucket(bucket);
 	}
@@ -270,10 +269,10 @@ public class BucketManager {
 		storage.removeImport(imp);
 	}
 
-	public List<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
+	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
 		final int bucketId = getBucket(entity.getId());
 
-		return tableToBuckets.getOrDefault(table, Int2ObjectMaps.emptyMap()).getOrDefault(bucketId, Collections.emptyList());
+		return tableToBuckets.getOrDefault(table, Int2ObjectMaps.emptyMap()).getOrDefault(bucketId, Collections.emptySet());
 	}
 
 	private int getBucket(String id) {
