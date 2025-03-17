@@ -82,8 +82,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
 	 * is that this method will create a new cloned child for each distinct
 	 * secondaryId it encounters during iteration.
-	 *
-	 * @return
 	 */
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
@@ -115,7 +113,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		nextTable(ctxWithPhase, currentTable);
 
-		final List<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final Set<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
 
 		for (BucketId bucketId : tableBuckets) {
 			Bucket bucket = bucketId.resolve();
@@ -168,7 +166,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		nextTable(ctx, currentTable);
 
-		final List<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final Set<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
 
 		for (BucketId bucketId : tableBuckets) {
 			Bucket bucket = bucketId.resolve();
