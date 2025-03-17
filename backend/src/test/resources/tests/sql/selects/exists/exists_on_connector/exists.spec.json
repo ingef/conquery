@@ -9,7 +9,7 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "concept.a"
+        "concept"
       ],
       "type": "CONCEPT",
       "tables": [
@@ -18,15 +18,12 @@
           "selects": "concept.connector_1.exists"
         },
         {
-          "id": "concept.connector_2",
-          "selects": "concept.connector_2.exists"
+          "id": "concept.connector_2"
         },
         {
-          "id": "concept.connector_3",
-          "selects": "concept.connector_3.exists"
+          "id": "concept.connector_3"
         }
-      ],
-      "selects": "concept.exists"
+      ]
     }
   },
   "concepts": [
@@ -34,24 +31,6 @@
       "name": "concept",
       "type": "TREE",
       "children": [
-        {
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "a"
-            ]
-          },
-          "name": "a"
-        },
-        {
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "b"
-            ]
-          },
-          "name": "b"
-        }
       ],
       "selects": [
         {
@@ -70,7 +49,7 @@
         },
         {
           "label": "connector_2",
-          "column": "exists_table_1.value",
+          "column": "exists_table_2.value",
           "selects": {
             "type": "EXISTS",
             "name": "exists"
