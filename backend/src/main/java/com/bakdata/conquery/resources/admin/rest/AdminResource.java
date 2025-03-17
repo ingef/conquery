@@ -106,7 +106,6 @@ public class AdminResource {
 
 
 		return storage.getAllExecutions()
-
 					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
 					  .limit(limit)
 					  .map(t -> {
