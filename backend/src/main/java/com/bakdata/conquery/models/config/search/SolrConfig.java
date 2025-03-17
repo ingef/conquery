@@ -1,26 +1,21 @@
 package com.bakdata.conquery.models.config.search;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.solr.ManagedSolrClient;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.util.Duration;
 import lombok.Data;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.HealthCheckRequest;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
 
 @CPSType(id = "SOLR", base = SearchConfig.class)
@@ -28,17 +23,14 @@ import org.apache.solr.common.util.NamedList;
 public class SolrConfig implements SearchConfig {
 
 	private final String baseSolrUrl;
-	private final boolean compression;
-	private final Map<String,String[]> params;
-	private int connectionTimeout = 10000;
-    private int socketTimeout = 60000;
+	private Duration connectionTimeout = Duration.seconds(60);
 	private final String username;
 	private final String password;
 
 	@Override
-	public SearchProcessor createSearchProcessor(Environment environment) {
+	public SearchProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
-			SolrClient client = createManagedClient(environment);
+			SolrClient client = createManagedClient(environment, datasetId.getName());
 			return new SolrProcessor(client);
 		}
 		catch (MalformedURLException e) {
@@ -46,36 +38,24 @@ public class SolrConfig implements SearchConfig {
 		}
 	}
 
-	public synchronized ManagedSolrClient createManagedClient(Environment environment) throws MalformedURLException {
-		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createClient());
+	public synchronized ManagedSolrClient createManagedClient(Environment environment, String collection) throws MalformedURLException {
+		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createClient(collection));
 		environment.lifecycle().manage(managedSolrClient);
 		return managedSolrClient;
 	}
 
-	public synchronized SolrClient createClient() throws MalformedURLException {
-		ModifiableSolrParams solrParams = new ModifiableSolrParams(params);
+	public synchronized SolrClient createClient(@Nullable String collection) {
 
+		HttpJdkSolrClient.Builder builder = new HttpJdkSolrClient.Builder(baseSolrUrl)
+				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS);
 
-		// Unfortunately we cannot use the metrics instrumented DropwizardClient here
-		BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(
-				new AuthScope(HttpHost.create(URI.create(baseSolrUrl).toURL().getHost())),
-				new UsernamePasswordCredentials(username, password)
-		);
+		if (collection != null) {
+			builder.withDefaultCollection(collection);
+		}
 
-		// Create HTTP client with Basic Auth
-		CloseableHttpClient httpClient = HttpClients.custom()
-													.setDefaultCredentialsProvider(credsProvider)
-													.build();
-
-
-		HttpSolrClient.Builder builder = new HttpSolrClient.Builder()
-//				.withHttpClient(httpClient)
-				.withBaseSolrUrl(baseSolrUrl)
-				.allowCompression(compression)
-				.withInvariantParams(solrParams)
-				.withSocketTimeout(socketTimeout)
-				.withConnectionTimeout(connectionTimeout);
+		if (username != null) {
+			builder.withBasicAuthCredentials(username, password);
+		}
 
 		SolrClient client = builder.build();
 

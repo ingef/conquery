@@ -32,6 +32,7 @@ import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
@@ -43,10 +44,10 @@ import org.apache.solr.client.solrj.SolrServerException;
 //TODO Managed -> each Namespace a SolrClient
 public class SolrProcessor implements SearchProcessor {
 
+	@NonNull
 	private final SolrClient solrClient;
 
 	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
-
 	@Override
 	public void clearSearch() {
 		try {
@@ -102,64 +103,65 @@ public class SolrProcessor implements SearchProcessor {
 	@Override
 	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
-		final Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
-		for (Searchable<FrontendValue> searchable : managerSearchables) {
-			if (searchable instanceof Column) {
-				throw new IllegalStateException("Columns should have been grouped out previously");
-			}
-
-			service.submit(() -> {
-
-				final StopWatch watch = StopWatch.createStarted();
-
-				log.info("BEGIN collecting entries for `{}`", searchable);
-
-				try {
-					if (searchable instanceof FilterTemplate temp) {
-						indexFilterTemplate(searchable, temp);
-					}
-					else if (searchable instanceof LabelMap labelMap) {
-						indexLabelMap(searchable, labelMap);
-					}
-					else {
-						log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
-						return;
-					}
-
-					final Search<FrontendValue> search = getSearchFor(searchable);
-
-
-					searchCache.put(searchable, search);
-
-					log.debug(
-							"DONE collecting {} entries for `{}`, within {}",
-							search.calculateSize(),
-							searchable,
-							watch
-					);
-				}
-				catch (Exception e) {
-					log.error("Failed to create search for {}", searchable, e);
+			final Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+			for (Searchable<FrontendValue> searchable : managerSearchables) {
+				if (searchable instanceof Column) {
+					throw new IllegalStateException("Columns should have been grouped out previously");
 				}
 
-			});
-		}
+				service.submit(() -> {
 
-		service.shutdown();
+					final StopWatch watch = StopWatch.createStarted();
+
+					log.info("BEGIN collecting entries for `{}`", searchable);
+
+					try {
+						if (searchable instanceof FilterTemplate temp) {
+							indexFilterTemplate(searchable, temp);
+						}
+						else if (searchable instanceof LabelMap labelMap) {
+							indexLabelMap(searchable, labelMap);
+						}
+						else {
+							log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
+							return;
+						}
+
+						final Search<FrontendValue> search = getSearchFor(searchable);
 
 
-		while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
-			if (cancelledState.get()) {
-				log.info("This job got canceled");
-				service.shutdownNow();
-				return;
+						searchCache.put(searchable, search);
+
+						log.debug(
+								"DONE collecting {} entries for `{}`, within {}",
+								search.calculateSize(),
+								searchable,
+								watch
+						);
+					}
+					catch (Exception e) {
+						log.error("Failed to create search for {}", searchable, e);
+					}
+
+				});
 			}
-			log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+
+			service.shutdown();
+
+
+			while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+				if (cancelledState.get()) {
+					log.info("This job got canceled");
+					service.shutdownNow();
+					return;
+				}
+				log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+			}
+			searchCache.values().forEach(Search::finalizeSearch);
 		}
 
-		searchCache.values().forEach(Search::finalizeSearch);
 	}
 
 	private void indexLabelMap(Searchable<FrontendValue> searchable, LabelMap labelMap) {

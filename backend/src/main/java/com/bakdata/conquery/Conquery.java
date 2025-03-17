@@ -49,6 +49,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
+
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
 		Jackson.configure(confMapper);
 

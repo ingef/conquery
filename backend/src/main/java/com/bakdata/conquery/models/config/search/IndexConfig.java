@@ -14,6 +14,7 @@ import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
@@ -143,7 +144,7 @@ public class IndexConfig implements SearchConfig {
 	}
 
 	@Override
-	public SearchProcessor createSearchProcessor(Environment environment) {
+	public SearchProcessor createSearchProcessor(Environment environment, DatasetId id) {
 		return new InternalFilterSearch(this);
 	}
 }

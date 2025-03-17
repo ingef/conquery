@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -50,9 +51,10 @@ public interface NamespaceHandler<N extends Namespace> {
 			storage.loadData();
 		}
 
-		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
+		Dataset dataset = storage.getDataset();
+		JobManager jobManager = new JobManager(dataset.getName(), config.isFailOnError());
 
-		SearchProcessor filterSearch = config.getIndex().createSearchProcessor(environment);
+		SearchProcessor filterSearch = config.getIndex().createSearchProcessor(environment, dataset.getId());
 
 		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}

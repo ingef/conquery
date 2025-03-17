@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,7 +53,7 @@ public class SolrTest {
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
 
 	public final static String SOLR_BASE_URL_ENV = "SOLR_BASE_URL";
-	public static final DatasetId DATASET_ID = new DatasetId("dataset");
+	public static final DatasetId DATASET_ID = new DatasetId("core1");
 	public static final Column SEARCHABLE = createSearchable();
 	public static final SelectFilter<?> FILTER = createFilter();
 	public static final Environment ENVIRONMENT = new Environment(SolrTest.class.getSimpleName());
@@ -74,10 +73,10 @@ public class SolrTest {
 		SolrBundle solrBundle = new SolrBundle();
 
 		String baseSolrUrl = System.getenv(SOLR_BASE_URL_ENV);
-		solrConfig = new SolrConfig(baseSolrUrl, false, new HashMap<>(), "solr", "SolrRocks");
+		solrConfig = new SolrConfig(baseSolrUrl, "solr", "SolrRocks");
 		CONQUERY_CONFIG.setSearch(solrConfig);
 		solrBundle.run(CONQUERY_CONFIG, new Environment(SolrTest.class.getSimpleName()));
-		searchProcessor = solrConfig.createSearchProcessor(ENVIRONMENT);
+		searchProcessor = solrConfig.createSearchProcessor(ENVIRONMENT, DATASET_ID);
 
 		// Cleanup core
 		searchProcessor.clearSearch();
