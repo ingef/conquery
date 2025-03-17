@@ -118,7 +118,19 @@ public class ResultTestUtil {
 																 null
 														 }
 												 )
-					   )
+					   ),
+					   new SinglelineEntityResult("3", new Object[]{
+							   null,
+							   null,
+							   null,
+							   null,
+							   null,
+							   null,
+							   new BigDecimal("99999999999e-2"),
+							   null,
+							   null,
+							   null
+					   })
 		);
 	}
 

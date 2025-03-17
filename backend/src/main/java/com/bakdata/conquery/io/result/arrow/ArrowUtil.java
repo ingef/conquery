@@ -57,7 +57,7 @@ public class ArrowUtil {
 		   This will also impact Frontend preview, and ExternalFormBackends, needs planning.
 		   Note: I suspect jsArrow has a bug, where it reads Decimal as BigInt
 		 */
-		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(32, true)), null);
+		return new Field(uniqueName, FieldType.nullable(new ArrowType.Int(64, true)), null);
 
 	}
 
