@@ -127,7 +127,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Stream<KEY> getAllKeys() {
 		// We need to synchronize around this and mutations to avoid ConcurrentModificationExceptions.
-		synchronized (backingKeys) {
+		synchronized (keys) {
 			// This creates a humongous copy, but avoids concurrent modification and simplifies usage.
 			return Set.copyOf(keys).stream();
 		}
