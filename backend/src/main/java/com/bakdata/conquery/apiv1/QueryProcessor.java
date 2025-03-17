@@ -121,8 +121,7 @@ public class QueryProcessor {
 			boolean allProviders) {
 
 		return allQueries
-				.filter(Objects::nonNull)
-				// The following only checks the dataset, under which the query was submitted, but a query can target more that
+				// The following only checks the dataset, under which the query was submitted, but a query can target more than
 				// one dataset.
 				.filter(q -> q.getDataset().equals(datasetId))
 				// to exclude subtypes from somewhere else
