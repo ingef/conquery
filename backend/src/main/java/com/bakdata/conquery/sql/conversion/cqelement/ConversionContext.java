@@ -51,6 +51,9 @@ public class ConversionContext implements Context {
 	@Nullable
 	QueryStep stratificationTable;
 
+	@Nullable
+	QueryStep externalExtras;
+
 	/**
 	 * An optional date restriction range. Is set when converting a {@link CQDateRestriction}.
 	 */
