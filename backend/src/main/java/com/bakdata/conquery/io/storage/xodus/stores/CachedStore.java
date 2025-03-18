@@ -127,8 +127,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		// Uses .toArray() under the hood, which is synchronized
-		return new ArrayList<>(keys).stream();
+		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override
