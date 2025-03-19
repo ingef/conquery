@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
