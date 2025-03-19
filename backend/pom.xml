@@ -364,7 +364,7 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-postgres-extensions</artifactId>
-            <version>3.18.3</version>
+            <version>3.20.2</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
