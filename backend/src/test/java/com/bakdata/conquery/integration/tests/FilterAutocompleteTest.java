@@ -182,7 +182,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService, conquery.getConfig());
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request
