@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.config.search.IndexConfig;
+import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -28,8 +28,8 @@ public class InternalFilterSearchTest {
 
 	@Test
 	public void totals() {
-		final IndexConfig indexConfig = new IndexConfig();
-		InternalFilterSearch search = new InternalFilterSearch(indexConfig);
+		final InternalSearchConfig searchConfig = new InternalSearchConfig();
+		InternalFilterSearch search = new InternalFilterSearch(searchConfig);
 
 		// Column Searchable
 		SelectFilter<String> filter = new SingleSelectFilter();
@@ -65,7 +65,7 @@ public class InternalFilterSearchTest {
 
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
-			search.addSearches(Map.of(searchable, indexConfig.createSearch(searchable)));
+			search.addSearches(Map.of(searchable, searchConfig.createSearch(searchable)));
 		});
 
 		search.registerValues(column, List.of(
@@ -81,8 +81,8 @@ public class InternalFilterSearchTest {
 
 	@Test
 	public void totalsEmptyFiler() {
-		final IndexConfig indexConfig = new IndexConfig();
-		InternalFilterSearch search = new InternalFilterSearch(indexConfig);
+		final InternalSearchConfig searchConfig = new InternalSearchConfig();
+		InternalFilterSearch search = new InternalFilterSearch(searchConfig);
 
 		// Column Searchable
 		SelectFilter<String> filter = new SingleSelectFilter();
@@ -113,7 +113,7 @@ public class InternalFilterSearchTest {
 
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
-			search.addSearches(Map.of(searchable, indexConfig.createSearch(searchable)));
+			search.addSearches(Map.of(searchable, searchConfig.createSearch(searchable)));
 		});
 		search.finalizeSearch(column);
 

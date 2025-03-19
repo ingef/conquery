@@ -5,6 +5,7 @@ import java.io.IOException;
 import io.dropwizard.lifecycle.Managed;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -14,6 +15,7 @@ import org.apache.solr.common.util.NamedList;
  * Wrapper for Dropwizard's lifecycle
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ManagedSolrClient extends SolrClient implements Managed {
 
 	@Delegate(excludes = DelegateExclude.class)
@@ -21,6 +23,7 @@ public class ManagedSolrClient extends SolrClient implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		log.info("Closing solr client of collection '{}'", delegate.getDefaultCollection());
 		delegate.close();
 	}
 

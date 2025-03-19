@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,15 +44,18 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	@Override
 	public List<FrontendValue> findExact(String searchTerm, int maxValue) {
-		return find(List.of(searchTerm), maxValue, false);
+		return find(List.of(searchTerm), maxValue, true);
 	}
 
-	public List<FrontendValue> find(Collection<String> searchTerms, int maxValue, boolean fuzzy) {
+	/**
+	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
+	 */
+	public List<FrontendValue> find(Collection<String> searchTerms, int maxValue, boolean exact) {
 		// Escape user input
 		String termsEscaped = searchTerms.stream()
 										 .filter(Objects::nonNull)
 										 .map(ClientUtils::escapeQueryChars)
-										 .map(fuzzy ? "%s~"::formatted : Function.identity())
+										 .map(exact ? "/^%s$/"::formatted : "/.*%s.*/"::formatted)
 										 .collect(Collectors.joining(" ", "(", ")"));
 
 		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchable.getId()));

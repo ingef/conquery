@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.models.config.search.IndexConfig;
+import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,7 +98,7 @@ public class ConqueryConfig extends Configuration implements Injectable {
 
 	@NotNull
 	@Valid
-	private SearchConfig search = new IndexConfig();
+	private SearchConfig search = new InternalSearchConfig();
 
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 

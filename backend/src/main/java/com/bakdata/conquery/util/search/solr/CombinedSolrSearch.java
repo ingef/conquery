@@ -63,49 +63,48 @@ public class CombinedSolrSearch {
 	 */
 	private @NotNull String combineSearchables(boolean boost) {
 		List<Search<FrontendValue>> searches = processor.getSearchesFor(filter);
-		final AtomicInteger boostIndex = new AtomicInteger(searches.size());
+		int numSearchables = searches.size();
+		final AtomicInteger boostIndex = new AtomicInteger(1);
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
 									 .map(SolrSearch::getSearchable)
 									 .map(Searchable::getId)
 									 .map(Id::toString)
 									 .map(ClientUtils::escapeQueryChars)
-									 // Apply boost (^) if flagged https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
-									 .map(boost ? term -> "%s^%d".formatted(term, boostIndex.getAndDecrement()) : Function.identity())
+									 /* Apply boost (^) if flagged https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
+									 	The boost is between (0,1]. The first item gets 1 boost (default) like the search term
+									  */
+									 .map(boost ? term -> "%s^%.2f".formatted(term, 1f / boostIndex.getAndIncrement()) : Function.identity())
 									 .collect(Collectors.joining(" ", "(", ")"));
 		return searchables;
 	}
 
 
-	public List<FrontendValue> topItems(String text, @Nullable Integer limit, boolean fuzzy) {
+	public List<FrontendValue> topItems(String text, @Nullable Integer limit) {
 		String searchables = combineSearchables( true);
 
 		String term = text;
 
 		if (StringUtils.isBlank(term)) {
 			// Fallback to wild card if search term is blank search for everything
-			term = "*";
-		} else {
-			// Escape user input
-			term = ClientUtils.escapeQueryChars(term);
+			term = "_text_:*";
 		}
+		// Escape user input
+		term = ClientUtils.escapeQueryChars(term);
 
-		if (fuzzy) {
-			term = term + "~";
-		}
-		final String finalTerm = term;
 
 		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
-		String collect = Stream.of(
-									   SolrFrontendValue.Fields.value_s_lower,
-									   SolrFrontendValue.Fields.label_ws
-							   )
-							   .map(field -> "%s:%s".formatted(field, finalTerm))
-							   .collect(Collectors.joining(" OR ", " AND (", ")"));
 
-		queryStringBuilder.append(collect);
+
+
+		queryStringBuilder.append(" AND ")
+						  .append(term);
 		String queryString = queryStringBuilder.toString();
 
+		return sendQuery(limit, queryString);
+	}
+
+	private @NotNull List<FrontendValue> sendQuery(@org.jetbrains.annotations.Nullable Integer limit, String queryString) {
 		log.info("Query [{}] created: {}", queryString.hashCode(), queryString);
 		SolrQuery query = new SolrQuery(queryString);
 		query.addField(SolrFrontendValue.Fields.value_s_lower);
@@ -125,5 +124,33 @@ public class CombinedSolrSearch {
 		catch (SolrServerException | IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public List<FrontendValue> topItemsExact(String text, @Nullable Integer limit) {
+		String searchables = combineSearchables( true);
+
+		String term = text;
+
+		if (StringUtils.isBlank(term)) {
+			// Fallback to wild card if search term is blank search for everything
+			return List.of();
+		}
+		// Escape user input
+		term = ClientUtils.escapeQueryChars(term);
+
+		final String finalTerm = term;
+
+		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
+		String collect = Stream.of(
+									   SolrFrontendValue.Fields.value_s_lower,
+									   SolrFrontendValue.Fields.label_ws
+							   )
+							   .map(field -> "%s:%s".formatted(field, finalTerm))
+							   .collect(Collectors.joining(" OR ", " AND (", ")"));
+
+		queryStringBuilder.append(collect);
+		String queryString = queryStringBuilder.toString();
+
+		return sendQuery(limit, queryString);
 	}
 }

@@ -13,6 +13,7 @@ import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.util.Duration;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.HealthCheckRequest;
@@ -20,6 +21,7 @@ import org.apache.solr.common.util.NamedList;
 
 @CPSType(id = "SOLR", base = SearchConfig.class)
 @Data
+@Slf4j
 public class SolrConfig implements SearchConfig {
 
 	private final String baseSolrUrl;
@@ -45,6 +47,7 @@ public class SolrConfig implements SearchConfig {
 	}
 
 	public synchronized SolrClient createClient(@Nullable String collection) {
+		log.info("Creating solr client. Base url: {}, Collection: {})", baseSolrUrl, collection);
 
 		HttpJdkSolrClient.Builder builder = new HttpJdkSolrClient.Builder(baseSolrUrl)
 				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS);

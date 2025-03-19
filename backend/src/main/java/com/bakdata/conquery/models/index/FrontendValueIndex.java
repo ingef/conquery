@@ -87,11 +87,6 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 
 		final StopWatch timer = StopWatch.createStarted();
 
-		// If no empty label was provided by the mapping, we insert the configured default-label
-		if (delegate.findExact("", 1).isEmpty()) {
-			delegate.addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
-		}
-
 		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
 
 		timer.reset();

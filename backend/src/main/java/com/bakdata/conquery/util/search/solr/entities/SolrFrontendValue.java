@@ -1,5 +1,8 @@
 package com.bakdata.conquery.util.search.solr.entities;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import lombok.Getter;
@@ -41,6 +44,12 @@ public class SolrFrontendValue implements SolrEntity {
 	@Field
 	public String optionValue_s;
 
+	/**
+	 * Non-retrievable field for full text search (indexed="true" stored="false")
+	 */
+	@Field
+	public List<String> _text_;
+
 	public SolrFrontendValue(Searchable<?> searchable, FrontendValue feValue) {
 		this(searchable, feValue.getValue(), feValue.getLabel(), feValue.getOptionValue());
 
@@ -52,10 +61,11 @@ public class SolrFrontendValue implements SolrEntity {
 		this.value_s_lower = value;
 		this.label_ws = label;
 		this.optionValue_s = optionValue;
+		this._text_ = List.of(value, label);
 	}
 
 	public FrontendValue toFrontendValue() {
-		return new FrontendValue(value_s_lower, label_ws, optionValue_s);
+		return new FrontendValue(Objects.requireNonNullElse(value_s_lower,""), label_ws, optionValue_s);
 	}
 
 	private static String buildId(Searchable<?> searchable, String value) {

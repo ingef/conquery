@@ -92,6 +92,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return new SearchIndexId(dataset, name);
 	}
 
+	@JsonIgnore
 	public URI getResolvedUri() {
 		return FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), filePath);
 	}

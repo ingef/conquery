@@ -29,7 +29,7 @@ public interface SearchProcessor extends Managed {
 
 	List<FrontendValue> topItems(SelectFilter<?> searchable, String text);
 
-	void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException;
+	void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException;
 
 	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
 }

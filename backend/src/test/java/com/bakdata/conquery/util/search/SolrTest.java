@@ -87,7 +87,7 @@ public class SolrTest {
 	public void addData() throws InterruptedException {
 		// Index values from concept/reference
 		Set<Searchable<FrontendValue>> managerSearchables = FILTER.getSearchReferences().stream().filter(ref -> !(ref instanceof Column)).collect(Collectors.toSet());
-		searchProcessor.initManagerResidingSearches(managerSearchables, new AtomicBoolean(true));
+		searchProcessor.indexManagerResidingSearches(managerSearchables, new AtomicBoolean(true));
 
 		// Index values from column
 		Column column = createSearchable();
@@ -133,20 +133,41 @@ public class SolrTest {
 
 	@Test
 	@Order(2)
-	public void findFuzzy() {
+	public void findTerm1() {
 			List<FrontendValue> actual = searchProcessor.topItems(FILTER, "a");
 
-		// See lucene fuzzy https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
-		// Map values are boosted because the filter#getSearchReferences returned them first
 		assertThat(actual).containsExactly(
 				new FrontendValue("map a", "Map A", "null"),
-				new FrontendValue("map b", "Map B", "null"),
-				new FrontendValue("map c", "Map C", "null"),
 				new FrontendValue("column a", "column a", "null"),
-				new FrontendValue("column b", "column b", "null"),
 				new FrontendValue("column ab", "column ab", "null"),
 				new FrontendValue("column ba", "column ba", "null"));
 	}
+
+	@Test
+	@Order(2)
+	public void findTerm2() {
+		List<FrontendValue> actual = searchProcessor.topItems(FILTER, "ab");
+
+		assertThat(actual).containsExactly(
+				new FrontendValue("column ab", "column ab", "null")
+		);
+	}
+
+
+	@Test
+	@Order(2)
+	public void findPhrase1() {
+		List<FrontendValue> actual = searchProcessor.topItems(FILTER, "column a");
+
+		assertThat(actual).containsExactly(
+				new FrontendValue("column a", "column a",null),
+				new FrontendValue("map a", "Map A",null),
+				new FrontendValue("column b", "column b",null),
+				new FrontendValue("column ab", "column ab",null),
+				new FrontendValue("column ba", "column ba",null)
+		);
+	}
+
 
 	@Test
 	@Order(3)

@@ -41,7 +41,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 
 @Slf4j
 @RequiredArgsConstructor
-//TODO Managed -> each Namespace a SolrClient
 public class SolrProcessor implements SearchProcessor {
 
 	@NonNull
@@ -51,6 +50,7 @@ public class SolrProcessor implements SearchProcessor {
 	@Override
 	public void clearSearch() {
 		try {
+			log.info("Clearing collection: {}", solrClient.getDefaultCollection());
 			solrClient.deleteByQuery("*:*");
 		}
 		catch (SolrServerException | IOException e) {
@@ -97,11 +97,11 @@ public class SolrProcessor implements SearchProcessor {
 	public List<FrontendValue> topItems(SelectFilter<?> filter, String text) {
 		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
-		return combinedSolrSearch.topItems(text, null, true);
+		return combinedSolrSearch.topItems(text, null);
 	}
 
 	@Override
-	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
@@ -215,7 +215,7 @@ public class SolrProcessor implements SearchProcessor {
 	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
 		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
-		List<FrontendValue> frontendValues = combinedSolrSearch.topItems(searchTerm, 10, false);
+		List<FrontendValue> frontendValues = combinedSolrSearch.topItemsExact(searchTerm, 10);
 
 		String normalizedTerm = searchTerm.toLowerCase();
 

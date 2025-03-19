@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.search.IndexConfig;
+import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
@@ -42,7 +42,7 @@ import org.apache.commons.lang3.time.StopWatch;
 public class InternalFilterSearch implements SearchProcessor {
 
 	@Getter
-	private final IndexConfig searchConfig;
+	private final InternalSearchConfig searchConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -162,7 +162,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
-	public void initManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 

@@ -54,7 +54,7 @@ public interface NamespaceHandler<N extends Namespace> {
 		Dataset dataset = storage.getDataset();
 		JobManager jobManager = new JobManager(dataset.getName(), config.isFailOnError());
 
-		SearchProcessor filterSearch = config.getIndex().createSearchProcessor(environment, dataset.getId());
+		SearchProcessor filterSearch = config.getSearch().createSearchProcessor(environment, dataset.getId());
 
 		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}
