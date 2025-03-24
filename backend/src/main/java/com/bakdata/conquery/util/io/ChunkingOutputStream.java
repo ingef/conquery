@@ -1,4 +1,4 @@
-package com.bakdata.conquery.io.mina;
+package com.bakdata.conquery.util.io;
 
 import java.io.IOException;
 import java.io.OutputStream;

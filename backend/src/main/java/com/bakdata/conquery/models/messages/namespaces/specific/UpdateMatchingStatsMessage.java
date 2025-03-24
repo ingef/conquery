@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -60,9 +61,11 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		@Override
 		public void execute() throws Exception {
-			if (worker.getStorage().getAllCBlocks().findAny().isEmpty()) {
-				log.debug("Worker {} is empty, skipping.", worker);
-				return;
+			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
+				if (allCBlocks.findAny().isEmpty()) {
+					log.debug("Worker {} is empty, skipping.", worker);
+					return;
+				}
 			}
 
 			final ProgressReporter progressReporter = getProgressReporter();
@@ -131,49 +134,52 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
-			for (CBlock cBlock : worker.getStorage().getAllCBlocks().toList()) {
+			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks();) {
 
-				if (!cBlock.getConnector().getConcept().equals(concept.getId())) {
-					continue;
-				}
+				for (CBlock cBlock : allCBlocks.toList()) {
 
-				try {
-					final Bucket bucket = cBlock.getBucket().resolve();
-					final Table table = bucket.getTable().resolve();
-					final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
-
-					for (String entity : bucket.entities()) {
-
-						final int entityEnd = bucket.getEntityEnd(entity);
-
-						for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
-
-							final int[] localIds = cBlock.getPathToMostSpecificChild(event);
-
-
-							if (!(concept instanceof TreeConcept) || localIds == null) {
-								results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry())
-									   .addEventFromBucket(entity, bucket, event, dateColumns);
-								continue;
-							}
-
-							if (Connector.isNotContained(localIds)) {
-								continue;
-							}
-
-							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
-
-							while (element != null) {
-								results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
-									   .addEventFromBucket(entity, bucket, event, dateColumns);
-								element = element.getParent();
-							}
-						}
+					if (!cBlock.getConnector().getConcept().equals(concept.getId())) {
+						continue;
 					}
 
-				}
-				catch (Exception e) {
-					log.error("Failed to collect the matching stats for {}", cBlock, e);
+					try {
+						final Bucket bucket = cBlock.getBucket().resolve();
+						final Table table = bucket.getTable().resolve();
+					final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
+
+						for (String entity : bucket.entities()) {
+
+							final int entityEnd = bucket.getEntityEnd(entity);
+
+							for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
+
+								final int[] localIds = cBlock.getPathToMostSpecificChild(event);
+
+
+								if (!(concept instanceof TreeConcept) || localIds == null) {
+									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry())
+									   .addEventFromBucket(entity, bucket, event, dateColumns);
+									continue;
+								}
+
+								if (Connector.isNotContained(localIds)) {
+									continue;
+								}
+
+								ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
+
+								while (element != null) {
+									results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
+										   .addEventFromBucket(entity, bucket, event, dateColumns);
+									element = element.getParent();
+								}
+							}
+						}
+
+					}
+					catch (Exception e) {
+						log.error("Failed to collect the matching stats for {}", cBlock, e);
+					}
 				}
 			}
 

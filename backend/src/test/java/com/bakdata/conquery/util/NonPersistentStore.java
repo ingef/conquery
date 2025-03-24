@@ -15,8 +15,15 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ConcurrentMap<KEY, VALUE> map = new ConcurrentHashMap<>();
 
 	@Override
-	public void add(KEY key, VALUE value) {
-		map.put(key, value);
+	public boolean add(KEY key, VALUE value) {
+		synchronized (map) {
+			boolean notPresent = !map.containsKey(key);
+			if(notPresent) {
+				map.put(key, value);
+			}
+			// Was not present before
+			return notPresent;
+		}
 	}
 
 	@Override
@@ -36,13 +43,15 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) {
+	public boolean update(KEY key, VALUE value) {
 		map.put(key, value);
+		return true;
 	}
 
 	@Override
-	public void remove(KEY key) {
-		map.remove(key);
+	public boolean remove(KEY key) {
+		VALUE remove = map.remove(key);
+		return remove != null;
 	}
 
 	@Override
@@ -78,5 +87,20 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void clear() {
 		map.clear();
+	}
+
+	@Override
+	public String getName() {
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
+	public void invalidateCache() {
+		/* Do nothing (semantically this is not a cache, although we hold everything in memory) */
+	}
+
+	@Override
+	public void loadKeys() {
+
 	}
 }

@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -29,6 +31,7 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
@@ -43,8 +46,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
-		//read test specification
-		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 
@@ -56,15 +57,19 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		StandaloneSupport conquery = testConquery.getSupport(name);
 		DatasetId dataset = conquery.getDataset().getId();
 
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
-		ValidatorHelper.failOnError(log, validator.validate(test));
+		log.info("Setup tests");
+		ConqueryTestSpec test1 = setupTestQuery(dataset, validator, conquery, "/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json");
+		ConqueryTestSpec test2 = setupTestQuery(dataset, validator, conquery, "/tests/query/MULTI_CONCEPT_SINGLE_TABLE/query.test.json");
 
-		test.importRequiredData(conquery);
+		log.info("Execute tests");
+		test1.executeTest(conquery);
+		test2.executeTest(conquery);
 
-		test.executeTest(conquery);
-
-		final long numberOfExecutions = conquery.getMetaStorage().getAllExecutions().count();
-		assertThat(numberOfExecutions).isEqualTo(1);
+		long numberOfExecutions;
+		try(Stream<ManagedExecution> allExecutions = conquery.getMetaStorage().getAllExecutions()) {
+			numberOfExecutions = allExecutions.count();
+			assertThat(numberOfExecutions).isEqualTo(2);
+		}
 
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
@@ -147,12 +152,16 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		DatasetRegistry<?> datasetRegistry = support.getDatasetRegistry();
 
-		assertThat(support.getMetaStorage().getAllExecutions().count()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		try(Stream<ManagedExecution> allExecutions = support.getMetaStorage().getAllExecutions()) {
+			assertThat(allExecutions.count()).as("Executions after restart").isEqualTo(numberOfExecutions);
+		}
 
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
 		assertThat(allQueries).size().isEqualTo(1);
 
-		test.executeTest(support);
+		log.info("Reexecute tests after restart.");
+		test1.executeTest(support);
+		test2.executeTest(support);
 
 		storage = support.getMetaStorage();
 
@@ -194,5 +203,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		adminDatasetProcessor.deleteDataset(dataset4);
 		adminDatasetProcessor.deleteDataset(dataset5);
 		adminDatasetProcessor.deleteDataset(dataset6);
+	}
+
+	private static @NotNull ConqueryTestSpec setupTestQuery(DatasetId dataset, Validator validator, StandaloneSupport conquery, String testPath) throws Exception {
+		//read test specification
+		String testJson = In.resource(testPath).withUTF8().readAll();
+		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		ValidatorHelper.failOnError(log, validator.validate(test));
+
+		test.importRequiredData(conquery);
+		return test;
 	}
 }

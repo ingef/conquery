@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -12,38 +11,25 @@ import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Stopwatch;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(callSuper = true)
+@Getter
 public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
-	/**
-	 * Threshold of jobs at which transmission of new messages will block for ManagerNode until below threshold.
-	 */
-	private final int backpressure;
-	/**
-	 * Used to await/notify for full job-queues.
-	 */
-	@JsonIgnore
-	private final Object jobManagerSync = new Object();
 	/**
 	 * Contains latest state of the Job-Queue of the Shard.
 	 *
 	 * @implNote This is sent by the shards at regular intervals, not polled.
 	 */
 	@JsonIgnore
-	@Getter
 	private final Set<JobManagerStatus> jobManagerStatus = new HashSet<>();
-	private final AtomicBoolean full = new AtomicBoolean(false);
-	@Getter
 	private LocalDateTime lastStatusTime = LocalDateTime.now();
 
-	public ShardNodeInformation(NetworkSession session, int backpressure) {
+	public ShardNodeInformation(NetworkSession session) {
 		super(session);
-		this.backpressure = backpressure;
 
 		// This metric tracks when the last message from the corresponding shard was received.
 		SharedMetricRegistries.getDefault().gauge(
@@ -77,39 +63,8 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 			// replace with new status
 			jobManagerStatus.remove(incoming);
 			jobManagerStatus.add(incoming);
-
-
-			final long pressure = calculatePressure();
-			final boolean isFull = pressure > backpressure;
-
-			full.set(isFull);
-
-			if (!isFull) {
-				synchronized (jobManagerSync) {
-					jobManagerSync.notifyAll();
-				}
-			}
 		}
 
 
-	}
-
-	private long calculatePressure() {
-		return jobManagerStatus.stream().mapToLong(status -> status.getJobs().size()).sum();
-	}
-
-	public void waitForFreeJobQueue() throws InterruptedException {
-		if (!full.get()) {
-			return;
-		}
-
-		synchronized (jobManagerSync) {
-			final Stopwatch waiting = Stopwatch.createStarted();
-			log.trace("Shard {}, have to wait for free JobQueue (backpressure={})", session, backpressure);
-
-			jobManagerSync.wait();
-
-			log.debug("Shard {}, Waited {} for free JobQueue", session, waiting.stop());
-		}
 	}
 }

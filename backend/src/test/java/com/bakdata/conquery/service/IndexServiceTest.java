@@ -64,7 +64,7 @@ public class IndexServiceTest {
 
 		CONFIG.getIndex().setBaseUrl(new URI(String.format("http://localhost:%d/", REF_SERVER.getPort())));
 
-		NAMESPACE_STORAGE.openStores(null, null);
+		NAMESPACE_STORAGE.openStores(null);
 
 		DATASET.setNamespacedStorageProvider(NAMESPACE_STORAGE);
 		NAMESPACE_STORAGE.updateDataset(DATASET);

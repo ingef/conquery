@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -39,10 +40,12 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthorizationHelper {
 
 	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage){
-		return storage.getAllGroups()
-					  .filter(g -> g.getMembers().contains(subject.getId()))
-					  .sorted()
-					  .collect(Collectors.toList());
+		try(Stream<Group> allGroups = storage.getAllGroups()) {
+			return allGroups
+					.filter(g -> g.getMembers().contains(subject.getId()))
+					.sorted()
+					.collect(Collectors.toList());
+		}
 	}
 
 	/**

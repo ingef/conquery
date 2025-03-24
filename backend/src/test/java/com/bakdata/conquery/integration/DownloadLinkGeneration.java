@@ -48,7 +48,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, false);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset().getId(), storage, conquery.getDatasetRegistry());
+		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset().getId(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
