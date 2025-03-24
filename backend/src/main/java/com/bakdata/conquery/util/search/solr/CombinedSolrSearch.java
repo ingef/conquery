@@ -63,7 +63,6 @@ public class CombinedSolrSearch {
 	 */
 	private @NotNull String combineSearchables(boolean boost) {
 		List<Search<FrontendValue>> searches = processor.getSearchesFor(filter);
-		int numSearchables = searches.size();
 		final AtomicInteger boostIndex = new AtomicInteger(1);
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
@@ -89,17 +88,14 @@ public class CombinedSolrSearch {
 			// Fallback to wild card if search term is blank search for everything
 			term = "_text_:*";
 		}
-		// Escape user input
-		term = ClientUtils.escapeQueryChars(term);
+		else {
+			// Escape user input
+			term = "*%s*".formatted(ClientUtils.escapeQueryChars(term));
+		}
 
 
-		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
-
-
-
-		queryStringBuilder.append(" AND ")
-						  .append(term);
-		String queryString = queryStringBuilder.toString();
+		String queryString = "%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables) + " AND "
+							 + term;
 
 		return sendQuery(limit, queryString);
 	}
@@ -116,7 +112,7 @@ public class CombinedSolrSearch {
 			QueryResponse response = solrClient.query(query);
 			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
-			log.info("Query [{}] collected {} documents", queryString.hashCode(), beans.size());
+			log.info("Query [{}] Found: {} | Collected: {}", queryString.hashCode(), response.getResults().getNumFound(), beans.size());
 
 			return beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
 

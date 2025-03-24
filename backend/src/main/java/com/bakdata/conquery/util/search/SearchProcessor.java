@@ -1,6 +1,7 @@
 package com.bakdata.conquery.util.search;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +25,8 @@ public interface SearchProcessor extends Managed {
 	long getTotal(SelectFilter<?> filter);
 
 	List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable);
+
+	Iterator<FrontendValue> listAllValues(SelectFilter<?> searchable);
 
 	void finalizeSearch(Searchable<FrontendValue> searchable);
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +29,7 @@ import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -84,6 +86,13 @@ public class InternalFilterSearch implements SearchProcessor {
 						 .filter(Objects::nonNull)
 						 .<Search<FrontendValue>>map(Search.class::cast)
 						 .toList();
+	}
+
+	@Override
+	public Iterator<FrontendValue> listAllValues(SelectFilter<?> searchable) {
+		List<Search<FrontendValue>> searches = getSearchesFor(searchable);
+
+		return Iterators.concat(Iterators.transform(searches.iterator(), Search::iterator));
 	}
 
 	public long getTotal(SelectFilter<?> filter) {
@@ -164,56 +173,57 @@ public class InternalFilterSearch implements SearchProcessor {
 
 	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
-		final Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
-		for (Searchable<FrontendValue> searchable : managerSearchables) {
-			if (searchable instanceof Column) {
-				throw new IllegalStateException("Columns should have been grouped out previously");
-			}
-
-			service.submit(() -> {
-
-				final StopWatch watch = StopWatch.createStarted();
-
-				log.info("BEGIN collecting entries for `{}`", searchable);
-
-				try {
-					final TrieSearch<FrontendValue> search = searchConfig.createSearch(searchable);
-
-					searchCache.put(searchable, search);
-
-					log.debug(
-							"DONE collecting {} entries for `{}`, within {}",
-							search.calculateSize(),
-							searchable,
-							watch
-					);
-				}
-				catch (Exception e) {
-					log.error("Failed to create search for {}", searchable, e);
+			final Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+			for (Searchable<FrontendValue> searchable : managerSearchables) {
+				if (searchable instanceof Column) {
+					throw new IllegalStateException("Columns should have been grouped out previously");
 				}
 
-			});
-		}
+				service.submit(() -> {
 
-		service.shutdown();
+					final StopWatch watch = StopWatch.createStarted();
 
+					log.info("BEGIN collecting entries for `{}`", searchable);
 
-		while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
-			if (cancelledState.get()) {
-				log.info("This job got canceled");
-				service.shutdownNow();
-				return;
+					try {
+						final TrieSearch<FrontendValue> search = searchConfig.createSearch(searchable);
+
+						searchCache.put(searchable, search);
+
+						log.debug(
+								"DONE collecting {} entries for `{}`, within {}",
+								search.calculateSize(),
+								searchable,
+								watch
+						);
+					}
+					catch (Exception e) {
+						log.error("Failed to create search for {}", searchable, e);
+					}
+
+				});
 			}
-			log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+
+			service.shutdown();
+
+
+			while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+				if (cancelledState.get()) {
+					log.info("This job got canceled");
+					service.shutdownNow();
+					return;
+				}
+				log.debug("Still waiting for {} to finish.", Sets.difference(managerSearchables, searchCache.keySet()));
+			}
+
+			// Shrink searches before registering in the filter search
+			searchCache.values().forEach(Search::finalizeSearch);
+
+
+			addSearches(searchCache);
 		}
-
-		// Shrink searches before registering in the filter search
-		searchCache.values().forEach(Search::finalizeSearch);
-
-
-		addSearches(searchCache);
 	}
 
 	@Override

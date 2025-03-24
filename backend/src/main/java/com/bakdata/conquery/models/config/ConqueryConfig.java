@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
-import com.bakdata.conquery.models.config.search.IndexConfig;
 import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.util.DateReader;

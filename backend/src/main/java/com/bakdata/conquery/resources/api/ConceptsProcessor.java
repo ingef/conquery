@@ -40,7 +40,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.Cursor;
 import com.google.common.base.Preconditions;
@@ -173,7 +172,7 @@ public class ConceptsProcessor {
 		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 			final String searchTerm = iterator.next();
-			final List<FrontendValue> results = filterSearch.findExact(searchable, searchTerm);;
+			final List<FrontendValue> results = filterSearch.findExact(searchable, searchTerm);
 
 			if (results.isEmpty()) {
 				continue;
@@ -239,15 +238,13 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final List<Search<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
-
+		final Iterator<FrontendValue> searches = namespace.getFilterSearch().listAllValues(searchable);
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
 						// We are always leading with the empty value.
 						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
-						Iterators.concat(Iterators.transform(searches.iterator(), Search::iterator))
+						searches
 				);
-
 		// Use Set to accomplish distinct values
 		final Set<FrontendValue> seen = new HashSet<>();
 

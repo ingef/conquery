@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.config.search;
+package com.bakdata.conquery.models.config;
 
 import java.net.MalformedURLException;
 import java.net.URI;

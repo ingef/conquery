@@ -3,6 +3,7 @@ package com.bakdata.conquery.util.search.solr;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,6 +86,13 @@ public class SolrProcessor implements SearchProcessor {
 		return searchReferences.stream().map(this::getSearchFor).toList();
 	}
 
+	@Override
+	public Iterator<FrontendValue> listAllValues(SelectFilter<?> filter) {
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+
+		return combinedSolrSearch.topItems(null, Integer.MAX_VALUE).iterator();
+	}
+
 	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
 		return searches.computeIfAbsent(searchable, newRef -> new SolrSearch(solrClient, newRef));
 	}
@@ -97,7 +105,7 @@ public class SolrProcessor implements SearchProcessor {
 	public List<FrontendValue> topItems(SelectFilter<?> filter, String text) {
 		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
-		return combinedSolrSearch.topItems(text, null);
+		return combinedSolrSearch.topItems(text, Integer.MAX_VALUE);
 	}
 
 	@Override
