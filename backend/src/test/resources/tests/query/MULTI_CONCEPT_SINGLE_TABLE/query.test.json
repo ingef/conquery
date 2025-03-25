@@ -1,0 +1,137 @@
+{
+	"type": "QUERY_TEST",
+	"label": "MULTI_CONCEPT_SINGLE_TABLE Test",
+	"expectedCsv": "tests/query/MULTI_CONCEPT_SINGLE_TABLE/expected.csv",
+	"query": {
+		"type": "CONCEPT_QUERY",
+		"root": {
+				"type": "CONCEPT",
+				"ids": [
+					"concept1.a"
+				],
+				"tables": [
+					{
+						"id": "concept1.connector",
+						"selects": "concept1.connector.sum"
+					}
+				]
+			}
+
+	},
+	"concepts": [
+		{
+			"label": "concept1",
+			"type": "TREE",
+			"connectors": [
+				{
+					"label": "tree_label",
+					"name": "connector",
+					"column": "test_table2.tree_column",
+					"validityDates": {
+						"label": "datum",
+						"column": "test_table2.datum"
+					},
+					"selects": [
+						{
+							"name": "sum",
+							"type": "SUM",
+							"column": "test_table2.test_column"
+						}
+					]
+				}
+			],
+			"children": [
+				{
+					"name": "a",
+					"condition": {
+						"type": "EQUAL",
+						"values": [
+							"A"
+						]
+					},
+					"children": []
+				},
+				{
+					"name": "b",
+					"condition": {
+						"type": "EQUAL",
+						"values": [
+							"B"
+						]
+					},
+					"children": []
+				}
+			]
+		},
+		{
+			"label": "concept2",
+			"type": "TREE",
+			"connectors": [
+				{
+					"label": "tree_label",
+					"name": "connector",
+					"column": "test_table2.tree_column",
+					"validityDates": {
+						"label": "datum",
+						"column": "test_table2.datum"
+					},
+					"selects": [
+						{
+							"name": "sum",
+							"type": "SUM",
+							"column": "test_table2.test_column"
+						}
+					]
+				}
+			],
+			"children": [
+				{
+					"label": "A",
+					"condition": {
+						"type": "EQUAL",
+						"values": [
+							"A"
+						]
+					},
+					"children": []
+				},
+				{
+					"name": "B",
+					"condition": {
+						"type": "EQUAL",
+						"values": [
+							"B"
+						]
+					},
+					"children": []
+				}
+			]
+		}
+	],
+	"content": {
+		"tables": [
+			{
+				"csv": "tests/query/MULTI_CONCEPT_SINGLE_TABLE/content.csv",
+				"name": "test_table2",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					},
+					{
+						"name": "test_column",
+						"type": "INTEGER"
+					},
+					{
+						"name": "tree_column",
+						"type": "STRING"
+					}
+				]
+			}
+		]
+	}
+}
