@@ -19,21 +19,6 @@ public class ExtractingSqlSelect<T> implements SingleColumnSqlSelect {
 	String table;
 	String column;
 	Class<T> columnClass;
-	boolean isUniversal;
-
-	public ExtractingSqlSelect(String table, String column, Class<T> columnClass) {
-		this.table = table;
-		this.column = column;
-		this.columnClass = columnClass;
-		this.isUniversal = false;
-	}
-
-	public ExtractingSqlSelect(String table, String column, Class<T> columnClass, boolean isUniversal) {
-		this.table = table;
-		this.column = column;
-		this.columnClass = columnClass;
-		this.isUniversal = isUniversal;
-	}
 
 	@Override
 	public Field<T> select() {
@@ -51,18 +36,12 @@ public class ExtractingSqlSelect<T> implements SingleColumnSqlSelect {
 	}
 
 	@Override
-	public boolean isUniversal() {
-		return isUniversal;
-	}
-
-	@Override
 	public ExtractingSqlSelect<T> qualify(String qualifier) {
 		Field<T> aliased = aliased();
 		return new ExtractingSqlSelect<>(
 				qualifier,
 				aliased.getName(),
-				aliased.getType(),
-				isUniversal
+				aliased.getType()
 		);
 	}
 

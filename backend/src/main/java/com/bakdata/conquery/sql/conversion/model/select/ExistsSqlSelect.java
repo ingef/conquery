@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 public class ExistsSqlSelect extends UniversalSqlSelect<Integer> {
