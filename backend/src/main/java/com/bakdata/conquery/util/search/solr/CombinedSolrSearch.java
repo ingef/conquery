@@ -40,7 +40,6 @@ public class CombinedSolrSearch {
 
 	public long getTotal() {
 
-		// TODO put this in an extra class
 		String searchables = combineSearchables(false);
 
 		// We query all documents that reference the searchables of the filter
@@ -81,7 +80,9 @@ public class CombinedSolrSearch {
 		return searchables;
 	}
 
-
+	/**
+	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
+	 */
 	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
 		String searchables = combineSearchables( true);
 
@@ -97,8 +98,8 @@ public class CombinedSolrSearch {
 						 .filter(Predicate.not(String::isBlank))
 						 // Escape
 						 .map(ClientUtils::escapeQueryChars)
-						 // Fuzzy each term
-						 .map("%s~"::formatted)
+						 // Wildcard regex each term (maybe combine with fuzzy search)
+						 .map("/.*%s.*/"::formatted)
 						 .collect(Collectors.joining(" "));
 		}
 

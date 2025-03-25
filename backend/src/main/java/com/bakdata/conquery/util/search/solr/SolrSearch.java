@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -16,10 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.util.ClientUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,55 +38,12 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	@Override
 	public List<FrontendValue> findExact(String searchTerm, int maxValue) {
-		return find(List.of(searchTerm), maxValue, true);
-	}
-
-	/**
-	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
-	 */
-	public List<FrontendValue> find(Collection<String> searchTerms, int maxValue, boolean exact) {
-		// Escape user input
-		String termsEscaped = searchTerms.stream()
-										 .filter(Objects::nonNull)
-										 .map(ClientUtils::escapeQueryChars)
-										 .map(exact ? "/^%s$/"::formatted : "/.*%s.*/"::formatted)
-										 .collect(Collectors.joining(" ", "(", ")"));
-
-		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchable.getId()));
-		String collect = Stream.of(
-									  SolrFrontendValue.Fields.value_s_lower,
-									  SolrFrontendValue.Fields.label_ws
-							  )
-							   .map(field -> "%s:%s".formatted(field, termsEscaped))
-							   .collect(Collectors.joining(" OR ", " AND (", ")"));
-
-		queryStringBuilder.append(collect);
-		String queryString = queryStringBuilder.toString();
-
-		log.info("Query [{}] created: {}", queryString.hashCode(), queryString);
-		SolrQuery query = new SolrQuery(queryString);
-		query.addField(SolrFrontendValue.Fields.value_s_lower);
-		query.addField(SolrFrontendValue.Fields.label_ws);
-		query.addField(SolrFrontendValue.Fields.optionValue_s);
-		query.setRows(maxValue);
-
-		try {
-			QueryResponse response = solrClient.query(query);
-			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
-
-			log.info("Query [{}] collected {} documents", queryString.hashCode(), beans.size());
-
-			return beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
-
-		}
-		catch (SolrServerException | IOException e) {
-			throw new RuntimeException(e);
-		}
+		throw new UnsupportedOperationException("Must not be used. Use " + CombinedSolrSearch.class);
 	}
 
 	@Override
 	public Iterator<FrontendValue> iterator() {
-		return null;
+		throw new UnsupportedOperationException("Must not be used. Use " + CombinedSolrSearch.class);
 	}
 
 	@Override

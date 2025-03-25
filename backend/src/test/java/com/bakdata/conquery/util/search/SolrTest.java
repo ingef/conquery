@@ -142,14 +142,13 @@ public class SolrTest {
 				new AutoCompleteResult(
 						List.of(
 								new FrontendValue("map a", "Map A", "null"),
-								new FrontendValue("column a", "column a", "null"),
 								new FrontendValue("map b", "Map B", "null"),
 								new FrontendValue("map c", "Map C", "null"),
-								new FrontendValue("column b", "column b", "null"),
+								new FrontendValue("column a", "column a", "null"),
 								new FrontendValue("column ab", "column ab", "null"),
 								new FrontendValue("column ba", "column ba", "null")
 						),
-						7
+						6
 				)
 		);
 	}
@@ -162,15 +161,9 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column ab", "column ab", null),
-								new FrontendValue("map a", "Map A", null),
-								new FrontendValue("map b", "Map B", null),
-								new FrontendValue("map c", "Map C", null),
-								new FrontendValue("column ba", "column ba", null),
-								new FrontendValue("column a", "column a", null),
-								new FrontendValue("column b", "column b", null)
+								new FrontendValue("column ab", "column ab", null)
 						),
-						7
+						1
 				)
 		);
 	}
@@ -185,9 +178,41 @@ public class SolrTest {
 				new AutoCompleteResult(
 						List.of(
 								new FrontendValue("column a", "column a", null),
-								new FrontendValue("column b", "column b", null),
 								new FrontendValue("column ab", "column ab", null),
-								new FrontendValue("column ba", "column ba", null)
+								new FrontendValue("column ba", "column ba", null),
+								new FrontendValue("column b", "column b", null)
+						),
+						4
+				)
+		);
+	}
+
+	@Test
+	@Order(2)
+	public void findPhrase1LimitPage0() {
+		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 2, 0);
+
+		assertThat(actual).isEqualTo(
+				new AutoCompleteResult(
+						List.of(
+								new FrontendValue("column a", "column a", null),
+								new FrontendValue("column ab", "column ab", null)
+						),
+						4
+				)
+		);
+	}
+
+	@Test
+	@Order(2)
+	public void findPhrase1LimitPage1() {
+		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 2, 1);
+
+		assertThat(actual).isEqualTo(
+				new AutoCompleteResult(
+						List.of(
+								new FrontendValue("column ba", "column ba", null),
+								new FrontendValue("column b", "column b", null)
 						),
 						4
 				)
