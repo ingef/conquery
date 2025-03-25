@@ -75,7 +75,10 @@ public class TestConquery {
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
 			log.info("loading dataset");
-			return createSupport(datasetId, datasetId.getName());
+			final StandaloneSupport support = createSupport(datasetId, datasetId.getName());
+			support.waitUntilWorkDone();
+
+			return support;
 		}
 		catch (Exception e) {
 			return fail("Failed to open dataset " + datasetId, e);
@@ -166,8 +169,7 @@ public class TestConquery {
 		for (int i = 0; i < 5; i++) {
 
 			await().atMost(10, TimeUnit.SECONDS)
-				   .pollDelay(1, TimeUnit.MILLISECONDS)
-				   .pollInterval(5, TimeUnit.MILLISECONDS)
+				   .pollInterval(1, TimeUnit.MILLISECONDS)
 				   .until(() -> !isBusy());
 		}
 

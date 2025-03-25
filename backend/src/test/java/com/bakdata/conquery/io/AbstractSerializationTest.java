@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,12 +58,6 @@ public abstract class AbstractSerializationTest {
 
 		// Prepare worker persistence mapper
 		workerStorage.openStores(shardInternalMapper);
-		ShardWorkers workers = new ShardWorkers(
-				config.getQueries().getExecutionPool(),
-				internalMapperFactory,
-				config.getCluster().getEntityBucketSize(),
-				config.getQueries().getSecondaryIdSubPlanRetention()
-		);
 		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
 
 		// Prepare api response mapper
