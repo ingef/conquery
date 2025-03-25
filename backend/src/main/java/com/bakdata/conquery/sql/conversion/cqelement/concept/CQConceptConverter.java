@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,7 +91,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// combine all universal selects and connector selects from preceding step
 		List<SqlSelect> allConceptSelects = Stream.concat(
 														  converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
-														  predecessor.getQualifiedSelects().getSqlSelects().stream()
+														  predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
 												  )
 												  .toList();
 
@@ -103,10 +104,18 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
+		List<Field<?>> groupByFields =
+				Stream.concat(
+						finalSelects.getIds().toFields().stream(),
+						predecessor.getQualifiedSelects().getSqlSelects().stream().filter(Predicate.not(SqlSelect::isUniversal))
+								.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				).toList();
+
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
 						.selects(finalSelects)
 						.fromTable(joinedTable)
+					    .groupBy(groupByFields)
 						.predecessors(queriesToJoin)
 						.build();
 	}
