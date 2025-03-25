@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.service.IndexServiceTest;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
@@ -134,22 +136,42 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findTerm1() {
-			List<FrontendValue> actual = searchProcessor.topItems(FILTER, "a");
+		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("a"), 25, 0);
 
-		assertThat(actual).containsExactly(
-				new FrontendValue("map a", "Map A", "null"),
-				new FrontendValue("column a", "column a", "null"),
-				new FrontendValue("column ab", "column ab", "null"),
-				new FrontendValue("column ba", "column ba", "null"));
+		assertThat(actual).isEqualTo(
+				new AutoCompleteResult(
+						List.of(
+								new FrontendValue("map a", "Map A", "null"),
+								new FrontendValue("column a", "column a", "null"),
+								new FrontendValue("map b", "Map B", "null"),
+								new FrontendValue("map c", "Map C", "null"),
+								new FrontendValue("column b", "column b", "null"),
+								new FrontendValue("column ab", "column ab", "null"),
+								new FrontendValue("column ba", "column ba", "null")
+						),
+						7
+				)
+		);
 	}
 
 	@Test
 	@Order(2)
 	public void findTerm2() {
-		List<FrontendValue> actual = searchProcessor.topItems(FILTER, "ab");
+		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("ab"), 25, 0);
 
-		assertThat(actual).containsExactly(
-				new FrontendValue("column ab", "column ab", "null")
+		assertThat(actual).isEqualTo(
+				new AutoCompleteResult(
+						List.of(
+								new FrontendValue("column ab", "column ab", null),
+								new FrontendValue("map a", "Map A", null),
+								new FrontendValue("map b", "Map B", null),
+								new FrontendValue("map c", "Map C", null),
+								new FrontendValue("column ba", "column ba", null),
+								new FrontendValue("column a", "column a", null),
+								new FrontendValue("column b", "column b", null)
+						),
+						7
+				)
 		);
 	}
 
@@ -157,14 +179,18 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findPhrase1() {
-		List<FrontendValue> actual = searchProcessor.topItems(FILTER, "column a");
+		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 25, 0);
 
-		assertThat(actual).containsExactly(
-				new FrontendValue("column a", "column a",null),
-				new FrontendValue("map a", "Map A",null),
-				new FrontendValue("column b", "column b",null),
-				new FrontendValue("column ab", "column ab",null),
-				new FrontendValue("column ba", "column ba",null)
+		assertThat(actual).isEqualTo(
+				new AutoCompleteResult(
+						List.of(
+								new FrontendValue("column a", "column a", null),
+								new FrontendValue("column b", "column b", null),
+								new FrontendValue("column ab", "column ab", null),
+								new FrontendValue("column ba", "column ba", null)
+						),
+						4
+				)
 		);
 	}
 

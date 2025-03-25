@@ -26,13 +26,14 @@ public class SolrConfig implements SearchConfig {
 
 	private final String baseSolrUrl;
 	private Duration connectionTimeout = Duration.seconds(60);
+	private Duration requestTimeout = Duration.seconds(60);
 	private final String username;
 	private final String password;
 
 	@Override
 	public SearchProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
-			SolrClient client = createManagedClient(environment, datasetId.getName());
+			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
 			return new SolrProcessor(client);
 		}
 		catch (MalformedURLException e) {
@@ -40,17 +41,18 @@ public class SolrConfig implements SearchConfig {
 		}
 	}
 
-	public synchronized ManagedSolrClient createManagedClient(Environment environment, String collection) throws MalformedURLException {
-		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createClient(collection));
+	public synchronized ManagedSolrClient createManagedSearchClient(Environment environment, String collection) throws MalformedURLException {
+		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createSearchClient(collection));
 		environment.lifecycle().manage(managedSolrClient);
 		return managedSolrClient;
 	}
 
-	public synchronized SolrClient createClient(@Nullable String collection) {
-		log.info("Creating solr client. Base url: {}, Collection: {})", baseSolrUrl, collection);
+	public SolrClient createSearchClient(@Nullable String collection) {
+		log.info("Creating solr search client. Base url: {}, Collection: {})", baseSolrUrl, collection);
 
 		HttpJdkSolrClient.Builder builder = new HttpJdkSolrClient.Builder(baseSolrUrl)
-				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS);
+				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS)
+				.withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
 
 		if (collection != null) {
 			builder.withDefaultCollection(collection);

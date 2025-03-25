@@ -23,7 +23,7 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 		}
 		this.solrConfig = config;
 
-		SolrClient solrClient = config.createManagedClient(environment, null);
+		SolrClient solrClient = config.createManagedSearchClient(environment, null);
 
 		environment.healthChecks().register(config.getBaseSolrUrl(), config.createHealthCheck(solrClient));
 

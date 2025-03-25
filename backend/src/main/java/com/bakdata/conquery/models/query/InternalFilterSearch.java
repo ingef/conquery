@@ -2,14 +2,17 @@ package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,10 +28,15 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
+import com.bakdata.conquery.util.search.internal.Cursor;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -37,6 +45,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 
 
 @Slf4j
@@ -45,6 +54,7 @@ public class InternalFilterSearch implements SearchProcessor {
 
 	@Getter
 	private final InternalSearchConfig searchConfig;
+//	private final IndexConfig indexConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -54,6 +64,38 @@ public class InternalFilterSearch implements SearchProcessor {
 	@JsonIgnore
 	private ConcurrentMap<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
+
+
+	/**
+	 * Cache of all search results on SelectFilters.
+	 */
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
+			searchResults =
+			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+
+				@Override
+				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+					final String searchTerm = filterAndSearch.getValue();
+					final SelectFilter<?> searchable = filterAndSearch.getKey();
+
+					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
+
+					return topItems(searchable, searchTerm);
+				}
+
+			});
+	/**
+	 * Cache of raw listing of values on a filter.
+	 * We use Cursor here to reduce strain on memory and increase response time.
+	 */
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+		@Override
+		public CursorAndLength load(SelectFilter<?> searchable) {
+			log.trace("Creating cursor for `{}`", searchable.getId());
+			return new CursorAndLength(listAllValues(searchable), getTotal(searchable));
+		}
+
+	});
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -88,11 +130,31 @@ public class InternalFilterSearch implements SearchProcessor {
 						 .toList();
 	}
 
-	@Override
-	public Iterator<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		List<Search<FrontendValue>> searches = getSearchesFor(searchable);
 
-		return Iterators.concat(Iterators.transform(searches.iterator(), Search::iterator));
+
+	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
+		/*
+		Don't worry, I am as confused as you are!
+		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
+		This in turn causes initial loads of this endpoint to extremely slow. By instead using iterators we have uglier code but enforce laziness.
+
+		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
+		 */
+
+		final List<Search<FrontendValue>> searchList = getSearchesFor(searchable);
+
+		final Iterator<FrontendValue> searches = Iterators.concat(Iterators.transform(searchList.iterator(), Search::iterator));
+		final Iterator<FrontendValue> iterators =
+				Iterators.concat(
+						// We are always leading with the empty value.
+						// Iterators.singletonIterator(new FrontendValue("", indexConfig.getEmptyLabel())),
+						searches
+				);
+
+		// Use Set to accomplish distinct values
+		final Set<FrontendValue> seen = new HashSet<>();
+
+		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
 	public long getTotal(SelectFilter<?> filter) {
@@ -145,7 +207,11 @@ public class InternalFilterSearch implements SearchProcessor {
 		search.finalizeSearch();
 	}
 
-	@Override
+
+	/**
+	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
+	 * Is used by the search cache to load missing items
+	 */
 	public List<FrontendValue> topItems(SelectFilter<?> searchable, String text) {
 		List<Search<FrontendValue>> searches = getSearchesFor(searchable);
 
@@ -236,5 +302,42 @@ public class InternalFilterSearch implements SearchProcessor {
 			out.addAll(subResult);
 		}
 		return out;
+	}
+
+	@Override
+	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, Optional<String> maybeText, int itemsPerPage, int pageNumber) {
+		final int startIncl = itemsPerPage * pageNumber;
+		final int endExcl = startIncl + itemsPerPage;
+
+		try {
+
+			// If we have none or a blank query string we list all values.
+			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
+				final CursorAndLength cursorAndLength = listResults.get(searchable);
+				final Cursor<FrontendValue> cursor = cursorAndLength.values();
+
+				return new ConceptsProcessor.AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
+			}
+
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
+
+			if (startIncl >= fullResult.size()) {
+				return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), fullResult.size());
+			}
+
+			return new ConceptsProcessor.AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
+		}
+		catch (ExecutionException e) {
+			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
+			return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), 0);
+		}
+	}
+
+
+
+	/**
+	 * Container class to pair number of available values and Cursor for those values.
+	 */
+	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
 	}
 }

@@ -41,16 +41,13 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.SearchProcessor;
-import com.bakdata.conquery.util.search.internal.Cursor;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Slf4j
@@ -73,36 +70,6 @@ public class ConceptsProcessor {
 				}
 			});
 
-	/**
-	 * Cache of all search results on SelectFilters.
-	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
-			searchResults =
-			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
-
-				@Override
-				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
-					final String searchTerm = filterAndSearch.getValue();
-					final SelectFilter<?> searchable = filterAndSearch.getKey();
-
-					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
-
-					return autocompleteTextFilter(searchable, searchTerm);
-				}
-
-			});
-	/**
-	 * Cache of raw listing of values on a filter.
-	 * We use Cursor here to reduce strain on memory and increase response time.
-	 */
-	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
-		@Override
-		public CursorAndLength load(SelectFilter<?> searchable) {
-			log.trace("Creating cursor for `{}`", searchable.getId());
-			return new CursorAndLength(listAllValues(searchable), countAllValues(searchable));
-		}
-
-	});
 
 	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
 
@@ -201,76 +168,7 @@ public class ConceptsProcessor {
 
 		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, searchable.getId(), pageNumber, itemsPerPage);
 
-		final int startIncl = itemsPerPage * pageNumber;
-		final int endExcl = startIncl + itemsPerPage;
-
-		try {
-
-			// If we have none or a blank query string we list all values.
-			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
-				final CursorAndLength cursorAndLength = listResults.get(searchable);
-				final Cursor<FrontendValue> cursor = cursorAndLength.values();
-
-				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
-			}
-
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
-
-			if (startIncl >= fullResult.size()) {
-				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
-			}
-
-			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
-		}
-		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
-			return new AutoCompleteResult(Collections.emptyList(), 0);
-		}
-	}
-
-	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset());
-		/*
-		Don't worry, I am as confused as you are!
-		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
-		This in turn causes initial loads of this endpoint to extremely slow. By instead using iterators we have uglier code but enforce laziness.
-
-		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
-		 */
-
-		final Iterator<FrontendValue> searches = namespace.getFilterSearch().listAllValues(searchable);
-		final Iterator<FrontendValue> iterators =
-				Iterators.concat(
-						// We are always leading with the empty value.
-						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
-						searches
-				);
-		// Use Set to accomplish distinct values
-		final Set<FrontendValue> seen = new HashSet<>();
-
-		return new Cursor<>(Iterators.filter(iterators, seen::add));
-	}
-
-	private long countAllValues(SelectFilter<?> searchable) {
-		final Namespace namespace = namespaces.get(searchable.getDataset());
-
-		return namespace.getFilterSearch().getTotal(searchable);
-	}
-
-	/**
-	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
-	 * Is used by the search cache to load missing items
-	 */
-	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> searchable, String text) {
-		final Namespace namespace = namespaces.get(searchable.getDataset());
-
-		// Note that FEValues is equals/hashcode only on value:
-		// The different sources might contain duplicate FEValue#values which we exploit:
-		// If a value is already present, it's from a search with higher priority.
-
-		return namespace.getFilterSearch().topItems(searchable, text);
-
-
+		return namespaces.get(searchable.getDataset()).getFilterSearch().query(searchable, maybeText, itemsPerPage, pageNumber);
 	}
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
@@ -294,12 +192,6 @@ public class ConceptsProcessor {
 			}
 		}
 		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
-	}
-
-	/**
-	 * Container class to pair number of available values and Cursor for those values.
-	 */
-	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
 	}
 
 	public record AutoCompleteResult(List<FrontendValue> values, long total) {

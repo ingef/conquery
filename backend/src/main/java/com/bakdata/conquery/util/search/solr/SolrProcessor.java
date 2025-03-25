@@ -3,9 +3,9 @@ package com.bakdata.conquery.util.search.solr;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.collect.BiMap;
@@ -86,13 +87,6 @@ public class SolrProcessor implements SearchProcessor {
 		return searchReferences.stream().map(this::getSearchFor).toList();
 	}
 
-	@Override
-	public Iterator<FrontendValue> listAllValues(SelectFilter<?> filter) {
-		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
-
-		return combinedSolrSearch.topItems(null, Integer.MAX_VALUE).iterator();
-	}
-
 	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
 		return searches.computeIfAbsent(searchable, newRef -> new SolrSearch(solrClient, newRef));
 	}
@@ -101,11 +95,10 @@ public class SolrProcessor implements SearchProcessor {
 
 	}
 
-	@Override
-	public List<FrontendValue> topItems(SelectFilter<?> filter, String text) {
+	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {
 		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
-		return combinedSolrSearch.topItems(text, Integer.MAX_VALUE);
+		return combinedSolrSearch.topItems(text, start, limit);
 	}
 
 	@Override
@@ -223,15 +216,14 @@ public class SolrProcessor implements SearchProcessor {
 	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
 		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
 
-		List<FrontendValue> frontendValues = combinedSolrSearch.topItemsExact(searchTerm, 10);
+		return combinedSolrSearch.topItemsExact(searchTerm, 0, 10).values();
 
-		String normalizedTerm = searchTerm.toLowerCase();
+	}
 
-		// filter for exact matches in label or value (no exact matches in substrings)
-		List<FrontendValue> exactMatches = frontendValues.stream()
-												 .filter(v -> normalizedTerm.equals(v.getValue().toLowerCase()) || normalizedTerm.equals(v.getLabel().toLowerCase()))
-												 .toList();
+	@Override
+	public AutoCompleteResult query(SelectFilter<?> searchable, Optional<String> maybeText, int itemsPerPage, int pageNumber) {
 
-		return exactMatches;
+		int start = itemsPerPage * pageNumber;
+		return topItems(searchable, maybeText.orElse(null), start, itemsPerPage);
 	}
 }

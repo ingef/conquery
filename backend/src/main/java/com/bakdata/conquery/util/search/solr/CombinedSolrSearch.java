@@ -1,9 +1,11 @@
 package com.bakdata.conquery.util.search.solr;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -12,6 +14,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import lombok.AllArgsConstructor;
@@ -79,7 +82,7 @@ public class CombinedSolrSearch {
 	}
 
 
-	public List<FrontendValue> topItems(String text, @Nullable Integer limit) {
+	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
 		String searchables = combineSearchables( true);
 
 		String term = text;
@@ -89,32 +92,41 @@ public class CombinedSolrSearch {
 			term = "_text_:*";
 		}
 		else {
-			// Escape user input
-			term = "*%s*".formatted(ClientUtils.escapeQueryChars(term));
+			term = Arrays.stream(term.split("\\s"))
+						 // Skip blanks
+						 .filter(Predicate.not(String::isBlank))
+						 // Escape
+						 .map(ClientUtils::escapeQueryChars)
+						 // Fuzzy each term
+						 .map("%s~"::formatted)
+						 .collect(Collectors.joining(" "));
 		}
 
 
 		String queryString = "%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables) + " AND "
 							 + term;
 
-		return sendQuery(limit, queryString);
+		return sendQuery(queryString, start, limit);
 	}
 
-	private @NotNull List<FrontendValue> sendQuery(@org.jetbrains.annotations.Nullable Integer limit, String queryString) {
+	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
 		log.info("Query [{}] created: {}", queryString.hashCode(), queryString);
 		SolrQuery query = new SolrQuery(queryString);
 		query.addField(SolrFrontendValue.Fields.value_s_lower);
 		query.addField(SolrFrontendValue.Fields.label_ws);
 		query.addField(SolrFrontendValue.Fields.optionValue_s);
+		query.setStart(start);
 		query.setRows(limit);
 
 		try {
 			QueryResponse response = solrClient.query(query);
 			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
-			log.info("Query [{}] Found: {} | Collected: {}", queryString.hashCode(), response.getResults().getNumFound(), beans.size());
+			long numFound = response.getResults().getNumFound();
+			log.info("Query [{}] Found: {} | Collected: {}", queryString.hashCode(), numFound, beans.size());
 
-			return beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
+			List<FrontendValue> values = beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
+			return new AutoCompleteResult(values, numFound);
 
 		}
 		catch (SolrServerException | IOException e) {
@@ -122,14 +134,13 @@ public class CombinedSolrSearch {
 		}
 	}
 
-	public List<FrontendValue> topItemsExact(String text, @Nullable Integer limit) {
+	public AutoCompleteResult topItemsExact(String text, Integer start, @Nullable Integer limit) {
 		String searchables = combineSearchables( true);
 
 		String term = text;
 
 		if (StringUtils.isBlank(term)) {
-			// Fallback to wild card if search term is blank search for everything
-			return List.of();
+			return new AutoCompleteResult(List.of(), 0);
 		}
 		// Escape user input
 		term = ClientUtils.escapeQueryChars(term);
@@ -141,12 +152,12 @@ public class CombinedSolrSearch {
 									   SolrFrontendValue.Fields.value_s_lower,
 									   SolrFrontendValue.Fields.label_ws
 							   )
-							   .map(field -> "%s:%s".formatted(field, finalTerm))
+							   .map(field -> "%s:\"%s\"".formatted(field, finalTerm))
 							   .collect(Collectors.joining(" OR ", " AND (", ")"));
 
 		queryStringBuilder.append(collect);
 		String queryString = queryStringBuilder.toString();
 
-		return sendQuery(limit, queryString);
+		return sendQuery(queryString, start, limit);
 	}
 }
