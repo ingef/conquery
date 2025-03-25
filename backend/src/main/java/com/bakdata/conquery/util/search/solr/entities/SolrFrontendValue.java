@@ -26,16 +26,17 @@ public class SolrFrontendValue implements SolrEntity {
 	public String searchable_s;
 
 	/**
-	 * @implNote The value field is handled as a single lowercased token.
+	 * @implNote The value field is a custom field in the schema that allows to use collapsing of results.
+	 * We use collapsing to filter out "duplicates" originating from an index and a column
 	 */
 	@Field
-	public String value_s_lower;
+	public String value;
 
 	/**
-	 * @implNote The label field is indexed as a whitespace-splitting text field resulting in possibly multiple token.
+	 * @implNote The label field is indexed as a general text field resulting in possibly multiple tokens.
 	 */
 	@Field
-	public String label_ws;
+	public String label_t;
 
 	/**
 	 * We can remove this, maybe.
@@ -58,14 +59,14 @@ public class SolrFrontendValue implements SolrEntity {
 	public SolrFrontendValue(Searchable<?> searchable, String value, String label, String optionValue) {
 		this.id = buildId(searchable, value);
 		this.searchable_s = searchable.getId().toString();
-		this.value_s_lower = value;
-		this.label_ws = label;
+		this.value = value;
+		this.label_t = label;
 		this.optionValue_s = optionValue;
 		this._text_ = List.of(value, label);
 	}
 
 	public FrontendValue toFrontendValue() {
-		return new FrontendValue(Objects.requireNonNullElse(value_s_lower,""), label_ws, optionValue_s);
+		return new FrontendValue(Objects.requireNonNullElse(value, ""), label_t, optionValue_s);
 	}
 
 	private static String buildId(Searchable<?> searchable, String value) {

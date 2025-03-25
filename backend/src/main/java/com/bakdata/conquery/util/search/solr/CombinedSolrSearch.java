@@ -111,13 +111,16 @@ public class CombinedSolrSearch {
 	}
 
 	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
-		log.info("Query [{}] created: {}", queryString.hashCode(), queryString);
 		SolrQuery query = new SolrQuery(queryString);
-		query.addField(SolrFrontendValue.Fields.value_s_lower);
-		query.addField(SolrFrontendValue.Fields.label_ws);
+		query.addField(SolrFrontendValue.Fields.value);
+		query.addField(SolrFrontendValue.Fields.label_t);
 		query.addField(SolrFrontendValue.Fields.optionValue_s);
 		query.setStart(start);
 		query.setRows(limit);
+
+		// Collapse the results with equal "value" field. Only the one with the highest score remains.
+		query.setFilterQueries("{!collapse field=%s}".formatted(SolrFrontendValue.Fields.value));
+		log.info("Query [{}] created: {}", queryString.hashCode(), query);
 
 		try {
 			QueryResponse response = solrClient.query(query);
@@ -150,8 +153,8 @@ public class CombinedSolrSearch {
 
 		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
 		String collect = Stream.of(
-									   SolrFrontendValue.Fields.value_s_lower,
-									   SolrFrontendValue.Fields.label_ws
+									   SolrFrontendValue.Fields.value,
+									   SolrFrontendValue.Fields.label_t
 							   )
 							   .map(field -> "%s:\"%s\"".formatted(field, finalTerm))
 							   .collect(Collectors.joining(" OR ", " AND (", ")"));
