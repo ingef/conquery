@@ -1,12 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -42,6 +35,12 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -103,10 +102,19 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
+		List<Condition> conditions = List.of(
+				predecessor.getQualifiedSelects().getSqlSelects().stream()
+						.filter(SqlSelect::isUniversal)
+						.flatMap(sqlSelect -> sqlSelect.toFields().stream()).map(Field::isNotNull)
+						.reduce(Condition::and)
+						.orElse(DSL.noCondition())
+		);
+
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
 						.selects(finalSelects)
 						.fromTable(joinedTable)
+						.conditions(conditions)
 						.predecessors(queriesToJoin)
 						.build();
 	}
