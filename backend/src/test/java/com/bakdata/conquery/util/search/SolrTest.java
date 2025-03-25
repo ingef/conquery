@@ -93,12 +93,16 @@ public class SolrTest {
 
 		// Index values from column
 		Column column = createSearchable();
-		searchProcessor.registerValues(column, List.of(
-				"column a",
-				"column b",
-				"column ab",
-				"column ba")
+		searchProcessor.registerValues(column,
+									   List.of(
+											   "column a",
+											   "column b",
+											   "column ab",
+											   "column ba",
+											   "map a" // This one should not be registered because it was already provided the map
+									   )
 		);
+		searchProcessor.finalizeSearch(column);
 	}
 
 	private static @NotNull Column createSearchable() {

@@ -72,10 +72,12 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
+	@ToString.Exclude
 	private IndexService indexService;
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
+	@ToString.Exclude
 	private ConqueryConfig config;
 
 	/**

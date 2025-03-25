@@ -92,7 +92,7 @@ public class SolrProcessor implements SearchProcessor {
 	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
-
+		searches.get(searchable).finalizeSearch();
 	}
 
 	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {

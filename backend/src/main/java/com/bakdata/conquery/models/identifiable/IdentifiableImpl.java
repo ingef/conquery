@@ -23,6 +23,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
+	@ToString.Exclude
 	private transient MetaStorage metaStorage;
 
 	@Override
