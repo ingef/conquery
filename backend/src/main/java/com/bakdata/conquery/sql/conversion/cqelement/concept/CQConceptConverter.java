@@ -91,6 +91,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// combine all universal selects and connector selects from preceding step
 		List<SqlSelect> allConceptSelects = Stream.concat(
 														  converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
+														  // aggregate special selects (e.g. Exists)
 														  predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
 												  )
 												  .toList();
@@ -104,6 +105,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
+		// group by everything which is not part of an aggregation in this step
 		List<Field<?>> groupByFields =
 				Stream.concat(
 						finalSelects.nonExplicitSelects().stream(),
