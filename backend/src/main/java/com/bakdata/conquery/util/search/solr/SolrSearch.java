@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -52,6 +54,10 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	@Override
 	public void addItem(FrontendValue feValue, List<String> _keywords) {
+		if (feValue.getValue().isEmpty()) {
+			log.warn("Skip indexing of {}, because its 'value' is empty.", feValue);
+			return;
+		}
 		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, feValue);
 
 		try {
@@ -69,12 +75,16 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	public void registerValues(Collection<String> values) {
 		try {
-			List<SolrFrontendValue> solrFrontendValues = values.stream().map(value -> new SolrFrontendValue(searchable, value, value, null)).toList();
+			List<SolrFrontendValue> solrFrontendValues = values.stream()
+															   .filter(Objects::nonNull)
+															   .filter(Predicate.not(String::isBlank))
+															   .map(value -> new SolrFrontendValue(searchable, value, value, null))
+															   .toList();
 
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.info("BEGIN registering {} values to {} for {} {}", values.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
+			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
 			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
-			log.info("DONE registering {} values to {} for {} {} in {}", values.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId(), stopwatch);
+			log.info("DONE registering {} values to {} for {} {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId(), stopwatch);
 		}
 		catch (SolrServerException | IOException e) {
 			throw new IllegalStateException("Unable to register values for searchable '%s'".formatted(searchable), e);

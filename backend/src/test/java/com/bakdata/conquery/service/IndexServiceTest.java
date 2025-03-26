@@ -40,7 +40,7 @@ public class IndexServiceTest {
 	@RegisterExtension
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
 
-	public static final String MAPPING_PATH = "/tests/aggregator/MAPPED/mapping.csv";
+	public static final String MAPPING_PATH = "/shared/mapping.csv";
 
 	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
 	private static final Dataset DATASET = new Dataset("dataset");

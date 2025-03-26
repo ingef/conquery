@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -52,18 +53,15 @@ import org.mockserver.integration.ClientAndServer;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SolrTest {
 
-	@RegisterExtension
-	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
-
 	public final static String SOLR_BASE_URL_ENV = "SOLR_BASE_URL";
 	public static final DatasetId DATASET_ID = new DatasetId("core1");
 	public static final Column SEARCHABLE = createSearchable();
-	public static final SelectFilter<?> FILTER = createFilter();
 	public static final Environment ENVIRONMENT = new Environment(SolrTest.class.getSimpleName());
-
-	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
-
 	public static final ConqueryConfig CONQUERY_CONFIG = new ConqueryConfig();
+	@RegisterExtension
+	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
+	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
+	public static final SelectFilter<?> FILTER = createFilter();
 	public static SolrConfig solrConfig;
 	public static SolrProcessor searchProcessor;
 
@@ -85,6 +83,56 @@ public class SolrTest {
 		searchProcessor.clearSearch();
 	}
 
+	private static @NotNull SelectFilter<Object> createFilter() {
+		return new SelectFilter<>() {
+
+			@Override
+			public FilterNode<?> createFilterNode(Object o) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public String getFilterType() {
+				throw new UnsupportedOperationException();
+			}
+
+			@SneakyThrows(URISyntaxException.class)
+			@Override
+			public List<Searchable<FrontendValue>> getSearchReferences() {
+				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
+						"map a", "Map A",
+						"map b", "Map B",
+						"map c", "Map C"
+				), 0, false);
+
+
+				final FilterTemplate index = new FilterTemplate(
+						"test1",
+						new URI("/mapping.csv"),
+						"internal",
+						"{{external}}",
+						""
+				);
+				index.setIndexService(INDEX_SERVICE);
+				index.setDataset(DATASET_ID);
+				index.setConfig(CONQUERY_CONFIG);
+
+				return List.of(labelMap, index, SolrTest.SEARCHABLE);
+			}
+
+			@Override
+			public FilterId getId() {
+				return new FilterId(new ConnectorId(new ConceptId(DATASET_ID, "concept"), "connector"), "filter");
+			}
+		};
+	}
+
+	@AfterAll
+	public static void afterAll() throws SolrServerException, IOException {
+		// Cleanup core
+		//		searchProcessor.clearSearch();
+	}
+
 	@Test
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
@@ -94,15 +142,19 @@ public class SolrTest {
 
 		// Index values from column
 		Column column = createSearchable();
-		searchProcessor.registerValues(column,
-									   List.of(
-											   "column a",
-											   "column b",
-											   "column ab",
-											   "column ba",
-											   "map a" // This one should not be registered because it was already provided the map
-									   )
-		);
+		ArrayList<String> strings = new ArrayList<>(List.of(
+				"column a",
+				"column b",
+				"column ab",
+				"column ba",
+				"map a", // This one should not be registered because it was already provided the map
+				"" // Empty string handling
+		));
+
+		// Null-Handling (adds null explicitly because List.of forbids it)
+		strings.add(null);
+
+		searchProcessor.registerValues(column, strings);
 		searchProcessor.finalizeSearch(column);
 		searchProcessor.explicitCommit();
 	}
@@ -150,11 +202,15 @@ public class SolrTest {
 								new FrontendValue("map a", "Map A", "null"),
 								new FrontendValue("map b", "Map B", "null"),
 								new FrontendValue("map c", "Map C", "null"),
+								new FrontendValue("data a", "Data", "data a"),
+								new FrontendValue("data b", "data b", "data b"),
+								new FrontendValue("data c", "Data C", "data c"),
+								new FrontendValue("external-null", "external-null", "external-null"),
 								new FrontendValue("column a", "column a", "null"),
 								new FrontendValue("column ab", "column ab", "null"),
 								new FrontendValue("column ba", "column ba", "null")
 						),
-						6
+						10
 				)
 		);
 	}
@@ -173,7 +229,6 @@ public class SolrTest {
 				)
 		);
 	}
-
 
 	@Test
 	@Order(2)
@@ -225,7 +280,6 @@ public class SolrTest {
 		);
 	}
 
-
 	@Test
 	@Order(3)
 	public void findExactNothing() {
@@ -251,56 +305,5 @@ public class SolrTest {
 		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("map a", "Map A"));
-	}
-
-	private static @NotNull SelectFilter<Object> createFilter() {
-		return new SelectFilter<>() {
-
-			@Override
-			public FilterId getId() {
-				return new FilterId(new ConnectorId(new ConceptId(DATASET_ID, "concept"), "connector"), "filter");
-			}
-
-			@Override
-			public FilterNode<?> createFilterNode(Object o) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public String getFilterType() {
-				throw new UnsupportedOperationException();
-			}
-
-			@SneakyThrows(URISyntaxException.class)
-			@Override
-			public List<Searchable<FrontendValue>> getSearchReferences() {
-				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
-						"map a", "Map A",
-						"map b", "Map B",
-						"map c", "Map C"
-				), 0, false);
-
-
-				final FilterTemplate index = new FilterTemplate(
-						"test1",
-						new URI("/mapping.csv"),
-						"internal",
-						"{{external}}",
-						""
-				);
-				index.setIndexService(INDEX_SERVICE);
-				index.setDataset(DATASET_ID);
-				index.setConfig(CONQUERY_CONFIG);
-
-				return List.of(labelMap, index, SolrTest.SEARCHABLE);
-			}
-		};
-	}
-
-
-	@AfterAll
-	public static void afterAll() throws SolrServerException, IOException {
-		// Cleanup core
-//		searchProcessor.clearSearch();
 	}
 }
