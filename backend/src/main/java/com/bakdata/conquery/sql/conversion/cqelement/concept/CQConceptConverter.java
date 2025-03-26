@@ -106,8 +106,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		List<Field<?>> groupByFields =
 				Stream.concat(
-						finalSelects.getIds().toFields().stream(),
-						predecessor.getQualifiedSelects().getSqlSelects().stream().filter(Predicate.not(SqlSelect::isUniversal))
+						finalSelects.nonExplicitSelects().stream(),
+						finalSelects.getSqlSelects().stream()
+								.filter(Predicate.not(SqlSelect::isUniversal))
 								.flatMap(sqlSelect -> sqlSelect.toFields().stream())
 				).toList();
 

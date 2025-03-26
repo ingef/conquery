@@ -68,6 +68,18 @@ public class Selects {
 					 .collect(Collectors.toList());
 	}
 
+	public List<Field<?>> nonExplicitSelects() {
+		return Stream.of(
+							this.ids.toFields().stream(),
+							this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+							this.validityDate.stream().flatMap(range -> range.toFields().stream())
+					 )
+					 .flatMap(Function.identity())
+					 .map(select -> (Field<?>) select)
+					 .distinct()
+					 .collect(Collectors.toList());
+	}
+
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
 							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
