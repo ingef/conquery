@@ -30,6 +30,7 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.service.IndexServiceTest;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
+import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.google.common.collect.ImmutableBiMap;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.dropwizard.core.setup.Environment;
@@ -64,7 +65,7 @@ public class SolrTest {
 
 	public static final ConqueryConfig CONQUERY_CONFIG = new ConqueryConfig();
 	public static SolrConfig solrConfig;
-	public static SearchProcessor searchProcessor;
+	public static SolrProcessor searchProcessor;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
@@ -86,7 +87,7 @@ public class SolrTest {
 
 	@Test
 	@Order(0)
-	public void addData() throws InterruptedException {
+	public void addData() throws InterruptedException, SolrServerException, IOException {
 		// Index values from concept/reference
 		Set<Searchable<FrontendValue>> managerSearchables = FILTER.getSearchReferences().stream().filter(ref -> !(ref instanceof Column)).collect(Collectors.toSet());
 		searchProcessor.indexManagerResidingSearches(managerSearchables, new AtomicBoolean(true));
@@ -103,6 +104,7 @@ public class SolrTest {
 									   )
 		);
 		searchProcessor.finalizeSearch(column);
+		searchProcessor.explicitCommit();
 	}
 
 	private static @NotNull Column createSearchable() {

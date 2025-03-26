@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import com.google.common.base.Stopwatch;
+import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +27,12 @@ public class SolrSearch extends Search<FrontendValue> {
 	@Getter
 	private final Searchable<?> searchable;
 
+	private final Duration commitWithin;
+
 
 	@Override
 	public void finalizeSearch() {
-
-		try {
-			solrClient.commit();
-		}
-		catch (SolrServerException | IOException e) {
-			throw new IllegalStateException("Unable to commit values", e);
-		}
+		// Don't issue commit, as we use commitWithin
 	}
 
 	@Override
@@ -58,7 +55,7 @@ public class SolrSearch extends Search<FrontendValue> {
 		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, feValue);
 
 		try {
-			solrClient.addBean(solrFrontendValue);
+			solrClient.addBean(solrFrontendValue, getCommitWithinMs());
 		}
 		catch (IOException | SolrServerException e) {
 			throw new RuntimeException(e);
@@ -66,13 +63,18 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	}
 
+	private int getCommitWithinMs() {
+		return (int) Math.min(commitWithin.toMilliseconds(), Integer.MAX_VALUE);
+	}
+
 	public void registerValues(Collection<String> values) {
 		try {
+			List<SolrFrontendValue> solrFrontendValues = values.stream().map(value -> new SolrFrontendValue(searchable, value, value, null)).toList();
 
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			log.info("BEGIN registering {} values to {} for {} {}", values.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
-			solrClient.addBeans(values);
-			log.info("FINISHED registering {} values to {} for {} {} in {}", values.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId(), stopwatch);
+			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
+			log.info("DONE registering {} values to {} for {} {} in {}", values.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId(), stopwatch);
 		}
 		catch (SolrServerException | IOException e) {
 			throw new IllegalStateException("Unable to register values for searchable '%s'".formatted(searchable), e);

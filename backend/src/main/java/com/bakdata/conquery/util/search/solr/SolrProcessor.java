@@ -32,8 +32,10 @@ import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
+import io.dropwizard.util.Duration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,8 @@ public class SolrProcessor implements SearchProcessor {
 
 	@NonNull
 	private final SolrClient solrClient;
+
+	private final Duration commitWithin;
 
 	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 	@Override
@@ -88,7 +92,7 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
-		return searches.computeIfAbsent(searchable, newRef -> new SolrSearch(solrClient, newRef));
+		return searches.computeIfAbsent(searchable, searchRef -> new SolrSearch(solrClient, searchRef, commitWithin));
 	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
@@ -225,5 +229,16 @@ public class SolrProcessor implements SearchProcessor {
 
 		int start = itemsPerPage * pageNumber;
 		return topItems(searchable, maybeText.orElse(null), start, itemsPerPage);
+	}
+
+	/**
+	 * Intended for tests only to ensure everything is commited.
+	 */
+	public void explicitCommit() throws SolrServerException, IOException {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		log.info("BEGIN explicit commit to core/collection {}", solrClient.getDefaultCollection());
+		solrClient.commit();
+		log.info("DONE explicit commit to core/collection {} in {}", solrClient.getDefaultCollection(), stopwatch);
+
 	}
 }

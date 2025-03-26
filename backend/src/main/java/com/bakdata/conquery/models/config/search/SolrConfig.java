@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.solr.ManagedSolrClient;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.codahale.metrics.health.HealthCheck;
@@ -27,14 +26,15 @@ public class SolrConfig implements SearchConfig {
 	private final String baseSolrUrl;
 	private Duration connectionTimeout = Duration.seconds(60);
 	private Duration requestTimeout = Duration.seconds(60);
+	private Duration commitWithin = Duration.seconds(5);
 	private final String username;
 	private final String password;
 
 	@Override
-	public SearchProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
+	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client);
+			return new SolrProcessor(client, commitWithin);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);
