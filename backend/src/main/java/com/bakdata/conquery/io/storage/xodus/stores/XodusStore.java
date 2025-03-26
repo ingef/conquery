@@ -110,8 +110,8 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
-			try(Cursor cursor = store.openCursor(t)) {
-				while(cursor.getNext()){
+			try (Cursor cursor = store.openCursor(t)) {
+				while (cursor.getNext()) {
 					cursor.deleteCurrent();
 				}
 			}
@@ -123,9 +123,14 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		/* Do nothing, no caches here */
 	}
 
+	@Override
+	public void loadKeys() {
+
+	}
+
 	public void removeStore() {
 		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
-		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+		environment.executeInTransaction(t -> environment.removeStore(store.getName(), t));
 		storeRemoveHook.accept(this);
 	}
 
@@ -144,7 +149,7 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 
 	@Override
 	public String toString() {
-		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
+		return "XodusStore[" + environment.getLocation() + ":" + store.getName() + "}";
 	}
 
 	private static class XodusKeyIterator extends Spliterators.AbstractSpliterator<ByteIterable> {
@@ -152,11 +157,10 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		private final long timeoutHalfMillis;
 		private final Environment environment;
 		private final Store store;
+		private final AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		private Transaction transaction;
 		private Cursor cursor;
 		private long start;
-
-		private final AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 
 		protected XodusKeyIterator(Environment environment, Store store, long timeoutHalfMillis) {
 			super(Long.MAX_VALUE, Spliterator.ORDERED);

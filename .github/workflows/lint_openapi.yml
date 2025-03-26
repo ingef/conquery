@@ -11,7 +11,7 @@ jobs:
     container: dshanley/vacuum
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: "Lint OpenApi spec for /api"
         run: vacuum lint --details ./openapi.yaml
       - name: "Lint OpenApi spec for external form backends"

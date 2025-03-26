@@ -16,7 +16,7 @@ public interface ConqueryStorage extends Closeable {
 	 */
 	void openStores(ObjectMapper objectMapper);
 
-	default void loadData(){
+	default void loadData() {
 		for (ManagedStore store : getStores()) {
 			store.loadData();
 		}
@@ -31,7 +31,7 @@ public interface ConqueryStorage extends Closeable {
 	/**
 	 * Delete the storage's contents.
 	 */
-	default void clear(){
+	default void clear() {
 		for (ManagedStore store : getStores()) {
 			store.clear();
 		}
@@ -40,7 +40,7 @@ public interface ConqueryStorage extends Closeable {
 	/**
 	 * Remove the storage.
 	 */
-	default void removeStorage(){
+	default void removeStorage() {
 		for (ManagedStore store : getStores()) {
 			store.removeStore();
 		}
@@ -61,6 +61,12 @@ public interface ConqueryStorage extends Closeable {
 	default void invalidateCache() {
 		for (ManagedStore store : getStores()) {
 			store.invalidateCache();
+		}
+	}
+
+	default void loadKeys() {
+		for (ManagedStore store : getStores()) {
+			store.loadKeys();
 		}
 	}
 }
