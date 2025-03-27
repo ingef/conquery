@@ -17,7 +17,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,7 +41,20 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	@Override
 	public long calculateSize() {
-		return 0;
+
+		// We query all documents that reference the searchables of the filter
+		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchable.getId()));
+
+		// Set rows to 0 because we don't want actual results, we are only interested in the total number
+		query.setRows(0);
+
+		try {
+			QueryResponse response = solrClient.query(query);
+			return response.getResults().getNumFound();
+		}
+		catch (SolrServerException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

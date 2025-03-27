@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import org.apache.solr.client.solrj.beans.Field;
 
@@ -56,7 +57,7 @@ public class SolrFrontendValue implements SolrEntity {
 
 	}
 
-	public SolrFrontendValue(Searchable<?> searchable, String value, String label, String optionValue) {
+	public SolrFrontendValue(Searchable<?> searchable, @NonNull String value, String label, String optionValue) {
 		this.id = buildId(searchable, value);
 		this.searchable_s = searchable.getId().toString();
 		this.value = value;
