@@ -3,8 +3,10 @@ package com.bakdata.conquery.util.search.solr;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -25,7 +27,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 @RequiredArgsConstructor
 public class SolrSearch extends Search<FrontendValue> {
 
-	// TODO use extra client for indexing
+	public static final int UPDATE_CHUNK_THRESHOLD = 1000;
 	private final SolrClient solrClient;
 
 	@Getter
@@ -33,10 +35,26 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	private final Duration commitWithin;
 
+	/**
+	 * Buffer docs to send larger update chunks (size {@link SolrSearch#UPDATE_CHUNK_THRESHOLD}).
+	 */
+	private final Queue<SolrFrontendValue> openDocs = new LinkedList<>();
+
 
 	@Override
 	public void finalizeSearch() {
-		// Don't issue commit, as we use commitWithin
+		if (openDocs.isEmpty()) {
+			return;
+		}
+
+		// Commit what is left
+		try {
+			log.info("Commiting the last {} documents of {}", openDocs.size(), searchable);
+			solrClient.addBeans(openDocs, getCommitWithinMs());
+		}
+		catch (IOException | SolrServerException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -75,11 +93,15 @@ public class SolrSearch extends Search<FrontendValue> {
 		}
 		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, feValue);
 
-		try {
-			solrClient.addBean(solrFrontendValue, getCommitWithinMs());
-		}
-		catch (IOException | SolrServerException e) {
-			throw new RuntimeException(e);
+		openDocs.add(solrFrontendValue);
+
+		while (openDocs.size() > UPDATE_CHUNK_THRESHOLD) {
+			try {
+				solrClient.addBeans(openDocs, getCommitWithinMs());
+			}
+			catch (IOException | SolrServerException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 	}

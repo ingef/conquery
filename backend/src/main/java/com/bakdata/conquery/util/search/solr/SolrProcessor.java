@@ -184,18 +184,18 @@ public class SolrProcessor implements SearchProcessor {
 		}
 
 		StopWatch timer = StopWatch.createStarted();
-		log.trace("START-SELECT ADDING_ITEMS for {}", id);
+		log.trace("BEGIN ADDING_ITEMS for {}", id);
 
 		collected.forEach(feValue -> search.addItem(feValue, InternalFilterSearch.extractKeywords(feValue)));
 
-		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", id, timer);
+		log.trace("DONE ADDING_ITEMS for {} in {}", id, timer);
 
 		timer.reset();
-		log.trace("START-SELECT SHRINKING for {}", id);
+		log.trace("BEGIN commit for {}", id);
 
 		search.finalizeSearch();
 
-		log.trace("DONE-SELECT SHRINKING for {} in {}", id, timer);
+		log.trace("DONE commit for {} in {}", id, timer);
 	}
 
 	private void indexFilterTemplate(Searchable<FrontendValue> searchable, FilterTemplate temp) {
