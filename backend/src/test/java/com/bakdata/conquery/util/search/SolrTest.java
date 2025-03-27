@@ -1,8 +1,10 @@
 package com.bakdata.conquery.util.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockserver.model.HttpRequest.request;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -28,10 +30,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
-import com.bakdata.conquery.service.IndexServiceTest;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
+import com.github.powerlibraries.io.In;
 import com.google.common.collect.ImmutableBiMap;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.dropwizard.core.setup.Environment;
@@ -47,23 +49,36 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpResponse;
+import org.mockserver.model.MediaType;
 
 
 @EnabledIfEnvironmentVariable(named = SolrTest.SOLR_BASE_URL_ENV, matches = "http.+")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SolrTest {
 
+	public static final String MAPPING_PATH = "/shared/mapping.csv";
 	public final static String SOLR_BASE_URL_ENV = "SOLR_BASE_URL";
 	public static final DatasetId DATASET_ID = new DatasetId("core1");
 	public static final Column SEARCHABLE = createSearchable();
 	public static final Environment ENVIRONMENT = new Environment(SolrTest.class.getSimpleName());
 	public static final ConqueryConfig CONQUERY_CONFIG = new ConqueryConfig();
 	@RegisterExtension
-	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
+	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), SolrTest::initRefServer);
 	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
 	public static final SelectFilter<?> FILTER = createFilter();
 	public static SolrConfig solrConfig;
 	public static SolrProcessor searchProcessor;
+
+	@SneakyThrows(IOException.class)
+	public static void initRefServer(ClientAndServer mockServer) {
+
+		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
+			mockServer.when(request().withPath("/mapping.csv"))
+					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
+		}
+
+	}
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
