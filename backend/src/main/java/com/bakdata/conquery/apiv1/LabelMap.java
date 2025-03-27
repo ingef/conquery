@@ -7,6 +7,7 @@ import com.google.common.collect.BiMap;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,8 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @EqualsAndHashCode
+@ToString(onlyExplicitlyIncluded = true)
 public class LabelMap implements Searchable<FrontendValue> {
 
+	@ToString.Include
 	private final FilterId id;
 	@Delegate
 	private final BiMap<String, String> delegate;
