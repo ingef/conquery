@@ -125,7 +125,7 @@ public class CombinedSolrSearch {
 
 	private static @NotNull SolrQuery buildSolrQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
 		SolrQuery query = new SolrQuery(queryString);
-		query.addField(SolrFrontendValue.Fields.value);
+		query.addField(SolrFrontendValue.Fields.value_s);
 		query.addField(SolrFrontendValue.Fields.label_t);
 		query.addField(SolrFrontendValue.Fields.optionValue_s);
 		query.setStart(start);
@@ -133,7 +133,9 @@ public class CombinedSolrSearch {
 
 		// Collapse the results with equal "value" field. Only the one with the highest score remains.
 		// This only works
-		query.setFilterQueries("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value, SolrFrontendValue.Fields.sourcePriority_i));
+		query.setFilterQueries("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
+
+		query.addSort(SolrQuery.SortClause.asc(SolrFrontendValue.Fields.sourcePriority_i));
 		return query;
 	}
 
@@ -152,7 +154,7 @@ public class CombinedSolrSearch {
 
 		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
 		String collect = Stream.of(
-									   SolrFrontendValue.Fields.value,
+									   SolrFrontendValue.Fields.value_s,
 									   SolrFrontendValue.Fields.label_t
 							   )
 							   .map(field -> "%s:\"%s\"".formatted(field, finalTerm))

@@ -260,9 +260,9 @@ public class SolrTest {
 				new AutoCompleteResult(
 						List.of(
 								new FrontendValue("column a", "column a", null),
+								new FrontendValue("column b", "column b", null),
 								new FrontendValue("column ab", "column ab", null),
-								new FrontendValue("column ba", "column ba", null),
-								new FrontendValue("column b", "column b", null)
+								new FrontendValue("column ba", "column ba", null)
 						),
 						4
 				)
@@ -278,7 +278,7 @@ public class SolrTest {
 				new AutoCompleteResult(
 						List.of(
 								new FrontendValue("column a", "column a", null),
-								new FrontendValue("column ab", "column ab", null)
+								new FrontendValue("column b", "column b", null)
 						),
 						4
 				)
@@ -293,8 +293,8 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column ba", "column ba", null),
-								new FrontendValue("column b", "column b", null)
+								new FrontendValue("column ab", "column ab", null),
+								new FrontendValue("column ba", "column ba", null)
 						),
 						4
 				)

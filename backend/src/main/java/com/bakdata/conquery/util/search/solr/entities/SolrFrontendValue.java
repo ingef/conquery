@@ -27,7 +27,7 @@ public class SolrFrontendValue implements SolrEntity {
 	public String id;
 
 	/**
-	 * Indicates, from which {@link Searchable} the {@link SolrFrontendValue#value}-{@link SolrFrontendValue#label_t}-{@link SolrFrontendValue#optionValue_s}-combo originates from.
+	 * Indicates, from which {@link Searchable} the {@link SolrFrontendValue#value_s}-{@link SolrFrontendValue#label_t}-{@link SolrFrontendValue#optionValue_s}-combo originates from.
 	 */
 	@Field
 	public String searchable_s;
@@ -41,11 +41,11 @@ public class SolrFrontendValue implements SolrEntity {
 
 
 	/**
-	 * @implNote The value field is a custom field in the schema that allows to use collapsing of results.
+	 * Field for the actual value in our data.
 	 * We use collapsing to filter out "duplicates" originating from an index and a column
 	 */
 	@Field
-	public String value;
+	public String value_s;
 
 	/**
 	 * @implNote The label field is indexed as a general text field resulting in possibly multiple tokens.
@@ -75,14 +75,14 @@ public class SolrFrontendValue implements SolrEntity {
 		this.id = buildId(searchable, value);
 		this.searchable_s = searchable.getId().toString();
 		this.sourcePriority_i = getSourcePriority(searchable);
-		this.value = value;
+		this.value_s = value;
 		this.label_t = label;
 		this.optionValue_s = optionValue;
 		this._text_ = List.of(value, label);
 	}
 
 	public FrontendValue toFrontendValue() {
-		return new FrontendValue(Objects.requireNonNullElse(value, ""), label_t, optionValue_s);
+		return new FrontendValue(Objects.requireNonNullElse(value_s, ""), label_t, optionValue_s);
 	}
 
 	private static String buildId(Searchable<?> searchable, String value) {
