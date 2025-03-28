@@ -2,6 +2,7 @@ internal,unused,external,external2
 data a,unused,Data,A
 data b,unused,,B
 data c,unused,Data C,
+data c,unused,Data C twin,
 ,,internal,null
 external-null,,,
 ,internal-external-null,,

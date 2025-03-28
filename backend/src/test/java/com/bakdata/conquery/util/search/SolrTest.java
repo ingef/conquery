@@ -39,7 +39,10 @@ import com.google.common.collect.ImmutableBiMap;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.dropwizard.core.setup.Environment;
 import lombok.SneakyThrows;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -321,5 +324,21 @@ public class SolrTest {
 		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("map a", "Map A"));
+	}
+
+	@Test
+	@Order(4)
+	public void checkIndexSkippedValue() throws IOException, SolrServerException {
+
+		SolrClient client = solrConfig.createSearchClient(DATASET_ID.toString());
+
+		// The twin value in the mapping should have been skipped (at multiple points IndexService, SolrSearch, ...) and not be indexed
+		SolrQuery query = new SolrQuery("twin");
+
+		QueryResponse response = client.query(query);
+
+		assertThat(response.getResults().getNumFound()).isEqualTo(0);
+
+		client.close();
 	}
 }

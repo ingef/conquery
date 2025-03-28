@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -39,6 +41,12 @@ public class SolrSearch extends Search<FrontendValue> {
 	 */
 	private final LinkedList<SolrFrontendValue> openDocs = new LinkedList<>();
 
+	/**
+	 * We keep track of values that we send to solr to lower network traffic.
+	 * Because we receive values independently from the shards, a value is probably seen multiple times.
+	 */
+	private final Set<String> seenValues = ConcurrentHashMap.newKeySet();
+
 
 	@Override
 	public void finalizeSearch() {
@@ -50,6 +58,7 @@ public class SolrSearch extends Search<FrontendValue> {
 		log.info("Commiting the last {} documents of {}", openDocs.size(), searchable);
 		registerValues(openDocs);
 		openDocs.clear();
+		seenValues.clear();
 	}
 
 	@Override
@@ -83,9 +92,14 @@ public class SolrSearch extends Search<FrontendValue> {
 	@Override
 	public void addItem(FrontendValue feValue, List<String> _keywords) {
 		if (feValue.getValue().isEmpty()) {
-			log.warn("Skip indexing of {}, because its 'value' is empty.", feValue);
+			log.warn("Skip indexing of {} for {}, because its 'value' is empty.", feValue, searchable);
 			return;
 		}
+		if (!seenValues.add(feValue.getValue())) {
+			log.trace("Skip indexing of {} for {}, because its 'value' has already been submitted to solr.", feValue, searchable);
+			return;
+		}
+
 		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, feValue);
 
 		openDocs.add(solrFrontendValue);
@@ -109,6 +123,7 @@ public class SolrSearch extends Search<FrontendValue> {
 		List<SolrFrontendValue> solrFrontendValues = values.stream()
 														   .filter(Objects::nonNull)
 														   .filter(Predicate.not(String::isBlank))
+														   .filter(seenValues::add)
 														   .map(value -> new SolrFrontendValue(searchable, value, value, null))
 														   .toList();
 
