@@ -3,7 +3,10 @@ package com.bakdata.conquery.util.search.solr.entities;
 import java.util.List;
 import java.util.Objects;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +15,8 @@ import lombok.experimental.FieldNameConstants;
 import org.apache.solr.client.solrj.beans.Field;
 
 /**
- * Java bind to solr's query engine
- * We use solr's
+ * Solr DAO for {@link FrontendValue}.
+ * We use solr's object mapping and managed-schema to define a suitable document type
  */
 @NoArgsConstructor
 @FieldNameConstants
@@ -23,8 +26,19 @@ public class SolrFrontendValue implements SolrEntity {
 	@Getter
 	public String id;
 
+	/**
+	 * Indicates, from which {@link Searchable} the {@link SolrFrontendValue#value}-{@link SolrFrontendValue#label_t}-{@link SolrFrontendValue#optionValue_s}-combo originates from.
+	 */
 	@Field
 	public String searchable_s;
+
+	/**
+	 * Determines the priority in the search ranking by its source type ({@link Searchable}).
+	 * @implNote lower value -> higher priority.
+	 */
+	@Field
+	public int sourcePriority_i;
+
 
 	/**
 	 * @implNote The value field is a custom field in the schema that allows to use collapsing of results.
@@ -60,6 +74,7 @@ public class SolrFrontendValue implements SolrEntity {
 	public SolrFrontendValue(Searchable<?> searchable, @NonNull String value, String label, String optionValue) {
 		this.id = buildId(searchable, value);
 		this.searchable_s = searchable.getId().toString();
+		this.sourcePriority_i = getSourcePriority(searchable);
 		this.value = value;
 		this.label_t = label;
 		this.optionValue_s = optionValue;
@@ -72,5 +87,14 @@ public class SolrFrontendValue implements SolrEntity {
 
 	private static String buildId(Searchable<?> searchable, String value) {
 		return searchable.getId().toString() + " " + value;
+	}
+
+	private static int getSourcePriority(Searchable<?> searchable) {
+		return switch (searchable) {
+			case LabelMap _l -> 1;
+			case FilterTemplate _f -> 2;
+			case Column _c -> 3;
+			default -> Integer.MAX_VALUE;
+		};
 	}
 }

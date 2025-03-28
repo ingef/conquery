@@ -1,10 +1,10 @@
 package com.bakdata.conquery.util.search.solr;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,7 +40,7 @@ public class CombinedSolrSearch {
 
 	public long getTotal() {
 
-		String searchables = combineSearchables(false);
+		String searchables = combineSearchables();
 
 		// We query all documents that reference the searchables of the filter
 		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
@@ -59,23 +59,16 @@ public class CombinedSolrSearch {
 
 
 	/**
-	 *
-	 * @param boost Boost filter search references by order (first gets highest boost)
-	 * @return Query substring that is a group of the searchable ids with optional boosting
+	 * @return Query substring that is a group of the searchable ids for the {@link CombinedSolrSearch#filter}.
 	 */
-	private @NotNull String combineSearchables(boolean boost) {
+	private @NotNull String combineSearchables() {
 		List<Search<FrontendValue>> searches = processor.getSearchesFor(filter);
-		final AtomicInteger boostIndex = new AtomicInteger(1);
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
 									 .map(SolrSearch::getSearchable)
 									 .map(Searchable::getId)
 									 .map(Id::toString)
 									 .map(ClientUtils::escapeQueryChars)
-									 /* Apply boost (^) if flagged https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
-									 	The boost is between (0,1]. The first item gets 1 boost (default) like the search term
-									  */
-									 .map(boost ? term -> "%s^%.2f".formatted(term, 1f / boostIndex.getAndIncrement()) : Function.identity())
 									 .collect(Collectors.joining(" ", "(", ")"));
 		return searchables;
 	}
@@ -84,7 +77,7 @@ public class CombinedSolrSearch {
 	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
 	 */
 	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
-		String searchables = combineSearchables( true);
+		String searchables = combineSearchables();
 
 		String term = text;
 
@@ -104,23 +97,15 @@ public class CombinedSolrSearch {
 		}
 
 
-		String queryString = "%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables) + " AND "
+		String queryString = "%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchables) + " AND "
 							 + term;
 
 		return sendQuery(queryString, start, limit);
 	}
 
 	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
-		SolrQuery query = new SolrQuery(queryString);
-		query.addField(SolrFrontendValue.Fields.value);
-		query.addField(SolrFrontendValue.Fields.label_t);
-		query.addField(SolrFrontendValue.Fields.optionValue_s);
-		query.setStart(start);
-		query.setRows(limit);
-
-		// Collapse the results with equal "value" field. Only the one with the highest score remains.
-		query.setFilterQueries("{!collapse field=%s}".formatted(SolrFrontendValue.Fields.value));
-		log.info("Query [{}] created: {}", queryString.hashCode(), query);
+		SolrQuery query = buildSolrQuery(queryString, start, limit);
+		log.info("Query [{}] created: {}", queryString.hashCode(), URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8));
 
 		try {
 			QueryResponse response = solrClient.query(query);
@@ -138,8 +123,22 @@ public class CombinedSolrSearch {
 		}
 	}
 
+	private static @NotNull SolrQuery buildSolrQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
+		SolrQuery query = new SolrQuery(queryString);
+		query.addField(SolrFrontendValue.Fields.value);
+		query.addField(SolrFrontendValue.Fields.label_t);
+		query.addField(SolrFrontendValue.Fields.optionValue_s);
+		query.setStart(start);
+		query.setRows(limit);
+
+		// Collapse the results with equal "value" field. Only the one with the highest score remains.
+		// This only works
+		query.setFilterQueries("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value, SolrFrontendValue.Fields.sourcePriority_i));
+		return query;
+	}
+
 	public AutoCompleteResult topItemsExact(String text, Integer start, @Nullable Integer limit) {
-		String searchables = combineSearchables( true);
+		String searchables = combineSearchables();
 
 		String term = text;
 
