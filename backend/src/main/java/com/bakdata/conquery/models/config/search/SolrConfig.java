@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.config.search;
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -23,18 +25,23 @@ import org.apache.solr.common.util.NamedList;
 @Slf4j
 public class SolrConfig implements SearchConfig {
 
+	@NotNull
 	private final String baseSolrUrl;
 	private Duration connectionTimeout = Duration.seconds(60);
 	private Duration requestTimeout = Duration.seconds(60);
 	private Duration commitWithin = Duration.seconds(5);
+	@Nullable
 	private final String username;
+	@Nullable
 	private final String password;
+	@Min(1)
+	private int updateChunkSize = 100;
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin);
+			return new SolrProcessor(client, commitWithin, updateChunkSize);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);

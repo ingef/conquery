@@ -26,16 +26,16 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 @RequiredArgsConstructor
 public class SolrSearch extends Search<FrontendValue> {
 
-	public static final int UPDATE_CHUNK_SIZE = 1000;
 	private final SolrClient solrClient;
 
 	@Getter
 	private final Searchable<?> searchable;
 
 	private final Duration commitWithin;
+	public final int updateChunkSize;
 
 	/**
-	 * Buffer docs to send larger update chunks (size {@link SolrSearch#UPDATE_CHUNK_SIZE}).
+	 * Buffer docs to send larger update chunks (size {@link SolrSearch#updateChunkSize}).
 	 */
 	private final LinkedList<SolrFrontendValue> openDocs = new LinkedList<>();
 
@@ -93,7 +93,7 @@ public class SolrSearch extends Search<FrontendValue> {
 		// We chunk here for performance.
 		// Too many small document request cause a lot of overhead.
 		// A too large chunk slows request submission and solr.
-		while (openDocs.size() >= UPDATE_CHUNK_SIZE) {
+		while (openDocs.size() >= updateChunkSize) {
 			log.trace("Adding {} documents for {}", openDocs.size(), searchable.getId());
 			registerValues(openDocs);
 			openDocs.clear();

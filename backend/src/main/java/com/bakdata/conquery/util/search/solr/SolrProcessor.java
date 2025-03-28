@@ -53,6 +53,8 @@ public class SolrProcessor implements SearchProcessor {
 
 	private final Duration commitWithin;
 
+	private final int updateChunkSize;
+
 	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 	@Override
 	public void clearSearch() {
@@ -93,7 +95,7 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
-		return searches.computeIfAbsent(searchable, searchRef -> new SolrSearch(solrClient, searchRef, commitWithin));
+		return searches.computeIfAbsent(searchable, searchRef -> new SolrSearch(solrClient, searchRef, commitWithin, updateChunkSize));
 	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
