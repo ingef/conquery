@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
+import com.bakdata.conquery.util.progressreporter.ProgressReporterImpl;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.github.powerlibraries.io.In;
@@ -153,7 +154,7 @@ public class SolrTest {
 	public void addData() throws InterruptedException, SolrServerException, IOException {
 		// Index values from concept/reference
 		Set<Searchable<FrontendValue>> managerSearchables = FILTER.getSearchReferences().stream().filter(ref -> !(ref instanceof Column)).collect(Collectors.toSet());
-		searchProcessor.indexManagerResidingSearches(managerSearchables, new AtomicBoolean(true));
+		searchProcessor.indexManagerResidingSearches(managerSearchables, new AtomicBoolean(false), new ProgressReporterImpl());
 
 		// Index values from column
 		Column column = createSearchable();

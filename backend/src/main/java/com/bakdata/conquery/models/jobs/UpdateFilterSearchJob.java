@@ -68,7 +68,7 @@ public class UpdateFilterSearchJob extends Job {
 		Set<Searchable<FrontendValue>> managerSearchables = collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet());
 
 
-		searchProcessor.indexManagerResidingSearches(managerSearchables, getCancelledState());
+		searchProcessor.indexManagerResidingSearches(managerSearchables, getCancelledState(), getProgressReporter());
 
 
 		// The following cast is safe

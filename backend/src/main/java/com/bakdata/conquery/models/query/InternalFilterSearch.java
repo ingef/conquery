@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.Cursor;
@@ -237,7 +238,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
-	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import io.dropwizard.lifecycle.Managed;
 
 public interface SearchProcessor extends Managed {
@@ -29,7 +30,7 @@ public interface SearchProcessor extends Managed {
 
 	void finalizeSearch(Searchable<FrontendValue> searchable);
 
-	void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException;
+	void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException;
 
 	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
 

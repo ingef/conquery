@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.base.Stopwatch;
@@ -106,7 +107,9 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	@Override
-	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+
+		progressReporter.setMax(managerSearchables.size());
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
@@ -148,6 +151,9 @@ public class SolrProcessor implements SearchProcessor {
 					}
 					catch (Exception e) {
 						log.error("Failed to create search for {}", searchable, e);
+					}
+					finally {
+						progressReporter.report(1);
 					}
 
 				});
