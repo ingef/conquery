@@ -26,7 +26,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 @RequiredArgsConstructor
 public class SolrSearch extends Search<FrontendValue> {
 
-	public static final int UPDATE_CHUNK_SIZE = 100;
+	public static final int UPDATE_CHUNK_SIZE = 1000;
 	private final SolrClient solrClient;
 
 	@Getter
@@ -47,14 +47,9 @@ public class SolrSearch extends Search<FrontendValue> {
 		}
 
 		// Commit what is left
-		try {
-			log.info("Commiting the last {} documents of {}", openDocs.size(), searchable);
-			solrClient.addBeans(openDocs, getCommitWithinMs());
-			openDocs.clear();
-		}
-		catch (IOException | SolrServerException e) {
-			throw new RuntimeException(e);
-		}
+		log.info("Commiting the last {} documents of {}", openDocs.size(), searchable);
+		registerValues(openDocs);
+		openDocs.clear();
 	}
 
 	@Override
@@ -95,14 +90,13 @@ public class SolrSearch extends Search<FrontendValue> {
 
 		openDocs.add(solrFrontendValue);
 
-		while (openDocs.size() > UPDATE_CHUNK_SIZE) {
-			try {
-				solrClient.addBeans(openDocs, getCommitWithinMs());
-				openDocs.clear();
-			}
-			catch (IOException | SolrServerException e) {
-				throw new RuntimeException(e);
-			}
+		// We chunk here for performance.
+		// Too many small document request cause a lot of overhead.
+		// A too large chunk slows request submission and solr.
+		while (openDocs.size() >= UPDATE_CHUNK_SIZE) {
+			log.trace("Adding {} documents for {}", openDocs.size(), searchable.getId());
+			registerValues(openDocs);
+			openDocs.clear();
 		}
 
 	}
@@ -111,14 +105,18 @@ public class SolrSearch extends Search<FrontendValue> {
 		return (int) Math.min(commitWithin.toMilliseconds(), Integer.MAX_VALUE);
 	}
 
-	public void registerValues(Collection<String> values) {
-		try {
-			List<SolrFrontendValue> solrFrontendValues = values.stream()
-															   .filter(Objects::nonNull)
-															   .filter(Predicate.not(String::isBlank))
-															   .map(value -> new SolrFrontendValue(searchable, value, value, null))
-															   .toList();
+	public void registerValuesRaw(Collection<String> values) {
+		List<SolrFrontendValue> solrFrontendValues = values.stream()
+														   .filter(Objects::nonNull)
+														   .filter(Predicate.not(String::isBlank))
+														   .map(value -> new SolrFrontendValue(searchable, value, value, null))
+														   .toList();
 
+		registerValues(solrFrontendValues);
+	}
+
+	public void registerValues(Collection<SolrFrontendValue> solrFrontendValues) {
+		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
 			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());

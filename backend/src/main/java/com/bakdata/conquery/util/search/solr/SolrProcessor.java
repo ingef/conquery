@@ -74,7 +74,7 @@ public class SolrProcessor implements SearchProcessor {
 
 		SolrSearch search = (SolrSearch) getSearchFor(searchable);
 
-		search.registerValues(values);
+		search.registerValuesRaw(values);
 	}
 
 	@Override
