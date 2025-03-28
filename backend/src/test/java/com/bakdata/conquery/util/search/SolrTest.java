@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
+import com.bakdata.conquery.util.extensions.SolrServerExtension;
 import com.bakdata.conquery.util.progressreporter.ProgressReporterImpl;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
@@ -50,26 +51,28 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 
-@EnabledIfEnvironmentVariable(named = SolrTest.SOLR_BASE_URL_ENV, matches = "http.+")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Testcontainers
 public class SolrTest {
 
+
 	public static final String MAPPING_PATH = "/shared/mapping.csv";
-	public final static String SOLR_BASE_URL_ENV = "SOLR_BASE_URL";
 	public static final DatasetId DATASET_ID = new DatasetId("core1");
 	public static final Column SEARCHABLE = createSearchable();
 	public static final Environment ENVIRONMENT = new Environment(SolrTest.class.getSimpleName());
 	public static final ConqueryConfig CONQUERY_CONFIG = new ConqueryConfig();
 	@RegisterExtension
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), SolrTest::initRefServer);
-	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
+	@RegisterExtension
+	private static final SolrServerExtension SOLR_SERVER = new SolrServerExtension(DATASET_ID.toString());
+	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(){{setDelimiterDetectionEnabled(true);setLineSeparatorDetectionEnabled(true);}}, "emptyDefaultLabel");
 	public static final SelectFilter<?> FILTER = createFilter();
 	public static SolrConfig solrConfig;
 	public static SolrProcessor searchProcessor;
@@ -92,7 +95,7 @@ public class SolrTest {
 
 		SolrBundle solrBundle = new SolrBundle();
 
-		String baseSolrUrl = System.getenv(SOLR_BASE_URL_ENV);
+		String baseSolrUrl = SOLR_SERVER.getSolrBaseUrl();
 		solrConfig = new SolrConfig(baseSolrUrl, "solr", "SolrRocks");
 		CONQUERY_CONFIG.setSearch(solrConfig);
 		solrBundle.run(CONQUERY_CONFIG, new Environment(SolrTest.class.getSimpleName()));
@@ -123,7 +126,6 @@ public class SolrTest {
 						"map b", "Map B",
 						"map c", "Map C"
 				), 0, false);
-
 
 				final FilterTemplate index = new FilterTemplate(
 						"test1",
