@@ -280,7 +280,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
 			if (getExecutionManager().isResultPresent(getId())) {
-				Preconditions.checkArgument(getExecutionManager().getResult(getId()).getState() != ExecutionState.RUNNING);
+				Preconditions.checkArgument(getExecutionManager().getState(getId()).getState() != ExecutionState.RUNNING);
 			}
 
 			startTime = LocalDateTime.now();
@@ -342,7 +342,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			return ExecutionState.NEW;
 		}
 
-		return getExecutionManager().getResult(getId()).getState();
+		return getExecutionManager().getState(getId()).getState();
 	}
 
 	/**

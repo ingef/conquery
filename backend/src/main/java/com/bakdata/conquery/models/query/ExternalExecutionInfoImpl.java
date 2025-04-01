@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
-import com.bakdata.conquery.io.result.ExternalState;
+import com.bakdata.conquery.io.result.ExternalExecutionInfo;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.google.common.collect.MoreCollectors;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @RequiredArgsConstructor
-public class ExternalStateImpl implements ExternalState {
+public class ExternalExecutionInfoImpl implements ExternalExecutionInfo {
 
 	@Getter
 	@Setter
