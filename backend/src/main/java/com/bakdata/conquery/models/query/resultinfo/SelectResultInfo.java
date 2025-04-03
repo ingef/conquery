@@ -22,7 +22,7 @@ public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final CQConcept cqConcept;
 
-	public SelectResultInfo(Select select, CQConcept cqConcept, Set<SemanticType> semantics) {
+	public SelectResultInfo(@NonNull Select select, @NonNull CQConcept cqConcept, Set<SemanticType> semantics) {
 		super(Sets.union(semantics, Set.of(new SemanticType.SelectResultT(select.getId()))));
 		this.select = select;
 		this.cqConcept = cqConcept;
@@ -73,7 +73,7 @@ public class SelectResultInfo extends ResultInfo {
 		}
 
 		if (cqLabel != null) {
-			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+			// If these labels differ, the user might have changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
 			sb.append(" ");
 		}

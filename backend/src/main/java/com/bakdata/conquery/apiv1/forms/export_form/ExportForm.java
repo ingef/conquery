@@ -21,6 +21,8 @@ import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -187,16 +189,25 @@ public class ExportForm extends Form implements InternalForm {
 	/**
 	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
 	 */
-	public static interface DefaultSelectSettable {
-		public static void enable(List<CQElement> features) {
-			for (CQElement feature : features) {
-				if(feature instanceof DefaultSelectSettable){
-					((DefaultSelectSettable) feature).setDefaultExists();
-				}
+	public interface DefaultSelectSettable {
+
+		static void enable(CQElement feature) {
+			switch (feature) {
+				case DefaultSelectSettable settable: settable.setDefaultSelects(); break;
+				// CQNegation and CQDateRestriction chain CQElements and don't have selects themselves
+				case CQNegation negation: enable(negation.getChild()); break;
+				case CQDateRestriction dr: enable(dr.getChild()); break;
+				default: break;
 			}
 		}
 
-		void setDefaultExists();
+		static void enable(List<CQElement> features) {
+			for (CQElement feature : features) {
+				enable(feature);
+			}
+		}
+
+		void setDefaultSelects();
 	}
 
 	/**
