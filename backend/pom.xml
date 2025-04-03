@@ -102,6 +102,7 @@
                                 <sourceFolder>src/main/java</sourceFolder>
                                 <generateSupportingFiles>false</generateSupportingFiles>
                                 <useJakartaEe>true</useJakartaEe>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
                             </configOptions>
                         </configuration>
                     </execution>

@@ -20,13 +20,14 @@ import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.rest.AdminApiResource;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminConfigResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.rest.AdminScriptResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
@@ -164,7 +165,8 @@ public class AdminServlet {
 				.register(PermissionResource.class)
 				.register(AuthOverviewResource.class)
 				.register(AdminResource.class)
-				.register(AdminApiResource.class);
+				.register(AdminConfigResource.class)
+						.register(AdminScriptResource.class);
 
 		jerseyConfigUI
 				.register(AdminUIResource.class)
