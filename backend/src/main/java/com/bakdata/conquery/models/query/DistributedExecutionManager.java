@@ -86,7 +86,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		log.trace("Received Result\n{}", result.getResults());
 
 		if (execution == null) {
-			log.info("Ignoring result {} because the corresponding execution was 'null' (probably deleted)", result);
+			log.debug("Ignoring result {} because the corresponding execution was 'null' (probably deleted)", result);
 			return;
 		}
 
