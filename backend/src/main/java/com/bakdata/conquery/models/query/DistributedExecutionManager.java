@@ -94,7 +94,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		Optional<ExecutionInfo> optInfo = tryGetState(id);
 
 		if (optInfo.isEmpty()){
-			log.info("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
+			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
 			return;
 		}
 
