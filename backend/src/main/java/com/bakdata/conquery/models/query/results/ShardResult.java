@@ -67,7 +67,7 @@ public class ShardResult  extends NamespaceMessage {
 		finishTime = LocalDateTime.now();
 
 		if (exc.isPresent()) {
-			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
+			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime), exc.get());
 
 			setError(exc.map(ConqueryError::asConqueryError));
 		}

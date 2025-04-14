@@ -31,6 +31,7 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
@@ -45,8 +46,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
-		//read test specification
-		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 
@@ -58,17 +57,18 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		StandaloneSupport conquery = testConquery.getSupport(name);
 		DatasetId dataset = conquery.getDataset().getId();
 
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
-		ValidatorHelper.failOnError(log, validator.validate(test));
+		log.info("Setup tests");
+		ConqueryTestSpec test1 = setupTestQuery(dataset, validator, conquery, "/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json");
+		ConqueryTestSpec test2 = setupTestQuery(dataset, validator, conquery, "/tests/query/MULTI_CONCEPT_SINGLE_TABLE/query.test.json");
 
-		test.importRequiredData(conquery);
-
-		test.executeTest(conquery);
+		log.info("Execute tests");
+		test1.executeTest(conquery);
+		test2.executeTest(conquery);
 
 		long numberOfExecutions;
 		try(Stream<ManagedExecution> allExecutions = conquery.getMetaStorage().getAllExecutions()) {
 			numberOfExecutions = allExecutions.count();
-			assertThat(numberOfExecutions).isEqualTo(1);
+			assertThat(numberOfExecutions).isEqualTo(2);
 		}
 
 		// IDMapping Testing
@@ -159,7 +159,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
 		assertThat(allQueries).size().isEqualTo(1);
 
-		test.executeTest(support);
+		log.info("Reexecute tests after restart.");
+		test1.executeTest(support);
+		test2.executeTest(support);
 
 		storage = support.getMetaStorage();
 
@@ -201,5 +203,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		adminDatasetProcessor.deleteDataset(dataset4);
 		adminDatasetProcessor.deleteDataset(dataset5);
 		adminDatasetProcessor.deleteDataset(dataset6);
+	}
+
+	private static @NotNull ConqueryTestSpec setupTestQuery(DatasetId dataset, Validator validator, StandaloneSupport conquery, String testPath) throws Exception {
+		//read test specification
+		String testJson = In.resource(testPath).withUTF8().readAll();
+		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		ValidatorHelper.failOnError(log, validator.validate(test));
+
+		test.importRequiredData(conquery);
+		return test;
 	}
 }

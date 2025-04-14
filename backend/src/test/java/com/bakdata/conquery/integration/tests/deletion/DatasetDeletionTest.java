@@ -31,8 +31,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jetbrains.exodus.ExodusException;
-import jetbrains.exodus.env.EnvironmentClosedException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -134,14 +132,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 
-			// We have deleted the dataset, the environment should be inoperable
-			assertThatThrownBy(() -> {
-				try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
-					allImports.count();
-				}
-			})
-					.isInstanceOf(ExodusException.class)
-					.hasCauseInstanceOf(EnvironmentClosedException.class);
+			// We have deleted the dataset, there should be no imports
+			assertThat(namespace.getStorage().getAllImports().count()).isEqualTo(0);
 
 			Stream<DatasetId> datasetIdStream = conquery.getShardNodes().stream()
 														.map(ShardNode::getWorkers)
