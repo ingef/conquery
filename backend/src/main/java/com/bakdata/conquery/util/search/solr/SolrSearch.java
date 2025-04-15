@@ -131,6 +131,11 @@ public class SolrSearch extends Search<FrontendValue> {
 	}
 
 	public void registerValues(Collection<SolrFrontendValue> solrFrontendValues) {
+		if (solrFrontendValues.isEmpty()) {
+			// Avoid "BaseHttpSolrClient$RemoteSolrException: ... missing content stream" on empty collection
+			return;
+		}
+
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
