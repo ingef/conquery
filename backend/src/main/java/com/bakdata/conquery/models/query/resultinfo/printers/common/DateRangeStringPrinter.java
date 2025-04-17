@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
 
+	private static final String NEGATIVE_INFINITY = "-inf";
+	private static final String POSITIVE_INFINITY = "+inf";
+
 	public DateRangeStringPrinter(PrintSettings printSettings) {
 		this(new DateStringPrinter(printSettings), printSettings);
 	}
@@ -24,13 +27,13 @@ public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSetting
 		final Integer max = f.get(1);
 
 		// Compute minString first because we need it either way
-		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : datePrinter.apply(min);
+		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? NEGATIVE_INFINITY : datePrinter.apply(min);
 
 		if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 			// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 			return minString;
 		}
-		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? "+∞" : datePrinter.apply(max);
+		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? POSITIVE_INFINITY : datePrinter.apply(max);
 
 		return minString + cfg.getDateRangeSeparator() + maxString;
 	}

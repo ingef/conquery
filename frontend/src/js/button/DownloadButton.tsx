@@ -1,21 +1,21 @@
-import { useTheme } from "@emotion/react";
+import {useTheme} from "@emotion/react";
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {
-  faDownload,
-  faFileArchive,
-  faFileCsv,
-  faFileDownload,
-  faFileExcel,
-  faFilePdf,
+    faDownload,
+    faFileArchive,
+    faFileCsv,
+    faFileDownload,
+    faFileExcel,
+    faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, forwardRef, useContext, useMemo } from "react";
+import {forwardRef, ReactNode, useContext, useMemo} from "react";
 
-import { ResultUrlWithLabel } from "../api/types";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
+import {ResultUrlWithLabel} from "../api/types";
+import {AuthTokenContext} from "../authorization/AuthTokenProvider";
+import {getEnding} from "../query-runner/DownloadResultsDropdownButton";
 
-import IconButton, { IconButtonPropsT } from "./IconButton";
+import IconButton, {IconButtonPropsT} from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
@@ -78,9 +78,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
   ) => {
     const { authToken } = useContext(AuthTokenContext);
 
-    const href = `${resultUrl.url}?access_token=${encodeURIComponent(
-      authToken,
-    )}&charset=ISO_8859_1`;
+    const href = `${resultUrl.url}?access_token=${encodeURIComponent(authToken,)}`;
 
     const { icon, color } = useFileIcon(resultUrl.url);
 

@@ -3,8 +3,11 @@ package com.bakdata.conquery.io.result.csv;
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -24,7 +27,8 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @Slf4j
 public class CsvResultGenerationTest {
@@ -38,12 +42,12 @@ public class CsvResultGenerationTest {
 		I18n.init();
 	}
 
-	@Test
-	void writeAndRead() throws IOException {
+	@ParameterizedTest()
+	@ValueSource(strings = {"UTF-8", "WINDOWS-1252"})
+	void writeAndRead(String charset) throws IOException {
 		// Prepare every input data
-		StringResultPrinters printers = new StringResultPrinters();
 		final PrintSettings printSettings = new PrintSettings(true,
-															  Locale.GERMAN,
+															  Locale.GERMANY,
 															  null,
 															  CONFIG,
 															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
@@ -55,14 +59,17 @@ public class CsvResultGenerationTest {
 		final ManagedQuery mquery = getTestQuery();
 
 		// First we write to the buffer, than we read from it and parse it as TSV
-		final StringWriter writer = new StringWriter();
+		final ByteArrayOutputStream bufferOut = new ByteArrayOutputStream();
 
-		final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(getIdFields(), mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings);
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(bufferOut, charset))) {
 
-		final String computed = writer.toString();
+			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
+			renderer.toCSV(getIdFields(), mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings);
+		}
 
+		final String computed = bufferOut.toString(charset);
 
+		final StringResultPrinters printers = new StringResultPrinters();
 		final String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings, printers);
 
 		log.info("Wrote and than read this csv data: {}", computed);
