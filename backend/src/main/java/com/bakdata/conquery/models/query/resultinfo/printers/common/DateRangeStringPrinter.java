@@ -18,14 +18,6 @@ public record DateRangeStringPrinter(
 		this(negativeInf, positiveInf, new DateStringPrinter(printSettings), printSettings);
 	}
 
-	public static DateRangeStringPrinter forExcel(PrintSettings cfg) {
-		return new DateRangeStringPrinter(cfg, "-∞", "+∞");
-	}
-
-	public static DateRangeStringPrinter forCsv(PrintSettings cfg) {
-		return new DateRangeStringPrinter(cfg, "-inf", "+inf");
-	}
-
 	@Override
 	public String apply(@NotNull List<Integer> f) {
 		Preconditions.checkArgument(f.size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);

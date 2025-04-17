@@ -18,6 +18,20 @@ import lombok.ToString;
 @ToString
 public class StringResultPrinters extends PrinterFactory {
 
+	public static final String POSITIVE_INF = "+inf";
+	public static final String NEGATIVE_INF = "-inf";
+	private final String negativeInf;
+	private final String positiveInf;
+
+	public StringResultPrinters() {
+		this(POSITIVE_INF, NEGATIVE_INF);
+	}
+
+	// Public for tests only.
+	public StringResultPrinters(String negativeInf, String positiveInf) {
+		this.negativeInf = negativeInf;
+		this.positiveInf = positiveInf;
+	}
 
 	@Override
 	public <T> Printer<Collection<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings) {
@@ -46,7 +60,7 @@ public class StringResultPrinters extends PrinterFactory {
 
 	@Override
 	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
-		return DateRangeStringPrinter.forCsv(printSettings);
+		return new DateRangeStringPrinter(printSettings, negativeInf, positiveInf);
 	}
 
 	@Override

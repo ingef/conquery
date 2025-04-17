@@ -1,10 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DatePrinter;
-import com.bakdata.conquery.models.query.resultinfo.printers.common.DateRangeStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 
@@ -15,7 +12,13 @@ import com.bakdata.conquery.models.types.ResultType;
  */
 public class ExcelResultPrinters extends StringResultPrinters {
 
-	private final PrinterFactory partialDelegate = new StringResultPrinters();
+	public static final String NEGATIVE_INF = "-∞";
+	public static final String POSITIVE_INF = "+∞";
+	private final PrinterFactory partialDelegate = new StringResultPrinters(NEGATIVE_INF, POSITIVE_INF);
+
+	public ExcelResultPrinters() {
+		super(NEGATIVE_INF, POSITIVE_INF);
+	}
 
 	public Printer<?> printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
@@ -54,10 +57,6 @@ public class ExcelResultPrinters extends StringResultPrinters {
 		return new DatePrinter();
 	}
 
-	@Override
-	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
-		return DateRangeStringPrinter.forExcel(printSettings);
-	}
 
 	@Override
 	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
