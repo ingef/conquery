@@ -110,7 +110,7 @@ public class CombinedSolrSearch {
 			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
 			long numFound = response.getResults().getNumFound();
-			log.info("Query [{}] Found: {} | Collected: {}", queryString.hashCode(), numFound, beans.size());
+			log.info("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryString.hashCode(), numFound, beans.size(), response.getQTime(), response.getElapsedTime());
 
 			List<FrontendValue> values = beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
 			return new AutoCompleteResult(values, numFound);
