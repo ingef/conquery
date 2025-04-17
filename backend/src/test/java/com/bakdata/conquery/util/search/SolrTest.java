@@ -45,7 +45,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -122,7 +121,7 @@ public class SolrTest {
 			@Override
 			public List<Searchable<FrontendValue>> getSearchReferences() {
 				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
-						"map a", "Map A",
+						"a", "Map A",
 						"map b", "Map B",
 						"map c", "Map C"
 				), 0, false);
@@ -148,12 +147,6 @@ public class SolrTest {
 		};
 	}
 
-	@AfterAll
-	public static void afterAll() throws SolrServerException, IOException {
-		// Cleanup core
-		//		searchProcessor.clearSearch();
-	}
-
 	@Test
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
@@ -164,11 +157,11 @@ public class SolrTest {
 		// Index values from column
 		Column column = createSearchable();
 		ArrayList<String> strings = new ArrayList<>(List.of(
-				"column a",
-				"column b",
+				"a", // should be shadowed by LabelMap
+				"b", // should be shadowed by external csv map
+				"column c",
 				"column ab",
 				"column ba",
-				"map a", // This one should not be registered because it was already provided the map
 				"" // Empty string handling
 		));
 
@@ -194,9 +187,9 @@ public class SolrTest {
 	@Order(1)
 	public void findExactColumn() {
 
-		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "column a");
+		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "column c");
 
-		assertThat(actual).containsExactly(new FrontendValue("column a", "column a"));
+		assertThat(actual).containsExactly(new FrontendValue("column c", "column c"));
 	}
 
 	@Test
@@ -204,12 +197,12 @@ public class SolrTest {
 	public void findExactMap() {
 		List<FrontendValue> actualLabel = searchProcessor.findExact(FILTER, "Map A");
 
-		assertThat(actualLabel).containsExactly(new FrontendValue("map a", "Map A"));
+		assertThat(actualLabel).containsExactly(new FrontendValue("a", "Map A"));
 
 
 		List<FrontendValue> actualValue = searchProcessor.findExact(FILTER, "map a");
 
-		assertThat(actualValue).containsExactly(new FrontendValue("map a", "Map A"));
+		assertThat(actualValue).containsExactly(new FrontendValue("a", "Map A"));
 	}
 
 	@Test
@@ -220,18 +213,19 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("map a", "Map A", "null"),
+								new FrontendValue("a", "Map A", "null"),
+								new FrontendValue("data a", "Data", "data a"),
 								new FrontendValue("map b", "Map B", "null"),
 								new FrontendValue("map c", "Map C", "null"),
-								new FrontendValue("data a", "Data", "data a"),
-								new FrontendValue("data b", "data b", "data b"),
+								new FrontendValue("b", "Data b", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
+								new FrontendValue("data d", "data d", "data d"),
 								new FrontendValue("external-null", "external-null", "external-null"),
-								new FrontendValue("column a", "column a", "null"),
 								new FrontendValue("column ab", "column ab", "null"),
-								new FrontendValue("column ba", "column ba", "null")
+								new FrontendValue("column ba", "column ba", "null"),
+								new FrontendValue("column c", "column c", "null")
 						),
-						10
+						11
 				)
 		);
 	}
@@ -244,9 +238,18 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column ab", "column ab", null)
+								new FrontendValue("column ab", "column ab", null),
+								new FrontendValue("column ba", "column ba", null),
+								new FrontendValue("a", "Map A", null),
+								new FrontendValue("map b", "Map B", null),
+								new FrontendValue("map c", "Map C", null),
+								new FrontendValue("data a", "Data", "data a"),
+								new FrontendValue("b", "Data B", "b"),
+								new FrontendValue("data c", "Data C", "data c"),
+								new FrontendValue("data d", "data d", "data d"),
+								new FrontendValue("column c", "column c", null)
 						),
-						1
+						10
 				)
 		);
 	}
@@ -259,12 +262,11 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column a", "column a", null),
-								new FrontendValue("column b", "column b", null),
 								new FrontendValue("column ab", "column ab", null),
-								new FrontendValue("column ba", "column ba", null)
+								new FrontendValue("column ba", "column ba", null),
+								new FrontendValue("column c", "column c", null)
 						),
-						4
+						3
 				)
 		);
 	}
@@ -277,10 +279,10 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column a", "column a", null),
-								new FrontendValue("column b", "column b", null)
+								new FrontendValue("column ab", "column ab", null),
+								new FrontendValue("column ba", "column ba", null)
 						),
-						4
+						3
 				)
 		);
 	}
@@ -293,10 +295,10 @@ public class SolrTest {
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
 						List.of(
-								new FrontendValue("column ab", "column ab", null),
-								new FrontendValue("column ba", "column ba", null)
+								new FrontendValue("column c", "column c", null)
+
 						),
-						4
+						3
 				)
 		);
 	}
@@ -325,7 +327,7 @@ public class SolrTest {
 
 		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
 
-		assertThat(actual).containsExactly(new FrontendValue("map a", "Map A"));
+		assertThat(actual).containsExactly(new FrontendValue("a", "Map A"));
 	}
 
 	@Test

@@ -40,10 +40,10 @@ public class CombinedSolrSearch {
 
 	public long getTotal() {
 
-		String searchables = combineSearchables();
+		String searchables = buildFilterQuery();
 
 		// We query all documents that reference the searchables of the filter
-		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
+		SolrQuery query = new SolrQuery(searchables);
 
 		// Set rows to 0 because we don't want actual results, we are only interested in the total number
 		query.setRows(0);
@@ -59,9 +59,11 @@ public class CombinedSolrSearch {
 
 
 	/**
-	 * @return Query substring that is a group of the searchable ids for the {@link CombinedSolrSearch#filter}.
+	 * Creates a filter query (which is cached by solr) for the subset of documents originating from the searchables related to this query.
+	 *
+	 * @return Query string that is a group of the searchable ids for the {@link CombinedSolrSearch#filter}.
 	 */
-	private @NotNull String combineSearchables() {
+	private @NotNull String buildFilterQuery() {
 		List<Search<FrontendValue>> searches = processor.getSearchesFor(filter);
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
@@ -69,7 +71,7 @@ public class CombinedSolrSearch {
 									 .map(Searchable::getId)
 									 .map(Id::toString)
 									 .map(ClientUtils::escapeQueryChars)
-									 .collect(Collectors.joining(" ", "(", ")"));
+									 .collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
 		return searchables;
 	}
 
@@ -77,7 +79,6 @@ public class CombinedSolrSearch {
 	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
 	 */
 	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
-		String searchables = combineSearchables();
 
 		String term = text;
 
@@ -91,20 +92,17 @@ public class CombinedSolrSearch {
 						 .filter(Predicate.not(String::isBlank))
 						 // Escape
 						 .map(ClientUtils::escapeQueryChars)
-						 // Wildcard regex each term (maybe combine with fuzzy search)
-						 .map("/.*%s.*/"::formatted)
-						 .collect(Collectors.joining(" "));
+						 // generalize and boost
+						 .map("( %1$s^3 *%1$s*^2 %1$s~^1 )"::formatted)
+						 .collect(Collectors.joining(" AND "));
 		}
 
-
-		String queryString = "%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchables) + " AND "
-							 + term;
-
-		return sendQuery(queryString, start, limit);
+		return sendQuery(term, start, limit);
 	}
 
 	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
-		SolrQuery query = buildSolrQuery(queryString, start, limit);
+		String filterQuery = buildFilterQuery();
+		SolrQuery query = buildSolrQuery(filterQuery, queryString, start, limit);
 		log.info("Query [{}] created: {}", queryString.hashCode(), URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8));
 
 		try {
@@ -123,8 +121,9 @@ public class CombinedSolrSearch {
 		}
 	}
 
-	private static @NotNull SolrQuery buildSolrQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
+	private static @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
 		SolrQuery query = new SolrQuery(queryString);
+		query.addFilterQuery(filterQuery);
 		query.addField(SolrFrontendValue.Fields.value_s);
 		query.addField(SolrFrontendValue.Fields.label_t);
 		query.addField(SolrFrontendValue.Fields.optionValue_s);
@@ -132,16 +131,13 @@ public class CombinedSolrSearch {
 		query.setRows(limit);
 
 		// Collapse the results with equal "value" field. Only the one with the highest score remains.
-		// This only works
-		query.setFilterQueries("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
+		// This only works if solr is not sharded (or collapsing documents are on the same shard)
+		query.addFilterQuery("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
 
-		query.addSort(SolrQuery.SortClause.asc(SolrFrontendValue.Fields.sourcePriority_i));
 		return query;
 	}
 
 	public AutoCompleteResult topItemsExact(String text, Integer start, @Nullable Integer limit) {
-		String searchables = combineSearchables();
-
 		String term = text;
 
 		if (StringUtils.isBlank(term)) {
@@ -152,17 +148,13 @@ public class CombinedSolrSearch {
 
 		final String finalTerm = term;
 
-		StringBuilder queryStringBuilder = new StringBuilder("%s:%s ".formatted(SolrFrontendValue.Fields.searchable_s, searchables));
 		String collect = Stream.of(
 									   SolrFrontendValue.Fields.value_s,
 									   SolrFrontendValue.Fields.label_t
 							   )
 							   .map(field -> "%s:\"%s\"".formatted(field, finalTerm))
-							   .collect(Collectors.joining(" OR ", " AND (", ")"));
+							   .collect(Collectors.joining(" OR ", "(", ")"));
 
-		queryStringBuilder.append(collect);
-		String queryString = queryStringBuilder.toString();
-
-		return sendQuery(queryString, start, limit);
+		return sendQuery(collect, start, limit);
 	}
 }
