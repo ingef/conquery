@@ -80,7 +80,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
 
     const href = `${resultUrl.url}?access_token=${encodeURIComponent(
       authToken,
-    )}&charset=ISO_8859_1`;
+    )}`;
 
     const { icon, color } = useFileIcon(resultUrl.url);
 
