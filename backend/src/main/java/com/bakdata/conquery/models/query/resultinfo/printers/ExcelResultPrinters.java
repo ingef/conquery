@@ -1,13 +1,16 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.DatePrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.DateRangeStringPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 
 /**
  * This class is a mess because Excel supports some of our types natively.
- *
+ * <p>
  * With LIST types we fall back onto the StringResultPrinter, as Excel does not support Lists, BUT we also cannot use the {@link IdentityPrinter} inside the list, as some of our printers are native types.
  */
 public class ExcelResultPrinters extends StringResultPrinters {
@@ -37,12 +40,12 @@ public class ExcelResultPrinters extends StringResultPrinters {
 	}
 
 	@Override
-	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
+	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
+	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
@@ -52,8 +55,12 @@ public class ExcelResultPrinters extends StringResultPrinters {
 	}
 
 	@Override
-	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
-		return new IdentityPrinter<>();
+	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
+		return DateRangeStringPrinter.forExcel(printSettings);
 	}
 
+	@Override
+	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
+		return new IdentityPrinter<>();
+	}
 }

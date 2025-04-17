@@ -46,7 +46,7 @@ public class StringResultPrinters extends PrinterFactory {
 
 	@Override
 	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
-		return new DateRangeStringPrinter(printSettings);
+		return DateRangeStringPrinter.forCsv(printSettings);
 	}
 
 	@Override
