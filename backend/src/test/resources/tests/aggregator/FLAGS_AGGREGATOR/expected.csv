@@ -1,8 +1,8 @@
 result,dates,concept select
-1,{-inf/+inf},{A}
-2,{-inf/+inf},{B}
-3,{-inf/+inf},{C}
-4,{-inf/+inf},"{A,B}"
-5,{-inf/+inf},{C}
-6,{-inf/+inf},
-7,{-inf/+inf},{C}
+1,{-∞/+∞},{A}
+2,{-∞/+∞},{B}
+3,{-∞/+∞},{C}
+4,{-∞/+∞},"{A,B}"
+5,{-∞/+∞},{C}
+6,{-∞/+∞},
+7,{-∞/+∞},{C}
