@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo.printers;
 
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,8 +19,16 @@ import lombok.ToString;
 @ToString
 public class StringResultPrinters extends PrinterFactory {
 
-	public static final String NEGATIVE_INF = "-inf";
-	public static final String POSITIVE_INF = "+inf";
+	/**
+	 * This is equivalent to `-∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
+	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
+	 */
+	public static final String NEGATIVE_INF = "-" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
+	/**
+	 * This is equivalent to `+∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
+	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
+	 */
+	public static final String POSITIVE_INF = "+" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
 
 	private final String negativeInf;
 	private final String positiveInf;
