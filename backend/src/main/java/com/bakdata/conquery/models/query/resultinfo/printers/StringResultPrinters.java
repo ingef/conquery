@@ -18,13 +18,14 @@ import lombok.ToString;
 @ToString
 public class StringResultPrinters extends PrinterFactory {
 
-	public static final String POSITIVE_INF = "+inf";
 	public static final String NEGATIVE_INF = "-inf";
+	public static final String POSITIVE_INF = "+inf";
+
 	private final String negativeInf;
 	private final String positiveInf;
 
 	public StringResultPrinters() {
-		this(POSITIVE_INF, NEGATIVE_INF);
+		this(NEGATIVE_INF, POSITIVE_INF);
 	}
 
 	// Public for tests only.
