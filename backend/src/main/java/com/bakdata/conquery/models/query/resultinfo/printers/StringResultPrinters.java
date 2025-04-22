@@ -23,24 +23,34 @@ public class StringResultPrinters extends PrinterFactory {
 	 * This is equivalent to `-∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
 	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
 	 */
-	public static final String NEGATIVE_INF = "-" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
+	public static final String NEGATIVE_INF_W1252 = "-" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
 	/**
 	 * This is equivalent to `+∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
 	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
 	 */
-	public static final String POSITIVE_INF = "+" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
+	public static final String POSITIVE_INF_W1252 = "+" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
 
+
+	public static final String POSITIVE_INF_DEFAULT = "+∞";
+	public static final String NEGATIVE_INF_DEFAULT = "-∞";
 	private final String negativeInf;
 	private final String positiveInf;
-
-	public StringResultPrinters() {
-		this(NEGATIVE_INF, POSITIVE_INF);
-	}
 
 	// Public for tests only.
 	public StringResultPrinters(String negativeInf, String positiveInf) {
 		this.negativeInf = negativeInf;
 		this.positiveInf = positiveInf;
+	}
+
+	/**
+	 * This circumvents a bug in the translation of infinity when using WINDOWS-1252 Charset.
+	 */
+	public static StringResultPrinters forCharset(Charset charset) {
+		if ("windows-1252".equals(charset.name()) || charset.aliases().contains("windows-1252")) {
+			return new StringResultPrinters(NEGATIVE_INF_W1252, POSITIVE_INF_W1252);
+		}
+
+		return new StringResultPrinters(NEGATIVE_INF_DEFAULT, POSITIVE_INF_DEFAULT);
 	}
 
 	@Override
