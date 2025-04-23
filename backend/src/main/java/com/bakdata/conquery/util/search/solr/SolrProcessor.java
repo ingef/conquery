@@ -55,6 +55,8 @@ public class SolrProcessor implements SearchProcessor {
 
 	private final int updateChunkSize;
 
+	private final String queryTemplate;
+
 	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 	@Override
 	public void clearSearch() {
@@ -82,7 +84,7 @@ public class SolrProcessor implements SearchProcessor {
 
 	@Override
 	public long getTotal(SelectFilter<?> filter) {
-		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient, queryTemplate);
 
 		return combinedSolrSearch.getTotal();
 	}
@@ -99,11 +101,12 @@ public class SolrProcessor implements SearchProcessor {
 	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
+		log.info("Finalizing Search for {}", searchable);
 		searches.get(searchable).finalizeSearch();
 	}
 
 	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {
-		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient, queryTemplate);
 
 		return combinedSolrSearch.topItems(text, start, limit);
 	}
@@ -226,7 +229,7 @@ public class SolrProcessor implements SearchProcessor {
 
 	@Override
 	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
-		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient);
+		CombinedSolrSearch combinedSolrSearch = new CombinedSolrSearch(filter, this, solrClient, queryTemplate);
 
 		return combinedSolrSearch.topItemsExact(searchTerm, 0, 10).values();
 

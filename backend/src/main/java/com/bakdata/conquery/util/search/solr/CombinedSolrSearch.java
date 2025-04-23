@@ -37,6 +37,7 @@ public class CombinedSolrSearch {
 	private final SelectFilter<?> filter;
 	private final SolrProcessor processor;
 	private final SolrClient solrClient;
+	private final String queryTemplate;
 
 	public long getTotal() {
 
@@ -92,9 +93,9 @@ public class CombinedSolrSearch {
 						 .filter(Predicate.not(String::isBlank))
 						 // Escape
 						 .map(ClientUtils::escapeQueryChars)
-						 // generalize and boost
-						 .map("( %1$s^3 *%1$s*^2 %1$s~^1 )"::formatted)
-						 .collect(Collectors.joining(" AND "));
+						 // Wildcard regex each term (maybe combine with fuzzy search)
+						 .map(queryTemplate::formatted)
+						 .collect(Collectors.joining(" "));
 		}
 
 		return sendQuery(term, start, limit);

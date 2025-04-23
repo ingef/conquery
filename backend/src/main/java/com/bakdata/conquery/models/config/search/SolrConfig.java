@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -36,12 +37,14 @@ public class SolrConfig implements SearchConfig {
 	private final String password;
 	@Min(1)
 	private int updateChunkSize = 100;
+	@NotEmpty
+	private String queryTemplate = "( %1$s^3 *%1$s*^2 %1$s~^1 )";
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin, updateChunkSize);
+			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);
