@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Currency;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ResultTypeTest {
 	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null);
 	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
 
-	private static PrinterFactory PRINTERS = new StringResultPrinters();
+	private static final PrinterFactory PRINTERS = StringResultPrinters.forCharset(Charset.defaultCharset());
 
 	static {
 		// Initialization of the internationalization
