@@ -47,7 +47,7 @@ public class StringResultPrinters extends PrinterFactory {
 	 * This circumvents a bug in the translation of infinity when using WINDOWS-1252 Charset.
 	 */
 	public static StringResultPrinters forCharset(Charset charset) {
-		if (MS1252.equals(charset) || charset.contains(MS1252)) {
+		if (MS1252.equals(charset) || MS1252.contains(charset)) {
 			return new StringResultPrinters(NEGATIVE_INF_MS1252, POSITIVE_INF_MS1252);
 		}
 
