@@ -22,14 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultUtil {
 
-	public static enum ContentDispositionOption {
+	private static final Charset WINDOWS_DEFAULT_CHARSET = Charset.forName("windows-1252");
+
+	public enum ContentDispositionOption {
 		// Try to display payload in the browser
 		INLINE,
 		// Force download of the payload by the browser
 		ATTACHMENT;
 
 		String getHeaderValue() {
-			return this.name().toLowerCase(Locale.ROOT);
+			return name().toLowerCase(Locale.ROOT);
 		}
 	}
 
@@ -58,7 +60,7 @@ public class ResultUtil {
 			}
 		}
 		if (userAgent != null && userAgent.toLowerCase().contains("windows")) {
-			return Charset.forName("WINDOWS-1252");
+			return WINDOWS_DEFAULT_CHARSET;
 		}
 		return StandardCharsets.UTF_8;
 	}

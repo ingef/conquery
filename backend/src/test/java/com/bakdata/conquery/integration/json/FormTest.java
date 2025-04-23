@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
@@ -110,14 +110,14 @@ public class FormTest extends ConqueryTestSpec {
 				printSettings =
 				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
 
-		checkSingleResult(managedForm, config, printSettings, Charset.defaultCharset());
+		checkSingleResult(managedForm, config, printSettings);
 
 	}
 
 	/**
 	 * The form produces only one result, so the result is directly requested.
 	 */
-	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings, Charset charset)
+	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 
 
@@ -128,7 +128,7 @@ public class FormTest extends ConqueryTestSpec {
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
-					managedForm.streamResults(OptionalLong.empty()), printSettings, charset
+					managedForm.streamResults(OptionalLong.empty()), printSettings, StandardCharsets.UTF_8
 			);
 
 			writer.close();

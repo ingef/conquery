@@ -19,16 +19,17 @@ import lombok.ToString;
 @ToString
 public class StringResultPrinters extends PrinterFactory {
 
+	private static final Charset MS1252 = Charset.forName("windows-1252");
 	/**
 	 * This is equivalent to `-∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
-	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
+	 * The code-point is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
 	 */
-	public static final String NEGATIVE_INF_W1252 = "-" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
+	public static final String NEGATIVE_INF_MS1252 = "-" + new String(new byte[]{0x22, 0x1E}, 0, 1, MS1252);
 	/**
 	 * This is equivalent to `+∞`. For some reason ∞/infinity does not get rendered in WINDOWS-1252. This way however it works.
-	 * The code is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
+	 * The code-point is taken from <a href="https://www.ee.ucl.ac.uk/mflanaga/java/HTMLandASCIItableWin.html">this table</a>.
 	 */
-	public static final String POSITIVE_INF_W1252 = "+" + new String(new byte[]{0x22, 0x1E}, 0, 1, Charset.forName("WINDOWS-1252"));
+	public static final String POSITIVE_INF_MS1252 = "+" + new String(new byte[]{0x22, 0x1E}, 0, 1, MS1252);
 
 
 	public static final String POSITIVE_INF_DEFAULT = "+∞";
@@ -46,8 +47,8 @@ public class StringResultPrinters extends PrinterFactory {
 	 * This circumvents a bug in the translation of infinity when using WINDOWS-1252 Charset.
 	 */
 	public static StringResultPrinters forCharset(Charset charset) {
-		if ("windows-1252".equals(charset.name()) || charset.aliases().contains("windows-1252")) {
-			return new StringResultPrinters(NEGATIVE_INF_W1252, POSITIVE_INF_W1252);
+		if (MS1252.equals(charset) || charset.contains(MS1252)) {
+			return new StringResultPrinters(NEGATIVE_INF_MS1252, POSITIVE_INF_MS1252);
 		}
 
 		return new StringResultPrinters(NEGATIVE_INF_DEFAULT, POSITIVE_INF_DEFAULT);
