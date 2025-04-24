@@ -11,9 +11,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
@@ -69,9 +67,7 @@ public class CombinedSolrSearch {
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
 									 .map(SolrSearch::getSearchable)
-									 .map(Searchable::getId)
-									 .map(Id::toString)
-									 .map(ClientUtils::escapeQueryChars)
+									 // The name of the searchable was already escaped at the creation of SolrSearch
 									 .collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
 		return searchables;
 	}

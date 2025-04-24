@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import com.google.common.base.Stopwatch;
@@ -31,7 +30,8 @@ public class SolrSearch extends Search<FrontendValue> {
 	private final SolrClient solrClient;
 
 	@Getter
-	private final Searchable<?> searchable;
+	private final String searchable;
+	private final int sourcePriority;
 
 	private final Duration commitWithin;
 	public final int updateChunkSize;
@@ -43,7 +43,7 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	/**
 	 * We keep track of values that we send to solr to lower network traffic.
-	 * Because we receive values independently from the shards, a value is probably seen multiple times.
+	 * Because we receive values individually from the shards, a value is probably seen multiple times.
 	 */
 	private final Set<String> seenValues = ConcurrentHashMap.newKeySet();
 
@@ -65,7 +65,7 @@ public class SolrSearch extends Search<FrontendValue> {
 	public long calculateSize() {
 
 		// We query all documents that reference the searchables of the filter
-		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchable.getId()));
+		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchable));
 
 		// Set rows to 0 because we don't want actual results, we are only interested in the total number
 		query.setRows(0);
@@ -100,7 +100,7 @@ public class SolrSearch extends Search<FrontendValue> {
 			return;
 		}
 
-		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, feValue);
+		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, sourcePriority, feValue);
 
 		openDocs.add(solrFrontendValue);
 
@@ -108,7 +108,7 @@ public class SolrSearch extends Search<FrontendValue> {
 		// Too many small document request cause a lot of overhead.
 		// A too large chunk slows request submission and solr.
 		while (openDocs.size() >= updateChunkSize) {
-			log.trace("Adding {} documents for {}", openDocs.size(), searchable.getId());
+			log.trace("Adding {} documents for {}", openDocs.size(), searchable);
 			registerValues(openDocs);
 			openDocs.clear();
 		}
@@ -124,7 +124,7 @@ public class SolrSearch extends Search<FrontendValue> {
 														   .filter(Objects::nonNull)
 														   .filter(Predicate.not(String::isBlank))
 														   .filter(seenValues::add)
-														   .map(value -> new SolrFrontendValue(searchable, value, null, null))
+														   .map(value -> new SolrFrontendValue(searchable, sourcePriority, value, null, null))
 														   .toList();
 
 		registerValues(solrFrontendValues);
@@ -138,9 +138,9 @@ public class SolrSearch extends Search<FrontendValue> {
 
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId());
+			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable);
 			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
-			log.info("DONE registering {} values to {} for {} {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable.getId(), stopwatch);
+			log.info("DONE registering {} values to {} for {} {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable, stopwatch);
 		}
 		catch (SolrServerException | IOException e) {
 			throw new IllegalStateException("Unable to register values for searchable '%s'".formatted(searchable), e);

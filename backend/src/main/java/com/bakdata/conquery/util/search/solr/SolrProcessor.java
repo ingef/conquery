@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.util.ClientUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,7 +58,10 @@ public class SolrProcessor implements SearchProcessor {
 
 	private final String queryTemplate;
 
-	private final Map<Searchable<FrontendValue>, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
+	private final boolean combineEquallyNamedColumns;
+
+	private final Map<String, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
+
 	@Override
 	public void clearSearch() {
 		try {
@@ -96,13 +100,42 @@ public class SolrProcessor implements SearchProcessor {
 		return searchReferences.stream().map(this::getSearchFor).toList();
 	}
 
+	/**
+	 * Helper to build referable names for search sources which may allow abstraction.
+	 * E.g. if column names are used across multiple tables and holds the same set of values, we may want to create only a single document in solr not one for every column.
+	 * @param searchable The searchable whose name is created.
+	 * @return the name vor the searchable
+	 */
+	private String buildNameForSearchable(Searchable<?> searchable) {
+		String name = switch (searchable) {
+			case Column column -> combineEquallyNamedColumns ? "column_"+column.getName() : column.getId().toString();
+			default -> searchable.getId().toString();
+		};
+
+		name = ClientUtils.escapeQueryChars(name);
+
+		return name;
+	}
+
+	private static int getSourcePriority(Searchable<?> searchable) {
+		return switch (searchable) {
+			case LabelMap _l -> 1;
+			case FilterTemplate _f -> 2;
+			case Column _c -> 3;
+			default -> Integer.MAX_VALUE;
+		};
+	}
+
 	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
-		return searches.computeIfAbsent(searchable, searchRef -> new SolrSearch(solrClient, searchRef, commitWithin, updateChunkSize));
+		String nameForSearchable = buildNameForSearchable(searchable);
+		int sourcePriority = getSourcePriority(searchable);
+		return searches.computeIfAbsent(nameForSearchable, searchRef -> new SolrSearch(solrClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
 	}
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
+		String nameForSearchable = buildNameForSearchable(searchable);
 		log.info("Finalizing Search for {}", searchable);
-		Search<FrontendValue> frontendValueSearch = searches.get(searchable);
+		Search<FrontendValue> frontendValueSearch = searches.get(nameForSearchable);
 
 		if (frontendValueSearch == null) {
 			log.info("Skipping finalization of {}, because it does not exist", searchable);

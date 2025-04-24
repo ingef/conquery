@@ -37,14 +37,30 @@ public class SolrConfig implements SearchConfig {
 	private final String password;
 	@Min(1)
 	private int updateChunkSize = 100;
+
+	/**
+	 * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
+	 * Joining involves a boolean operator, so parentheses might be needed.
+	 * The format string only gets a single argument, so refer to the argument using <code>%1$s</code> if you want to use it multiple times.
+	 */
 	@NotEmpty
 	private String queryTemplate = "( %1$s^3 *%1$s*^2 %1$s~^1 )";
+
+	/**
+	 * By default, for each value in a column a solr document is created. The id of this solr-document uses the column id and the column value.
+	 * This can cause a large number of documents, many referring to the same <code>value</code>.
+	 * When this flag is <code>true</code>, not the column id but its name is used to form the document id, hence abstracting over all columns of the same name.
+	 * <p/>
+	 * Beware that you need to ensure that equally named columns used in filters are also based on the same set of values. Otherwise, you might encounter unexpected
+	 * query results.
+	 */
+	private final boolean combineEquallyNamedColumns = false;
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate);
+			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate, combineEquallyNamedColumns);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);

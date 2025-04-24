@@ -3,10 +3,7 @@ package com.bakdata.conquery.util.search.solr.entities;
 import java.util.List;
 import java.util.Objects;
 
-import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,15 +63,15 @@ public class SolrFrontendValue implements SolrEntity {
 	@Field
 	public List<String> _text_;
 
-	public SolrFrontendValue(Searchable<?> searchable, FrontendValue feValue) {
-		this(searchable, feValue.getValue(), feValue.getLabel(), feValue.getOptionValue());
+	public SolrFrontendValue(String searchable, int sourcePriority, FrontendValue feValue) {
+		this(searchable, sourcePriority, feValue.getValue(), feValue.getLabel(), feValue.getOptionValue());
 
 	}
 
-	public SolrFrontendValue(Searchable<?> searchable, @NonNull String value, String label, String optionValue) {
+	public SolrFrontendValue(String searchable, int sourcePriority, @NonNull String value, String label, String optionValue) {
 		this.id = buildId(searchable, value);
-		this.searchable_s = searchable.getId().toString();
-		this.sourcePriority_i = getSourcePriority(searchable);
+		this.searchable_s = searchable;
+		this.sourcePriority_i = sourcePriority;
 		this.value_s = value;
 		this.label_t = label;
 		this.optionValue_s = optionValue;
@@ -85,16 +82,7 @@ public class SolrFrontendValue implements SolrEntity {
 		return new FrontendValue(Objects.requireNonNullElse(value_s, ""), Objects.requireNonNullElse(label_t, value_s), optionValue_s);
 	}
 
-	private static String buildId(Searchable<?> searchable, String value) {
-		return searchable.getId().toString() + " " + value;
-	}
-
-	private static int getSourcePriority(Searchable<?> searchable) {
-		return switch (searchable) {
-			case LabelMap _l -> 1;
-			case FilterTemplate _f -> 2;
-			case Column _c -> 3;
-			default -> Integer.MAX_VALUE;
-		};
+	private static String buildId(String searchable, String value) {
+		return searchable + " " + value;
 	}
 }
