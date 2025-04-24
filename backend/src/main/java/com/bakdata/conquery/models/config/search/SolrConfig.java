@@ -54,7 +54,7 @@ public class SolrConfig implements SearchConfig {
 	 * Beware that you need to ensure that equally named columns used in filters are also based on the same set of values. Otherwise, you might encounter unexpected
 	 * query results.
 	 */
-	private final boolean combineEquallyNamedColumns = false;
+	private boolean combineEquallyNamedColumns = false;
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
