@@ -53,5 +53,9 @@ ENTRYPOINT [ "java", "-jar", "conquery.jar" ]
 
 CMD [ "standalone" ]
 
+# -Yoff to always bypass proxy.
+# --spider and -q to ensure as little action as possible, we are only interested in the status code for the exit code.
+HEALTHCHECK CMD wget -q --spider -Yoff http://localhost:${ADMIN_PORT}/healthcheck
+
 EXPOSE $CLUSTER_PORT $ADMIN_PORT $API_PORT
 
