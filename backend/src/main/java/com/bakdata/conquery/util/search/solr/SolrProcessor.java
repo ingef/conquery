@@ -102,7 +102,14 @@ public class SolrProcessor implements SearchProcessor {
 	@Override
 	public void finalizeSearch(Searchable<FrontendValue> searchable) {
 		log.info("Finalizing Search for {}", searchable);
-		searches.get(searchable).finalizeSearch();
+		Search<FrontendValue> frontendValueSearch = searches.get(searchable);
+
+		if (frontendValueSearch == null) {
+			log.info("Skipping finalization of {}, because it does not exist", searchable);
+			return;
+		}
+
+		frontendValueSearch.finalizeSearch();
 	}
 
 	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {

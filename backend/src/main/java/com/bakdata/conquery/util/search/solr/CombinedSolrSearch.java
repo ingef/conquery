@@ -95,7 +95,7 @@ public class CombinedSolrSearch {
 						 .map(ClientUtils::escapeQueryChars)
 						 // Wildcard regex each term (maybe combine with fuzzy search)
 						 .map(queryTemplate::formatted)
-						 .collect(Collectors.joining(" "));
+						 .collect(Collectors.joining(" AND "));
 		}
 
 		return sendQuery(term, start, limit);

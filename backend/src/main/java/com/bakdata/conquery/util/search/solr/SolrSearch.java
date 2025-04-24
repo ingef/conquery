@@ -124,7 +124,7 @@ public class SolrSearch extends Search<FrontendValue> {
 														   .filter(Objects::nonNull)
 														   .filter(Predicate.not(String::isBlank))
 														   .filter(seenValues::add)
-														   .map(value -> new SolrFrontendValue(searchable, value, value, null))
+														   .map(value -> new SolrFrontendValue(searchable, value, null, null))
 														   .toList();
 
 		registerValues(solrFrontendValues);

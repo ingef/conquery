@@ -78,11 +78,11 @@ public class SolrFrontendValue implements SolrEntity {
 		this.value_s = value;
 		this.label_t = label;
 		this.optionValue_s = optionValue;
-		this._text_ = List.of(value, label);
+		this._text_ = label == null ? List.of(value) : List.of(value, label);
 	}
 
 	public FrontendValue toFrontendValue() {
-		return new FrontendValue(Objects.requireNonNullElse(value_s, ""), label_t, optionValue_s);
+		return new FrontendValue(Objects.requireNonNullElse(value_s, ""), Objects.requireNonNullElse(label_t, value_s), optionValue_s);
 	}
 
 	private static String buildId(Searchable<?> searchable, String value) {
