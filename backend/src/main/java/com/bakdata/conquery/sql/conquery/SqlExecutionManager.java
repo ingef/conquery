@@ -69,7 +69,7 @@ public class SqlExecutionManager extends ExecutionManager {
 									ManagedExecutionId id = managedQuery.getId();
 
 									// We need to transfer the columns and data from the query result together with the execution lock to a new result
-									SqlExecutionExecutionInfo startResult = getState(id);
+									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
 									SqlExecutionExecutionInfo
 											finishResult =
 											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());

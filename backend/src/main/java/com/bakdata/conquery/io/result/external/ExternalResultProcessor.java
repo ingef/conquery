@@ -21,7 +21,7 @@ public class ExternalResultProcessor {
 		ResultUtil.authorizeExecutable(subject, execution);
 
 		ExecutionManager executionManager = datasetRegistry.get(execution.getDataset()).getExecutionManager();
-		ExternalExecutionInfo externalResult = executionManager.getState(execution.getId());
+		ExternalExecutionInfo externalResult = executionManager.getExecutionInfo(execution.getId());
 
 		return externalResult.fetchExternalResult(fileName);
 	}

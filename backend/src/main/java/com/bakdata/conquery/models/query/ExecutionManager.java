@@ -94,7 +94,7 @@ public abstract class ExecutionManager {
 	/**
 	 * Returns the state or throws an NoSuchElementException if no state was found.
 	 */
-	public <R extends ExecutionInfo> R getState(ManagedExecutionId id) {
+	public <R extends ExecutionInfo> R getExecutionInfo(ManagedExecutionId id) {
 		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
 		if (executionInfo == null) {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
@@ -193,7 +193,7 @@ public abstract class ExecutionManager {
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
 		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
 		if (executionInfo != null) {
-			executionInfo.setState(execState);
+			executionInfo.setExecutionState(execState);
 			return;
 		}
 
@@ -224,7 +224,7 @@ public abstract class ExecutionManager {
 		if (executionInfo == null) {
 			return ExecutionState.NEW;
 		}
-		ExecutionState execState = executionInfo.getState();
+		ExecutionState execState = executionInfo.getExecutionState();
 		if (execState != ExecutionState.RUNNING) {
 			return execState;
 		}
@@ -240,7 +240,7 @@ public abstract class ExecutionManager {
 		if (executionInfoAfterWait == null) {
 			return ExecutionState.NEW;
 		}
-		return executionInfoAfterWait.getState();
+		return executionInfoAfterWait.getExecutionState();
 	}
 
 	/**
@@ -252,9 +252,9 @@ public abstract class ExecutionManager {
 		 * The current {@link ExecutionState} of the execution.
 		 */
 		@NotNull
-		ExecutionState getState();
+		ExecutionState getExecutionState();
 
-		void setState(ExecutionState state);
+		void setExecutionState(ExecutionState state);
 
 		/**
 		 * Synchronization barrier for web requests.

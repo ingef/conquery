@@ -24,7 +24,7 @@ public class ExternalExecutionInfoImpl implements ExternalExecutionInfo {
 	@Getter
 	@Setter
 	@NonNull
-	private ExecutionState state;
+	private ExecutionState executionState;
 
 	private final CountDownLatch latch;
 
@@ -56,7 +56,6 @@ public class ExternalExecutionInfoImpl implements ExternalExecutionInfo {
 		final ResultAsset resultRef = resultsAssetMap.stream()
 													 .map(Pair::key).filter(a -> a.getAssetId().equals(assetId))
 													 .collect(MoreCollectors.onlyElement());
-
 		return api.getResult(resultRef.url());
 	}
 }

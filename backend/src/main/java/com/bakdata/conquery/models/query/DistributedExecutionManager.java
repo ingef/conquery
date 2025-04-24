@@ -102,7 +102,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedExecutionInfo.class, optInfo.getClass()));
 		}
 
-		ExecutionState execState = distributedInfo.state;
+		ExecutionState execState = distributedInfo.executionState;
 		if (execState != ExecutionState.RUNNING) {
 			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
 			return;
@@ -125,7 +125,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		}
 
 		// State changed to DONE or FAILED
-		ExecutionState execStateAfterResultCollect = getState(id).getState();
+		ExecutionState execStateAfterResultCollect = getExecutionInfo(id).getExecutionState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
 
@@ -145,7 +145,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 	public static class DistributedExecutionInfo implements InternalExecutionInfo {
 		@Setter
 		@NonNull
-		private ExecutionState state;
+		private ExecutionState executionState;
 		private Map<WorkerId, List<EntityResult>> results;
 		private CountDownLatch executingLock;
 
@@ -155,8 +155,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		@NotNull
 		@Override
-		public ExecutionState getState() {
-			return state;
+		public ExecutionState getExecutionState() {
+			return executionState;
 		}
 
 		@Override

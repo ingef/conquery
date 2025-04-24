@@ -79,7 +79,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			// Check after possible sync
 			final boolean isRunning = getExecutionManager().tryGetState(getId())
-														   .map(ExecutionManager.ExecutionInfo::getState)
+														   .map(ExecutionManager.ExecutionInfo::getExecutionState)
 														   .map(ExecutionState.RUNNING::equals).orElse(false);
 			if (isRunning) {
 				throw new ConqueryError.ExecutionProcessingError();
@@ -121,7 +121,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			case FAILURE -> fail(formState.getError());
 			case SUCCESS -> {
 				final List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
-				final ExternalExecutionInfo state = getExecutionManager().getState(getId());
+				final ExternalExecutionInfo state = getExecutionManager().getExecutionInfo(getId());
 				state.setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE);
 			}
@@ -141,7 +141,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			return;
 		}
 
-		final ExternalExecutionInfo state = getExecutionManager().getState(getId());
+		final ExternalExecutionInfo state = getExecutionManager().getExecutionInfo(getId());
 		final User serviceUser = state.getServiceUser();
 
 		super.finish(executionState);
@@ -177,13 +177,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	public void cancel() {
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
-		final ExternalExecutionInfo state = getExecutionManager().getState(getId());
+		final ExternalExecutionInfo state = getExecutionManager().getExecutionInfo(getId());
 		updateStatus(state.getApi().cancelTask(externalTaskId));
 	}
 
 	@JsonIgnore
 	public Stream<ExternalExecutionInfo.AssetBuilder> getResultAssets() {
-		final ExternalExecutionInfo state = getExecutionManager().getState(getId());
+		final ExternalExecutionInfo state = getExecutionManager().getExecutionInfo(getId());
 		return state.getResultAssets();
 	}
 }

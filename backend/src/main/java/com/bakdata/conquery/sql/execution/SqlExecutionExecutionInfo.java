@@ -14,22 +14,22 @@ import lombok.Setter;
 public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecutionInfo {
 
 	@Setter
-	ExecutionState state;
+	ExecutionState executionState;
 	List<String> columnNames;
 	List<EntityResult> table;
 	int rowCount;
 	CountDownLatch executingLock;
 
 	public SqlExecutionExecutionInfo() {
-		this.state = ExecutionState.RUNNING;
+		this.executionState = ExecutionState.RUNNING;
 		this.columnNames = null;
 		this.table = null;
 		this.executingLock = new CountDownLatch(1);
 		rowCount = 0;
 	}
 
-	public SqlExecutionExecutionInfo(ExecutionState state, List<String> columnNames, List<EntityResult> table, CountDownLatch executingLock) {
-		this.state = state;
+	public SqlExecutionExecutionInfo(ExecutionState executionState, List<String> columnNames, List<EntityResult> table, CountDownLatch executingLock) {
+		this.executionState = executionState;
 		this.columnNames = columnNames;
 		this.table = table;
 		this.executingLock = executingLock;
