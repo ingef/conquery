@@ -98,7 +98,6 @@ public class AdminProcessor {
 	 *
 	 * @param owner      to which the permission is assigned
 	 * @param permission The permission to create.
-	 *
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
@@ -121,7 +120,7 @@ public class AdminProcessor {
 	}
 
 	public synchronized void deleteUser(UserId user) {
-		try(Stream<Group> allGroups = storage.getAllGroups()) {
+		try (Stream<Group> allGroups = storage.getAllGroups()) {
 			allGroups.forEach(group -> group.removeMember(user));
 		}
 		storage.removeUser(user);
@@ -262,13 +261,18 @@ public class AdminProcessor {
 	public Collection<JobManagerStatus> getJobs() {
 		final List<JobManagerStatus> out = new ArrayList<>();
 
-		out.add(new JobManagerStatus("Manager", null, getJobManager().getJobStatus()));
+
+		out.add(JobManagerStatus.builder()
+								.origin("Manager")
+								.jobs(getJobManager().getJobStatus())
+								.build());
 
 		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
-			out.add(new JobManagerStatus(
-					"Manager", namespace.getDataset().getId(),
-					namespace.getJobManager().getJobStatus()
-			));
+			out.add(JobManagerStatus.builder()
+									.origin("Manager")
+									.dataset(namespace.getDataset().getId())
+									.jobs(namespace.getJobManager().getJobStatus())
+									.build());
 		}
 
 		for (ShardNodeInformation si : nodeProvider.get()) {
