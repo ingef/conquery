@@ -2,6 +2,7 @@ import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
+  faCode,
   faDownload,
   faFileArchive,
   faFileCsv,
@@ -39,6 +40,7 @@ function useFileIcon(url: string): FileIcon {
       XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
       PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
       CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
+      JSON: { icon: faCode, color: theme.col.fileTypes.json },
     }),
     [theme],
   );
