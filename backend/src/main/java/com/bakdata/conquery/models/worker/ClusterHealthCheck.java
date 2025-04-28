@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -19,7 +18,6 @@ public class ClusterHealthCheck extends HealthCheck {
 
 	public static final String HEALTHY_MESSAGE_FMT = "All %d known shards are connected.";
 	private final ClusterState clusterState;
-	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
 	private final Duration heartbeatTimeout;
 
 	@Override
@@ -37,9 +35,10 @@ public class ClusterHealthCheck extends HealthCheck {
 		}
 
 		LocalDateTime now = LocalDateTime.now();
-		List<ShardNodeInformation> timeoutShards = nodeProvider.get().stream()
-															   .filter((status) -> heartbeatTimeout.minus(Duration.between(status.getLastStatusTime(), now).abs())
-																								   .isNegative()).toList();
+		List<ShardNodeInformation> timeoutShards =
+				clusterState.getShardNodes().values().stream()
+							.filter((status) -> heartbeatTimeout.minus(Duration.between(status.getLastStatusTime(), now).abs())
+																.isNegative()).toList();
 
 		if (!timeoutShards.isEmpty()) {
 			return Result.unhealthy("Shards timed out:%s".formatted(timeoutShards.stream()
