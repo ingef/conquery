@@ -24,7 +24,7 @@ import org.eclipse.jetty.io.EofException;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public class JsonDescriptionProcessor {
+public class ResultJsonDescriptionProcessor {
 
 
 	public <E extends ManagedQuery> Response createResult(Subject subject, E exec, Charset charset) {
