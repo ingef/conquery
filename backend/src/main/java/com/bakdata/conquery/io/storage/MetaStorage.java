@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -88,7 +89,9 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAllKeys().map(executions::get);
+		return executions.getAllKeys()
+						 .map(executions::get)
+				         .filter(Objects::nonNull);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {

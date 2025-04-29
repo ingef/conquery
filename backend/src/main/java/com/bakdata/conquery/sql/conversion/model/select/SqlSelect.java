@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import java.util.List;
 
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
@@ -19,6 +20,13 @@ public interface SqlSelect extends Qualifiable<SqlSelect> {
 	 */
 	default boolean isUniversal() {
 		return false;
+	}
+
+	/**
+	 * Special selects like {@link ExistsSelect} require an extra aggregation when joining them with other connectors.
+	 */
+	default SqlSelect connectorAggregate() {
+		return this;
 	}
 
 }

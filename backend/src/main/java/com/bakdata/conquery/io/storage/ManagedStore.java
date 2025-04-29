@@ -13,4 +13,6 @@ public interface ManagedStore {
 	void removeStore();
 
 	void invalidateCache();
+
+	void loadKeys();
 }
