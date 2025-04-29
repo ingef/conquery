@@ -135,9 +135,6 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	@JsonIgnore
 	public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
 
-	@JsonIgnore
-	private Client httpClient;
-
 
 	@ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
 	@JsonIgnore
@@ -174,7 +171,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemAuthzCode, "jwt-authz-redeemer");
 		RedirectingAuthFilter.registerAuthAttemptChecker(jerseyAdminUi, this::checkAndRedeemRefreshToken, "jwt-refresh-redeemer");
 
-		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, authorizationController.getStorage(), tokenLeeway, environment.getValidator());
+		return new JwtPkceVerifyingRealm(idpConfigurationSupplier,
+										 client,
+										 additionalVerifiers,
+										 alternativeIdClaims,
+										 authorizationController.getStorage(),
+										 tokenLeeway,
+										 environment.getValidator()
+		);
 	}
 
 	@Data
@@ -190,10 +194,9 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 					// check again since we are now in an exclusive section
 					if (idpConfiguration == null) {
 
-
-						try{
-							Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-																					.build(this.getClass().getSimpleName());
+						final Client httpClient = new JerseyClientBuilder(environment).using(config.getJerseyClient())
+																					  .build(this.getClass().getSimpleName());
+						try {
 							// retrieve the configuration and cache it
 							idpConfiguration = retrieveIdpConfiguration(httpClient);
 						}
@@ -344,13 +347,15 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 
 		// Build the original redirect uri (the request uri without the query added by the IDP)
-		final URI redirectedUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).replacePath(request.getUriInfo().getAbsolutePath().getPath()).replaceQuery("").build();
+		final URI redirectedUri =
+				UriBuilder.fromUri(RequestHelper.getRequestURL(request)).replacePath(request.getUriInfo().getAbsolutePath().getPath()).replaceQuery("").build();
 		log.trace("Redirect URI: {}", redirectedUri);
 
 		// Prepare code for exchange with access token
 		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(
 				new AuthorizationCode(code),
-				redirectedUri);
+				redirectedUri
+		);
 
 		// Redeem code
 		AccessTokenResponse tokenResponse = getTokenResponse(authzGrant);
@@ -409,7 +414,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	}
 
 	/**
-	 *	Extracts a refresh token and converts it into a cookies with the life span of that refresh token.
+	 * Extracts a refresh token and converts it into a cookies with the life span of that refresh token.
 	 */
 	@SneakyThrows(java.text.ParseException.class)
 	private NewCookie prepareRefreshTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
