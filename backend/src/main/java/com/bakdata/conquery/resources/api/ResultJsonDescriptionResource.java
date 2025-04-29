@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.result.json.ResultJsonDescriptionProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -42,6 +43,10 @@ public class ResultJsonDescriptionResource {
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset
 	) {
+
+		if(!subject.isPermitted(execution, Ability.JSON_RESULT)){
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
 
 		//TODO handle ManagedForm separately
 		if (execution instanceof ManagedQuery managedQuery) {

@@ -2,17 +2,18 @@ package com.bakdata.conquery.models.config;
 
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.resources.api.ResultExternalResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +28,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	@Override
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, Subject viewer, UriBuilder uriBuilder, boolean allProviders) {
 
 		if (!(exec instanceof ExternalExecution)) {
 			return Collections.emptyList();

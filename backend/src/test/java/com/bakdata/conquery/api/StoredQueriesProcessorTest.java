@@ -284,10 +284,10 @@ public class StoredQueriesProcessorTest {
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is a filter for the search)
 		if(state.equals(DONE)) {
 			List<ResultAsset> resultUrls = new ArrayList<>();
-			resultUrls.addAll(EXCEL_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
-			resultUrls.addAll(CSV_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
-			resultUrls.addAll(ARROW_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
-			resultUrls.addAll(PARQUET_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
+			resultUrls.addAll(EXCEL_RESULT_PROVIDER.generateResultURLs(execMock, owner, URI_BUILDER.clone(), true));
+			resultUrls.addAll(CSV_RESULT_PROVIDER.generateResultURLs(execMock, owner, URI_BUILDER.clone(), true));
+			resultUrls.addAll(ARROW_RESULT_PROVIDER.generateResultURLs(execMock, owner, URI_BUILDER.clone(), true));
+			resultUrls.addAll(PARQUET_RESULT_PROVIDER.generateResultURLs(execMock, owner, URI_BUILDER.clone(), true));
 			status.setResultUrls(resultUrls);
 		}
 

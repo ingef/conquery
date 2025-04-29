@@ -12,6 +12,8 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.json.ResultJsonDescriptionProcessor;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.api.ResultJsonDescriptionResource;
@@ -23,11 +25,15 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 @Slf4j
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "JSON")
-public class JsonResultProvider implements ResultRendererProvider {
+public class JsonDescriptionResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, Subject viewer, UriBuilder uriBuilder, boolean allProviders)
 			throws MalformedURLException, URISyntaxException {
+
+		if(!viewer.isPermitted(exec, Ability.JSON_RESULT)){
+			return Collections.emptyList();
+		}
 
 		if (!(exec instanceof ManagedQuery)){
 			return Collections.emptyList();

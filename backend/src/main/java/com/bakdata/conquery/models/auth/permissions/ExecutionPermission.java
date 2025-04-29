@@ -11,20 +11,20 @@ import org.jetbrains.annotations.TestOnly;
 public class ExecutionPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "queries";
-	
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
-		Ability.READ,
-		Ability.DELETE,
-		Ability.SHARE,
-		Ability.TAG,
-		Ability.CANCEL,
-		Ability.LABEL
-		);
-	
+			Ability.READ,
+			Ability.DELETE,
+			Ability.SHARE,
+			Ability.TAG,
+			Ability.CANCEL,
+			Ability.LABEL,
+			Ability.JSON_RESULT
+	);
+
 	public static final ExecutionPermission INSTANCE = new ExecutionPermission();
-	
-	
+
+
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
 		return instancePermission(ability, instance.toString());
 	}
@@ -43,7 +43,6 @@ public class ExecutionPermission extends StringPermissionBuilder {
 		return ALLOWED_ABILITIES;
 	}
 
-	//// Helper functions
 	@TestOnly
 	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(ability, instance);
