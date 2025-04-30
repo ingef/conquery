@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
@@ -100,7 +101,7 @@ public class ExcelResultRenderTest {
 														   (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings, new StringResultPrinters());
+		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings, new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF));
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
